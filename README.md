@@ -1,4 +1,5 @@
-# herocast 
+# Nounspace
+Forked from [herocast](https://github.com/hellno/herocast/)
 [![build](https://github.com/hellno/herocast/actions/workflows/build.yaml/badge.svg)](https://github.com/hellno/herocast/actions/workflows/build.yaml)
 ![herocast_cartridge_landscape](https://github.com/hellno/herocast/assets/686075/f6925730-6e41-4729-93c0-4ce617b15aee)
 
