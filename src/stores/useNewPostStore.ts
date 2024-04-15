@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { create as mutativeCreate, Draft } from 'mutative';
-import { CommandType } from "../../src/common/constants/commands";
+import { CommandType } from "@/common/constants/commands";
 import { PlusCircleIcon, TagIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { AccountObjectType } from "./useAccountStore";
-import { DraftStatus, DraftType, ParentCastIdType } from "../../src/common/constants/farcaster";
+import { DraftStatus, DraftType, ParentCastIdType } from "@/common/constants/farcaster";
 import {
   getMentionFidsByUsernames,
   formatPlaintextToHubCastMessage,

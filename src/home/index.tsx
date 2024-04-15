@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { createClient } from "../../src/common/helpers/supabase/component";
+import { createClient } from "@/common/helpers/supabase/component";
 import {
   Cog6ToothIcon,
   PlusCircleIcon,
@@ -11,12 +11,11 @@ import {
   Bars3Icon,
   UserPlusIcon,
 } from "@heroicons/react/20/solid";
-import { classNames } from "../common/helpers/css";
-import { RIGHT_SIDEBAR_ENUM } from "../common/constants/navigation";
-import AccountsRightSidebar from "../common/components/RightSidebar/AccountsRightSidebar";
-import ChannelsRightSidebar from "../common/components/RightSidebar/ChannelsRightSidebar";
-import { CUSTOM_CHANNELS, useAccountStore } from "../stores/useAccountStore";
-import { findParamInHashUrlPath } from "../common/helpers/navigation";
+import { classNames } from "@/common/helpers/css";
+import { RIGHT_SIDEBAR_ENUM } from "@/common/constants/navigation";
+import AccountsRightSidebar from "@/common/components/RightSidebar/AccountsRightSidebar";
+import ChannelsRightSidebar from "@/common/components/RightSidebar/ChannelsRightSidebar";
+import { CUSTOM_CHANNELS, useAccountStore } from "@/stores/useAccountStore";
 import {
   BellIcon,
   MagnifyingGlassIcon,
@@ -25,7 +24,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { ThemeToggle } from "@/common/components/ThemeToggle";
-import herocastImg from "../../public/images/logo.png";
+import herocastImg from "@public/images/logo.png";
 import {
   TooltipProvider,
 } from "@/components/ui/tooltip";

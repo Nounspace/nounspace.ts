@@ -1,9 +1,9 @@
 import React, { Fragment, useState } from 'react';
-import { CommandType } from "../../../common/constants/commands";
-import { classNames } from "../../../common/helpers/css";
-import { accountCommands, channelCommands, useAccountStore } from '../../../stores/useAccountStore';
-import { useNavigationStore } from "../../../stores/useNavigationStore";
-import { newPostCommands } from "../../../stores/useNewPostStore";
+import { CommandType } from "@/common/constants/commands";
+import { classNames } from "@/common/helpers/css";
+import { accountCommands, channelCommands, useAccountStore } from '@/stores/useAccountStore';
+import { useNavigationStore } from "@/stores/useNavigationStore";
+import { newPostCommands } from "@/stores/useNewPostStore";
 import { Combobox, Dialog, Transition } from '@headlessui/react';
 import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { FaceSmileIcon } from '@heroicons/react/24/outline';
@@ -39,7 +39,7 @@ export default function CommandPalette() {
   })
 
   const { theme, setTheme } = useTheme()
-  const themeCommands = getThemeCommands(theme, setTheme);
+  const themeCommands = getThemeCommands(theme!, setTheme);
   const navigationCommands = getNavigationCommands({ router });
 
   let commands: CommandType[] = [

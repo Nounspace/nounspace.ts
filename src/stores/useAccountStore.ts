@@ -1,8 +1,8 @@
-import { AccountPlatformType, AccountStatusType } from "../../src/common/constants/accounts";
-import { ChannelType } from "../../src/common/constants/channels";
-import { CommandType } from "../../src/common/constants/commands";
-import { randomNumberBetween } from "../../src/common/helpers/math";
-import { getAccountsForUser } from "../../src/common/helpers/supabase";
+import { AccountPlatformType, AccountStatusType } from "@/common/constants/accounts";
+import { ChannelType } from "@/common/constants/channels";
+import { CommandType } from "@/common/constants/commands";
+import { randomNumberBetween } from "@/common/helpers/math";
+import { getAccountsForUser } from "@/common/helpers/supabase";
 import { Draft, create as mutativeCreate } from 'mutative';
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";

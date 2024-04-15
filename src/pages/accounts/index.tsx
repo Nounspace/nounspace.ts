@@ -9,13 +9,13 @@ import { ArrowDownTrayIcon, NewspaperIcon } from "@heroicons/react/24/solid";
 import {
   JoinedHerocastPostDraft,
   useNewPostStore,
-} from "../../src/stores/useNewPostStore";
-import { hydrate, useAccountStore } from "../../src/stores/useAccountStore";
+} from "@/stores/useNewPostStore";
+import { hydrate, useAccountStore } from "@/stores/useAccountStore";
 import isEmpty from "lodash.isempty";
 import {
   AccountPlatformType,
   AccountStatusType,
-} from "../../src/common/constants/accounts";
+} from "@/common/constants/accounts";
 import {
   Card,
   CardContent,
@@ -24,9 +24,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "../../src/components/ui/button";
-import { QrCode } from "../../src/common/components/QrCode";
-import ConnectFarcasterAccountViaHatsProtocol from "../../src/common/components/ConnectFarcasterAccountViaHatsProtocol";
+import { Button } from "@/components/ui/button";
+import { QrCode } from "@/common/components/QrCode";
+import ConnectFarcasterAccountViaHatsProtocol from "@/common/components/ConnectFarcasterAccountViaHatsProtocol";
 import { useAccount } from "wagmi";
 import {
   WarpcastLoginStatus,
@@ -34,14 +34,14 @@ import {
   createSignerRequest,
   generateWarpcastSigner,
   getWarpcastSignerStatus,
-} from "../../src/common/helpers/warpcastLogin";
-import HelpCard from "../../src/common/components/HelpCard";
-import { useIsMounted } from "../../src/common/helpers/hooks";
+} from "@/common/helpers/warpcastLogin";
+import HelpCard from "@/common/components/HelpCard";
+import { useIsMounted } from "@/common/helpers/hooks";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { openWindow } from "../../src/common/helpers/navigation";
-import ConfirmOnchainSignerButton from "../../src/common/components/ConfirmOnchainSignerButton";
-import SwitchWalletButton from "../../src/common/components/SwitchWalletButton";
+import { openWindow } from "@/common/helpers/navigation";
+import ConfirmOnchainSignerButton from "@/common/components/ConfirmOnchainSignerButton";
+import SwitchWalletButton from "@/common/components/SwitchWalletButton";
 
 const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 
