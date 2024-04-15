@@ -1,17 +1,17 @@
-import "../src/globals.css";
+import "@/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
 import React, { useEffect } from "react";
 import type { AppProps } from "next/app";
-import { ThemeProvider } from "../src/common/hooks/ThemeProvider";
+import { ThemeProvider } from "@/common/hooks/ThemeProvider";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import CommandPalette from "../src/common/components/CommandPalette";
+import CommandPalette from "@/common/components/CommandPalette";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { rainbowKitTheme, config } from "../src/common/helpers/rainbowkit";
-import Home from "../src/home";
+import { rainbowKitTheme, config } from "@/common/helpers/rainbowkit";
+import Home from "@/home";
 import { PostHogProvider } from "posthog-js/react";
-import { loadPosthogAnalytics } from "../src/lib/analytics";
+import { loadPosthogAnalytics } from "@/lib/analytics";
 import { useRouter } from "next/router";
 
 const posthog = loadPosthogAnalytics();

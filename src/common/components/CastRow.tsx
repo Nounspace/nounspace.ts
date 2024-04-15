@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { castTextStyle, classNames } from "../../../src/common/helpers/css";
+import { castTextStyle, classNames } from "@/common/helpers/css";
 import {
   CastType,
   CastReactionType,
-} from "../../../src/common/constants/farcaster";
-import { ChannelType } from "../../../src/common/constants/channels";
-import { useAccountStore } from "../../../src/stores/useAccountStore";
+} from "@/common/constants/farcaster";
+import { ChannelType } from "@/common/constants/channels";
+import { useAccountStore } from "@/stores/useAccountStore";
 import {
   ArrowPathRoundedSquareIcon,
   ArrowTopRightOnSquareIcon,
@@ -33,7 +33,6 @@ import mentionPlugin, {
   cashtagPlugin,
   channelPlugin,
 } from "../helpers/linkify";
-import { toast } from "sonner";
 import { AccountPlatformType } from "../constants/accounts";
 import { toastInfoReadOnlyMode } from "../helpers/toast";
 

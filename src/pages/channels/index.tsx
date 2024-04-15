@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { useAccountStore } from "../../src/stores/useAccountStore";
+import { useAccountStore } from "@/stores/useAccountStore";
 import isEmpty from "lodash.isempty";
-import { ChevronRightIcon, UserPlusIcon } from "@heroicons/react/24/outline";
-import { classNames } from "../../src/common/helpers/css";
-import { ChannelType } from "../../src/common/constants/channels";
-import Toggle from "../../src/common/components/Toggle";
+import { classNames } from "@/common/helpers/css";
+import { ChannelType } from "@/common/constants/channels";
+import Toggle from "@/common/components/Toggle";
 import findIndex from "lodash.findindex";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import includes from "lodash.includes";

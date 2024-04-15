@@ -1,7 +1,6 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import StepSequence from "@/common/components/Steps/StepSequence";
-import WalletLogin from "@/common/components/WalletLogin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,7 @@ import BigOptionSelector from "@/common/components/BigOptionSelector";
 import SharedAccountOwnershipSetup from "@/common/components/SharedAccountOwnershipSetup";
 import TransferAccountToHatsDelegator from "@/common/components/TransferAccountToHatsDelegator";
 import { openWindow } from "@/common/helpers/navigation";
-import { ID_REGISTRY } from "../../src/common/constants/contracts/id-registry";
+import { ID_REGISTRY } from "@/common/constants/contracts/id-registry";
 import isEmpty from "lodash.isempty";
 import clsx from "clsx";
 import SwitchWalletButton from "@/common/components/SwitchWalletButton";
