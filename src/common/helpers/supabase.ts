@@ -1,4 +1,3 @@
-import { createClient } from '@supabase/supabase-js'
 import isEmpty from 'lodash.isempty';
 import { AccountStatusType } from '../constants/accounts';
 

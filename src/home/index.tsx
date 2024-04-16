@@ -41,10 +41,8 @@ type NavigationItemType = {
 
 const Home = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const supabase = createClient()
 
   const { pathname, asPath } = router;
-  const locationHash = asPath.split("#")[1];
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { allChannels, selectedChannelUrl } = useAccountStore();
 
