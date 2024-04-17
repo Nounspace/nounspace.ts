@@ -325,7 +325,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       <div className="lg:pl-20">
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-0 border-muted bg-background px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+{/*        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-0 border-muted bg-background px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
             className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -337,54 +337,18 @@ const Home = ({ children }: { children: React.ReactNode }) => {
           <h1 className="mx-auto text-xl font-semibold leading-7 text-foreground">
             {title}
           </h1>
-          {/* Separator */}
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              {/* Separator */}
-              {/* <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true" /> */}
-              {/* Profile dropdown */}
-              {/* <Menu as="div" className="relative">
-              <Menu.Button className="-m-1.5 flex items-center p-1.5">
-                <span className="sr-only">Open user menu</span>
-                <img
-                  className="h-8 w-8 rounded-full bg-gray-50"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
-                />
-                <span className="hidden lg:flex lg:items-center">
-                  <span className="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">
-                    Tom Cook
-                  </span>
-                  <ChevronDownIcon className="ml-2 h-5 w-5 text-gray-400" aria-hidden="true" />
-                </span>
-              </Menu.Button>
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
-                </Menu.Items>
-              </Transition>
-            </Menu> */}
-            </div>
-          </div>
-        </div>
-        <main
-          className={classNames(
-            sidebarType === RIGHT_SIDEBAR_ENUM.NONE
-              ? ""
-              : "md:pr-48 lg:pr-64"
-          )}
-        >
-          <div className="w-full max-w-full min-h-screen flex justify-between">
-            {children}
-          </div>
-          {renderRightSidebar()}
+        </div>*/}
+        <main>
+              <div class="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
+                <div class="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
+                <div class="p-4 bg-slate-300 row-span-4 col-span-4 rounded-md flex items-center justify-center"></div>
+                <div class="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+                <div class="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+                <div class="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+                <div class="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+                <div class="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+              </div>
+          {/*{renderRightSidebar()}*/}
         </main>
       </div>
       <Toaster theme="system" position="bottom-right" />
