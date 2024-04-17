@@ -5,7 +5,7 @@ import { SelectableListWithHotkeys } from './SelectableListWithHotkeys';
 import { openWindow } from '../helpers/navigation';
 import { classNames } from '../helpers/css';
 import { getUrlsInText } from '../helpers/text';
-import uniqBy from 'lodash.uniqby';
+import { uniqBy } from 'lodash';
 import OpenGraphImage from './Embeds/OpenGraphImage';
 
 type EmbedsModalProps = {

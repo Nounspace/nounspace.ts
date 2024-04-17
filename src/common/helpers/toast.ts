@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import truncate from "lodash.truncate";
+import { truncate } from "lodash";
 
 export const toastInfoReadOnlyMode = () => {
     toast.info('You\'re using a readonly account', {

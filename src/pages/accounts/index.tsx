@@ -11,7 +11,7 @@ import {
   useNewPostStore,
 } from "@/stores/useNewPostStore";
 import { hydrate, useAccountStore } from "@/stores/useAccountStore";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import {
   AccountPlatformType,
   AccountStatusType,

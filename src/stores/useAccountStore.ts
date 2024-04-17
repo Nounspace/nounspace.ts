@@ -6,16 +6,11 @@ import { getAccountsForUser } from "@/common/helpers/supabase";
 import { Draft, create as mutativeCreate } from 'mutative';
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import isEmpty from "lodash.isempty";
-import findIndex from 'lodash.findindex';
-import sortBy from "lodash.sortby";
-import cloneDeep from "lodash.clonedeep";
+import { isEmpty, findIndex, sortBy, cloneDeep, includes, uniqBy } from "lodash";
 import { UUID } from "crypto";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { createClient } from "@/common/helpers/supabase/component";
-import includes from "lodash.includes";
-import uniqBy from "lodash.uniqby";
 import { v4 as uuidv4 } from 'uuid';
 import { getUsernameForFid } from "@/common/helpers/farcaster";
 

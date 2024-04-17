@@ -5,7 +5,7 @@ import { useAccountStore } from "@/stores/useAccountStore";
 import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
 import { localize, timeDiff } from "@/common/helpers/date";
 import { CastThreadView } from "@/common/components/CastThreadView";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
 import { CastType } from "@/common/constants/farcaster";

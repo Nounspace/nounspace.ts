@@ -1,5 +1,5 @@
 import * as linkify from "linkifyjs";
-import uniqBy from "lodash.uniqby";
+import { uniqBy } from "lodash";
 
 export const getUrlsInText = (text: string): { url: string }[] => {
   const urls = linkify.find(text, "url");

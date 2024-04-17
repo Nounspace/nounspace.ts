@@ -6,9 +6,8 @@ import {
 } from "@/stores/useAccountStore";
 import { CastType } from "@/common/constants/farcaster";
 import { useHotkeys } from "react-hotkeys-hook";
-import get from "lodash.get";
+import { get, isEmpty, uniqBy } from "lodash";
 import { CastRow } from "@/common/components/CastRow";
-import isEmpty from "lodash.isempty";
 import { CastThreadView } from "@/common/components/CastThreadView";
 import { DEFAULT_FEED_PAGE_SIZE } from "@/common/helpers/neynar";
 import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
@@ -24,7 +23,6 @@ import {
   FeedType,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { Loading } from "@/common/components/Loading";
-import uniqBy from "lodash.uniqby";
 import BigOptionSelector from "@/common/components/BigOptionSelector";
 
 type FeedsType = {

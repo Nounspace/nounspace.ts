@@ -9,7 +9,7 @@ import { openWindow } from "../helpers/navigation";
 import { Loading } from "./Loading";
 import { useInView } from "react-intersection-observer";
 import { DexPair, PriceChange, useDataStore } from "@/stores/useDataStore";
-import get from "lodash.get";
+import { get } from "lodash";
 import { Button } from "@/components/ui/button";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 

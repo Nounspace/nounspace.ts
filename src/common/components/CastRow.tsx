@@ -15,12 +15,10 @@ import {
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
 import { localize, timeDiff } from "../helpers/date";
 import { publishReaction, removeReaction } from "../helpers/farcaster";
-import includes from "lodash.includes";
-import map from "lodash.map";
+import { includes, map, get } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import HotkeyTooltipWrapper from "./HotkeyTooltipWrapper";
-import get from "lodash.get";
 import Linkify from "linkify-react";
 import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";

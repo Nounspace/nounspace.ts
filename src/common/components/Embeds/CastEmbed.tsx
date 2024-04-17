@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { CastRow } from "../CastRow";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import { CastParamType, NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { CastResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";

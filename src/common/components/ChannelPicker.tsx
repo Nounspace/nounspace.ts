@@ -14,9 +14,8 @@ import {
 } from "@/components/ui/popover";
 import { Channel } from "@mod-protocol/farcaster";
 import { CaretDownIcon } from "@radix-ui/react-icons";
-import { take } from "lodash";
+import { take, uniqBy } from "lodash";
 import { useEffect } from "react";
-import uniqBy from "lodash.uniqby";
 
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;

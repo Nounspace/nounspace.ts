@@ -7,7 +7,7 @@ import {
 import { ArrowDownTrayIcon, UserPlusIcon } from "@heroicons/react/24/outline";
 import EmptyStateWithAction from "@/common/components/EmptyStateWithAction";
 import { classNames } from "@/common/helpers/css";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import ChannelsOverview from "./ChannelsOverview";
 import { SidebarHeader } from "./SidebarHeader";
 import * as Tooltip from "@radix-ui/react-tooltip";
