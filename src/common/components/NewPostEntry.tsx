@@ -17,7 +17,7 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import debounce from "lodash.debounce";
+import { debounce, map } from "lodash";
 import { Button } from "@/components/ui/button";
 import { MentionList } from "@mod-protocol/react-ui-shadcn/dist/components/mention-list";
 import { take } from "lodash";
@@ -30,7 +30,6 @@ import {
 import { CreationMod } from "@mod-protocol/react";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-import map from "lodash.map";
 import { renderEmbedForUrl } from "./Embeds";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";

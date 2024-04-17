@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { classNames } from "@/common/helpers/css";
 import { makeGraphqlRequest } from "@/common/helpers/graphql";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
-import get from "lodash.get";
-import isEmpty from "lodash.isempty";
+import { get, isEmpty } from "lodash";
 import { openWindow } from "../../helpers/navigation";
 
 type StatsType = {

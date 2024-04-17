@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { InformationCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { searchForText, SearchResultCast } from "@/common/helpers/searchcaster";
 import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
-import debounce from "lodash.debounce";
+import { debounce } from "lodash";
 import { CastRow } from "@/common/components/CastRow";
 import { CastType } from "@/common/constants/farcaster";
 import { getUrlsInText } from "@/common/helpers/text";

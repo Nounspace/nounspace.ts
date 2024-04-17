@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { classNames } from "@/common/helpers/css";
 import { CheckCircleIcon } from "@heroicons/react/20/solid";
-import findIndex from "lodash.findindex";
+import { findIndex } from "lodash";
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
   items: {

@@ -9,7 +9,7 @@ import { openWindow } from "../helpers/navigation";
 import { Loading } from "./Loading";
 import { useInView } from "react-intersection-observer";
 import { useDataStore } from "@/stores/useDataStore";
-import get from "lodash.get";
+import { get } from "lodash";
 import FollowButton from "./FollowButton";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 

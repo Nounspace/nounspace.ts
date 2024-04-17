@@ -14,7 +14,7 @@ import SharedAccountOwnershipSetup from "@/common/components/SharedAccountOwners
 import TransferAccountToHatsDelegator from "@/common/components/TransferAccountToHatsDelegator";
 import { openWindow } from "@/common/helpers/navigation";
 import { ID_REGISTRY } from "@/common/constants/contracts/id-registry";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import clsx from "clsx";
 import SwitchWalletButton from "@/common/components/SwitchWalletButton";
 import { Loading } from "@/common/components/Loading";

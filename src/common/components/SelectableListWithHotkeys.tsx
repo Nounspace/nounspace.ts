@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from 'ts-key-enum';
 import { useInView } from 'react-intersection-observer';
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 
 type SelectableListWithHotkeysProps = {
   data: any[],

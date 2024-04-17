@@ -1,15 +1,12 @@
 import React, { useState } from "react";
 import { useAccountStore } from "@/stores/useAccountStore";
-import isEmpty from "lodash.isempty";
 import { classNames } from "@/common/helpers/css";
 import { ChannelType } from "@/common/constants/channels";
 import Toggle from "@/common/components/Toggle";
-import findIndex from "lodash.findindex";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-import includes from "lodash.includes";
 import SortableList, { SortableItem } from "react-easy-sort";
 import { useRouter } from "next/router";
-import { take } from "lodash";
+import { take, isEmpty, findIndex, includes } from "lodash";
 
 export default function Channels() {
   const [searchTerm, setSearchTerm] = useState("");

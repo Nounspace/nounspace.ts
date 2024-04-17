@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { SidebarNav } from "./SidebarNav";
-import findIndex from "lodash.findindex";
+import { findIndex } from "lodash";
 
 type StepSequenceProps = {
   title: string;

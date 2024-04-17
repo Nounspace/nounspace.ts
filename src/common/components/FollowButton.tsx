@@ -6,7 +6,7 @@ import { followUser, unfollowUser } from "../helpers/farcaster";
 import { useAccountStore } from "@/stores/useAccountStore";
 import { useRouter } from "next/navigation";
 import { useDataStore } from "@/stores/useDataStore";
-import get from "lodash.get";
+import { get } from "lodash";
 
 type FollowButtonProps = {
   username: string;

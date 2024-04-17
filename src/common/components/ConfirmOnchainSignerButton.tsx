@@ -18,7 +18,7 @@ import {
   hydrate,
   useAccountStore,
 } from "@/stores/useAccountStore";
-import isEmpty from "lodash.isempty";
+import { isEmpty } from "lodash";
 import { useAccountModal } from "@rainbow-me/rainbowkit";
 import { getChainId } from "@wagmi/core";
 import { config } from "../helpers/rainbowkit";
