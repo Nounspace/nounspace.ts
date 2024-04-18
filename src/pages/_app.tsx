@@ -13,6 +13,7 @@ import Home from "@/space/home";
 import { PostHogProvider } from "posthog-js/react";
 import { loadPosthogAnalytics } from "@/space/lib/analytics";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 const posthog = loadPosthogAnalytics();
 
@@ -46,14 +47,18 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   );
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <title>Nounspace</title>
-      {children}
-    </ThemeProvider>
+    <>
+      <Head>
+        <title>Nounspace</title>
+      </Head>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
+    </>
   );
 }
