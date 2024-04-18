@@ -1,5 +1,5 @@
 import { NextRouter } from 'next/router'
-import { CommandType } from './common/constants/commands';
+import { CommandType } from './space/common/constants/commands';
 import { MagnifyingGlassIcon, RectangleGroupIcon } from '@heroicons/react/20/solid';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { Bars3BottomLeftIcon } from "@heroicons/react/20/solid";

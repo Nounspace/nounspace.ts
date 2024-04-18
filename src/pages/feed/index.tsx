@@ -3,27 +3,27 @@ import {
   AccountObjectType,
   CUSTOM_CHANNELS,
   useAccountStore,
-} from "@/stores/useAccountStore";
-import { CastType } from "@/common/constants/farcaster";
+} from "@/space/stores/useAccountStore";
+import { CastType } from "@/space/common/constants/farcaster";
 import { useHotkeys } from "react-hotkeys-hook";
 import { get, isEmpty, uniqBy } from "lodash";
-import { CastRow } from "@/common/components/CastRow";
-import { CastThreadView } from "@/common/components/CastThreadView";
-import { DEFAULT_FEED_PAGE_SIZE } from "@/common/helpers/neynar";
-import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
+import { CastRow } from "@/space/common/components/CastRow";
+import { CastThreadView } from "@/space/common/components/CastThreadView";
+import { DEFAULT_FEED_PAGE_SIZE } from "@/space/common/helpers/neynar";
+import { SelectableListWithHotkeys } from "@/space/common/components/SelectableListWithHotkeys";
 import { Key } from "ts-key-enum";
-import ReplyModal from "@/common/components/ReplyModal";
-import EmbedsModal from "@/common/components/EmbedsModal";
+import ReplyModal from "@/space/common/components/ReplyModal";
+import EmbedsModal from "@/space/common/components/EmbedsModal";
 import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/router";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { FilterType, NeynarAPIClient } from "@neynar/nodejs-sdk";
 import {
   CastWithInteractions,
   FeedType,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { Loading } from "@/common/components/Loading";
-import BigOptionSelector from "@/common/components/BigOptionSelector";
+import { Loading } from "@/space/common/components/Loading";
+import BigOptionSelector from "@/space/common/components/BigOptionSelector";
 
 type FeedsType = {
   [key: string]: CastWithInteractions[];
