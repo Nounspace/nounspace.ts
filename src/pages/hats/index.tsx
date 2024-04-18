@@ -1,23 +1,23 @@
 import React, { ReactNode, useEffect, useState } from "react";
-import { Separator } from "@/components/ui/separator";
-import StepSequence from "@/common/components/Steps/StepSequence";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Separator } from "@/shared/ui/separator";
+import StepSequence from "@/space/common/components/Steps/StepSequence";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Label } from "@/shared/ui/label";
 import { ClipboardDocumentIcon } from "@heroicons/react/20/solid";
 import { useAccount, useReadContract } from "wagmi";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import BigOptionSelector from "@/common/components/BigOptionSelector";
-import SharedAccountOwnershipSetup from "@/common/components/SharedAccountOwnershipSetup";
-import TransferAccountToHatsDelegator from "@/common/components/TransferAccountToHatsDelegator";
-import { openWindow } from "@/common/helpers/navigation";
-import { ID_REGISTRY } from "@/common/constants/contracts/id-registry";
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+import BigOptionSelector from "@/space/common/components/BigOptionSelector";
+import SharedAccountOwnershipSetup from "@/space/common/components/SharedAccountOwnershipSetup";
+import TransferAccountToHatsDelegator from "@/space/common/components/TransferAccountToHatsDelegator";
+import { openWindow } from "@/space/common/helpers/navigation";
+import { ID_REGISTRY } from "@/space/common/constants/contracts/id-registry";
 import { isEmpty } from "lodash";
 import clsx from "clsx";
-import SwitchWalletButton from "@/common/components/SwitchWalletButton";
-import { Loading } from "@/common/components/Loading";
+import SwitchWalletButton from "@/space/common/components/SwitchWalletButton";
+import { Loading } from "@/space/common/components/Loading";
 
 enum HatsSignupNav {
   select_account = "SELECT_ACCOUNT",

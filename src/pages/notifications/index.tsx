@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-import { castTextStyle, classNames } from "@/common/helpers/css";
-import { useAccountStore } from "@/stores/useAccountStore";
-import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
-import { localize, timeDiff } from "@/common/helpers/date";
-import { CastThreadView } from "@/common/components/CastThreadView";
+import { castTextStyle, classNames } from "@/space/common/helpers/css";
+import { useAccountStore } from "@/space/stores/useAccountStore";
+import { SelectableListWithHotkeys } from "@/space/common/components/SelectableListWithHotkeys";
+import { localize, timeDiff } from "@/space/common/helpers/date";
+import { CastThreadView } from "@/space/common/components/CastThreadView";
 import { isEmpty } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
-import { CastType } from "@/common/constants/farcaster";
-import ReplyModal from "@/common/components/ReplyModal";
+import { CastType } from "@/space/common/constants/farcaster";
+import ReplyModal from "@/space/common/components/ReplyModal";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 
