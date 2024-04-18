@@ -9,7 +9,7 @@ import CommandPalette from "@/space/common/components/CommandPalette";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import { rainbowKitTheme, config } from "@/space/common/helpers/rainbowkit";
-import Home from "@/home";
+import Home from "@/space/home";
 import { PostHogProvider } from "posthog-js/react";
 import { loadPosthogAnalytics } from "@/space/lib/analytics";
 import { useRouter } from "next/router";
@@ -52,6 +52,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
       enableSystem
       disableTransitionOnChange
     >
+      <title>Nounspace</title>
       {children}
     </ThemeProvider>
   );
