@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import AlertDialogDemo from "@/common/components/AlertDialog";
-import HelpCard from "@/common/components/HelpCard";
-import { classNames } from "@/common/helpers/css";
-import { Button } from "@/components/ui/button";
+import AlertDialogDemo from "@/space/common/components/AlertDialog";
+import HelpCard from "@/space/common/components/HelpCard";
+import { classNames } from "@/space/common/helpers/css";
+import { Button } from "@/shared/ui/button";
 import {
   AccountObjectType,
   PENDING_ACCOUNT_NAME_PLACEHOLDER,
@@ -10,20 +10,20 @@ import {
   channelCommands,
   hydrate,
   useAccountStore,
-} from "@/stores/useAccountStore";
-import { newPostCommands } from "@/stores/useNewPostStore";
+} from "@/space/stores/useAccountStore";
+import { newPostCommands } from "@/space/stores/useNewPostStore";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { getNavigationCommands } from "@/getNavigationCommands";
-import AccountManagementModal from "@/common/components/AccountManagement/AccountManagementModal";
+import AccountManagementModal from "@/space/common/components/AccountManagement/AccountManagementModal";
 import { useAccount } from "wagmi";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
-import { AccountPlatformType } from "@/common/constants/accounts";
-import { Loading } from "@/common/components/Loading";
+import { AccountPlatformType } from "@/space/common/constants/accounts";
+import { Loading } from "@/space/common/components/Loading";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { getUsernameForFid, updateUsername } from "@/common/helpers/farcaster";
-import SwitchWalletButton from "@/common/components/SwitchWalletButton";
-import { createClient } from "@/common/helpers/supabase/component";
+import { getUsernameForFid, updateUsername } from "@/space/common/helpers/farcaster";
+import SwitchWalletButton from "@/space/common/components/SwitchWalletButton";
+import { createClient } from "@/space/common/helpers/supabase/component";
 import { usePostHog } from "posthog-js/react";
 
 type SimpleCommand = {

@@ -1,9 +1,9 @@
 import "@farcaster/auth-kit/styles.css";
 import React from "react";
-import { UserAuthForm } from "@/common/components/UserAuthForm";
+import { UserAuthForm } from "@/space/common/components/UserAuthForm";
 import { AuthKitProvider } from "@farcaster/auth-kit";
-import { Button } from "@/components/ui/button";
-import { openWindow } from "@/common/helpers/navigation";
+import { Button } from "@/shared/ui/button";
+import { openWindow } from "@/space/common/helpers/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 

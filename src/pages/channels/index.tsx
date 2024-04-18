@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { useAccountStore } from "@/stores/useAccountStore";
-import { classNames } from "@/common/helpers/css";
-import { ChannelType } from "@/common/constants/channels";
-import Toggle from "@/common/components/Toggle";
+import { useAccountStore } from "@/space/stores/useAccountStore";
+import { classNames } from "@/space/common/helpers/css";
+import { ChannelType } from "@/space/common/constants/channels";
+import Toggle from "@/space/common/components/Toggle";
 import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import SortableList, { SortableItem } from "react-easy-sort";
 import { useRouter } from "next/router";
