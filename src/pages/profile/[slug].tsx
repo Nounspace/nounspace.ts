@@ -6,17 +6,17 @@ import {
   AvatarImage,
   AvatarFallback,
   Avatar,
-} from "@/components/ui/avatar";
-import { CardHeader, Card } from "@/components/ui/card";
-import { SelectableListWithHotkeys } from "@/common/components/SelectableListWithHotkeys";
-import { CastRow } from "@/common/components/CastRow";
+} from "@/shared/ui/avatar";
+import { CardHeader, Card } from "@/shared/ui/card";
+import { SelectableListWithHotkeys } from "@/space/common/components/SelectableListWithHotkeys";
+import { CastRow } from "@/space/common/components/CastRow";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2/openapi-farcaster/models/cast-with-interactions";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { uniqBy } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";
-import FollowButton from "@/common/components/FollowButton";
-import { useAccountStore } from "@/stores/useAccountStore";
-import { useDataStore } from "@/stores/useDataStore";
+import FollowButton from "@/space/common/components/FollowButton";
+import { useAccountStore } from "@/space/stores/useAccountStore";
+import { useDataStore } from "@/space/stores/useDataStore";
 
 const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 
