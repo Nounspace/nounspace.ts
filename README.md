@@ -24,7 +24,7 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
 The Nounspace App follows the Atomic Design Pattern
 ![atomic_design](https://github.com/Nounspace/nounspace.ts/assets/7180740/2c892612-c730-4e74-bd32-3e7a8a6babbb)
 
-Atoms and Moluclues can be found in the `src/common` foloder. Feel free to use existing ones or add your own.
+Atoms and Moluclues can be found in the `src/shared/ui` foloder. Feel free to use existing ones or add your own.
 
 Fidgets are a type of Organism, fulfilling the role of sections of a page. To build Fidgets, please add them to the `src/fidgets` directory.
 
