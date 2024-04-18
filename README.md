@@ -1,48 +1,34 @@
 # Nounspace
-Forked from [herocast](https://github.com/hellno/herocast/)
 [![build](https://github.com/hellno/herocast/actions/workflows/build.yaml/badge.svg)](https://github.com/hellno/herocast/actions/workflows/build.yaml)
-![herocast_cartridge_landscape](https://github.com/hellno/herocast/assets/686075/f6925730-6e41-4729-93c0-4ce617b15aee)
 
-
-'Superhuman for Farcaster'
-= keyboard-first. support for multiple accounts and switching channels. cmd + k (command palette) to control everything.
+Forked from [herocast](https://github.com/hellno/herocast/)
 
 ## What is Farcaster?
 a protocol for decentralized social apps: https://www.farcaster.xyz
 
 ## 🏗️ Dev Setup
 
-- register with Supabase and create a new project https://supabase.com
-- get a Neynar API key https://docs.neynar.com/docs
-- get an Alchemy API key https://www.alchemy.com
-- get your Farcaster account FID and mnemoic
+1. Clone the repo
+2. Install Supabase CLI: <br> e.g. for MacOS with `brew install supabase/tap/supabase`
+3. Install dependencies `yarn install`
+4. Create a file `.env.development.local`
+5. Get the details you need for the file <br>
+  a. get a Neynar API key https://docs.neynar.com/docs -> `NEXT_PUBLIC_NEYNAR_API_KEY` <br>
+  b. get an Alchemy API key https://www.alchemy.com -> `NEXT_PUBLIC_ALCHEMY_API_KEY` <br>
+  c. get your Farcaster account FID and mnemoic -> `NEXT_PUBLIC_APP_FID` + `NEXT_PUBLIC_APP_MNENOMIC`<br>
+  d. launch local copy of Supabase with `supabase start`, use the info provided -> <br>
+ `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-## Local setup
+## Code Design
 
-- Install Supabase CLI `https://github.com/supabase/cli`
-  - e.g. for MacOS with `brew install supabase/tap/supabase` 
+The Nounspace App follows the Atomic Design Pattern
+![atomic_design](https://github.com/Nounspace/nounspace.ts/assets/7180740/2c892612-c730-4e74-bd32-3e7a8a6babbb)
 
-### install dependencies
+Atoms and Moluclues can be found in the `src/common` foloder. Feel free to use existing ones or add your own.
 
-```bash
-yarn install
-```
+Fidgets are a type of Organism, fulfilling the role of sections of a page. To build Fidgets, please add them to the `src/fidgets` directory.
 
-### run as website
-
-```bash
-yarn dev
-```
-
-run local DB in Docker
-```bash
-supabase db start
-```
-
-
-### run as native app
-
-...coming back soon via [tauri](https://tauri.app/)...
+Templates are the Fidget grid. Pages are managed by Nounspace
 
 
 ### DB scheme: accounts
