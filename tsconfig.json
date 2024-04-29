@@ -32,7 +32,12 @@
       "@public/*": [
         "public/*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ]
   },
   "include": [
     "src",
@@ -43,5 +48,9 @@
     // "./**/*.tsx",
     // "./src",
     // "./src/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "./node_modules"
   ]
 }
