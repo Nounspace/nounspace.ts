@@ -3,15 +3,15 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import React, { useEffect } from "react";
 import type { AppProps } from "next/app";
-import { ThemeProvider } from "@/space/common/hooks/ThemeProvider";
+import { ThemeProvider } from "@/common/ui/templates/themeProvider";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import CommandPalette from "@/space/common/components/CommandPalette";
+import CommandPalette from "@/common/ui/components/CommandPalette";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { rainbowKitTheme, config } from "@/space/common/helpers/rainbowkit";
-import Home from "@/space/home";
+import { rainbowKitTheme, config } from "@/common/ui/templates/rainboxkit";
+import Home from "@/common/ui/templates/home";
 import { PostHogProvider } from "posthog-js/react";
-import { loadPosthogAnalytics } from "@/space/lib/analytics";
+import { loadPosthogAnalytics } from "@/lib/analytics";
 import { useRouter } from "next/router";
 import Head from "next/head";
 
