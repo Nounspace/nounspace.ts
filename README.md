@@ -24,11 +24,21 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
 The Nounspace App follows the Atomic Design Pattern
 ![atomic_design](https://github.com/Nounspace/nounspace.ts/assets/7180740/2c892612-c730-4e74-bd32-3e7a8a6babbb)
 
-Atoms and Moluclues can be found in the `src/shared/ui` foloder. Feel free to use existing ones or add your own.
+`src/pages` holds the Page elements of the atomic design. These are separated from `src/common` due to how Next.js handles routing.
 
-Fidgets are a type of Organism, fulfilling the role of sections of a page. To build Fidgets, please add them to the `src/fidgets` directory.
+`src/common/ui` contains all of the display components for all other layers of the atomic design. `src/common/ui/components` are a mixture of Molecules and Organisms that were imported from `herocast`, they still need to be split into their appropriate folders (`src/common/ui/molecules` & `src/common/ui/organisms`).
 
-Templates are the Fidget grid. Pages are managed by Nounspace
+`src/common/data` contains the access to datastreams, in the form of database connections and API's
+
+`src/common/lib` contain useful functions for accessing formatted data, along with helpers functions inside the `utils` directory.
+
+`src/styles` contains information for managing website styling
+
+`src/constants` contains all static information that is the needed to run the app. This includes actual constants, along with some global types
+
+### Refactoring
+
+This file structure is adapted from `herocast`, and not all files have been cleaned up properly. If you find files or data that is placed in the wrong location, please refactor it. For example, there are some constants that are not placed in the `src/constants` directory, and instead are in the other files
 
 
 ### DB scheme: accounts
