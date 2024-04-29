@@ -44,7 +44,7 @@ const UserAuthFormSchema = z.object({
   }),
 });
 
-export function UserAuthForm({ className }: { className: string }) {
+export function UserAuthForm({ className }: { className?: string }) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [userMessage, setUserMessage] = useState<string>("");
   const supabase = createClient();
