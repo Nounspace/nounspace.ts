@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { cn } from "@/space/lib/utils";
+import { mergeClasses }from "@/space/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Label } from "@/shared/ui/label";
@@ -171,7 +171,7 @@ export function UserAuthForm({ className }: { className?: string }) {
   useHotkeys(Key.Enter, logIn, [form.getValues()], { enableOnFormTags: true });
 
   return (
-    <div className={cn("grid gap-6", className)}>
+    <div className={mergeClasses("grid gap-6", className)}>
       <Form {...form}>
         <form>
           <div className="grid gap-2">
