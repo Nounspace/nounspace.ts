@@ -234,7 +234,7 @@ export default function Settings() {
       <HelpCard />
       {renderInfoSection()}
       <AccountManagementModal
-        account={selectedAccount}
+        account={selectedAccount!}
         open={open}
         setOpen={setOpen}
       />
