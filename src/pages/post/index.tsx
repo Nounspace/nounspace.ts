@@ -1,11 +1,11 @@
-import NewPostEntry from "@/space/common/components/NewPostEntry";
-import { classNames } from "@/space/common/helpers/css";
-import { useNewPostStore } from "@/space/stores/useNewPostStore";
+import NewPostEntry from "@/common/ui/components/NewPostEntry";
+import { classNames } from "@/styles/utils/css";
+import { useNewPostStore } from "@/common/data/stores/useNewPostStore";
 import React, { useEffect, useState } from "react";
 import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import * as Tooltip from "@radix-ui/react-tooltip";
-import HotkeyTooltipWrapper from "@/space/common/components/HotkeyTooltipWrapper";
-import { Button } from "@/shared/ui/button";
+import HotkeyTooltipWrapper from "@/common/ui/components/HotkeyTooltipWrapper";
+import { Button } from "@/common/ui/atoms/button";
 
 export default function NewPost() {
   const [showToast, setShowToast] = useState(false);

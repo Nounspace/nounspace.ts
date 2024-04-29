@@ -1,13 +1,13 @@
 import React, { ReactNode, useEffect, useState } from "react";
-import { Separator } from "@/shared/ui/separator";
-import { Button } from "@/shared/ui/button";
-import StepSequence from "@/space/common/components/Steps/StepSequence";
-import RegisterFarcasterUsernameForm from "@/space/common/components/RegisterFarcasterUsernameForm";
-import CreateFarcasterAccount from "@/space/common/components/CreateFarcasterAccount";
+import { Separator } from "@/common/ui/atoms/separator";
+import { Button } from "@/common/ui/atoms/button";
+import StepSequence from "@/common/ui/components/Steps/StepSequence";
+import RegisterFarcasterUsernameForm from "@/common/ui/components/RegisterFarcasterUsernameForm";
+import CreateFarcasterAccount from "@/common/ui/components/CreateFarcasterAccount";
 import { useAccount } from "wagmi";
 import { useRouter } from "next/router";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
-import SwitchWalletButton from "@/space/common/components/SwitchWalletButton";
+import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 
 enum FarcasterSignupNav {
   login = "LOGIN",

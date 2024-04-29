@@ -3,31 +3,32 @@ import {
   AccountObjectType,
   CUSTOM_CHANNELS,
   useAccountStore,
-} from "@/space/stores/useAccountStore";
-import { CastType } from "@/space/common/constants/farcaster";
+} from "@/common/data/stores/useAccountStore";
+import { CastType } from "@/constants/farcaster";
 import { useHotkeys } from "react-hotkeys-hook";
 import { get, isEmpty, uniqBy } from "lodash";
-import { CastRow } from "@/space/common/components/CastRow";
-import { CastThreadView } from "@/space/common/components/CastThreadView";
-import { DEFAULT_FEED_PAGE_SIZE } from "@/space/common/helpers/neynar";
-import { SelectableListWithHotkeys } from "@/space/common/components/SelectableListWithHotkeys";
+import { CastRow } from "@/common/ui/components/CastRow";
+import { CastThreadView } from "@/common/ui/components/CastThreadView";
+import { SelectableListWithHotkeys } from "@/common/ui/components/SelectableListWithHotkeys";
 import { Key } from "ts-key-enum";
-import ReplyModal from "@/space/common/components/ReplyModal";
-import EmbedsModal from "@/space/common/components/EmbedsModal";
+import ReplyModal from "@/common/ui/components/ReplyModal";
+import EmbedsModal from "@/common/ui/components/EmbedsModal";
 import { useInView } from "react-intersection-observer";
 import { useRouter } from "next/router";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/common/ui/atoms/button";
 import { FilterType, NeynarAPIClient } from "@neynar/nodejs-sdk";
 import {
   CastWithInteractions,
   FeedType,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { Loading } from "@/space/common/components/Loading";
-import BigOptionSelector from "@/space/common/components/BigOptionSelector";
+import { Loading } from "@/common/ui/components/Loading";
+import BigOptionSelector from "@/common/ui/components/BigOptionSelector";
 
 type FeedsType = {
   [key: string]: CastWithInteractions[];
 };
+
+const DEFAULT_FEED_PAGE_SIZE = 10;
 
 const neynarClient = new NeynarAPIClient(
   process.env.NEXT_PUBLIC_NEYNAR_API_KEY!

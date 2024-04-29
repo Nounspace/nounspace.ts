@@ -1,7 +1,7 @@
 import React, {  } from "react";
-import { Separator } from "@/shared/ui/separator";
+import { Separator } from "@/common/ui/atoms/separator";
 import { useRouter } from "next/router";
-import BigOptionSelector from "@/space/common/components/BigOptionSelector";
+import BigOptionSelector from "@/common/ui/components/BigOptionSelector";
 
 export default function Welcome() {
   const router = useRouter();

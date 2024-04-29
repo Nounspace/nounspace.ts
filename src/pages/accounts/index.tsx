@@ -9,13 +9,13 @@ import { ArrowDownTrayIcon, NewspaperIcon } from "@heroicons/react/24/solid";
 import {
   JoinedHerocastPostDraft,
   useNewPostStore,
-} from "@/space/stores/useNewPostStore";
-import { hydrate, useAccountStore } from "@/space/stores/useAccountStore";
+} from "@/common/data/stores/useNewPostStore";
+import { hydrate, useAccountStore } from "@/common/data/stores/useAccountStore";
 import { isEmpty } from "lodash";
 import {
   AccountPlatformType,
   AccountStatusType,
-} from "@/space/common/constants/accounts";
+} from "@/constants/accounts";
 import {
   Card,
   CardContent,
@@ -23,10 +23,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/shared/ui/card";
-import { Button } from "@/shared/ui/button";
-import { QrCode } from "@/space/common/components/QrCode";
-import ConnectFarcasterAccountViaHatsProtocol from "@/space/common/components/ConnectFarcasterAccountViaHatsProtocol";
+} from "@/common/ui/atoms/card";
+import { Button } from "@/common/ui/atoms/button";
+import { QrCode } from "@/common/ui/components/QrCode";
+import ConnectFarcasterAccountViaHatsProtocol from "@/common/ui/components/ConnectFarcasterAccountViaHatsProtocol";
 import { useAccount } from "wagmi";
 import {
   WarpcastLoginStatus,
@@ -34,14 +34,14 @@ import {
   createSignerRequest,
   generateWarpcastSigner,
   getWarpcastSignerStatus,
-} from "@/space/common/helpers/warpcastLogin";
-import HelpCard from "@/space/common/components/HelpCard";
-import { useIsMounted } from "@/space/common/helpers/hooks";
+} from "@/common/data/api/warpcastLogin";
+import HelpCard from "@/common/ui/components/HelpCard";
+import { useIsMounted } from "@/common/data/hooks/useIsMounted";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { openWindow } from "@/space/common/helpers/navigation";
-import ConfirmOnchainSignerButton from "@/space/common/components/ConfirmOnchainSignerButton";
-import SwitchWalletButton from "@/space/common/components/SwitchWalletButton";
+import { openWindow } from "@/lib/utils/navigation";
+import ConfirmOnchainSignerButton from "@/common/ui/components/ConfirmOnchainSignerButton";
+import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 
 const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 
