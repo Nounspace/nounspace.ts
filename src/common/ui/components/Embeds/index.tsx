@@ -3,7 +3,7 @@ import OnchainEmbed from "./OnchainEmbed";
 import CastEmbed from "./CastEmbed";
 import TweetEmbed from "./TweetEmbed";
 import NounsBuildEmbed from "./NounsBuildEmbed";
-import ParagraphXyzEmbed from "./ParagraphXyz/ParagraphXyzEmbed";
+import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import OpenGraphImage from "./OpenGraphImage";
 import { isImageUrl } from "@/lib/utils/text";
 import VideoEmbed from "./VideoEmbed";

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ParagraphXyzArticleType,
   getParagraphXyzArticle,
-} from "./paragraph";
+} from "../../../../lib/utils/paragraph";
 import {
   Card,
   CardContent,

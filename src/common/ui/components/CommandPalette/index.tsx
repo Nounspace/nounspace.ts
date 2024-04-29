@@ -10,9 +10,9 @@ import { FaceSmileIcon } from '@heroicons/react/24/outline';
 import commandScore from "command-score";
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useRouter } from 'next/router';
-import { getNavigationCommands } from '@/getNavigationCommands';
+import { getNavigationCommands } from '@/common/data/commands/getNavigationCommands';
 import { useTheme } from 'next-themes';
-import { getThemeCommands } from '@/getThemeCommands';
+import { getThemeCommands } from '@/common/data/commands/getThemeCommands';
 
 const MIN_SCORE_THRESHOLD = 0.0015;
 

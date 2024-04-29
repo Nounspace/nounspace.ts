@@ -14,7 +14,7 @@ import {
 import { newPostCommands } from "@/common/data/stores/useNewPostStore";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
-import { getNavigationCommands } from "@/getNavigationCommands";
+import { getNavigationCommands } from "@/common/data/commands/getNavigationCommands";
 import AccountManagementModal from "@/common/ui/components/AccountManagement/AccountManagementModal";
 import { useAccount } from "wagmi";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
