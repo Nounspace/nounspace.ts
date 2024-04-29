@@ -1,6 +1,6 @@
 import React from "react";
 import QRCode from "react-qr-code";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 
 export const QrCode = ({ deepLink }: { deepLink: string }) => {
   return <div className="mt-2">

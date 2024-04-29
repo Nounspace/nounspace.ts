@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from "@/common/ui/atoms/card";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 import { Button } from '@/common/ui/atoms/button';
 
 const HelpCard = () => (

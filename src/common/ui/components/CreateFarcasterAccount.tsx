@@ -19,7 +19,7 @@ import {
   getFidForAddress,
   getSignedKeyRequestMetadataFromAppAccount,
   readNoncesFromKeyGateway,
-} from "../../../lib/utils/farcaster";
+} from "../../lib/utils/farcaster";
 import { formatEther, toBytes, toHex } from "viem";
 import {
   PENDING_ACCOUNT_NAME_PLACEHOLDER,

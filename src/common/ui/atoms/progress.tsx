@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
-import { mergeClasses }from "@/lib/utils/mergeClasses";
+import { mergeClasses }from "@/common/lib/utils/mergeClasses";
 
 type CustomProgressProps = {
   indicatorClassName?: string;

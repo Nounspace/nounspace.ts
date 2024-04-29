@@ -9,11 +9,11 @@ import {
   getMentionFidsByUsernames,
   formatPlaintextToHubCastMessage,
 } from '@mod-protocol/farcaster';
-import { submitCast } from "@/lib/utils/farcaster";
+import { submitCast } from "@/common/lib/utils/farcaster";
 import { toHex } from "viem";
 import { CastId, Embed } from "@farcaster/hub-web";
 import { AccountPlatformType } from "@/constants/accounts";
-import { toastInfoReadOnlyMode } from "@/lib/toast";
+import { toastInfoReadOnlyMode } from "@/common/lib/toast";
 
 const getMentionFids = getMentionFidsByUsernames(process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!);
 

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { classNames } from "@/styles/utils/css";
-import { makeGraphqlRequest } from "@/lib/utils/graphql";
+import { makeGraphqlRequest } from "@/common/lib/utils/graphql";
 import { ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
 import { get, isEmpty } from "lodash";
-import { openWindow } from "../../../../lib/utils/navigation";
+import { openWindow } from "../../../lib/utils/navigation";
 
 type StatsType = {
   name: string;

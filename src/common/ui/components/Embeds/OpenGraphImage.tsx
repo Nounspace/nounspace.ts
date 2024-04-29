@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/ui/atoms/card";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 
 type OpenGraphMetadata = {
   image: {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v1";
 import { Button } from "@/common/ui/atoms/button";
 import { useHotkeys } from "react-hotkeys-hook";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 
 const renderFrame = (
   frame: any,

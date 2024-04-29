@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { mergeClasses }from "@/lib/utils/mergeClasses"
+import { mergeClasses }from "@/common/lib/utils/mergeClasses"
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {}

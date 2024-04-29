@@ -14,14 +14,14 @@ import {
 import { newPostCommands } from "@/common/data/stores/useNewPostStore";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
-import { getNavigationCommands } from "@/common/data/commands/getNavigationCommands";
+import { getNavigationCommands } from "@/common/lib/commands/getNavigationCommands";
 import AccountManagementModal from "@/common/ui/components/AccountManagement/AccountManagementModal";
 import { useAccount } from "wagmi";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import { AccountPlatformType } from "@/constants/accounts";
 import { Loading } from "@/common/ui/components/Loading";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { getUsernameForFid, updateUsername } from "@/lib/utils/farcaster";
+import { getUsernameForFid, updateUsername } from "@/common/lib/utils/farcaster";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 import { createClient } from "@/common/data/api/supabase/component";
 import { usePostHog } from "posthog-js/react";

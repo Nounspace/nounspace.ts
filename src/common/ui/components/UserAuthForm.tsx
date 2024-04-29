@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { mergeClasses }from "@/lib/utils/mergeClasses";
+import { mergeClasses }from "@/common/lib/utils/mergeClasses";
 import { Button } from "@/common/ui/atoms/button";
 import { Input } from "@/common/ui/atoms/input";
 import { Label } from "@/common/ui/atoms/label";

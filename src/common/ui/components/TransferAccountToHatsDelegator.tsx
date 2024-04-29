@@ -12,14 +12,14 @@ import { writeContract } from "@wagmi/core";
 import { config, publicClient } from "@/common/ui/templates/rainboxkit";
 import { encodePacked, hashTypedData, keccak256, toHex } from "viem";
 import { useWaitForTransactionReceipt } from "wagmi";
-import { getDeadline } from "@/lib/utils/farcaster";
+import { getDeadline } from "@/common/lib/utils/farcaster";
 import { HatsFarcasterDelegatorAbi } from "@/constants/contracts/HatsFarcasterDelegator";
-import { openWindow } from "../../../lib/utils/navigation";
+import { openWindow } from "../../lib/utils/navigation";
 import {
   SIGNED_KEY_REQUEST_TYPEHASH,
   isValidSignature,
   isValidSigner,
-} from "@/lib/hats";
+} from "@/common/lib/hats";
 import { waitForTransactionReceipt } from "@wagmi/core";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
 import SwitchWalletButton from "./SwitchWalletButton";

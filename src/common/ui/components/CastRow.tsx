@@ -13,8 +13,8 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import { localize, timeDiff } from "../../../lib/utils/date";
-import { publishReaction, removeReaction } from "../../../lib/utils/farcaster";
+import { localize, timeDiff } from "../../lib/utils/date";
+import { publishReaction, removeReaction } from "../../lib/utils/farcaster";
 import { includes, map, get } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";
 import * as Tooltip from "@radix-ui/react-tooltip";
@@ -30,9 +30,9 @@ import CashtagHoverCard from "./CashtagHoverCard";
 import mentionPlugin, {
   cashtagPlugin,
   channelPlugin,
-} from "../../../lib/utils/linkify";
+} from "../../lib/utils/linkify";
 import { AccountPlatformType } from "../../../constants/accounts";
-import { toastInfoReadOnlyMode } from "../../../lib/toast";
+import { toastInfoReadOnlyMode } from "../../lib/toast";
 
 registerPlugin("mention", mentionPlugin);
 registerPlugin("cashtag", cashtagPlugin);

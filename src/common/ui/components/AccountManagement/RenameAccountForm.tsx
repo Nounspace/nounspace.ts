@@ -27,7 +27,7 @@ import {
   setUserDataInProtocol,
   updateUsername,
   validateUsernameIsAvailable,
-} from "@/lib/utils/farcaster";
+} from "@/common/lib/utils/farcaster";
 import { getAddress } from "viem";
 import { AccountObjectType, PENDING_ACCOUNT_NAME_PLACEHOLDER, useAccountStore } from "@/common/data/stores/useAccountStore";
 import { AccountPlatformType } from "@/constants/accounts";

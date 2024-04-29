@@ -25,7 +25,7 @@ import { config } from "../templates/rainboxkit";
 import { writeContract } from "@wagmi/core";
 import SwitchWalletButton from "./SwitchWalletButton";
 import { KEY_GATEWAY } from "../../../constants/contracts/key-gateway";
-import { getSignedKeyRequestMetadataFromAppAccount } from "../../../lib/utils/farcaster";
+import { getSignedKeyRequestMetadataFromAppAccount } from "../../lib/utils/farcaster";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { Label } from "@/common/ui/atoms/label";
 

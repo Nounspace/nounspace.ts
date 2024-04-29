@@ -11,7 +11,7 @@ import { WagmiProvider } from "wagmi";
 import { rainbowKitTheme, config } from "@/common/ui/templates/rainboxkit";
 import Home from "@/common/ui/templates/home";
 import { PostHogProvider } from "posthog-js/react";
-import { loadPosthogAnalytics } from "@/lib/analytics";
+import { loadPosthogAnalytics } from "@/common/lib/analytics";
 import { useRouter } from "next/router";
 import Head from "next/head";
 

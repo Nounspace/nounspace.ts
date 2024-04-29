@@ -3,7 +3,7 @@ import React from "react";
 import { UserAuthForm } from "@/common/ui/components/UserAuthForm";
 import { AuthKitProvider } from "@farcaster/auth-kit";
 import { Button } from "@/common/ui/atoms/button";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 

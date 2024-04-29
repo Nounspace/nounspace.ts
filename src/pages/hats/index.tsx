@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/common/ui/atoms/avatar";
 import BigOptionSelector from "@/common/ui/components/BigOptionSelector";
 import SharedAccountOwnershipSetup from "@/common/ui/components/SharedAccountOwnershipSetup";
 import TransferAccountToHatsDelegator from "@/common/ui/components/TransferAccountToHatsDelegator";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 import { ID_REGISTRY } from "@/constants/contracts/id-registry";
 import { isEmpty } from "lodash";
 import clsx from "clsx";

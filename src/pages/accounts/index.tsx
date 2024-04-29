@@ -36,10 +36,10 @@ import {
   getWarpcastSignerStatus,
 } from "@/common/data/api/warpcastLogin";
 import HelpCard from "@/common/ui/components/HelpCard";
-import { useIsMounted } from "@/common/data/hooks/useIsMounted";
+import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 import ConfirmOnchainSignerButton from "@/common/ui/components/ConfirmOnchainSignerButton";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 

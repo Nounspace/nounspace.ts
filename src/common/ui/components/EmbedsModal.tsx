@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { CastType } from '../../../constants/farcaster';
 import { SelectableListWithHotkeys } from './SelectableListWithHotkeys';
-import { openWindow } from '../../../lib/utils/navigation';
+import { openWindow } from '../../lib/utils/navigation';
 import { classNames } from '../../../styles/utils/css';
-import { getUrlsInText } from '../../../lib/utils/text';
+import { getUrlsInText } from '../../lib/utils/text';
 import { uniqBy } from 'lodash';
 import OpenGraphImage from './Embeds/OpenGraphImage';
 

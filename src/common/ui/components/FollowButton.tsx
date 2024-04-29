@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { Button } from "@/common/ui/atoms/button";
 import clsx from "clsx";
-import { followUser, unfollowUser } from "../../../lib/utils/farcaster";
+import { followUser, unfollowUser } from "../../lib/utils/farcaster";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { useRouter } from "next/navigation";
 import { useDataStore } from "@/common/data/stores/useDataStore";
