@@ -1,4 +1,4 @@
-import "@/globals.css";
+import "@/styles/globals.css";
 import "@rainbow-me/rainbowkit/styles.css";
 
 import React, { useEffect } from "react";
