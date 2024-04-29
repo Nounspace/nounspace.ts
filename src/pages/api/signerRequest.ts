@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { createSignerRequest, getSignerRequestStatus } from '@/space/common/helpers/warpcastLogin';
+import { createSignerRequest, getSignerRequestStatus } from '@/common/data/api/warpcastLogin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const requestMethod = req.method;

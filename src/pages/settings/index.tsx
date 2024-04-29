@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import AlertDialogDemo from "@/space/common/components/AlertDialog";
-import HelpCard from "@/space/common/components/HelpCard";
-import { classNames } from "@/space/common/helpers/css";
-import { Button } from "@/shared/ui/button";
+import AlertDialogDemo from "@/common/ui/components/AlertDialog";
+import HelpCard from "@/common/ui/components/HelpCard";
+import { classNames } from "@/styles/utils/css";
+import { Button } from "@/common/ui/atoms/button";
 import {
   AccountObjectType,
   PENDING_ACCOUNT_NAME_PLACEHOLDER,
@@ -10,20 +10,20 @@ import {
   channelCommands,
   hydrate,
   useAccountStore,
-} from "@/space/stores/useAccountStore";
-import { newPostCommands } from "@/space/stores/useNewPostStore";
+} from "@/common/data/stores/useAccountStore";
+import { newPostCommands } from "@/common/data/stores/useNewPostStore";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
-import { getNavigationCommands } from "@/getNavigationCommands";
-import AccountManagementModal from "@/space/common/components/AccountManagement/AccountManagementModal";
+import { getNavigationCommands } from "@/common/lib/commands/getNavigationCommands";
+import AccountManagementModal from "@/common/ui/components/AccountManagement/AccountManagementModal";
 import { useAccount } from "wagmi";
 import { useAccountModal, useConnectModal } from "@rainbow-me/rainbowkit";
-import { AccountPlatformType } from "@/space/common/constants/accounts";
-import { Loading } from "@/space/common/components/Loading";
+import { AccountPlatformType } from "@/constants/accounts";
+import { Loading } from "@/common/ui/components/Loading";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { getUsernameForFid, updateUsername } from "@/space/common/helpers/farcaster";
-import SwitchWalletButton from "@/space/common/components/SwitchWalletButton";
-import { createClient } from "@/space/common/helpers/supabase/component";
+import { getUsernameForFid, updateUsername } from "@/common/lib/utils/farcaster";
+import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
+import { createClient } from "@/common/data/api/supabase/component";
 import { usePostHog } from "posthog-js/react";
 
 type SimpleCommand = {
@@ -234,7 +234,7 @@ export default function Settings() {
       <HelpCard />
       {renderInfoSection()}
       <AccountManagementModal
-        account={selectedAccount}
+        account={selectedAccount!}
         open={open}
         setOpen={setOpen}
       />
