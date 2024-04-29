@@ -1,5 +1,5 @@
 import React from "react";
-import { mergeClasses }from "@/lib/utils/mergeClasses"
+import { mergeClasses }from "@/common/lib/utils/mergeClasses"
 
 function Skeleton({
   className,

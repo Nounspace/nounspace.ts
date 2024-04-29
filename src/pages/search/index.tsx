@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { InformationCircleIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import { searchForText, SearchResultCast } from "@/lib/utils/searchcaster";
+import { searchForText, SearchResultCast } from "@/common/lib/utils/searchcaster";
 import { SelectableListWithHotkeys } from "@/common/ui/components/SelectableListWithHotkeys";
 import { debounce } from "lodash";
 import { CastRow } from "@/common/ui/components/CastRow";
 import { CastType } from "@/constants/farcaster";
-import { getUrlsInText } from "@/lib/utils/text";
+import { getUrlsInText } from "@/common/lib/utils/text";
 
 
 // export type CastType = {

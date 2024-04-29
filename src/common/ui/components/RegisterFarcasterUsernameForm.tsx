@@ -21,7 +21,7 @@ import {
   setUserDataInProtocol,
   updateUsername,
   validateUsernameIsAvailable,
-} from "../../../lib/utils/farcaster";
+} from "../../lib/utils/farcaster";
 import { getAddress, toHex } from "viem";
 import {
   PENDING_ACCOUNT_NAME_PLACEHOLDER,

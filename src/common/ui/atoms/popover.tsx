@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
-import { mergeClasses }from "@/lib/utils/mergeClasses"
+import { mergeClasses }from "@/common/lib/utils/mergeClasses"
 
 const Popover = PopoverPrimitive.Root
 

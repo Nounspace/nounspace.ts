@@ -1,7 +1,7 @@
 import * as React from "react"
 import * as SwitchPrimitives from "@radix-ui/react-switch"
 
-import { mergeClasses }from "@/lib/utils/mergeClasses"
+import { mergeClasses }from "@/common/lib/utils/mergeClasses"
 
 const Switch = React.forwardRef<
   React.ElementRef<typeof SwitchPrimitives.Root>,

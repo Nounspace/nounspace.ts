@@ -10,7 +10,7 @@ import {
 import { Button } from "@/common/ui/atoms/button";
 import { Label } from "@/common/ui/atoms/label";
 import { Input } from "@/common/ui/atoms/input";
-import { openWindow } from "../../../lib/utils/navigation";
+import { openWindow } from "../../lib/utils/navigation";
 
 type ShowLinkCardProps = {
   title: string;

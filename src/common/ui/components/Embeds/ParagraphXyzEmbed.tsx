@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   ParagraphXyzArticleType,
   getParagraphXyzArticle,
-} from "../../../../lib/utils/paragraph";
+} from "../../../lib/utils/paragraph";
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/ui/atoms/card";
-import { openWindow } from "@/lib/utils/navigation";
+import { openWindow } from "@/common/lib/utils/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/common/ui/atoms/avatar";
 type ParagraphXyzEmbedProps = {
   url: string;

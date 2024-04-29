@@ -4,7 +4,7 @@ import { type DialogProps } from "@radix-ui/react-dialog"
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons"
 import { Command as CommandPrimitive } from "cmdk"
 
-import { mergeClasses }from "@/lib/utils/mergeClasses"
+import { mergeClasses }from "@/common/lib/utils/mergeClasses"
 import { Dialog, DialogContent } from "@/common/ui/atoms/dialog"
 
 const Command = React.forwardRef<

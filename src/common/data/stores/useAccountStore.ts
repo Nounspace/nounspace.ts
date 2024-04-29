@@ -1,8 +1,8 @@
 import { AccountPlatformType, AccountStatusType } from "@/constants/accounts";
 import { ChannelType } from "@/constants/channels";
 import { CommandType } from "@/constants/commands";
-import { randomNumberBetween } from "@/lib/utils/math";
-import { getAccountsForUser } from "@/lib/utils/supabase";
+import { randomNumberBetween } from "@/common/lib/utils/math";
+import { getAccountsForUser } from "@/common/lib/utils/supabase";
 import { Draft, create as mutativeCreate } from 'mutative';
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
@@ -12,7 +12,7 @@ import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { createClient } from "@/common/data/api/supabase/component";
 import { v4 as uuidv4 } from 'uuid';
-import { getUsernameForFid } from "@/lib/utils/farcaster";
+import { getUsernameForFid } from "@/common/lib/utils/farcaster";
 
 const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 const TIMEDELTA_REHYDRATE = 1000 * 60 * 60 * 12; // 12 hrs;

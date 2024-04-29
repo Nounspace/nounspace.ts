@@ -14,7 +14,7 @@ import {
   ExclamationCircleIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/outline";
-import usePollingUpdate from "../../data/hooks/usePollingUpdate";
+import usePollingUpdate from "../../lib/hooks/usePollingUpdate";
 import { QrCode } from "./QrCode";
 import { useHotkeys } from "react-hotkeys-hook";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";

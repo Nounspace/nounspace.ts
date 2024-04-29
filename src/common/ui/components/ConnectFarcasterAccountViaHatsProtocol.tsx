@@ -33,7 +33,7 @@ import { Cog6ToothIcon } from "@heroicons/react/20/solid";
 import { config } from "@/common/ui/templates/rainboxkit";
 import {
   getDeadline, getUsernameForFid, isValidSignedKeyRequest,
-} from "@/lib/utils/farcaster";
+} from "@/common/lib/utils/farcaster";
 import { writeContract } from "@wagmi/core";
 import { generateKeyPair } from "@/common/data/api/warpcastLogin";
 import {
@@ -44,8 +44,8 @@ import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { JoinedHerocastViaHatsProtocolDraft, useNewPostStore } from "@/common/data/stores/useNewPostStore";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { isValidSignature, isValidSigner } from "@/lib/hats";
-import { SIGNED_KEY_REQUEST_TYPEHASH } from "@/lib/hats";
+import { isValidSignature, isValidSigner } from "@/common/lib/hats";
+import { SIGNED_KEY_REQUEST_TYPEHASH } from "@/common/lib/hats";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 
 enum SignupStateEnum {

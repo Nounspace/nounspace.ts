@@ -7,7 +7,7 @@ import NewPostEntry from "./NewPostEntry";
 import { useNewPostStore } from "@/common/data/stores/useNewPostStore";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { SelectableListWithHotkeys } from "./SelectableListWithHotkeys";
-import { openWindow } from "../../../lib/utils/navigation";
+import { openWindow } from "../../lib/utils/navigation";
 import { classNames } from "../../../styles/utils/css";
 import HotkeyTooltipWrapper from "./HotkeyTooltipWrapper";
 import * as Tooltip from "@radix-ui/react-tooltip";

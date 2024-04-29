@@ -5,7 +5,7 @@ import {
   HoverCardTrigger,
 } from "@/common/ui/atoms/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/common/ui/atoms/avatar";
-import { openWindow } from "../../../lib/utils/navigation";
+import { openWindow } from "../../lib/utils/navigation";
 import { Loading } from "./Loading";
 import { useInView } from "react-intersection-observer";
 import { useDataStore } from "@/common/data/stores/useDataStore";

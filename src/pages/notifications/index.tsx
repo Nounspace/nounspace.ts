@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { castTextStyle, classNames } from "@/styles/utils/css";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { SelectableListWithHotkeys } from "@/common/ui/components/SelectableListWithHotkeys";
-import { localize, timeDiff } from "@/lib/utils/date";
+import { localize, timeDiff } from "@/common/lib/utils/date";
 import { CastThreadView } from "@/common/ui/components/CastThreadView";
 import { isEmpty } from "lodash";
 import { useHotkeys } from "react-hotkeys-hook";

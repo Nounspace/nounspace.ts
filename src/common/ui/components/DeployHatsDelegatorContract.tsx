@@ -34,8 +34,8 @@ import {
   checkAndEncodeArgs,
 } from "@hatsprotocol/modules-sdk";
 import { optimism } from "wagmi/chains";
-import { getCustomRegistry } from "../../../lib/hats";
-import { openWindow } from "@/lib/utils/navigation";
+import { getCustomRegistry } from "../../lib/hats";
+import { openWindow } from "@/common/lib/utils/navigation";
 import { HatsModuleFactoryAbi } from "@/constants/contracts/HatsModuleFactory";
 import { AddressSchema } from "@hatsprotocol/modules-sdk/dist/schemas";
 
