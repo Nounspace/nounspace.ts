@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "lib": [
-      "ES2020",
+      "es2022",
       "DOM",
       "DOM.Iterable"
     ],
@@ -19,6 +19,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "ESNext",
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -40,14 +41,10 @@
     ]
   },
   "include": [
-    "src",
-    "./dist/types/**/*.ts",
-    "./next-env.d.ts",
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
     ".next/types/**/*.ts"
-    // "./**/*.ts",
-    // "./**/*.tsx",
-    // "./src",
-    // "./src/**/*.tsx"
   ],
   "exclude": [
     "node_modules",

@@ -39,10 +39,9 @@ import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { mainnet } from "viem/chains";
 import { switchChain } from "viem/actions";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v1";
+import { APP_FID } from "@/constants/app";
 
 export type RenameAccountFormValues = z.infer<typeof RenameAccountFormSchema>;
-
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 
 const RenameAccountFormSchema = z.object({
   username: z

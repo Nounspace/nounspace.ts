@@ -30,8 +30,7 @@ import { AccountPlatformType, AccountStatusType } from "../../../constants/accou
 import { v4 as uuidv4 } from "uuid";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
-
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
+import { APP_FID } from "@/constants/app";
 
 export type UserAuthFormValues = z.infer<typeof UserAuthFormSchema>;
 

@@ -13,8 +13,8 @@ import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { createClient } from "@/common/data/api/supabase/component";
 import { v4 as uuidv4 } from 'uuid';
 import { getUsernameForFid } from "@/common/lib/utils/farcaster";
+import { APP_FID } from "@/constants/app";
 
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
 const TIMEDELTA_REHYDRATE = 1000 * 60 * 60 * 12; // 12 hrs;
 
 export const PENDING_ACCOUNT_NAME_PLACEHOLDER = "New Account";
@@ -377,7 +377,7 @@ const store = (set: StoreSet) => ({
 
 export const useAccountStore = create<AccountStore>()(persist(mutative(store),
   {
-    'name': 'herocast-accounts-store',
+    'name': 'nounspace-accounts-store',
     storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
     partialize: (state) => ({
       allChannels: state.allChannels,

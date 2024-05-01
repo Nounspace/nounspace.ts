@@ -5,7 +5,7 @@ import {
   RectangleGroupIcon,
   UserPlusIcon,
 } from "@heroicons/react/20/solid";
-import { ArrowDownTrayIcon, NewspaperIcon } from "@heroicons/react/24/solid";
+import { NewspaperIcon } from "@heroicons/react/24/solid";
 import {
   JoinedHerocastPostDraft,
   useNewPostStore,
@@ -39,11 +39,10 @@ import HelpCard from "@/common/ui/components/HelpCard";
 import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { openWindow } from "@/common/lib/utils/navigation";
 import ConfirmOnchainSignerButton from "@/common/ui/components/ConfirmOnchainSignerButton";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
-
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
+import { APP_FID } from "@/constants/app";
+import SignupForNonLocalAccountCard from "@/common/ui/organisms/SignupForNonLocalAccountCard";
 
 enum SignupStateEnum {
   "initial",
@@ -168,7 +167,7 @@ export default function Accounts() {
       const neynarClient = new NeynarAPIClient(
         process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
       );
-      const user = (await neynarClient.fetchBulkUsers([fid], {viewerFid: APP_FID!})).users[0];
+      const user = (await neynarClient.fetchBulkUsers([fid], {viewerFid: APP_FID})).users[0];
       await setAccountActive(pendingAccount.id, user.username, {
         platform_account_id: user.fid.toString(),
         data,
@@ -193,30 +192,6 @@ export default function Accounts() {
     addNewPostDraft(JoinedHerocastPostDraft);
     router.push("/post");
   };
-
-  const renderSignupForNonLocalAccount = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-2xl flex">
-          You are using a readonly account{" "}
-          <ArrowDownTrayIcon className="ml-2 mt-1 w-6 h-6" />
-        </CardTitle>
-        <CardDescription>
-          A readonly account is great for browsing, but you need a full account
-          to start casting and interact with others on Farcaster.
-        </CardDescription>
-      </CardHeader>
-      <CardFooter>
-        <Button
-          className="w-full"
-          variant="default"
-          onClick={() => openWindow(`${process.env.NEXT_PUBLIC_URL}/login`)}
-        >
-          Switch to a full account
-        </Button>
-      </CardFooter>
-    </Card>
-  );
 
   const renderCreateSignerStep = () => (
     <Card>
@@ -384,7 +359,9 @@ export default function Accounts() {
         renderDoneStep()}
       <div className="w-full flex flex-col gap-5">
         {hasOnlyLocalAccounts ? (
-          <div className="flex">{renderSignupForNonLocalAccount()}</div>
+          <div className="flex">
+            <SignupForNonLocalAccountCard />
+          </div>
         ) : (
           <>
             <div className="max-w-md lg:max-w-lg">
