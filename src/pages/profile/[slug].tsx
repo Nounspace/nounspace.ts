@@ -17,8 +17,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import FollowButton from "@/common/ui/components/FollowButton";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { useDataStore } from "@/common/data/stores/useDataStore";
-
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
+import { APP_FID } from "@/constants/app";
 
 export async function getStaticProps({ params: { slug } }) {
   const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);

@@ -116,7 +116,7 @@ export const CastThreadView = ({
       if (replies) {
         setCasts([castObjectWithoutReplies].concat(replies));
       } else {
-        const castResponse = await neynarClient.lookUpCastByHash(cast.hash, {viewerFid: Number(fid)});
+        const castResponse = await neynarClient.lookUpCastByHash(cast.hash, {viewerFid: fid ? Number(fid) : undefined });
         setCasts([castResponse.result.cast]);
       }
 

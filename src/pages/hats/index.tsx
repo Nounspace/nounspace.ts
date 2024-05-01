@@ -18,6 +18,7 @@ import { isEmpty } from "lodash";
 import clsx from "clsx";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 import { Loading } from "@/common/ui/components/Loading";
+import { APP_FID } from "@/constants/app";
 
 enum HatsSignupNav {
   select_account = "SELECT_ACCOUNT",
@@ -56,8 +57,6 @@ const hatsSignupSteps = [
   },
 ];
 
-const APP_FID = process.env.NEXT_PUBLIC_APP_FID!;
-
 export default function HatsProtocolPage() {
   const [step, setStep] = useState<string>(hatsSignupSteps[0].key);
   const [accountToTransfer, setAccountToTransfer] = useState<User | null>();
@@ -92,7 +91,7 @@ export default function HatsProtocolPage() {
       if (isNumeric) {
         fid = Number(userInput);
         const res = await neynarClient.fetchBulkUsers([fid], {
-          viewerFid: Number(APP_FID),
+          viewerFid: APP_FID,
         });
         console.log("res", res);
         setAccountToTransfer(res?.users?.[0]);

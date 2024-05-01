@@ -24,7 +24,6 @@ import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";
 import ProfileHoverCard from "./ProfileHoverCard";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v1/openapi/models/cast-with-interactions";
-import FrameEmbed from "./Embeds/FrameEmbed";
 import { registerPlugin } from "linkifyjs";
 import CashtagHoverCard from "./CashtagHoverCard";
 import mentionPlugin, {
@@ -158,7 +157,6 @@ export const CastRow = ({
   const canSendReaction =
     selectedAccount?.platform !== AccountPlatformType.farcaster_local_readonly;
   const now = new Date();
-  const hasFrame = cast.frames && cast.frames.length > 0;
 
   const getCastReactionsObj = () => {
     const repliesCount = cast.replies?.count || 0;
@@ -415,9 +413,7 @@ export const CastRow = ({
       </div>
     );
 
-  const renderFrame = () =>
-    hasFrame ? <FrameEmbed cast={cast} isSelected={isSelected} /> : null;
-
+  
   const channel = showChannel ? getChannelForParentUrl(cast.parent_url) : null;
   const authorPfpUrl = cast.author.pfp_url || cast.author.pfp?.url;
   const timeAgo = timeDiff(now, new Date(cast.timestamp));
@@ -488,9 +484,8 @@ export const CastRow = ({
                 {getText()}
               </div>
             </div>
+            {!disableEmbeds && renderEmbeds()}
             {renderCastReactions(cast)}
-            {!disableEmbeds && !hasFrame && renderEmbeds()}
-            {renderFrame()}
           </div>
         </div>
       </div>
