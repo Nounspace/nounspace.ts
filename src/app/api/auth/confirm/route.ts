@@ -8,7 +8,7 @@ function stringOrFirstString(item: string | string[] | undefined) {
   return Array.isArray(item) ? item[0] : item
 }
 
-export default async function POST(req: NextRequest) {
+export async function POST(req: NextRequest) {
   const queryParams = req.nextUrl.searchParams;
   const token_hash = stringOrFirstString(get(queryParams, "token_hash", ""));
   const type = stringOrFirstString(get(queryParams, "type", ""));
