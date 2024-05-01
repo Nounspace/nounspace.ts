@@ -47,6 +47,7 @@ import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { isValidSignature, isValidSigner } from "@/common/lib/hats";
 import { SIGNED_KEY_REQUEST_TYPEHASH } from "@/common/lib/hats";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
+import { APP_FID } from "@/constants/app";
 
 enum SignupStateEnum {
   "CONNECT_WALLET",
@@ -104,8 +105,6 @@ const HatsProtocolSignupSteps: SignupStepType[] = [
     idx: 5,
   },
 ];
-
-const APP_FID = process.env.NEXT_PUBLIC_APP_FID!;
 
 const ConnectFarcasterAccountViaHatsProtocol = () => {
   const router = useRouter();

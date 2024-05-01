@@ -18,8 +18,7 @@ import usePollingUpdate from "../../lib/hooks/usePollingUpdate";
 import { QrCode } from "./QrCode";
 import { useHotkeys } from "react-hotkeys-hook";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-
-const APP_FID = Number(process.env.NEXT_PUBLIC_APP_FID!);
+import { APP_FID } from "@/constants/app";
 
 const WarpcastLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
