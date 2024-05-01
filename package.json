@@ -114,7 +114,7 @@
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
-    "@next/eslint-plugin-next": "^13.5.5",
+    "@next/eslint-plugin-next": "^14.2.3",
     "@types/node": "^18.7.15",
     "@types/ramda": "^0.29.11",
     "@types/react": "^18.2.79",
