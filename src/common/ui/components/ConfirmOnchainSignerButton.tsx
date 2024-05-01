@@ -28,9 +28,7 @@ import { KEY_GATEWAY } from "../../../constants/contracts/key-gateway";
 import { getSignedKeyRequestMetadataFromAppAccount } from "../../lib/utils/farcaster";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { Label } from "@/common/ui/atoms/label";
-
-const APP_FID = process.env.NEXT_PUBLIC_APP_FID!;
-const APP_MNENOMIC = process.env.NEXT_PUBLIC_APP_MNENOMIC!;
+import { APP_FID, APP_MNENOMIC } from "@/constants/app";
 
 const SIGNED_KEY_REQUEST_TYPE_V2 = [
   {
@@ -118,9 +116,7 @@ const ConfirmOnchainSignerButton = ({
         process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
       );
       const user = (
-        await neynarClient.fetchBulkUsers([Number(idOfUser)], {
-          viewerFid: Number(APP_FID!),
-        })
+        await neynarClient.fetchBulkUsers([Number(idOfUser)], { viewerFid: APP_FID })
       ).users[0];
       await setAccountActive(account.id, user.username, {
         platform_account_id: user.fid.toString(),

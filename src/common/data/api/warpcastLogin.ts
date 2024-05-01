@@ -4,6 +4,8 @@ import { toBytes } from 'viem'
 import { mnemonicToAccount } from "viem/accounts";
 import axios from "axios";
 
+import { APP_MNENOMIC, APP_FID } from "@/constants/app";
+
 type KeyPairType = {
   publicKey: Uint8Array,
   privateKey: Uint8Array
@@ -27,9 +29,6 @@ export enum WarpcastLoginStatus {
   success = "success",
   failure = "failure"
 }
-
-const APP_FID = process.env.NEXT_PUBLIC_APP_FID
-const APP_MNENOMIC = process.env.NEXT_PUBLIC_APP_MNENOMIC
 
 const WARPCAST_API_ENDPOINT = 'https://api.warpcast.com/v2/';
 const headers = { "Content-Type": "application/json", };
