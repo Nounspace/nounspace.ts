@@ -24,13 +24,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Setup Rust cache
-      uses: actions/cache@v3
-      with:
-        key: ${{ matrix.os }}-${{ hashFiles('src-tauri/Cargo.lock') }}
-        path: |
-          ~/.cargo
-
     - name: Install Node.js
       uses: actions/setup-node@v3
       with:
@@ -38,3 +31,13 @@ jobs:
         cache: yarn
         cache-dependency-path: |
           yarn.lock
+
+    - name: Run Type Check
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: tsc
+
+    - name: Build
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: build
