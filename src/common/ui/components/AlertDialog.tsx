@@ -21,7 +21,7 @@ const AlertDialogDemo = ({ buttonText, onClick }: AlertDialogProps) => (
           Are you absolutely sure?
         </AlertDialog.Title>
         <AlertDialog.Description className="text-radix-mauve1 mt-4 mb-5 text-[15px] leading-normal">
-          This action cannot be undone. <br />This will remove your account from herocast. <br />You will have to reconnect your account to use herocast again.
+          This action cannot be undone. <br />This will remove your account from Nounspace. <br />You will have to reconnect your account to use Nounspace again.
         </AlertDialog.Description>
         <div className="flex justify-end gap-[25px]">
           <AlertDialog.Cancel asChild>
