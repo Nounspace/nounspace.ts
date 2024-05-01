@@ -156,7 +156,7 @@ const RenameAccountForm = ({
     if (!(await validateConnectedWalletOwnsFid())) return;
     setIsPending(true);
 
-    console.log("herocast account", account);
+    console.log("Nounspace account", account);
     console.log("userInProtocol", userInProtocol);
     let timestamp = getTimestamp();
 

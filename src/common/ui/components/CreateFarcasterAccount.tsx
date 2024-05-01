@@ -72,7 +72,7 @@ const CreateFarcasterAccount = ({ onSuccess }: { onSuccess?: () => void }) => {
           const accountId = pendingAccounts[0].id!;
           await setAccountActive(accountId, PENDING_ACCOUNT_NAME_PLACEHOLDER, {
             platform_account_id: fid.toString(),
-            data: { signupViaHerocast: true },
+            data: { signupViaNounspace: true },
           });
           onSuccess?.();
           return true;

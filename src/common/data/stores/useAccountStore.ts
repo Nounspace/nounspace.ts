@@ -10,7 +10,7 @@ import { isEmpty, findIndex, sortBy, cloneDeep, includes, uniqBy } from "lodash"
 import { UUID } from "crypto";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { createClient } from "@/common/data/database/supabase/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import { v4 as uuidv4 } from 'uuid';
 import { getUsernameForFid } from "@/common/lib/utils/farcaster";
 import { APP_FID } from "@/constants/app";
@@ -33,7 +33,7 @@ const CUSTOM_CHANNEL_COUNT = 2;
 export const DEFAULT_CHANNEL_URL = CUSTOM_CHANNELS.FOLLOWING;
 const DEFAULT_LOCAL_ACCOUNT_CHANNELS = [
   "Farcaster",
-  "herocast",
+  "nounspace",
   "Base",
   "Founders",
   "Product",
@@ -306,7 +306,7 @@ const store = (set: StoreSet) => ({
           name,
           url,
           icon_url: iconUrl,
-          source: `${account} via herocast`,
+          source: `${account} via Nounspace`,
         })
         .select()
         .then(({ error, data }) => {

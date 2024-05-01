@@ -78,7 +78,7 @@ export default function Welcome() {
   const renderExplainer = () => (
     <div>
       <h3 className="mb-4 text-lg font-medium">
-        You are fully onboarded to herocast 🥳
+        You are fully onboarded to Nounspace 🥳
       </h3>
       <div className="w-1/2 grid grid-cols-1 items-center gap-4">
         <Button variant="default" onClick={() => router.push("/feed")}>
@@ -115,7 +115,7 @@ export default function Welcome() {
       case FarcasterSignupNav.login:
         return getStepContent(
           "Login",
-          "Congrats, you are already logged in to herocast."
+          "Congrats, you are already logged in to Nounspace."
         );
       case FarcasterSignupNav.connect_wallet:
         return getStepContent(
@@ -162,7 +162,7 @@ export default function Welcome() {
   return (
     <div className="space-y-6 p-4 pb-16 block">
       <StepSequence
-        title="Welcome to herocast"
+        title="Welcome to Nounspace"
         description="Follow these steps to create your Farcaster account"
         step={step}
         setStep={setStep}
