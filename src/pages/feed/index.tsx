@@ -309,7 +309,7 @@ export default function Feed() {
           options={[
             account &&
               !account.platformAccountId && {
-                title: "Continue to connect to herocast",
+                title: "Continue to connect to Nounspace",
                 description:
                   "Finish connecting your Farcaster account with your web3 wallet or by scanning a QR code.",
                 buttonText: "Continue",
@@ -318,21 +318,21 @@ export default function Feed() {
             {
               title: "I have a Farcaster account",
               description:
-                "I signed up for Farcaster before and want to connect my account to herocast.",
+                "I signed up for Farcaster before and want to connect my account to Nounspace.",
               buttonText: "Connect my account",
               onClick: () => router.push("/accounts"),
             },
             {
               title: "I am new to Farcaster",
               description:
-                "I want to create a new account on Farcaster with herocast.",
+                "I want to create a new account on Farcaster with Nounspace.",
               buttonText: "Create new account",
               onClick: () => router.push("/farcaster-signup"),
             },
             {
               title: "Browse trending feed",
               description:
-                "No need to signup if you just want to checkout herocast",
+                "No need to signup if you just want to checkout Nounspace",
               buttonText: "Trending Feed →",
               onClick: () => {
                 getFeed({ parentUrl: CUSTOM_CHANNELS.TRENDING, fid: "1" });

@@ -32,7 +32,7 @@ const AccountsRightSidebar = ({ showChannels }: AccountsRightSidebarProps) => {
     <div className="ml-6">
       <EmptyStateWithAction
         title="Connect Farcaster accounts"
-        description="Get started with herocast"
+        description="Get started with Nounspace"
         onClick={() => router.push("/accounts")}
         submitText="Connect account"
         icon={UserPlusIcon}

@@ -1,5 +1,5 @@
 {
-  "name": "herocast",
+  "name": "Nounspace",
   "version": "0.1",
   "license": "",
   "private": true,
@@ -108,13 +108,13 @@
     "ts-key-enum": "^2.0.12",
     "typescript": "^5.1.6",
     "viem": "2.x",
-    "wagmi": "^2.5.11",
+    "wagmi": "^2.7.0",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
-    "@next/eslint-plugin-next": "^13.5.5",
+    "@next/eslint-plugin-next": "^14.2.3",
     "@types/node": "^18.7.15",
     "@types/ramda": "^0.29.11",
     "@types/react": "^18.2.79",

@@ -6,25 +6,13 @@ import { useDataStore } from "@/common/data/stores/useDataStore";
 
 const defaultProfiles: User[] = [
   {
-    username: "hellno",
-    fid: 13596,
+    username: "nounspace",
+    fid: 456830,
+    display_name: "nounspace",
+    pfp_url: "https://i.imgur.com/AHE0m9Y.jpg",
     profile: {
       bio: {
-        text: "dev + founder | @herocast",
-      },
-    },
-    display_name: "hellno the optimist",
-    pfp_url:
-      "https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/https://i.imgur.com/u5kUjiN.png",
-  },
-  {
-    username: "herocast",
-    fid: 18665,
-    display_name: "herocast",
-    pfp_url: "https://i.imgur.com/Ai9jiC3.jpg",
-    profile: {
-      bio: {
-        text: "you are using herocast right now 👋🏻",
+        text: "you are using Nounspace right now 👋🏻",
       },
     },
   },
