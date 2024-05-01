@@ -23,7 +23,7 @@ import { Loading } from "@/common/ui/components/Loading";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { getUsernameForFid, updateUsername } from "@/common/lib/utils/farcaster";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/component";
 import { usePostHog } from "posthog-js/react";
 
 type SimpleCommand = {

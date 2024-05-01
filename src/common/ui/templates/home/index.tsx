@@ -1,7 +1,7 @@
 import React from "react";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/component";
 import {
   Cog6ToothIcon,
   PlusCircleIcon,
