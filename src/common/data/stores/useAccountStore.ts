@@ -10,7 +10,7 @@ import { isEmpty, findIndex, sortBy, cloneDeep, includes, uniqBy } from "lodash"
 import { UUID } from "crypto";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/component";
 import { v4 as uuidv4 } from 'uuid';
 import { getUsernameForFid } from "@/common/lib/utils/farcaster";
 import { APP_FID } from "@/constants/app";

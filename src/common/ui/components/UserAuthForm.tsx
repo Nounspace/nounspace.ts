@@ -7,7 +7,7 @@ import { Label } from "@/common/ui/atoms/label";
 import { Loading } from "./Loading";
 import { SignInButton, useProfile } from "@farcaster/auth-kit";
 import { useEffect, useState } from "react";
-import { createClient } from "../../data/api/supabase/component";
+import { createClient } from "../../data/database/supabase/component";
 import { useRouter } from "next/router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
