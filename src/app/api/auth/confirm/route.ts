@@ -1,6 +1,6 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 
-import createClient from '@/common/data/database/supabase/api'
+import createClient from '@/common/data/database/supabase/clients/api'
 import { NextRequest, NextResponse } from 'next/server';
 import { get } from 'lodash';
 

@@ -27,22 +27,22 @@ export const NewPostDraft: DraftType = {
 
 
 const NewFeedbackPostDraft: DraftType = {
-  text: "hey @hellno, feedback on @herocast: ",
-  parentUrl: "https://herocast.xyz",
+  text: "hey @nounspace, feedback on /nounspace: ",
+  parentUrl: "https://nounspace.com",
   status: DraftStatus.writing,
-  mentionsToFids: { 'herocast': '18665', 'hellno': '13596' }
+  mentionsToFids: { 'nounspace': '456830' }
 };
 
-export const JoinedHerocastPostDraft: DraftType = {
-  text: "I just joined @herocast! ",
+export const JoinedNounspacePostDraft: DraftType = {
+  text: "I just joined @nounspace! ",
   status: DraftStatus.writing,
-  mentionsToFids: { 'herocast': '18665' }
+  mentionsToFids: { 'nounspace': '456830' }
 }
 
-export const JoinedHerocastViaHatsProtocolDraft: DraftType = {
-  text: "I just joined @herocast via @hatsprotocol",
+export const JoinedNounspaceViaHatsProtocolDraft: DraftType = {
+  text: "I just joined @nounspace via @hatsprotocol",
   status: DraftStatus.writing,
-  mentionsToFids: { 'herocast': '18665', 'hatsprotocol': '18484' }
+  mentionsToFids: { 'nounspace': '456830', 'hatsprotocol': '18484' }
 }
 
 type addNewPostDraftProps = {

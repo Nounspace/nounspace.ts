@@ -7,7 +7,7 @@ import { Label } from "@/common/ui/atoms/label";
 import { Loading } from "./Loading";
 import { SignInButton, useProfile } from "@farcaster/auth-kit";
 import { useEffect, useState } from "react";
-import { createClient } from "../../data/database/supabase/component";
+import { createClient } from "../../data/database/supabase/clients/component";
 import { useRouter } from "next/router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,7 +88,7 @@ export function UserAuthForm({ className }: { className?: string }) {
     });
     posthog.identify(uuidv4(), { isLocalOnly: true });
 
-    setUserMessage("Setup done. Welcome to the herocast experience!");
+    setUserMessage("Setup done. Welcome to the Nounspace experience!");
     router.push("/feed");
     setIsLoading(false);
   };

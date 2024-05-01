@@ -26,10 +26,10 @@ export const publicClient = createPublicClient({
 });
 
 export const config = getDefaultConfig({
-  appName: "herocast",
-  projectId: "b34f1019e33e832831871e41741f13fc",
-  chains: [optimism],
+  appName: process.env.NEXT_PUBLIC_APP_NAME!,
+  projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID!,
   ssr: true,
+  ...wagmiConfig,
 });
 
 export const rainbowKitTheme = midnightTheme({
