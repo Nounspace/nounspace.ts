@@ -9,7 +9,8 @@
     "start": "next start",
     "serve": "serve -s build",
     "lint": "next lint",
-    "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx src"
+    "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx src",
+    "check-types": "tsc"
   },
   "browserslist": {
     "production": [
