@@ -128,7 +128,7 @@ export default function HatsProtocolPage() {
       <div className="flex items-center space-x-2">
         <Input
           className="w-72"
-          placeholder="herocast"
+          placeholder="Nounspace"
           value={userInput}
           onChange={(e) => {
             if (accountToTransfer) setAccountToTransfer(null);
@@ -255,7 +255,7 @@ export default function HatsProtocolPage() {
               options={[
                 {
                   title: "I have created a Hats tree",
-                  description: "Continue with the setup in herocast",
+                  description: "Continue with the setup in Nounspace",
                   buttonText: "I have a Hats tree",
                   disabled: isEmpty(accountToTransfer),
                   onClick: () => setStep(HatsSignupNav.account_ownership),

@@ -9,7 +9,7 @@ import clsx from "clsx";
 
 const authKitConfig = {
   rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-  domain: "app.herocast.xyz",
+  domain: "app.nounspace.com",
   // siweUri: `${process.env.NEXT_PUBLIC_URL}/api/auth/siwe`,
 };
 
@@ -35,11 +35,6 @@ export default function Login() {
             <div className="relative h-full flex-col bg-muted p-10 text-foreground flex">
               <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-gray-900 via-gray-700 to-stone-500" />
               <div className="relative z-20 flex items-center text-lg font-medium text-gray-200">
-                {/* <img
-              className="h-8 w-auto mr-1"
-              src={herocastImg.src}
-              alt="herocast"
-            /> */}
               </div>
               <div className="relative z-20 mt-16 lg:mt-24">
                 <div className="text-center">
@@ -84,7 +79,7 @@ export default function Login() {
                       className="p-6 text-white"
                       type="button"
                       onClick={() =>
-                        openWindow("https://warpcast.com/~/channel/herocast")
+                        openWindow("https://warpcast.com/~/channel/nounspace")
                       }
                     >
                       Learn more <span aria-hidden="true">→</span>
@@ -114,10 +109,10 @@ export default function Login() {
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] md:w-[450px]">
               <div className="flex flex-col space-y-2 text-center">
                 <h1 className="text-5xl lg:text-3xl font-semibold tracking-tight text-gray-100">
-                  Welcome to herocast
+                  Welcome to Nounspace
                 </h1>
                 <p className="px-8 text-center text-md text-gray-400">
-                  Your herocast account can be used to connect multiple
+                  Your Nounpsace account can be used to connect multiple
                   Farcaster accounts.
                 </p>
               </div>
