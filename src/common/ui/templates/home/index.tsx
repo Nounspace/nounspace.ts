@@ -1,7 +1,7 @@
 import React from "react";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { createClient } from "@/common/data/database/supabase/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import {
   Cog6ToothIcon,
   PlusCircleIcon,
@@ -24,7 +24,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { ThemeToggle } from "@/common/ui/components/ThemeToggle";
-import herocastImg from "@public/images/logo.png";
+import nounspaceImg from "@public/images/logo.png";
 import {
   TooltipProvider,
 } from "@/common/ui/atoms/tooltip";
@@ -230,11 +230,11 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                   <div className="flex h-16 shrink-0 items-center">
                     <img
                       className="h-8 w-auto"
-                      src={herocastImg.src}
-                      alt="herocast"
+                      src={nounspaceImg.src}
+                      alt="Nounspace"
                     />
                     <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
-                      herocast
+                      Nounspace
                     </h2>
                   </div>
                   <nav className="flex flex-1 flex-col">
@@ -280,12 +280,12 @@ const Home = ({ children }: { children: React.ReactNode }) => {
         <div className="flex grow flex-col min-h-full gap-y-5 overflow-y-auto bg-background px-6 ring-1 ring-white/5">
           <div className="flex h-16 shrink-0 items-center">
             <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:tracking-tight">
-              herocast
+              Nounspace
             </h2>
             <img
               className="h-8 w-auto"
-              src={herocastImg.src}
-              alt="herocast"
+              src={nounspaceImg.src}
+              alt="Nounspace"
             />
           </div>
           <div className="h-full min-h-full flex flex-col justify-between">
