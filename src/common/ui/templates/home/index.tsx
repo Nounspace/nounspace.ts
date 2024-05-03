@@ -19,6 +19,7 @@ import AccountsRightSidebar from "@/common/ui/components/RightSidebar/AccountsRi
 import ChannelsRightSidebar from "@/common/ui/components/RightSidebar/ChannelsRightSidebar";
 import { CUSTOM_CHANNELS, useAccountStore } from "@/common/data/stores/useAccountStore";
 import {
+  HomeIcon,
   BellIcon,
   MagnifyingGlassIcon,
   NewspaperIcon,
@@ -66,20 +67,20 @@ const Home = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navigation: NavigationItemType[] = [
+    {
+      name: "Homebase",
+      router: "/homebase",
+      icon: <HomeIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
+      getTitle: getFeedTitle,
+      shortcut: "Shift + H",
+    },
     // {
-    //   name: "Homebase",
-    //   router: "/homebase",
+    //   name: "Feed",
+    //   router: "/feed",
     //   icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
     //   getTitle: getFeedTitle,
-    //   shortcut: "Shift + H",
+    //   shortcut: "Shift + F",
     // },
-    {
-      name: "Feed",
-      router: "/feed",
-      icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
-      getTitle: getFeedTitle,
-      shortcut: "Shift + F",
-    },
     { 
       name: "New Post",
       router: "/post", 
@@ -348,17 +349,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
           </h1>
         </div>*/}
         <main>
-        <main>
-          <div className="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
-            <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
-            <Gallery />
-            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
-            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
-            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-          </div>
-        </main>
+          {children}
         </main>
       </div>
       <Toaster theme="system" position="bottom-right" />

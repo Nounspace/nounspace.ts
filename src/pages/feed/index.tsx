@@ -345,7 +345,7 @@ export default function Feed() {
     );
 
   const renderContent = () => (
-    <>
+    <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">
       <div className="min-w-full">
         {isLoadingFeed && isEmpty(feed) && (
           <div className="ml-4">
@@ -366,7 +366,7 @@ export default function Feed() {
       </div>
       {renderReplyModal()}
       {renderEmbedsModal()}
-    </>
+    </div>
   );
 
   return renderContent();
