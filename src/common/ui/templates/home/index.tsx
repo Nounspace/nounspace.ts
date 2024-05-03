@@ -237,7 +237,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                   <div className="flex h-16 shrink-0 items-center">
                     <img
                       className="h-8 w-auto"
-                      src={herocastImg.src}
+                      src={logo.src}
                       alt="herocast"
                     />
                     <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
