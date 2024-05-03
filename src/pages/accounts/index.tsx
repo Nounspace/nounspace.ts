@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/20/solid";
 import { NewspaperIcon } from "@heroicons/react/24/solid";
 import {
-  JoinedHerocastPostDraft,
+  JoinedNounspacePostDraft,
   useNewPostStore,
 } from "@/common/data/stores/useNewPostStore";
 import { hydrate, useAccountStore } from "@/common/data/stores/useAccountStore";
@@ -61,13 +61,13 @@ const SignupSteps: SignupStepType[] = [
   {
     state: SignupStateEnum.initial,
     title: "Start adding Farcaster accounts",
-    description: "Get started with herocast",
+    description: "Get started with Nounspace",
     idx: 0,
   },
   {
     state: SignupStateEnum.connecting,
     title: "Connect account",
-    description: "Connect your Farcaster account to herocast",
+    description: "Connect your Farcaster account to Nounspace",
     idx: 1,
   },
   {
@@ -189,7 +189,7 @@ export default function Accounts() {
   };
 
   const onStartCasting = () => {
-    addNewPostDraft(JoinedHerocastPostDraft);
+    addNewPostDraft(JoinedNounspacePostDraft);
     router.push("/post");
   };
 
@@ -200,7 +200,7 @@ export default function Accounts() {
           Connect your Farcaster account
         </CardTitle>
         <CardDescription>
-          Connect with herocast to see and publish casts
+          Connect with Nounspace to see and publish casts
         </CardDescription>
       </CardHeader>
       <CardFooter>
@@ -228,7 +228,7 @@ export default function Accounts() {
                 Sign in with Web3 wallet
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Pay with ETH on Optimism to connect with herocast
+                Pay with ETH on Optimism to connect with Nounspace
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -258,7 +258,7 @@ export default function Accounts() {
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl">Sign in with Warpcast</CardTitle>
             <CardDescription className="text-muted-foreground">
-              Pay with Warps in Warpcast to connect with herocast
+              Pay with Warps in Warpcast to connect with Nounspace
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -283,7 +283,7 @@ export default function Accounts() {
             className="-mt-0.5 mr-1 h-5 w-5 text-foreground/80"
             aria-hidden="true"
           />
-          Account added to herocast
+          Account added to Nounspace
         </CardTitle>
         <CardDescription className="text-muted-foreground">
           You can start casting and browsing your feed

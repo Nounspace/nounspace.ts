@@ -41,7 +41,7 @@ import {
   AccountStatusType,
 } from "@/constants/accounts";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
-import { JoinedHerocastViaHatsProtocolDraft, useNewPostStore } from "@/common/data/stores/useNewPostStore";
+import { JoinedNounspaceViaHatsProtocolDraft, useNewPostStore } from "@/common/data/stores/useNewPostStore";
 import { useRouter } from "next/router";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { isValidSignature, isValidSigner } from "@/common/lib/hats";
@@ -89,7 +89,7 @@ const HatsProtocolSignupSteps: SignupStepType[] = [
   {
     state: SignupStateEnum.PENDING_ADD_KEY,
     title: "",
-    description: "Add your herocast signer to Hats Protocol to start casting",
+    description: "Add your Nounspace signer to Hats Protocol to start casting",
     idx: 3,
   },
   {
@@ -189,7 +189,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
     setState(HatsProtocolSignupSteps[3]);
   };
 
-  const onAddHerocastSignerToHatsProtocol = async () => {
+  const onAddNounspaceSignerToHatsProtocol = async () => {
     if (!address || !delegatorContractAddress) return;
 
     let hexStringPublicKey: `0x${string}`, hexStringPrivateKey: `0x${string}`;
@@ -327,7 +327,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
   }, [onchainTransactionHash, transactionResult]);
 
   const onPublishTestCast = async () => {
-    addNewPostDraft(JoinedHerocastViaHatsProtocolDraft);
+    addNewPostDraft(JoinedNounspaceViaHatsProtocolDraft);
     router.push('/post');
   };
 
@@ -349,7 +349,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
       case SignupStateEnum.CONFIRMED_IS_VALID_SIGNER:
         return "Do I need to sign again?";
       case SignupStateEnum.PENDING_ADD_KEY:
-        return "Confirm herocast signer";
+        return "Confirm Nounspace signer";
       case SignupStateEnum.CONFIRMED_ADD_KEY:
         return null;
       case SignupStateEnum.ERROR:
@@ -381,7 +381,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
       case SignupStateEnum.CHECKING_IS_VALID_SIGNER:
         break;
       case SignupStateEnum.PENDING_ADD_KEY:
-        onAddHerocastSignerToHatsProtocol();
+        onAddNounspaceSignerToHatsProtocol();
         break;
       case SignupStateEnum.ERROR:
         setState(HatsProtocolSignupSteps[0]); 
@@ -399,7 +399,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
               <p className="">Which account do you want to connect? (account name or FID)</p>
               <Input
                 className="w-2/3"
-                placeholder="herocast / 13596"
+                placeholder="Nounspace / 456830"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
               />
@@ -438,7 +438,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
           <div className="flex flex-col">
             <div className="w-full">
               <p className="">
-                You have successfully connected your herocast account to Hats
+                You have successfully connected your Nounspace account to Hats
                 Protocol.
               </p>
               <Button

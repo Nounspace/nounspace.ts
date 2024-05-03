@@ -147,7 +147,7 @@ export default function CommandPalette() {
                   />
                   <Combobox.Input
                     className="h-12 w-full border-0 bg-transparent pl-11 pr-4 text-foreground focus:outline-none focus:ring focus:border-gray-500 sm:text-sm"
-                    placeholder="Search Herocast..."
+                    placeholder="Search Nounspace..."
                     onChange={(event) => setQuery(event.target.value)}
                   />
                 </div>
