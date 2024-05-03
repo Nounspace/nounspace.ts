@@ -24,7 +24,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { ThemeToggle } from "@/common/ui/components/ThemeToggle";
-import nounspaceImg from "@public/images/logo.png";
+import logo from "@public/images/logo.png";
 import {
   TooltipProvider,
 } from "@/common/ui/atoms/tooltip";
@@ -64,6 +64,13 @@ const Home = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navigation: NavigationItemType[] = [
+    // {
+    //   name: "Homebase",
+    //   router: "/homebase",
+    //   icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
+    //   getTitle: getFeedTitle,
+    //   shortcut: "Shift + H",
+    // },
     {
       name: "Feed",
       router: "/feed",
@@ -230,7 +237,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                   <div className="flex h-16 shrink-0 items-center">
                     <img
                       className="h-8 w-auto"
-                      src={nounspaceImg.src}
+                      src={logo.src}
                       alt="Nounspace"
                     />
                     <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
@@ -280,12 +287,12 @@ const Home = ({ children }: { children: React.ReactNode }) => {
         <div className="flex grow flex-col min-h-full gap-y-5 overflow-y-auto bg-background px-6 ring-1 ring-white/5">
           <div className="flex h-16 shrink-0 items-center">
             <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:tracking-tight">
-              Nounspace
+              nounspace
             </h2>
             <img
               className="h-8 w-auto"
-              src={nounspaceImg.src}
-              alt="Nounspace"
+              src={logo.src}
+              alt="nounspace"
             />
           </div>
           <div className="h-full min-h-full flex flex-col justify-between">
@@ -339,16 +346,17 @@ const Home = ({ children }: { children: React.ReactNode }) => {
           </h1>
         </div>*/}
         <main>
-              <div className="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
-                <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
-                <div className="p-4 bg-slate-300 row-span-4 col-span-4 rounded-md flex items-center justify-center"></div>
-                <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-                <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-                <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
-                <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
-                <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
-              </div>
-          {/*{renderRightSidebar()}*/}
+        <main>
+          <div className="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
+            <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
+            <div className="p-4 bg-slate-300 row-span-4 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+          </div>
+        </main>
         </main>
       </div>
       <Toaster theme="system" position="bottom-right" />
