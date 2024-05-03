@@ -3,8 +3,11 @@
 
 Forked from [herocast](https://github.com/hellno/herocast/)
 
+## Documentation
+https://app.gitbook.com/o/ZHCISOxwQgVAv1J0ey8M/s/cmf53xNti4tqfseoYngd/
+
 ## What is Farcaster?
-a protocol for decentralized social apps: https://www.farcaster.xyz
+A protocol for decentralized social apps: https://www.farcaster.xyz
 
 ## 🏗️ Dev Setup
 
