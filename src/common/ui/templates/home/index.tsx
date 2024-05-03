@@ -238,7 +238,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                     <img
                       className="h-8 w-auto"
                       src={logo.src}
-                      alt="herocast"
+                      alt="Nounspace"
                     />
                     <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
                       Nounspace
