@@ -2,7 +2,7 @@ import Space from "@/common/ui/templates/space";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 
 function retrieveConfig(user, space){
-    const fidgets = {};
+    const fidgetConfigs = {};
     const layoutConfig = {}
     const layoutID = "";
 
