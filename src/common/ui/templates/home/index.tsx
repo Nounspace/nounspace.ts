@@ -64,13 +64,13 @@ const Home = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navigation: NavigationItemType[] = [
-    {
-      name: "Homebase",
-      router: "/homebase",
-      icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
-      getTitle: getFeedTitle,
-      shortcut: "Shift + H",
-    },
+    // {
+    //   name: "Homebase",
+    //   router: "/homebase",
+    //   icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
+    //   getTitle: getFeedTitle,
+    //   shortcut: "Shift + H",
+    // },
     {
       name: "Feed",
       router: "/feed",
