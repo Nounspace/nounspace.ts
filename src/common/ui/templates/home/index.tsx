@@ -1,5 +1,6 @@
 import React from "react";
 import { Fragment, useState } from "react";
+import  Gallery from "@/fidgets/ui/gallery"
 import { Dialog, Transition } from "@headlessui/react";
 import { createClient } from "@/common/data/database/supabase/clients/component";
 import {
@@ -349,7 +350,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
         <main>
           <div className="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
             <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
-            <div className="p-4 bg-slate-300 row-span-4 col-span-4 rounded-md flex items-center justify-center"></div>
+            <Gallery />
             <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
             <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
             <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
