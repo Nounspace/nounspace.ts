@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 
 const Index = () => {
   const router = useRouter();

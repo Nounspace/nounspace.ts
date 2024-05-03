@@ -23,7 +23,7 @@ import { Loading } from "@/common/ui/components/Loading";
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { getUsernameForFid, updateUsername } from "@/common/lib/utils/farcaster";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import { usePostHog } from "posthog-js/react";
 
 type SimpleCommand = {
@@ -149,7 +149,7 @@ export default function Settings() {
     <div className="ml-10 mt-10 flex flex-col space-y-4">
       <div className="border-b border-gray-200">
         <h1 className="text-xl font-semibold leading-7 text-foreground/80">
-          Herocast account
+          Nounspace account
         </h1>
       </div>
       <div className="flex flex-row mt-4 px-2">

@@ -1,7 +1,7 @@
 import React from "react";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { createClient } from "@/common/data/api/supabase/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import {
   Cog6ToothIcon,
   PlusCircleIcon,
@@ -241,7 +241,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                       alt="herocast"
                     />
                     <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
-                      herocast
+                      Nounspace
                     </h2>
                   </div>
                   <nav className="flex flex-1 flex-col">
