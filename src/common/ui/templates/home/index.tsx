@@ -347,7 +347,17 @@ const Home = ({ children }: { children: React.ReactNode }) => {
           </h1>
         </div>*/}
         <main>
-              
+        <main>
+          <div className="p-8 grid grid-cols-4 md:grid-cols-8 lg:grid-cols-12 grid-rows-4 md:grid-rows-6 lg:grid-rows-8 gap-4 lg:gap-8 h-screen max-h-screen">
+            <div className="p-4 border-2 row-span-8 col-span-6 max-h-full overflow-scroll rounded-md">{children}</div>
+            <div className="p-4 bg-slate-300 row-span-4 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-4 rounded-md flex items-center justify-center"></div>
+            <div className="p-4 bg-slate-300 row-span-2 col-span-2 rounded-md flex items-center justify-center"></div>
+          </div>
+        </main>
         </main>
       </div>
       <Toaster theme="system" position="bottom-right" />
