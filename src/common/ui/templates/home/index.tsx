@@ -69,7 +69,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       router: "/homebase",
       icon: <NewspaperIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
       getTitle: getFeedTitle,
-      shortcut: "Shift + F",
+      shortcut: "Shift + H",
     },
     {
       name: "Feed",
