@@ -9,7 +9,6 @@ type SpaceArgs = {
     layoutConfig: {
       [key: string]: any
     }
-    layoutID: string;
   };
   isEditable: boolean;
 }
