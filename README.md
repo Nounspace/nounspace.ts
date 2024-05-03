@@ -3,6 +3,9 @@
 
 Forked from [herocast](https://github.com/hellno/herocast/)
 
+# Docs
+https://docs.nounspace.com/nounspace-alpha/
+
 ## What is Farcaster?
 a protocol for decentralized social apps: https://www.farcaster.xyz
 
