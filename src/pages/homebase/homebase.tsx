@@ -6,13 +6,13 @@ function retrieveConfig(user, space){
     const layoutConfig = {}
     const layoutID = "";
 
-    return ({fidgets, layoutConfig, layoutID})
+    return ({fidgetConfigs, layoutConfig, layoutID})
 }
 
 export default function Homebase(spaceID) {
 
-    const { getCurrentUser } = useAccountStore();
-    const user = getCurrentUser()
+   //const { getCurrentUser } = useAccountStore();
+    const user = useAccountStore.getState().accounts[0];
 
     return (
         <Space config={retrieveConfig(user, spaceID)} isEditable={true}></Space>
