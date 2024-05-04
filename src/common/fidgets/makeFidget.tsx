@@ -1,7 +1,10 @@
+import React from "react";
+
 export interface FidgetSettings {
+  // TO DO: infer values here backed off the related config file
 }
 
-export type FidgetConfig<S> = {
+export type FidgetConfig<S extends FidgetSettings> = {
   editable: boolean;
   size: [number, number];
   settings: S;
@@ -19,12 +22,15 @@ export type FidgetFieldConfig = {
 export type FidgetEditConfig = {
   fields: FidgetFieldConfig[];
 };
-
-export type FidgetModule<P> = {
-  fidget: React.FC<P>;
+      
+export interface Fidget<P> extends React.FC<P> {
   fieldConfig: FidgetEditConfig;
-};
+}
 
-export async function importFidget(fidgetName) {
-  return await import(`./${fidgetName}`) as FidgetModule<FidgetSettings>;
+export type GenericFidget = Fidget<FidgetSettings>;
+
+export function makeFidget<S>(component: React.FC<S>, fieldConfig: FidgetEditConfig): Fidget<S> {
+  const componentAny: any = component;
+  componentAny.fieldConfig = fieldConfig;
+  return componentAny;
 }

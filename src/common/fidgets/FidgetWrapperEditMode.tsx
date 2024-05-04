@@ -1,5 +1,5 @@
 import React from "react";
-import { FidgetEditConfig, FidgetSettings } from "@/fidgets";
+import { FidgetEditConfig, FidgetSettings } from "@/common/fidgets/makeFidget";
 
 type FidgetWrapperSettingsEditorProps = {
   readonly editConfig: FidgetEditConfig;
