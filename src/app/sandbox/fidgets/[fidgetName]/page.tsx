@@ -1,5 +1,7 @@
-import { importFidget } from "@/fidgets";
-import React, { use } from "react";
+import React from "react";
+import FidgetViewer from "@/common/fidgets/FidgetViewer";
+import CompleteFidgets from "@/fidgets";
+import { GenericFidget } from "@/common/fidgets/makeFidget";
 
 type PageParams = {
   params: {
@@ -8,5 +10,13 @@ type PageParams = {
 };
 
 export default function Page({ params }: PageParams) {
-  const { fidget, fieldConfig } = use(importFidget(params.fidgetName));
+  const fidget = CompleteFidgets[params.fidgetName] as GenericFidget;
+
+  return (
+  <>
+    {
+      fidget ? <FidgetViewer fidget={fidget} /> : <div>Error Loading Fidget</div>
+    }
+  </>
+  );
 }

@@ -1,10 +1,10 @@
+"use client"
 import React, { useState } from "react";
-import { FidgetConfig, FidgetEditConfig, FidgetSettings } from "@/fidgets";
+import { FidgetConfig, FidgetEditConfig, FidgetSettings } from "@/common/fidgets/makeFidget";
 import { Card, CardContent, CardHeader } from "../ui/atoms/card";
 import { Button } from "../ui/atoms/button";
 import FidgetWrapperEditMode from "./FidgetWrapperEditMode";
 import { toast } from "sonner";
-
 
 export type FidgetWrapperConfig = {
   fidgetConfig: FidgetConfig<FidgetSettings>;
@@ -18,6 +18,7 @@ type FidgetWrapperProps = {
 };
 
 export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
+  console.log(fidget);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [viewEditor, setViewEditor] = useState(false);
