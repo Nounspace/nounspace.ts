@@ -5,7 +5,7 @@ import { rainbowKitTheme, config } from "@/common/ui/templates/rainboxkit";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PostHogProvider } from "posthog-js/react";
-import React from "react"
+import React, { Suspense } from "react"
 import { WagmiProvider } from "wagmi";
 
 export const metadata = {
@@ -54,18 +54,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <PostHogProvider client={posthog}>
-          <WagmiProvider config={config}>
-            <QueryClientProvider client={queryClient}>
-              <RainbowKitProvider theme={rainbowKitTheme}>
-                <CommandPalette />
-                <Home>
-                  { children }
-                </Home>
-              </RainbowKitProvider>
-            </QueryClientProvider>
-          </WagmiProvider>
-        </PostHogProvider>  
+        <Suspense>
+          { children }
+        </Suspense>
       </body>
     </html>
   );
