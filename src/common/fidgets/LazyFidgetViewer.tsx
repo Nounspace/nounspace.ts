@@ -12,7 +12,7 @@ export default function LazyFidgetViewer({ fidgetPath }: { fidgetPath: string })
   // But that will take testing
   const lazyFidget = useLazyFidget(fidgetPath);
   const [config, setConfig] = useState<FidgetWrapperConfig>({
-    editConfig: { fields: [] },
+    editConfig: { fields: [], size: { minHeight: 1, maxHeight: 36, minWidth: 1, maxWidth: 36} },
     fidgetConfig: { editable: true, size: [1,1], settings: {} }
   });  
   const saveConifg = async (conf: FidgetConfig<FidgetSettings>) => {
