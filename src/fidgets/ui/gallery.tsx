@@ -23,7 +23,7 @@ export default function Gallery() {
       <div className ="rounded-md flex items-center justify-center overflow-hidden relative">
         <img
           src={`${imageURL}?${new Date().getTime()}`}
-          className = "inset-0 bg-cover bg-center z-0"
+          className = "inset-0 bg-center bg-contain	z-0 overflow-hidden"
         />
         <div className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50">
           <button onClick={switchMode} className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex justify-center items-center text-white font-semibold text-4xl">

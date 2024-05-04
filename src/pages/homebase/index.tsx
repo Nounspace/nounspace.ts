@@ -12,15 +12,15 @@ export default function Homebase(spaceID) {
         const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 
         const fidgetConfigs = [
-            {
+            {   
+                f: <Feed/>,
+                resizeHandles: editMode ? availableHandles : [],
                 x: 0,
                 y: 0,
                 w: 6,
-                h: 20,
-                f: <Feed/>,
-                resizeHandles: editMode ? availableHandles : [],
                 minW: 4,
                 maxW: 8,
+                h: 20,
                 minH: 10,
                 maxH: 20
             },
@@ -39,12 +39,16 @@ export default function Homebase(spaceID) {
         ];
 
         const layoutConfig = {
-            isDraggable: true,
-            isResizable: true,
+            isDraggable: editMode,
+            isResizable: editMode,
             items: 2,
+            cols: 12,
             rowHeight: 30,
             onLayoutChange: function() {},
-            cols: 12
+            // This turns off compaction so you can place items wherever.
+            verticalCompact: false,
+            // This turns off rearrangement so items will not be pushed arround.
+            preventCollision: true
         };
         const layoutID = "";
     
@@ -54,7 +58,6 @@ export default function Homebase(spaceID) {
     const images = ["image1","image2","image3"]
     
     const [editMode, setMode] = useState(false);
-    const [imageURL, setImageURL] = useState("https://images.unsplash.com/photo-1554629947-334ff61d85dc?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1024&h=1280&q=80");
     
     function switchMode() {
       setMode(!editMode);
