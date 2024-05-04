@@ -20,7 +20,7 @@ export default function Gallery() {
   return (
     // TO DO: Change this to sit inside of the FidgetWrapper, which will handle the edit mode for the Fidget
     <>
-      <div className ="row-span-4 col-span-4 rounded-md flex items-center justify-center overflow-hidden relative">
+      <div className ="rounded-md flex items-center justify-center overflow-hidden relative">
         <img
           src={`${imageURL}?${new Date().getTime()}`}
           className = "inset-0 bg-cover bg-center z-0"
