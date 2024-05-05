@@ -66,7 +66,7 @@
   transition: height 200ms ease;
 }
 .react-grid-item {
-  padding: 10px;
+  padding:10px;
   border-color: lightgray;
   transition: all 200ms ease;
   transition-property: left, top, width, height;
@@ -95,9 +95,11 @@
 }
 
 .react-grid-item.react-grid-placeholder {
-  background: red;
-  opacity: 0.2;
-  transition-duration: 100ms;
+  border-radius: 10px;
+  margin:4px;
+  background: blue 20% 20%;
+  opacity: 0.1;
+  transition-duration: 200ms;
   z-index: 2;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -123,8 +125,8 @@
   bottom: 3px;
   width: 5px;
   height: 5px;
-  border-right: 2px solid rgba(0, 0, 0, 0.4);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+  border-right: 2px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .react-resizable-hide > .react-resizable-handle {
