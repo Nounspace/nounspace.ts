@@ -1,3 +1,4 @@
+import React from "react";
 import DefaultGrid from "@/fidgets/layout/grids/defaultGrid";
 import Gallery from "@/fidgets/ui/gallery";
 import Feed from "@/pages/feed";
