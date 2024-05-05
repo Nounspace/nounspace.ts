@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { RiPencilFill } from "react-icons/ri";
+import { FaGear } from "react-icons/fa6";
 import Modal from "@/common/ui/components/Modal";
 
 export default function Gallery() {
@@ -22,14 +22,14 @@ export default function Gallery() {
 
   return (
     <>
-      <div className ="rounded-md flex items-center justify-center overflow-hidden relative">
+      <div className ="rounded-md flex-1 items-center justify-center overflow-hidden relative size-11/12 bg-contain">
         <img
           src={`${imageURL}?${new Date().getTime()}`}
-          className = "inset-0 bg-center bg-contain	z-0 overflow-hidden"
+          className = "inset-0 bg-center bg-contain	z-0 rounded-md"
         />
-        <div className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50">
-          <button onClick={switchMode} className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex justify-center items-center text-white font-semibold text-4xl">
-            <RiPencilFill />
+        <div className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-0 justify-center items-center">
+          <button onClick={switchMode} className = "size-4/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl">
+            <FaGear />
           </button>
         </div>
       </div>
