@@ -7,46 +7,54 @@ import Gallery from "@/fidgets/ui/gallery";
 import Feed from "@/pages/feed";
 
 export default function Homebase(spaceID) {
+    const [editMode, setMode] = useState(false);
+
+    //const { getCurrentUser } = useAccountStore();
+    const user = useAccountStore.getState().accounts[0];
+    
+    const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
+
+    const [fidgetConfigs, setFidgetConfigs] = useState([
+        {   
+            f: <Feed/>,
+            resizeHandles: availableHandles,
+            x: 0,
+            y: 0,
+            w: 6,
+            minW: 4,
+            maxW: 8,
+            h: 20,
+            minH: 10,
+            maxH: 20
+        },
+        {
+            f: <Gallery/>,
+            resizeHandles: availableHandles,
+            x: 6,
+            y: 0,
+            w: 4,
+            minW: 2,
+            maxW: 4,
+            h: 9,
+            minH: 3,
+            maxH: 12
+        },
+    ]);
+
+    function switchMode() {
+        setMode(!editMode);
+    }  
+
     function retrieveConfig(user, space){
-
-        const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
-
-        const fidgetConfigs = [
-            {   
-                f: <Feed/>,
-                resizeHandles: editMode ? availableHandles : [],
-                x: 0,
-                y: 0,
-                w: 6,
-                minW: 4,
-                maxW: 8,
-                h: 20,
-                minH: 10,
-                maxH: 20
-            },
-            {
-                f: <Gallery/>,
-                resizeHandles: editMode ? availableHandles : [],
-                x: 6,
-                y: 0,
-                w: 4,
-                minW: 2,
-                maxW: 4,
-                h: 9,
-                minH: 3,
-                maxH: 12
-            },
-        ];
-
         const layoutConfig = {
             isDraggable: editMode,
             isResizable: editMode,
             items: 2,
             cols: 12,
             rowHeight: 30,
-            onLayoutChange: function() {},
+            onLayoutChange: function(){},
             // This turns off compaction so you can place items wherever.
-            verticalCompact: false,
+            compactType: null,
             // This turns off rearrangement so items will not be pushed arround.
             preventCollision: true
         };
@@ -54,17 +62,6 @@ export default function Homebase(spaceID) {
     
         return ({fidgetConfigs, layoutConfig, layoutID})
     }
-    
-    const images = ["image1","image2","image3"]
-    
-    const [editMode, setMode] = useState(false);
-    
-    function switchMode() {
-      setMode(!editMode);
-    }
-
-   //const { getCurrentUser } = useAccountStore();
-    const user = useAccountStore.getState().accounts[0];
 
     return (
         <div>
