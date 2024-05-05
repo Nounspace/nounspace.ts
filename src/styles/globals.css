@@ -60,6 +60,39 @@
     @apply bg-background text-foreground;
   }
 } */
+.no-edit-grid {
+  /* background-image: radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px); */
+
+  background-color:rgba(255, 255, 255, 0);
+  background-image: linear-gradient(white 10px, transparent 10px),
+  linear-gradient(90deg, white 10px, transparent 10px);
+  background-size: 80px 80px, 114px 114px, 40px 40px, 40px 40px;
+  margin-top:20px;
+  margin-right:14px;
+  margin-left:100px;
+  height:96vh;
+
+  -webkit-transition: background-color 1000ms linear;
+  -ms-transition: background-color 1000ms linear;
+  transition: background-color 1000ms linear;
+}
+
+.edit-grid {
+  /* background-image: radial-gradient(circle, #000000 1px, rgba(0, 0, 0, 0) 1px); */
+
+  background-color:rgba(200, 227, 248, 0.523);
+  background-image: linear-gradient(white 10px, transparent 10px),
+  linear-gradient(90deg, white 10px, transparent 10px);
+  background-size: 80px 80px, 114px 114px, 40px 40px, 40px 40px;
+  margin-top:20px;
+  margin-right:14px;
+  margin-left:100px;
+  height:96vh;
+
+  -webkit-transition: background-color 1000ms linear;
+  -ms-transition: background-color 1000ms linear;
+  transition: background-color 1000ms linear;
+}
 
 .react-grid-layout {
   position: relative;
