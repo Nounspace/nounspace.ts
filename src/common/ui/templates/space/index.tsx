@@ -26,7 +26,7 @@ export default function Space({ config, isEditable }: SpaceArgs){
   function generateDOM() {    
     return _.map(_.range(config.layoutConfig.items), function(i) {
       return (
-        <div key={i} data-grid={config.fidgetConfigs[i]} className="overflow-hidden rounded-md flex m-4 items-center">
+        <div key={i} data-grid={config.fidgetConfigs[i]} className="overflow-hidden rounded-md flex justify-center items-center">
           {config.fidgetConfigs[i].f}
         </div>
       );
@@ -38,8 +38,10 @@ export default function Space({ config, isEditable }: SpaceArgs){
   }
 
   return (
-    <ReactGridLayout onLayoutChange={onLayoutChange} {...config.layoutConfig}>
-      {generateDOM()}
-    </ReactGridLayout>
+    <div className="m-4">
+      <ReactGridLayout onLayoutChange={onLayoutChange} {...config.layoutConfig}>
+        {generateDOM()}
+      </ReactGridLayout>
+    </div>
   );
 }

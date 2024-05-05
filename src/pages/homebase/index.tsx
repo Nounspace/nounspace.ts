@@ -3,6 +3,7 @@ import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { useState } from 'react';
 import { RiPencilFill } from "react-icons/ri";
 import Gallery from "@/fidgets/ui/gallery";
+import FrameFidget from "@/fidgets/ui/frameFidget";
 import Feed from "@/pages/feed";
 
 export default function Homebase(spaceID) {
@@ -14,30 +15,48 @@ export default function Homebase(spaceID) {
     const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 
     const [fidgetConfigs, setFidgetConfigs] = useState([
-        {   
-            f: <Feed/>,
+        {   f: <Feed/>,
             resizeHandles: availableHandles,
             x: 0,
             y: 0,
             w: 6,
             minW: 4,
             maxW: 8,
-            h: 20,
-            minH: 10,
-            maxH: 20
+            h: 10,
+            minH: 6,
+            maxH: 12
         },
-        {
-            f: <Gallery/>,
+        {   f: <Gallery/>,
             resizeHandles: availableHandles,
             x: 6,
             y: 0,
-            w: 4,
+            w: 2,
+            minW: 1,
+            h: 4,
+            minH: 1
+        },
+        {   f: <FrameFidget/>,
+            resizeHandles: availableHandles,
+            x: 8,
+            y: 0,
+            w: 2,
             minW: 2,
             maxW: 4,
-            h: 9,
+            h: 4,
             minH: 3,
             maxH: 12
         },
+        {   f: <FrameFidget/>,
+            resizeHandles: availableHandles,
+            x: 12,
+            y: 0,
+            w: 2,
+            minW: 2,
+            maxW: 4,
+            h: 4,
+            minH: 3,
+            maxH: 12
+        }
     ]);
 
     function switchMode() {
@@ -48,9 +67,9 @@ export default function Homebase(spaceID) {
         const layoutConfig = {
             isDraggable: editMode,
             isResizable: editMode,
-            items: 2,
+            items: 4,
             cols: 12,
-            rowHeight: 30,
+            rowHeight: 70,
             onLayoutChange: function(){},
             // This turns off compaction so you can place items wherever.
             compactType: null,
@@ -64,9 +83,10 @@ export default function Homebase(spaceID) {
 
     return (
         <div>
+            <div className={editMode ? "edit-grid absolute inset-0 z-0" : "no-edit-grid  absolute inset-0 z-0"} />
             <button onClick={switchMode} 
-                    className = "size-12 absolute top-4 right-0 z-10 flex opacity-50 hover:opacity-100 duration-500 ">
-                <RiPencilFill className="text-gray-700 font-semibold text-3xl"/>
+                    className = {editMode ? "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-90 hover:opacity-100 duration-500" : "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-50 hover:opacity-100 duration-500"}>
+                <RiPencilFill className={editMode ? "text-slate-900 font-semibold text-3xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" : "text-gray-700 font-semibold text-3xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"}/>
             </button>
             <Space config={retrieveConfig(user, spaceID)} isEditable={editMode}></Space>
         </div>

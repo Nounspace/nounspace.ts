@@ -112,11 +112,11 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       getTitle: () => "Your notifications",
       shortcut: "Shift + N",
     },
-    {
-      name: "Hats Protocol",
-      router: "/hats",
-      icon: <span className="grayscale group-hover:grayscale-0 text-xl h-6 w-6 shrink-0" aria-hidden="true">🧢</span>,
-    },
+    // {
+    //   name: "Hats Protocol",
+    //   router: "/hats",
+    //   icon: <span className="grayscale group-hover:grayscale-0 text-xl h-6 w-6 shrink-0" aria-hidden="true">🧢</span>,
+    // },
     {
       name: "Settings",
       router: "/settings",
