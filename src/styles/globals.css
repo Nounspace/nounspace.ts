@@ -84,9 +84,9 @@
   background-image: linear-gradient(white 10px, transparent 10px),
   linear-gradient(90deg, white 10px, transparent 10px);
   background-size: 80px 80px, 114px 114px, 40px 40px, 40px 40px;
-  margin-top:20px;
+  margin-top:16px;
   margin-right:14px;
-  margin-left:100px;
+  margin-left:96px;
   height:96vh;
 
   -webkit-transition: background-color 1000ms linear;
@@ -129,7 +129,7 @@
 
 .react-grid-item.react-grid-placeholder {
   border-radius: 10px;
-  margin:4px;
+  padding:4px;
   background: blue 20% 20%;
   opacity: 0.1;
   transition-duration: 200ms;
