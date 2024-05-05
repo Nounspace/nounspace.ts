@@ -26,7 +26,7 @@ export default function Gallery() {
           className = "flex-1 inset-0 bg-center bg-cover z-0 rounded-md"
         />
         <div className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-0 justify-center items-center">
-          <button onClick={switchMode} className = "size-4/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl">
+          <button onClick={switchMode} className = "size-1/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl">
             <FaGear />
           </button>
         </div>

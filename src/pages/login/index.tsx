@@ -40,7 +40,7 @@ export default function Login() {
                 <div className="text-center">
                   <h1 className="bg-gradient-to-tl from-white via-stone-200 to-stone-500 bg-clip-text text-center text-5xl font-bold leading-tight tracking-tight text-transparent drop-shadow-sm dark:from-white dark:via-gray-200 dark:to-stone-500 md:text-7xl md:leading-[6rem] lg:leading-[1.1]">
                     <p className="inline-block">
-                      <span>The Fastest Farcaster</span>
+                      <span>A Creative Farcaster</span>
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         width="42"
