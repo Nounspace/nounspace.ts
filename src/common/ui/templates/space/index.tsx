@@ -22,6 +22,7 @@ type SpaceArgs = {
 const ReactGridLayout = WidthProvider(RGL);
 
 export default function Space({ config, isEditable }: SpaceArgs){
+  
   function generateDOM() {    
     return _.map(_.range(config.layoutConfig.items), function(i) {
       return (
