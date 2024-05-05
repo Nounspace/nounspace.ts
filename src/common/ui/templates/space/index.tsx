@@ -23,11 +23,11 @@ type SpaceArgs = {
 const ReactGridLayout = WidthProvider(RGL);
 
 export default function Space({ config, isEditable }: SpaceArgs){
-  
+
   function generateDOM() {    
     return _.map(_.range(config.layoutConfig.items), function(i) {
       return (
-        <div key={i} data-grid={config.fidgetConfigs[i]} className="overflow-hidden rounded-md m4">
+        <div key={i} data-grid={config.fidgetConfigs[i]} className="overflow-hidden rounded-md flex m-4 items-center">
           {config.fidgetConfigs[i].f}
         </div>
       );
