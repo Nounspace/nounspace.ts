@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RiPencilFill } from "react-icons/ri";
 import { FaGear } from "react-icons/fa6";
 import Modal from "@/common/ui/components/Modal";
 
@@ -7,7 +8,7 @@ export default function Gallery() {
   const images = ["image1","image2","image3"]
 
   const [editMode, setMode] = useState(false);
-  const [imageURL, setImageURL] = useState("https://images.unsplash.com/photo-1554629947-334ff61d85dc?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1024&h=1280&q=80");
+  const [imageURL, setImageURL] = useState("https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png");
 
   function switchMode() {
     setMode(!editMode);
@@ -22,13 +23,11 @@ export default function Gallery() {
 
   return (
     <>
-      <div className ="rounded-md flex-1 items-center justify-center overflow-hidden relative size-11/12 bg-contain">
-        <img
-          src={`${imageURL}?${new Date().getTime()}`}
-          className = "flex-1 inset-0 bg-center bg-cover z-0 rounded-md"
-        />
-        <div className = "opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-0 justify-center items-center">
-          <button onClick={switchMode} className = "size-1/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl">
+      <div className ="bg-[image:var(--image-url)] rounded-md flex-1 items-center justify-center overflow-hidden relative bg-cover size-full"
+            style={{'--image-url': `url(${imageURL})`}}
+      >
+        <div className = "flex items-center justify-center opacity-0 hover:opacity-100 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50">
+          <button onClick={switchMode} className = "absolute flex-1 size-1/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl">
             <FaGear />
           </button>
         </div>

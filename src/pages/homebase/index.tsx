@@ -26,36 +26,36 @@ export default function Homebase(spaceID) {
             minH: 6,
             maxH: 12
         },
-        {   f: <Gallery/>,
+        {   f: <FrameFidget url = {"https://altumbase.com/degen/4888/dIVWKaIQZR"}/>,
             resizeHandles: availableHandles,
             x: 6,
             y: 0,
+            w: 3,
+            minW: 2,
+            maxW: 4,
+            h: 6,
+            minH: 3,
+            maxH: 12
+        },
+        {   f: <FrameFidget url = {"https://framedl.vercel.app?id=6390550a-d652-4bed-b258-d35ef6c9ff0dFramedl"}/>,
+            resizeHandles: availableHandles,
+            x: 9,
+            y: 0,
+            w: 3,
+            minW: 2,
+            maxW: 4,
+            h: 4,
+            minH: 3,
+            maxH: 12
+        },
+        {   f: <Gallery/>,
+            resizeHandles: availableHandles,
+            x: 6,
+            y: 6,
             w: 2,
             minW: 1,
             h: 4,
             minH: 1
-        },
-        {   f: <FrameFidget/>,
-            resizeHandles: availableHandles,
-            x: 8,
-            y: 0,
-            w: 2,
-            minW: 2,
-            maxW: 4,
-            h: 4,
-            minH: 3,
-            maxH: 12
-        },
-        {   f: <FrameFidget/>,
-            resizeHandles: availableHandles,
-            x: 12,
-            y: 0,
-            w: 2,
-            minW: 2,
-            maxW: 4,
-            h: 4,
-            minH: 3,
-            maxH: 12
         }
     ]);
 
@@ -86,7 +86,7 @@ export default function Homebase(spaceID) {
             <div className={editMode ? "edit-grid absolute inset-0 z-0" : "no-edit-grid  absolute inset-0 z-0"} />
             <button onClick={switchMode} 
                     className = {editMode ? "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-90 hover:opacity-100 duration-500" : "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-50 hover:opacity-100 duration-500"}>
-                <RiPencilFill className={editMode ? "text-slate-900 font-semibold text-3xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" : "text-gray-700 font-semibold text-3xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"}/>
+                <RiPencilFill className={editMode ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" : "x  text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"}/>
             </button>
             <Space config={retrieveConfig(user, spaceID)} isEditable={editMode}></Space>
         </div>
