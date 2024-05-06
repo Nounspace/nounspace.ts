@@ -118,7 +118,7 @@
     "@next/eslint-plugin-next": "^14.2.3",
     "@types/node": "^18.7.15",
     "@types/ramda": "^0.29.11",
-    "@types/react": "^18.2.79",
+    "@types/react": "^18.3.1",
     "@types/react-dom": "^18.2.25",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.5.0",
