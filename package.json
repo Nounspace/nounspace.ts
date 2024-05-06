@@ -72,7 +72,7 @@
     "@webscopeio/react-textarea-autocomplete": "^4.9.2",
     "@xmtp/frames-validator": "^0.6.0",
     "@xmtp/proto": "^3.54.1",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "^0.2.1",
