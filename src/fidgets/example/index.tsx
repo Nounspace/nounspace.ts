@@ -6,7 +6,6 @@ import { FidgetEditConfig, makeFidget } from "../../common/fidgets/makeFidget";
 
 export type ChannelFidgetSettings = {
   channel: string;
-  title: string;
 };
 
 const channelFidgetConfig: FidgetEditConfig = {
@@ -36,7 +35,7 @@ const isWebUrl = (url: string) => {
   return url.match(/^(http|https):\/\//) != null;
 };
 
-const Channel: React.FC<ChannelFidgetSettings> = ({ channel, title }: ChannelFidgetSettings) => {
+const Channel: React.FC<ChannelFidgetSettings> = ({ channel }: ChannelFidgetSettings) => {
   const { data: channelCasts, isLoading: castsLoading } = useGetChannelCasts(channel);
   const { data: channelInfo, isLoading: channelInfoLoading } = useLookupChannel(channel);
 

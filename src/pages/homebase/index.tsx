@@ -13,8 +13,8 @@ export default function Homebase(spaceID) {
   const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 
   const [fidgetConfigs, setFidgetConfigs] = useState([
-    { f: <ChannelFidget title="Bright Moments" channel="bright-moments" />, resizeHandles: availableHandles, x: 0, y: 0, w: 4, minW: 1, h: 8, minH: 1 },
-    { f: <ChannelFidget title="Invaders" channel="invaders" />, resizeHandles: availableHandles, x: 4, y: 0, w: 4, minW: 1, h: 8, minH: 1 },
+    { f: <ChannelFidget channel="bright-moments" />, resizeHandles: availableHandles, x: 0, y: 0, w: 4, minW: 1, h: 8, minH: 1 },
+    { f: <ChannelFidget channel="invaders" />, resizeHandles: availableHandles, x: 4, y: 0, w: 4, minW: 1, h: 8, minH: 1 },
   ]);
 
   function switchMode() {
