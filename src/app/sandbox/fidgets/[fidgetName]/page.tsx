@@ -1,3 +1,4 @@
+"use client"
 import React from "react";
 import FidgetViewer from "@/common/fidgets/FidgetViewer";
 import CompleteFidgets from "@/fidgets";
