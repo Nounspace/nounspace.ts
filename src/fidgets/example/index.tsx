@@ -15,6 +15,12 @@ const exampleConfig: FidgetEditConfig = {
       inputSelector: TextInput,
     }
   ],
+  size: {
+    minHeight: 1,
+    maxHeight: 36,
+    minWidth: 1,
+    maxWidth: 36,
+  }
 };
 
 const Example: React.FC<ExampleFidgetSettings> = ({ text }: ExampleFidgetSettings) => {
