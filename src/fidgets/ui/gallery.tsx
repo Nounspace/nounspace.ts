@@ -1,11 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { RiPencilFill } from "react-icons/ri";
 import Modal from "@/common/ui/components/Modal";
 
 export default function Gallery() {
-
-  const images = ["image1","image2","image3"]
-
   const [editMode, setMode] = useState(false);
   const [imageURL, setImageURL] = useState("https://images.unsplash.com/photo-1554629947-334ff61d85dc?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1024&h=1280&q=80");
 
@@ -16,11 +13,12 @@ export default function Gallery() {
   const handleSubmit = (event) => {
     const formData = new FormData(event.currentTarget);
     event.preventDefault();
-    setImageURL(formData.get("URL"));
+    setImageURL(formData.get("URL") as string);
     switchMode();
   };
 
   return (
+    // TO DO: Change this to sit inside of the FidgetWrapper, which will handle the edit mode for the Fidget
     <>
       <div className ="row-span-4 col-span-4 rounded-md flex items-center justify-center overflow-hidden relative">
         <img

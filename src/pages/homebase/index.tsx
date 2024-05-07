@@ -1,5 +1,5 @@
+import React from "react";
 import Space from "@/common/ui/templates/space";
-import Feed from "../feed";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 
 function retrieveConfig(user, space){
