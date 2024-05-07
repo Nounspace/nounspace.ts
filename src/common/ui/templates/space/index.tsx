@@ -1,9 +1,4 @@
-import React from "react";
-import DefaultGrid from "@/fidgets/layout/grids/defaultGrid";
-import Gallery from "@/fidgets/ui/gallery";
-import Feed from "@/pages/feed";
-import GridLayout from "react-grid-layout";
-import React, { ReactElement, useState } from 'react';
+import React, { ReactElement } from 'react';
 import _ from "lodash";
 import RGL, { WidthProvider } from "react-grid-layout";
 

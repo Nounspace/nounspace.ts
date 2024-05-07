@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { FaGear } from "react-icons/fa6";
 import Modal from "@/common/ui/components/Modal";
 import Frame from '@/common/ui/molecules/Frame';
