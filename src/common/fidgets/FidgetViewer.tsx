@@ -5,7 +5,7 @@ import { reduce } from "lodash";
 import { FidgetWrapper, FidgetWrapperConfig } from "@/common/fidgets/FidgetWrapper";
 
 
-export default function LazyFidgetViewer({ fidget }: { fidget: GenericFidget }) {
+export default function FidgetViewer({ fidget }: { fidget: GenericFidget }) {
   const defaultConfig: FidgetWrapperConfig = {
     editConfig: fidget.fieldConfig,
     fidgetConfig: {
