@@ -18,7 +18,6 @@ type FidgetWrapperProps = {
 };
 
 export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
-  console.log(fidget);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [viewEditor, setViewEditor] = useState(false);
