@@ -1,3 +1,4 @@
+import { NumericRange } from "@/constants/numericRange";
 import React from "react";
 
 export interface FidgetSettings {
@@ -21,6 +22,12 @@ export type FidgetFieldConfig = {
 
 export type FidgetEditConfig = {
   fields: FidgetFieldConfig[];
+  size: {
+    minHeight: NumericRange<1,36>;
+    maxHeight: NumericRange<1,36>;
+    minWidth: NumericRange<1,36>;
+    maxWidth: NumericRange<1,36>;
+  }
 };
       
 export interface Fidget<P> extends React.FC<P> {
