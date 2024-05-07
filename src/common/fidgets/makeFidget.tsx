@@ -31,13 +31,13 @@ export type FidgetEditConfig = {
 };
       
 export interface Fidget<P> extends React.FC<P> {
-  fieldConfig: FidgetEditConfig;
+  editConfig: FidgetEditConfig;
 }
 
 export type GenericFidget = Fidget<FidgetSettings>;
 
-export function makeFidget<S>(component: React.FC<S>, fieldConfig: FidgetEditConfig): Fidget<S> {
+export function makeFidget<S>(component: React.FC<S>, editConfig: FidgetEditConfig): Fidget<S> {
   const componentAny: any = component;
-  componentAny.fieldConfig = fieldConfig;
+  componentAny.editConfig = editConfig;
   return componentAny;
 }
