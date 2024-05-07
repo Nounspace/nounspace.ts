@@ -7,12 +7,12 @@ import { FidgetWrapper, FidgetWrapperConfig } from "@/common/fidgets/FidgetWrapp
 
 export default function FidgetViewer({ fidget }: { fidget: GenericFidget }) {
   const defaultConfig: FidgetWrapperConfig = {
-    editConfig: fidget.fieldConfig,
+    editConfig: fidget.editConfig,
     fidgetConfig: {
       editable: true,
       size: [1, 2],
       settings: reduce(
-        fidget.fieldConfig.fields,
+        fidget.editConfig.fields,
         (acc, f) => ({
           ...acc,
           [f.fieldName]: f.default || null,

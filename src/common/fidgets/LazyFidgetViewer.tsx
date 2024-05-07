@@ -27,12 +27,12 @@ export default function LazyFidgetViewer({ fidgetPath }: { fidgetPath: string })
     if (lazyFidget.status === "Success") {
       const fidget = lazyFidget.result;
       const defaultConfig: FidgetWrapperConfig = {
-        editConfig: fidget.fieldConfig,
+        editConfig: fidget.editConfig,
         fidgetConfig: {
           editable: true,
           size: [1, 2],
           settings: reduce(
-            fidget.fieldConfig.fields,
+            fidget.editConfig.fields,
             (acc, f) => ({
               ...acc,
               [f.fieldName]: f.default || null,
