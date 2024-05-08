@@ -10,8 +10,8 @@ export default function Welcome() {
     <div className="w-full">
       <div className="space-y-6 p-10 pb-16 block">
         <div className="space-y-1 max-w-lg">
-          <h2 className="text-2xl font-bold tracking-tight">Welcome to Nounsapce</h2>
-          <p className="text-muted-foreground">Nounsapce is a client for Farcaster with focus on keyboard-first desktop experience for power users and teams</p>
+          <h2 className="text-2xl font-bold tracking-tight">Welcome to Nounspace</h2>
+          <p className="text-muted-foreground">Nounspace is a client for Farcaster with focus on keyboard-first desktop experience for power users and teams</p>
         </div>
         <Separator className="my-6" />
         <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">

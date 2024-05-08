@@ -1,3 +1,4 @@
+"use client"
 import React, { Fragment, useState } from 'react';
 import { CommandType } from "@/constants/commands";
 import { classNames } from "@/styles/utils/css";
