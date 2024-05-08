@@ -13,7 +13,7 @@ type SpaceArgs = {
     }
   };
   isEditable: boolean;
-  children: ReactElement;
+  children?: ReactElement;
 } 
 
 const ReactGridLayout = WidthProvider(RGL);
