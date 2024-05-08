@@ -60,7 +60,6 @@ export const getStaticPaths = (async () => {
     "params.hash"
   );
 
-  console.log(`preparing static casts: ${paths.length}`);
   return {
     paths,
     fallback: 'blocking',

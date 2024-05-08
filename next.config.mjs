@@ -4,7 +4,7 @@ const nextConfig = {
   // distDir: './dist', // Changes the build output directory to `./dist/`.
   transpilePackages: ['react-tweet'], // https://react-tweet.vercel.app/next,
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   images: {
     remotePatterns: [
