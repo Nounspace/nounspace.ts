@@ -11,7 +11,7 @@ const Index = () => {
       if (!session) {
         router.push("/login");
       } else {
-        router.push("/feed");
+        router.push("/homebase");
       }
     });
   }, []);

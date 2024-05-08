@@ -18,6 +18,10 @@ import FollowButton from "@/common/ui/components/FollowButton";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { useDataStore } from "@/common/data/stores/useDataStore";
 import { APP_FID } from "@/constants/app";
+import Space from "@/common/ui/templates/space";
+import Gallery from "@/fidgets/ui/gallery";
+import FrameFidget from "@/fidgets/ui/frameFidget";
+import { RiPencilFill } from "react-icons/ri";
 
 export async function getStaticProps({ params: { slug } }) {
   const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
@@ -71,7 +75,6 @@ export const getStaticPaths = (async () => {
     "params.slug"
   );
 
-  console.log(`preparing static profiles: ${paths.length}`);
   return {
     paths,
     fallback: 'blocking',
@@ -193,8 +196,8 @@ export default function Profile({ profile }) {
   );
 
   const renderFeed = () => (
-    <>
-      <Tabs value={feedType} className="p-5 w-full max-w-full">
+    <div className="border-2 max-h-full overflow-scroll rounded-md bg-white pr-4 pl-4">
+      <Tabs value={feedType} className="pt-2 pb-2 w-full max-w-full">
         <TabsList className="grid w-full grid-cols-2">
           {Object.keys(FeedTypeEnum).map((key) => {
             return (
@@ -227,44 +230,157 @@ export default function Profile({ profile }) {
         onSelect={() => null}
         isActive
       />
-    </>
+    </div>
   );
+
+  function ProfileHeader(){
+    return(
+      <Card className="max-w-2xl mx-auto bg-transparent border-none shadow-none">
+          <CardHeader className="flex space-y-0">
+            <div className="flex space-x-4 grid grid-cols-2 lg:grid-cols-3">
+              <div className="col-span-1 lg:col-span-2">
+                <Avatar className="h-14 w-14">
+                  <AvatarImage alt="User avatar" src={profile.pfp.url} />
+                  <AvatarFallback>{profile.username}</AvatarFallback>
+                </Avatar>
+                <div className="text-left">
+                  <h2 className="text-xl font-bold text-foreground">
+                    {profile.displayName}
+                  </h2>
+                  <span className="text-sm text-foreground/80">
+                    @{profile.username}
+                  </span>
+                </div>
+              </div>
+              {userFid !== profile.fid && (
+                <FollowButton username={profile.username} />
+              )}
+            </div>
+            <div className="flex pt-4 text-sm text-foreground/80">
+              <span className="mr-4">
+                <strong>{profile.followingCount}</strong> Following
+              </span>
+              <span>
+                <strong>{profile.followerCount}</strong> Followers
+              </span>
+            </div>
+            <span className="text-foreground">{profile.profile.bio.text}</span>
+          </CardHeader>
+        </Card>
+      )
+  }
+
+  ////
+
+    const [editMode, setMode] = useState(false);
+
+    //const { getCurrentUser } = useAccountStore();
+    const user = useAccountStore.getState().accounts[0];
+    
+    const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
+
+    const [fidgetConfigs, setFidgetConfigs] = useState([
+        {   f: <></>,
+            resizeHandles: availableHandles,
+            x: 0,
+            y: 3,
+            w: 6,
+            minW: 4,
+            maxW: 8,
+            h: 7,
+            minH: 6,
+            maxH: 12
+        },
+        {
+          f: <ProfileHeader />,
+          resizeHandles: availableHandles,
+            x: 0,
+            y: 0,
+            w: 6,
+            minW: 4,
+            maxW: 8,
+            h: 3,
+            minH: 2,
+            maxH: 6
+        }, 
+        {   f: <FrameFidget url = {"https://paragraph.xyz/@nounspace/the-third-space?referrer=0x51603C7059f369aB04B16AddFB7BB6c4e34b8523"}/>,
+            resizeHandles: availableHandles,
+            x: 10,
+            y: 0,
+            w: 3,
+            minW: 1,
+            h: 6,
+            minH: 1
+        },
+        {   f: <FrameFidget url = {"https://far.cards/api/trade/user/4888"}/>,
+            resizeHandles: availableHandles,
+            x: 6,
+            y: 0,
+            w: 3,
+            minW: 2,
+            maxW: 4,
+            h: 6,
+            minH: 3,
+            maxH: 12
+        },
+        {   f: <FrameFidget url = {"https://altumbase.com/degen/4888/dIVWKaIQZR"}/>,
+            resizeHandles: availableHandles,
+            x: 6,
+            y: 6,
+            w: 3,
+            minW: 2,
+            maxW: 4,
+            h: 4,
+            minH: 3,
+            maxH: 12
+        },
+        {   f: <FrameFidget url = {"https://yoink.alfafrens.com/inviteCode/rollingInvites"}/>,
+            resizeHandles: availableHandles,
+            x: 10,
+            y: 6,
+            w: 3,
+            minW: 2,
+            maxW: 4,
+            h: 3,
+            minH: 3,
+            maxH: 12
+        }
+    ]);
+
+    function switchMode() {
+        setMode(!editMode);
+    }  
+
+    function retrieveConfig(user, space){
+        const layoutConfig = {
+            isDraggable: editMode,
+            isResizable: editMode,
+            items: 6  ,
+            cols: 12,
+            rowHeight: 70,
+            onLayoutChange: function(){},
+            // This turns off compaction so you can place items wherever.
+            compactType: null,
+            // This turns off rearrangement so items will not be pushed arround.
+            preventCollision: true
+        };
+        const layoutID = "";
+    
+        return ({fidgetConfigs, layoutConfig, layoutID})
+    }
+
+  ////
 
   const renderProfile = () => (
     <div>
-      <Card className="max-w-2xl mx-auto bg-transparent border-none shadow-none">
-        <CardHeader className="flex space-y-0">
-          <div className="flex space-x-4 grid grid-cols-2 lg:grid-cols-3">
-            <div className="col-span-1 lg:col-span-2">
-              <Avatar className="h-14 w-14">
-                <AvatarImage alt="User avatar" src={profile.pfp.url} />
-                <AvatarFallback>{profile.username}</AvatarFallback>
-              </Avatar>
-              <div className="text-left">
-                <h2 className="text-xl font-bold text-foreground">
-                  {profile.displayName}
-                </h2>
-                <span className="text-sm text-foreground/80">
-                  @{profile.username}
-                </span>
-              </div>
-            </div>
-            {userFid !== profile.fid && (
-              <FollowButton username={profile.username} />
-            )}
-          </div>
-          <div className="flex pt-4 text-sm text-foreground/80">
-            <span className="mr-4">
-              <strong>{profile.followingCount}</strong> Following
-            </span>
-            <span>
-              <strong>{profile.followerCount}</strong> Followers
-            </span>
-          </div>
-          <span className="text-foreground">{profile.profile.bio.text}</span>
-        </CardHeader>
-      </Card>
-      {renderFeed()}
+      <div className={editMode ? "edit-grid absolute inset-0 z-0" : "no-edit-grid  absolute inset-0 z-0"} />
+      <button onClick={switchMode} 
+              className = {editMode ? "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-90 hover:opacity-100 duration-500" : "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-50 hover:opacity-100 duration-500"}>
+          <RiPencilFill className={editMode ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" : "x  text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"}/>
+      </button>
+      <Space config={retrieveConfig(user, 0)} isEditable={editMode}>
+        {renderFeed()}
+      </Space>
     </div>
   );
 
