@@ -1,29 +1,23 @@
 "use client"
 import React, { useState } from "react";
-import { FidgetConfig, FidgetEditConfig, FidgetSettings } from "@/common/fidgets/makeFidget";
 import { Card, CardContent, CardHeader } from "../ui/atoms/card";
 import { Button } from "../ui/atoms/button";
 import FidgetWrapperEditMode from "./FidgetWrapperEditMode";
 import { toast } from "sonner";
-
-export type FidgetWrapperConfig = {
-  fidgetConfig: FidgetConfig<FidgetSettings>;
-  readonly editConfig: FidgetEditConfig;
-};
+import { FidgetConfig, FidgetSettings, FidgetDetails } from ".";
 
 type FidgetWrapperProps = {
   fidget: React.FC<FidgetSettings>;
-  config: FidgetWrapperConfig;
+  config: FidgetDetails;
   saveConfig: (conf: FidgetConfig<FidgetSettings>) => Promise<boolean>
 };
 
 export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
-  console.log(fidget);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [viewEditor, setViewEditor] = useState(false);
-  const [localConfig, setLocalConfig] = useState({
-    ...config.fidgetConfig,
+  const [localConfig, setLocalConfig] = useState<FidgetConfig<FidgetSettings>>({
+    ...config.instanceConfig,
   });
   const setSettings = (settings: FidgetSettings) => {
     setLocalConfig({
@@ -42,11 +36,8 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
     }
   }
 
-  // TO DO: Add support for resizing the Fidget
-  // TO DO: Add support to set size of Fidget to size defined in the config
-  
   return (
-    <Card className="max-w-sm col-span-1">
+    <Card style={{width: "100%", height: "100%"}}>
       <CardHeader>
         {
           editing ? 
@@ -57,7 +48,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
             { viewEditor ? "View Fidget" : "View Editor" }
           </Button> : null
         }
-        { config.fidgetConfig.editable ? 
+        { config.instanceConfig.editable ? 
           <Button
             className="w-full"
             onClick={toggleEditing}
@@ -66,7 +57,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
           </Button> : null
         }
       </CardHeader>
-      <CardContent>
+      <CardContent style={{position: "relative", width: "100%", height: "100%" }}>
         { 
           editing && viewEditor ? 
             <FidgetWrapperEditMode
@@ -74,7 +65,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
               settings={localConfig.settings}
               setSettings={setSettings}
             />
-            : fidget(config.fidgetConfig.settings)
+            : fidget(config.instanceConfig.settings)
         }
       </CardContent>
     </Card>
