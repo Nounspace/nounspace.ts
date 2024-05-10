@@ -22,9 +22,6 @@
       "safari 13"
     ]
   },
-  "engines": {
-    "node": "20.11.1"
-  },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
     "@emotion/react": "11",
