@@ -80,7 +80,7 @@ const Grid: LayoutFiget<GridArgs> = ({ layoutConfig, fidgets, isEditable }: Grid
   function generateDOM() {
     return _.map(layoutConfigWithEditable.layout, (gridItem: PlacedGridItem) => {
       return (
-        <div key={gridItem.i} className="overflow-hidden rounded-md flex justify-center items-center">
+        <div key={gridItem.i}>
           { fidgets[gridItem.i] }
         </div>
       );
