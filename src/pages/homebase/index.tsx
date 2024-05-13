@@ -58,7 +58,7 @@ export default function Homebase() {
           imageUrl: "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
         },
       },
-    },
+    },  
     frame: {
       fidgetName: "frame",
       id: "frame",
@@ -120,15 +120,15 @@ export default function Homebase() {
         onClick={switchMode}
         className={
           editMode
-            ? "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-90 hover:opacity-100 duration-500"
-            : "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-50 hover:opacity-100 duration-500"
+            ? "opacity-90 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
+            : "opacity-50 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
         }
       >
         <RiPencilFill
           className={
             editMode
               ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-              : "x  text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+              : "text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
           }
         />
       </button>
