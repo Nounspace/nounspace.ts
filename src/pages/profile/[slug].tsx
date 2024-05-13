@@ -18,10 +18,9 @@ import FollowButton from "@/common/ui/components/FollowButton";
 import { useAccountStore } from "@/common/data/stores/useAccountStore";
 import { useDataStore } from "@/common/data/stores/useDataStore";
 import { APP_FID } from "@/constants/app";
-import Space from "@/common/ui/templates/space";
-import Gallery from "@/fidgets/ui/gallery";
-import FrameFidget from "@/fidgets/ui/frameFidget";
+import FrameFidget from "@/fidgets/frame";
 import { RiPencilFill } from "react-icons/ri";
+import Space from "@/common/ui/templates/Space";
 
 export async function getStaticProps({ params: { slug } }) {
   const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);

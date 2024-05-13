@@ -1,95 +1,142 @@
 import React from "react";
-import Space from "@/common/ui/templates/space";
-import { useAccountStore } from "@/common/data/stores/useAccountStore";
-import { useState } from 'react';
+import Space, { SpaceConfig } from "@/common/ui/templates/Space";
+import { useState } from "react";
 import { RiPencilFill } from "react-icons/ri";
-import Gallery from "@/fidgets/ui/gallery";
-import FrameFidget from "@/fidgets/ui/frameFidget";
-import Feed from "@/pages/feed";
+import {
+  GridLayout,
+  ResizeDirections,
+} from "@/fidgets/layout/Grid";
+import { LayoutFidgetDetails } from "@/common/fidgets";
 
-export default function Homebase(spaceID) {
-    const [editMode, setMode] = useState(false);
+export default function Homebase() {
+  const [editMode, setMode] = useState(false);
 
-    //const { getCurrentUser } = useAccountStore();
-    const user = useAccountStore.getState().accounts[0];
-    
-    const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
+  const availableHandles = [
+    "s",
+    "w",
+    "e",
+    "n",
+    "sw",
+    "nw",
+    "se",
+    "ne",
+  ] as ResizeDirections[];
+  const defaultLayoutData = [
+    {
+      i: "gallery",
+      resizeHandles: availableHandles,
+      x: 0,
+      y: 0,
+      w: 6,
+      minW: 1,
+      maxW: 12,
+      h: 10,
+      minH: 1,
+      maxH: 12,
+    },
+    {
+      i: "frame",
+      resizeHandles: availableHandles,
+      x: 6,
+      y: 0,
+      w: 3,
+      minW: 2,
+      maxW: 4,
+      h: 6,
+      minH: 3,
+      maxH: 12,
+    },
+  ];
 
-    const [fidgetConfigs, setFidgetConfigs] = useState([
-        {   f: <Feed/>,
-            resizeHandles: availableHandles,
-            x: 0,
-            y: 0,
-            w: 6,
-            minW: 4,
-            maxW: 8,
-            h: 10,
-            minH: 6,
-            maxH: 12
+  const fidgets = {
+    gallery: {
+      fidgetName: "gallery",
+      id: "gallery",
+      instanceConfig: {
+        editable: false,
+        settings: {
+          imageUrl: "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
         },
-        {   f: <FrameFidget url = {"https://altumbase.com/degen/4888/dIVWKaIQZR"}/>,
-            resizeHandles: availableHandles,
-            x: 6,
-            y: 0,
-            w: 3,
-            minW: 2,
-            maxW: 4,
-            h: 6,
-            minH: 3,
-            maxH: 12
+      },
+    },  
+    frame: {
+      fidgetName: "frame",
+      id: "frame",
+      instanceConfig: {
+        settings: {
+          url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
         },
-        {   f: <FrameFidget url = {"https://framedl.vercel.app?id=6390550a-d652-4bed-b258-d35ef6c9ff0dFramedl"}/>,
-            resizeHandles: availableHandles,
-            x: 9,
-            y: 0,
-            w: 3,
-            minW: 2,
-            maxW: 4,
-            h: 4,
-            minH: 3,
-            maxH: 12
-        },
-        {   f: <Gallery/>,
-            resizeHandles: availableHandles,
-            x: 6,
-            y: 6,
-            w: 2,
-            minW: 1,
-            h: 4,
-            minH: 1
+        editable: false,
+      },
+    },
+  };
+
+  function switchMode() {
+    setMode(!editMode);
+  }
+
+  const gridDetails: GridLayout = {
+    isDraggable: false,
+    isResizable: false,
+    items: 4,
+    cols: 12,
+    rowHeight: 70,
+    onLayoutChange: () => {},
+    onDrop: () => {},
+    // This turns off compaction so you can place items wherever.
+    compactType: null,
+    // This turns off rearrangement so items will not be pushed arround.
+    preventCollision: true,
+    maxRows: 9,
+    layout: defaultLayoutData,
+  };
+  const layoutID = "";
+  const layoutDetails: LayoutFidgetDetails = {
+    layoutConfig: gridDetails,
+    layoutFidget: "grid",
+  };
+
+  const [spaceConfig, setSpaceConfig] = useState<SpaceConfig>({
+    layoutID,
+    layoutDetails,
+    fidgetConfigs: fidgets,
+  });
+
+  async function saveConfig(config: SpaceConfig) {
+    setSpaceConfig(config);
+    return true;
+  }
+
+  return (
+    <div>
+      <div
+        className={
+          editMode
+            ? "edit-grid absolute inset-0 z-0"
+            : "no-edit-grid  absolute inset-0 z-0"
         }
-    ]);
-
-    function switchMode() {
-        setMode(!editMode);
-    }  
-
-    function retrieveConfig(user, space){
-        const layoutConfig = {
-            isDraggable: editMode,
-            isResizable: editMode,
-            items: 4,
-            cols: 12,
-            rowHeight: 70,
-            onLayoutChange: function(){},
-            // This turns off compaction so you can place items wherever.
-            compactType: null,
-            // This turns off rearrangement so items will not be pushed arround.
-            preventCollision: true
-        };
-        const layoutID = "";
-    
-        return ({fidgetConfigs, layoutConfig, layoutID})
-    }
-
-    return (
-        <div>
-            <div className={editMode ? "edit-grid absolute inset-0 z-0" : "no-edit-grid  absolute inset-0 z-0"} />
-            <button onClick={switchMode} 
-                    className = {editMode ? "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-90 hover:opacity-100 duration-500" : "rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex opacity-50 hover:opacity-100 duration-500"}>
-                <RiPencilFill className={editMode ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2" : "x  text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"}/>
-            </button>
-            <Space config={retrieveConfig(user, spaceID)} isEditable={editMode}></Space>
-        </div>
-    )
+      />
+      <button
+        onClick={switchMode}
+        className={
+          editMode
+            ? "opacity-90 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
+            : "opacity-50 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
+        }
+      >
+        <RiPencilFill
+          className={
+            editMode
+              ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+              : "text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
+          }
+        />
+      </button>
+      <Space
+        config={spaceConfig}
+        isEditable={editMode}
+        saveConfig={saveConfig}
+      />
+    </div>
+  );
 }
