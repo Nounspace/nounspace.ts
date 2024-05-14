@@ -1,36 +1,24 @@
-import * as React from "react";
-
-import { mergeClasses }from "@/common/lib/utils/mergeClasses";
+import { hydrate, hydrateChannels, useAccountStore } from "@/common/data/stores/useAccountStore";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { Button } from "@/common/ui/atoms/button";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/common/ui/atoms/form";
 import { Input } from "@/common/ui/atoms/input";
 import { Label } from "@/common/ui/atoms/label";
-import { Loading } from "./Loading";
+import { APP_FID } from "@/constants/app";
 import { SignInButton, useProfile } from "@farcaster/auth-kit";
-import { useEffect, useState } from "react";
-import { createClient } from "../../data/database/supabase/clients/component";
-import { useRouter } from "next/router";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { usePostHog } from "posthog-js/react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/common/ui/atoms/form";
-import {
-  hydrate,
-  hydrateChannels,
-  useAccountStore,
-} from "@/common/data/stores/useAccountStore";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
-import { AccountPlatformType, AccountStatusType } from "../../../constants/accounts";
-import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/router";
+import { usePostHog } from "posthog-js/react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Key } from "ts-key-enum";
-import { APP_FID } from "@/constants/app";
+import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
+import { AccountPlatformType, AccountStatusType } from "../../../constants/accounts";
+import { createClient } from "../../data/database/supabase/clients/component";
+import { Loading } from "./Loading";
 
 export type UserAuthFormValues = z.infer<typeof UserAuthFormSchema>;
 
@@ -61,13 +49,9 @@ export function UserAuthForm({ className }: { className?: string }) {
     setIsLoading(true);
     const { fid } = profile;
     if (!fid) return;
-    const neynarClient = new NeynarAPIClient(
-      process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
-    );
+    const neynarClient = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
 
-    const users = (
-      await neynarClient.fetchBulkUsers([fid], { viewerFid: APP_FID })
-    ).users;
+    const users = (await neynarClient.fetchBulkUsers([fid], { viewerFid: APP_FID })).users;
     if (!users.length) {
       console.error("No users found for fid: ", fid);
       return;
@@ -89,7 +73,7 @@ export function UserAuthForm({ className }: { className?: string }) {
     posthog.identify(uuidv4(), { isLocalOnly: true });
 
     setUserMessage("Setup done. Welcome to the Nounspace experience!");
-    router.push("/Homebase");
+    router.push("/homebase");
     setIsLoading(false);
   };
 
@@ -181,12 +165,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        className="text-white"
-                        placeholder="vitalik@home.xyz"
-                        disabled={isLoading}
-                        {...field}
-                      />
+                      <Input className="text-white" placeholder="vitalik@home.xyz" disabled={isLoading} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -201,14 +180,7 @@ export function UserAuthForm({ className }: { className?: string }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        className="text-white"
-                        placeholder="************"
-                        disabled={isLoading}
-                        autoComplete="current-password"
-                        type="password"
-                        {...field}
-                      />
+                      <Input className="text-white" placeholder="************" disabled={isLoading} autoComplete="current-password" type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -218,62 +190,34 @@ export function UserAuthForm({ className }: { className?: string }) {
                 Password
               </Label>
             </div>
-            <Button
-              type="button"
-              size="lg"
-              className="py-6 bg-[#7C65C1] hover:bg-[#6A4CA5]"
-              disabled={isLoading}
-              onClick={() => logIn()}
-            >
+            <Button type="button" size="lg" className="py-6 bg-[#7C65C1] hover:bg-[#6A4CA5]" disabled={isLoading} onClick={() => logIn()}>
               {isLoading ? <Loading /> : "Sign In with Email"}
             </Button>
             <div className="flex items-center justify-center space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="text-gray-100 border-gray-500 w-full"
-                disabled={isLoading}
-                onClick={() => signUp()}
-              >
+              <Button type="button" variant="outline" className="text-gray-100 border-gray-500 w-full" disabled={isLoading} onClick={() => signUp()}>
                 Signup
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="text-gray-100 border-gray-500 w-full"
-                disabled={isLoading}
-                onClick={() => resetPassword()}
-              >
+              <Button type="button" variant="outline" className="text-gray-100 border-gray-500 w-full" disabled={isLoading} onClick={() => resetPassword()}>
                 Forgot Password?
               </Button>
             </div>
           </div>
         </form>
       </Form>
-      <div className="text-center">
-        {userMessage && <Label className="text-gray-200">{userMessage}</Label>}
-      </div>
+      <div className="text-center">{userMessage && <Label className="text-gray-200">{userMessage}</Label>}</div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-gray-900 px-2 text-muted-foreground">
-            or continue with
-          </span>
+          <span className="bg-gray-900 px-2 text-muted-foreground">or continue with</span>
         </div>
       </div>
       <div className="flex flex-col space-y-4 items-center justify-center text-white">
         {!isAuthenticated && !isLoading ? (
           <SignInButton hideSignOut />
         ) : (
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="py-4 text-white bg-[#7C65C1] rounded-md"
-            disabled={isLoading}
-          >
+          <Button type="button" variant="outline" size="lg" className="py-4 text-white bg-[#7C65C1] rounded-md" disabled={isLoading}>
             <Loading />
           </Button>
         )}
