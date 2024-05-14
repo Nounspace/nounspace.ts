@@ -36,9 +36,9 @@ export default function Space({ config, isEditable, children }: SpaceArgs) {
   return (
     <div className="m-4">
       <ReactGridLayout onLayoutChange={onLayoutChange} {...config.layoutConfig}>
-        {/* <div key={0} data-grid={config.fidgetConfigs[0]} className="overflow-hidden rounded-md flex justify-center items-center">
+        <div key={0} data-grid={config.fidgetConfigs[0]} className="overflow-hidden rounded-md flex justify-center items-center">
           {children}
-        </div> */}
+        </div>
         {generateDOM()}
       </ReactGridLayout>
     </div>
