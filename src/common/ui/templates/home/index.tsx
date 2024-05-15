@@ -1,36 +1,21 @@
-"use client"
+"use client";
 import React from "react";
 import { Fragment, useState } from "react";
-import  Gallery from "@/fidgets/ui/gallery"
+import Gallery from "@/fidgets/ui/gallery";
 import { Dialog, Transition } from "@headlessui/react";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import {
-  Cog6ToothIcon,
-  PlusCircleIcon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Bars3Icon,
-  UserPlusIcon,
-} from "@heroicons/react/20/solid";
+import { Cog6ToothIcon, PlusCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, UserPlusIcon } from "@heroicons/react/20/solid";
 import { classNames } from "@/styles/utils/css";
 import { RIGHT_SIDEBAR_ENUM } from "@/constants/navigation";
 import AccountsRightSidebar from "@/common/ui/components/RightSidebar/AccountsRightSidebar";
 import ChannelsRightSidebar from "@/common/ui/components/RightSidebar/ChannelsRightSidebar";
 import { CUSTOM_CHANNELS, useAccountStore } from "@/common/data/stores/useAccountStore";
-import {
-  HomeIcon,
-  BellIcon,
-  MagnifyingGlassIcon,
-  NewspaperIcon,
-  RectangleGroupIcon,
-} from "@heroicons/react/24/solid";
+import { HomeIcon, BellIcon, MagnifyingGlassIcon, NewspaperIcon, RectangleGroupIcon } from "@heroicons/react/24/solid";
 import { useRouter } from "next/router";
 import { ThemeToggle } from "@/common/ui/components/ThemeToggle";
 import logo from "@public/images/logo.png";
-import {
-  TooltipProvider,
-} from "@/common/ui/atoms/tooltip";
+import { TooltipProvider } from "@/common/ui/atoms/tooltip";
 import HotkeyTooltipWrapper from "@/common/ui/components/HotkeyTooltipWrapper";
 import { Toaster } from "@/common/ui/atoms/sonner";
 
@@ -57,9 +42,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       return "Trending Feed";
     }
 
-    const selectedChannelIdx = allChannels?.findIndex(
-      (channel) => channel.url === selectedChannelUrl
-    );
+    const selectedChannelIdx = allChannels?.findIndex((channel) => channel.url === selectedChannelUrl);
     if (selectedChannelIdx !== -1) {
       return `${allChannels[selectedChannelIdx]?.name} channel`;
     }
@@ -81,11 +64,11 @@ const Home = ({ children }: { children: React.ReactNode }) => {
     //   getTitle: getFeedTitle,
     //   shortcut: "Shift + F",
     // },
-    { 
+    {
       name: "New Post",
-      router: "/post", 
-      icon: <PlusCircleIcon className="h-6 w-6 shrink-0" aria-hidden="true" />, 
-      shortcut: "C" 
+      router: "/post",
+      icon: <PlusCircleIcon className="h-6 w-6 shrink-0" aria-hidden="true" />,
+      shortcut: "C",
     },
     {
       name: "Search",
@@ -184,11 +167,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-full bg-background">
       <Transition.Root show={sidebarOpen} as={Fragment}>
-        <Dialog
-          as="div"
-          className="relative z-5 lg:hidden"
-          onClose={setSidebarOpen}
-        >
+        <Dialog as="div" className="relative z-5 lg:hidden" onClose={setSidebarOpen}>
           <Transition.Child
             as={Fragment}
             enter="transition-opacity ease-linear duration-10"
@@ -212,46 +191,22 @@ const Home = ({ children }: { children: React.ReactNode }) => {
               leaveTo="-translate-x-full"
             >
               <Dialog.Panel className="relative mr-2 flex w-full max-w-64 flex-1">
-                <Transition.Child
-                  as={Fragment}
-                  enter="ease-in-out duration-10"
-                  enterFrom="opacity-0"
-                  enterTo="opacity-100"
-                  leave="ease-in-out duration-10"
-                  leaveFrom="opacity-100"
-                  leaveTo="opacity-0"
-                >
+                <Transition.Child as={Fragment} enter="ease-in-out duration-10" enterFrom="opacity-0" enterTo="opacity-100" leave="ease-in-out duration-10" leaveFrom="opacity-100" leaveTo="opacity-0">
                   <div className="absolute left-full top-0 flex w-16 justify-center pt-5">
-                    <button
-                      type="button"
-                      className="-m-2.5 p-2.5"
-                      onClick={() => setSidebarOpen(false)}
-                    >
+                    <button type="button" className="-m-2.5 p-2.5" onClick={() => setSidebarOpen(false)}>
                       <span className="sr-only">Close sidebar</span>
-                      <XMarkIcon
-                        className="h-6 w-6 text-foreground"
-                        aria-hidden="true"
-                      />
+                      <XMarkIcon className="h-6 w-6 text-foreground" aria-hidden="true" />
                     </button>
                   </div>
                 </Transition.Child>
                 {/* Sidebar component, swap this element with another sidebar if you like */}
                 <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background px-6 ring-1 ring-gray-700/10">
                   <div className="flex h-16 shrink-0 items-center">
-                    <img
-                      className="h-8 w-auto"
-                      src={logo.src}
-                      alt="Nounspace"
-                    />
-                    <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">
-                      Nounspace
-                    </h2>
+                    <img className="h-8 w-auto" src={logo.src} alt="Nounspace" />
+                    <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:tracking-tight">Nounspace</h2>
                   </div>
                   <nav className="flex flex-1 flex-col">
-                    <ul
-                      role="list"
-                      className="flex flex-1 flex-col gap-y-7"
-                    >
+                    <ul role="list" className="flex flex-1 flex-col gap-y-7">
                       <li>
                         <ul role="list" className="-mx-2 space-y-1">
                           {navigation.map((item) => (
@@ -259,9 +214,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                               <p
                                 onClick={() => onClickItem(item)}
                                 className={classNames(
-                                  item.router === pathname
-                                    ? "text-foreground bg-foreground/10"
-                                    : "text-foreground/70 hover:text-foreground hover:bg-foreground/30",
+                                  item.router === pathname ? "text-foreground bg-foreground/10" : "text-foreground/70 hover:text-foreground hover:bg-foreground/30",
                                   "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold cursor-pointer"
                                 )}
                               >
@@ -289,41 +242,29 @@ const Home = ({ children }: { children: React.ReactNode }) => {
         {/* Sidebar component, swap this element with another sidebar if you like */}
         <div className="flex grow flex-col min-h-full gap-y-5 overflow-y-auto bg-background px-6 ring-1 ring-white/5">
           <div className="flex h-16 shrink-0 items-center">
-            <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:tracking-tight">
-              Nounspace
-            </h2>
-            <img
-              className="h-8 w-auto"
-              src={logo.src}
-              alt="Nounspace"
-            />
+            <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:tracking-tight">nounspace</h2>
+            <img className="h-8 w-auto" src={logo.src} alt="nounspace" />
           </div>
           <div className="h-full min-h-full flex flex-col justify-between">
             <nav className="mt-0">
-              <ul
-                role="list"
-                className="flex flex-col items-center space-y-1"
-              >
+              <ul role="list" className="flex flex-col items-center space-y-1">
                 {navigation.map((item) => (
                   <li key={item.name}>
-                    <TooltipProvider
-                      delayDuration={50}
-                      skipDelayDuration={0}
-                    >
+                    <TooltipProvider delayDuration={50} skipDelayDuration={0}>
                       <HotkeyTooltipWrapper hotkey={item.shortcut} side="right">
-                          <div
-                            onClick={() => onClickItem(item)}
-                            className={classNames(
-                              item.router === pathname
-                                ? "text-background bg-foreground dark:text-foreground/60 dark:bg-foreground/10 dark:hover:text-foreground"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                              "group flex gap-x-3 rounded-lg p-2 text-sm leading-6 font-semibold cursor-pointer"
-                            )}
-                          >
-                            {item.icon}
-                            <span className="sr-only">{item.name}</span>
-                          </div>
-                        </HotkeyTooltipWrapper>
+                        <div
+                          onClick={() => onClickItem(item)}
+                          className={classNames(
+                            item.router === pathname
+                              ? "text-background bg-foreground dark:text-foreground/60 dark:bg-foreground/10 dark:hover:text-foreground"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                            "group flex gap-x-3 rounded-lg p-2 text-sm leading-6 font-semibold cursor-pointer"
+                          )}
+                        >
+                          {item.icon}
+                          <span className="sr-only">{item.name}</span>
+                        </div>
+                      </HotkeyTooltipWrapper>
                     </TooltipProvider>
                   </li>
                 ))}
@@ -335,7 +276,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       <div className="lg:pl-20">
-{/*        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-0 border-muted bg-background px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        {/*        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-0 border-muted bg-background px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <button
             type="button"
             className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
@@ -348,9 +289,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
             {title}
           </h1>
         </div>*/}
-        <main>
-          {children}
-        </main>
+        <main>{children}</main>
       </div>
       <Toaster theme="system" position="bottom-right" />
     </div>

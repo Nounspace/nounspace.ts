@@ -22,6 +22,10 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   d. launch local copy of Supabase with `supabase start`, use the info provided -> <br>
  `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
+## Contributing and making Fidgets
+
+See the [contributing docs](docs/CONTRIBUTING.MD) for how to add to the code base.
+
 ## Code Design
 
 The Nounspace App follows the Atomic Design Pattern

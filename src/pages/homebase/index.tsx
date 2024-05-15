@@ -1,8 +1,9 @@
-import { LayoutFidgetDetails } from "@/common/fidgets";
+import React from "react";
 import Space, { SpaceConfig } from "@/common/ui/templates/Space";
-import { GridLayout, ResizeDirections } from "@/fidgets/layout/Grid";
 import { useState } from "react";
 import { RiPencilFill } from "react-icons/ri";
+import { GridLayout, ResizeDirections } from "@/fidgets/layout/Grid";
+import { LayoutFidgetDetails } from "@/common/fidgets";
 
 export default function Homebase() {
   const [editMode, setMode] = useState(false);

@@ -73,7 +73,7 @@ export function UserAuthForm({ className }: { className?: string }) {
     posthog.identify(uuidv4(), { isLocalOnly: true });
 
     setUserMessage("Setup done. Welcome to the Nounspace experience!");
-    router.push("/homebase");
+    router.push("/Homebase");
     setIsLoading(false);
   };
 
