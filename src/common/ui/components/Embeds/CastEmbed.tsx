@@ -12,7 +12,7 @@ const CastEmbed = ({ url, castId }: { url?: string, castId?: { hash: string, fid
     const getData = async () => {
     try {
         const neynarClient = new NeynarAPIClient(
-          process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+          process.env.NEYNAR_API_KEY!
         );
         
         let res: CastResponse | null;

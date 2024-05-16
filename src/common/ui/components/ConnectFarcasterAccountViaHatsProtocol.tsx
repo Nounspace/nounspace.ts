@@ -137,7 +137,7 @@ const ConnectFarcasterAccountViaHatsProtocol = () => {
 
   const getFidForUsername = async (username: string) => {
     const neynarClient = new NeynarAPIClient(
-      process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+      process.env.NEYNAR_API_KEY!
     );
     try {
       const resp = await neynarClient.lookupUserByUsername(

@@ -80,7 +80,7 @@ const RenameAccountForm = ({
   useEffect(() => {
     const getUserInProtocol = async () => {
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const user = (
         await neynarClient.lookupUserByFid(
@@ -120,7 +120,7 @@ const RenameAccountForm = ({
           return true;
         } else {
           const neynarClient = new NeynarAPIClient(
-            process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+            process.env.NEYNAR_API_KEY!
           );
           const walletsResponse =
             await neynarClient.lookupCustodyAddressForUser(

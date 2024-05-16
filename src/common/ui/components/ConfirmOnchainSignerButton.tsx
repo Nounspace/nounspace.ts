@@ -113,7 +113,7 @@ const ConfirmOnchainSignerButton = ({
       if (!isAddKeyTxLoading || !isWalletOwnerOfFid) return;
 
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const user = (
         await neynarClient.fetchBulkUsers([Number(idOfUser)], { viewerFid: APP_FID })

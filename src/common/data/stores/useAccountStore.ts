@@ -453,7 +453,7 @@ const hydrateAccounts = async (): Promise<AccountObjectType[]> => {
     const fids = accounts.filter((account) => account.platformAccountId).map((account) => Number(account.platformAccountId!));
     if (fids.length) {
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const users = (await neynarClient.fetchBulkUsers(fids, { viewerFid: APP_FID })).users;
       accounts = accounts.map((account) => {

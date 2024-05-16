@@ -24,7 +24,6 @@ import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { getUsernameForFid, updateUsername } from "@/common/lib/utils/farcaster";
 import SwitchWalletButton from "@/common/ui/components/SwitchWalletButton";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import { usePostHog } from "posthog-js/react";
 
 type SimpleCommand = {
   name: string;
@@ -34,7 +33,6 @@ type SimpleCommand = {
 export default function Settings() {
   const router = useRouter();
   const supabase = createClient();
-  const posthog = usePostHog();
 
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -70,7 +68,6 @@ export default function Settings() {
       resetStore();
       setUser(null);
       await supabase.auth.signOut();
-      posthog.reset();
     }
 
     router.push("/login");

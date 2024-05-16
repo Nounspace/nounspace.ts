@@ -12,7 +12,6 @@ import { useRouter } from "next/router";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { usePostHog } from "posthog-js/react";
 import {
   Form,
   FormControl,
@@ -48,7 +47,6 @@ export function UserAuthForm({ className }: { className?: string }) {
   const [userMessage, setUserMessage] = useState<string>("");
   const supabase = createClient();
   const router = useRouter();
-  const posthog = usePostHog();
   const { isAuthenticated, profile } = useProfile();
 
   const form = useForm<UserAuthFormValues>({
@@ -62,7 +60,7 @@ export function UserAuthForm({ className }: { className?: string }) {
     const { fid } = profile;
     if (!fid) return;
     const neynarClient = new NeynarAPIClient(
-      process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+      process.env.NEYNAR_API_KEY!
     );
 
     const users = (
@@ -86,7 +84,6 @@ export function UserAuthForm({ className }: { className?: string }) {
       account,
       localOnly: true,
     });
-    posthog.identify(uuidv4(), { isLocalOnly: true });
 
     setUserMessage("Setup done. Welcome to the Nounspace experience!");
     router.push("/Homebase");
@@ -119,7 +116,6 @@ export function UserAuthForm({ className }: { className?: string }) {
       return;
     }
 
-    posthog.identify(data?.user?.id, { email });
     await hydrate();
     router.push("/homebase");
     setIsLoading(false);
@@ -142,7 +138,6 @@ export function UserAuthForm({ className }: { className?: string }) {
       setIsLoading(false);
       return;
     } else {
-      posthog.identify(data?.user?.id, { email });
       router.push("/welcome");
       setIsLoading(false);
     }

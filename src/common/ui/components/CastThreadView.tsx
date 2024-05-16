@@ -109,7 +109,7 @@ export const CastThreadView = ({
   useEffect(() => {
     const loadData = async () => {
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const { conversation } = await neynarClient.lookupCastConversation(cast.hash, CastParamType.Hash, {replyDepth: 1, includeChronologicalParentCasts: true });
       const {direct_replies: replies, ...castObjectWithoutReplies} = conversation.cast;
