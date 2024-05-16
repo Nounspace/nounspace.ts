@@ -23,7 +23,7 @@ import { RiPencilFill } from "react-icons/ri";
 import Space from "@/common/ui/templates/Space";
 
 export async function getStaticProps({ params: { slug } }) {
-  const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
+  const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY!);
   let user: any = {};
   try {
     if (slug.startsWith("fid:")) {
@@ -58,7 +58,7 @@ export async function getStaticProps({ params: { slug } }) {
 }
 
 export const getStaticPaths = (async () => {
-  const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
+  const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY!);
 
   const globalFeed = await client.fetchFeed("filter", {
     filterType: FilterType.GlobalTrending,
@@ -105,7 +105,7 @@ export default function Profile({ profile }) {
 
     const getData = async () => {
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const resp = await neynarClient.fetchBulkUsers(
         [profile.fid],
@@ -141,7 +141,7 @@ export default function Profile({ profile }) {
 
     const loadFeed = async () => {
       const client = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
 
       if (feedType === FeedTypeEnum.casts) {

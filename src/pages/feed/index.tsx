@@ -31,7 +31,7 @@ type FeedsType = {
 const DEFAULT_FEED_PAGE_SIZE = 10;
 
 const neynarClient = new NeynarAPIClient(
-  process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+  process.env.NEYNAR_API_KEY!
 );
 
 export default function Feed() {

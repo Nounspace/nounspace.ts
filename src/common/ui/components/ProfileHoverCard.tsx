@@ -37,7 +37,7 @@ const ProfileHoverCard = ({
     const getData = async () => {
       try {
         const neynarClient = new NeynarAPIClient(
-          process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+          process.env.NEYNAR_API_KEY!
         );
         const resp = await neynarClient.searchUser(
           username,

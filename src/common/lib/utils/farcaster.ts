@@ -12,7 +12,7 @@ export const WARPCAST_RECOVERY_PROXY: `0x${string}` = '0x00000000FcB080a4D6c39a9
 const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
-    'api_key': process.env.NEXT_PUBLIC_NEYNAR_API_KEY
+    'api_key': process.env.NEYNAR_API_KEY
   }
 });
 
@@ -191,7 +191,7 @@ export async function isValidSignedKeyRequest(
 }
 
 export const getSignedKeyRequestMetadataFromAppAccount = async (signerPublicKey: `0x${string}`, deadline: bigint | number) => {
-  const appAccount = mnemonicToAccount(process.env.NEXT_PUBLIC_APP_MNENOMIC!);
+  const appAccount = mnemonicToAccount(process.env.APP_MNENOMIC!);
   const fid = BigInt(process.env.NEXT_PUBLIC_APP_FID!);
 
   const signature = await appAccount.signTypedData({

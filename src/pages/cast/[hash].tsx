@@ -12,7 +12,7 @@ export const getStaticProps = (async function (context) {
       notFound: true,
     }
   }
-  const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
+  const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY!);
   let cast: CastResponse | undefined;
   try {
     cast = await client.lookUpCastByHashOrWarpcastUrl(hash, "hash");
@@ -44,7 +44,7 @@ export const getStaticProps = (async function (context) {
 }>
 
 export const getStaticPaths = (async () => {
-  const client = new NeynarAPIClient(process.env.NEXT_PUBLIC_NEYNAR_API_KEY!);
+  const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY!);
 
   const globalFeed = await client.fetchFeed("filter", {
     filterType: FilterType.GlobalTrending,

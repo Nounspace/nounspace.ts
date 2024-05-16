@@ -165,7 +165,7 @@ export default function Accounts() {
     if (status === WarpcastLoginStatus.success) {
       const fid = data.userFid;
       const neynarClient = new NeynarAPIClient(
-        process.env.NEXT_PUBLIC_NEYNAR_API_KEY!
+        process.env.NEYNAR_API_KEY!
       );
       const user = (await neynarClient.fetchBulkUsers([fid], {viewerFid: APP_FID})).users[0];
       await setAccountActive(pendingAccount.id, user.username, {
