@@ -175,7 +175,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const renderAccountSidebar = () => <AccountsRightSidebar />;
+  // const renderAccountSidebar = () => <AccountsRightSidebar />;
 
   if (pathname === "/login") {
     return children;
@@ -273,7 +273,7 @@ const Home = ({ children }: { children: React.ReactNode }) => {
                         </ul>
                       </li>
                       <ThemeToggle />
-                      {renderAccountSidebar()}
+                      {/* {renderAccountSidebar()} */}
                     </ul>
                   </nav>
                 </div>
@@ -335,19 +335,6 @@ const Home = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       <div className="lg:pl-20">
-{/*        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-0 border-muted bg-background px-4 sm:gap-x-6 sm:px-6 lg:px-8">
-          <button
-            type="button"
-            className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <span className="sr-only">Open sidebar</span>
-            <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-          </button>
-          <h1 className="mx-auto text-xl font-semibold leading-7 text-foreground">
-            {title}
-          </h1>
-        </div>*/}
         <main>
           {children}
         </main>

@@ -42,6 +42,8 @@
     "@mod-protocol/react-ui-shadcn": "^0.3.1",
     "@neynar/nodejs-sdk": "^1.9.6",
     "@noble/ed25519": "^2.1.0",
+    "@privy-io/react-auth": "^1.64.1",
+    "@privy-io/wagmi": "^0.2.6",
     "@radix-ui/colors": "^3.0.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
