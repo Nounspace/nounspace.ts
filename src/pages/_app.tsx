@@ -2,28 +2,29 @@ import "@/styles/globals.css";
 
 import React from "react";
 import type { AppProps } from "next/app";
-import Home from "@/common/ui/templates/Home";
+import type { NextPage } from 'next'
 import Head from "next/head";
 import Providers from "@/common/providers";
-import { useRouter } from "next/router";
 
+export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: React.ReactElement) => React.ReactNode
+}
 
-export default function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-  const { pathname } = router;
-  
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout
+}
+
+export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout ?? ((page) => page)
+
   return (
     <>
       <Head>
         <title>Nounspace</title>
       </Head>
       <Providers>
-        { pathname === "/login" ? 
-          <Component {...pageProps} /> : 
-          // <Home>
-            <Component {...pageProps} />
-          // </Home>
-        }
+        { getLayout(<Component {...pageProps} />) }
       </Providers>
     </>
   );
