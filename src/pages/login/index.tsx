@@ -40,9 +40,9 @@ export default function Login() {
       <Button
         onClick={logout}
         size="lg"
-        className="p-6 text-black bg-white"
+        className="p-6 text-white bg-transparent hover:bg-white hover:text-black border border-white hover:border-transparent"
         type="button"
-        variant="ghost"
+        variant="outline"
       > Logout </Button>
     </>
   );
