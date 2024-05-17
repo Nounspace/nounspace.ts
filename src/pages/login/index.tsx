@@ -1,4 +1,6 @@
 import { Button } from "@/common/ui/atoms/button";
+import Spinner from "@/common/ui/atoms/spinner";
+import { classNames } from "@/styles/utils/css";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -120,8 +122,11 @@ export default function Login() {
                   { ready && authenticated ? "Welcome Back!" : "Welcome to Nounspace" }
                 </h1>
               </div>
-              { 
-                ready && authenticated ? proceedToHomebase : loginButton
+              {
+                ready ? (authenticated ? proceedToHomebase : loginButton) :
+                <div className="self-center"> 
+                  <Spinner className="size-12"/> 
+                </div>
               }
             </div>
           </div>
