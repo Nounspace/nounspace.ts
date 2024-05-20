@@ -1005,10 +1005,10 @@
   resolved "https://registry.yarnpkg.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.3.tgz#2be4e39ee25bfbd85be78eea17c0e7751dc4323c"
   integrity sha512-Q1/zm43RWynxrO7lW4ehciQVj+5ePBhOK+/K2P7pLFX3JaJ/IZVC69SHidrmZSOkqz7ECIOhhy7XhAFG4JYyHA==
 
-"@neynar/nodejs-sdk@^1.9.6":
-  version "1.23.0"
-  resolved "https://registry.yarnpkg.com/@neynar/nodejs-sdk/-/nodejs-sdk-1.23.0.tgz#84de34db6d1743b0e13cfdd957b7f88f4717cf95"
-  integrity sha512-rqJv1fJ8pQ4HpXW8PWUTlpWETBeGCZHY7fbHE0tIUMN7LN6r53HbL7iApyMGyEBxrFzJKW1eQbzDFChgHhbjww==
+"@neynar/nodejs-sdk@^1.24.0":
+  version "1.24.0"
+  resolved "https://registry.yarnpkg.com/@neynar/nodejs-sdk/-/nodejs-sdk-1.24.0.tgz#6c35edbc5d2c1178230f20b8b1710b08992c0d02"
+  integrity sha512-oBPl4Zr1xAdGzD4FrYDGSj2v2RcT3ZawAieW5XoE6HF63ftBasTDoMtZPVwbkn4qCUaXIoK8wZAHO/Saww7k4Q==
   dependencies:
     "@openapitools/openapi-generator-cli" "^2.7.0"
     axios "^1.6.2"
