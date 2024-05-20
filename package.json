@@ -72,7 +72,7 @@
     "@types/lodash": "^4.17.0",
     "@webscopeio/react-textarea-autocomplete": "^4.9.2",
     "@xmtp/frames-validator": "^0.6.0",
-    "@xmtp/proto": "^3.54.1",
+    "@xmtp/proto": "^3.58.0",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",

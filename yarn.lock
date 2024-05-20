@@ -3370,10 +3370,10 @@
     rxjs "^7.8.0"
     undici "^5.8.1"
 
-"@xmtp/proto@^3.54.1":
-  version "3.56.0"
-  resolved "https://registry.yarnpkg.com/@xmtp/proto/-/proto-3.56.0.tgz#48dfbfed6f97e1d14775a10caf274f23238f0594"
-  integrity sha512-zW8/s7x9je0keYjJpu/c5zmYK5wE14MxcDWLkxzMwRmrajwdy69BNN0NgVJ1uBzMUqGTjnGQJANDev8lpa58qQ==
+"@xmtp/proto@^3.58.0":
+  version "3.58.0"
+  resolved "https://registry.yarnpkg.com/@xmtp/proto/-/proto-3.58.0.tgz#a2ea752b302edd32a01641fc70f4a936998e34a2"
+  integrity sha512-+SjO/bAVy9ij9EanBbDr2cYX3T/Y6K0NZwZM7C5ysadjhenpqMu+eOvbPEUN9jBrQ/Ih3epNngz1VWPZp33vzg==
   dependencies:
     long "^5.2.0"
     protobufjs "^7.0.0"
