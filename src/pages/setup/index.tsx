@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 import { useAccountStore } from "@/common/data/stores/accounts";
-import { hexToBytes } from "@noble/ciphers/utils";
 
 const SETUP_STATES = {
   wallet: "Loading Wallet...",
