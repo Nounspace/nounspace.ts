@@ -8,7 +8,6 @@ import {
 } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
-import Home from "@/common/ui/templates/Home";
 
 const Homebase: NextPageWithLayout = () => {
   const [editMode, setMode] = useState(false);
@@ -145,9 +144,9 @@ const Homebase: NextPageWithLayout = () => {
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <Home>
+    <>
       { page }
-    </Home>
+    </>
   )
 }
 
