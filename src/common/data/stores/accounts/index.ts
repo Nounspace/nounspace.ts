@@ -52,9 +52,11 @@ function createAccountStore(signMessage) {
   )
 }
 
-const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings("AcccountStore", createAccountStore, { hooks: {
-  signMessage: useSignMessage,
-}});
+const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings(
+  "AcccountStore",
+  createAccountStore,
+  { hooks: { signMessage: useSignMessage,}}
+);
 
 export {
   useAccountStore, AccountStoreProvider,

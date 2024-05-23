@@ -15,6 +15,7 @@
     "sourceType": "module"
   },
   "plugins": [
+    "@stylistic",
     "@typescript-eslint",
     "react"
   ],
@@ -24,7 +25,16 @@
       "args": "none"
     }],
     "@typescript-eslint/no-explicit-any": "off",
-    "react/prop-types": "off"
+    "react/prop-types": "off",
+    "@stylistic/max-len": [
+      "error",
+      {
+        "code": 120,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ]
   },
   "settings": {
     "react": {
