@@ -45,12 +45,11 @@ interface IndentityState {
 
 interface IndentityActions {
   loadIdentitiesForWallet: (wallet: Wallet) => Promise<void>;
-  decryptIdentityKeys: (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => Promise<void>;
-  createIdentityForWallet: (signMessage: SignMessageFunctionSignature, wallet: Wallet) => Promise<string>;
+  decryptIdentityKeys: (wallet: Wallet, identityPublicKey: string) => Promise<void>;
+  createIdentityForWallet: (wallet: Wallet) => Promise<string>;
   setCurrentIdentity: (publicKey: string) => void;
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
-  resetIdentityStore: () => void;
 }
 
 export type IdentityStore = IndentityState & IndentityActions;
@@ -94,14 +93,14 @@ async function encryptKeyFile(signMessage: SignMessageFunctionSignature, wallet:
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
+export const indentityStore = (signMessage: SignMessageFunctionSignature) => (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
     return find(state.spaceIdentities, { rootKeys: { publicKey: state.currentSpaceIdentityPublicKey } })
   },
   setCurrentIdentity: (publicKey: string) => {
-    set((state) => { state.currentSpaceIdentityPublicKey = publicKey});
+    set((draft) => { draft.currentSpaceIdentityPublicKey = publicKey});
   },
   loadIdentitiesForWallet: async (wallet: Wallet) => {
     // Load Indentity + Nonce + Wallet address info from DB
@@ -111,14 +110,14 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
       }
     });
     const walletIdentities = data.value ? (isArray(data.value) ? data.value : [data.value]) : [];
-    set((state) => {
-      state.walletIdentities[wallet.address] = walletIdentities;
+    set((draft) => {
+      draft.walletIdentities[wallet.address] = walletIdentities;
     })
   },
   getIdentitiesForWallet: (wallet: Wallet) => {
     return get().walletIdentities[wallet.address] || [];
   },
-  decryptIdentityKeys: async (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => {
+  decryptIdentityKeys: async (wallet: Wallet, identityPublicKey: string) => {
     const supabase = createClient();
     const walletIndentityInfo = find(get().walletIdentities[wallet.address], { identityPublicKey: identityPublicKey});
     if (isUndefined(walletIndentityInfo)) {
@@ -134,14 +133,14 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
     }
     const fileData = JSON.parse(await data.text()) as SignedFile;
     const keys = await decryptKeyFile(signMessage, wallet, walletIndentityInfo.nonce, hexToBytes(fileData.fileData)) as RootSpaceKeys;
-    set((state) => {
-      state.spaceIdentities.push({
+    set((draft) => {
+      draft.spaceIdentities.push({
         rootKeys: keys,
         preKeys: [],
       });
     });
   },
-  createIdentityForWallet: async (signMessage: SignMessageFunctionSignature, wallet: Wallet) => {
+  createIdentityForWallet: async (wallet: Wallet) => {
     const privateKey = secp256k1.utils.randomPrivateKey();
     const publicKey = secp256k1.getPublicKey(privateKey);
     const identityKeys: RootSpaceKeys = {
@@ -184,17 +183,10 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
       identityRequest,
     };
     await axiosBackend.post("/api/space/identities", postData, { headers: { "Content-Type": "application/json" } });
-    set((state) => {
-      state.spaceIdentities.push({ rootKeys: identityKeys, preKeys: []});
+    set((draft) => {
+      draft.spaceIdentities.push({ rootKeys: identityKeys, preKeys: []});
     });
     return identityKeys.publicKey;
-  },
-  resetIdentityStore: () => {
-    set((state) => {
-      state.currentSpaceIdentityPublicKey = "";
-      state.spaceIdentities = [];
-      state.walletIdentities = {};
-    });
   },
 });
 

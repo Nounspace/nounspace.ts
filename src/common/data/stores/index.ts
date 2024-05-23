@@ -2,12 +2,14 @@ import { Draft, create as mutativeCreate } from 'mutative';
 import { StoreApi, create, useStore } from "zustand";
 import { PersistOptions, persist, devtools } from "zustand/middleware";
 import React, { ReactNode, useRef, createContext, useContext } from 'react'
+import { mapValues } from 'lodash';
 
 export const mutative = (config) =>
   (set, get, store) => config(
     (fn) => set(mutativeCreate(fn)), get, store);
 
-export type StoreSet<T> = (fn: (draft: Draft<T>) => void) => void;
+type StoreReset<T> = (newState: Draft<T>) => void;
+export type StoreSet<T> = (fn: (draft: Draft<T>) => void) => void | StoreReset<T>;
 export type StoreGet<T> = () => T;
 
 export function createStore<T>(
@@ -18,14 +20,22 @@ export function createStore<T>(
 }
 
 type StoreProviderProps = { children: ReactNode };
+type CreateStoreOpts = {
+  hooks?: {
+    [key: string]: () => unknown;
+  };
+};
 
-export function createStoreBindings<T = unknown>(storeName: string, createStoreFunc: () => StoreApi<T>) {
+export function createStoreBindings<T = unknown>(storeName: string, createStoreFunc: (hooks?) => StoreApi<T>, createStoreOpts?: CreateStoreOpts) {
   const storeContext = createContext<StoreApi<T> | null>(null);
 
   const provider: React.FC<StoreProviderProps> = ({ children }) => {
     const storeRef = useRef<StoreApi<T>>();
+
+    const resolvedHooks = mapValues(createStoreOpts?.hooks || {}, (hook) => hook());
+
     if (!storeRef.current) {
-      storeRef.current = createStoreFunc();
+      storeRef.current = createStoreFunc(resolvedHooks);
     }
   
     return React.createElement(storeContext.Provider, { value: storeRef.current }, children);
