@@ -3,6 +3,7 @@ import { Button } from "@/common/ui/atoms/button";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { isUndefined } from "lodash";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 
@@ -106,7 +107,7 @@ export default function Login() {
                   <div className="mx-auto mt-20 flex max-w-2xl lg:mr-10 lg:ml-0 lg:mt-12 lg:max-w-none lg:flex-none xl:mr-32">
                     <div className="mx-auto max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
                       <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-                        <img
+                        <Image
                           src="/images/app-screenshot.png"
                           alt="App screenshot"
                           width={2432}

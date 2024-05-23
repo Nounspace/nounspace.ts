@@ -50,7 +50,7 @@ interface LayoutFigetProps {
   isEditable: boolean;
 }
 
-const LayoutFidgetDefaultProps = {
+type LayoutFidgetDefaultProps = {
   fidgets: object,
   layoutConfig: object,
   isEditable: false,

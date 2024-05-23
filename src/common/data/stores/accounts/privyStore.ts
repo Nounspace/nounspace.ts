@@ -1,4 +1,4 @@
-import { ConnectedWallet, PrivyInterface, User as PrivyUser, usePrivy, useWallets } from '@privy-io/react-auth';
+import { ConnectedWallet, User as PrivyUser, usePrivy, useWallets } from '@privy-io/react-auth';
 import type { AccountStore } from '.';
 import { StoreSet } from '..';
 import { find, isUndefined } from 'lodash';
