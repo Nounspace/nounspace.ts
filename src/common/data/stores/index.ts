@@ -26,7 +26,11 @@ type CreateStoreOpts = {
   };
 };
 
-export function createStoreBindings<T = unknown>(storeName: string, createStoreFunc: (hooks?) => StoreApi<T>, createStoreOpts?: CreateStoreOpts) {
+export function createStoreBindings<T = unknown>(
+  storeName: string,
+  createStoreFunc: (hooks?) => StoreApi<T>,
+  createStoreOpts?: CreateStoreOpts
+) {
   const storeContext = createContext<StoreApi<T> | null>(null);
 
   const provider: React.FC<StoreProviderProps> = ({ children }) => {

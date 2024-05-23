@@ -7,7 +7,9 @@ type FidgetWrapperSettingsEditorProps = {
   setSettings: (settings: FidgetSettings) => void;
 };
 
-const FidgetWrapperSettingsEditor: React.FC<FidgetWrapperSettingsEditorProps> = ({ settings, editConfig, setSettings }) => {
+const FidgetWrapperSettingsEditor: React.FC<FidgetWrapperSettingsEditorProps> = (
+  { settings, editConfig, setSettings }
+) => {
 
   return (<></>);
 };

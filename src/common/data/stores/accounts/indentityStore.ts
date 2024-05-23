@@ -81,19 +81,31 @@ function signatureToCipherKey(signature: string): Uint8Array {
   return hkdf(sha256, signature, "salt", "", 32);
 }
 
-async function decryptKeyFile(signMessage: SignMessageFunctionSignature, wallet: Wallet, nonce: string, encryptedBlob: Uint8Array): Promise<RootSpaceKeys | PreSpaceKeys> {
+async function decryptKeyFile(
+  signMessage: SignMessageFunctionSignature,
+  wallet: Wallet,
+  nonce: string,
+  encryptedBlob: Uint8Array
+): Promise<RootSpaceKeys | PreSpaceKeys> {
   const signature = await signMessage(wallet, generateMessage(nonce));
   const cipher = managedNonce(xchacha20poly1305)(signatureToCipherKey(signature));
   return JSON.parse(bytesToUtf8(cipher.decrypt(encryptedBlob))) as RootSpaceKeys | PreSpaceKeys;
 }
 
-async function encryptKeyFile(signMessage: SignMessageFunctionSignature, wallet: Wallet, nonce: string, keysToEncrypt: RootSpaceKeys | PreSpaceKeys): Promise<Uint8Array> {
+async function encryptKeyFile(
+  signMessage: SignMessageFunctionSignature,
+  wallet: Wallet,
+  nonce: string,
+  keysToEncrypt: RootSpaceKeys | PreSpaceKeys
+): Promise<Uint8Array> {
   const signature = await signMessage(wallet, generateMessage(nonce));
   const cipher = managedNonce(xchacha20poly1305)(signatureToCipherKey(signature));
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (signMessage: SignMessageFunctionSignature) => (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
+export const indentityStore = (
+  signMessage: SignMessageFunctionSignature
+) => (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
@@ -132,7 +144,12 @@ export const indentityStore = (signMessage: SignMessageFunctionSignature) => (se
       throw new IdentitytDecryptError(identityPublicKey, wallet.address, "Blob not found");
     }
     const fileData = JSON.parse(await data.text()) as SignedFile;
-    const keys = await decryptKeyFile(signMessage, wallet, walletIndentityInfo.nonce, hexToBytes(fileData.fileData)) as RootSpaceKeys;
+    const keys = await decryptKeyFile(
+      signMessage,
+      wallet,
+      walletIndentityInfo.nonce,
+      hexToBytes(fileData.fileData)
+    ) as RootSpaceKeys;
     set((draft) => {
       draft.spaceIdentities.push({
         rootKeys: keys,
