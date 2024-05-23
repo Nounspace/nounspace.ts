@@ -20,13 +20,19 @@ export function hashObject(obj: object) {
   return blake3(stringify(obj), { dkLen: 256 });
 }
 
-export type AccountStore = IdentityStore & PrivyStore;
+export type AccountStore = IdentityStore & PrivyStore & {
+  logout: () => void;
+};
 
 function createAccountStore() {
   return createStore<AccountStore>(
-    (set: StoreSet<AccountStore>, get: StoreGet<AccountStore>, _state: AccountStore) => ({
+    (set: StoreSet<AccountStore>, get: StoreGet<AccountStore>, state: AccountStore) => ({
       ...indentityStore(set, get),
       ...privyStore(set),
+      logout: () => {
+        state.resetIdentityStore();
+        state.resetPrivyStore();
+      },
     }),
     {
       name: "nounspace-account-store",

@@ -10,6 +10,7 @@ interface PrivyState {
 
 interface PrivyActions {
   setPrivyUser: (user: PrivyUser) => void;
+  resetPrivyStore: () => void;
 }
 
 export type PrivyStore = PrivyActions & PrivyState;
@@ -51,6 +52,11 @@ export const privyStore = (set: StoreSet<AccountStore>) => ({
   setPrivyUser: (user: PrivyUser) => {
     set((state) => {
       state.privyUser = user;
+    })
+  },
+  resetPrivyStore: () => {
+    set((state) => {
+      state.privyUser = privyDefault.privyUser;
     })
   },
 });
