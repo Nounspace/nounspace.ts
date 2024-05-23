@@ -1,6 +1,5 @@
 import { Button } from "@/common/ui/atoms/button";
 import Spinner from "@/common/ui/atoms/spinner";
-import { classNames } from "@/styles/utils/css";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -16,7 +15,7 @@ export default function Login() {
           // Trigger creating use store data
           // redirect to the new user tutorial
         } 
-        router.push("/homebase");
+        router.push("/setup");
       }
     },
     onError: () => {
@@ -75,8 +74,6 @@ export default function Login() {
         >
             <div className="relative h-full flex-col bg-muted p-10 text-foreground flex">
               <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-gray-900 via-gray-700 to-stone-500" />
-              <div className="relative z-20 flex items-center text-lg font-medium text-gray-200">
-              </div>
               <div className="relative z-20 mt-16 lg:mt-24">
                 <div className="text-center">
                   <h1 className="bg-gradient-to-tl from-white via-stone-200 to-stone-500 bg-clip-text text-center text-5xl font-bold leading-tight tracking-tight text-transparent drop-shadow-sm dark:from-white dark:via-gray-200 dark:to-stone-500 md:text-7xl md:leading-[6rem] lg:leading-[1.1]">

@@ -5,12 +5,10 @@ import {
 } from "@frames.js/render";
 import { signFrameAction } from '@frames.js/render/farcaster'
 import { useFrame } from "@frames.js/render/use-frame";
-import { useAccountStore } from "@/common/data/stores/useAccountStore";
-import { framesJsAccountStatusMap } from "@/constants/accounts";
 import Image from "next/image";
 import type { ImgHTMLAttributes } from "react";
 import { isUndefined } from "lodash";
-import Modal from "../components/Modal";
+import Modal from "./Modal";
 import SignupForNonLocalAccountCard from "../organisms/SignupForNonLocalAccountCard";
 
 // Due to issue with FrameImageNext from @frame.js/render/next
@@ -34,18 +32,10 @@ type FrameArgs = {
 }
 
 const Frame = ({ url }: FrameArgs) =>  {
-  const { selectedAccountIdx, accounts } = useAccountStore();
-  const account = accounts[selectedAccountIdx];
 
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 
-  const signer = account && account.privateKey && account.publicKey ? {
-    ...account,
-    fid: Number(account.platformAccountId),
-    status: framesJsAccountStatusMap[account.status] || "impersonating",
-    privateKey: account.privateKey!,
-    publicKey: account.publicKey!,
-  } : undefined;
+  const signer = undefined;
 
   const frameState = useFrame({
     homeframeUrl: url,
