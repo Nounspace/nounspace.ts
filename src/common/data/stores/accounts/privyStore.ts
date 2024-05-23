@@ -10,7 +10,6 @@ interface PrivyState {
 
 interface PrivyActions {
   setPrivyUser: (user: PrivyUser) => void;
-  resetPrivyStore: () => void;
 }
 
 export type PrivyStore = PrivyActions & PrivyState;
@@ -47,16 +46,11 @@ export function useSignMessage() {
   return signMessage;
 }
 
-export const privyStore = (set: StoreSet<AccountStore>) => ({
+export const privyStore = (set: StoreSet<AccountStore>): PrivyStore => ({
   ...privyDefault,
   setPrivyUser: (user: PrivyUser) => {
-    set((state) => {
-      state.privyUser = user;
-    })
-  },
-  resetPrivyStore: () => {
-    set((state) => {
-      state.privyUser = privyDefault.privyUser;
+    set((draft) => {
+      draft.privyUser = user;
     })
   },
 });

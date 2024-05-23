@@ -1,9 +1,10 @@
 import { createJSONStorage } from "zustand/middleware";
 import { StoreGet, StoreSet, createStore, createStoreBindings } from "..";
-import { IdentityStore, indentityStore, partializedIdentityStore } from "./indentityStore";
-import { PrivyStore, partializedPrivyStore, privyStore, useSignMessage } from "./privyStore";
+import { IdentityStore, identityDefault, indentityStore, partializedIdentityStore } from "./indentityStore";
+import { PrivyStore, partializedPrivyStore, privyDefault, privyStore, useSignMessage } from "./privyStore";
 import { blake3 } from '@noble/hashes/blake3';
 import stringify from "fast-json-stable-stringify";
+import { rawReturn } from "mutative";
 
 export interface UnsignedFile {
   publicKey: string;
@@ -24,14 +25,20 @@ export type AccountStore = IdentityStore & PrivyStore & {
   logout: () => void;
 };
 
-function createAccountStore() {
+const accountStoreDefaults: Partial<AccountStore> = {
+  ...privyDefault,
+  ...identityDefault,
+};
+
+function createAccountStore(signMessage) {
   return createStore<AccountStore>(
     (set: StoreSet<AccountStore>, get: StoreGet<AccountStore>, state: AccountStore) => ({
-      ...indentityStore(set, get),
+      ...indentityStore(signMessage)(set, get),
       ...privyStore(set),
       logout: () => {
-        state.resetIdentityStore();
-        state.resetPrivyStore();
+        set((_draft) => {
+          return rawReturn(accountStoreDefaults);
+        });
       },
     }),
     {
@@ -45,7 +52,9 @@ function createAccountStore() {
   )
 }
 
-const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings("AcccountStore", createAccountStore);
+const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings("AcccountStore", createAccountStore, { hooks: {
+  signMessage: useSignMessage,
+}});
 
 export {
   useAccountStore, AccountStoreProvider,

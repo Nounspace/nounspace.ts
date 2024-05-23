@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Wallet, usePrivy, useWallets } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import Spinner from "@/common/ui/atoms/spinner";
-import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 import { useAccountStore } from "@/common/data/stores/accounts";
 import { isUndefined } from "lodash";
 
@@ -18,7 +17,6 @@ const SETUP_STATES = {
 export default function Setup() {
   const { ready, authenticated, user, createWallet, logout } = usePrivy();
   const { ready: walletsReady } = useWallets();
-  const signMessage = useSignMessage();
   const router = useRouter();
   const {
     loadIdentitiesForWallet,
@@ -55,12 +53,12 @@ export default function Setup() {
         
       } else {
         setCurrentStep(SETUP_STATES.load);
-        await decryptIdentityKeys(signMessage, wallet, identities[0].identityPublicKey);
+        await decryptIdentityKeys(wallet, identities[0].identityPublicKey);
         setCurrentIdentity(identities[0].identityPublicKey);
       }
     } else {
       setCurrentStep(SETUP_STATES.create);
-      const publicKey = await createIdentityForWallet(signMessage, wallet);
+      const publicKey = await createIdentityForWallet(wallet);
       setCurrentIdentity(publicKey);
     }
     router.push("/done");
