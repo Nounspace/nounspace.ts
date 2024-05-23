@@ -1,4 +1,4 @@
-import { isArray, find, map, isUndefined, isNull } from 'lodash';
+import { isArray, find, isUndefined, isNull } from 'lodash';
 import { Wallet } from '@privy-io/react-auth';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { xchacha20poly1305 } from '@noble/ciphers/chacha';

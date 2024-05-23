@@ -34,7 +34,7 @@ export default function Setup() {
     currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
   }));
   const [currentStep, setCurrentStep] = useState(SETUP_STATES.wallet);
-  const [selectedIdentity, setSelectedIdentity] = useState("");
+  // const [selectedIdentity, setSelectedIdentity] = useState("");
  
   // Redirect if not logged in with Privy
   useEffect(() => {

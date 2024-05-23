@@ -1,5 +1,4 @@
-
-interface Provider {
+export interface Provider {
   methods: {
     [key: string]: (unknown) => Promise<unknown>;
   };
