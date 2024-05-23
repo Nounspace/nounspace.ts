@@ -31,7 +31,6 @@ export function useSignMessage() {
   const { wallets } = useWallets();
 
   async function signMessage(wallet: Partial<ConnectedWallet>, message: string) {
-    console.log("wallets:", wallets)
     if (wallet.walletClientType === "privy") {
       return signPrivyWalletMessage(message);
     } else {
