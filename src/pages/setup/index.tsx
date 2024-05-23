@@ -12,10 +12,11 @@ const SETUP_STATES = {
   load: "Loading Identity...",
   select: "Multiple Identities Found, please choose which one to use",
   create: "Creating Identity...",
+  error: "An error occurred, you will be signed out, please try again"
 };
 
 export default function Setup() {
-  const { ready, authenticated, user } = usePrivy();
+  const { ready, authenticated, user, createWallet, logout } = usePrivy();
   const { ready: walletsReady } = useWallets();
   const signMessage = useSignMessage();
   const router = useRouter();
@@ -70,7 +71,11 @@ export default function Setup() {
       if (wallet) {
         setup(wallet);
       } else {
-        console.log("INITIALIZE A WALLET NOW PLEASE");
+        createWallet().then(w => setup(w)).catch(e => {
+          console.log(e);
+          logout();
+          router.push("/login");
+        });
       }
     }
   }, [walletsReady, ready]);
