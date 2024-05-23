@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 import { useAccountStore } from "@/common/data/stores/accounts";
+import { isUndefined } from "lodash";
 
 const SETUP_STATES = {
   wallet: "Loading Wallet...",
@@ -25,13 +26,14 @@ export default function Setup() {
     createIdentityForWallet,
     decryptIdentityKeys,
     setCurrentIdentity,
+    currentSpaceIdentityPublicKey,
   } = useAccountStore((state) => ({
     loadIdentitiesForWallet: state.loadIdentitiesForWallet,
     getIdentitiesForWallet: state.getIdentitiesForWallet,
     createIdentityForWallet: state.createIdentityForWallet,
     decryptIdentityKeys: state.decryptIdentityKeys,
-    getCurrentIdentity: state.getCurrentIdentity,
     setCurrentIdentity: state.setCurrentIdentity,
+    currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
   }));
   const [currentStep, setCurrentStep] = useState(SETUP_STATES.wallet);
   const [selectedIdentity, setSelectedIdentity] = useState("");
@@ -65,6 +67,9 @@ export default function Setup() {
   }
 
   useEffect(() => {
+    if (!isUndefined(currentSpaceIdentityPublicKey)) {
+      router.push("/homebase");
+    }
     if (walletsReady && ready && user) {
       const wallet = user.wallet;
       if (wallet) {

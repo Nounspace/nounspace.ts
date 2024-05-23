@@ -50,6 +50,7 @@ interface IndentityActions {
   setCurrentIdentity: (publicKey: string) => void;
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
+  resetIdentityStore: () => void;
 }
 
 export type IdentityStore = IndentityState & IndentityActions;
@@ -93,7 +94,7 @@ async function encryptKeyFile(signMessage: SignMessageFunctionSignature, wallet:
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>) => ({
+export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
@@ -187,6 +188,13 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
       state.spaceIdentities.push({ rootKeys: identityKeys, preKeys: []});
     });
     return identityKeys.publicKey;
+  },
+  resetIdentityStore: () => {
+    set((state) => {
+      state.currentSpaceIdentityPublicKey = "";
+      state.spaceIdentities = [];
+      state.walletIdentities = {};
+    });
   },
 });
 

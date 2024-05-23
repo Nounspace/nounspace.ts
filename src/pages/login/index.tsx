@@ -1,12 +1,21 @@
+import { useAccountStore } from "@/common/data/stores/accounts";
 import { Button } from "@/common/ui/atoms/button";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
+import { isUndefined } from "lodash";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 
 export default function Login() {
   const router = useRouter();
   const { ready, authenticated, logout: privyLogout } = usePrivy();
+  const {
+    currentSpaceIdentityPublicKey,
+    logout: accountStoreLogout,
+  } = useAccountStore((state) => ({
+    currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
+    logout: state.logout,
+  }));
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
       // Add User to Local Store if not already present
@@ -27,17 +36,18 @@ export default function Login() {
   function logout() {
     privyLogout();
     // Logout from store as well
+    accountStoreLogout();
   }
 
   const proceedToHomebase = (
     <>
       <Button
-        onClick={() => router.push("/homebase")}
+        onClick={() => router.push(isUndefined(currentSpaceIdentityPublicKey) ? "/setup" : "/homebase")}
         size="lg"
         className="p-6 text-black bg-white"
         type="button"
         variant="ghost"
-      > Proceed to Homebase </Button>
+      > Proceed </Button>
       <Button
         onClick={logout}
         size="lg"
