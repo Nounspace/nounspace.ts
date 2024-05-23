@@ -64,8 +64,6 @@ export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
     });
   }
 
-  console.log(fidgets);
-
   return (
     <LayoutFidget
       layoutConfig={{

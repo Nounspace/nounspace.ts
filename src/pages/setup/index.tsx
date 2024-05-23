@@ -72,7 +72,7 @@ export default function Setup() {
         setup(wallet);
       } else {
         createWallet().then(w => setup(w)).catch(e => {
-          console.log(e);
+          console.error(e);
           logout();
           router.push("/login");
         });
