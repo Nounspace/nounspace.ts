@@ -1,64 +1,31 @@
 import "@/styles/globals.css";
-import "@rainbow-me/rainbowkit/styles.css";
 
-import React, { useEffect } from "react";
+import React from "react";
 import type { AppProps } from "next/app";
-import { ThemeProvider } from "@/common/ui/templates/themeProvider";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import CommandPalette from "@/common/ui/components/CommandPalette";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { WagmiProvider } from "wagmi";
-import { rainbowKitTheme, config } from "@/common/ui/templates/rainboxkit";
-import Home from "@/common/ui/templates/home";
-import { PostHogProvider } from "posthog-js/react";
-import { loadPosthogAnalytics } from "@/common/lib/analytics";
-import { useRouter } from "next/router";
+import type { NextPage } from 'next'
 import Head from "next/head";
+import Providers from "@/common/providers";
 
-const posthog = loadPosthogAnalytics();
+export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
+  getLayout?: (page: React.ReactElement) => React.ReactNode
+}
 
-const queryClient = new QueryClient();
+type AppPropsWithLayout = AppProps & {
+  Component: NextPageWithLayout
+}
 
-export default function MyApp({ Component, pageProps }: AppProps) {
-  const router = useRouter();
-
-  useEffect(() => {
-    const handleRouteChange = () => posthog?.capture("$pageview");
-    router.events.on("routeChangeComplete", handleRouteChange);
-
-    return () => {
-      router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, []);
-
-  const children = (
-    <PostHogProvider client={posthog}>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider theme={rainbowKitTheme}>
-            <CommandPalette />
-            <Home>
-              <Component {...pageProps} />
-            </Home>
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </PostHogProvider>
-  );
+export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
+  // Use the layout defined at the page level, if available
+  const getLayout = Component.getLayout ?? ((page) => page)
 
   return (
     <>
       <Head>
         <title>Nounspace</title>
       </Head>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
-      >
-        {children}
-      </ThemeProvider>
+      <Providers>
+        { getLayout(<Component {...pageProps} />) }
+      </Providers>
     </>
   );
 }

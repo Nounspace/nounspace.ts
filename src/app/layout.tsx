@@ -1,12 +1,4 @@
-import { loadPosthogAnalytics } from "@/common/lib/analytics";
-import CommandPalette from "@/common/ui/components/CommandPalette";
-import Home from "@/common/ui/templates/home";
-import { rainbowKitTheme, config } from "@/common/ui/templates/rainboxkit";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PostHogProvider } from "posthog-js/react";
 import React, { Suspense } from "react"
-import { WagmiProvider } from "wagmi";
 
 export const metadata = {
   title: 'Nounspace',
@@ -41,10 +33,6 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
 }
-
-const posthog = loadPosthogAnalytics();
-
-const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,

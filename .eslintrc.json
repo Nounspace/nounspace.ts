@@ -15,14 +15,26 @@
     "sourceType": "module"
   },
   "plugins": [
+    "@stylistic",
     "@typescript-eslint",
     "react"
   ],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      "varsIgnorePattern": "^_",
+      "args": "none"
+    }],
     "@typescript-eslint/no-explicit-any": "off",
     "react/prop-types": "off",
-    "@next/next/no-img-element": "off"
+    "@stylistic/max-len": [
+      "error",
+      {
+        "code": 120,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true
+      }
+    ]
   },
   "settings": {
     "react": {

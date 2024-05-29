@@ -4,7 +4,7 @@ const nextConfig = {
   // distDir: './dist', // Changes the build output directory to `./dist/`.
   transpilePackages: ['react-tweet'], // https://react-tweet.vercel.app/next,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [
@@ -21,10 +21,10 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/demo',
-        destination: '/login',
+        source: '/signatures',
+        destination: 'https://docs.nounspace.com/nounspace-alpha/accounts/signatures',
         permanent: true,
-      },
+      }
     ]
   },
 }

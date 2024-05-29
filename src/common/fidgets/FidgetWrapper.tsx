@@ -1,20 +1,20 @@
 "use client"
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "../ui/atoms/card";
+import { Card, CardContent } from "../ui/atoms/card";
 import { Button } from "../ui/atoms/button";
 import FidgetWrapperEditMode from "./FidgetWrapperEditMode";
 import { toast } from "sonner";
 import { FidgetConfig, FidgetSettings, FidgetDetails } from ".";
 import { FaGear } from "react-icons/fa6";
 
-type FidgetWrapperProps = {
+export type FidgetWrapperProps = {
   fidget: React.FC<FidgetSettings>;
   config: FidgetDetails;
   saveConfig: (conf: FidgetConfig<FidgetSettings>) => Promise<boolean>
 };
 
 export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
-  const [saving, setSaving] = useState(false);
+  const [_saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
   const [viewEditor, setViewEditor] = useState(false);
   const [localConfig, setLocalConfig] = useState<FidgetConfig<FidgetSettings>>({

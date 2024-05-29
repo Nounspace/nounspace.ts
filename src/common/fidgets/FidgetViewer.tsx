@@ -1,16 +1,15 @@
 "use client"
 import React, { useState } from "react";
 import { reduce } from "lodash";
-import { FidgetWrapper, FidgetWrapperConfig } from "@/common/fidgets/FidgetWrapper";
+import { FidgetWrapper, FidgetWrapperProps } from "@/common/fidgets/FidgetWrapper";
 import { FidgetConfig, FidgetModule, FidgetSettings } from ".";
 
 
 export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetModule }) {
-  const defaultConfig: FidgetWrapperConfig = {
+  const defaultConfig: FidgetWrapperProps["config"] = {
     editConfig: fidgetModule.editConfig,
-    fidgetConfig: {
+    instanceConfig: {
       editable: true,
-      size: [1, 2],
       settings: reduce(
         fidgetModule.editConfig.fields,
         (acc, f) => ({
@@ -20,12 +19,14 @@ export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetMod
         {},
       )
     },
+    id: fidgetModule.fidget.name,
   };
-  const [config, setConfig] = useState<FidgetWrapperConfig>(defaultConfig);  
+  const [config, setConfig] = useState<FidgetWrapperProps["config"]>(defaultConfig);  
   const saveConifg = async (conf: FidgetConfig<FidgetSettings>) => {
     setConfig({
+      id: defaultConfig.id,
       editConfig: config.editConfig,
-      fidgetConfig: conf,
+      instanceConfig: conf,
     });
     return true;
   };

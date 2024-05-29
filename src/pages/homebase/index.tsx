@@ -7,8 +7,9 @@ import {
   ResizeDirections,
 } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
+import { NextPageWithLayout } from "../_app";
 
-export default function Homebase() {
+const Homebase: NextPageWithLayout = () => {
   const [editMode, setMode] = useState(false);
 
   const availableHandles = [
@@ -140,3 +141,13 @@ export default function Homebase() {
     </div>
   );
 }
+
+Homebase.getLayout = function getLayout(page: React.ReactElement) {
+  return (
+    <>
+      { page }
+    </>
+  )
+}
+
+export default Homebase;

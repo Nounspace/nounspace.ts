@@ -1,41 +1,90 @@
-import "@farcaster/auth-kit/styles.css";
-import React from "react";
-import { UserAuthForm } from "@/common/ui/components/UserAuthForm";
-import { AuthKitProvider } from "@farcaster/auth-kit";
+import { useAccountStore } from "@/common/data/stores/accounts";
 import { Button } from "@/common/ui/atoms/button";
-import { openWindow } from "@/common/lib/utils/navigation";
-import Link from "next/link";
-import clsx from "clsx";
-
-const authKitConfig = {
-  rpcUrl: `https://opt-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-  domain: "app.nounspace.com",
-  // siweUri: `${process.env.NEXT_PUBLIC_URL}/api/auth/siwe`,
-};
+import Spinner from "@/common/ui/atoms/spinner";
+import { useLogin, usePrivy } from "@privy-io/react-auth";
+import { isUndefined } from "lodash";
+import Image from "next/image";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
 
 export default function Login() {
-  const renderAuthForm = () => (
-    <div className="mt-10 text-lg text-foreground sm:mx-auto sm:w-full sm:max-w-sm">
-      <UserAuthForm />
-    </div>
+  const router = useRouter();
+  const { ready, authenticated, logout: privyLogout } = usePrivy();
+  const {
+    currentSpaceIdentityPublicKey,
+    logout: accountStoreLogout,
+  } = useAccountStore((state) => ({
+    currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
+    logout: state.logout,
+  }));
+  const { login } = useLogin({
+    onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
+      // Add User to Local Store if not already present
+      if (!wasAlreadyAuthenticated) {
+        if (isNewUser) {
+          // Trigger creating use store data
+          // redirect to the new user tutorial
+        } 
+        router.push("/setup");
+      }
+    },
+    onError: () => {
+      setErrored(true);
+    },
+  });
+  const [errored, setErrored] = useState(false);
+
+  function logout() {
+    privyLogout();
+    // Logout from store as well
+    accountStoreLogout();
+  }
+
+  const proceedToHomebase = (
+    <>
+      <Button
+        onClick={() => router.push(isUndefined(currentSpaceIdentityPublicKey) ? "/setup" : "/homebase")}
+        size="lg"
+        className="p-6 text-black bg-white"
+        type="button"
+        variant="ghost"
+      > Proceed </Button>
+      <Button
+        onClick={logout}
+        size="lg"
+        className="p-6 text-white bg-transparent hover:bg-white hover:text-black border border-white hover:border-transparent"
+        type="button"
+        variant="outline"
+      > Logout </Button>
+    </>
   );
 
-  const showLandingPageInfo = true;
+  const loginButton = (
+    <>
+      <Button
+        onClick={login}
+        size="lg"
+        className="p-6 text-black bg-white"
+        type="button"
+        variant="ghost"
+      > Sign In or Create Account </Button>
+      {
+        errored ? 
+        <div className="bg-red">
+          An error occurred signing you in. Please try again or contact support if the problem persists
+        </div>
+        : <></>
+      }
+    </>
+  );
 
   return (
-    <AuthKitProvider config={authKitConfig}>
       <div className="w-full max-w-full min-h-screen">
         <div
-          className={clsx(
-            showLandingPageInfo ? "grid lg:max-w-none lg:grid-cols-2 lg:px-0" : "mx-auto bg-gray-900",
-            "relative w-full h-screen flex-col items-center"
-          )}
+          className="relative w-full h-screen flex-col items-center grid lg:max-w-none lg:grid-cols-2 lg:px-0"
         >
-          {showLandingPageInfo && (
             <div className="relative h-full flex-col bg-muted p-10 text-foreground flex">
               <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-gray-900 via-gray-700 to-stone-500" />
-              <div className="relative z-20 flex items-center text-lg font-medium text-gray-200">
-              </div>
               <div className="relative z-20 mt-16 lg:mt-24">
                 <div className="text-center">
                   <h1 className="bg-gradient-to-tl from-white via-stone-200 to-stone-500 bg-clip-text text-center text-5xl font-bold leading-tight tracking-tight text-transparent drop-shadow-sm dark:from-white dark:via-gray-200 dark:to-stone-500 md:text-7xl md:leading-[6rem] lg:leading-[1.1]">
@@ -55,40 +104,10 @@ export default function Login() {
                       <span>Experience</span>
                     </p>
                   </h1>
-                  <p className="mt-6 text-lg font-normal leading-6 text-gray-300">
-                    Share Farcaster accounts with onchain permissions.
-                    <br />
-                    Switch between multiple accounts.
-                    <br />
-                    Use keyboard shortcuts to navigate everything.
-                  </p>
-                  <div className="lg:hidden mt-10 flex items-center justify-center gap-x-6">
-                    <Link href="#login-form">
-                      <Button
-                        variant="default"
-                        size="lg"
-                        className="p-6 px-10 bg-[#8A63D2] hover:bg-[#8A63D2] text-white"
-                        type="button"
-                      >
-                        Login
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="ghost"
-                      size="lg"
-                      className="p-6 text-white"
-                      type="button"
-                      onClick={() =>
-                        openWindow("https://warpcast.com/~/channel/nounspace")
-                      }
-                    >
-                      Learn more <span aria-hidden="true">→</span>
-                    </Button>
-                  </div>
                   <div className="mx-auto mt-20 flex max-w-2xl lg:mr-10 lg:ml-0 lg:mt-12 lg:max-w-none lg:flex-none xl:mr-32">
                     <div className="mx-auto max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
                       <div className="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-                        <img
+                        <Image
                           src="/images/app-screenshot.png"
                           alt="App screenshot"
                           width={2432}
@@ -101,7 +120,6 @@ export default function Login() {
                 </div>
               </div>
             </div>
-          )}
           <div
             id="login-form"
             className="bg-gray-900 h-full w-full p-8 py-20 lg:py-36"
@@ -109,18 +127,18 @@ export default function Login() {
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] md:w-[450px]">
               <div className="flex flex-col space-y-2 text-center">
                 <h1 className="text-5xl lg:text-3xl font-semibold tracking-tight text-gray-100">
-                  Welcome to Nounspace
+                  { ready && authenticated ? "Welcome Back!" : "Welcome to Nounspace" }
                 </h1>
-                <p className="px-8 text-center text-md text-gray-400">
-                  Your Nounpsace account can be used to connect multiple
-                  Farcaster accounts.
-                </p>
               </div>
-              {renderAuthForm()}
+              {
+                ready ? (authenticated ? proceedToHomebase : loginButton) :
+                <div className="self-center"> 
+                  <Spinner className="size-12"/> 
+                </div>
+              }
             </div>
           </div>
         </div>
       </div>
-    </AuthKitProvider>
   );
 }

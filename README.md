@@ -16,9 +16,9 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
 3. Install dependencies `yarn install`
 4. Create a file `.env.development.local`
 5. Get the details you need for the file <br>
-  a. get a Neynar API key https://docs.neynar.com/docs -> `NEXT_PUBLIC_NEYNAR_API_KEY` <br>
+  a. get a Neynar API key https://docs.neynar.com/docs -> `NEYNAR_API_KEY` <br>
   b. get an Alchemy API key https://www.alchemy.com -> `NEXT_PUBLIC_ALCHEMY_API_KEY` <br>
-  c. get your Farcaster account FID and mnemoic -> `NEXT_PUBLIC_APP_FID` + `NEXT_PUBLIC_APP_MNENOMIC`<br>
+  c. get your Farcaster account FID and mnemoic -> `NEXT_PUBLIC_APP_FID` + `APP_MNENOMIC`<br>
   d. launch local copy of Supabase with `supabase start`, use the info provided -> <br>
  `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
