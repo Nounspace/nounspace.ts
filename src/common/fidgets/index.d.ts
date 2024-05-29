@@ -50,10 +50,10 @@ interface LayoutFigetProps {
   isEditable: boolean;
 }
 
-const LayoutFidgetDefaultProps = {
+type LayoutFidgetDefaultProps = {
   fidgets: object,
   layoutConfig: object,
-  isEditable: false,
+  isEditable: boolean,
 }
 
 export interface LayoutFiget<P extends LayoutFigetProps = LayoutFidgetDefaultProps> extends React.FC<P> {}

@@ -75,8 +75,6 @@ const Grid: LayoutFiget<GridArgs> = ({ layoutConfig, fidgets, isEditable }: Grid
     isResizable: isEditable,
   };
 
-  console.log(fidgets);
-
   function generateDOM() {
     return _.map(layoutConfigWithEditable.layout, (gridItem: PlacedGridItem) => {
       return (
