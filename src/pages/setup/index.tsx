@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Wallet, usePrivy, useWallets } from "@privy-io/react-auth";
+import { Wallet, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useAccountStore } from "@/common/data/stores/accounts";
 import { isUndefined } from "lodash";
+import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 
 const SETUP_STATES = {
   wallet: "Loading Wallet...",
@@ -16,7 +17,7 @@ const SETUP_STATES = {
 
 export default function Setup() {
   const { ready, authenticated, user, createWallet, logout } = usePrivy();
-  const { ready: walletsReady } = useWallets();
+  const { signMessage, ready: walletsReady } = useSignMessage();
   const router = useRouter();
   const {
     loadIdentitiesForWallet,
@@ -49,25 +50,24 @@ export default function Setup() {
     const identities = getIdentitiesForWallet(wallet);
     if (identities.length > 0) {
       if (identities.length > 1) {
-        setCurrentStep(SETUP_STATES.select);
-        
+        setCurrentStep(SETUP_STATES.select); 
       } else {
         setCurrentStep(SETUP_STATES.load);
-        await decryptIdentityKeys(wallet, identities[0].identityPublicKey);
+        await decryptIdentityKeys(signMessage, wallet, identities[0].identityPublicKey);
         setCurrentIdentity(identities[0].identityPublicKey);
       }
     } else {
       setCurrentStep(SETUP_STATES.create);
-      const publicKey = await createIdentityForWallet(wallet);
+      const publicKey = await createIdentityForWallet(signMessage, wallet);
       setCurrentIdentity(publicKey);
     }
-    router.push("/done");
+    router.push("/homebase");
   }
 
   useEffect(() => {
-    if (!isUndefined(currentSpaceIdentityPublicKey)) {
-      router.push("/homebase");
-    }
+    // if (!isUndefined(currentSpaceIdentityPublicKey)) {
+    //   router.push("/homebase");
+    // }
     if (walletsReady && ready && user) {
       const wallet = user.wallet;
       if (wallet) {

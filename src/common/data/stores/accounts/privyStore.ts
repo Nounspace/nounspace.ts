@@ -3,6 +3,7 @@ import type { AccountStore } from '.';
 import { StoreSet } from '..';
 import { find, isUndefined } from 'lodash';
 import { signMessage as signExternalWalletMessage } from "@/common/lib/wallets";
+import { useEffect, useState } from 'react';
 
 interface PrivyState {
   privyUser?: PrivyUser | null;
@@ -27,8 +28,9 @@ class WalletNotConnectedError extends Error {
 export type SignMessageFunctionSignature = (wallet: Partial<ConnectedWallet>, message: string) => Promise<string>;
 
 export function useSignMessage() {
-  const { signMessage: signPrivyWalletMessage } = usePrivy();
-  const { wallets } = useWallets();
+  const { signMessage: signPrivyWalletMessage, ready: privyReady } = usePrivy();
+  const { wallets, ready: walletsReady } = useWallets();
+  const [ready, setReady] = useState(false);
 
   async function signMessage(wallet: Partial<ConnectedWallet>, message: string) {
     if (wallet.walletClientType === "privy") {
@@ -43,7 +45,13 @@ export function useSignMessage() {
     }
   }
 
-  return signMessage;
+  useEffect(() => {
+    if (walletsReady && privyReady) {
+      setReady(true);
+    }
+  }, [walletsReady, privyReady])
+
+  return { signMessage, ready };
 }
 
 export const privyStore = (set: StoreSet<AccountStore>): PrivyStore => ({

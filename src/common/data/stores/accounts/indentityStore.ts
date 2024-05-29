@@ -45,8 +45,9 @@ interface IndentityState {
 
 interface IndentityActions {
   loadIdentitiesForWallet: (wallet: Wallet) => Promise<void>;
-  decryptIdentityKeys: (wallet: Wallet, identityPublicKey: string) => Promise<void>;
-  createIdentityForWallet: (wallet: Wallet) => Promise<string>;
+  decryptIdentityKeys: 
+    (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => Promise<void>;
+  createIdentityForWallet: (signMessage: SignMessageFunctionSignature, wallet: Wallet) => Promise<string>;
   setCurrentIdentity: (publicKey: string) => void;
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
@@ -103,9 +104,7 @@ async function encryptKeyFile(
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (
-  signMessage: SignMessageFunctionSignature
-) => (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
+export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
@@ -129,7 +128,7 @@ export const indentityStore = (
   getIdentitiesForWallet: (wallet: Wallet) => {
     return get().walletIdentities[wallet.address] || [];
   },
-  decryptIdentityKeys: async (wallet: Wallet, identityPublicKey: string) => {
+  decryptIdentityKeys: async (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => {
     const supabase = createClient();
     const walletIndentityInfo = find(get().walletIdentities[wallet.address], { identityPublicKey: identityPublicKey});
     if (isUndefined(walletIndentityInfo)) {
@@ -157,7 +156,7 @@ export const indentityStore = (
       });
     });
   },
-  createIdentityForWallet: async (wallet: Wallet) => {
+  createIdentityForWallet: async (signMessage: SignMessageFunctionSignature, wallet: Wallet) => {
     const privateKey = secp256k1.utils.randomPrivateKey();
     const publicKey = secp256k1.getPublicKey(privateKey);
     const identityKeys: RootSpaceKeys = {
@@ -168,7 +167,12 @@ export const indentityStore = (
     const nonce = randomNonce();
     const keyFile: UnsignedFile = {
       publicKey: bytesToHex(publicKey),
-      fileData: bytesToHex(await encryptKeyFile(signMessage, wallet, nonce, identityKeys)),
+      fileData: bytesToHex(await encryptKeyFile(
+        signMessage,
+        wallet,
+        nonce,
+        identityKeys
+      )),
       fileType: "json",
       isEncrypted: true,
     };
