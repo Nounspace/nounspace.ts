@@ -1,7 +1,7 @@
 import { createJSONStorage } from "zustand/middleware";
 import { StoreGet, StoreSet, createStore, createStoreBindings } from "..";
 import { IdentityStore, identityDefault, indentityStore, partializedIdentityStore } from "./indentityStore";
-import { PrivyStore, partializedPrivyStore, privyDefault, privyStore, useSignMessage } from "./privyStore";
+import { PrivyStore, partializedPrivyStore, privyDefault, privyStore } from "./privyStore";
 import { blake3 } from '@noble/hashes/blake3';
 import stringify from "fast-json-stable-stringify";
 import { rawReturn } from "mutative";
@@ -30,10 +30,10 @@ const accountStoreDefaults: Partial<AccountStore> = {
   ...identityDefault,
 };
 
-function createAccountStore(signMessage) {
+function createAccountStore() {
   return createStore<AccountStore>(
     (set: StoreSet<AccountStore>, get: StoreGet<AccountStore>, state: AccountStore) => ({
-      ...indentityStore(signMessage)(set, get),
+      ...indentityStore(set, get),
       ...privyStore(set),
       logout: () => {
         set((_draft) => {
@@ -55,7 +55,6 @@ function createAccountStore(signMessage) {
 const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings(
   "AcccountStore",
   createAccountStore,
-  { hooks: { signMessage: useSignMessage,}}
 );
 
 export {
