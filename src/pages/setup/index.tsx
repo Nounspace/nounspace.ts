@@ -3,7 +3,6 @@ import { Wallet, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import Spinner from "@/common/ui/atoms/spinner";
 import { useAccountStore } from "@/common/data/stores/accounts";
-import { isUndefined } from "lodash";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 
 const SETUP_STATES = {
@@ -25,14 +24,12 @@ export default function Setup() {
     createIdentityForWallet,
     decryptIdentityKeys,
     setCurrentIdentity,
-    currentSpaceIdentityPublicKey,
   } = useAccountStore((state) => ({
     loadIdentitiesForWallet: state.loadIdentitiesForWallet,
     getIdentitiesForWallet: state.getIdentitiesForWallet,
     createIdentityForWallet: state.createIdentityForWallet,
     decryptIdentityKeys: state.decryptIdentityKeys,
     setCurrentIdentity: state.setCurrentIdentity,
-    currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
   }));
   const [currentStep, setCurrentStep] = useState(SETUP_STATES.wallet);
   // const [selectedIdentity, setSelectedIdentity] = useState("");
