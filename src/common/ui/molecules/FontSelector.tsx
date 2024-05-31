@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/common/ui/atoms/select"
 
-const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce((a, v) => ({...a, [v.name]: v}), {}) 
+const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce((acc, v) => ({...acc, [v.name]: v}), {}) 
 
 export interface FontSelectorProps {
   onChange: (fontConfig: FontConfig) => void;
@@ -21,7 +21,7 @@ export function FontSelector({
   onChange,
   value
 }) {
-  const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value]?.config
+  const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value]
 
   return (
     <Select onValueChange={onChange} value={value}>
@@ -30,7 +30,7 @@ export function FontSelector({
           placeholder="Select a font"
           className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
         >
-          <span className={`${fontConfig?.className}`}>{ value }</span>
+          <span style={selectedFont?.config?.style}>{ value }</span>
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
@@ -39,6 +39,7 @@ export function FontSelector({
             (font, i) => {
               return (
                 <SelectItem
+                  style={font.config.style}
                   value={font.name}
                   key={i}
                 >
