@@ -1,6 +1,6 @@
 import { Properties } from 'csstype';
 
-export function classNames(...classes: string[]) {
+export function classNames(...classes: (string|undefined)[]) {
   return classes.filter(Boolean).join(' ')
 }
 
