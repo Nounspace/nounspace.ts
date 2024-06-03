@@ -6,12 +6,13 @@ import { ed25519 } from '@noble/curves/ed25519';
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
 import { AxiosResponse } from "axios";
-import QRCode from "react-qr-code";
 import { DeveloperManagedSigner } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { FidgetSpinner } from "react-loader-spinner";
 import { Button } from "@/common/ui/atoms/button";
+import Spinner from "@/common/ui/atoms/spinner";
+import { SignerResponse } from "@/pages/api/signerRequests";
+import QRCode from "@/common/ui/atoms/qr-code";
 
-type NeynarDeveloperManagedSignerData = FarcasterAuthenticatorData & {
+export type NeynarDeveloperManagedSignerData = FarcasterAuthenticatorData & {
   publicKeyHex?: string;
   privateKeyHex?: string;
   accountType?: FarcasterRegistrationType;
@@ -43,10 +44,10 @@ function isDataInitialized(data: NeynarDeveloperManagedSignerData, error = false
 
 const retrieveSignerData = (data) => {
   return async () => {
-    const resp: AxiosResponse<DeveloperManagedSigner> = await axiosBackend.get("/api/signerRequests", { params: {
+    const resp: AxiosResponse<SignerResponse<DeveloperManagedSigner>> = await axiosBackend.get("/api/signerRequests", { params: {
       publicKey: data.publicKeyHex,
     } });
-    return resp.data;
+    return resp.data.value!;
   };
 }
 
@@ -83,30 +84,33 @@ const methods: FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData> =
       const resp = (await retrieveSignerData(data)());
       await saveData({
         ...data,
-        signerFid: resp.fid,
-        status: resp.status || "pending_approval",
-        signerUrl: resp.signer_approval_url,
+        signerFid: resp.fid || data.signerFid,
+        status: resp.status || data.status || "pending_approval",
+        signerUrl: resp.signer_approval_url || data.signerUrl,
       });
     };
   },
   createNewSigner: (data, saveData) => {
     return async () => {
       const newPrivKey = ed25519.utils.randomPrivateKey();
-      const publicKeyHex = bytesToHex(ed25519.getPublicKey(newPrivKey));
-      const resp: AxiosResponse<DeveloperManagedSigner> = await axiosBackend.post("/api/signerRequests", { publicKey: publicKeyHex });
+      const publicKeyHex = `0x${bytesToHex(ed25519.getPublicKey(newPrivKey))}`;
+      const resp: AxiosResponse<SignerResponse<DeveloperManagedSigner>> = await axiosBackend.post("/api/signerRequests", { publicKey: publicKeyHex });
+      const signerData = resp.data.value!;
       await saveData({
         accountType: "signer",
         publicKeyHex: publicKeyHex,
-        privateKeyHex: bytesToHex(newPrivKey),
-        signerFid: resp.data.fid,
-        status: resp.data.status || "pending_approval",
-        signerUrl: resp.data.signer_approval_url,
+        privateKeyHex: `0x${bytesToHex(newPrivKey)}`,
+        signerFid: signerData.fid,
+        status: signerData.status || "pending_approval",
+        signerUrl: signerData.signer_approval_url,
       });
-      return resp.data.signer_approval_url;
+      return signerData.signer_approval_url;
     };
   },
   createNewAccount: (_data, _saveData) => {
-    throw new Error("Function not implemented.");
+    return () => {
+      throw new Error("Function not implemented.");
+    };
   },
   getSignerFid: (data) => {
     return async () => {
@@ -132,7 +136,7 @@ const methods: FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData> =
   },
 };
 
-const initializer: AuthenticatorInitializer<NeynarDeveloperManagedSignerData> = async ({ data, saveData, done }) => {
+const initializer: AuthenticatorInitializer<NeynarDeveloperManagedSignerData> = ({ data, saveData, done }) => {
   const self = makeAuthenticatorMethods(methods, { data, saveData });
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
@@ -164,15 +168,15 @@ const initializer: AuthenticatorInitializer<NeynarDeveloperManagedSignerData> = 
   });
 
   return (
-    <div>
+    <>
       {
         (isUndefined(data.status) || !isDataInitialized(data) || data.status === "revoked") ? (
           <Button onClick={createSigner}>Link Warpcast Account</Button>
         ) : (
-          loading && data.signerUrl ? <QRCode value={data.signerUrl}/> : <FidgetSpinner />
+          loading && data.signerUrl ? <QRCode value={data.signerUrl} maxWidth={256}/> : <Spinner />
         )
       }
-    </div>
+    </>
   );
 };
 
