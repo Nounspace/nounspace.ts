@@ -1,5 +1,5 @@
 import { AuthenticatorData, AuthenticatorMethodWrapper, AuthenticatorMethods } from "..";
-import NeynarFarcasterAuthenticator from "./NeynarFarcasterAuthenticator";
+import NounspaceFarcasterAuthenticator from "./NounspaceManagedSigner";
 
 export type SignerStatus = "pending_approval" | "approved" | "revoked";
 export type FarcasterRegistrationType = "account" | "signer"; 
@@ -30,5 +30,5 @@ export interface FarcasterAuthenticatorMethods<D extends FarcasterAuthenticatorD
 }
 
 export default {
-  "neynar": NeynarFarcasterAuthenticator,
+  "neynar": NounspaceFarcasterAuthenticator,
 };
