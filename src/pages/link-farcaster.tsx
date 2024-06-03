@@ -1,22 +1,22 @@
 import { AuthenticatorInitializer, AuthenticatorRef } from "@/authenticators";
 import { FarcasterAuthenticatorMethods } from "@/authenticators/farcaster";
-import NeynarFarcasterAuthenticator, { NeynarDeveloperManagedSignerData } from "@/authenticators/farcaster/NeynarFarcasterAuthenticator";
+import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/NounspaceManagedSignerAuthenticator";
 import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function LinkFarcaster() {
   const authenticatorRef = useRef<
     AuthenticatorRef<
-      NeynarDeveloperManagedSignerData,
-      FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData>
+      NounspaceDeveloperManagedSignerData,
+      FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
     >
   >(null);
-  const [data, saveData] = useState<NeynarDeveloperManagedSignerData>({});
+  const [data, saveData] = useState<NounspaceDeveloperManagedSignerData>({});
   const [done, setDone] = useState(false);
-  const [AuthComponent, setAuthComponent] = useState<AuthenticatorInitializer<NeynarDeveloperManagedSignerData>>();
+  const [AuthComponent, setAuthComponent] = useState<AuthenticatorInitializer<NounspaceDeveloperManagedSignerData>>();
   const isMounted = useIsMounted();
   
-  async function saveDataAsync(data: NeynarDeveloperManagedSignerData) {
+  async function saveDataAsync(data: NounspaceDeveloperManagedSignerData) {
     return saveData(data);
   }
 
@@ -32,7 +32,7 @@ export default function LinkFarcaster() {
           <div className="relative h-full flex-col bg-muted p-10 text-foreground flex">
             <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-gray-900 via-gray-700 to-stone-500" />
             <div className="relative z-20 mt-16 lg:mt-24">
-              <NeynarFarcasterAuthenticator ref={authenticatorRef} data={data} saveData={saveDataAsync} />
+              <NounspaceFarcasterAuthenticator ref={authenticatorRef} data={data} saveData={saveDataAsync} />
               {
                 isMounted() ? (
                   !done && AuthComponent ?

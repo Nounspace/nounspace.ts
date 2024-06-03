@@ -12,7 +12,7 @@ import Spinner from "@/common/ui/atoms/spinner";
 import { SignerResponse } from "@/pages/api/signerRequests";
 import QRCode from "@/common/ui/atoms/qr-code";
 
-export type NeynarDeveloperManagedSignerData = FarcasterAuthenticatorData & {
+export type NounspaceDeveloperManagedSignerData = FarcasterAuthenticatorData & {
   publicKeyHex?: string;
   privateKeyHex?: string;
   accountType?: FarcasterRegistrationType;
@@ -28,7 +28,7 @@ class SignerNotProperlyInitializedError extends Error {
   }
 }
 
-function isDataInitialized(data: NeynarDeveloperManagedSignerData, error = false) {
+function isDataInitialized(data: NounspaceDeveloperManagedSignerData, error = false) {
   if (
     isUndefined(data.privateKeyHex) ||
     isUndefined(data.publicKeyHex) ||
@@ -51,7 +51,7 @@ const retrieveSignerData = (data) => {
   };
 }
 
-const methods: FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData> = {
+const methods: FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData> = {
   signMessage: (data) => {
     return async (messageHash: Uint8Array) => {
       if (isUndefined(data.publicKeyHex) || isUndefined(data.privateKeyHex)) {
@@ -136,7 +136,7 @@ const methods: FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData> =
   },
 };
 
-const initializer: AuthenticatorInitializer<NeynarDeveloperManagedSignerData> = ({ data, saveData, done }) => {
+const initializer: AuthenticatorInitializer<NounspaceDeveloperManagedSignerData> = ({ data, saveData, done }) => {
   const self = makeAuthenticatorMethods(methods, { data, saveData });
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
@@ -181,10 +181,10 @@ const initializer: AuthenticatorInitializer<NeynarDeveloperManagedSignerData> = 
 };
 
 export default createAuthenticator<
-  NeynarDeveloperManagedSignerData,
-  FarcasterAuthenticatorMethods<NeynarDeveloperManagedSignerData>
+  NounspaceDeveloperManagedSignerData,
+  FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
 >(
-  "NeynarFarcasterAuthenticator",
+  "NounspaceFarcasterAuthenticator",
   methods,
   initializer
 );
