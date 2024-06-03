@@ -1,3 +1,4 @@
+import { WEBSITE_URL } from "@/constants/app";
 import React, { Suspense } from "react"
 
 export const metadata = {
@@ -9,12 +10,12 @@ export const metadata = {
     type: "website",
     description: "Nounspace is a client for Farcaster",
     images: {
-      url: `${process.env.NEXT_PUBLIC_URL}/images/nounspace_og.png`,
+      url: `${WEBSITE_URL}/images/nounspace_og.png`,
       type: "image/png",
       width: 1200,
       height: 737,
     },
-    url: process.env.NEXT_PUBLIC_URL,
+    url: WEBSITE_URL,
   },
   icons: {
     icon: [
