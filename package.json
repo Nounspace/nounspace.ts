@@ -108,7 +108,7 @@
     "react-icons": "^5.0.1",
     "react-intersection-observer": "^9.8.1",
     "react-loader-spinner": "^6.1.6",
-    "react-qr-code": "^2.0.11",
+    "react-qr-code": "^2.0.14",
     "react-router-dom": "^6.22.0",
     "react-tweet": "^3.2.1",
     "sonner": "^1.4.41",

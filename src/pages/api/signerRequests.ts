@@ -2,6 +2,7 @@ import { APP_FID } from "@/constants/app";
 import { AppSigner } from "@/constants/app-server-side";
 import { SIGNED_KEY_REQUEST_TYPE, SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN } from "@farcaster/core";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
+import { DeveloperManagedSigner } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isArray, isUndefined } from "lodash";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -9,7 +10,15 @@ type CreateSignerRequest = {
   publicKey: `0x${string}`;
 };
 
-async function handlePost(req: NextApiRequest, res: NextApiResponse) {
+export type SignerResponse<D> = {
+  result: "success" | "error";
+  error?: {
+    message: string;
+  };
+  value?: D;
+};
+
+async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerResponse<DeveloperManagedSigner>>) {
   const { publicKey } = req.body as CreateSignerRequest;
 
   if (isUndefined(publicKey)) {
@@ -48,7 +57,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse) {
   } catch (e) {
     console.error(e);
     return res.status(500).json({
-      status: "error",
+      result: "error",
       error: {
         message: "An error occurred registering the signer with Neynar",
       },
@@ -97,7 +106,10 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<SignerResponse<DeveloperManagedSigner>>
+) {
   if (req.method === "POST") {
     return handlePost(req, res);
   } else if (req.method === "GET") {
