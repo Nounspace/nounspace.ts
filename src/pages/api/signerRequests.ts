@@ -1,4 +1,5 @@
-import { APP_FID, AppSigner } from "@/constants/app";
+import { APP_FID } from "@/constants/app";
+import { AppSigner } from "@/constants/app-server-side";
 import { SIGNED_KEY_REQUEST_TYPE, SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN } from "@farcaster/core";
 import { NeynarAPIClient } from "@neynar/nodejs-sdk";
 import { isArray, isUndefined } from "lodash";
