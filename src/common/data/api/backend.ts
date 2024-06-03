@@ -1,7 +1,8 @@
+import { WEBSITE_URL } from "@/constants/app";
 import axios from "axios";
 
 const axiosBackend = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_URL!,
+  baseURL: WEBSITE_URL,
 });
 
 export default axiosBackend;

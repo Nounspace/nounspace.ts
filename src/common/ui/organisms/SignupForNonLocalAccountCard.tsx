@@ -9,6 +9,7 @@ import {
 } from "@/common/ui/atoms/card";
 import { Button } from "@/common/ui/atoms/button";
 import { openWindow } from "@/common/lib/utils/navigation";
+import { WEBSITE_URL } from "@/constants/app";
 
 const SignupForNonLocalAccountCard = () => {
   return (
@@ -27,7 +28,7 @@ const SignupForNonLocalAccountCard = () => {
         <Button
           className="w-full"
           variant="default"
-          onClick={() => openWindow(`${process.env.NEXT_PUBLIC_URL}/login`)}
+          onClick={() => openWindow(`${WEBSITE_URL}/login`)}
         >
           Switch to a full account
         </Button>
