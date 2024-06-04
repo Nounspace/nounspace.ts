@@ -1,6 +1,6 @@
 import { AuthenticatorInitializer, AuthenticatorRef } from "@/authenticators";
-import { FarcasterSignerAuthenticatorMethods } from "@/authenticators/farcaster/neynar";
-import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/neynar/NounspaceManagedSignerAuthenticator";
+import { FarcasterSignerAuthenticatorMethods } from "@/authenticators/farcaster/signers";
+import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/signers/NounspaceManagedSignerAuthenticator";
 import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 import React, { useEffect, useRef, useState } from "react";
 
