@@ -1,6 +1,6 @@
 import { AuthenticatorInitializer, AuthenticatorRef } from "@/authenticators";
-import { FarcasterAuthenticatorMethods } from "@/authenticators/farcaster";
-import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/NounspaceManagedSignerAuthenticator";
+import { FarcasterSignerAuthenticatorMethods } from "@/authenticators/farcaster/neynar";
+import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/neynar/NounspaceManagedSignerAuthenticator";
 import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -8,7 +8,7 @@ export default function LinkFarcaster() {
   const authenticatorRef = useRef<
     AuthenticatorRef<
       NounspaceDeveloperManagedSignerData,
-      FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
+      FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
     >
   >(null);
   const [data, saveData] = useState<NounspaceDeveloperManagedSignerData>({});

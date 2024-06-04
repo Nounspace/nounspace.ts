@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AuthenticatorInitializer, createAuthenticator, makeAuthenticatorMethods } from "..";
-import { FarcasterAuthenticatorData, FarcasterAuthenticatorMethods, FarcasterRegistrationType, SignerStatus } from ".";
+import { AuthenticatorInitializer, createAuthenticator, makeAuthenticatorMethods } from "../..";
+import { FarcasterSignerAuthenticatorData, FarcasterSignerAuthenticatorMethods, FarcasterRegistrationType, SignerStatus } from ".";
 import { isUndefined } from "lodash";
 import { ed25519 } from '@noble/curves/ed25519';
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
@@ -12,7 +12,7 @@ import Spinner from "@/common/ui/atoms/spinner";
 import { SignerResponse } from "@/pages/api/signerRequests";
 import QRCode from "@/common/ui/atoms/qr-code";
 
-export type NounspaceDeveloperManagedSignerData = FarcasterAuthenticatorData & {
+export type NounspaceDeveloperManagedSignerData = FarcasterSignerAuthenticatorData & {
   publicKeyHex?: string;
   privateKeyHex?: string;
   accountType?: FarcasterRegistrationType;
@@ -51,7 +51,7 @@ const retrieveSignerData = (data) => {
   };
 }
 
-const methods: FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData> = {
+const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData> = {
   signMessage: (data) => {
     return async (messageHash: Uint8Array) => {
       if (isUndefined(data.publicKeyHex) || isUndefined(data.privateKeyHex)) {
@@ -182,7 +182,7 @@ const initializer: AuthenticatorInitializer<NounspaceDeveloperManagedSignerData>
 
 export default createAuthenticator<
   NounspaceDeveloperManagedSignerData,
-  FarcasterAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
+  FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
 >(
   "NounspaceFarcasterAuthenticator",
   methods,
