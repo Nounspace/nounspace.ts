@@ -1,15 +1,17 @@
-import { AuthenticatorData, AuthenticatorMethodWrapper, AuthenticatorMethods } from "..";
-import NounspaceFarcasterAuthenticator from "./NounspaceManagedSigner";
+import { AuthenticatorData, AuthenticatorMethodWrapper, AuthenticatorMethods } from "../..";
+import NounspaceFarcasterAuthenticator from "./NounspaceManagedSignerAuthenticator";
 
 export type SignerStatus = "pending_approval" | "approved" | "revoked";
 export type FarcasterRegistrationType = "account" | "signer"; 
 
-export interface FarcasterAuthenticatorData extends AuthenticatorData {
+export interface FarcasterSignerAuthenticatorData extends AuthenticatorData {
   accountFid?: number;
   signerFid?: number;
 }
 
-export interface FarcasterAuthenticatorMethods<D extends FarcasterAuthenticatorData> extends AuthenticatorMethods<D> {
+export interface FarcasterSignerAuthenticatorMethods<
+  D extends FarcasterSignerAuthenticatorData
+> extends AuthenticatorMethods<D> {
   signMessage: AuthenticatorMethodWrapper<((messageHash: Uint8Array) => Promise<Uint8Array>), D>;
   // Same as the account's public key for account type
   getSignerPublicKey: AuthenticatorMethodWrapper<(() => Promise<Uint8Array>), D>;
@@ -30,5 +32,5 @@ export interface FarcasterAuthenticatorMethods<D extends FarcasterAuthenticatorD
 }
 
 export default {
-  "neynar": NounspaceFarcasterAuthenticator,
+  "nounspace": NounspaceFarcasterAuthenticator,
 };
