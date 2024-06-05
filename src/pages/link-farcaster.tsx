@@ -2,6 +2,8 @@ import { AuthenticatorInitializer, AuthenticatorRef } from "@/authenticators";
 import { FarcasterSignerAuthenticatorMethods } from "@/authenticators/farcaster/signers";
 import NounspaceFarcasterAuthenticator, { NounspaceDeveloperManagedSignerData } from "@/authenticators/farcaster/signers/NounspaceManagedSignerAuthenticator";
 import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
+import { isArray } from "lodash";
+import { useRouter } from "next/router";
 import React, { useEffect, useRef, useState } from "react";
 
 export default function LinkFarcaster() {
@@ -11,18 +13,22 @@ export default function LinkFarcaster() {
       FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
     >
   >(null);
+  const router = useRouter();
   const [data, saveData] = useState<NounspaceDeveloperManagedSignerData>({});
   const [done, setDone] = useState(false);
   const [AuthComponent, setAuthComponent] = useState<AuthenticatorInitializer<NounspaceDeveloperManagedSignerData>>();
   const isMounted = useIsMounted();
-  
+
   async function saveDataAsync(data: NounspaceDeveloperManagedSignerData) {
     return saveData(data);
   }
 
   useEffect(() => {
+    saveData({
+      requestingWallet: isArray(router.query.wallet) ? undefined : router.query.wallet,
+    });
     setAuthComponent(() => authenticatorRef.current?.initializer);
-  });
+  }, [isMounted, router.query]);
 
   return (
       <div className="w-full max-w-full min-h-screen">

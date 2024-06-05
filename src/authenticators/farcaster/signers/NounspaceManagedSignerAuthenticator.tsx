@@ -6,10 +6,9 @@ import { ed25519 } from '@noble/curves/ed25519';
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
 import { AxiosResponse } from "axios";
-import { DeveloperManagedSigner } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { Button } from "@/common/ui/atoms/button";
 import Spinner from "@/common/ui/atoms/spinner";
-import { SignerResponse } from "@/pages/api/signerRequests";
+import { SignedKeyRequestResponse, SignerResponse } from "@/pages/api/signerRequests";
 import QRCode from "@/common/ui/atoms/qr-code";
 
 export type NounspaceDeveloperManagedSignerData = FarcasterSignerAuthenticatorData & {
@@ -18,6 +17,7 @@ export type NounspaceDeveloperManagedSignerData = FarcasterSignerAuthenticatorDa
   accountType?: FarcasterRegistrationType;
   status?: SignerStatus;
   signerUrl?: string;
+  requestingWallet?: string;
 };
 
 const BACKEND_POLL_FREQUENCY = 2000;
@@ -44,8 +44,8 @@ function isDataInitialized(data: NounspaceDeveloperManagedSignerData, error = fa
 
 const retrieveSignerData = (data) => {
   return async () => {
-    const resp: AxiosResponse<SignerResponse<DeveloperManagedSigner>> = await axiosBackend.get("/api/signerRequests", { params: {
-      publicKey: data.publicKeyHex,
+    const resp: AxiosResponse<SignerResponse<SignedKeyRequestResponse>> = await axiosBackend.get("/api/signerRequests", { params: {
+      token: data.token,
     } });
     return resp.data.value!;
   };
@@ -71,9 +71,9 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
     return async () => {
       isDataInitialized(data, true);
       if (data.accountType === "account") {
-        return "approved";
+        return "completed";
       }
-      return (await retrieveSignerData(data)()).status;
+      return (await retrieveSignerData(data)()).state;
     };
   },
   updateSignerInfo: (data, saveData) => {
@@ -84,9 +84,9 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
       const resp = (await retrieveSignerData(data)());
       await saveData({
         ...data,
-        signerFid: resp.fid || data.signerFid,
-        status: resp.status || data.status || "pending_approval",
-        signerUrl: resp.signer_approval_url || data.signerUrl,
+        signerFid: resp.requestFid || data.signerFid,
+        status: resp.state || data.status || "pending",
+        signerUrl: resp.deeplinkUrl || data.signerUrl,
       });
     };
   },
@@ -94,17 +94,22 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
     return async () => {
       const newPrivKey = ed25519.utils.randomPrivateKey();
       const publicKeyHex = `0x${bytesToHex(ed25519.getPublicKey(newPrivKey))}`;
-      const resp: AxiosResponse<SignerResponse<DeveloperManagedSigner>> = await axiosBackend.post("/api/signerRequests", { publicKey: publicKeyHex });
+      const resp: AxiosResponse<SignerResponse<SignedKeyRequestResponse>> = await axiosBackend.post("/api/signerRequests", {
+        publicKey: publicKeyHex,
+        requestingWallet: data.requestingWallet,
+      });
       const signerData = resp.data.value!;
       await saveData({
+        ...data,
         accountType: "signer",
         publicKeyHex: publicKeyHex,
         privateKeyHex: `0x${bytesToHex(newPrivKey)}`,
-        signerFid: signerData.fid,
-        status: signerData.status || "pending_approval",
-        signerUrl: signerData.signer_approval_url,
+        signerFid: signerData.requestFid,
+        status: signerData.state || "pending",
+        signerUrl: signerData.deeplinkUrl,
+        token: signerData.token,
       });
-      return signerData.signer_approval_url;
+      return signerData.deeplinkUrl;
     };
   },
   createNewAccount: (_data, _saveData) => {
@@ -151,14 +156,14 @@ const initializer: AuthenticatorInitializer<NounspaceDeveloperManagedSignerData>
     setLoading(true);
     pollInterval.current = setInterval(() => self.updateSignerInfo(), BACKEND_POLL_FREQUENCY);
     doneInterval.current = setInterval(() => {
-      if (data.status === "approved" ) {
+      if (data.status === "completed" ) {
         done();
       }
     }, BACKEND_POLL_FREQUENCY);
   }
 
   useEffect(() => {
-    if (data.status === "pending_approval") {
+    if (data.state === "pending") {
       startPolling();
     }
     return () => {
