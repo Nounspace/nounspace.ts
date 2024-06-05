@@ -173,14 +173,6 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
     config: source_code_pro
   },
   {
-    name: 'Noto Serif',
-    config: noto_serif
-  },
-  {
-    name: 'Noto Sans',
-    config: noto_sans
-  },
-  {
     name: 'Roboto Condensed',
     config: roboto_condensed
   },
