@@ -13,14 +13,14 @@ import {
 const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce((acc, v) => ({...acc, [v.name]: v}), {}) 
 
 export interface FontSelectorProps {
-  onChange: (fontConfig: FontConfig) => void;
+  onChange: (fontConfig: FontFamily) => void;
   value: string;
 }
 
-export function FontSelector({
+export const FontSelector: React.FC<FontSelectorProps> = ({
   onChange,
   value
-}) {
+}) => {
   const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value]
 
   return (
@@ -55,3 +55,4 @@ export function FontSelector({
 }
 
 export default FontSelector;
+
