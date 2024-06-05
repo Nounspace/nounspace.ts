@@ -1,5 +1,5 @@
 // TO DO: Figure out how to do this importing dynamically
-import { LayoutFiget } from "@/common/fidgets";
+import { LayoutFidget } from "@/common/fidgets";
 import Example from "./example";
 import Frame from "./frame";
 import Gallery from "./ui/gallery";
@@ -14,5 +14,5 @@ export const CompleteFidgets = {
 export const LayoutFidgets = {
   grid: Grid,
 } as {
-  [key: string]: LayoutFiget;  
+  [key: string]: LayoutFidget;
 };
