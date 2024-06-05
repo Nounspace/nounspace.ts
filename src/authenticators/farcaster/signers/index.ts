@@ -1,12 +1,13 @@
 import { AuthenticatorData, AuthenticatorMethodWrapper, AuthenticatorMethods } from "../..";
 import NounspaceFarcasterAuthenticator from "./NounspaceManagedSignerAuthenticator";
 
-export type SignerStatus = "pending_approval" | "approved" | "revoked";
+export type SignerStatus = "pending" | "approved" | "revoked" | "completed";
 export type FarcasterRegistrationType = "account" | "signer"; 
 
 export interface FarcasterSignerAuthenticatorData extends AuthenticatorData {
   accountFid?: number;
   signerFid?: number;
+  token?: string;
 }
 
 export interface FarcasterSignerAuthenticatorMethods<
