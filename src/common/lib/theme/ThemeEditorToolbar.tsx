@@ -37,11 +37,11 @@ export function ThemeEditorToolbar({
   const { background, font } = editedTheme.properties;
 
   useEffect(() => {
-    setCSSVar('--theme-background', background)
+    setCSSVar('--user-theme-background', background)
   }, [background])
 
   useEffect(() => {
-    setCSSVar('--theme-font', font)
+    setCSSVar('--user-theme-font', font)
   }, [font])
 
   return show && (

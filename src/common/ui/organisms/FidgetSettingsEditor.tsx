@@ -31,27 +31,12 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({ field, value, onC
   )
 }
 
-// Merges defaults and saved settings
-const getInitialSettings = (
-  settings: FidgetSettings,
-  config: FidgetEditConfig
-): FidgetSettings => {
-  return reduce(
-    config.fields,
-    (acc, f) => ({
-      ...acc,
-      [f.fieldName]: f.fieldName in settings ? settings[f.fieldName] : (f.default || null),
-    }),
-    {},
-  )
-}
-
 export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   editConfig,
   settings,
   onSave,
 }) => {
-  const [state, setState] = useState<FidgetSettings>(getInitialSettings(settings, editConfig))
+  const [state, setState] = useState<FidgetSettings>(settings)
 
   const _onSave = (e) => {
     e.preventDefault()
