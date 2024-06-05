@@ -121,6 +121,16 @@ export const work_sans = Work_Sans({
 
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
+    name: 'var(--user-theme-font)',
+    config: {
+      variable: '--user-theme-font',
+      className: '.user-theme-font',
+      style: {
+        fontFamily: 'var(--user-theme-font)'
+      }
+    }
+  },
+  {
     name: 'Inter',
     config: inter
   },
