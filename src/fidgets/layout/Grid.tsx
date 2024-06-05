@@ -1,10 +1,10 @@
 import React, { ReactNode } from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
-import _ from "lodash";
-import { FidgetDetails, LayoutFidgetConfig, LayoutFiget, LayoutFigetProps } from "@/common/fidgets";
-import randDivId from "@/common/lib/utils/divIdGenerator";
+import { LayoutFidgetConfig, LayoutFidget, LayoutFidgetProps } from "@/common/fidgets";
+import { classNames } from '@/styles/utils/css';
 
-export type ResizeDirections = 's' | 'w' | 'e' | 'n' | 'sw' | 'nw' | 'se' | 'ne';
+export const resizeDirections = ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'];
+export type ResizeDirection = typeof resizeDirections[number]
 
 interface GridItem {
   i: string; // Id
@@ -14,7 +14,7 @@ interface GridItem {
   maxH: number,
   // By default, a handle is only shown on the bottom-right (southeast) corner.
   // As of RGL >= 1.4.0, resizing on any corner works just fine!
-  resizeHandles?: ResizeDirections[];
+  resizeHandles?: ResizeDirection[];
 }
 
 export interface PlacedGridItem extends GridItem{
@@ -42,12 +42,13 @@ export interface GridLayout extends LayoutFidgetConfig {
   rowHeight: number;
   compactType?: string | null;
   preventCollision?: boolean;
-  margin?: [number, number];
+  margin: [number, number],
+  containerPadding: [number, number],
   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
   onDrop: (layout: PlacedGridItem[], item: PlacedGridItem) => unknown;
 }
 
-export type GridArgs = LayoutFigetProps & {
+export type GridArgs = LayoutFidgetProps & {
   layoutConfig: GridLayout;
   fidgets: {
     [key: string]: ReactNode;
@@ -55,42 +56,73 @@ export type GridArgs = LayoutFigetProps & {
   isEditable: boolean;
 }
 
-const availableHandles = ["s", "w", "e", "n", "sw", "nw", "se", "ne"] as ResizeDirections[];
-
-export function createGridItemFromFidgetDetails(details: FidgetDetails): GridItem {
-  return {
-    i: details.id + randDivId(),
-    maxH: details.editConfig.size.maxHeight,
-    maxW: details.editConfig.size.maxWidth,
-    minH: details.editConfig.size.minHeight,
-    minW: details.editConfig.size.minWidth,
-    resizeHandles: availableHandles,
-  };
-}
-
 const ReactGridLayout = WidthProvider(RGL);
 
-const Grid: LayoutFiget<GridArgs> = ({ layoutConfig, fidgets, isEditable }: GridArgs) => {
-  const layoutConfigWithEditable: GridLayout = {
-    ...layoutConfig,
-    isDraggable: isEditable,
-    isResizable: isEditable,
-  };
-
-  function generateDOM() {
-    return _.map(layoutConfigWithEditable.layout, (gridItem: PlacedGridItem) => {
-      return (
-        <div key={gridItem.i}>
-          { fidgets[gridItem.i] }
-        </div>
-      );
-    });
-  }
-
+const Gridlines: React.FC<GridLayout> = ({
+  maxRows,
+  cols,
+  rowHeight,
+  margin,
+  containerPadding
+}) => {
   return (
-    <ReactGridLayout {...layoutConfigWithEditable}>
-      { generateDOM() }
-    </ReactGridLayout>
+    <div className='absolute inset-0 z-0 rounded-lg h-max'
+      style={{
+        transition: "background-color 1000ms linear",
+        display: "grid",
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${maxRows}, ${rowHeight}px)`,
+        gridGap: `${margin[0]}px`,
+        rowGap: `${margin[1]}px`,
+        inset: `${containerPadding[0]}px ${containerPadding[1]}px`,
+        background: 'rgba(200, 227, 248, 0.3)',
+      }}
+    >
+      {[...Array(cols * maxRows)].map(
+        (_, i) => (
+          <div
+            className="rounded-lg"
+            key={i}
+            style={{
+              backgroundColor: "rgba(200, 227, 248, 0.5)",
+              outline: '1px dashed rgba(200, 227, 248, 0.8)'
+            }}
+          />
+        )
+      )}
+    </div>
+  );
+}
+
+const Grid: LayoutFidget<GridArgs> = ({
+  layoutConfig,
+  fidgets,
+  isEditable,
+  isEditing = false,
+}: GridArgs) => {
+  return (
+    <>
+      {isEditable && isEditing && (
+        <Gridlines {...layoutConfig} />
+      )}
+      <ReactGridLayout
+        {...layoutConfig}
+        isDraggable={isEditable && isEditing}
+        isResizable={isEditable && isEditing}
+      >
+        {
+          layoutConfig.layout.map(
+            (gridItem: PlacedGridItem) => {
+              return (
+                <div key={gridItem.i}>
+                  { fidgets[gridItem.i] }
+                </div>
+              );
+            }
+          )
+        }
+      </ReactGridLayout>
+    </>
   );
 }
 
