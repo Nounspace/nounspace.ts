@@ -27,9 +27,9 @@
     --ring: 240 5.9% 10%;
     --radius: 0.3rem;
 
-    /* User-Configurable Theme */
-    --theme-background: initial;
-    --theme-font: initial;
+    /* User Theme Variables */
+    --user-theme-background: initial;
+    --user-theme-font: initial;
   }
  
   .dark {
@@ -52,6 +52,15 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 23%;
     --ring: 240 4.9% 83.9%;
+  }
+
+  /* User Theme Classes */
+  .user-theme-background {
+    background: var(--user-theme-background);
+  }
+
+  .user-theme-font {
+    font-family: var(--user-theme-font);
   }
 
   html {

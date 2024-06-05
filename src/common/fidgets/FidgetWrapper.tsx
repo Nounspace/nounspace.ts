@@ -2,15 +2,30 @@
 import React, { useState, useCallback } from "react";
 import { Card, CardContent } from "@/common/ui/atoms/card";
 import { toast } from "sonner";
-import { FidgetConfig, FidgetSettings, FidgetDetails } from ".";
+import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetEditConfig } from ".";
 import { FaGear } from "react-icons/fa6";
 import FidgetSettingsModal from "@/common/fidgets/FidgetSettingsModal";
+import { reduce } from "lodash";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetSettings>;
   config: FidgetDetails;
   saveConfig: (conf: FidgetConfig<FidgetSettings>) => Promise<boolean>
 };
+
+export const getSettingsWithDefaults = (
+  settings: FidgetSettings,
+  config: FidgetEditConfig
+): FidgetSettings => {
+  return reduce(
+    config.fields,
+    (acc, f) => ({
+      ...acc,
+      [f.fieldName]: f.fieldName in settings ? settings[f.fieldName] : (f.default || null),
+    }),
+    {},
+  )
+}
 
 export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
   const [_saving, setSaving] = useState(false);
@@ -21,6 +36,11 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
       setEditing(true)
     },
     [setEditing]
+  )
+
+  const settingsWithDefaults = getSettingsWithDefaults(
+    config.instanceConfig.settings,
+    config.editConfig
   )
 
   const onSave = async (newSettings: FidgetSettings) => {
@@ -44,7 +64,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
         setOpen={setEditing}
         onSave={onSave}
         editConfig={config.editConfig}
-        settings={config.instanceConfig.settings}
+        settings={settingsWithDefaults}
       />
       {
         config.instanceConfig.editable && (
@@ -59,7 +79,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
         )
       }
       <CardContent className="size-full">
-        {fidget(config.instanceConfig.settings)}
+        {fidget(settingsWithDefaults)}
       </CardContent>
     </Card>
   );
