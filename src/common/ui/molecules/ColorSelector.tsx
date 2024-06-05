@@ -16,7 +16,7 @@ export type ColorSelectorProps = {
 export const ColorSelector: React.FC<ColorSelectorProps> = ({
   value,
   onChange
-}: ColorSelectorProps) => {
+}) => {
   const [isEditing, setIsEditing] = useState(false)
 
   const _onChange = useCallback<(val: string) => void>(
