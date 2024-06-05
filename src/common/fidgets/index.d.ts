@@ -1,3 +1,7 @@
+import TextInput from "@/common/ui/molecules/TextInput";
+import ColorSelector from "@/common/ui/molecules/ColorSelector";
+import FontSelector from "@/common/ui/molecules/FontSelector";
+
 export interface FidgetSettings {}
 
 export type FidgetConfig<S extends FidgetSettings = FidgetSettings> = {
@@ -8,8 +12,7 @@ export type FidgetConfig<S extends FidgetSettings = FidgetSettings> = {
 export type FidgetFieldConfig = {
   readonly fieldName: string;
   readonly validator?: (value) => boolean;
-  // This should be changed to a set of allowed input selectors
-  readonly inputSelector: React.FC;
+  readonly inputSelector: typeof TextInput | typeof ColorSelector | typeof FontSelector;
   readonly default?: any;
   readonly required: boolean;
 };
@@ -42,18 +45,20 @@ export interface FidgetModule<P = unknown> {
   editConfig: FidgetEditConfig;
 }
 
-interface LayoutFigetProps {
+interface LayoutFidgetProps {
   layoutConfig: LayoutFidgetConfig;
   fidgets: {
     [key: string]: ReactNode;
   };
   isEditable: boolean;
+  isEditing: boolean;
 }
 
 type LayoutFidgetDefaultProps = {
   fidgets: object,
   layoutConfig: object,
   isEditable: boolean,
+  isEditing: boolean
 }
 
-export interface LayoutFiget<P extends LayoutFigetProps = LayoutFidgetDefaultProps> extends React.FC<P> {}
+export interface LayoutFidget<P extends LayoutFidgetProps = LayoutFidgetDefaultProps> extends React.FC<P> {}
