@@ -7,6 +7,25 @@ import axios from "axios";
 import { isArray, isUndefined } from "lodash";
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+/**
+ * Defines an API endpoint to manage the creation of signers from Warpcast
+ * 
+ * This file is based on the guide offered by Warpcast
+ * https://warpcast.notion.site/Signer-Request-API-Migration-Guide-Public-9e74827f9070442fb6f2a7ffe7226b3c
+ * 
+ * Rough flow:
+ * GET -> 
+ *   - takes in a given token (as returned by the POST method)
+ *   - looks up the data from the warpcast API about the state of that token
+ *   - returns the data or an error if the token is invalid or not provided
+ * POST ->
+ *   - takes in the Public key of the signer that is being created
+ *   - builds a signer request object that is signed by the Nounspace account
+ *   - adds a sponsorship field if the user is nOG holder (TO DO: change this as we leave alpha)
+ *   - returns data about the new signer, including reference token and deeplinkUrl
+ *   - errors if the public key is not provided
+ */
+
 type CreateSignerRequest = {
   publicKey: `0x${string}`;
   requestingWallet?: `0x${string}`;
@@ -78,6 +97,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerRespon
     },
   });
 
+  // TO DO: Change who get's sponsorship as we leave Alpha and move forward
   let shouldSponsor = false;
   if (!isUndefined(requestingWallet)) {
     try {

@@ -47,6 +47,19 @@ export function createAuthenticator<D extends AuthenticatorData, M extends Authe
   methods: M,
   initializerComponent: AuthenticatorInitializer<D>,
  ) {
+    /**
+   * This is a code factor function that takes in the methods that a specific
+   * authenticator needs to function, and turns it into a component that
+   * the AuthenticatorManager can add to the DOM and reference.
+   * Because the AuthenticatorManager tracks these components with React refs,
+   * it builds a Component that is wrapped in forwardRef and then uses
+   * useImperativeHandle, since there are no DOM elements related to this component
+   * @param  {String} name  Name of the Authenticator that is being made
+   * @param  {M} methods  The methods that a developer can call for this authenticator
+   * @param  {AuthenticatorInitializer<D>} initializerComponent A component that allows the user
+   * to register sensative data for the Authenticator
+   * @return {unknown}  A component that can be used 
+   */
   const authenticator = forwardRef<
     AuthenticatorRef<D, M>,
     AuthenticatorProps<D>
