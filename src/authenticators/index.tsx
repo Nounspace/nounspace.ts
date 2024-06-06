@@ -48,7 +48,7 @@ export function createAuthenticator<D extends AuthenticatorData, M extends Authe
   initializerComponent: AuthenticatorInitializer<D>,
  ) {
     /**
-   * This is a code factor function that takes in the methods that a specific
+   * This is a code factory function that takes in the methods that a specific
    * authenticator needs to function, and turns it into a component that
    * the AuthenticatorManager can add to the DOM and reference.
    * Because the AuthenticatorManager tracks these components with React refs,
