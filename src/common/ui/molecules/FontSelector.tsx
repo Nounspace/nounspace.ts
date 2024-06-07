@@ -15,17 +15,19 @@ const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce((acc, v) => ({...
 export interface FontSelectorProps {
   onChange: (fontConfig: FontFamily) => void;
   value: string;
+  className?: string;
 }
 
 export const FontSelector: React.FC<FontSelectorProps> = ({
   onChange,
-  value
+  value,
+  className
 }) => {
   const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value]
 
   return (
     <Select onValueChange={onChange} value={value}>
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className={className}>
         <SelectValue
           placeholder="Select a font"
           className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
