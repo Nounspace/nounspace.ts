@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { classNames } from "@/styles/utils/css";
 
 const HomeIcon = () => {
@@ -60,26 +61,29 @@ const ShareIcon = () => {
 
 const BrandHeader = () => {
   return (
-    <a href="/homebase" className="flex items-center ps-2.5 mb-4">
+    <Link href="/homebase" className="flex items-center ps-2.5 mb-4">
       <img src="/images/noggles.svg" className="h-13 me-3" alt="Nounspace Logo" />
       {false && <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">Nounspace</span>}
-    </a>
+    </Link>
   )
 }
 
-const NavItem = ({ label, active, Icon }) => {
+type NavItemProps = {
+  label: string;
+  active?: boolean;
+  Icon: React.FC
+}
+
+const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   return (
     <li>
       <a href="#" className={
         classNames(
           "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
-          active && 'bg-gray-100'
+          active ? 'bg-gray-100' : ''
         )
       }>
-        <Icon
-          className="w-5 h-5 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
-          aria-hidden="true"
-        />
+        <Icon aria-hidden="true" />
         <span className="ms-2">{label}</span>
       </a>
     </li>

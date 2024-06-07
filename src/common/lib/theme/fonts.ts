@@ -47,14 +47,14 @@ export const open_sans = Open_Sans({
   subsets: ['latin'],
   variable: '--font-open-sans',
   display: 'swap',
-});;
+});
 
 export const lato = Lato({
   subsets: ['latin'],
   variable: '--font-lato',
   display: 'swap',
   weight: ['100', '300', '400', '700', '900']
-});;
+});
 
 export const noto_serif = Noto_Serif({
   subsets: ['latin'],

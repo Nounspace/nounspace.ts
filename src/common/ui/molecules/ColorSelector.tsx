@@ -6,7 +6,6 @@ import {
 } from "@/common/ui/atoms/popover";
 import { Button } from "@/common/ui/atoms/button"
 import { Color } from "@/common/lib/theme"
-import { HexAlphaColorPicker } from "react-colorful";
 import ColorPicker from 'react-best-gradient-color-picker'
 
 export type ColorSelectorProps = {

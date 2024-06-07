@@ -1,7 +1,6 @@
 import React, { ReactNode } from "react";
 import RGL, { WidthProvider } from "react-grid-layout";
 import { LayoutFidgetConfig, LayoutFidget, LayoutFidgetProps } from "@/common/fidgets";
-import { classNames } from '@/styles/utils/css';
 
 export const resizeDirections = ['s', 'w', 'e', 'n', 'sw', 'nw', 'se', 'ne'];
 export type ResizeDirection = typeof resizeDirections[number]
