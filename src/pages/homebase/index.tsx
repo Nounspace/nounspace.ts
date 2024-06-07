@@ -68,22 +68,24 @@ const Homebase: NextPageWithLayout = () => {
       fidgetName: "text",
       id: "text1",
       instanceConfig: {
+        editable: true,
         settings: {
           title: "Hello, World!",
           text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget tincidunt nunc. Vivamus vitae arcu placerat diam lacinia interdum."
         },
-        editable: true,
+        data: {},
       },
     },
     text2: {
       fidgetName: "text",
       id: "text2",
       instanceConfig: {
+        editable: true,
         settings: {
           title: "Text Fidget",
           text: "Jot down your ideas and grow them."
         },
-        editable: true,
+        data: {},
       },
     },
     gallery: {
