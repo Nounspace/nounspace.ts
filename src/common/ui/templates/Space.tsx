@@ -1,4 +1,4 @@
-import { FidgetConfig, FidgetSettings, LayoutFidgetDetails } from '@/common/fidgets';
+import { FidgetConfig, FidgetSettings, LayoutFidgetConfig, LayoutFidgetDetails } from '@/common/fidgets';
 import React from 'react';
 import { CompleteFidgets, LayoutFidgets } from '@/fidgets';
 import { mapValues } from 'lodash';
@@ -20,7 +20,7 @@ type SpaceArgs = {
   config: SpaceConfig;
   isEditable: boolean;
   saveConfig: (config: SpaceConfig) => Promise<boolean>;
-} 
+}
 
 export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
@@ -50,7 +50,7 @@ export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
     },
   }));
 
-  function saveLayout(layout) {
+  function saveLayout(layout: LayoutFidgetConfig) {
     return saveConfig({
       layoutID: config.layoutID,
       fidgetConfigs: config.fidgetConfigs,

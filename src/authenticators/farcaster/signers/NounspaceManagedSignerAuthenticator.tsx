@@ -52,6 +52,9 @@ const retrieveSignerData = (data) => {
 }
 
 const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData> = {
+  isReady: (data) => {
+    return async () => data.status === "completed" && !isUndefined(data.publicKeyHex) && !isUndefined(data.privateKeyHex);
+  },
   signMessage: (data) => {
     return async (messageHash: Uint8Array) => {
       if (isUndefined(data.publicKeyHex) || isUndefined(data.privateKeyHex)) {
@@ -185,7 +188,7 @@ const initializer: AuthenticatorInitializer<NounspaceDeveloperManagedSignerData>
   );
 };
 
-export default createAuthenticator<
+const auth = createAuthenticator<
   NounspaceDeveloperManagedSignerData,
   FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
 >(
@@ -193,3 +196,5 @@ export default createAuthenticator<
   methods,
   initializer
 );
+
+export default auth;
