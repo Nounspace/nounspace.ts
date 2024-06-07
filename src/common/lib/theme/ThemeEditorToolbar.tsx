@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardFooter } from '@/common/ui/atoms/card';
 import { FaFloppyDisk } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme"
@@ -9,21 +9,21 @@ import FontSelector from "@/common/ui/molecules/FontSelector"
 
 export type ThemeEditorToolbarArgs = {
   theme: ThemeSettings;
+  saveTheme: (newTheme: ThemeSettings) => void;
   show: boolean;
 }
 
 export function ThemeEditorToolbar({
   theme = DEFAULT_THEME,
+  saveTheme,
   show = true
 }: ThemeEditorToolbarArgs) {
-  const [editedTheme, setEditedTheme] = useState<ThemeSettings>(theme)
-
   function themePropSetter<T extends string>(property: string): (value: T) => void {
     return (value: T): void => {
-      setEditedTheme({
-        ...editedTheme,
+      saveTheme({
+        ...theme,
         properties: {
-          ...editedTheme.properties,
+          ...theme.properties,
           [property]: value
         }
       })
@@ -34,10 +34,10 @@ export function ThemeEditorToolbar({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font } = editedTheme.properties;
+  const { background, font } = theme.properties;
 
   useEffect(() => {
-    setCSSVar('--user-theme-background', background)
+    setCSSVar('--user-theme-background', background);
   }, [background])
 
   useEffect(() => {
