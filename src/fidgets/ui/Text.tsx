@@ -14,7 +14,7 @@ import { FontFamily, Color } from '@/common/lib/theme';
 export type TextFidgetSettings = {
   title?: string,
   text: string,
-  font: FontFamily,
+  fontFamily: FontFamily,
   background: Color
 };
 
