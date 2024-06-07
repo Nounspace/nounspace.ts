@@ -1,17 +1,16 @@
-"use client"
 import React, { useState, useCallback } from "react";
 import { Card, CardContent } from "@/common/ui/atoms/card";
 import { toast } from "sonner";
-import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetEditConfig, FidgetRenderContext } from ".";
+import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetArgs, FidgetData, FidgetEditConfig, FidgetRenderContext  } from ".";
 import { FaGear } from "react-icons/fa6";
 import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 import { reduce } from "lodash";
 
 export type FidgetWrapperProps = {
-  fidget: React.FC<FidgetSettings>;
+  fidget: React.FC<FidgetArgs>;
   config: FidgetDetails;
   context?: FidgetRenderContext;
-  saveConfig: (conf: FidgetConfig<FidgetSettings>) => Promise<boolean>
+  saveConfig: (conf: FidgetConfig) => Promise<void>
 };
 
 export const getSettingsWithDefaults = (
@@ -39,6 +38,13 @@ export function FidgetWrapper({ fidget, config, context, saveConfig }: FidgetWra
     [setEditing]
   )
 
+  const saveData = (data: FidgetData) => {
+    return saveConfig({
+      ...config.instanceConfig,
+      data,
+    });
+  };
+
   const settingsWithDefaults = getSettingsWithDefaults(
     config.instanceConfig.settings,
     config.editConfig,
@@ -46,16 +52,16 @@ export function FidgetWrapper({ fidget, config, context, saveConfig }: FidgetWra
 
   const onSave = async (newSettings: FidgetSettings) => {
     setSaving(true);
-    const success = await saveConfig({
-      ...config.instanceConfig,
-      settings: newSettings
-    })
-    if (success) {
-      setEditing(false)
-    } else {
-      toast.error("Failed to save fidget settings", { duration: 1000 })
+    try {
+      await saveConfig({
+        ...config.instanceConfig,
+        settings: newSettings
+      });
+      setEditing(false);
+    } catch (e) {
+      toast.error("Failed to save fidget settings", { duration: 1000 });
     }
-    setSaving(false)
+    setSaving(false);
   }
 
   return (
@@ -73,7 +79,13 @@ export function FidgetWrapper({ fidget, config, context, saveConfig }: FidgetWra
         )
       }
       <CardContent className="size-full">
-        {fidget(settingsWithDefaults)}
+        {
+          fidget({
+            settings: settingsWithDefaults,
+            data: config.instanceConfig.data,
+            saveData,
+          })
+        }
         <FidgetSettingsPopover
           open={editing}
           setOpen={setEditing}

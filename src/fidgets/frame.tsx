@@ -2,7 +2,7 @@ import React from 'react';
 import FrameComponent from '@/common/ui/molecules/Frame';
 import TextInput from "@/common/ui/molecules/TextInput";
 
-import { FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 
 export type FrameFidgetSettings = {
   url: string,
@@ -24,7 +24,7 @@ const frameConfig: FidgetEditConfig = {
   }
 };
 
-const Frame: React.FC<FrameFidgetSettings> = ({ url }) => {
+const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({ settings: { url } }) => {
     return (
       <FrameComponent url = { url }/>
     )
@@ -33,4 +33,4 @@ const Frame: React.FC<FrameFidgetSettings> = ({ url }) => {
 export default {
   fidget: Frame,
   editConfig: frameConfig,
-} as FidgetModule<FrameFidgetSettings>;
+} as FidgetModule<FidgetArgs<FrameFidgetSettings>>;

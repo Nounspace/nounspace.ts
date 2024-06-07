@@ -3,11 +3,16 @@ import ColorSelector from "@/common/ui/molecules/ColorSelector";
 import FontSelector from "@/common/ui/molecules/FontSelector";
 import type { ThemeSettings } from '@/common/lib/theme';
 
-export interface FidgetSettings {}
+export type FidgetSettings = Reacord<string, any>;
+export type FidgetData = Reacord<string, any>;
 
-export type FidgetConfig<S extends FidgetSettings = FidgetSettings> = {
+export type FidgetConfig<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData
+> = {
   editable: boolean;
   settings: S;
+  data: D;
 };
 
 export type FidgetFieldConfig = {
@@ -32,9 +37,12 @@ export type FidgetRenderContext = {
   theme: ThemeSettings
 }
       
-export interface FidgetDetails<S extends FidgetSettings = FidgetSettings> {
+export interface FidgetDetails<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData
+> {
   editConfig: FidgetEditConfig;
-  instanceConfig: FidgetConfig<S>;
+  instanceConfig: FidgetConfig<S, D>;
   id: string;
 }
 
@@ -45,7 +53,16 @@ export interface LayoutFidgetDetails {
   layoutConfig: LayoutFidgetConfig;
 }
 
-export interface FidgetModule<P = unknown> {
+export interface FidgetArgs<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData
+> {
+  settings: S;
+  data: D;
+  saveData: (data: D) => Promise<void>;
+}
+
+export interface FidgetModule<P extends FidgetArgs> {
   fidget: React.FC<P>;
   editConfig: FidgetEditConfig;
 }
