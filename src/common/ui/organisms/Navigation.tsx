@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { classNames } from "@/styles/utils/css";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 const HomeIcon = () => {
   return (
@@ -78,7 +78,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   return (
     <li>
       <a href="#" className={
-        classNames(
+        mergeClasses(
           "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
           active ? 'bg-gray-100' : ''
         )
