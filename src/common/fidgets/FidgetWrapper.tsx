@@ -2,20 +2,22 @@
 import React, { useState, useCallback } from "react";
 import { Card, CardContent } from "@/common/ui/atoms/card";
 import { toast } from "sonner";
-import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetEditConfig } from ".";
+import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetEditConfig, FidgetRenderContext } from ".";
 import { FaGear } from "react-icons/fa6";
-import FidgetSettingsModal from "@/common/fidgets/FidgetSettingsModal";
+import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 import { reduce } from "lodash";
+import { ThemeSettings } from '@/common/lib/theme';
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetSettings>;
   config: FidgetDetails;
+  context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig<FidgetSettings>) => Promise<boolean>
 };
 
 export const getSettingsWithDefaults = (
   settings: FidgetSettings,
-  config: FidgetEditConfig
+  config: FidgetEditConfig,
 ): FidgetSettings => {
   return reduce(
     config.fields,
@@ -27,7 +29,7 @@ export const getSettingsWithDefaults = (
   )
 }
 
-export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps) {
+export function FidgetWrapper({ fidget, config, context, saveConfig }: FidgetWrapperProps) {
   const [_saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -40,7 +42,7 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
 
   const settingsWithDefaults = getSettingsWithDefaults(
     config.instanceConfig.settings,
-    config.editConfig
+    config.editConfig,
   )
 
   const onSave = async (newSettings: FidgetSettings) => {
@@ -59,13 +61,6 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
 
   return (
     <Card className="size-full overflow-scroll">
-      <FidgetSettingsModal
-        open={editing}
-        setOpen={setEditing}
-        onSave={onSave}
-        editConfig={config.editConfig}
-        settings={settingsWithDefaults}
-      />
       {
         config.instanceConfig.editable && (
           <div className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md">
@@ -80,6 +75,13 @@ export function FidgetWrapper({ fidget, config, saveConfig }: FidgetWrapperProps
       }
       <CardContent className="size-full">
         {fidget(settingsWithDefaults)}
+        <FidgetSettingsPopover
+          open={editing}
+          setOpen={setEditing}
+          onSave={onSave}
+          editConfig={config.editConfig}
+          settings={settingsWithDefaults}
+        />
       </CardContent>
     </Card>
   );

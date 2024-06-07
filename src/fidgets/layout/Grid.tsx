@@ -98,17 +98,16 @@ const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
   fidgets,
   isEditable,
-  isEditing = false,
 }: GridArgs) => {
   return (
     <>
-      {isEditable && isEditing && (
+      {isEditable && (
         <Gridlines {...layoutConfig} />
       )}
       <ReactGridLayout
         {...layoutConfig}
-        isDraggable={isEditable && isEditing}
-        isResizable={isEditable && isEditing}
+        isDraggable={isEditable}
+        isResizable={isEditable}
       >
         {
           layoutConfig.layout.map(
