@@ -2,7 +2,7 @@ import React from 'react';
 import TextInput from "@/common/ui/molecules/TextInput";
 import ColorSelector from "@/common/ui/molecules/ColorSelector";
 import FontSelector from "@/common/ui/molecules/FontSelector";
-import { FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
@@ -53,29 +53,29 @@ export const textConfig: FidgetEditConfig = {
   }
 };
 
-export const Text: React.FC<TextFidgetSettings> = (props) => {
+export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
   return (
     <div
       style={{
-        background: props.background,
-        fontFamily: props.fontFamily,
+        background: settings.background,
+        fontFamily: settings.fontFamily,
         height: '100%',
       }}
     >
       {
-        props?.title && (
+        settings?.title && (
           <CardHeader className="p-4 pb-2">
             <CardTitle className='text-2xl font-bold'>
-              { props.title }
+              { settings.title }
             </CardTitle>
           </CardHeader>
         )
       }
       {
-        props?.text && (
+        settings?.text && (
           <CardContent className="p-4 pt-2">
             <CardDescription className='text-base font-normal text-black dark:text-white'>
-              { props.text }
+              { settings.text }
             </CardDescription>
           </CardContent>
         )
@@ -87,4 +87,4 @@ export const Text: React.FC<TextFidgetSettings> = (props) => {
 export default {
   fidget: Text,
   editConfig: textConfig
-} as FidgetModule<TextFidgetSettings>;
+} as FidgetModule<FidgetArgs<TextFidgetSettings>>;
