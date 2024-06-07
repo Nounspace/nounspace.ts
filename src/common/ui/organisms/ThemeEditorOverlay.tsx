@@ -3,7 +3,7 @@ import { RiPencilFill } from "react-icons/ri";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeEditorToolbar from "@/common/lib/theme/ThemeEditorToolbar";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { classNames } from '@/styles/utils/css';
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 export interface ThemeEditorOverlayProps {
   editMode: boolean;
@@ -41,7 +41,7 @@ export const ThemeEditorOverlay: React.FC<ThemeEditorOverlayProps> = ({
       }
       <button
         onClick={toggleEditMode}
-        className={classNames(
+        className={mergeClasses(
           "flex items-center justify-center",
           "rounded-full bg-white size-12 hover:opacity-100 duration-500",
           editMode
@@ -51,7 +51,7 @@ export const ThemeEditorOverlay: React.FC<ThemeEditorOverlayProps> = ({
       >
         <RiPencilFill
           className={
-            classNames(
+            mergeClasses(
               "text-2xl",
               editMode
                 ? "text-slate-900"
