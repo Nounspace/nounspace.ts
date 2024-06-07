@@ -1,11 +1,10 @@
-"use client"
 import React, { useState } from "react";
 import { reduce } from "lodash";
 import { FidgetWrapper, FidgetWrapperProps } from "@/common/fidgets/FidgetWrapper";
-import { FidgetConfig, FidgetModule, FidgetSettings } from ".";
+import { FidgetArgs, FidgetConfig, FidgetModule, FidgetSettings } from ".";
 
 
-export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetModule }) {
+export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetModule<FidgetArgs> }) {
   const defaultConfig: FidgetWrapperProps["config"] = {
     editConfig: fidgetModule.editConfig,
     instanceConfig: {
@@ -17,7 +16,8 @@ export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetMod
           [f.fieldName]: f.default || null,
         }),
         {},
-      )
+      ),
+      data: {},
     },
     id: fidgetModule.fidget.name,
   };
@@ -28,7 +28,6 @@ export default function FidgetViewer({ fidgetModule }: { fidgetModule: FidgetMod
       editConfig: config.editConfig,
       instanceConfig: conf,
     });
-    return true;
   };
 
   return (
