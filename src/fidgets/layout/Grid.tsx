@@ -38,9 +38,11 @@ export interface GridLayout extends LayoutFidgetConfig {
   items: number;
   isResizable: boolean;
   isDraggable: boolean;
+  isBounded?: boolean;
   rowHeight: number;
   compactType?: string | null;
   preventCollision?: boolean;
+  margin?: [number, number];
   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
   onDrop: (layout: PlacedGridItem[], item: PlacedGridItem) => unknown;
 }
