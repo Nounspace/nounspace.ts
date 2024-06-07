@@ -1,6 +1,7 @@
 import TextInput from "@/common/ui/molecules/TextInput";
 import ColorSelector from "@/common/ui/molecules/ColorSelector";
 import FontSelector from "@/common/ui/molecules/FontSelector";
+import type { ThemeSettings } from '@/common/lib/theme';
 
 export interface FidgetSettings {}
 
@@ -26,6 +27,10 @@ export type FidgetEditConfig = {
     maxWidth: NumericRange<1,36>;
   }
 };
+
+export type FidgetRenderContext = {
+  theme: ThemeSettings
+}
       
 export interface FidgetDetails<S extends FidgetSettings = FidgetSettings> {
   editConfig: FidgetEditConfig;
@@ -51,14 +56,12 @@ interface LayoutFidgetProps {
     [key: string]: ReactNode;
   };
   isEditable: boolean;
-  isEditing: boolean;
 }
 
 type LayoutFidgetDefaultProps = {
   fidgets: object,
   layoutConfig: object,
   isEditable: boolean,
-  isEditing: boolean
 }
 
 export interface LayoutFidget<P extends LayoutFidgetProps = LayoutFidgetDefaultProps> extends React.FC<P> {}

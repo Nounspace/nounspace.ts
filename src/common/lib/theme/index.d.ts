@@ -13,14 +13,6 @@ export interface GlobalTheme extends ThemeSettings {
   }
 }
 
-export interface ThemeConfig {
-  id: string;
-  name: string;
-  fontPrimary: FontFamily;
-  fontSecondary: FontFamily;
-  background: ColorBackground | ImageBackground | VideoBackground | CodeBackground;
-}
-
 // Sizes
 export type CSSUnit = 'cm' | 'mm' | 'in' | 'px' | 'pt' | 'pc' | 'em' | 'rem' | 'vw' | 'vh' | 'vmin' | 'vmax' | '%';
 export type CSSSize = `${number}${CSSUnit}`;

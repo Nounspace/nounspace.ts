@@ -1,49 +1,62 @@
 import React, { useEffect } from "react";
 import Space, { SpaceConfig } from "@/common/ui/templates/Space";
 import { useState } from "react";
-import { RiPencilFill } from "react-icons/ri";
 import {
   GridLayout,
-  ResizeDirections,
+  resizeDirections,
 } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
+import ThemeEditorOverlay from "@/common/ui/organisms/ThemeEditorOverlay"
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import Navigation from "@/common/ui/organisms/Navigation";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
-import { round } from "lodash";
 
 const Homebase: NextPageWithLayout = () => {
   const [editMode, setMode] = useState(false);
-  const windowSize = useWindowSize();
-
-  const availableHandles = [
-    "s",
-    "w",
-    "e",
-    "n",
-    "sw",
-    "nw",
-    "se",
-    "ne",
-  ] as ResizeDirections[];
   const defaultLayoutData = [
     {
-      i: "gallery",
-      resizeHandles: availableHandles,
+      i: "text1",
+      resizeHandles: resizeDirections,
       x: 0,
       y: 0,
       w: 6,
       minW: 1,
-      maxW: 9,
-      h: 8,
+      maxW: 12,
+      h: 2,
+      minH: 1,
+      maxH: 12,
+    },
+    {
+      i: "text2",
+      resizeHandles: resizeDirections,
+      x: 6,
+      y: 0,
+      w: 6,
+      minW: 1,
+      maxW: 12,
+      h: 2,
+      minH: 1,
+      maxH: 12,
+    },
+    {
+      i: "gallery",
+      resizeHandles: resizeDirections,
+      x: 0,
+      y: 2,
+      w: 8,
+      minW: 1,
+      maxW: 12,
+      h: 7,
       minH: 1,
       maxH: 9,
     },
     {
       i: "frame",
-      resizeHandles: availableHandles,
-      x: 6,
-      y: 0,
-      w: 3,
+      resizeHandles: resizeDirections,
+      x: 8,
+      y: 2,
+      w: 4,
       minW: 2,
       maxW: 4,
       h: 6,
@@ -53,6 +66,28 @@ const Homebase: NextPageWithLayout = () => {
   ];
 
   const fidgets = {
+    text1: {
+      fidgetName: "text",
+      id: "text1",
+      instanceConfig: {
+        settings: {
+          title: "Hello, World!",
+          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget tincidunt nunc. Vivamus vitae arcu placerat diam lacinia interdum."
+        },
+        editable: true,
+      },
+    },
+    text2: {
+      fidgetName: "text",
+      id: "text2",
+      instanceConfig: {
+        settings: {
+          title: "Text Fidget",
+          text: "Jot down your ideas and grow them."
+        },
+        editable: true,
+      },
+    },
     gallery: {
       fidgetName: "gallery",
       id: "gallery",
@@ -75,9 +110,7 @@ const Homebase: NextPageWithLayout = () => {
     },
   };
 
-  function switchMode() {
-    setMode(!editMode);
-  }
+  const windowSize = useWindowSize()
 
   const gridDetails: GridLayout = {
     isDraggable: false,
@@ -93,8 +126,9 @@ const Homebase: NextPageWithLayout = () => {
     preventCollision: true,
     maxRows: 9,
     layout: defaultLayoutData,
-    margin: [0, 0],
     isBounded: true,
+    margin: [30, 24],
+    containerPadding: [0, 0],
   };
   const layoutID = "";
   const layoutDetails: LayoutFidgetDetails = {
@@ -105,6 +139,7 @@ const Homebase: NextPageWithLayout = () => {
   const [spaceConfig, setSpaceConfig] = useState<SpaceConfig>({
     layoutID,
     layoutDetails,
+    theme: DEFAULT_THEME,
     fidgetConfigs: fidgets,
   });
 
@@ -115,7 +150,7 @@ const Homebase: NextPageWithLayout = () => {
         layoutFidget: "grid",
         layoutConfig: {
           ...gridDetails,
-          rowHeight: windowSize ? round(windowSize.height / 9) : 70,
+          rowHeight: windowSize ? Math.round(windowSize.height / 9) : 70,
         },
       },
     });
@@ -128,43 +163,30 @@ const Homebase: NextPageWithLayout = () => {
 
   return (
     <div>
-      <div
-        className={
-          editMode
-            ? "edit-grid absolute inset-0 z-0"
-            : "no-edit-grid  absolute inset-0 z-0"
-        }
-      />
-      <button
-        onClick={switchMode}
-        className={
-          editMode
-            ? "opacity-90 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
-            : "opacity-50 rounded-full bg-white size-12 absolute top-6 right-4 z-10 flex hover:opacity-100 duration-500"
-        }
-      >
-        <RiPencilFill
-          className={
-            editMode
-              ? "text-slate-900 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-              : "text-gray-700 font-semibold text-2xl absolute transform -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2"
-          }
-        />
-      </button>
-      <Space
-        config={spaceConfig}
-        isEditable={editMode}
-        saveConfig={saveConfig}
-      />
+      <div className="p-8">
+        <div className="relative">
+          <Space
+            config={spaceConfig}
+            isEditable={editMode}
+            saveConfig={saveConfig}
+          />
+        </div>
+      </div>
+      <ThemeEditorOverlay editMode={editMode} setEditMode={setMode} />
     </div>
   );
 }
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <>
-      { page }
-    </>
+    <div className="min-h-screen" style={{ background: 'var(--user-theme-background)' }}>
+    <div className="container mx-auto">
+      <Navigation />
+      <div className="p-4 sm:ml-64">
+        { page }
+      </div>
+    </div>
+    </div>
   )
 }
 
