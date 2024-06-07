@@ -10,7 +10,12 @@
     "serve": "serve -s build",
     "lint": "next lint",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx src",
-    "check-types": "tsc"
+    "check-types": "tsc",
+    "prettier": "prettier src --write",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*": "prettier --write --ignore-unknown"
   },
   "browserslist": {
     "production": [
@@ -145,10 +150,14 @@
     "buffer": "^6.0.3",
     "cross-env": "^7.0.3",
     "eslint": "^8.49.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.5",
     "madge": "^6.1.0",
     "postcss": "^8.4.38",
+    "prettier": "3.3.1",
     "ramda": "^0.29.1",
     "supabase": "^1.123.0"
   }
