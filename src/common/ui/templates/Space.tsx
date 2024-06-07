@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FidgetConfig, FidgetSettings, LayoutFidgetConfig, LayoutFidgetDetails } from '@/common/fidgets';
 import { CompleteFidgets, LayoutFidgets } from '@/fidgets';
 import { mapValues } from 'lodash';
 import { FidgetWrapper } from '@/common/fidgets/FidgetWrapper';
 import { ThemeSettings } from '@/common/lib/theme';
+import ThemeEditorOverlay from "@/common/ui/organisms/ThemeEditorOverlay"
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -20,18 +21,18 @@ export type SpaceConfig = {
 
 type SpaceArgs = {
   config: SpaceConfig;
-  isEditable: boolean;
   saveConfig: (config: SpaceConfig) => Promise<boolean>;
 }
 
-export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
+export default function Space({ config, saveConfig }: SpaceArgs) {
+  const [editMode, setEditMode] = useState(false);
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
   const fidgets = mapValues(config.fidgetConfigs, (details, key) => FidgetWrapper({
     fidget: CompleteFidgets[details.fidgetName].fidget,
     config: {
       id: details.id,
       instanceConfig: {
-        editable: isEditable,
+        editable: editMode,
         settings: details.instanceConfig.settings,
       },
       editConfig: CompleteFidgets[details.fidgetName].editConfig,
@@ -68,13 +69,16 @@ export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
   }
 
   return (
-    <LayoutFidget
-      layoutConfig={{
-        ...config.layoutDetails.layoutConfig,
-        onLayoutChange: saveLayout,
-      }}
-      fidgets={fidgets}
-      isEditable={isEditable}
-    />
+    <>
+      <LayoutFidget
+        layoutConfig={{
+          ...config.layoutDetails.layoutConfig,
+          onLayoutChange: saveLayout,
+        }}
+        fidgets={fidgets}
+        isEditable={editMode}
+      />
+      <ThemeEditorOverlay editMode={editMode} setEditMode={setEditMode} />
+    </>
   );
 }

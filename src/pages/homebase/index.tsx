@@ -7,13 +7,11 @@ import {
 } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
-import ThemeEditorOverlay from "@/common/ui/organisms/ThemeEditorOverlay"
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import Navigation from "@/common/ui/organisms/Navigation";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
 const Homebase: NextPageWithLayout = () => {
-  const [editMode, setMode] = useState(false);
   const defaultLayoutData = [
     {
       i: "text1",
@@ -167,12 +165,10 @@ const Homebase: NextPageWithLayout = () => {
         <div className="relative">
           <Space
             config={spaceConfig}
-            isEditable={editMode}
             saveConfig={saveConfig}
           />
         </div>
       </div>
-      <ThemeEditorOverlay editMode={editMode} setEditMode={setMode} />
     </div>
   );
 }
@@ -180,12 +176,12 @@ const Homebase: NextPageWithLayout = () => {
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <div className="min-h-screen" style={{ background: 'var(--user-theme-background)' }}>
-    <div className="container mx-auto">
-      <Navigation />
-      <div className="p-4 sm:ml-64">
-        { page }
+      <div className="container mx-auto">
+        <Navigation />
+        <div className="p-4 sm:ml-64">
+          { page }
+        </div>
       </div>
-    </div>
     </div>
   )
 }
