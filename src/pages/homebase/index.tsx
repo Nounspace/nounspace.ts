@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Space, { SpaceConfig } from "@/common/ui/templates/Space";
 import { useState } from "react";
 import { RiPencilFill } from "react-icons/ri";
@@ -8,9 +8,12 @@ import {
 } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import { round } from "lodash";
 
 const Homebase: NextPageWithLayout = () => {
   const [editMode, setMode] = useState(false);
+  const windowSize = useWindowSize();
 
   const availableHandles = [
     "s",
@@ -30,10 +33,10 @@ const Homebase: NextPageWithLayout = () => {
       y: 0,
       w: 6,
       minW: 1,
-      maxW: 12,
-      h: 10,
+      maxW: 9,
+      h: 8,
       minH: 1,
-      maxH: 12,
+      maxH: 9,
     },
     {
       i: "frame",
@@ -45,7 +48,7 @@ const Homebase: NextPageWithLayout = () => {
       maxW: 4,
       h: 6,
       minH: 3,
-      maxH: 12,
+      maxH: 9,
     },
   ];
 
@@ -90,6 +93,8 @@ const Homebase: NextPageWithLayout = () => {
     preventCollision: true,
     maxRows: 9,
     layout: defaultLayoutData,
+    margin: [0, 0],
+    isBounded: true,
   };
   const layoutID = "";
   const layoutDetails: LayoutFidgetDetails = {
@@ -102,6 +107,19 @@ const Homebase: NextPageWithLayout = () => {
     layoutDetails,
     fidgetConfigs: fidgets,
   });
+
+  useEffect(() => {
+    setSpaceConfig({
+      ...spaceConfig,
+      layoutDetails: {
+        layoutFidget: "grid",
+        layoutConfig: {
+          ...gridDetails,
+          rowHeight: windowSize ? round(windowSize.height / 9) : 70,
+        },
+      },
+    });
+  }, [windowSize])
 
   async function saveConfig(config: SpaceConfig) {
     setSpaceConfig(config);
