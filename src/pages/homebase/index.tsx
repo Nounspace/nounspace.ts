@@ -94,16 +94,18 @@ const Homebase: NextPageWithLayout = () => {
         settings: {
           imageUrl: "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
         },
+        data: {},
       },
     },  
     frame: {
       fidgetName: "frame",
       id: "frame",
       instanceConfig: {
+        editable: false,
         settings: {
           url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
         },
-        editable: false,
+        data: {},
       },
     },
   };
@@ -156,7 +158,6 @@ const Homebase: NextPageWithLayout = () => {
 
   async function saveConfig(config: SpaceConfig) {
     setSpaceConfig(config);
-    return true;
   }
 
   return (
