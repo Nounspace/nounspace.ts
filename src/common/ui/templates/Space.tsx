@@ -1,8 +1,9 @@
-import { FidgetConfig, FidgetSettings, LayoutFidgetConfig, LayoutFidgetDetails } from '@/common/fidgets';
 import React from 'react';
+import { FidgetConfig, FidgetSettings, LayoutFidgetConfig, LayoutFidgetDetails } from '@/common/fidgets';
 import { CompleteFidgets, LayoutFidgets } from '@/fidgets';
 import { mapValues } from 'lodash';
 import { FidgetWrapper } from '@/common/fidgets/FidgetWrapper';
+import { ThemeSettings } from '@/common/lib/theme';
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -14,6 +15,7 @@ export type SpaceConfig = {
   }
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
+  theme: ThemeSettings;
 }
 
 type SpaceArgs = {
@@ -34,10 +36,12 @@ export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
       },
       editConfig: CompleteFidgets[details.fidgetName].editConfig,
     },
+    context: {
+      theme: config.theme
+    },
     saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
       return await saveConfig({
-        layoutID: config.layoutID,
-        layoutDetails: config.layoutDetails,
+        ...config,
         fidgetConfigs: {
           ...config.fidgetConfigs,
           [key]: {
@@ -52,8 +56,7 @@ export default function Space({ config, isEditable, saveConfig }: SpaceArgs){
 
   function saveLayout(layout: LayoutFidgetConfig) {
     return saveConfig({
-      layoutID: config.layoutID,
-      fidgetConfigs: config.fidgetConfigs,
+      ...config,
       layoutDetails: {
         ...config.layoutDetails,
         layoutConfig: {
