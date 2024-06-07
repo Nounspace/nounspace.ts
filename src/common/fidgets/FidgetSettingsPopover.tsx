@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { Popover, PopoverContent, PopoverAnchor } from "@/common/ui/atoms/popover";
-import { FidgetSettings, FidgetEditConfig, FidgetFieldConfig } from "@/common/fidgets";
+import { FidgetSettings } from "@/common/fidgets";
 import FidgetSettingsEditor, { FidgetSettingsEditorProps } from "@/common/ui/organisms/FidgetSettingsEditor";
 
 type FidgetSettingsPopoverProps = FidgetSettingsEditorProps & {

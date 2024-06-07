@@ -1,5 +1,4 @@
 import React, { useCallback } from "react";
-import { useState } from "react";
 import { RiPencilFill } from "react-icons/ri";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeEditorToolbar from "@/common/lib/theme/ThemeEditorToolbar";
