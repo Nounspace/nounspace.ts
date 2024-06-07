@@ -21,7 +21,7 @@ export type SpaceConfig = {
 
 type SpaceArgs = {
   config: SpaceConfig;
-  saveConfig: (config: SpaceConfig) => Promise<boolean>;
+  saveConfig: (config: SpaceConfig) => Promise<void>;
 }
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
@@ -34,6 +34,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
       instanceConfig: {
         editable: editMode,
         settings: details.instanceConfig.settings,
+        data: details.instanceConfig.data,
       },
       editConfig: CompleteFidgets[details.fidgetName].editConfig,
     },

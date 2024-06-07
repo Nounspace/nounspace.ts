@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import TextInput from "@/common/ui/molecules/TextInput";
-import { FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 
 export type GalleryFidgetSettings = {
   imageUrl: string,
@@ -22,7 +22,9 @@ const galleryConfig: FidgetEditConfig = {
   }
 };
 
-const Gallery: React.FC<GalleryFidgetSettings> = ({ imageUrl }: GalleryFidgetSettings) => {
+const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = (
+  { settings: { imageUrl } }
+) => {
   const imageUrlStyle = {
     '--image-url': `url(${imageUrl})`,
   } as CSSProperties;
@@ -39,4 +41,4 @@ const Gallery: React.FC<GalleryFidgetSettings> = ({ imageUrl }: GalleryFidgetSet
 export default {
   fidget: Gallery,
   editConfig: galleryConfig,
-} as FidgetModule<GalleryFidgetSettings>;
+} as FidgetModule<FidgetArgs<GalleryFidgetSettings>>;

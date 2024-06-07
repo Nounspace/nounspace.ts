@@ -1,6 +1,6 @@
 import React from "react";
 import TextInput from "@/common/ui/molecules/TextInput";
-import { FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 
 export type ExampleFidgetSettings = {
   text: string,
@@ -23,15 +23,15 @@ const exampleConfig: FidgetEditConfig = {
   }
 };
 
-const Example: React.FC<ExampleFidgetSettings> = ({ text }: ExampleFidgetSettings) => {
-  return (
-    <div className="">
-      { text }
-    </div>
-  );
-};
+const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = (
+  { settings: { text } }
+) => (
+  <div className="">
+    {text}
+  </div>
+);
 
 export default {
   fidget: Example,
   editConfig: exampleConfig,
-} as FidgetModule<ExampleFidgetSettings>;
+} as FidgetModule<FidgetArgs<ExampleFidgetSettings>>;
