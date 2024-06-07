@@ -68,6 +68,13 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     });
   }
 
+  function saveTheme(newTheme) {
+    return saveConfig({
+      ...config,
+      theme: newTheme
+    });
+  }
+
   return (
     <>
       <LayoutFidget
@@ -78,7 +85,12 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
         fidgets={fidgets}
         isEditable={editMode}
       />
-      <ThemeEditorOverlay editMode={editMode} setEditMode={setEditMode} />
+      <ThemeEditorOverlay
+        editMode={editMode}
+        setEditMode={setEditMode}
+        theme={config.theme}
+        saveTheme={saveTheme}
+      />
     </>
   );
 }

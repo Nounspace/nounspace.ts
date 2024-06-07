@@ -9,6 +9,7 @@ export interface ThemeEditorOverlayProps {
   editMode: boolean;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;
+  saveTheme: (newTheme: ThemeSettings) => void;
   disabled?: boolean;
 
 }
@@ -17,6 +18,7 @@ export const ThemeEditorOverlay: React.FC<ThemeEditorOverlayProps> = ({
   editMode,
   setEditMode,
   theme = DEFAULT_THEME,
+  saveTheme,
   disabled = false
 }) => {
   const toggleEditMode = useCallback(
@@ -32,6 +34,7 @@ export const ThemeEditorOverlay: React.FC<ThemeEditorOverlayProps> = ({
         !disabled && (
           <ThemeEditorToolbar
             theme={theme}
+            saveTheme={saveTheme}
             show={editMode}
           />
         )
