@@ -7,6 +7,7 @@ import {
 import { Button } from "@/common/ui/atoms/button"
 import { Color } from "@/common/lib/theme"
 import { HexAlphaColorPicker } from "react-colorful";
+import ColorPicker from 'react-best-gradient-color-picker'
 
 export type ColorSelectorProps = {
   value: Color,
@@ -34,20 +35,20 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className="p-2 h-9 w-9 flex flex-shrink-0 items-stretch border cursor-pointer rounded-md disabled:opacity-50 disabled:pointer-events-none"
+          className="p-0.5 h-9 w-9 flex flex-shrink-0 items-stretch border cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none"
         >
           <div
-            className="flex-1 rounded-sm"
+            className="flex-1 rounded-md"
             style={{ backgroundColor: value }}
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-auto p-0 border-none bg-transparent"
+        className="w-auto p-2"
         align="start"
       >
-        <HexAlphaColorPicker
-          color={value}
+        <ColorPicker
+          value={value}
           onChange={_onChange}
         />
       </PopoverContent>
