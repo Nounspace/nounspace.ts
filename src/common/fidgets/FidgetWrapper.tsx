@@ -6,7 +6,6 @@ import { FidgetConfig, FidgetSettings, FidgetDetails, FidgetEditConfig, FidgetRe
 import { FaGear } from "react-icons/fa6";
 import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 import { reduce } from "lodash";
-import { ThemeSettings } from '@/common/lib/theme';
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetSettings>;
