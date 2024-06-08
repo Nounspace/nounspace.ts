@@ -1,20 +1,21 @@
-import React from "react";
-// import { useRouter } from "next/router";
-// import { createClient } from "@/common/data/database/supabase/clients/component";
+import React, { useEffect } from "react";
+import { useRouter } from "next/router";
+import { useAccountStore } from "@/common/data/stores/accounts";
+import { isUndefined } from "lodash";
 
 const Index = () => {
-  // const router = useRouter();
-  // const supabaseClient = createClient();
+  const router = useRouter();
+  const { currentSpaceIdentityPublicKey } = useAccountStore((state) => ({
+    currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
+  }));
 
-  // useEffect(() => {
-  //   supabaseClient.auth.getSession().then(({ data: { session } }) => {
-  //     if (!session) {
-  //       router.push("/login");
-  //     } else {
-  //       router.push("/homebase");
-  //     }
-  //   });
-  // }, []);
+  // TO DO: Update redirect to "setup" if the account is logged in
+  // sign up is not completed (i.e. hasn't finished adding Farcaster Auth)
+  useEffect(() => {
+    isUndefined(currentSpaceIdentityPublicKey)
+      ? router.replace("/login")
+      : router.replace("/homebase");
+  });
 
   return <p className="m-4 text-gray-200 text-md">Redirecting...</p>;
 };
