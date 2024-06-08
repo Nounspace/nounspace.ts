@@ -11,7 +11,7 @@ const SETUP_STATES = {
   load: "Loading Identity...",
   select: "Multiple Identities Found, please choose which one to use",
   create: "Creating Identity...",
-  error: "An error occurred, you will be signed out, please try again"
+  error: "An error occurred, you will be signed out, please try again",
 };
 
 export default function Setup() {
@@ -33,7 +33,7 @@ export default function Setup() {
   }));
   const [currentStep, setCurrentStep] = useState(SETUP_STATES.wallet);
   // const [selectedIdentity, setSelectedIdentity] = useState("");
- 
+
   // Redirect if not logged in with Privy
   useEffect(() => {
     if (ready && !authenticated) {
@@ -47,10 +47,14 @@ export default function Setup() {
     const identities = getIdentitiesForWallet(wallet);
     if (identities.length > 0) {
       if (identities.length > 1) {
-        setCurrentStep(SETUP_STATES.select); 
+        setCurrentStep(SETUP_STATES.select);
       } else {
         setCurrentStep(SETUP_STATES.load);
-        await decryptIdentityKeys(signMessage, wallet, identities[0].identityPublicKey);
+        await decryptIdentityKeys(
+          signMessage,
+          wallet,
+          identities[0].identityPublicKey,
+        );
         setCurrentIdentity(identities[0].identityPublicKey);
       }
     } else {
@@ -70,20 +74,20 @@ export default function Setup() {
       if (wallet) {
         setup(wallet);
       } else {
-        createWallet().then(w => setup(w)).catch(e => {
-          console.error(e);
-          logout();
-          router.push("/login");
-        });
+        createWallet()
+          .then((w) => setup(w))
+          .catch((e) => {
+            console.error(e);
+            logout();
+            router.push("/login");
+          });
       }
     }
   }, [walletsReady, ready]);
 
   return (
     <div className="w-full max-w-full min-h-screen">
-      <div
-        className="relative w-full h-screen flex-col items-center grid lg:max-w-none lg:grid-cols lg:px-0"
-      >
+      <div className="relative w-full h-screen flex-col items-center grid lg:max-w-none lg:grid-cols lg:px-0">
         <div className="relative h-full flex-col bg-muted p-10 text-foreground flex">
           <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-l from-gray-900 via-gray-700 to-stone-500" />
           <div className="relative z-20 mt-16 lg:mt-24">
@@ -93,20 +97,18 @@ export default function Setup() {
                   One second while we setup your account...
                 </h1>
               </div>
-              <div className="self-center text-gray-100"> 
-                { currentStep }
-              </div>
-              {
-                currentStep !== SETUP_STATES.select ? (
-                  <div className="self-center"> 
-                    <Spinner className="size-15"/> 
-                  </div>
-                ) : (<></>)
-              }
+              <div className="self-center text-gray-100">{currentStep}</div>
+              {currentStep !== SETUP_STATES.select ? (
+                <div className="self-center">
+                  <Spinner className="size-15" />
+                </div>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>    
+    </div>
   );
 }

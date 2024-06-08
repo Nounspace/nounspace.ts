@@ -3,8 +3,8 @@ import TextInput from "@/common/ui/molecules/TextInput";
 import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 
 export type ExampleFidgetSettings = {
-  text: string,
-}
+  text: string;
+};
 
 const exampleConfig: FidgetEditConfig = {
   fields: [
@@ -13,23 +13,19 @@ const exampleConfig: FidgetEditConfig = {
       default: "Hello World!",
       required: true,
       inputSelector: TextInput,
-    }
+    },
   ],
   size: {
     minHeight: 1,
     maxHeight: 36,
     minWidth: 1,
     maxWidth: 36,
-  }
+  },
 };
 
-const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = (
-  { settings: { text } }
-) => (
-  <div className="">
-    {text}
-  </div>
-);
+const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = ({
+  settings: { text },
+}) => <div className="">{text}</div>;
 
 export default {
   fidget: Example,

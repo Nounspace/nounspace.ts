@@ -1,12 +1,12 @@
-import * as React from "react"
-import * as LabelPrimitive from "@radix-ui/react-label"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import * as LabelPrimitive from "@radix-ui/react-label";
+import { cva, type VariantProps } from "class-variance-authority";
 
-import { mergeClasses }from "@/common/lib/utils/mergeClasses"
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 const labelVariants = cva(
-  "text-sm font-normal leading-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-  )
+  "text-sm font-normal leading-0 peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
+);
 
 const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
@@ -18,7 +18,7 @@ const Label = React.forwardRef<
     className={mergeClasses(labelVariants(), className)}
     {...props}
   />
-))
-Label.displayName = LabelPrimitive.Root.displayName
+));
+Label.displayName = LabelPrimitive.Root.displayName;
 
-export { Label }
+export { Label };

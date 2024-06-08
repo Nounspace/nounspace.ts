@@ -7,11 +7,13 @@ export type AuthenticatorMethod = (...args: any[]) => Promise<unknown>;
 
 export type AuthenticatorMethodWrapper<
   F extends AuthenticatorMethod,
-  D extends AuthenticatorData
+  D extends AuthenticatorData,
 > = (data: D, saveData: SaveDataFunction<D>) => F;
 
 type AuthenticatorMethodsWithData<M> = {
-  [T in keyof M]: M[T] extends AuthenticatorMethodWrapper<infer F, any> ? F : never;
+  [T in keyof M]: M[T] extends AuthenticatorMethodWrapper<infer F, any>
+    ? F
+    : never;
 };
 
 export interface AuthenticatorMethods<D extends AuthenticatorData> {
@@ -26,35 +28,47 @@ export interface AuthenticatorData {
 type AuthenticatorProps<D extends AuthenticatorData> = {
   data: D;
   saveData: SaveDataFunction<D>;
-}
+};
 
-export type AuthenticatorInitializer<D> = React.FC<{data: D, saveData: SaveDataFunction<D>, done: () => void}>;
+export type AuthenticatorInitializer<D> = React.FC<{
+  data: D;
+  saveData: SaveDataFunction<D>;
+  done: () => void;
+}>;
 
-type AuthenticatorArgs<D> = { data: D, saveData: SaveDataFunction<D>};
+type AuthenticatorArgs<D> = { data: D; saveData: SaveDataFunction<D> };
 
 export function makeAuthenticatorMethods<
   D extends AuthenticatorData,
-  M extends AuthenticatorMethods<D>
+  M extends AuthenticatorMethods<D>,
 >(methods: M, args: AuthenticatorArgs<D>): AuthenticatorMethodsWithData<M> {
-  return mapValues(methods, (m) => m(args.data, args.saveData)) as AuthenticatorMethodsWithData<M>;
+  return mapValues(methods, (m) =>
+    m(args.data, args.saveData),
+  ) as AuthenticatorMethodsWithData<M>;
 }
 
-export type AuthenticatorRef<D extends AuthenticatorData, M extends AuthenticatorMethods<D>> = (
-  AuthenticatorMethodsWithData<M> & { initializer: AuthenticatorInitializer<D> }
-);
+export type AuthenticatorRef<
+  D extends AuthenticatorData,
+  M extends AuthenticatorMethods<D>,
+> = AuthenticatorMethodsWithData<M> & {
+  initializer: AuthenticatorInitializer<D>;
+};
 
 export type AuthenticatorComponent<
   D extends AuthenticatorData,
-  M extends AuthenticatorMethods<D>
+  M extends AuthenticatorMethods<D>,
 > = React.ForwardRefExoticComponent<
   AuthenticatorProps<D> & React.RefAttributes<AuthenticatorRef<D, M>>
 >;
 
-export function createAuthenticator<D extends AuthenticatorData, M extends AuthenticatorMethods<D>>(
+export function createAuthenticator<
+  D extends AuthenticatorData,
+  M extends AuthenticatorMethods<D>,
+>(
   name: string,
   methods: M,
   initializerComponent: AuthenticatorInitializer<D>,
- ): AuthenticatorComponent<D, M> {
+): AuthenticatorComponent<D, M> {
   /**
    * This is a code factor function that takes in the methods that a specific
    * This is a code factory function that takes in the methods that a specific
@@ -72,10 +86,7 @@ export function createAuthenticator<D extends AuthenticatorData, M extends Authe
   const authenticator = forwardRef<
     AuthenticatorRef<D, M>,
     AuthenticatorProps<D>
-  >((
-    args: AuthenticatorArgs<D>,
-    ref
-  ) => {
+  >((args: AuthenticatorArgs<D>, ref) => {
     useImperativeHandle(ref, () => {
       return {
         ...makeAuthenticatorMethods(methods, args),

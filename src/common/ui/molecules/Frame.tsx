@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import {
-  FrameUI,
-  fallbackFrameContext,
-} from "@frames.js/render";
-import { signFrameAction } from '@frames.js/render/farcaster'
+import { FrameUI, fallbackFrameContext } from "@frames.js/render";
+import { signFrameAction } from "@frames.js/render/farcaster";
 import { useFrame } from "@frames.js/render/use-frame";
 import Image from "next/image";
 import type { ImgHTMLAttributes } from "react";
@@ -14,7 +11,7 @@ import SignupForNonLocalAccountCard from "../organisms/SignupForNonLocalAccountC
 // Due to issue with FrameImageNext from @frame.js/render/next
 // Implement the exact same thing again
 function FrameImageNext(
-  props: ImgHTMLAttributes<HTMLImageElement> & { src: string }
+  props: ImgHTMLAttributes<HTMLImageElement> & { src: string },
 ): React.JSX.Element {
   return (
     <Image
@@ -28,11 +25,10 @@ function FrameImageNext(
 }
 
 type FrameArgs = {
-  url: string
-}
+  url: string;
+};
 
-const Frame = ({ url }: FrameArgs) =>  {
-
+const Frame = ({ url }: FrameArgs) => {
   const [showSignUpModal, setShowSignUpModal] = useState(false);
 
   const signer = undefined;
@@ -56,18 +52,12 @@ const Frame = ({ url }: FrameArgs) =>  {
 
   return (
     <>
-      <Modal
-        open={showSignUpModal}
-        setOpen={setShowSignUpModal}
-      >
+      <Modal open={showSignUpModal} setOpen={setShowSignUpModal}>
         <SignupForNonLocalAccountCard />
       </Modal>
-      <FrameUI
-        frameState={frameState}
-        FrameImage={FrameImageNext}
-      />
+      <FrameUI frameState={frameState} FrameImage={FrameImageNext} />
     </>
   );
-}
+};
 
 export default Frame;

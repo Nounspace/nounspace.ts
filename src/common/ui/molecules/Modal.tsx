@@ -1,6 +1,6 @@
-import React from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { Cross2Icon } from '@radix-ui/react-icons';
+import React from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
 export type ModalProps = {
   open: boolean;
@@ -13,15 +13,25 @@ export type ModalProps = {
   // The modality of the dialog. When set to true, interaction with outside elements
   // will be disabled and only dialog content will be visible to screen readers.
   focusMode?: boolean;
-}
+};
 
-const Modal = ({ open, setOpen, title, description, children, focusMode, overlay = true }: ModalProps) => (
+const Modal = ({
+  open,
+  setOpen,
+  title,
+  description,
+  children,
+  focusMode,
+  overlay = true,
+}: ModalProps) => (
   <Dialog.Root open={open} onOpenChange={setOpen} modal={focusMode || true}>
     <Dialog.Portal>
-      {overlay && <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0" />}
+      {overlay && (
+        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0" />
+      )}
       <Dialog.Content
         className="data-[state=open]:animate-contentShow fixed bg-background top-[40%] left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[6px] p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none"
-        onMouseDown={e => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
+        onMouseDown={(e) => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
       >
         {title && (
           <Dialog.Title className="text-card-foreground m-0 text-[17px] font-medium">

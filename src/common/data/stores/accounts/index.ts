@@ -1,8 +1,18 @@
 import { createJSONStorage } from "zustand/middleware";
 import { StoreGet, StoreSet, createStore, createStoreBindings } from "..";
-import { IdentityStore, identityDefault, indentityStore, partializedIdentityStore } from "./indentityStore";
-import { PrivyStore, partializedPrivyStore, privyDefault, privyStore } from "./privyStore";
-import { blake3 } from '@noble/hashes/blake3';
+import {
+  IdentityStore,
+  identityDefault,
+  indentityStore,
+  partializedIdentityStore,
+} from "./indentityStore";
+import {
+  PrivyStore,
+  partializedPrivyStore,
+  privyDefault,
+  privyStore,
+} from "./privyStore";
+import { blake3 } from "@noble/hashes/blake3";
 import stringify from "fast-json-stable-stringify";
 import { rawReturn } from "mutative";
 
@@ -15,15 +25,16 @@ export interface UnsignedFile {
 
 export type SignedFile = UnsignedFile & {
   signature: string;
-}
+};
 
 export function hashObject(obj: object) {
   return blake3(stringify(obj), { dkLen: 256 });
 }
 
-export type AccountStore = IdentityStore & PrivyStore & {
-  logout: () => void;
-};
+export type AccountStore = IdentityStore &
+  PrivyStore & {
+    logout: () => void;
+  };
 
 const accountStoreDefaults: Partial<AccountStore> = {
   ...privyDefault,
@@ -32,7 +43,11 @@ const accountStoreDefaults: Partial<AccountStore> = {
 
 function createAccountStore() {
   return createStore<AccountStore>(
-    (set: StoreSet<AccountStore>, get: StoreGet<AccountStore>, state: AccountStore) => ({
+    (
+      set: StoreSet<AccountStore>,
+      get: StoreGet<AccountStore>,
+      state: AccountStore,
+    ) => ({
       ...indentityStore(set, get),
       ...privyStore(set),
       logout: () => {
@@ -43,20 +58,16 @@ function createAccountStore() {
     }),
     {
       name: "nounspace-account-store",
-      storage: createJSONStorage(() => sessionStorage), 
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state: AccountStore) => ({
         ...partializedIdentityStore(state),
         ...partializedPrivyStore(state),
       }),
-    }
-  )
+    },
+  );
 }
 
-const { useStore: useAccountStore, provider: AccountStoreProvider } = createStoreBindings(
-  "AcccountStore",
-  createAccountStore,
-);
+const { useStore: useAccountStore, provider: AccountStoreProvider } =
+  createStoreBindings("AcccountStore", createAccountStore);
 
-export {
-  useAccountStore, AccountStoreProvider,
-};
+export { useAccountStore, AccountStoreProvider };

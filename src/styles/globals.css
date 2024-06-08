@@ -1,8 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
-
 
 @layer base {
   :root {
@@ -31,7 +29,7 @@
     --user-theme-background: initial;
     --user-theme-font: initial;
   }
- 
+
   .dark {
     --background: 0deg, 0%, 9%;
     --foreground: 0 0% 98%;
@@ -112,7 +110,7 @@
 
 .react-grid-item.react-grid-placeholder {
   border-radius: 10px;
-  padding:4px;
+  padding: 4px;
   background: blue 20% 20%;
   opacity: 0.1;
   transition-duration: 200ms;

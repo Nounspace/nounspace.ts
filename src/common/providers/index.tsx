@@ -1,12 +1,11 @@
 import React from "react";
 
 import Wagmi from "./Wagmi";
-import Query from "./Query"
+import Query from "./Query";
 import Theme from "./Theme";
 import Privy from "./Privy";
 
 import { AccountStoreProvider } from "../data/stores/accounts";
-
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,9 +13,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <Query>
         <Wagmi>
           <Theme>
-            <AccountStoreProvider>
-              { children }
-            </AccountStoreProvider>
+            <AccountStoreProvider>{children}</AccountStoreProvider>
           </Theme>
         </Wagmi>
       </Query>

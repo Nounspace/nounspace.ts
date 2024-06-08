@@ -1,12 +1,14 @@
+const SEARCHASTER_API_ENDPOINT = "https://searchcaster.xyz/api/";
 
-const SEARCHASTER_API_ENDPOINT = 'https://searchcaster.xyz/api/'
-
-export const searchForText = async (text: string): Promise<SearchResultCast[]> => {
-  const response = await fetch(`${SEARCHASTER_API_ENDPOINT}search?count=10&text=${text}`)
-  const json = await response.json()
-  return json?.casts || []
-}
-
+export const searchForText = async (
+  text: string,
+): Promise<SearchResultCast[]> => {
+  const response = await fetch(
+    `${SEARCHASTER_API_ENDPOINT}search?count=10&text=${text}`,
+  );
+  const json = await response.json();
+  return json?.casts || [];
+};
 
 export type SearchResultCast = {
   body: {
@@ -17,8 +19,8 @@ export type SearchResultCast = {
       image: string;
       replyParentMerkleRoot: string;
       threadMerkleRoot: string;
-    }
-  }
+    };
+  };
   meta: {
     displayName: string;
     avatar: string;
@@ -27,27 +29,27 @@ export type SearchResultCast = {
     reactions: {
       count: number;
       type: string;
-    }
+    };
     recasts: {
       count: number;
-    }
+    };
     watches: {
       count: number;
-    }
+    };
     replyParentUsername: {
       fid: number;
       username: string;
-    }
+    };
     mentions: {
       fid: number;
       pfp: {
         url: string;
         verified: boolean;
-      }
+      };
       username: string;
       displayName: string;
-    }[]
-  }
+    }[];
+  };
   merkleRoot: string;
   uri: string;
-}
+};

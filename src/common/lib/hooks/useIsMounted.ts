@@ -14,7 +14,10 @@ export function useIsMounted(): () => boolean {
       mountedRef.current = false;
     };
   }, []);
-  return useCallback(function isMounted() {
-    return mountedRef.current;
-  }, [mountedRef]);
+  return useCallback(
+    function isMounted() {
+      return mountedRef.current;
+    },
+    [mountedRef],
+  );
 }

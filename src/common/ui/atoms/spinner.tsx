@@ -9,9 +9,14 @@ type SpinnerProps = {
   ballColors?: [string, string, string];
 };
 
-export default function Spinner({ style, className, color, ballColors }: SpinnerProps) {
+export default function Spinner({
+  style,
+  className,
+  color,
+  ballColors,
+}: SpinnerProps) {
   return (
-    <FidgetSpinner 
+    <FidgetSpinner
       backgroundColor={color || "#ffffff"} // Default color to white instead of green
       ballColors={ballColors} // Ball colors default to red, blue, yellow
       wrapperStyle={style}
