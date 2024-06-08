@@ -4,33 +4,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/ui/atoms/popover";
-import { Button } from "@/common/ui/atoms/button"
-import { Color } from "@/common/lib/theme"
-import ColorPicker from 'react-best-gradient-color-picker'
+import { Button } from "@/common/ui/atoms/button";
+import { Color } from "@/common/lib/theme";
+import ColorPicker from "react-best-gradient-color-picker";
 
 export type ColorSelectorProps = {
-  value: Color,
-  onChange: (value: Color) => void,
-}
+  value: Color;
+  onChange: (value: Color) => void;
+};
 
 export const ColorSelector: React.FC<ColorSelectorProps> = ({
   value,
-  onChange
+  onChange,
 }) => {
-  const [isEditing, setIsEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
 
   const _onChange = useCallback<(val: string) => void>(
     (val) => {
-      onChange(val as Color)
+      onChange(val as Color);
     },
-    [onChange]
+    [onChange],
   );
 
   return (
-    <Popover
-      open={isEditing}
-      onOpenChange={setIsEditing}
-    >
+    <Popover open={isEditing} onOpenChange={setIsEditing}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -42,17 +39,11 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-auto p-2"
-        align="start"
-      >
-        <ColorPicker
-          value={value}
-          onChange={_onChange}
-        />
+      <PopoverContent className="w-auto p-2" align="start">
+        <ColorPicker value={value} onChange={_onChange} />
       </PopoverContent>
     </Popover>
-  )
-}
+  );
+};
 
 export default ColorSelector;

@@ -3,7 +3,7 @@ import supabase from "@/common/data/database/supabase/clients/server";
 import { SignedFile, hashObject } from "@/common/data/stores/accounts";
 import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
-import { secp256k1 } from '@noble/curves/secp256k1';
+import { secp256k1 } from "@noble/curves/secp256k1";
 import stringify from "fast-json-stable-stringify";
 
 export interface UnsignedIdentityRequest {
@@ -25,7 +25,7 @@ interface IdentityResponseError {
 export type IndentityResponse = {
   result: "error" | "success";
   value?: IdentityRequest | IdentityRequest[];
-  error?: IdentityResponseError
+  error?: IdentityResponseError;
 };
 
 function validateRequestSignature(req: IdentityRequest) {
@@ -33,12 +33,9 @@ function validateRequestSignature(req: IdentityRequest) {
     ...req,
     signature: undefined,
   });
-  return secp256k1.verify(
-    req.signature,
-    message,
-    req.identityPublicKey,
-    { prehash: true },
-  );
+  return secp256k1.verify(req.signature, message, req.identityPublicKey, {
+    prehash: true,
+  });
 }
 
 function validateFileSignature(f: SignedFile) {
@@ -52,12 +49,12 @@ function validateFileSignature(f: SignedFile) {
 
 async function handlePost(
   req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>
+  res: NextApiResponse<IndentityResponse>,
 ) {
   try {
     const { file, identityRequest } = req.body as {
-      file?: SignedFile,
-      identityRequest: IdentityRequest
+      file?: SignedFile;
+      identityRequest: IdentityRequest;
     };
     if (!validateRequestSignature(identityRequest)) {
       throw Error("Invalid signature on request");
@@ -66,14 +63,21 @@ async function handlePost(
       if (!validateFileSignature(file)) {
         throw Error("Invalid signature on keys file");
       }
-      const { error } = await supabase.from('walletIdentities').insert(identityRequest);
+      const { error } = await supabase
+        .from("walletIdentities")
+        .insert(identityRequest);
       if (error) {
         throw error;
       }
-      const { error: storageError } = await supabase.storage.from("private").upload(
-        rootKeyPath(identityRequest.identityPublicKey, identityRequest.walletAddress),
-        new Blob([stringify(file)], { type: 'application/json' })
-      );
+      const { error: storageError } = await supabase.storage
+        .from("private")
+        .upload(
+          rootKeyPath(
+            identityRequest.identityPublicKey,
+            identityRequest.walletAddress,
+          ),
+          new Blob([stringify(file)], { type: "application/json" }),
+        );
       if (storageError) {
         throw storageError;
       }
@@ -87,26 +91,29 @@ async function handlePost(
     res.status(500).json({
       result: "error",
       error: {
-        message: "Malformed POST request"
-      }
+        message: "Malformed POST request",
+      },
     });
   }
 }
 
 async function handleGet(
   req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>
+  res: NextApiResponse<IndentityResponse>,
 ) {
   const query = req.query;
   if (query.address) {
-    const { data, error } = await supabase.from('walletIdentities').select().eq('walletAddress', query.address);
+    const { data, error } = await supabase
+      .from("walletIdentities")
+      .select()
+      .eq("walletAddress", query.address);
     if (error) {
       res.status(500).json({
         result: "error",
         error: {
           message: error.message,
         },
-      })
+      });
     } else {
       res.status(200).json({
         result: "success",
@@ -118,25 +125,25 @@ async function handleGet(
       result: "error",
       error: {
         message: "Must provide `address` in the query",
-      }
+      },
     });
   }
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>
+  res: NextApiResponse<IndentityResponse>,
 ) {
   if (req.method === "GET") {
-    await handleGet(req, res)
+    await handleGet(req, res);
   } else if (req.method === "POST") {
-    await handlePost(req, res)
+    await handlePost(req, res);
   } else {
     res.status(405).json({
       result: "error",
       error: {
         message: "Only GET and POST are allowed",
-      }
+      },
     });
   }
 }

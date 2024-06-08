@@ -1,10 +1,7 @@
 import React, { useEffect } from "react";
 import Space, { SpaceConfig } from "@/common/ui/templates/Space";
 import { useState } from "react";
-import {
-  GridLayout,
-  resizeDirections,
-} from "@/fidgets/layout/Grid";
+import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -71,7 +68,7 @@ const Homebase: NextPageWithLayout = () => {
         editable: true,
         settings: {
           title: "Hello, World!",
-          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget tincidunt nunc. Vivamus vitae arcu placerat diam lacinia interdum."
+          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget tincidunt nunc. Vivamus vitae arcu placerat diam lacinia interdum.",
         },
         data: {},
       },
@@ -83,7 +80,7 @@ const Homebase: NextPageWithLayout = () => {
         editable: true,
         settings: {
           title: "Text Fidget",
-          text: "Jot down your ideas and grow them."
+          text: "Jot down your ideas and grow them.",
         },
         data: {},
       },
@@ -94,11 +91,12 @@ const Homebase: NextPageWithLayout = () => {
       instanceConfig: {
         editable: false,
         settings: {
-          imageUrl: "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+          imageUrl:
+            "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
         },
         data: {},
       },
-    },  
+    },
     frame: {
       fidgetName: "frame",
       id: "frame",
@@ -112,7 +110,7 @@ const Homebase: NextPageWithLayout = () => {
     },
   };
 
-  const windowSize = useWindowSize()
+  const windowSize = useWindowSize();
 
   const gridDetails: GridLayout = {
     isDraggable: false,
@@ -156,7 +154,7 @@ const Homebase: NextPageWithLayout = () => {
         },
       },
     });
-  }, [windowSize])
+  }, [windowSize]);
 
   async function saveConfig(config: SpaceConfig) {
     setSpaceConfig(config);
@@ -166,27 +164,25 @@ const Homebase: NextPageWithLayout = () => {
     <div>
       <div className="p-8">
         <div className="relative">
-          <Space
-            config={spaceConfig}
-            saveConfig={saveConfig}
-          />
+          <Space config={spaceConfig} saveConfig={saveConfig} />
         </div>
       </div>
     </div>
   );
-}
+};
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <div className="min-h-screen" style={{ background: 'var(--user-theme-background)' }}>
+    <div
+      className="min-h-screen"
+      style={{ background: "var(--user-theme-background)" }}
+    >
       <div className="container mx-auto">
         <Navigation />
-        <div className="p-4 sm:ml-64">
-          { page }
-        </div>
+        <div className="p-4 sm:ml-64">{page}</div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default Homebase;

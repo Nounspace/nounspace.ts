@@ -10,7 +10,7 @@ export const CompleteFidgets = {
   example: Example,
   frame: Frame,
   gallery: Gallery,
-  text: TextFidget
+  text: TextFidget,
 };
 
 export const LayoutFidgets = {
