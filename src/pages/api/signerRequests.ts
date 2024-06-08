@@ -2,19 +2,22 @@ import { APP_FID } from "@/constants/app";
 import { AppSigner } from "@/constants/app-server-side";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 import { ALCHEMY_API, WARPCAST_API } from "@/constants/urls";
-import { SIGNED_KEY_REQUEST_TYPE, SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN } from "@farcaster/core";
+import {
+  SIGNED_KEY_REQUEST_TYPE,
+  SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
+} from "@farcaster/core";
 import axios from "axios";
 import { isArray, isUndefined } from "lodash";
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * Defines an API endpoint to manage the creation of signers from Warpcast
- * 
+ *
  * This file is based on the guide offered by Warpcast
  * https://warpcast.notion.site/Signer-Request-API-Migration-Guide-Public-9e74827f9070442fb6f2a7ffe7226b3c
- * 
+ *
  * Rough flow:
- * GET -> 
+ * GET ->
  *   - takes in a given token (as returned by the POST method)
  *   - looks up the data from the warpcast API about the state of that token
  *   - returns the data or an error if the token is invalid or not provided
@@ -42,7 +45,7 @@ export type SignerResponse<D> = {
 type SignedKeyRequestSponsorship = {
   sponsorFid: number;
   signature: string; // sponsorship signature by sponsorFid
-}
+};
 
 type SignedKeyRequestBody = {
   key: string;
@@ -50,7 +53,7 @@ type SignedKeyRequestBody = {
   deadline: number;
   signature: string; // key request signature by requestFid
   sponsorship?: SignedKeyRequestSponsorship;
-}
+};
 
 export type SignedKeyRequestResponse = {
   token: string;
@@ -71,7 +74,10 @@ type AlchemyIsHolderOfContract = {
   isHolderOfContract: boolean;
 };
 
-async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>) {
+async function handlePost(
+  req: NextApiRequest,
+  res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
+) {
   const { publicKey, requestingWallet } = req.body as CreateSignerRequest;
 
   if (isUndefined(publicKey)) {
@@ -107,13 +113,13 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerRespon
           params: {
             wallet: requestingWallet,
             contractAddress: NOGS_CONTRACT_ADDR,
-          }
-        }
+          },
+        },
       );
       shouldSponsor = data.isHolderOfContract;
     } catch (e) {
       console.error(e);
-      console.log("Failed to check ")
+      console.log("Failed to check ");
     }
   }
 
@@ -121,7 +127,7 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerRespon
   if (shouldSponsor) {
     sponsorship = {
       sponsorFid: APP_FID!,
-      signature: await AppSigner.signMessage({ message: { raw: signature }}),
+      signature: await AppSigner.signMessage({ message: { raw: signature } }),
     };
   }
 
@@ -133,7 +139,10 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerRespon
       deadline,
       sponsorship,
     };
-    const { data } = await axios.post<SignedKeyRequestResponseBody>(`${WARPCAST_API}/v2/signed-key-requests`, requestArgs);
+    const { data } = await axios.post<SignedKeyRequestResponseBody>(
+      `${WARPCAST_API}/v2/signed-key-requests`,
+      requestArgs,
+    );
 
     return res.status(200).json({
       result: "success",
@@ -150,7 +159,10 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse<SignerRespon
   }
 }
 
-async function handleGet(req: NextApiRequest, res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>) {
+async function handleGet(
+  req: NextApiRequest,
+  res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
+) {
   const token = req.query.token;
 
   if (isUndefined(token)) {
@@ -172,11 +184,14 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<SignerRespons
   }
 
   try {
-    const { data } = await axios.get<SignedKeyRequestResponseBody>(`${WARPCAST_API}/v2/signed-key-request`, {
-      params: {
-        token,
+    const { data } = await axios.get<SignedKeyRequestResponseBody>(
+      `${WARPCAST_API}/v2/signed-key-request`,
+      {
+        params: {
+          token,
+        },
       },
-    });
+    );
 
     return res.status(200).json({
       result: "success",
@@ -195,7 +210,7 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse<SignerRespons
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>
+  res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
 ) {
   if (req.method === "POST") {
     return handlePost(req, res);
@@ -206,7 +221,7 @@ export default async function handler(
       result: "error",
       error: {
         message: "Only GET and POST are allowed",
-      }
+      },
     });
   }
 }

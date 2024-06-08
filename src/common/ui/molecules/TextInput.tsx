@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback } from "react";
 import { Input, InputProps } from "@/common/ui/atoms/input";
 
-export interface TextInputProps extends Omit<InputProps, 'onChange'> {
+export interface TextInputProps extends Omit<InputProps, "onChange"> {
   value: string;
   onChange?: (value: string) => void;
 }
@@ -11,18 +11,12 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       props.onChange?.(event.target.value);
     },
-    [props.onChange]
+    [props.onChange],
   );
 
-  return (
-    <Input
-      {...props}
-      ref={ref}
-      onChange={onChange}
-    />
-  );
+  return <Input {...props} ref={ref} onChange={onChange} />;
 });
 
-TextInput.displayName = "TextInput"
+TextInput.displayName = "TextInput";
 
 export default TextInput;

@@ -1,8 +1,12 @@
-import { AuthenticatorData, AuthenticatorMethodWrapper, AuthenticatorMethods } from "../..";
+import {
+  AuthenticatorData,
+  AuthenticatorMethodWrapper,
+  AuthenticatorMethods,
+} from "../..";
 import NounspaceFarcasterAuthenticator from "./NounspaceManagedSignerAuthenticator";
 
 export type SignerStatus = "pending" | "approved" | "revoked" | "completed";
-export type FarcasterRegistrationType = "account" | "signer"; 
+export type FarcasterRegistrationType = "account" | "signer";
 
 export interface FarcasterSignerAuthenticatorData extends AuthenticatorData {
   accountFid?: number;
@@ -11,27 +15,36 @@ export interface FarcasterSignerAuthenticatorData extends AuthenticatorData {
 }
 
 export interface FarcasterSignerAuthenticatorMethods<
-  D extends FarcasterSignerAuthenticatorData
+  D extends FarcasterSignerAuthenticatorData,
 > extends AuthenticatorMethods<D> {
-  signMessage: AuthenticatorMethodWrapper<((messageHash: Uint8Array) => Promise<Uint8Array>), D>;
+  signMessage: AuthenticatorMethodWrapper<
+    (messageHash: Uint8Array) => Promise<Uint8Array>,
+    D
+  >;
   // Same as the account's public key for account type
-  getSignerPublicKey: AuthenticatorMethodWrapper<(() => Promise<Uint8Array>), D>;
+  getSignerPublicKey: AuthenticatorMethodWrapper<() => Promise<Uint8Array>, D>;
   // Always returns "approved" for "account"
-  getSignerStatus: AuthenticatorMethodWrapper<(() => Promise<SignerStatus>), D>;
+  getSignerStatus: AuthenticatorMethodWrapper<() => Promise<SignerStatus>, D>;
   // Returns the URL for the user to auth
-  createNewSigner: AuthenticatorMethodWrapper<(() => Promise<string | undefined>), D>;
+  createNewSigner: AuthenticatorMethodWrapper<
+    () => Promise<string | undefined>,
+    D
+  >;
   // Returns the FID of the new account that is created
-  createNewAccount: AuthenticatorMethodWrapper<(() => Promise<number>), D>;
+  createNewAccount: AuthenticatorMethodWrapper<() => Promise<number>, D>;
   // FID of the account that requested the signer -- same as Account FID for accounts
-  getSignerFid: AuthenticatorMethodWrapper<(() => Promise<number>), D>;
+  getSignerFid: AuthenticatorMethodWrapper<() => Promise<number>, D>;
   // FID of the account that the signer signs on behalf of
-  getAccountFid: AuthenticatorMethodWrapper<(() => Promise<number>), D>;
+  getAccountFid: AuthenticatorMethodWrapper<() => Promise<number>, D>;
   // Says if the Authenticator is a signer or an account
-  getRegistrationType: AuthenticatorMethodWrapper<(() => Promise<FarcasterRegistrationType>), D>;
+  getRegistrationType: AuthenticatorMethodWrapper<
+    () => Promise<FarcasterRegistrationType>,
+    D
+  >;
   // Pull recent data about the signer if it exists
-  updateSignerInfo: AuthenticatorMethodWrapper<(() => Promise<void>), D>;
+  updateSignerInfo: AuthenticatorMethodWrapper<() => Promise<void>, D>;
 }
 
 export default {
-  "nounspace": NounspaceFarcasterAuthenticator,
+  nounspace: NounspaceFarcasterAuthenticator,
 };

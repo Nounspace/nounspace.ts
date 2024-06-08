@@ -1,9 +1,9 @@
 import { WEBSITE_URL } from "@/constants/app";
-import React, { Suspense } from "react"
+import React, { Suspense } from "react";
 
 export const metadata = {
-  title: 'Nounspace',
-  description: 'Nounspace is a client for Farcaster',
+  title: "Nounspace",
+  description: "Nounspace is a client for Farcaster",
   openGraph: {
     siteName: "Nounspace",
     title: "Nounspace",
@@ -33,19 +33,17 @@ export const metadata = {
     ],
     apple: "/images/apple-touch-icon.png",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
       <body>
-        <Suspense>
-          { children }
-        </Suspense>
+        <Suspense>{children}</Suspense>
       </body>
     </html>
   );

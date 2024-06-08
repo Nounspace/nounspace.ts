@@ -1,6 +1,20 @@
 import React, { createContext, useContext, useRef } from "react";
-import { AuthenticatorComponent, AuthenticatorData, AuthenticatorMethod, AuthenticatorMethods, AuthenticatorRef } from ".";
-import { get, includes, isNull, isUndefined, map, mapValues, pickBy } from "lodash";
+import {
+  AuthenticatorComponent,
+  AuthenticatorData,
+  AuthenticatorMethod,
+  AuthenticatorMethods,
+  AuthenticatorRef,
+} from ".";
+import {
+  get,
+  includes,
+  isNull,
+  isUndefined,
+  map,
+  mapValues,
+  pickBy,
+} from "lodash";
 import authenticators from "./authenticators";
 
 type AuthenticatorPermissions = {
@@ -38,8 +52,9 @@ type AuthenticatorManagerUnknownMethodResponse = {
   reason: "unknownMethod";
 };
 
-type AuthenticatorManagerResponse = AuthenticatorManagerAllowedResponse 
-  | AuthenticatorManagerFailedResponse 
+type AuthenticatorManagerResponse =
+  | AuthenticatorManagerAllowedResponse
+  | AuthenticatorManagerFailedResponse
   | AuthenticatorManagerDeniedResponse
   | AuthenticatorManagerUnknownMethodResponse;
 
@@ -69,10 +84,14 @@ type AuthenticatorManager = {
   ) => Promise<AuthenticatorManagerResponse>;
   // If Authenticator is not initialized, it will initialize it before asking
   // the user to grant the permission to the Fidget
-  requestPermissions: (requestingFidgetId: string, permissionsRequested: AuthenticatorPermissionRequest[]) => 
-    Promise<AuthenticatorPermissionResponse[]>;
+  requestPermissions: (
+    requestingFidgetId: string,
+    permissionsRequested: AuthenticatorPermissionRequest[],
+  ) => Promise<AuthenticatorPermissionResponse[]>;
   // If Authenticator is not initialized, returns an empty array
-  grantedPermissions: (requestingFidgetId: string) => Promise<AuthenticatorPermissionResponse[]>;
+  grantedPermissions: (
+    requestingFidgetId: string,
+  ) => Promise<AuthenticatorPermissionResponse[]>;
   openManagementPanel: () => void;
 };
 
@@ -83,38 +102,44 @@ type AuthenticatorManager = {
 
 const AuthenticatorContext = createContext<AuthenticatorManager | null>(null);
 
-function authenticatorForName(name: string): AuthenticatorComponent<
-  AuthenticatorData,
-  AuthenticatorMethods<AuthenticatorData>
-> | undefined {
+function authenticatorForName(
+  name: string,
+):
+  | AuthenticatorComponent<
+      AuthenticatorData,
+      AuthenticatorMethods<AuthenticatorData>
+    >
+  | undefined {
   const lookups = name.replace(":", ".");
   return get(authenticators, lookups);
 }
 
-export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProviderProps> = ({
-  authenticatorConfig,
-  saveAuthenticatorConfig,
-  children
-}) => {
+export const AuthenticatorManagerProvider: React.FC<
+  AuthenticatorManagerProviderProps
+> = ({ authenticatorConfig, saveAuthenticatorConfig, children }) => {
   const installedAuthenticators = mapValues(
     authenticatorConfig,
     (config, authenticatorName) => {
       const component = authenticatorForName(authenticatorName);
-      if (isUndefined(component)) return {
-        component: null,
-        ref: null,
-        config,
-      };
-      type ComponentMethods<X> = X extends AuthenticatorComponent<any, infer M> ? M : never;
+      if (isUndefined(component))
+        return {
+          component: null,
+          ref: null,
+          config,
+        };
+      type ComponentMethods<X> =
+        X extends AuthenticatorComponent<any, infer M> ? M : never;
       return {
         component,
-        ref: useRef<AuthenticatorRef<
-          typeof config.data,
-          ComponentMethods<typeof component>
-        >>(null),
+        ref: useRef<
+          AuthenticatorRef<
+            typeof config.data,
+            ComponentMethods<typeof component>
+          >
+        >(null),
         config,
       };
-    }
+    },
   );
 
   // const [currentInitializer, setCurrentInitializer] = useState<InitializerRecord<unknown>>();
@@ -133,14 +158,15 @@ export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProvider
         if (isUndefined(authenticator) || isNull(authenticator.ref)) {
           return {
             result: "error",
-            reason: "denied"
+            reason: "denied",
           };
         }
-        const allowedMethods = authenticator.config.permissions[requestingFidgetId] || [];
+        const allowedMethods =
+          authenticator.config.permissions[requestingFidgetId] || [];
         if (!includes(allowedMethods, methodName)) {
           return {
             result: "error",
-            reason: "denied"
+            reason: "denied",
           };
         }
         try {
@@ -170,7 +196,9 @@ export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProvider
         // TO DO: Change this to support permission grants to spaces or Fidget types, not just single instances
         return map(
           // Get all of the auth configs that contain the figet ID
-          pickBy(authenticatorConfig, conf => includes(conf.permissions, [requestingFidgetId])),
+          pickBy(authenticatorConfig, (conf) =>
+            includes(conf.permissions, [requestingFidgetId]),
+          ),
           // Map these configs into the return type
           (config, authenticatorName) => {
             return {
@@ -185,13 +213,14 @@ export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProvider
   }
 
   function saveSingleAuthenticatorData(authenticatorName, config) {
-    return (data) => saveAuthenticatorConfig({
-      ...authenticatorConfig,
-      [authenticatorName]: {
-        permissions: config.permissions,
-        data,
-      },
-    });
+    return (data) =>
+      saveAuthenticatorConfig({
+        ...authenticatorConfig,
+        [authenticatorName]: {
+          permissions: config.permissions,
+          data,
+        },
+      });
   }
 
   // function initializationCompleted() {
@@ -201,19 +230,20 @@ export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProvider
 
   return (
     <AuthenticatorContext.Provider value={authenticatorManager.current}>
-      {
-        map(
-          installedAuthenticators,
-          ({ component, ref, config }, authenticatorName) => component ? React.createElement(
-            component,
-            {
-              ref,
-              data: config.data,
-              saveData: saveSingleAuthenticatorData(authenticatorName, config),
-            }
-          ) : null
-        )
-      }
+      {map(
+        installedAuthenticators,
+        ({ component, ref, config }, authenticatorName) =>
+          component
+            ? React.createElement(component, {
+                ref,
+                data: config.data,
+                saveData: saveSingleAuthenticatorData(
+                  authenticatorName,
+                  config,
+                ),
+              })
+            : null,
+      )}
       {/* <Modal open={showModal} setOpen={setShowModal}>
         {
           !isUndefined(currentInitializer) ?
@@ -228,7 +258,7 @@ export const AuthenticatorManagerProvider: React.FC<AuthenticatorManagerProvider
           null
         }
       </Modal> */}
-      { children }
+      {children}
     </AuthenticatorContext.Provider>
   );
 };
@@ -237,7 +267,9 @@ export function useAuthenticatorManager() {
   const context = useContext(AuthenticatorContext);
 
   if (!context) {
-    throw new Error(`useAuthenticatorManager must be use within AuthenticatorManagerProvider`)
+    throw new Error(
+      `useAuthenticatorManager must be use within AuthenticatorManagerProvider`,
+    );
   }
 
   return context;

@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr'
-import { type NextRequest, type NextResponse } from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, type NextResponse } from "next/server";
 
 export default function createClient(req: NextRequest, res: NextResponse) {
   const supabase = createServerClient(
@@ -17,8 +17,8 @@ export default function createClient(req: NextRequest, res: NextResponse) {
           res.cookies.delete(name);
         },
       },
-    }
-  )
+    },
+  );
 
-  return supabase
+  return supabase;
 }

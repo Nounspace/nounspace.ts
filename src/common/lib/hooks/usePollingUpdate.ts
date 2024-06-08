@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 
-const usePollingUpdate = (pollingFunction: (() => void) | null, interval: number) => {
+const usePollingUpdate = (
+  pollingFunction: (() => void) | null,
+  interval: number,
+) => {
   const [subscription, setSubscription] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -14,7 +17,6 @@ const usePollingUpdate = (pollingFunction: (() => void) | null, interval: number
       }
     };
   }, [pollingFunction]);
-}
-
+};
 
 export default usePollingUpdate;

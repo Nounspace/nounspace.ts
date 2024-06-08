@@ -1,21 +1,30 @@
-import { isArray, find, isUndefined, isNull } from 'lodash';
-import { Wallet } from '@privy-io/react-auth';
-import { secp256k1 } from '@noble/curves/secp256k1';
-import { xchacha20poly1305 } from '@noble/ciphers/chacha';
-import { hkdf } from '@noble/hashes/hkdf';
-import { sha256 } from '@noble/hashes/sha256';
-import { managedNonce, randomBytes } from '@noble/ciphers/webcrypto';
-import { bytesToHex, bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
-import { StoreGet, StoreSet } from '..';
+import { isArray, find, isUndefined, isNull } from "lodash";
+import { Wallet } from "@privy-io/react-auth";
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { xchacha20poly1305 } from "@noble/ciphers/chacha";
+import { hkdf } from "@noble/hashes/hkdf";
+import { sha256 } from "@noble/hashes/sha256";
+import { managedNonce, randomBytes } from "@noble/ciphers/webcrypto";
+import {
+  bytesToHex,
+  bytesToUtf8,
+  hexToBytes,
+  utf8ToBytes,
+} from "@noble/ciphers/utils";
+import { StoreGet, StoreSet } from "..";
 import { AccountStore, SignedFile, UnsignedFile, hashObject } from ".";
-import { createClient } from '../../database/supabase/clients/component';
-import axiosBackend from '../../api/backend';
-import { IdentityRequest, IndentityResponse, UnsignedIdentityRequest } from '@/pages/api/space/identities';
-import { SignMessageFunctionSignature } from './privyStore';
-import { rootKeyPath } from '@/constants/supabase';
-import stringify from 'fast-json-stable-stringify';
+import { createClient } from "../../database/supabase/clients/component";
+import axiosBackend from "../../api/backend";
+import {
+  IdentityRequest,
+  IndentityResponse,
+  UnsignedIdentityRequest,
+} from "@/pages/api/space/identities";
+import { SignMessageFunctionSignature } from "./privyStore";
+import { rootKeyPath } from "@/constants/supabase";
+import stringify from "fast-json-stable-stringify";
 import moment from "moment";
-import axios from 'axios';
+import axios from "axios";
 
 interface SpaceKeys {
   publicKey: string;
@@ -24,11 +33,11 @@ interface SpaceKeys {
 
 type RootSpaceKeys = SpaceKeys & {
   type: "root";
-}
+};
 
 type PreSpaceKeys = SpaceKeys & {
   type: "pre";
-}
+};
 
 export interface SpaceIdentity {
   rootKeys: RootSpaceKeys;
@@ -45,9 +54,15 @@ interface IndentityState {
 
 interface IndentityActions {
   loadIdentitiesForWallet: (wallet: Wallet) => Promise<void>;
-  decryptIdentityKeys: 
-    (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => Promise<void>;
-  createIdentityForWallet: (signMessage: SignMessageFunctionSignature, wallet: Wallet) => Promise<string>;
+  decryptIdentityKeys: (
+    signMessage: SignMessageFunctionSignature,
+    wallet: Wallet,
+    identityPublicKey: string,
+  ) => Promise<void>;
+  createIdentityForWallet: (
+    signMessage: SignMessageFunctionSignature,
+    wallet: Wallet,
+  ) => Promise<string>;
   setCurrentIdentity: (publicKey: string) => void;
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
@@ -62,15 +77,23 @@ export const identityDefault: IndentityState = {
 };
 
 class IdentitytDecryptError extends Error {
-  constructor(identityPublicKey: string, walletAddress: string, message: string = "", ...args) {
-    super(`Unable to decrypt identity ${identityPublicKey} for wallet ${walletAddress}: ${message}`, ...args);
+  constructor(
+    identityPublicKey: string,
+    walletAddress: string,
+    message: string = "",
+    ...args
+  ) {
+    super(
+      `Unable to decrypt identity ${identityPublicKey} for wallet ${walletAddress}: ${message}`,
+      ...args,
+    );
   }
 }
 
 const moreInfo = "For more info: https://nounspace.com/signatures/";
 const identityMessaage = "SPACE Identity:";
 
-function randomNonce(length=32) {
+function randomNonce(length = 32) {
   return bytesToHex(randomBytes(length));
 }
 
@@ -86,69 +109,113 @@ async function decryptKeyFile(
   signMessage: SignMessageFunctionSignature,
   wallet: Wallet,
   nonce: string,
-  encryptedBlob: Uint8Array
+  encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
   const signature = await signMessage(wallet, generateMessage(nonce));
-  const cipher = managedNonce(xchacha20poly1305)(signatureToCipherKey(signature));
-  return JSON.parse(bytesToUtf8(cipher.decrypt(encryptedBlob))) as RootSpaceKeys | PreSpaceKeys;
+  const cipher = managedNonce(xchacha20poly1305)(
+    signatureToCipherKey(signature),
+  );
+  return JSON.parse(bytesToUtf8(cipher.decrypt(encryptedBlob))) as
+    | RootSpaceKeys
+    | PreSpaceKeys;
 }
 
 async function encryptKeyFile(
   signMessage: SignMessageFunctionSignature,
   wallet: Wallet,
   nonce: string,
-  keysToEncrypt: RootSpaceKeys | PreSpaceKeys
+  keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
   const signature = await signMessage(wallet, generateMessage(nonce));
-  const cipher = managedNonce(xchacha20poly1305)(signatureToCipherKey(signature));
+  const cipher = managedNonce(xchacha20poly1305)(
+    signatureToCipherKey(signature),
+  );
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<IndentityState>): IdentityStore => ({
+export const indentityStore = (
+  set: StoreSet<AccountStore>,
+  get: StoreGet<IndentityState>,
+): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
-    return find(state.spaceIdentities, { rootKeys: { publicKey: state.currentSpaceIdentityPublicKey } })
+    return find(state.spaceIdentities, {
+      rootKeys: { publicKey: state.currentSpaceIdentityPublicKey },
+    });
   },
   setCurrentIdentity: (publicKey: string) => {
-    set((draft) => { draft.currentSpaceIdentityPublicKey = publicKey});
+    set((draft) => {
+      draft.currentSpaceIdentityPublicKey = publicKey;
+    });
   },
   loadIdentitiesForWallet: async (wallet: Wallet) => {
     // Load Indentity + Nonce + Wallet address info from DB
-    const { data }: { data: IndentityResponse } = await axiosBackend.get("/api/space/identities", {
-      params: {
-        address: wallet.address,
-      }
-    });
-    const walletIdentities = data.value ? (isArray(data.value) ? data.value : [data.value]) : [];
+    const { data }: { data: IndentityResponse } = await axiosBackend.get(
+      "/api/space/identities",
+      {
+        params: {
+          address: wallet.address,
+        },
+      },
+    );
+    const walletIdentities = data.value
+      ? isArray(data.value)
+        ? data.value
+        : [data.value]
+      : [];
     set((draft) => {
       draft.walletIdentities[wallet.address] = walletIdentities;
-    })
+    });
   },
   getIdentitiesForWallet: (wallet: Wallet) => {
     return get().walletIdentities[wallet.address] || [];
   },
-  decryptIdentityKeys: async (signMessage: SignMessageFunctionSignature, wallet: Wallet, identityPublicKey: string) => {
+  decryptIdentityKeys: async (
+    signMessage: SignMessageFunctionSignature,
+    wallet: Wallet,
+    identityPublicKey: string,
+  ) => {
     const supabase = createClient();
-    const walletIndentityInfo = find(get().walletIdentities[wallet.address], { identityPublicKey: identityPublicKey});
+    const walletIndentityInfo = find(get().walletIdentities[wallet.address], {
+      identityPublicKey: identityPublicKey,
+    });
     if (isUndefined(walletIndentityInfo)) {
-      throw new IdentitytDecryptError(identityPublicKey, wallet.address, "Nonce not found");
+      throw new IdentitytDecryptError(
+        identityPublicKey,
+        wallet.address,
+        "Nonce not found",
+      );
     }
-    const { data: { publicUrl } } = await supabase.storage.from('private').getPublicUrl(rootKeyPath(identityPublicKey, wallet.address));
+    const {
+      data: { publicUrl },
+    } = await supabase.storage
+      .from("private")
+      .getPublicUrl(rootKeyPath(identityPublicKey, wallet.address));
     if (!publicUrl) {
-      throw new IdentitytDecryptError(identityPublicKey, wallet.address, "Blob not found");
+      throw new IdentitytDecryptError(
+        identityPublicKey,
+        wallet.address,
+        "Blob not found",
+      );
     }
-    const { data }: { data: Blob } = await axios.get(publicUrl, { responseType: "blob" });
+    const { data }: { data: Blob } = await axios.get(publicUrl, {
+      responseType: "blob",
+    });
     if (isNull(data)) {
-      throw new IdentitytDecryptError(identityPublicKey, wallet.address, "Blob not found");
+      throw new IdentitytDecryptError(
+        identityPublicKey,
+        wallet.address,
+        "Blob not found",
+      );
     }
     const fileData = JSON.parse(await data.text()) as SignedFile;
-    const keys = await decryptKeyFile(
+    const keys = (await decryptKeyFile(
       signMessage,
       wallet,
       walletIndentityInfo.nonce,
-      hexToBytes(fileData.fileData)
-    ) as RootSpaceKeys;
+      hexToBytes(fileData.fileData),
+    )) as RootSpaceKeys;
     set((draft) => {
       draft.spaceIdentities.push({
         rootKeys: keys,
@@ -156,36 +223,34 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
       });
     });
   },
-  createIdentityForWallet: async (signMessage: SignMessageFunctionSignature, wallet: Wallet) => {
+  createIdentityForWallet: async (
+    signMessage: SignMessageFunctionSignature,
+    wallet: Wallet,
+  ) => {
     const privateKey = secp256k1.utils.randomPrivateKey();
     const publicKey = secp256k1.getPublicKey(privateKey);
     const identityKeys: RootSpaceKeys = {
       publicKey: bytesToHex(publicKey),
       privateKey: bytesToHex(privateKey),
-      type: "root"
+      type: "root",
     };
     const nonce = randomNonce();
     const keyFile: UnsignedFile = {
       publicKey: bytesToHex(publicKey),
-      fileData: bytesToHex(await encryptKeyFile(
-        signMessage,
-        wallet,
-        nonce,
-        identityKeys
-      )),
+      fileData: bytesToHex(
+        await encryptKeyFile(signMessage, wallet, nonce, identityKeys),
+      ),
       fileType: "json",
       isEncrypted: true,
     };
     const signedKeyFile: SignedFile = {
       ...keyFile,
-      signature: secp256k1.sign(
-        hashObject(keyFile),
-        privateKey,
-        { prehash: true }
-      ).toCompactHex(),
+      signature: secp256k1
+        .sign(hashObject(keyFile), privateKey, { prehash: true })
+        .toCompactHex(),
     };
     const identityRequestUnsigned: UnsignedIdentityRequest = {
-      type: 'Create',
+      type: "Create",
       identityPublicKey: bytesToHex(publicKey),
       walletAddress: wallet.address,
       nonce,
@@ -193,19 +258,21 @@ export const indentityStore = (set: StoreSet<AccountStore>, get: StoreGet<Indent
     };
     const identityRequest: IdentityRequest = {
       ...identityRequestUnsigned,
-      signature: secp256k1.sign(
-        hashObject(identityRequestUnsigned),
-        privateKey,
-        { prehash: true }
-      ).toCompactHex(),
+      signature: secp256k1
+        .sign(hashObject(identityRequestUnsigned), privateKey, {
+          prehash: true,
+        })
+        .toCompactHex(),
     };
     const postData = {
       file: signedKeyFile,
       identityRequest,
     };
-    await axiosBackend.post("/api/space/identities", postData, { headers: { "Content-Type": "application/json" } });
+    await axiosBackend.post("/api/space/identities", postData, {
+      headers: { "Content-Type": "application/json" },
+    });
     set((draft) => {
-      draft.spaceIdentities.push({ rootKeys: identityKeys, preKeys: []});
+      draft.spaceIdentities.push({ rootKeys: identityKeys, preKeys: [] });
     });
     return identityKeys.publicKey;
   },

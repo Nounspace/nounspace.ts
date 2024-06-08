@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import TextInput from "@/common/ui/molecules/TextInput";
 import ColorSelector from "@/common/ui/molecules/ColorSelector";
 import FontSelector from "@/common/ui/molecules/FontSelector";
@@ -7,15 +7,15 @@ import {
   CardHeader,
   CardContent,
   CardTitle,
-  CardDescription
-} from '@/common/ui/atoms/card';
-import { FontFamily, Color } from '@/common/lib/theme';
+  CardDescription,
+} from "@/common/ui/atoms/card";
+import { FontFamily, Color } from "@/common/lib/theme";
 
 export type TextFidgetSettings = {
-  title?: string,
-  text: string,
-  fontFamily: FontFamily,
-  background: Color
+  title?: string;
+  text: string;
+  fontFamily: FontFamily;
+  background: Color;
 };
 
 export const textConfig: FidgetEditConfig = {
@@ -43,48 +43,44 @@ export const textConfig: FidgetEditConfig = {
       default: "var(--user-theme-background)",
       required: false,
       inputSelector: ColorSelector,
-    }
+    },
   ],
   size: {
     minHeight: 1,
     maxHeight: 36,
     minWidth: 1,
     maxWidth: 36,
-  }
+  },
 };
 
-export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
+export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
+  settings,
+}) => {
   return (
     <div
       style={{
         background: settings.background,
         fontFamily: settings.fontFamily,
-        height: '100%',
+        height: "100%",
       }}
     >
-      {
-        settings?.title && (
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className='text-2xl font-bold'>
-              { settings.title }
-            </CardTitle>
-          </CardHeader>
-        )
-      }
-      {
-        settings?.text && (
-          <CardContent className="p-4 pt-2">
-            <CardDescription className='text-base font-normal text-black dark:text-white'>
-              { settings.text }
-            </CardDescription>
-          </CardContent>
-        )
-      }
+      {settings?.title && (
+        <CardHeader className="p-4 pb-2">
+          <CardTitle className="text-2xl font-bold">{settings.title}</CardTitle>
+        </CardHeader>
+      )}
+      {settings?.text && (
+        <CardContent className="p-4 pt-2">
+          <CardDescription className="text-base font-normal text-black dark:text-white">
+            {settings.text}
+          </CardDescription>
+        </CardContent>
+      )}
     </div>
   );
 };
 
 export default {
   fidget: Text,
-  editConfig: textConfig
+  editConfig: textConfig,
 } as FidgetModule<FidgetArgs<TextFidgetSettings>>;
