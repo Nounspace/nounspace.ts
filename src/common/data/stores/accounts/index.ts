@@ -12,24 +12,7 @@ import {
   privyDefault,
   privyStore,
 } from "./privyStore";
-import { blake3 } from "@noble/hashes/blake3";
-import stringify from "fast-json-stable-stringify";
 import { rawReturn } from "mutative";
-
-export interface UnsignedFile {
-  publicKey: string;
-  fileData: string;
-  fileType: string;
-  isEncrypted: boolean;
-}
-
-export type SignedFile = UnsignedFile & {
-  signature: string;
-};
-
-export function hashObject(obj: object) {
-  return blake3(stringify(obj), { dkLen: 256 });
-}
 
 export type AccountStore = IdentityStore &
   PrivyStore & {

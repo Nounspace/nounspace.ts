@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import supabase from "@/common/data/database/supabase/clients/server";
-import { SignedFile, hashObject } from "@/common/data/stores/accounts";
 import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
 import { secp256k1 } from "@noble/curves/secp256k1";
@@ -8,6 +7,11 @@ import stringify from "fast-json-stable-stringify";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
+import {
+  SignedFile,
+  hashObject,
+  validateFileSignature,
+} from "@/common/lib/signedFiles";
 
 export interface UnsignedIdentityRequest {
   type: "Create" | "Revoke";
@@ -38,15 +42,6 @@ function validateRequestSignature(req: IdentityRequest) {
   return secp256k1.verify(req.signature, message, req.identityPublicKey, {
     prehash: true,
   });
-}
-
-function validateFileSignature(f: SignedFile) {
-  return secp256k1.verify(
-    f.signature,
-    hashObject({ ...f, signature: undefined }),
-    f.publicKey,
-    { prehash: true },
-  );
 }
 
 async function handlePost(
