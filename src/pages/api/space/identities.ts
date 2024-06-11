@@ -5,6 +5,9 @@ import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import stringify from "fast-json-stable-stringify";
+import requestHandler, {
+  NounspaceResponse,
+} from "@/common/data/api/requestHandler";
 
 export interface UnsignedIdentityRequest {
   type: "Create" | "Revoke";
@@ -22,11 +25,10 @@ interface IdentityResponseError {
   message: string;
 }
 
-export type IndentityResponse = {
-  result: "error" | "success";
-  value?: IdentityRequest | IdentityRequest[];
-  error?: IdentityResponseError;
-};
+export type IndentityResponse = NounspaceResponse<
+  IdentityRequest | IdentityRequest[],
+  IdentityResponseError
+>;
 
 function validateRequestSignature(req: IdentityRequest) {
   const message = hashObject({
@@ -130,20 +132,4 @@ async function handleGet(
   }
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>,
-) {
-  if (req.method === "GET") {
-    await handleGet(req, res);
-  } else if (req.method === "POST") {
-    await handlePost(req, res);
-  } else {
-    res.status(405).json({
-      result: "error",
-      error: {
-        message: "Only GET and POST are allowed",
-      },
-    });
-  }
-}
+export default requestHandler(handlePost, handleGet);

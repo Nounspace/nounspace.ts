@@ -1,3 +1,6 @@
+import requestHandler, {
+  NounspaceResponse,
+} from "@/common/data/api/requestHandler";
 import { APP_FID } from "@/constants/app";
 import { AppSigner } from "@/constants/app-server-side";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
@@ -34,13 +37,7 @@ type CreateSignerRequest = {
   requestingWallet?: `0x${string}`;
 };
 
-export type SignerResponse<D> = {
-  result: "success" | "error";
-  error?: {
-    message: string;
-  };
-  value?: D;
-};
+export type SignerResponse<D> = NounspaceResponse<D>;
 
 type SignedKeyRequestSponsorship = {
   sponsorFid: number;
@@ -208,20 +205,4 @@ async function handleGet(
   }
 }
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
-) {
-  if (req.method === "POST") {
-    return handlePost(req, res);
-  } else if (req.method === "GET") {
-    return handleGet(req, res);
-  } else {
-    res.status(405).json({
-      result: "error",
-      error: {
-        message: "Only GET and POST are allowed",
-      },
-    });
-  }
-}
+export default requestHandler(handlePost, handleGet);
