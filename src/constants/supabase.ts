@@ -5,3 +5,7 @@ export function rootKeyPath(identityPublicKey: string, walletAddress: string) {
 export function preKeysPath(identityPublicKey: string) {
   return `${identityPublicKey}/keys/pre/`;
 }
+
+export function authenticatorsPath(identityPublicKey: string) {
+  return `${identityPublicKey}/authenticators`;
+}
