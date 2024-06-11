@@ -177,7 +177,7 @@ async function encryptKeyFile(
 
 export const indentityStore = (
   set: StoreSet<AccountStore>,
-  get: StoreGet<IdentityStore>,
+  get: StoreGet<AccountStore>,
 ): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
