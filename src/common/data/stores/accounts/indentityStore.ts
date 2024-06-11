@@ -51,6 +51,7 @@ interface SpaceKeys {
 
 type RootSpaceKeys = SpaceKeys & {
   type: "root";
+  salt: string;
 };
 
 type PreSpaceKeys = SpaceKeys & {
@@ -275,6 +276,7 @@ export const indentityStore = (
       publicKey: bytesToHex(publicKey),
       privateKey: bytesToHex(privateKey),
       type: "root",
+      salt: randomNonce(32),
     };
     const nonce = randomNonce();
     const keyFile: UnsignedFile = {
