@@ -17,7 +17,7 @@ import { createClient } from "../../database/supabase/clients/component";
 import axiosBackend from "../../api/backend";
 import {
   IdentityRequest,
-  IndentityResponse,
+  IdentityResponse,
   UnsignedIdentityRequest,
 } from "@/pages/api/space/identities";
 import { SignMessageFunctionSignature } from "./privyStore";
@@ -48,7 +48,7 @@ export interface SpaceIdentity {
   preKeys: PreSpaceKeys[];
 }
 
-interface IndentityState {
+interface IdentityState {
   currentSpaceIdentityPublicKey: string;
   spaceIdentities: SpaceIdentity[];
   walletIdentities: {
@@ -56,7 +56,7 @@ interface IndentityState {
   };
 }
 
-interface IndentityActions {
+interface IdentityActions {
   loadIdentitiesForWallet: (wallet: Wallet) => Promise<IdentityRequest[]>;
   decryptIdentityKeys: (
     signMessage: SignMessageFunctionSignature,
@@ -72,9 +72,9 @@ interface IndentityActions {
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
 }
 
-export type IdentityStore = IndentityState & IndentityActions;
+export type IdentityStore = IdentityState & IdentityActions;
 
-export const identityDefault: IndentityState = {
+export const identityDefault: IdentityState = {
   currentSpaceIdentityPublicKey: "",
   spaceIdentities: [],
   walletIdentities: {},
@@ -133,7 +133,7 @@ async function encryptKeyFile(
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
-export const indentityStore = (
+export const identityStore = (
   set: StoreSet<AccountStore>,
   get: StoreGet<AccountStore>,
 ): IdentityStore => ({
@@ -150,8 +150,8 @@ export const indentityStore = (
     });
   },
   loadIdentitiesForWallet: async (wallet: Wallet) => {
-    // Load Indentity + Nonce + Wallet address info from DB
-    const { data }: { data: IndentityResponse } = await axiosBackend.get(
+    // Load Identity + Nonce + Wallet address info from DB
+    const { data }: { data: IdentityResponse } = await axiosBackend.get(
       "/api/space/identities",
       {
         params: {
@@ -178,10 +178,10 @@ export const indentityStore = (
     identityPublicKey: string,
   ) => {
     const supabase = createClient();
-    const walletIndentityInfo = find(get().walletIdentities[wallet.address], {
+    const walletIdentityInfo = find(get().walletIdentities[wallet.address], {
       identityPublicKey: identityPublicKey,
     });
-    if (isUndefined(walletIndentityInfo)) {
+    if (isUndefined(walletIdentityInfo)) {
       throw new IdentitytDecryptError(
         identityPublicKey,
         wallet.address,
@@ -214,7 +214,7 @@ export const indentityStore = (
     const keys = (await decryptKeyFile(
       signMessage,
       wallet,
-      walletIndentityInfo.nonce,
+      walletIdentityInfo.nonce,
       hexToBytes(fileData.fileData),
     )) as RootSpaceKeys;
     set((draft) => {
