@@ -3,12 +3,12 @@ import {
   find,
   isUndefined,
   isNull,
-  first,
   map,
   compact,
   findIndex,
   sortBy,
   concat,
+  last,
 } from "lodash";
 import { Wallet } from "@privy-io/react-auth";
 import { secp256k1 } from "@noble/curves/secp256k1";
@@ -445,7 +445,7 @@ export const indentityStore = (
     return prekeys;
   },
   getCurrentPrekey: () => {
-    return first(get().getCurrentIdentity()?.preKeys);
+    return last(get().getCurrentIdentity()?.preKeys);
   },
 });
 
