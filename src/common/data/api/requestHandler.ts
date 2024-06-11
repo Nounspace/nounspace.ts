@@ -1,3 +1,4 @@
+import { isUndefined, keys, map } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 type ResponseError = {
@@ -13,20 +14,34 @@ export type NounspaceResponse<
   value?: D;
 };
 
+type HandlerFunction<R extends NounspaceResponse> = (
+  req: NextApiRequest,
+  res: NextApiResponse<R>,
+) => Promise<void>;
+
+type RequestHandlerArgs<R extends NounspaceResponse> = {
+  get?: HandlerFunction<R>;
+  post?: HandlerFunction<R>;
+  patch?: HandlerFunction<R>;
+  delete?: HandlerFunction<R>;
+  put?: HandlerFunction<R>;
+};
+
 export default async function requestHandler<R extends NounspaceResponse>(
-  handlePost: (req: NextApiRequest, res: NextApiResponse<R>) => Promise<void>,
-  handleGet: (req: NextApiRequest, res: NextApiResponse<R>) => Promise<void>,
+  args: RequestHandlerArgs<R>,
 ) {
+  const allowedMethods = map(keys(args), (m) => m.toUpperCase());
+
   return async (req: NextApiRequest, res: NextApiResponse<R>) => {
-    if (req.method === "POST") {
-      return handlePost(req, res);
-    } else if (req.method === "GET") {
-      return handleGet(req, res);
+    const method = req.method ? args[req.method.toLowerCase()] : undefined;
+
+    if (!isUndefined(method)) {
+      return method(req, res);
     } else {
       res.status(405).json({
         result: "error",
         error: {
-          message: "Only GET and POST are allowed",
+          message: `Allowed methods: ${allowedMethods}`,
         },
       } as R);
     }

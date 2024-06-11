@@ -127,4 +127,7 @@ async function handleGet(
   }
 }
 
-export default requestHandler(handlePost, handleGet);
+export default requestHandler({
+  post: handlePost,
+  get: handleGet,
+});
