@@ -98,3 +98,8 @@ export const authenticatorStore = (
     get().commitAuthenticatorUpdatesToDatabase();
   },
 });
+
+export const partializedAuthenticatorStore = (state: AccountStore) => ({
+  authenticatorConfig: state.authenticatorConfig,
+  authenticatorRemoteConfig: state.authenticatorRemoteConfig,
+});

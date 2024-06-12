@@ -14,7 +14,11 @@ import {
 } from "./privyStore";
 import { rawReturn } from "mutative";
 import { PreKeyStore, prekeyStore } from "./prekeyStore";
-import { AuthenticatorStore, authenticatorStore } from "./authenticatorStore";
+import {
+  AuthenticatorStore,
+  authenticatorStore,
+  partializedAuthenticatorStore,
+} from "./authenticatorStore";
 
 export type AccountStore = IdentityStore &
   AuthenticatorStore &
@@ -51,6 +55,7 @@ function createAccountStore() {
       partialize: (state: AccountStore) => ({
         ...partializedIdentityStore(state),
         ...partializedPrivyStore(state),
+        ...partializedAuthenticatorStore(state),
       }),
     },
   );
