@@ -13,8 +13,10 @@ import {
   privyStore,
 } from "./privyStore";
 import { rawReturn } from "mutative";
+import { PreKeyStore, prekeyStore } from "./prekeyStore";
 
 export type AccountStore = IdentityStore &
+  PreKeyStore &
   PrivyStore & {
     logout: () => void;
   };
@@ -32,6 +34,7 @@ function createAccountStore() {
       state: AccountStore,
     ) => ({
       ...indentityStore(set, get),
+      ...prekeyStore(set, get),
       ...privyStore(set),
       logout: () => {
         set((_draft) => {
