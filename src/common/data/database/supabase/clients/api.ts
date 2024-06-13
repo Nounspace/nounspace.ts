@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, type NextResponse } from "next/server";
+import { Database as SupabaseDataBaseType } from "@/supabase/database";
 
 export default function createClient(req: NextRequest, res: NextResponse) {
-  const supabase = createServerClient(
+  const supabase = createServerClient<SupabaseDataBaseType>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
