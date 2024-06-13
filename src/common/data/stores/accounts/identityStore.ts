@@ -244,6 +244,7 @@ export const identityStore = (
       ),
       fileType: "json",
       isEncrypted: true,
+      timestamp: moment().toISOString(),
     };
     const signedKeyFile = signFile(keyFile, privateKey);
     const identityRequestUnsigned: UnsignedIdentityRequest = {

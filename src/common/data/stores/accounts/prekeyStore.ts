@@ -74,6 +74,7 @@ export const prekeyStore = (
         fileType,
         publicKey: currentIdentity.rootKeys.publicKey,
         isEncrypted: false,
+        timestamp: moment().toISOString(),
       },
       currentIdentity.rootKeys.privateKey,
     );
@@ -92,6 +93,7 @@ export const prekeyStore = (
       fileType,
       publicKey: key.publicKey,
       isEncrypted: true,
+      timestamp: moment().toISOString(),
     };
     return signFile(file, key.privateKey);
   },
