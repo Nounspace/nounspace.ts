@@ -3,7 +3,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
-import { findIndex, first } from "lodash";
+import { findIndex, first, isArray, isUndefined } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 type SpaceRegistration = {
@@ -124,7 +124,39 @@ async function registerNewSpace(
 async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
-) {}
+) {
+  const identity = req.query.indentityPublicKey;
+  if (isUndefined(identity) || isArray(identity)) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message:
+          "indentityPublicKey must be provided as a query parameter with a single value",
+      },
+    });
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from("spaceRegistrations")
+    .select("*, fidRegistrations (fid)")
+    .eq("fidRegistrations.identityPublicKey", identity);
+  if (error) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: error.message,
+      },
+    });
+    return;
+  }
+  res.status(200).json({
+    result: "success",
+    value: {
+      identity,
+      spaces: data,
+    },
+  });
+}
 
 export default requestHandler({
   get: listModifiableSpaces,
