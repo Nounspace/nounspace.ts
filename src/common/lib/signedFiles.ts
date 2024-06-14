@@ -24,6 +24,20 @@ export function hashObject(obj: object) {
   return blake3(stringify(obj), { dkLen: 256 });
 }
 
+export function isSignable(
+  maybe: unknown,
+  publicKeyVariableName = "publicKey",
+): maybe is Signable {
+  if (!isObject(maybe)) {
+    return false;
+  }
+  return (
+    publicKeyVariableName in maybe &&
+    typeof maybe[publicKeyVariableName] === "string" &&
+    typeof maybe["signature"] === "string"
+  );
+}
+
 export function validateSignable(
   f: Signable,
   publicKeyVariableName = "publicKey",
