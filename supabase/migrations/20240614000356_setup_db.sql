@@ -79,13 +79,22 @@ CREATE TABLE IF NOT EXISTS "public"."walletIdentities" (
 ALTER TABLE "public"."walletIdentities" OWNER TO "postgres";
 
 ALTER TABLE ONLY "public"."fidRegistrations"
+    ADD CONSTRAINT "fidRegistrations_fid_key" UNIQUE ("fid");
+
+ALTER TABLE ONLY "public"."fidRegistrations"
     ADD CONSTRAINT "fidregistrations_pkey" PRIMARY KEY ("id");
+
+ALTER TABLE ONLY "public"."spaceRegistrations"
+    ADD CONSTRAINT "spaceRegistrations_fid_spaceName_key" UNIQUE ("fid", "spaceName");
 
 ALTER TABLE ONLY "public"."spaceRegistrations"
     ADD CONSTRAINT "spaceregistrations_pkey" PRIMARY KEY ("spaceId");
 
 ALTER TABLE ONLY "public"."walletIdentities"
     ADD CONSTRAINT "walletIdentities_pkey" PRIMARY KEY ("id");
+
+ALTER TABLE ONLY "public"."spaceRegistrations"
+    ADD CONSTRAINT "public_spaceRegistrations_fid_fkey" FOREIGN KEY ("fid") REFERENCES "public"."fidRegistrations"("fid");
 
 ALTER TABLE "public"."fidRegistrations" ENABLE ROW LEVEL SECURITY;
 
