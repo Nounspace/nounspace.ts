@@ -2,7 +2,7 @@ import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
-import { SignedFile, validateFileSignature } from "@/common/lib/signedFiles";
+import { SignedFile, validateSignable } from "@/common/lib/signedFiles";
 import { preKeysPath } from "@/constants/supabase";
 import stringify from "fast-json-stable-stringify";
 import { isArray, isUndefined, map } from "lodash";
@@ -49,7 +49,7 @@ async function handlePost(
       });
       return;
     }
-    if (!validateFileSignature(file)) {
+    if (!validateSignable(file)) {
       res.status(400).json({
         result: "error",
         error: {

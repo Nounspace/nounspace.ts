@@ -10,7 +10,7 @@ import requestHandler, {
 import {
   SignedFile,
   hashObject,
-  validateFileSignature,
+  validateSignable,
 } from "@/common/lib/signedFiles";
 
 export interface UnsignedIdentityRequest {
@@ -57,7 +57,7 @@ async function handlePost(
       throw Error("Invalid signature on request");
     }
     if (identityRequest.type === "Create" && !isUndefined(file)) {
-      if (!validateFileSignature(file)) {
+      if (!validateSignable(file)) {
         throw Error("Invalid signature on keys file");
       }
       const { error } = await supabase

@@ -14,11 +14,17 @@ export type SignedFile = UnsignedFile & {
   signature: string;
 };
 
+export type Signable = {
+  signature: string;
+  publicKey: string;
+  [key: string]: any;
+};
+
 export function hashObject(obj: object) {
   return blake3(stringify(obj), { dkLen: 256 });
 }
 
-export function validateFileSignature(f: SignedFile) {
+export function validateSignable(f: Signable) {
   return secp256k1.verify(
     f.signature,
     hashObject({ ...f, signature: undefined }),
