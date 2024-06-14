@@ -101,7 +101,7 @@ async function updateName(
       },
     };
   }
-  if (!identityCanModifySpace(req.publicKey, spaceId)) {
+  if (!(await identityCanModifySpace(req.publicKey, spaceId))) {
     return {
       result: "error",
       error: {
@@ -175,7 +175,7 @@ async function updateConfig(
       },
     };
   }
-  if (!identityCanModifySpace(req.publicKey, spaceId)) {
+  if (!(await identityCanModifySpace(req.publicKey, spaceId))) {
     return {
       result: "error",
       error: {
