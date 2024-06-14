@@ -17,7 +17,6 @@ export type SignedFile = UnsignedFile & {
 
 export type Signable = {
   signature: string;
-  publicKey: string;
   [key: string]: any;
 };
 
@@ -25,11 +24,14 @@ export function hashObject(obj: object) {
   return blake3(stringify(obj), { dkLen: 256 });
 }
 
-export function validateSignable(f: Signable) {
+export function validateSignable(
+  f: Signable,
+  publicKeyVariableName = "publicKey",
+) {
   return secp256k1.verify(
     f.signature,
     hashObject({ ...f, signature: undefined }),
-    f.publicKey,
+    f[publicKeyVariableName],
     { prehash: true },
   );
 }
