@@ -6,7 +6,7 @@ import {
   isSignedFile,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { findIndex, first, isObject } from "lodash";
+import { findIndex, first, isObject, isUndefined } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
@@ -44,6 +44,14 @@ type UpdateSpaceResponseData = {
 };
 
 export type UpdateSpaceResponse = NounspaceResponse<UpdateSpaceResponseData>;
+
+async function getFidForSpaceId(spaceId: string) {
+  const { data } = await supabase
+    .from("spaceRegistrations")
+    .select("fid")
+    .eq("spaceId", spaceId);
+  return data !== null ? first(data)?.fid : undefined;
+}
 
 async function identityCanModifySpace(identity: string, spaceId: string) {
   const { data } = await supabase
@@ -109,6 +117,28 @@ async function updateName(
       },
     };
   }
+  const fid = await getFidForSpaceId(spaceId);
+  if (isUndefined(fid)) {
+    return {
+      result: "error",
+      error: {
+        message: `Couldn't find fid for space ${spaceId}`,
+      },
+    };
+  }
+  const { data: existingRegistrations } = await supabase
+    .from("spaceRegistrations")
+    .select("spaceId")
+    .eq("fid", fid)
+    .eq("spaceName", req.newName);
+  if (existingRegistrations && existingRegistrations.length > 0) {
+    return {
+      result: "error",
+      error: {
+        message: `fid ${fid} already has a space named ${req.newName}`,
+      },
+    };
+  }
   const { data, error } = await updateSpaceRegistration(spaceId, req);
   if (data === null) {
     return {
@@ -142,6 +172,14 @@ async function updateConfig(
       result: "error",
       error: {
         message: "Invalid signature",
+      },
+    };
+  }
+  if (!identityCanModifySpace(req.publicKey, spaceId)) {
+    return {
+      result: "error",
+      error: {
+        message: `Identity ${req.publicKey} cannot update space ${spaceId}`,
       },
     };
   }
