@@ -1,6 +1,7 @@
 import { blake3 } from "@noble/hashes/blake3";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import stringify from "fast-json-stable-stringify";
+import { isObject } from "lodash";
 
 export interface UnsignedFile {
   publicKey: string;
@@ -43,4 +44,18 @@ export function signFile(
       .sign(hashObject(file), privateKey, { prehash: true })
       .toCompactHex(),
   };
+}
+
+export function isSignedFile(maybeFile: unknown): maybeFile is SignedFile {
+  if (!isObject(maybeFile)) {
+    return false;
+  } else {
+    return (
+      typeof (maybeFile as SignedFile).fileData === "string" &&
+      typeof (maybeFile as SignedFile).fileType === "string" &&
+      typeof (maybeFile as SignedFile).isEncrypted === "boolean" &&
+      typeof (maybeFile as SignedFile).timestamp === "string" &&
+      typeof (maybeFile as SignedFile).publicKey === "string"
+    );
+  }
 }
