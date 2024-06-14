@@ -150,7 +150,7 @@ async function handlePost(
     return res.status(500).json({
       result: "error",
       error: {
-        message: "An error occurred registering the signer with Neynar",
+        message: "An error occurred registering the signer",
       },
     });
   }
@@ -199,7 +199,7 @@ async function handleGet(
     return res.status(500).json({
       result: "error",
       error: {
-        message: "An error occurred registering the signer with Neynar",
+        message: "An error occurred registering the signer",
       },
     });
   }
