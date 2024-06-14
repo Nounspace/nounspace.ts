@@ -3,7 +3,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
-import { first } from "lodash";
+import { findIndex, first } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 type SpaceRegistration = {
@@ -36,6 +36,17 @@ export type ModifiableSpacesResponse = NounspaceResponse<{
   spaces: SpaceInfo[];
 }>;
 
+async function identityCanRegisterForFid(identity: string, fid: number) {
+  const { data } = await supabaseClient
+    .from("fidRegistrations")
+    .select("fid, identityPublicKey")
+    .eq("fid", fid);
+  return (
+    data !== null &&
+    findIndex(data, (i) => i.identityPublicKey === identity) !== -1
+  );
+}
+
 // Handles the registration of a new space name to requesting identity
 // Checks that the identity is allowed to register more than one name
 async function registerNewSpace(
@@ -58,6 +69,20 @@ async function registerNewSpace(
       result: "error",
       error: {
         message: "Invalid signature",
+      },
+    });
+    return;
+  }
+  if (
+    !(await identityCanRegisterForFid(
+      registration.identityPublicKey,
+      registration.fid,
+    ))
+  ) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message: `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
       },
     });
     return;
