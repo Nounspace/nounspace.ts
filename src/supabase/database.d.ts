@@ -95,7 +95,15 @@ export type Database = {
           spaceName?: string;
           timestamp?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "public_spaceRegistrations_fid_fkey";
+            columns: ["fid"];
+            isOneToOne: false;
+            referencedRelation: "fidRegistrations";
+            referencedColumns: ["fid"];
+          },
+        ];
       };
       walletIdentities: {
         Row: {
