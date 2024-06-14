@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 
 type ResponseError = {
   message?: string;
+  [key: string]: any;
 };
 
 export type NounspaceResponse<
