@@ -114,7 +114,7 @@ async function handleGet(
     } else {
       res.status(200).json({
         result: "success",
-        value: data,
+        value: data as IdentityRequest | IdentityRequest[],
       });
     }
   } else {
