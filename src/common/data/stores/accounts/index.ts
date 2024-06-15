@@ -19,10 +19,12 @@ import {
   authenticatorStore,
   partializedAuthenticatorStore,
 } from "./authenticatorStore";
+import { SpaceStore, spaceDefault } from "./spaceStore";
 
 export type AccountStore = IdentityStore &
   AuthenticatorStore &
   PreKeyStore &
+  SpaceStore &
   PrivyStore & {
     logout: () => void;
   };
@@ -30,6 +32,7 @@ export type AccountStore = IdentityStore &
 const accountStoreDefaults: Partial<AccountStore> = {
   ...privyDefault,
   ...identityDefault,
+  ...spaceDefault,
 };
 
 function createAccountStore() {
