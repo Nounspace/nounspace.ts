@@ -106,14 +106,19 @@ export const prekeyStore = (
       return file.fileData;
     }
     const encryptingKey = file.publicKey;
-    // Find the pre key used to encrypt this file
-    let keyPair = find(get().getCurrentIdentity()?.preKeys, {
-      publicKey: encryptingKey,
-    });
-    // Try loading keys from the DB if key is not found
-    if (isUndefined(keyPair)) {
-      const preKeys = await get().loadPreKeys();
-      keyPair = find(preKeys, { publicKey: encryptingKey });
+    let keyPair;
+    if (encryptingKey === get().currentSpaceIdentityPublicKey) {
+      keyPair = get().getCurrentIdentity()?.rootKeys;
+    } else {
+      // Find the pre key used to encrypt this file
+      keyPair = find(get().getCurrentIdentity()?.preKeys, {
+        publicKey: encryptingKey,
+      });
+      // Try loading keys from the DB if key is not found
+      if (isUndefined(keyPair)) {
+        const preKeys = await get().loadPreKeys();
+        keyPair = find(preKeys, { publicKey: encryptingKey });
+      }
     }
     // Error if key is still not found
     if (isUndefined(keyPair)) {
