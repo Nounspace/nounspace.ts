@@ -50,14 +50,14 @@ export function validateSignable(
   );
 }
 
-export function signFile(
-  file: UnsignedFile,
+export function signSignable<S extends object = object>(
+  signable: S,
   privateKey: string | Uint8Array,
-): SignedFile {
+): Signable & S {
   return {
-    ...file,
+    ...signable,
     signature: secp256k1
-      .sign(hashObject(file), privateKey, { prehash: true })
+      .sign(hashObject(signable), privateKey, { prehash: true })
       .toCompactHex(),
   };
 }

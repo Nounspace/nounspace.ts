@@ -1,4 +1,8 @@
-import { SignedFile, UnsignedFile, signFile } from "@/common/lib/signedFiles";
+import {
+  SignedFile,
+  UnsignedFile,
+  signSignable,
+} from "@/common/lib/signedFiles";
 import { PreKeyRequest, PreKeyResponse } from "@/pages/api/space/prekeys";
 import { SpaceKeys, stringToCipherKey } from "./identityStore";
 import { StoreGet, StoreSet } from "..";
@@ -68,7 +72,7 @@ export const prekeyStore = (
     if (isUndefined(currentIdentity)) {
       throw new NoCurrentIdentity();
     }
-    return signFile(
+    return signSignable(
       {
         fileData: data,
         fileType,
@@ -95,7 +99,7 @@ export const prekeyStore = (
       isEncrypted: true,
       timestamp: moment().toISOString(),
     };
-    return signFile(file, key.privateKey);
+    return signSignable(file, key.privateKey);
   },
   decryptEncryptedSignedFile: async (file) => {
     if (!file.isEncrypted) {
