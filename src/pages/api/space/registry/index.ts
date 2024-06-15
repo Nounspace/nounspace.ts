@@ -6,7 +6,7 @@ import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import { findIndex, first, isArray, isUndefined } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
-type SpaceRegistration = {
+export type SpaceRegistration = {
   spaceName: string;
   identityPublicKey: string;
   fid: number;
