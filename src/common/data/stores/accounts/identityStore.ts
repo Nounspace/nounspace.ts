@@ -29,7 +29,7 @@ import {
   SignedFile,
   UnsignedFile,
   hashObject,
-  signFile,
+  signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
 
@@ -246,7 +246,7 @@ export const identityStore = (
       isEncrypted: true,
       timestamp: moment().toISOString(),
     };
-    const signedKeyFile = signFile(keyFile, privateKey);
+    const signedKeyFile = signSignable(keyFile, privateKey);
     const identityRequestUnsigned: UnsignedIdentityRequest = {
       type: "Create",
       identityPublicKey: bytesToHex(publicKey),
