@@ -46,6 +46,7 @@ type RootSpaceKeys = SpaceKeys & {
 export interface SpaceIdentity {
   rootKeys: RootSpaceKeys;
   preKeys: PreSpaceKeys[];
+  associatedFids: number[];
 }
 
 interface IdentityState {
@@ -221,6 +222,7 @@ export const identityStore = (
       draft.spaceIdentities.push({
         rootKeys: keys,
         preKeys: [],
+        associatedFids: [],
       });
     });
   },
@@ -270,7 +272,11 @@ export const identityStore = (
       headers: { "Content-Type": "application/json" },
     });
     set((draft) => {
-      draft.spaceIdentities.push({ rootKeys: identityKeys, preKeys: [] });
+      draft.spaceIdentities.push({
+        rootKeys: identityKeys,
+        preKeys: [],
+        associatedFids: [],
+      });
     });
     return identityKeys.publicKey;
   },
