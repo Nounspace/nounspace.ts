@@ -2,7 +2,7 @@ import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import { APP_FID } from "@/constants/app";
-import { AppSigner } from "@/constants/app-server-side";
+import { AppSigner } from "@/constants/appServerSide";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 import { ALCHEMY_API, WARPCAST_API } from "@/constants/urls";
 import {
