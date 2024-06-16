@@ -5,6 +5,25 @@ import Spinner from "@/common/components/atoms/spinner";
 import { useAccountStore } from "@/common/data/stores/accounts";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 
+/**
+ * Set up flow:
+ * - Check local storage for identity, if none
+ * -- Check database identity related to wallet
+ * -- If no identity, create one
+ * -- If identity, load keys
+ * - Local storage now has identity
+ * - Load fresh authenticator data from database
+ * - Check that all "requiredAuthenticators" are installed
+ * - Install all authenticators not currently installed
+ * - Check that Identity has been linked to FID, link if not
+ * - Push to homebase
+ *
+ * Store needs to have a check for all of the following data in local storage
+ * - Identity Root Keys
+ * - Authenticator Data
+ * - FID registration
+ */
+
 const SETUP_STATES = {
   wallet: "Loading Wallet...",
   check: "Checking for Existing Identities...",
