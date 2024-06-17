@@ -32,7 +32,6 @@ import {
   signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
-import { FidsLinkedToIdentityResponse } from "@/pages/api/fid-link";
 
 export interface SpaceKeys {
   publicKey: string;
@@ -73,7 +72,6 @@ interface IdentityActions {
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getCurrentIdentityIndex: () => number;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
-  getFidsForCurrentIdentity: () => Promise<void>;
 }
 
 export type IdentityStore = IdentityState & IdentityActions;
@@ -288,18 +286,6 @@ export const identityStore = (
       });
     });
     return identityKeys.publicKey;
-  },
-  getFidsForCurrentIdentity: async () => {
-    const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
-      "/api/fid-links/",
-      { params: { identityPublicKey: get().currentSpaceIdentityPublicKey } },
-    );
-    if (!isUndefined(data.value)) {
-      set((draft) => {
-        draft.spaceIdentities[draft.getCurrentIdentityIndex()].associatedFids =
-          data.value!.fids;
-      });
-    }
   },
 });
 

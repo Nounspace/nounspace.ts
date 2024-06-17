@@ -20,11 +20,13 @@ import {
   partializedAuthenticatorStore,
 } from "./authenticatorStore";
 import { SpaceStore, spaceDefault } from "./spaceStore";
+import { FarcasterStore, farcasterStore } from "./farcasterStore";
 
 export type AccountStore = IdentityStore &
   AuthenticatorStore &
   PreKeyStore &
   SpaceStore &
+  FarcasterStore &
   PrivyStore & {
     logout: () => void;
   };
@@ -46,6 +48,7 @@ function createAccountStore() {
       ...prekeyStore(set, get),
       ...privyStore(set),
       ...authenticatorStore(set, get),
+      ...farcasterStore(set, get),
       logout: () => {
         set((_draft) => {
           return rawReturn(accountStoreDefaults);
