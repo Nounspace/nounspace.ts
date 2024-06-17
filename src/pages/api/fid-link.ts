@@ -6,7 +6,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import moment from "moment";
-import { first } from "lodash";
+import { first, isArray, isUndefined, map } from "lodash";
 
 export type FidLinkToIdentityRequest = {
   fid: number;
@@ -149,6 +149,55 @@ async function linkFidToIdentity(
   }
 }
 
+export type FidsLinkedToIdentityResponse = NounspaceResponse<{
+  identity: string;
+  fids: number[];
+}>;
+
+async function lookUpFidsForIdentity(
+  req: NextApiRequest,
+  res: NextApiResponse<FidsLinkedToIdentityResponse>,
+) {
+  const identity = req.query.identityPublicKey;
+  if (isUndefined(identity) || isArray(identity)) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message:
+          "identityPublicKey must be provided as a single query argument",
+      },
+    });
+    return;
+  }
+  const { data, error } = await supabaseClient
+    .from("fidRegistrations")
+    .select("fid")
+    .eq("identityPublicKey", identity)
+    .eq("isSigningKeyValid", true);
+  if (error) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: error.message,
+      },
+    });
+    return;
+  }
+  // TO DO: Refresh that these signatures are valid
+  let results: number[] = [];
+  if (data !== null) {
+    results = map(data, ({ fid }) => fid);
+  }
+  res.status(200).json({
+    result: "success",
+    value: {
+      identity,
+      fids: results,
+    },
+  });
+}
+
 export default requestHandler({
   post: linkFidToIdentity,
+  get: lookUpFidsForIdentity,
 });
