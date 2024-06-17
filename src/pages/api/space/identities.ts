@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import supabase from "@/common/data/database/supabase/clients/server";
 import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { ed25519 } from "@noble/curves/ed25519";
 import stringify from "fast-json-stable-stringify";
 import requestHandler, {
   NounspaceResponse,
@@ -39,9 +39,7 @@ function validateRequestSignature(req: IdentityRequest) {
     ...req,
     signature: undefined,
   });
-  return secp256k1.verify(req.signature, message, req.identityPublicKey, {
-    prehash: true,
-  });
+  return ed25519.verify(req.signature, message, req.identityPublicKey);
 }
 
 async function handlePost(

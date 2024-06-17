@@ -1,6 +1,6 @@
 import { isArray, find, isUndefined, isNull, findIndex } from "lodash";
 import { Wallet } from "@privy-io/react-auth";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { ed25519 } from "@noble/curves/ed25519";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha256";
@@ -237,8 +237,8 @@ export const identityStore = (
     signMessage: SignMessageFunctionSignature,
     wallet: Wallet,
   ) => {
-    const privateKey = secp256k1.utils.randomPrivateKey();
-    const publicKey = secp256k1.getPublicKey(privateKey);
+    const privateKey = ed25519.utils.randomPrivateKey();
+    const publicKey = ed25519.getPublicKey(privateKey);
     const identityKeys: RootSpaceKeys = {
       publicKey: bytesToHex(publicKey),
       privateKey: bytesToHex(privateKey),
@@ -265,11 +265,9 @@ export const identityStore = (
     };
     const identityRequest: IdentityRequest = {
       ...identityRequestUnsigned,
-      signature: secp256k1
-        .sign(hashObject(identityRequestUnsigned), privateKey, {
-          prehash: true,
-        })
-        .toCompactHex(),
+      signature: bytesToHex(
+        ed25519.sign(hashObject(identityRequestUnsigned), privateKey),
+      ),
     };
     const postData = {
       file: signedKeyFile,

@@ -18,7 +18,7 @@ import {
   sortBy,
 } from "lodash";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { ed25519 } from "@noble/curves/ed25519";
 import { managedNonce } from "@noble/ciphers/webcrypto";
 import { bytesToHex, bytesToUtf8, utf8ToBytes } from "@noble/ciphers/utils";
 import moment from "moment";
@@ -88,9 +88,7 @@ export const prekeyStore = (
       ? get().getCurrentIdentity()!.rootKeys
       : get().getCurrentPrekey() || (await get().generatePreKey());
     const cipher = managedNonce(xchacha20poly1305)(
-      stringToCipherKey(
-        bytesToHex(secp256k1.getSharedSecret(key.privateKey, key.publicKey)),
-      ),
+      stringToCipherKey(key.privateKey),
     );
     const file: UnsignedFile = {
       fileData: bytesToUtf8(cipher.encrypt(utf8ToBytes(data))),
@@ -125,17 +123,13 @@ export const prekeyStore = (
       throw new NoPreKeyFoundError(encryptingKey);
     }
     const cipher = managedNonce(xchacha20poly1305)(
-      stringToCipherKey(
-        bytesToHex(
-          secp256k1.getSharedSecret(keyPair.privateKey, keyPair.publicKey),
-        ),
-      ),
+      stringToCipherKey(keyPair.privateKey),
     );
     return bytesToUtf8(cipher.decrypt(utf8ToBytes(file.fileData)));
   },
   generatePreKey: async () => {
-    const privateKey = secp256k1.utils.randomPrivateKey();
-    const publicKey = secp256k1.getPublicKey(privateKey);
+    const privateKey = ed25519.utils.randomPrivateKey();
+    const publicKey = ed25519.getPublicKey(privateKey);
     const prekey: PreSpaceKeys = {
       publicKey: bytesToHex(publicKey),
       privateKey: bytesToHex(privateKey),

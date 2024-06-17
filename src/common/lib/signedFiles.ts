@@ -1,7 +1,8 @@
 import { blake3 } from "@noble/hashes/blake3";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { ed25519 } from "@noble/curves/ed25519";
 import stringify from "fast-json-stable-stringify";
 import { isObject } from "lodash";
+import { bytesToHex } from "@noble/ciphers/utils";
 
 export interface UnsignedFile {
   publicKey: string;
@@ -42,11 +43,10 @@ export function validateSignable(
   f: Signable,
   publicKeyVariableName = "publicKey",
 ) {
-  return secp256k1.verify(
+  return ed25519.verify(
     f.signature,
     hashObject({ ...f, signature: undefined }),
     f[publicKeyVariableName],
-    { prehash: true },
   );
 }
 
@@ -56,9 +56,7 @@ export function signSignable<S extends object = object>(
 ): Signable & S {
   return {
     ...signable,
-    signature: secp256k1
-      .sign(hashObject(signable), privateKey, { prehash: true })
-      .toCompactHex(),
+    signature: bytesToHex(ed25519.sign(hashObject(signable), privateKey)),
   };
 }
 
