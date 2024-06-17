@@ -10516,9 +10516,9 @@ videojs-vtt.js@0.15.5:
     global "^4.3.1"
 
 viem@2.x, viem@^2.7.8, viem@^2.9.28:
-  version "2.13.7"
-  resolved "https://registry.yarnpkg.com/viem/-/viem-2.13.7.tgz#c1153c02f7ffaf0263d784fc1d4e4ffa3f66c24a"
-  integrity sha512-SZWn9LPrz40PHl4PM2iwkPTTtjWPDFsnLr32UwpqC/Z5f0AwxitjLyZdDKcImvbWZ3vLQ0oPggR1aLlqvTcUug==
+  version "2.14.2"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.14.2.tgz#ddc91f927bbe6dbedc87b687ccd17c08be7e2dbd"
+  integrity sha512-dQY3dmeKY0av7p1zVvqBYYsFzNhMmnxOtBA3ttS2SFRJHs4r8EdF4L9xW0rJ6tMyUwSlpeHxJ4kP+S+uCuoyGQ==
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
