@@ -1,7 +1,7 @@
 import { AuthenticatorConfig } from "@/authenticators/AuthenticatorManager";
 import { StoreGet, StoreSet } from "..";
 import { AccountStore } from ".";
-import { debounce, isNull } from "lodash";
+import { debounce, isNull, keys } from "lodash";
 import { createClient } from "../../database/supabase/clients/component";
 import { authenticatorsPath } from "@/constants/supabase";
 import axios from "axios";
@@ -21,6 +21,7 @@ export interface AuthenticatorActions {
   loadAuthenitcators: () => Promise<void>;
   commitAuthenticatorUpdatesToDatabase: () => Promise<void>;
   saveAuthenticatorConfig: (newConfig: AuthenticatorConfig) => Promise<void>;
+  listInstalledAuthenticators: () => string[];
 }
 
 export type AuthenticatorStore = AuthenticatorState & AuthenticatorActions;
@@ -35,6 +36,9 @@ export const authenticatorStore = (
   get: StoreGet<AccountStore>,
 ): AuthenticatorStore => ({
   ...authenticatorDefaults,
+  listInstalledAuthenticators: () => {
+    return keys(get().authenticatorConfig);
+  },
   loadAuthenitcators: async () => {
     const supabase = createClient();
     const {
