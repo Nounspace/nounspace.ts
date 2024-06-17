@@ -1,4 +1,4 @@
-import { isArray, find, isUndefined, isNull } from "lodash";
+import { isArray, find, isUndefined, isNull, findIndex } from "lodash";
 import { Wallet } from "@privy-io/react-auth";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
@@ -32,6 +32,7 @@ import {
   signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
+import { FidsLinkedToIdentityResponse } from "@/pages/api/fid-link";
 
 export interface SpaceKeys {
   publicKey: string;
@@ -70,7 +71,9 @@ interface IdentityActions {
   ) => Promise<string>;
   setCurrentIdentity: (publicKey: string) => void;
   getCurrentIdentity: () => SpaceIdentity | undefined;
+  getCurrentIdentityIndex: () => number;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
+  getFidsForCurrentIdentity: () => Promise<void>;
 }
 
 export type IdentityStore = IdentityState & IdentityActions;
@@ -142,6 +145,12 @@ export const identityStore = (
   getCurrentIdentity: () => {
     const state = get();
     return find(state.spaceIdentities, {
+      rootKeys: { publicKey: state.currentSpaceIdentityPublicKey },
+    });
+  },
+  getCurrentIdentityIndex: () => {
+    const state = get();
+    return findIndex(state.spaceIdentities, {
       rootKeys: { publicKey: state.currentSpaceIdentityPublicKey },
     });
   },
@@ -279,6 +288,18 @@ export const identityStore = (
       });
     });
     return identityKeys.publicKey;
+  },
+  getFidsForCurrentIdentity: async () => {
+    const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
+      "/api/fid-links/",
+      { params: { identityPublicKey: get().currentSpaceIdentityPublicKey } },
+    );
+    if (!isUndefined(data.value)) {
+      set((draft) => {
+        draft.spaceIdentities[draft.getCurrentIdentityIndex()].associatedFids =
+          data.value!.fids;
+      });
+    }
   },
 });
 
