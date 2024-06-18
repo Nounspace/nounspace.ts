@@ -15,6 +15,7 @@ import { rawReturn } from "mutative";
 import { PreKeyStore, prekeyStore } from "./prekeyStore";
 import {
   AuthenticatorStore,
+  authenticatorDefaults,
   authenticatorStore,
   partializedAuthenticatorStore,
 } from "./authenticatorStore";
@@ -35,6 +36,7 @@ const accountStoreDefaults: Partial<AccountStore> = {
   ...privyDefault,
   ...identityDefault,
   ...spaceDefault,
+  ...authenticatorDefaults,
 };
 
 export const createAccountStoreFunc = (
