@@ -141,6 +141,26 @@ const SettingsIcon = () => {
   );
 };
 
+const EditIcon = () => {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10.779 17.779L4.361 19.918L6.5 13.5M10.779 17.779L19.143 9.13599C19.7101 8.56839 20.0287 7.79885 20.0287 6.99649C20.0287 6.19413 19.7101 5.42459 19.143 4.85699C18.5754 4.28987 17.8059 3.97131 17.0035 3.97131C16.2011 3.97131 15.4316 4.28987 14.864 4.85699L6.5 13.5M10.779 17.779L6.5 13.5M8.639 15.64L14.8518 9.13599M12.7511 7.04036L17 11.279"
+        stroke="#383838"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  );
+};
+
 const ShareIcon = () => {
   return (
     <svg
@@ -169,6 +189,8 @@ const BrandHeader = () => {
         src="/images/noggles.svg"
         className="h-13 me-3"
         alt="Nounspace Logo"
+        width={50}
+        height={30}
       />
       {false && (
         <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
@@ -202,7 +224,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   );
 };
 
-const Navigation = () => {
+const Navigation = (isEditable: boolean) => {
   return (
     <aside
       id="logo-sidebar"
@@ -214,25 +236,28 @@ const Navigation = () => {
         <div className="text-lg font-medium">
           <ul className="space-y-2">
             <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-            <NavItem label="Feed" Icon={FeedIcon} />
             <NavItem label="Explore" Icon={ExploreIcon} />
             <NavItem label="Channels" Icon={ChannelsIcon} />
             <NavItem label="Bookmark" Icon={BookmarkIcon} />
           </ul>
           <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-            <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700">
-              <a
-                href="#"
-                className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
+            <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                 <div className="flex items-center">
-                  <SettingsIcon />
-                  <span className="ms-2">Settings</span>
+                  <EditIcon />
                 </div>
-                <div className="border-l border-gray-200 dark:border-gray-700 ps-3">
+                {/* <div className="border-l border-gray-200 dark:border-gray-700 ps-3">
                   <ShareIcon />
+                </div> */}
+              </button>
+              <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <div className="flex items-center">
+                  <span className="mr-16 ml-16">Cast</span>
                 </div>
-              </a>
+                {/* <div className="border-l border-gray-200 dark:border-gray-700 ps-3">
+                  <ShareIcon />
+                </div> */}
+              </button>
             </div>
           </div>
         </div>

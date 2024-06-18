@@ -141,6 +141,7 @@ const Homebase: NextPageWithLayout = () => {
     layoutDetails,
     theme: DEFAULT_THEME,
     fidgetConfigs: fidgets,
+    isEditable: true,
   });
 
   useEffect(() => {
@@ -177,10 +178,7 @@ Homebase.getLayout = function getLayout(page: React.ReactElement) {
       className="min-h-screen"
       style={{ background: "var(--user-theme-background)" }}
     >
-      <div className="container mx-auto">
-        <Navigation />
-        <div className="p-4 sm:ml-64">{page}</div>
-      </div>
+      {page}
     </div>
   );
 };
