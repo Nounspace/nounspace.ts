@@ -126,7 +126,7 @@ const Homebase: NextPageWithLayout = () => {
     preventCollision: true,
     maxRows: 9,
     layout: defaultLayoutData,
-    isBounded: true,
+    isBounded: false,
     margin: [16, 16],
     containerPadding: [0, 0],
   };
