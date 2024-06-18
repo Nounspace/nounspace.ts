@@ -1,7 +1,7 @@
-import { SpaceConfig } from "@/common/ui/templates/Space";
-import { AccountStore } from ".";
+import { SpaceConfig } from "@/common/components/templates/Space";
+import { AppStore } from "..";
 import { FidgetSettings } from "@/common/fidgets";
-import { StoreGet, StoreSet } from "..";
+import { StoreGet, StoreSet } from "../createStore";
 import axiosBackend from "../../api/backend";
 import {
   ModifiableSpacesResponse,
@@ -63,8 +63,8 @@ export const spaceDefault: SpaceState = {
 };
 
 export const spaceStore = (
-  set: StoreSet<AccountStore>,
-  get: StoreGet<AccountStore>,
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceDefault,
   loadSpace: async (spaceId) => {
@@ -77,7 +77,7 @@ export const spaceStore = (
     });
     const fileData = JSON.parse(await data.text()) as SignedFile;
     const spaceConfig = JSON.parse(
-      await get().decryptEncryptedSignedFile(fileData),
+      await get().account.decryptEncryptedSignedFile(fileData),
     );
     const cachedSpace: CachedSpace = {
       id: spaceId,
@@ -85,20 +85,20 @@ export const spaceStore = (
       updatedAt: moment().toISOString(),
     };
     set((draft) => {
-      draft.spaces[spaceId] = cachedSpace;
+      draft.account.spaces[spaceId] = cachedSpace;
     });
     return cachedSpace;
   },
   registerSpace: async (fid, name) => {
     const unsignedRegistration: Omit<SpaceRegistration, "signature"> = {
-      identityPublicKey: get().currentSpaceIdentityPublicKey,
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
       fid,
     };
     const registration = signSignable(
       unsignedRegistration,
-      get().getCurrentIdentity()!.rootKeys.privateKey,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     // TO DO: Error handling
     const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
@@ -107,7 +107,7 @@ export const spaceStore = (
     );
     const newSpaceId = data.value!.spaceId;
     set((draft) => {
-      draft.editableSpaces[newSpaceId] = name;
+      draft.account.editableSpaces[newSpaceId] = name;
     });
     return newSpaceId;
   },
@@ -115,12 +115,12 @@ export const spaceStore = (
     try {
       const unsignedNameRequest: Omit<NameChangeRequest, "signature"> = {
         newName: name,
-        publicKey: get().currentSpaceIdentityPublicKey,
+        publicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
       };
       const signedNameRequest = signSignable(
         unsignedNameRequest,
-        get().getCurrentIdentity()!.rootKeys.privateKey,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
       const { data } = await axiosBackend.post<UpdateSpaceResponse>(
         `/api/space/registry/${spaceId}`,
@@ -142,14 +142,18 @@ export const spaceStore = (
     try {
       const { data } = await axiosBackend.get<ModifiableSpacesResponse>(
         "/api/space/registry",
-        { params: { identityPublicKey: get().currentSpaceIdentityPublicKey } },
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+          },
+        },
       );
       if (data.value) {
         const editableSpaces = fromPairs(
           map(data.value.spaces, (si) => [si.spaceId, si.spaceName]),
         );
         set((draft) => {
-          draft.editableSpaces = editableSpaces;
+          draft.account.editableSpaces = editableSpaces;
         });
         return editableSpaces;
       }
@@ -161,18 +165,18 @@ export const spaceStore = (
   },
   commitCurrentSpaceToDatabase: async () => {
     debounce(async () => {
-      const localCopy = get().editableSpace;
+      const localCopy = get().account.editableSpace;
       if (localCopy) {
         const file = localCopy.isPrivate
-          ? await get().createEncryptedSignedFile(
+          ? await get().account.createEncryptedSignedFile(
               stringify(localCopy),
               "json",
               true,
             )
-          : await get().createSignedFile(stringify(localCopy), "json");
+          : await get().account.createSignedFile(stringify(localCopy), "json");
         // TO DO: Error handling
         await axiosBackend.post(
-          `/api/spaces/registry/${get().currentSpaceId}/`,
+          `/api/spaces/registry/${get().account.currentSpaceId}/`,
           {
             config: file,
           },
@@ -182,17 +186,17 @@ export const spaceStore = (
   },
   saveSpace: async (config) => {
     set((draft) => {
-      draft.editableSpace = config;
+      draft.account.editableSpace = config;
     });
   },
   setCurrentSpace: async (spaceId) => {
     set((draft) => {
-      draft.currentSpaceId = spaceId;
+      draft.account.currentSpaceId = spaceId;
     });
   },
 });
 
-export const partializedSpaceStore = (state: AccountStore) => ({
-  spaces: state.spaces,
-  editableSpaces: state.editableSpaces,
+export const partializedSpaceStore = (state: AppStore) => ({
+  spaces: state.account.spaces,
+  editableSpaces: state.account.editableSpaces,
 });

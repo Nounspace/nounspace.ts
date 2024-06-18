@@ -1,6 +1,6 @@
 import { AuthenticatorConfig } from "@/authenticators/AuthenticatorManager";
-import { StoreGet, StoreSet } from "..";
-import { AccountStore } from ".";
+import { StoreGet, StoreSet } from "../createStore";
+import { AppStore } from "..";
 import { debounce, isNull, keys } from "lodash";
 import { createClient } from "../../database/supabase/clients/component";
 import { authenticatorsPath } from "@/constants/supabase";
@@ -32,12 +32,12 @@ export const authenticatorDefaults: AuthenticatorState = {
 };
 
 export const authenticatorStore = (
-  set: StoreSet<AccountStore>,
-  get: StoreGet<AccountStore>,
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
 ): AuthenticatorStore => ({
   ...authenticatorDefaults,
   listInstalledAuthenticators: () => {
-    return keys(get().authenticatorConfig);
+    return keys(get().account.authenticatorConfig);
   },
   loadAuthenitcators: async () => {
     const supabase = createClient();
@@ -45,7 +45,9 @@ export const authenticatorStore = (
       data: { publicUrl },
     } = await supabase.storage
       .from("private")
-      .getPublicUrl(authenticatorsPath(get().currentSpaceIdentityPublicKey));
+      .getPublicUrl(
+        authenticatorsPath(get().account.currentSpaceIdentityPublicKey!),
+      );
     if (publicUrl) {
       const { data }: { data: Blob } = await axios.get(publicUrl, {
         responseType: "blob",
@@ -56,11 +58,11 @@ export const authenticatorStore = (
       }
       const fileData = JSON.parse(await data.text()) as SignedFile;
       const authConfig = JSON.parse(
-        await get().decryptEncryptedSignedFile(fileData),
+        await get().account.decryptEncryptedSignedFile(fileData),
       ) as AuthenticatorConfig;
       set((draft) => {
-        draft.authenticatorConfig = authConfig;
-        draft.authenticatorRemoteConfig = authConfig;
+        draft.account.authenticatorConfig = authConfig;
+        draft.account.authenticatorRemoteConfig = authConfig;
       });
     } else {
       console.debug("Could not locate authenticator data");
@@ -68,18 +70,21 @@ export const authenticatorStore = (
   },
   commitAuthenticatorUpdatesToDatabase: async () => {
     debounce(async () => {
-      if (get().authenticatorConfig === get().authenticatorRemoteConfig) {
+      if (
+        get().account.authenticatorConfig ===
+        get().account.authenticatorRemoteConfig
+      ) {
         // Only update if changes have been made
         return;
       }
-      const configFile = await get().createEncryptedSignedFile(
-        stringify(get().authenticatorConfig),
+      const configFile = await get().account.createEncryptedSignedFile(
+        stringify(get().account.authenticatorConfig),
         "json",
         true,
       );
       const postData: AuthenticatorUpdateRequest = {
         file: configFile,
-        identityPublicKey: get().currentSpaceIdentityPublicKey,
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       };
 
       try {
@@ -87,23 +92,24 @@ export const authenticatorStore = (
           headers: { "Content-Type": "application/json" },
         });
         set((draft) => {
-          draft.authenticatorRemoteConfig = get().authenticatorConfig;
+          draft.account.authenticatorRemoteConfig =
+            get().account.authenticatorConfig;
         });
       } catch (e) {
         console.debug("failed to save authenticator data, trying again");
-        get().commitAuthenticatorUpdatesToDatabase();
+        get().account.commitAuthenticatorUpdatesToDatabase();
       }
     }, 1000)();
   },
   saveAuthenticatorConfig: async (newConfig) => {
     set((draft) => {
-      draft.authenticatorConfig = newConfig;
+      draft.account.authenticatorConfig = newConfig;
     });
-    get().commitAuthenticatorUpdatesToDatabase();
+    get().account.commitAuthenticatorUpdatesToDatabase();
   },
 });
 
-export const partializedAuthenticatorStore = (state: AccountStore) => ({
-  authenticatorConfig: state.authenticatorConfig,
-  authenticatorRemoteConfig: state.authenticatorRemoteConfig,
+export const partializedAuthenticatorStore = (state: AppStore) => ({
+  authenticatorConfig: state.account.authenticatorConfig,
+  authenticatorRemoteConfig: state.account.authenticatorRemoteConfig,
 });

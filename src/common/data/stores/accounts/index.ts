@@ -1,5 +1,4 @@
-import { createJSONStorage } from "zustand/middleware";
-import { StoreGet, StoreSet, createStore, createStoreBindings } from "..";
+import { StoreGet, StoreSet } from "../createStore";
 import {
   IdentityStore,
   identityDefault,
@@ -19,8 +18,9 @@ import {
   authenticatorStore,
   partializedAuthenticatorStore,
 } from "./authenticatorStore";
-import { SpaceStore, spaceDefault } from "./spaceStore";
+import { SpaceStore, spaceDefault, spaceStore } from "./spaceStore";
 import { FarcasterStore, farcasterStore } from "./farcasterStore";
+import { AppStore } from "..";
 
 export type AccountStore = IdentityStore &
   AuthenticatorStore &
@@ -37,37 +37,26 @@ const accountStoreDefaults: Partial<AccountStore> = {
   ...spaceDefault,
 };
 
-function createAccountStore() {
-  return createStore<AccountStore>(
-    (
-      set: StoreSet<AccountStore>,
-      get: StoreGet<AccountStore>,
-      state: AccountStore,
-    ) => ({
-      ...identityStore(set, get),
-      ...prekeyStore(set, get),
-      ...privyStore(set),
-      ...authenticatorStore(set, get),
-      ...farcasterStore(set, get),
-      logout: () => {
-        set((_draft) => {
-          return rawReturn(accountStoreDefaults);
-        });
-      },
-    }),
-    {
-      name: "nounspace-account-store",
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state: AccountStore) => ({
-        ...partializedIdentityStore(state),
-        ...partializedPrivyStore(state),
-        ...partializedAuthenticatorStore(state),
-      }),
-    },
-  );
-}
+export const createAccountStoreFunc = (
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
+  state: AppStore,
+): AccountStore => ({
+  ...identityStore(set, get),
+  ...prekeyStore(set, get),
+  ...privyStore(set),
+  ...authenticatorStore(set, get),
+  ...farcasterStore(set, get),
+  ...spaceStore(set, get),
+  logout: () => {
+    set((_draft) => {
+      return rawReturn(accountStoreDefaults);
+    });
+  },
+});
 
-const { useStore: useAccountStore, provider: AccountStoreProvider } =
-  createStoreBindings("AcccountStore", createAccountStore);
-
-export { useAccountStore, AccountStoreProvider };
+export const partializedAccountStore = (state: AppStore) => ({
+  ...partializedIdentityStore(state),
+  ...partializedPrivyStore(state),
+  ...partializedAuthenticatorStore(state),
+});

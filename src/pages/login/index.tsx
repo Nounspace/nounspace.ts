@@ -1,4 +1,4 @@
-import { useAccountStore } from "@/common/data/stores/accounts";
+import { useAppStore } from "@/common/data/stores";
 import { Button } from "@/common/components/atoms/button";
 import Spinner from "@/common/components/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
@@ -11,9 +11,10 @@ export default function Login() {
   const router = useRouter();
   const { ready, authenticated, logout: privyLogout } = usePrivy();
   const { currentSpaceIdentityPublicKey, logout: accountStoreLogout } =
-    useAccountStore((state) => ({
-      currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
-      logout: state.logout,
+    useAppStore((state) => ({
+      currentSpaceIdentityPublicKey:
+        state.account.currentSpaceIdentityPublicKey,
+      logout: state.account.logout,
     }));
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {

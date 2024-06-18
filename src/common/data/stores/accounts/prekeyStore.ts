@@ -5,8 +5,8 @@ import {
 } from "@/common/lib/signedFiles";
 import { PreKeyRequest, PreKeyResponse } from "@/pages/api/space/prekeys";
 import { SpaceKeys, stringToCipherKey } from "./identityStore";
-import { StoreGet, StoreSet } from "..";
-import { AccountStore } from ".";
+import { StoreGet, StoreSet } from "../createStore";
+import { AppStore } from "..";
 import {
   compact,
   concat,
@@ -64,11 +64,11 @@ interface PreKeyActions {
 export type PreKeyStore = PreKeyActions;
 
 export const prekeyStore = (
-  set: StoreSet<AccountStore>,
-  get: StoreGet<AccountStore>,
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
 ): PreKeyStore => ({
   createSignedFile: async (data, fileType) => {
-    const currentIdentity = get().getCurrentIdentity();
+    const currentIdentity = get().account.getCurrentIdentity();
     if (isUndefined(currentIdentity)) {
       throw new NoCurrentIdentity();
     }
@@ -85,8 +85,9 @@ export const prekeyStore = (
   },
   createEncryptedSignedFile: async (data, fileType, useRootKey = false) => {
     const key = useRootKey
-      ? get().getCurrentIdentity()!.rootKeys
-      : get().getCurrentPrekey() || (await get().generatePreKey());
+      ? get().account.getCurrentIdentity()!.rootKeys
+      : get().account.getCurrentPrekey() ||
+        (await get().account.generatePreKey());
     const cipher = managedNonce(xchacha20poly1305)(
       stringToCipherKey(key.privateKey),
     );
@@ -105,16 +106,16 @@ export const prekeyStore = (
     }
     const encryptingKey = file.publicKey;
     let keyPair;
-    if (encryptingKey === get().currentSpaceIdentityPublicKey) {
-      keyPair = get().getCurrentIdentity()?.rootKeys;
+    if (encryptingKey === get().account.currentSpaceIdentityPublicKey) {
+      keyPair = get().account.getCurrentIdentity()?.rootKeys;
     } else {
       // Find the pre key used to encrypt this file
-      keyPair = find(get().getCurrentIdentity()?.preKeys, {
+      keyPair = find(get().account.getCurrentIdentity()?.preKeys, {
         publicKey: encryptingKey,
       });
       // Try loading keys from the DB if key is not found
       if (isUndefined(keyPair)) {
-        const preKeys = await get().loadPreKeys();
+        const preKeys = await get().account.loadPreKeys();
         keyPair = find(preKeys, { publicKey: encryptingKey });
       }
     }
@@ -136,14 +137,14 @@ export const prekeyStore = (
       type: "pre",
       timestamp: moment().toISOString(),
     };
-    const keyFile = await get().createEncryptedSignedFile(
+    const keyFile = await get().account.createEncryptedSignedFile(
       stringify(prekey),
       "json",
       true,
     );
     const postData: PreKeyRequest = {
       file: keyFile,
-      identityPublicKey: get().currentSpaceIdentityPublicKey,
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       prekeyPublicKey: bytesToHex(publicKey),
     };
 
@@ -152,16 +153,19 @@ export const prekeyStore = (
       headers: { "Content-Type": "application/json" },
     });
 
-    get().addPreKeysToIdentity([prekey]);
+    get().account.addPreKeysToIdentity([prekey]);
     return prekey;
   },
   addPreKeysToIdentity: (prekeys) => {
     set((draft) => {
-      const currentIdentityIndex = findIndex(get().spaceIdentities, {
-        rootKeys: { publicKey: get().currentSpaceIdentityPublicKey },
+      const currentIdentityIndex = findIndex(get().account.spaceIdentities, {
+        rootKeys: { publicKey: get().account.currentSpaceIdentityPublicKey },
       });
-      draft.spaceIdentities[currentIdentityIndex].preKeys = sortBy(
-        concat(draft.spaceIdentities[currentIdentityIndex].preKeys, prekeys),
+      draft.account.spaceIdentities[currentIdentityIndex].preKeys = sortBy(
+        concat(
+          draft.account.spaceIdentities[currentIdentityIndex].preKeys,
+          prekeys,
+        ),
         ["timestamp"],
       );
     });
@@ -169,7 +173,11 @@ export const prekeyStore = (
   loadPreKeys: async () => {
     const keyFileLocs = await axiosBackend.get<PreKeyResponse>(
       "/api/space/prekeys",
-      { params: { publicKey: get().getCurrentIdentity()?.rootKeys.publicKey } },
+      {
+        params: {
+          publicKey: get().account.getCurrentIdentity()?.rootKeys.publicKey,
+        },
+      },
     );
     const supabase = createClient();
     const prekeys = compact(
@@ -184,7 +192,7 @@ export const prekeyStore = (
             });
             const fileData = JSON.parse(await data.text()) as SignedFile;
             const decryptedFile =
-              await get().decryptEncryptedSignedFile(fileData);
+              await get().account.decryptEncryptedSignedFile(fileData);
             const preKeys = JSON.parse(decryptedFile) as PreSpaceKeys;
             return preKeys;
           } catch (e) {
@@ -194,10 +202,10 @@ export const prekeyStore = (
         }),
       ),
     );
-    get().addPreKeysToIdentity(prekeys);
+    get().account.addPreKeysToIdentity(prekeys);
     return prekeys;
   },
   getCurrentPrekey: () => {
-    return last(get().getCurrentIdentity()?.preKeys);
+    return last(get().account.getCurrentIdentity()?.preKeys);
   },
 });

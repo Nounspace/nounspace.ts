@@ -11,8 +11,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from "@noble/ciphers/utils";
-import { StoreGet, StoreSet } from "..";
-import { AccountStore } from ".";
+import { StoreGet, StoreSet } from "../createStore";
+import { AppStore } from "..";
 import { createClient } from "../../database/supabase/clients/component";
 import axiosBackend from "../../api/backend";
 import {
@@ -50,7 +50,7 @@ export interface SpaceIdentity {
 }
 
 interface IdentityState {
-  currentSpaceIdentityPublicKey: string;
+  currentSpaceIdentityPublicKey?: string;
   spaceIdentities: SpaceIdentity[];
   walletIdentities: {
     [key: string]: IdentityRequest[];
@@ -136,25 +136,25 @@ async function encryptKeyFile(
 }
 
 export const identityStore = (
-  set: StoreSet<AccountStore>,
-  get: StoreGet<AccountStore>,
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
 ): IdentityStore => ({
   ...identityDefault,
   getCurrentIdentity: () => {
     const state = get();
-    return find(state.spaceIdentities, {
-      rootKeys: { publicKey: state.currentSpaceIdentityPublicKey },
+    return find(state.account.spaceIdentities, {
+      rootKeys: { publicKey: state.account.currentSpaceIdentityPublicKey },
     });
   },
   getCurrentIdentityIndex: () => {
     const state = get();
-    return findIndex(state.spaceIdentities, {
-      rootKeys: { publicKey: state.currentSpaceIdentityPublicKey },
+    return findIndex(state.account.spaceIdentities, {
+      rootKeys: { publicKey: state.account.currentSpaceIdentityPublicKey },
     });
   },
   setCurrentIdentity: (publicKey: string) => {
     set((draft) => {
-      draft.currentSpaceIdentityPublicKey = publicKey;
+      draft.account.currentSpaceIdentityPublicKey = publicKey;
     });
   },
   loadIdentitiesForWallet: async (wallet: Wallet) => {
@@ -173,12 +173,12 @@ export const identityStore = (
         : [data.value]
       : [];
     set((draft) => {
-      draft.walletIdentities[wallet.address] = walletIdentities;
+      draft.account.walletIdentities[wallet.address] = walletIdentities;
     });
     return walletIdentities;
   },
   getIdentitiesForWallet: (wallet: Wallet) => {
-    return get().walletIdentities[wallet.address] || [];
+    return get().account.walletIdentities[wallet.address] || [];
   },
   decryptIdentityKeys: async (
     signMessage: SignMessageFunctionSignature,
@@ -186,9 +186,12 @@ export const identityStore = (
     identityPublicKey: string,
   ) => {
     const supabase = createClient();
-    const walletIdentityInfo = find(get().walletIdentities[wallet.address], {
-      identityPublicKey: identityPublicKey,
-    });
+    const walletIdentityInfo = find(
+      get().account.walletIdentities[wallet.address],
+      {
+        identityPublicKey: identityPublicKey,
+      },
+    );
     if (isUndefined(walletIdentityInfo)) {
       throw new IdentitytDecryptError(
         identityPublicKey,
@@ -226,7 +229,7 @@ export const identityStore = (
       hexToBytes(fileData.fileData),
     )) as RootSpaceKeys;
     set((draft) => {
-      draft.spaceIdentities.push({
+      draft.account.spaceIdentities.push({
         rootKeys: keys,
         preKeys: [],
         associatedFids: [],
@@ -277,7 +280,7 @@ export const identityStore = (
       headers: { "Content-Type": "application/json" },
     });
     set((draft) => {
-      draft.spaceIdentities.push({
+      draft.account.spaceIdentities.push({
         rootKeys: identityKeys,
         preKeys: [],
         associatedFids: [],
@@ -287,8 +290,8 @@ export const identityStore = (
   },
 });
 
-export const partializedIdentityStore = (state: AccountStore) => ({
-  currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
-  spaceIdentities: state.spaceIdentities,
-  walletIdentities: state.walletIdentities,
+export const partializedIdentityStore = (state: AppStore) => ({
+  currentSpaceIdentityPublicKey: state.account.currentSpaceIdentityPublicKey,
+  spaceIdentities: state.account.spaceIdentities,
+  walletIdentities: state.account.walletIdentities,
 });

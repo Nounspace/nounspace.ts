@@ -3,8 +3,8 @@ import {
   FidLinkToIdentityResponse,
   FidsLinkedToIdentityResponse,
 } from "@/pages/api/fid-link";
-import { AccountStore } from ".";
-import { StoreGet, StoreSet } from "..";
+import { AppStore } from "..";
+import { StoreGet, StoreSet } from "../createStore";
 import axiosBackend from "../../api/backend";
 import { concat, isUndefined } from "lodash";
 import { hashObject } from "@/common/lib/signedFiles";
@@ -28,32 +28,38 @@ type FarcasterActions = {
 export type FarcasterStore = FarcasterActions;
 
 export const farcasterStore = (
-  set: StoreSet<AccountStore>,
-  get: StoreGet<AccountStore>,
+  set: StoreSet<AppStore>,
+  get: StoreGet<AppStore>,
 ): FarcasterStore => ({
   addFidToCurrentIdentity: (fid) => {
-    const currentFids = get().getCurrentIdentity()?.associatedFids || [];
-    get().setFidsForCurrentIdentity(concat(currentFids, [fid]));
+    const currentFids =
+      get().account.getCurrentIdentity()?.associatedFids || [];
+    get().account.setFidsForCurrentIdentity(concat(currentFids, [fid]));
   },
   setFidsForCurrentIdentity: (fids) => {
     set((draft) => {
-      draft.spaceIdentities[draft.getCurrentIdentityIndex()].associatedFids =
-        fids;
+      draft.account.spaceIdentities[
+        draft.account.getCurrentIdentityIndex()
+      ].associatedFids = fids;
     });
   },
   getFidsForCurrentIdentity: async () => {
     const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
       "/api/fid-links/",
-      { params: { identityPublicKey: get().currentSpaceIdentityPublicKey } },
+      {
+        params: {
+          identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+        },
+      },
     );
     if (!isUndefined(data.value)) {
-      get().setFidsForCurrentIdentity(data.value!.fids);
+      get().account.setFidsForCurrentIdentity(data.value!.fids);
     }
   },
   registerFidForCurrentIdentity: async (fid, signingKey, signMessage) => {
     const request: Omit<FidLinkToIdentityRequest, "signature"> = {
       fid,
-      identityPublicKey: get().currentSpaceIdentityPublicKey,
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
       signingPublicKey: signingKey,
     };
@@ -66,7 +72,7 @@ export const farcasterStore = (
       signedRequest,
     );
     if (!isUndefined(data.value)) {
-      get().addFidToCurrentIdentity(data.value!.fid);
+      get().account.addFidToCurrentIdentity(data.value!.fid);
     }
   },
 });
