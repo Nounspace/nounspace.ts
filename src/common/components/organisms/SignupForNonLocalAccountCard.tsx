@@ -6,8 +6,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/common/ui/atoms/card";
-import { Button } from "@/common/ui/atoms/button";
+} from "@/common/components/atoms/card";
+import { Button } from "@/common/components/atoms/button";
 import { openWindow } from "@/common/lib/utils/navigation";
 import { WEBSITE_URL } from "@/constants/app";
 

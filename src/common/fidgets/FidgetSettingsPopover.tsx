@@ -3,11 +3,11 @@ import {
   Popover,
   PopoverContent,
   PopoverAnchor,
-} from "@/common/ui/atoms/popover";
+} from "@/common/components/atoms/popover";
 import { FidgetSettings } from "@/common/fidgets";
 import FidgetSettingsEditor, {
   FidgetSettingsEditorProps,
-} from "@/common/ui/organisms/FidgetSettingsEditor";
+} from "@/common/components/organisms/FidgetSettingsEditor";
 
 type FidgetSettingsPopoverProps = FidgetSettingsEditorProps & {
   open: boolean;
