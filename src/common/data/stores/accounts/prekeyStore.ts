@@ -1,6 +1,6 @@
 import { SignedFile, UnsignedFile, signFile } from "@/common/lib/signedFiles";
 import { PreKeyRequest, PreKeyResponse } from "@/pages/api/space/prekeys";
-import { SpaceKeys, stringToCipherKey } from "./indentityStore";
+import { SpaceKeys, stringToCipherKey } from "./identityStore";
 import { StoreGet, StoreSet } from "..";
 import { AccountStore } from ".";
 import {

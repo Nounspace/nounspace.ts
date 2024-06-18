@@ -1,4 +1,5 @@
 import { ThemeSettings } from "@/common/lib/theme";
+import React from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
 

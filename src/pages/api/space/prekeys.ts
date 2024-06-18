@@ -47,6 +47,7 @@ async function handlePost(
           message: "File public key must match the identity public key",
         },
       });
+      return;
     }
     if (!validateFileSignature(file)) {
       res.status(400).json({
@@ -55,6 +56,7 @@ async function handlePost(
           message: "Provided signature invalid",
         },
       });
+      return;
     }
     const { error: storageError } = await supabaseClient.storage
       .from("private")
@@ -118,4 +120,7 @@ async function handleGet(
   }
 }
 
-export default requestHandler(handlePost, handleGet);
+export default requestHandler({
+  post: handlePost,
+  get: handleGet,
+});

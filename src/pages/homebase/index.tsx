@@ -5,7 +5,6 @@ import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import Navigation from "@/common/components/organisms/Navigation";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
 const Homebase: NextPageWithLayout = () => {

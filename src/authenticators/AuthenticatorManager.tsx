@@ -21,7 +21,7 @@ type AuthenticatorPermissions = {
   [fidgetId: string]: string[];
 };
 
-type AuthenticatorConfig = {
+export type AuthenticatorConfig = {
   [authenticatorName: string]: {
     data: AuthenticatorData;
     permissions: AuthenticatorPermissions;

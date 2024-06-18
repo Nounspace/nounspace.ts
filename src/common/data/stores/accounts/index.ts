@@ -3,9 +3,9 @@ import { StoreGet, StoreSet, createStore, createStoreBindings } from "..";
 import {
   IdentityStore,
   identityDefault,
-  indentityStore,
+  identityStore,
   partializedIdentityStore,
-} from "./indentityStore";
+} from "./identityStore";
 import {
   PrivyStore,
   partializedPrivyStore,
@@ -14,8 +14,14 @@ import {
 } from "./privyStore";
 import { rawReturn } from "mutative";
 import { PreKeyStore, prekeyStore } from "./prekeyStore";
+import {
+  AuthenticatorStore,
+  authenticatorStore,
+  partializedAuthenticatorStore,
+} from "./authenticatorStore";
 
 export type AccountStore = IdentityStore &
+  AuthenticatorStore &
   PreKeyStore &
   PrivyStore & {
     logout: () => void;
@@ -33,9 +39,10 @@ function createAccountStore() {
       get: StoreGet<AccountStore>,
       state: AccountStore,
     ) => ({
-      ...indentityStore(set, get),
+      ...identityStore(set, get),
       ...prekeyStore(set, get),
       ...privyStore(set),
+      ...authenticatorStore(set, get),
       logout: () => {
         set((_draft) => {
           return rawReturn(accountStoreDefaults);
@@ -48,6 +55,7 @@ function createAccountStore() {
       partialize: (state: AccountStore) => ({
         ...partializedIdentityStore(state),
         ...partializedPrivyStore(state),
+        ...partializedAuthenticatorStore(state),
       }),
     },
   );

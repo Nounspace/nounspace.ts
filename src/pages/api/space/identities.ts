@@ -29,7 +29,7 @@ interface IdentityResponseError {
   message: string;
 }
 
-export type IndentityResponse = NounspaceResponse<
+export type IdentityResponse = NounspaceResponse<
   IdentityRequest | IdentityRequest[],
   IdentityResponseError
 >;
@@ -46,7 +46,7 @@ function validateRequestSignature(req: IdentityRequest) {
 
 async function handlePost(
   req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>,
+  res: NextApiResponse<IdentityResponse>,
 ) {
   try {
     const { file, identityRequest } = req.body as {
@@ -96,7 +96,7 @@ async function handlePost(
 
 async function handleGet(
   req: NextApiRequest,
-  res: NextApiResponse<IndentityResponse>,
+  res: NextApiResponse<IdentityResponse>,
 ) {
   const query = req.query;
   if (query.address) {
@@ -127,4 +127,7 @@ async function handleGet(
   }
 }
 
-export default requestHandler(handlePost, handleGet);
+export default requestHandler({
+  post: handlePost,
+  get: handleGet,
+});
