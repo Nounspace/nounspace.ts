@@ -9,7 +9,7 @@ import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
-import ThemeEditorOverlay from "@/common/components/organisms/ThemeEditorOverlay";
+import Sidebar from "../organisms/Sidebar";
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -22,6 +22,7 @@ export type SpaceConfig = {
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   theme: ThemeSettings;
+  isEditable: boolean;
 };
 
 type SpaceArgs = {
@@ -85,20 +86,28 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
-      <LayoutFidget
-        layoutConfig={{
-          ...config.layoutDetails.layoutConfig,
-          onLayoutChange: saveLayout,
-        }}
-        fidgets={fidgets}
-        isEditable={editMode}
-      />
-      <ThemeEditorOverlay
-        editMode={editMode}
-        setEditMode={setEditMode}
-        theme={config.theme}
-        saveTheme={saveTheme}
-      />
+      <div className="flex">
+        <div className="w-3/12 flex mx-auto">
+          <Sidebar
+            editMode={editMode}
+            setEditMode={setEditMode}
+            theme={config.theme}
+            saveTheme={saveTheme}
+            isEditable={config.isEditable}
+          />
+        </div>
+
+        <div className="w-9/12">
+          <LayoutFidget
+            layoutConfig={{
+              ...config.layoutDetails.layoutConfig,
+              onLayoutChange: saveLayout,
+            }}
+            fidgets={fidgets}
+            inEditMode={editMode}
+          />
+        </div>
+      </div>
     </>
   );
 }

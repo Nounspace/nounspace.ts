@@ -75,13 +75,13 @@ interface LayoutFidgetProps {
   fidgets: {
     [key: string]: ReactNode;
   };
-  isEditable: boolean;
+  inEditMode: boolean;
 }
 
 type LayoutFidgetDefaultProps = {
   fidgets: object;
   layoutConfig: object;
-  isEditable: boolean;
+  inEditMode: boolean;
 };
 
 export interface LayoutFidget<

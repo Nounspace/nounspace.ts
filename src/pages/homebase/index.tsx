@@ -5,7 +5,6 @@ import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import Navigation from "@/common/components/organisms/Navigation";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
 const Homebase: NextPageWithLayout = () => {
@@ -126,8 +125,8 @@ const Homebase: NextPageWithLayout = () => {
     preventCollision: true,
     maxRows: 9,
     layout: defaultLayoutData,
-    isBounded: true,
-    margin: [30, 24],
+    isBounded: false,
+    margin: [16, 16],
     containerPadding: [0, 0],
   };
   const layoutID = "";
@@ -141,6 +140,7 @@ const Homebase: NextPageWithLayout = () => {
     layoutDetails,
     theme: DEFAULT_THEME,
     fidgetConfigs: fidgets,
+    isEditable: true,
   });
 
   useEffect(() => {
@@ -150,7 +150,11 @@ const Homebase: NextPageWithLayout = () => {
         layoutFidget: "grid",
         layoutConfig: {
           ...gridDetails,
-          rowHeight: windowSize ? Math.round(windowSize.height / 9) : 70,
+          rowHeight: windowSize
+            ? Math.round(windowSize.height / gridDetails.maxRows) -
+              gridDetails.margin[0] -
+              8
+            : 70,
         },
       },
     });
@@ -174,13 +178,10 @@ const Homebase: NextPageWithLayout = () => {
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen max-w-screen"
       style={{ background: "var(--user-theme-background)" }}
     >
-      <div className="container mx-auto">
-        <Navigation />
-        <div className="p-4 sm:ml-64">{page}</div>
-      </div>
+      {page}
     </div>
   );
 };
