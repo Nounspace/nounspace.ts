@@ -15,7 +15,7 @@ export type StoreSet<T> = (fn: MutativeFunction<T>) => void | StoreReset<T>;
 export type StoreGet<T> = () => T;
 
 export function createStore<T>(
-  store: (set: StoreSet<T>, get: StoreGet<T>, store: T) => object,
+  store: (set: StoreSet<T>, get: StoreGet<T>, store: T) => T,
   persistArgs: PersistOptions<any, any>,
 ) {
   return create<T>()(devtools(persist(mutative(store), persistArgs)));
