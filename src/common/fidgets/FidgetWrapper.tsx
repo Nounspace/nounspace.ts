@@ -19,6 +19,7 @@ export type FidgetWrapperProps = {
   config: FidgetDetails;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
+  setSelectedFidgetID: (editMode: string) => void;
 };
 
 export const getSettingsWithDefaults = (
@@ -41,12 +42,14 @@ export function FidgetWrapper({
   config,
   context,
   saveConfig,
+  setSelectedFidgetID,
 }: FidgetWrapperProps) {
   const [_saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const onClickEdit = useCallback(() => {
     setEditing(true);
+    setSelectedFidgetID(config.id);
   }, [setEditing]);
 
   const saveData = (data: FidgetData) => {

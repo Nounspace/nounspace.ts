@@ -9,6 +9,7 @@ export interface SidebarProps {
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   isEditable: boolean;
+  selectedFidgetID: string | null;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -17,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   theme,
   saveTheme,
   isEditable,
+  selectedFidgetID,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -35,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             setEditMode={setEditMode}
             theme={theme}
             saveTheme={saveTheme}
+            selectedFidgetID={selectedFidgetID}
           />
         ) : (
           <Navigation isEditable={isEditable} setEditMode={setEditMode} />

@@ -1,16 +1,17 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { RiPencilFill } from "react-icons/ri";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeEditorToolbar from "@/common/lib/theme/ThemeEditorToolbar";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 
 export interface EditorPanelProps {
   editMode: boolean;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
-  disabled?: boolean;
+  selectedFidgetID: string | null;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -18,16 +19,25 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   setEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
+  selectedFidgetID,
 }) => {
   // const toggleEditMode = useCallback(() => {
   //   !disabled && setEditMode(!editMode);
   // }, [editMode, setEditMode, disabled]);
+  const [editing, setEditing] = useState(false);
+
   return (
-    <ThemeEditorToolbar
-      theme={theme}
-      saveTheme={saveTheme}
-      setEditMode={setEditMode}
-    />
+    <>
+      {selectedFidgetID ? (
+        <></>
+      ) : (
+        <ThemeEditorToolbar
+          theme={theme}
+          saveTheme={saveTheme}
+          setEditMode={setEditMode}
+        />
+      )}
+    </>
   );
 };
 

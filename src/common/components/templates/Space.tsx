@@ -32,10 +32,12 @@ type SpaceArgs = {
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
+  const [selectedFidgetID, setSelectedFidgetID] = useState<string | null>(null);
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
   const fidgets = mapValues(config.fidgetConfigs, (details, key) =>
     FidgetWrapper({
       fidget: CompleteFidgets[details.fidgetName].fidget,
+      setSelectedFidgetID: setSelectedFidgetID,
       config: {
         id: details.id,
         instanceConfig: {
@@ -94,6 +96,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             theme={config.theme}
             saveTheme={saveTheme}
             isEditable={config.isEditable}
+            selectedFidgetID={selectedFidgetID}
           />
         </div>
 

@@ -57,6 +57,7 @@ export type GridArgs = LayoutFidgetProps & {
     [key: string]: ReactNode;
   };
   inEditMode: boolean;
+  selectedFidgetID: string;
 };
 
 const ReactGridLayout = WidthProvider(RGL);
