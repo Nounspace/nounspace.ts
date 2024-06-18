@@ -11,6 +11,7 @@ import {
   includes,
   isNull,
   isUndefined,
+  keys,
   map,
   mapValues,
   pickBy,
@@ -93,6 +94,7 @@ type AuthenticatorManager = {
     requestingFidgetId: string,
   ) => Promise<AuthenticatorPermissionResponse[]>;
   openManagementPanel: () => void;
+  installedAuthenticators: () => string[];
 };
 
 // type InitializerRecord<D> = {
@@ -209,6 +211,7 @@ export const AuthenticatorManagerProvider: React.FC<
         );
       },
       openManagementPanel: () => undefined,
+      installedAuthenticators: () => keys(authenticatorConfig),
     };
   }
 

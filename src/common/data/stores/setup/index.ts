@@ -2,12 +2,13 @@ import { StoreGet, StoreSet } from "../createStore";
 import { AppStore } from "..";
 
 export enum SetupStep {
-  START,
-  IDENTITY_LOADED,
-  AUTHENTICATORS_LOADED,
-  REQUIRED_AUTHENTICATORS_INSTALLED,
-  ACCOUNTS_REGISTERED,
-  DONE,
+  START = "Connecting to wallet...",
+  WALLET_CONNECTED = "Loading Identity...",
+  IDENTITY_LOADED = "Loading Authenticators...",
+  AUTHENTICATORS_LOADED = "Installing required Authenticators...",
+  REQUIRED_AUTHENTICATORS_INSTALLED = "Registering Farcaster Account...",
+  ACCOUNTS_REGISTERED = "Loading...",
+  DONE = "DONE",
 }
 
 interface SetupStoreState {
