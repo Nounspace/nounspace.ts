@@ -9,7 +9,7 @@ import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
-import ThemeEditorOverlay from "@/common/ui/organisms/ThemeEditorOverlay";
+import EditorPanel from "@/common/ui/organisms/EditorPanel";
 import Navigation from "../organisms/Navigation";
 
 export type SpaceConfig = {
@@ -89,17 +89,20 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     <>
       <div className="container mx-auto">
         {editMode ? (
-          <ThemeEditorOverlay
+          <EditorPanel
             editMode={editMode}
             setEditMode={setEditMode}
             theme={config.theme}
             saveTheme={saveTheme}
           />
         ) : (
-          <Navigation isEditable={config.isEditable} />
+          <Navigation
+            isEditable={config.isEditable}
+            setEditMode={setEditMode}
+          />
         )}
 
-        <div className="p-4 sm:ml-64">
+        <div className="p-4 sm:ml-64 h-full">
           <LayoutFidget
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,

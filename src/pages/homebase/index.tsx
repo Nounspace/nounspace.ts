@@ -175,7 +175,7 @@ const Homebase: NextPageWithLayout = () => {
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen max-w-screen"
       style={{ background: "var(--user-theme-background)" }}
     >
       {page}

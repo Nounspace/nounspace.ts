@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import Link from "next/link";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import Image from "next/image";
@@ -207,6 +207,11 @@ type NavItemProps = {
   Icon: React.FC;
 };
 
+type NavProps = {
+  isEditable: boolean;
+  setEditMode: (editMode: boolean) => void;
+};
+
 const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   return (
     <li>
@@ -224,7 +229,11 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   );
 };
 
-const Navigation = (isEditable: boolean) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
+  function turnOnEditMode() {
+    setEditMode(true);
+  }
+
   return (
     <aside
       id="logo-sidebar"
@@ -242,21 +251,21 @@ const Navigation = (isEditable: boolean) => {
           </ul>
           <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
             <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                <div className="flex items-center">
-                  <EditIcon />
-                </div>
-                {/* <div className="border-l border-gray-200 dark:border-gray-700 ps-3">
-                  <ShareIcon />
-                </div> */}
-              </button>
+              {isEditable ? (
+                <button
+                  onClick={turnOnEditMode}
+                  className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                >
+                  <div className="flex items-center">
+                    <EditIcon />
+                  </div>
+                </button>
+              ) : null}
+
               <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                 <div className="flex items-center">
                   <span className="mr-16 ml-16">Cast</span>
                 </div>
-                {/* <div className="border-l border-gray-200 dark:border-gray-700 ps-3">
-                  <ShareIcon />
-                </div> */}
               </button>
             </div>
           </div>

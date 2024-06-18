@@ -70,7 +70,7 @@ const Gridlines: React.FC<GridLayout> = ({
 }) => {
   return (
     <div
-      className="absolute inset-0 z-0 rounded-lg h-max"
+      className="absolute inset-0 z-0 rounded-lg h-max sm:ml-64"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",

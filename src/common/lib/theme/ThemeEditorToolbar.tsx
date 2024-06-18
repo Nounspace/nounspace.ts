@@ -10,13 +10,13 @@ import FontSelector from "@/common/ui/molecules/FontSelector";
 export type ThemeEditorToolbarArgs = {
   theme: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
-  show: boolean;
+  setEditMode: (editMode: boolean) => void;
 };
 
 export function ThemeEditorToolbar({
   theme = DEFAULT_THEME,
   saveTheme,
-  show = true,
+  setEditMode,
 }: ThemeEditorToolbarArgs) {
   function themePropSetter<T extends string>(
     property: string,
@@ -46,24 +46,42 @@ export function ThemeEditorToolbar({
     setCSSVar("--user-theme-font", font);
   }, [font]);
 
+  function saveAndClose() {
+    saveTheme(theme);
+    setEditMode(false);
+  }
+
   return (
-    show && (
-      <>
-        <Card className="inset-x-auto shadow-lg">
-          <CardFooter className="gap-2 p-3">
-            <ColorSelector
-              value={background as Color}
-              onChange={themePropSetter<Color>("background")}
-            />
-            <FontSelector
-              value={font}
-              onChange={themePropSetter<FontFamily>("font")}
-            />
-            <FaFloppyDisk className="h-8 w-8 shrink-0" aria-hidden="true" />
-          </CardFooter>
-        </Card>
-      </>
-    )
+    <div className="text-lg font-medium">
+      <Card className="inset-x-auto shadow-lg">
+        <CardFooter className="gap-2 p-3">
+          <ColorSelector
+            value={background as Color}
+            onChange={themePropSetter<Color>("background")}
+          />
+          <FontSelector
+            value={font}
+            onChange={themePropSetter<FontFamily>("font")}
+          />
+        </CardFooter>
+      </Card>
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+        <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <button
+            onClick={saveAndClose}
+            className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+          >
+            <div className="flex items-center">
+              <FaFloppyDisk
+                className="ml-16 h-8 w-8 shrink-0"
+                aria-hidden="true"
+              />
+              <span className="ml-4">Save</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
