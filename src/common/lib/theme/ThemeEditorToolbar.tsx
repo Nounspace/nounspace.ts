@@ -66,17 +66,14 @@ export function ThemeEditorToolbar({
         </CardFooter>
       </Card>
       <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-        <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={saveAndClose}
-            className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+            className="flex justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
           >
             <div className="flex items-center">
-              <FaFloppyDisk
-                className="ml-16 h-8 w-8 shrink-0"
-                aria-hidden="true"
-              />
-              <span className="ml-4">Save</span>
+              <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+              <span className="ml-4 mr-4">Save</span>
             </div>
           </button>
         </div>

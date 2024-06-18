@@ -9,8 +9,7 @@ import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
-import EditorPanel from "@/common/ui/organisms/EditorPanel";
-import Navigation from "../organisms/Navigation";
+import Sidebar from "../organisms/Sidebar";
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -87,29 +86,25 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
-      <div className="container mx-auto">
-        {editMode ? (
-          <EditorPanel
+      <div className="flex">
+        <div className="w-3/12 flex mx-auto">
+          <Sidebar
             editMode={editMode}
             setEditMode={setEditMode}
             theme={config.theme}
             saveTheme={saveTheme}
-          />
-        ) : (
-          <Navigation
             isEditable={config.isEditable}
-            setEditMode={setEditMode}
           />
-        )}
+        </div>
 
-        <div className="p-4 sm:ml-64 h-full">
+        <div className="w-9/12">
           <LayoutFidget
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
               onLayoutChange: saveLayout,
             }}
             fidgets={fidgets}
-            isEditable={editMode}
+            inEditMode={editMode}
           />
         </div>
       </div>

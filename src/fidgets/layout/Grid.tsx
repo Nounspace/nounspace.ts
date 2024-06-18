@@ -56,7 +56,7 @@ export type GridArgs = LayoutFidgetProps & {
   fidgets: {
     [key: string]: ReactNode;
   };
-  isEditable: boolean;
+  inEditMode: boolean;
 };
 
 const ReactGridLayout = WidthProvider(RGL);
@@ -70,7 +70,7 @@ const Gridlines: React.FC<GridLayout> = ({
 }) => {
   return (
     <div
-      className="absolute inset-0 z-0 rounded-lg h-max sm:ml-64"
+      className="absolute inset-0 z-0 rounded-lg h-max w-9/12 ml-auto"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",
@@ -99,15 +99,15 @@ const Gridlines: React.FC<GridLayout> = ({
 const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
   fidgets,
-  isEditable,
+  inEditMode,
 }: GridArgs) => {
   return (
     <>
-      {isEditable && <Gridlines {...layoutConfig} />}
+      {inEditMode && <Gridlines {...layoutConfig} />}
       <ReactGridLayout
         {...layoutConfig}
-        isDraggable={isEditable}
-        isResizable={isEditable}
+        isDraggable={inEditMode}
+        isResizable={inEditMode}
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
           return <div key={gridItem.i}>{fidgets[gridItem.i]}</div>;
