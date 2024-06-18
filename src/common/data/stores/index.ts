@@ -15,7 +15,7 @@ export type AppStore = {
 export function createAppStore() {
   return createStore<AppStore>(
     (set, get, state) => ({
-      setup: createSetupStoreFunc(set, get, state),
+      setup: createSetupStoreFunc(set, get),
       account: createAccountStoreFunc(set, get, state),
     }),
     {
