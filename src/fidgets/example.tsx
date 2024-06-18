@@ -1,5 +1,5 @@
 import React from "react";
-import TextInput from "@/common/ui/molecules/TextInput";
+import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 
 export type ExampleFidgetSettings = {

@@ -1,6 +1,6 @@
-import TextInput from "@/common/ui/molecules/TextInput";
-import ColorSelector from "@/common/ui/molecules/ColorSelector";
-import FontSelector from "@/common/ui/molecules/FontSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings } from "@/common/lib/theme";
 
 export type FidgetSettings = Reacord<string, any>;

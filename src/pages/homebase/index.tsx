@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import Space, { SpaceConfig } from "@/common/ui/templates/Space";
+import Space, { SpaceConfig } from "@/common/components/templates/Space";
 import { useState } from "react";
 import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import Navigation from "@/common/ui/organisms/Navigation";
+import Navigation from "@/common/components/organisms/Navigation";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
 const Homebase: NextPageWithLayout = () => {
