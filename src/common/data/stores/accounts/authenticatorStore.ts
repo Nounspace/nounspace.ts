@@ -41,30 +41,32 @@ export const authenticatorStore = (
   },
   loadAuthenitcators: async () => {
     const supabase = createClient();
-    const {
-      data: { publicUrl },
-    } = await supabase.storage
-      .from("private")
-      .getPublicUrl(
-        authenticatorsPath(get().account.currentSpaceIdentityPublicKey!),
-      );
-    if (publicUrl) {
-      const { data }: { data: Blob } = await axios.get(publicUrl, {
-        responseType: "blob",
-      });
-      if (isNull(data)) {
-        console.debug("Could not locate authenticator data");
-        return;
+    try {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+        .from("private")
+        .getPublicUrl(
+          authenticatorsPath(get().account.currentSpaceIdentityPublicKey!),
+        );
+      if (publicUrl) {
+        const { data }: { data: Blob } = await axios.get(publicUrl, {
+          responseType: "blob",
+        });
+        if (isNull(data)) {
+          console.debug("Could not locate authenticator data");
+          return;
+        }
+        const fileData = JSON.parse(await data.text()) as SignedFile;
+        const authConfig = JSON.parse(
+          await get().account.decryptEncryptedSignedFile(fileData),
+        ) as AuthenticatorConfig;
+        set((draft) => {
+          draft.account.authenticatorConfig = authConfig;
+          draft.account.authenticatorRemoteConfig = authConfig;
+        });
       }
-      const fileData = JSON.parse(await data.text()) as SignedFile;
-      const authConfig = JSON.parse(
-        await get().account.decryptEncryptedSignedFile(fileData),
-      ) as AuthenticatorConfig;
-      set((draft) => {
-        draft.account.authenticatorConfig = authConfig;
-        draft.account.authenticatorRemoteConfig = authConfig;
-      });
-    } else {
+    } catch {
       console.debug("Could not locate authenticator data");
     }
   },
