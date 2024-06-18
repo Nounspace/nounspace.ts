@@ -6,6 +6,7 @@ import {
   partializedAccountStore,
 } from "./accounts";
 import { SetupStore, createSetupStoreFunc } from "./setup";
+import { merge } from "lodash";
 
 export type AppStore = {
   account: AccountStore;
@@ -24,6 +25,9 @@ export function createAppStore() {
       partialize: (state: AppStore) => ({
         account: partializedAccountStore(state),
       }),
+      merge: (persistedState, currentState: AppStore) => {
+        return merge(currentState, persistedState);
+      },
     },
   );
 }
