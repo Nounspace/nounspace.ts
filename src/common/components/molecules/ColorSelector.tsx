@@ -3,8 +3,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/common/ui/atoms/popover";
-import { Button } from "@/common/ui/atoms/button";
+} from "@/common/components/atoms/popover";
+import { Button } from "@/common/components/atoms/button";
 import { Color } from "@/common/lib/theme";
 import ColorPicker from "react-best-gradient-color-picker";
 

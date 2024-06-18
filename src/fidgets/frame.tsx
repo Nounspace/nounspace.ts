@@ -1,6 +1,6 @@
 import React from "react";
-import FrameComponent from "@/common/ui/molecules/Frame";
-import TextInput from "@/common/ui/molecules/TextInput";
+import FrameComponent from "@/common/components/molecules/Frame";
+import TextInput from "@/common/components/molecules/TextInput";
 
 import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 

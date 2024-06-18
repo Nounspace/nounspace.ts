@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback } from "react";
-import { Input, InputProps } from "@/common/ui/atoms/input";
+import { Input, InputProps } from "@/common/components/atoms/input";
 
 export interface TextInputProps extends Omit<InputProps, "onChange"> {
   value: string;

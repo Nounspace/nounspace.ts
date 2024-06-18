@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { Card, CardContent } from "@/common/ui/atoms/card";
+import { Card, CardContent } from "@/common/components/atoms/card";
 import { toast } from "sonner";
 import {
   FidgetConfig,

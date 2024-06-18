@@ -1,14 +1,14 @@
 import React from "react";
-import TextInput from "@/common/ui/molecules/TextInput";
-import ColorSelector from "@/common/ui/molecules/ColorSelector";
-import FontSelector from "@/common/ui/molecules/FontSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
   CardTitle,
   CardDescription,
-} from "@/common/ui/atoms/card";
+} from "@/common/components/atoms/card";
 import { FontFamily, Color } from "@/common/lib/theme";
 
 export type TextFidgetSettings = {

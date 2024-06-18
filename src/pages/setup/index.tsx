@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Wallet, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
-import Spinner from "@/common/ui/atoms/spinner";
+import Spinner from "@/common/components/atoms/spinner";
 import { useAccountStore } from "@/common/data/stores/accounts";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 
