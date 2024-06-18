@@ -1,6 +1,6 @@
 import { useAccountStore } from "@/common/data/stores/accounts";
-import { Button } from "@/common/ui/atoms/button";
-import Spinner from "@/common/ui/atoms/spinner";
+import { Button } from "@/common/components/atoms/button";
+import Spinner from "@/common/components/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import { isUndefined } from "lodash";
 import Image from "next/image";

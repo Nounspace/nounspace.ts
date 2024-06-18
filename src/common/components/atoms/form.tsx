@@ -11,7 +11,7 @@ import {
 } from "react-hook-form";
 
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import { Label } from "@/common/ui/atoms/label";
+import { Label } from "@/common/components/atoms/label";
 
 const Form = FormProvider;
 

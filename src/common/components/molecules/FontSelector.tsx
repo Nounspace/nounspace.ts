@@ -8,7 +8,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/common/ui/atoms/select";
+} from "@/common/components/atoms/select";
 
 const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
   (acc, v) => ({ ...acc, [v.name]: v }),

@@ -15,13 +15,13 @@ import { ed25519 } from "@noble/curves/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
 import { AxiosResponse } from "axios";
-import { Button } from "@/common/ui/atoms/button";
-import Spinner from "@/common/ui/atoms/spinner";
+import { Button } from "@/common/components/atoms/button";
+import Spinner from "@/common/components/atoms/spinner";
 import {
   SignedKeyRequestResponse,
   SignerResponse,
 } from "@/pages/api/signerRequests";
-import QRCode from "@/common/ui/atoms/qr-code";
+import QRCode from "@/common/components/atoms/qr-code";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {

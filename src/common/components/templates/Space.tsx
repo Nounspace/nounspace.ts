@@ -9,7 +9,7 @@ import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
-import ThemeEditorOverlay from "@/common/ui/organisms/ThemeEditorOverlay";
+import ThemeEditorOverlay from "@/common/components/organisms/ThemeEditorOverlay";
 
 export type SpaceConfig = {
   fidgetConfigs: {
