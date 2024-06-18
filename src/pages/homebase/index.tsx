@@ -127,7 +127,7 @@ const Homebase: NextPageWithLayout = () => {
     maxRows: 9,
     layout: defaultLayoutData,
     isBounded: true,
-    margin: [30, 24],
+    margin: [16, 16],
     containerPadding: [0, 0],
   };
   const layoutID = "";
@@ -151,7 +151,11 @@ const Homebase: NextPageWithLayout = () => {
         layoutFidget: "grid",
         layoutConfig: {
           ...gridDetails,
-          rowHeight: windowSize ? Math.round(windowSize.height / 9) : 70,
+          rowHeight: windowSize
+            ? Math.round(windowSize.height / gridDetails.maxRows) -
+              gridDetails.margin[0] -
+              8
+            : 70,
         },
       },
     });
