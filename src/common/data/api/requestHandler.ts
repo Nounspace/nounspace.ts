@@ -28,7 +28,7 @@ type RequestHandlerArgs = {
   put?: HandlerFunction;
 };
 
-export default async function requestHandler(args: RequestHandlerArgs) {
+export default function requestHandler(args: RequestHandlerArgs) {
   const allowedMethods = map(keys(args), (m) => m.toUpperCase());
 
   return async (
