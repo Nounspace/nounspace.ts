@@ -150,6 +150,7 @@ const Homebase: NextPageWithLayout = () => {
   const windowSize = useWindowSize();
 
   const gridDetails: GridLayout = {
+    isDroppable: true,
     isDraggable: false,
     isResizable: false,
     items: 4,

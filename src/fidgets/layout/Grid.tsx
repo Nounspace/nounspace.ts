@@ -5,6 +5,7 @@ import {
   LayoutFidget,
   LayoutFidgetProps,
 } from "@/common/fidgets";
+import { PlusIcon } from "@radix-ui/react-icons";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -41,6 +42,7 @@ export interface GridLayout extends LayoutFidgetConfig {
   items: number;
   isResizable: boolean;
   isDraggable: boolean;
+  isDroppable: boolean;
   isBounded?: boolean;
   rowHeight: number;
   compactType?: string | null;

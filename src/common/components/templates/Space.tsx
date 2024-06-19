@@ -79,6 +79,8 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     }),
   );
 
+  function OnDrop() {}
+
   function saveLayout(layout: LayoutFidgetConfig) {
     return saveConfig({
       ...config,
@@ -136,6 +138,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
               onLayoutChange: saveLayout,
+              onDrop: saveLayout,
             }}
             fidgets={fidgets}
             inEditMode={editMode}

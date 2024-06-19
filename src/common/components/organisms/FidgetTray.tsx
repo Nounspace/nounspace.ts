@@ -1,5 +1,8 @@
 import { FidgetConfig, FidgetSettings } from "@/common/fidgets";
 import React from "react";
+import _ from "lodash";
+import { Responsive, WidthProvider } from "react-grid-layout";
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
   return (
@@ -21,6 +24,8 @@ const PlusIcon = () => {
   );
 };
 
+function addFidgetToTray() {}
+
 export interface FidgetTrayProps {
   trayFidgetStorage?: {
     [key: string]: {
@@ -35,7 +40,31 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   trayFidgetStorage,
 }) => {
   return (
-    <div className="w-full h-full mx-4 inset-x-auto shadow-lg shadow-inner h-full"></div>
+    <div className="w-full h-full mx-4 flex-col justify-center items-center">
+      <div className="flex">
+        <div
+          onClick={addFidgetToTray}
+          className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+          draggable={true}
+          unselectable="on"
+          // this is a hack for firefox
+          // Firefox requires some kind of initialization
+          // which we can do by adding this attribute
+          // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
+          onDragStart={(e) => e.dataTransfer.setData("text/plain", "")}
+        >
+          <PlusIcon />
+        </div>
+      </div>
+      <div className="flex">
+        <button
+          onClick={addFidgetToTray}
+          className="z-10 justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+        >
+          <PlusIcon />
+        </button>
+      </div>
+    </div>
   );
 };
 
