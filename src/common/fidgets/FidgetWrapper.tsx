@@ -93,6 +93,11 @@ export function FidgetWrapper({
     setCurrentSettings(<></>);
   };
 
+  function unselect() {
+    setSelectedFidgetID("");
+    setCurrentSettings(<></>);
+  }
+
   return (
     <Card
       className={

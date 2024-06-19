@@ -34,8 +34,13 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentSettings, setCurrentSettings] = useState<React.JSX.Element>(
-    <div>Hi</div>,
+    <></>,
   );
+  function unselect() {
+    setSelectedFidgetID("");
+    setCurrentSettings(<></>);
+  }
+
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
   const fidgets = mapValues(config.fidgetConfigs, (details, key) =>
     FidgetWrapper({
@@ -93,6 +98,10 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
+      <div
+        className="fixed top-0 left-0 h-screen w-screen bg-sky-500"
+        onClick={unselect}
+      ></div>
       <div className="flex">
         <div className="w-3/12 flex mx-auto">
           <Sidebar
