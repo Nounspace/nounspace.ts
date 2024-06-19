@@ -20,7 +20,7 @@ export type FidgetWrapperProps = {
   config: FidgetDetails;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
-  setCurrentSettings: (currentSettings: React.JSX.Element) => void;
+  setcurrentFidgetSettings: (currentFidgetSettings: React.JSX.Element) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
 };
@@ -45,7 +45,7 @@ export function FidgetWrapper({
   config,
   context,
   saveConfig,
-  setCurrentSettings,
+  setcurrentFidgetSettings,
   setSelectedFidgetID,
   selectedFidgetID,
 }: FidgetWrapperProps) {
@@ -55,7 +55,7 @@ export function FidgetWrapper({
   const onClickEdit = useCallback(() => {
     setSelectedFidgetID(config.id);
     setEditing(true);
-    setCurrentSettings(
+    setcurrentFidgetSettings(
       <FidgetSettingsEditor
         editConfig={config.editConfig}
         settings={settingsWithDefaults}
@@ -90,12 +90,12 @@ export function FidgetWrapper({
     setSaving(false);
     setEditing(false);
     setSelectedFidgetID("");
-    setCurrentSettings(<></>);
+    setcurrentFidgetSettings(<></>);
   };
 
   function unselect() {
     setSelectedFidgetID("");
-    setCurrentSettings(<></>);
+    setcurrentFidgetSettings(<></>);
   }
 
   return (

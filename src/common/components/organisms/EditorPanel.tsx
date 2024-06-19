@@ -10,7 +10,7 @@ export interface EditorPanelProps {
   saveTheme: (newTheme: ThemeSettings) => void;
   unselect: () => void;
   selectedFidgetID: string | null;
-  currentSettings: React.JSX.Element;
+  currentFidgetSettings: React.JSX.Element;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -19,7 +19,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   saveTheme,
   unselect,
   selectedFidgetID,
-  currentSettings,
+  currentFidgetSettings,
 }) => {
   return (
     <div className="flex w-full">
@@ -41,7 +41,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                       Edit {selectedFidgetID}
                     </h1>
                   </div>
-                  {currentSettings}
+                  {currentFidgetSettings}
                 </>
               ) : (
                 <>

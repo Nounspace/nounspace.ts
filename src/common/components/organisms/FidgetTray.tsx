@@ -1,4 +1,4 @@
-export interface FidgetTrayProps {}
+import { FidgetConfig, FidgetSettings } from "@/common/fidgets";
 import React from "react";
 
 const PlusIcon = () => {
@@ -21,18 +21,21 @@ const PlusIcon = () => {
   );
 };
 
-export const FidgetTray: React.FC<FidgetTrayProps> = ({}) => {
+export interface FidgetTrayProps {
+  trayFidgetStorage: {
+    [key: string]: {
+      instanceConfig: FidgetConfig<FidgetSettings>;
+      fidgetName: string;
+      id: string;
+    };
+  };
+}
+
+export const FidgetTray: React.FC<FidgetTrayProps> = ({
+  trayFidgetStorage,
+}) => {
   return (
-    <div className="w-full h-full mx-4">
-      <div className="inset-x-auto shadow-lg shadow-inner h-full">
-        <button className="flex-col justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-          <div className="">
-            <PlusIcon />
-          </div>
-          <span className="ml-4 mr-4">Add Fidget</span>
-        </button>
-      </div>
-    </div>
+    <div className="w-full h-full mx-4 inset-x-auto shadow-lg shadow-inner h-full"></div>
   );
 };
 

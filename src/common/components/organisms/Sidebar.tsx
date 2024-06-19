@@ -11,7 +11,7 @@ export interface SidebarProps {
   isEditable: boolean;
   unselect: () => void;
   selectedFidgetID: string | null;
-  currentSettings: React.JSX.Element;
+  currentFidgetSettings: React.JSX.Element;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -22,7 +22,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isEditable,
   unselect,
   selectedFidgetID,
-  currentSettings,
+  currentFidgetSettings,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -37,7 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           saveTheme={saveTheme}
           unselect={unselect}
           selectedFidgetID={selectedFidgetID}
-          currentSettings={currentSettings}
+          currentFidgetSettings={currentFidgetSettings}
         />
       ) : (
         <Navigation isEditable={isEditable} setEditMode={setEditMode} />
