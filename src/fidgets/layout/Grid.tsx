@@ -101,6 +101,7 @@ const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
   fidgets,
   inEditMode,
+  selectedFidgetID,
 }: GridArgs) => {
   return (
     <>

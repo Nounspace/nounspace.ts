@@ -7,17 +7,17 @@ import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 
-export type ThemeEditorToolbarArgs = {
+export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   setEditMode: (editMode: boolean) => void;
 };
 
-export function ThemeEditorToolbar({
+export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,
   saveTheme,
   setEditMode,
-}: ThemeEditorToolbarArgs) {
+}: ThemeSettingsEditorArgs) {
   function themePropSetter<T extends string>(
     property: string,
   ): (value: T) => void {
@@ -82,4 +82,4 @@ export function ThemeEditorToolbar({
   );
 }
 
-export default ThemeEditorToolbar;
+export default ThemeSettingsEditor;

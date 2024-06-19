@@ -13,13 +13,16 @@ import {
 import { FaGear } from "react-icons/fa6";
 import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 import { reduce } from "lodash";
+import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
   config: FidgetDetails;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
-  setSelectedFidgetID: (editMode: string) => void;
+  setCurrentSettings: (currentSettings: React.JSX.Element) => void;
+  setSelectedFidgetID: (selectedFidgetID: string) => void;
+  selectedFidgetID: string;
 };
 
 export const getSettingsWithDefaults = (
@@ -42,14 +45,23 @@ export function FidgetWrapper({
   config,
   context,
   saveConfig,
+  setCurrentSettings,
   setSelectedFidgetID,
+  selectedFidgetID,
 }: FidgetWrapperProps) {
   const [_saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(false);
 
   const onClickEdit = useCallback(() => {
-    setEditing(true);
     setSelectedFidgetID(config.id);
+    setEditing(true);
+    setCurrentSettings(
+      <FidgetSettingsEditor
+        editConfig={config.editConfig}
+        settings={settingsWithDefaults}
+        onSave={onSave}
+      />,
+    );
   }, [setEditing]);
 
   const saveData = (data: FidgetData) => {
@@ -76,19 +88,24 @@ export function FidgetWrapper({
       toast.error("Failed to save fidget settings", { duration: 1000 });
     }
     setSaving(false);
+    setEditing(false);
+    setSelectedFidgetID("");
+    setCurrentSettings(<></>);
   };
 
   return (
-    <Card className="size-full overflow-scroll">
+    <Card
+      className={
+        selectedFidgetID === config.id
+          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-scroll"
+          : "size-full overflow-scroll"
+      }
+    >
       {config.instanceConfig.editable && (
-        <div className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md">
-          <button
-            onClick={onClickEdit}
-            className="absolute flex-1 size-1/12 opacity-50 hover:opacity-100 duration-500 z-10 flex justify-center items-center text-white font-semibold text-2xl"
-          >
-            <FaGear />
-          </button>
-        </div>
+        <button
+          onClick={onClickEdit}
+          className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+        ></button>
       )}
       <CardContent className="size-full">
         {fidget({
@@ -96,13 +113,6 @@ export function FidgetWrapper({
           data: config.instanceConfig.data,
           saveData,
         })}
-        <FidgetSettingsPopover
-          open={editing}
-          setOpen={setEditing}
-          onSave={onSave}
-          editConfig={config.editConfig}
-          settings={settingsWithDefaults}
-        />
       </CardContent>
     </Card>
   );

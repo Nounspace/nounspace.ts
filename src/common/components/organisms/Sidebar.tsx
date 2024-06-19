@@ -1,5 +1,5 @@
 import { ThemeSettings } from "@/common/lib/theme";
-import React from "react";
+import React, { ReactNode } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
 
@@ -10,6 +10,7 @@ export interface SidebarProps {
   saveTheme: (newTheme: ThemeSettings) => void;
   isEditable: boolean;
   selectedFidgetID: string | null;
+  currentSettings: React.JSX.Element;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -19,6 +20,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   saveTheme,
   isEditable,
   selectedFidgetID,
+  currentSettings,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -33,11 +35,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
         {editMode ? (
           <EditorPanel
-            editMode={editMode}
             setEditMode={setEditMode}
             theme={theme}
             saveTheme={saveTheme}
             selectedFidgetID={selectedFidgetID}
+            currentSettings={currentSettings}
           />
         ) : (
           <Navigation isEditable={isEditable} setEditMode={setEditMode} />
