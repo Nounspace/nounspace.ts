@@ -24,7 +24,7 @@ function isFidLinkToIdentityRequest(
   }
   return (
     typeof maybe["fid"] === "number" &&
-    typeof maybe["timestamp"] === "number" &&
+    typeof maybe["timestamp"] === "string" &&
     typeof maybe["identityPublicKey"] === "string"
   );
 }
@@ -62,7 +62,7 @@ async function linkFidToIdentity(
     });
     return;
   }
-  if (!validateSignable(reqBody)) {
+  if (!validateSignable(reqBody, "signingPublicKey")) {
     res.status(400).json({
       result: "error",
       error: {

@@ -82,7 +82,6 @@ export const authenticatorStore = (
       const configFile = await get().account.createEncryptedSignedFile(
         stringify(get().account.authenticatorConfig),
         "json",
-        true,
       );
       const postData: AuthenticatorUpdateRequest = {
         file: configFile,

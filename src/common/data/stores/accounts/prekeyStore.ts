@@ -196,8 +196,7 @@ export const prekeyStore = (
               await get().account.decryptEncryptedSignedFile(fileData);
             const preKeys = JSON.parse(decryptedFile) as PreSpaceKeys;
             return preKeys;
-          } catch (e) {
-            console.error(e);
+          } catch {
             return undefined;
           }
         }),

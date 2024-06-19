@@ -6,7 +6,8 @@ export enum SetupStep {
   WALLET_CONNECTED = "Loading Identity...",
   IDENTITY_LOADED = "Loading Authenticators...",
   AUTHENTICATORS_LOADED = "Installing required Authenticators...",
-  REQUIRED_AUTHENTICATORS_INSTALLED = "Registering Farcaster Account...",
+  REQUIRED_AUTHENTICATORS_INSTALLED = "Initializing Authenicators...",
+  AUTHENTICATORS_INITIALIZED = "Registering accounts...",
   ACCOUNTS_REGISTERED = "Loading...",
   DONE = "DONE",
 }

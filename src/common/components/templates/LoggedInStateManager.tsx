@@ -6,7 +6,9 @@ import { useAppStore } from "@/common/data/stores";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
 import { SetupStep } from "@/common/data/stores/setup";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { isUndefined } from "lodash";
+import { isEqual, isUndefined } from "lodash";
+import requiredAuthenticators from "@/constants/requiredAuthenticators";
+import { bytesToHex } from "@noble/ciphers/utils";
 
 type LoggedInLayoutProps = {
   children: React.ReactNode;
@@ -32,6 +34,9 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     setCurrentIdentity,
     storeLogout,
     getCurrentIdentity,
+    loadPreKeys,
+    loadFidsForCurrentIdentity,
+    registerFidForCurrentIdentity,
   } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -43,8 +48,12 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     decryptIdentityKeys: state.account.decryptIdentityKeys,
     setCurrentIdentity: state.account.setCurrentIdentity,
     getCurrentIdentity: state.account.getCurrentIdentity,
+    loadPreKeys: state.account.loadPreKeys,
     // Authenticator Loading
     storeLoadAuthenticators: state.account.loadAuthenitcators,
+    // Register FIDs for account
+    loadFidsForCurrentIdentity: state.account.getFidsForCurrentIdentity,
+    registerFidForCurrentIdentity: state.account.registerFidForCurrentIdentity,
     // Logout
     storeLogout: state.account.logout,
   }));
@@ -106,6 +115,7 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
 
   async function loadAuthenticators() {
     try {
+      await loadPreKeys();
       await storeLoadAuthenticators();
       setCurrentStep(SetupStep.AUTHENTICATORS_LOADED);
     } catch (e) {
@@ -114,11 +124,65 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     }
   }
 
-  async function installRequiredAuthenticators() {
-    console.log(authenticatorManager.installedAuthenticators());
-  }
+  const installRequiredAuthenticators = async () => {
+    await authenticatorManager.installAuthenticators(requiredAuthenticators);
+    authenticatorManager.initializeAuthenticators(requiredAuthenticators);
+    setCurrentStep(SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED);
+  };
 
-  async function registerAccounts() {}
+  // For whatever reason, running this as a method that was triggered by
+  // switch case useEffect down the page didn't work
+  // but this does. Something to refactor later?
+  useEffect(() => {
+    if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED) {
+      Promise.resolve(authenticatorManager.getInitializedAuthenticators()).then(
+        (initializedAuthNames) => {
+          const initializedAuthenticators = new Set(initializedAuthNames);
+          const requiredAuthSet = new Set(requiredAuthenticators);
+          if (isEqual(initializedAuthenticators, requiredAuthSet)) {
+            setCurrentStep(SetupStep.AUTHENTICATORS_INITIALIZED);
+          }
+        },
+      );
+    }
+  }, [authenticatorManager, currentStep]);
+
+  const registerAccounts = async () => {
+    let currentIdentity = getCurrentIdentity()!;
+    if (currentIdentity.associatedFids.length > 0) {
+      setCurrentStep(SetupStep.ACCOUNTS_REGISTERED);
+    } else {
+      await loadFidsForCurrentIdentity();
+      currentIdentity = getCurrentIdentity()!;
+      if (currentIdentity.associatedFids.length === 0) {
+        const fidResult = (await authenticatorManager.callMethod(
+          "root",
+          "farcaster:nounspace",
+          "getAccountFid",
+        )) as { value: number };
+        const publicKeyResult = (await authenticatorManager.callMethod(
+          "root",
+          "farcaster:nounspace",
+          "getSignerPublicKey",
+        )) as { value: Uint8Array };
+        const signForFid = async (messageHash) => {
+          const signResult = (await authenticatorManager.callMethod(
+            "root",
+            "farcaster:nounspace",
+            "signMessage",
+            messageHash,
+          )) as { value: Uint8Array };
+          return signResult.value;
+        };
+        await registerFidForCurrentIdentity(
+          fidResult.value,
+          bytesToHex(publicKeyResult.value),
+          signForFid,
+        );
+      }
+    }
+    setCurrentStep(SetupStep.ACCOUNTS_REGISTERED);
+  };
 
   useEffect(() => {
     if (ready) {
@@ -138,6 +202,8 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
             installRequiredAuthenticators();
             break;
           case SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED:
+            break;
+          case SetupStep.AUTHENTICATORS_INITIALIZED:
             registerAccounts();
             break;
           case SetupStep.ACCOUNTS_REGISTERED:
