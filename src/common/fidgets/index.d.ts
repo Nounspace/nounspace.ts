@@ -34,6 +34,7 @@ export type FidgetEditConfig = {
     minWidth: NumericRange<1, 36>;
     maxWidth: NumericRange<1, 36>;
   };
+  name: string;
 };
 
 export type FidgetRenderContext = {

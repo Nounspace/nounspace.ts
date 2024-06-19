@@ -51,6 +51,7 @@ export const textConfig: FidgetEditConfig = {
     minWidth: 1,
     maxWidth: 36,
   },
+  name: "Text",
 };
 
 export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({

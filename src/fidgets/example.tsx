@@ -21,6 +21,7 @@ const exampleConfig: FidgetEditConfig = {
     minWidth: 1,
     maxWidth: 36,
   },
+  name: "Example",
 };
 
 const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = ({

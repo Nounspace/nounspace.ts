@@ -22,6 +22,7 @@ const frameConfig: FidgetEditConfig = {
     minWidth: 1,
     maxWidth: 36,
   },
+  name: "Frame",
 };
 
 const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({

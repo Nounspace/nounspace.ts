@@ -20,6 +20,7 @@ const galleryConfig: FidgetEditConfig = {
     minWidth: 1,
     maxWidth: 36,
   },
+  name: "Gallery",
 };
 
 const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({
