@@ -10,8 +10,6 @@ import {
   FidgetEditConfig,
   FidgetRenderContext,
 } from ".";
-import { FaGear } from "react-icons/fa6";
-import FidgetSettingsPopover from "@/common/fidgets/FidgetSettingsPopover";
 import { reduce } from "lodash";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
