@@ -11,18 +11,21 @@ import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 
+type SpaceFidgetConfig = {
+  instanceConfig: FidgetConfig<FidgetSettings>;
+  fidgetType: string;
+  id: string;
+};
+
 export type SpaceConfig = {
   fidgetConfigs: {
-    [key: string]: {
-      instanceConfig: FidgetConfig<FidgetSettings>;
-      fidgetType: string;
-      id: string;
-    };
+    [key: string]: SpaceFidgetConfig;
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   theme: ThemeSettings;
   isEditable: boolean;
+  fidgetTray?: SpaceFidgetConfig[];
 };
 
 type SpaceArgs = {
