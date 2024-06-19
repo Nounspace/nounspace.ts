@@ -15,7 +15,7 @@ export type SpaceConfig = {
   fidgetConfigs: {
     [key: string]: {
       instanceConfig: FidgetConfig<FidgetSettings>;
-      fidgetName: string;
+      fidgetType: string;
       id: string;
     };
   };
@@ -35,7 +35,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
   const fidgets = mapValues(config.fidgetConfigs, (details, key) =>
     FidgetWrapper({
-      fidget: CompleteFidgets[details.fidgetName].fidget,
+      fidget: CompleteFidgets[details.fidgetType].fidget,
       config: {
         id: details.id,
         instanceConfig: {
@@ -43,7 +43,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           settings: details.instanceConfig.settings,
           data: details.instanceConfig.data,
         },
-        editConfig: CompleteFidgets[details.fidgetName].editConfig,
+        editConfig: CompleteFidgets[details.fidgetType].editConfig,
       },
       context: {
         theme: config.theme,
@@ -56,7 +56,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             [key]: {
               instanceConfig: newInstanceConfig,
               id: details.id,
-              fidgetName: details.fidgetName,
+              fidgetType: details.fidgetType,
             },
           },
         });

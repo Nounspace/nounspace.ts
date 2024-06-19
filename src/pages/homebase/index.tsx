@@ -61,7 +61,7 @@ const Homebase: NextPageWithLayout = () => {
 
   const fidgets = {
     text1: {
-      fidgetName: "text",
+      fidgetType: "text",
       id: "text1",
       instanceConfig: {
         editable: true,
@@ -73,7 +73,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     text2: {
-      fidgetName: "text",
+      fidgetType: "text",
       id: "text2",
       instanceConfig: {
         editable: true,
@@ -85,7 +85,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     gallery: {
-      fidgetName: "gallery",
+      fidgetType: "gallery",
       id: "gallery",
       instanceConfig: {
         editable: false,
@@ -97,7 +97,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     frame: {
-      fidgetName: "frame",
+      fidgetType: "frame",
       id: "frame",
       instanceConfig: {
         editable: false,
