@@ -103,7 +103,7 @@ export function FidgetWrapper({
     >
       {config.instanceConfig.editable && (
         <button
-          onClick={onClickEdit}
+          onMouseDown={onClickEdit}
           className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
         ></button>
       )}

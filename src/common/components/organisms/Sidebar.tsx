@@ -2,6 +2,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import React, { ReactNode } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
+import FidgetTray from "./FidgetTray";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -45,6 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <Navigation isEditable={isEditable} setEditMode={setEditMode} />
         )}
       </div>
+      <FidgetTray />
     </aside>
   );
 };
