@@ -99,7 +99,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   return (
     <>
       <div
-        className="fixed top-0 left-0 h-screen w-screen bg-sky-500"
+        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
         onClick={unselect}
       ></div>
       <div className="flex">
