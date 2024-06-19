@@ -45,7 +45,7 @@ export const farcasterStore = (
   },
   getFidsForCurrentIdentity: async () => {
     const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
-      "/api/fid-links/",
+      "/api/fid-link/",
       {
         params: {
           identityPublicKey: get().account.currentSpaceIdentityPublicKey,
