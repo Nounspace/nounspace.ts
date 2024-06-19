@@ -4,6 +4,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetSettingsEditor from "./FidgetSettingsEditor";
+import FidgetTray from "./FidgetTray";
 
 export interface EditorPanelProps {
   setEditMode: (editMode: boolean) => void;
@@ -26,7 +27,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   const [editing, setEditing] = useState(false);
 
   return (
-    <>
+    <div className="flex-row">
       {selectedFidgetID ? (
         <>
           <h1 className="capitalize pb-4 m-2">{selectedFidgetID}</h1>
@@ -42,7 +43,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           />
         </>
       )}
-    </>
+      <FidgetTray />
+    </div>
   );
 };
 
