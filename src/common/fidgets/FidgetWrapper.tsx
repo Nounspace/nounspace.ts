@@ -60,6 +60,7 @@ export function FidgetWrapper({
         editConfig={config.editConfig}
         settings={settingsWithDefaults}
         onSave={onSave}
+        unselect={unselect}
       />,
     );
   }, [setEditing]);

@@ -4,11 +4,13 @@ import {
   FidgetEditConfig,
   FidgetFieldConfig,
 } from "@/common/fidgets";
+import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export type FidgetSettingsEditorProps = {
   readonly editConfig: FidgetEditConfig;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings) => void;
+  unselect: () => void;
 };
 
 type FidgetSettingsRowProps = {
@@ -46,6 +48,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   editConfig,
   settings,
   onSave,
+  unselect,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
 
@@ -56,6 +59,14 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   return (
     <form onSubmit={_onSave}>
+      <div className="flex">
+        <button onClick={unselect} className="my-auto">
+          <BackArrowIcon />
+        </button>
+        <h1 className="capitalize text-lg pl-4">
+          Edit {editConfig.fidgetName} Fidget
+        </h1>
+      </div>
       <div className="gap-3 flex flex-col">
         {editConfig.fields.map((field, i) => (
           <FidgetSettingsRow

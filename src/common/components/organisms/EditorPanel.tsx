@@ -32,17 +32,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
             <div className="flex-col">
               {selectedFidgetID ? (
-                <>
-                  <div className="flex">
-                    <button onClick={unselect} className="my-auto">
-                      <BackArrowIcon />
-                    </button>
-                    <h1 className="capitalize text-lg pl-4">
-                      Edit {selectedFidgetID} Fidget
-                    </h1>
-                  </div>
-                  {currentFidgetSettings}
-                </>
+                <>{currentFidgetSettings}</>
               ) : (
                 <>
                   <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
@@ -61,26 +51,6 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         <FidgetTray />
       </div>
     </div>
-  );
-};
-
-const BackArrowIcon = () => {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M5 12H19M5 12L9 8M5 12L9 16"
-        stroke="#383838"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 };
 
