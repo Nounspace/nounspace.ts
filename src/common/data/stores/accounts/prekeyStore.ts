@@ -52,7 +52,7 @@ interface PreKeyActions {
   createEncryptedSignedFile: (
     data: string,
     fileType: string,
-    useRootKey: boolean | undefined,
+    useRootKey?: boolean,
   ) => Promise<SignedFile>;
   decryptEncryptedSignedFile: (file: SignedFile) => Promise<string>;
   generatePreKey: () => Promise<PreSpaceKeys>;
@@ -171,7 +171,7 @@ export const prekeyStore = (
     });
   },
   loadPreKeys: async () => {
-    const keyFileLocs = await axiosBackend.get<PreKeyResponse>(
+    const { data } = await axiosBackend.get<PreKeyResponse>(
       "/api/space/prekeys",
       {
         params: {
@@ -179,6 +179,7 @@ export const prekeyStore = (
         },
       },
     );
+    const keyFileLocs = data.value!;
     const supabase = createClient();
     const prekeys = compact(
       await Promise.all(
