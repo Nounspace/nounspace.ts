@@ -20,7 +20,7 @@ export type FidgetWrapperProps = {
   config: FidgetDetails;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
-  setcurrentFidgetSettings: (currentFidgetSettings: React.JSX.Element) => void;
+  setcurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
 };

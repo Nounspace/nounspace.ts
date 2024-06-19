@@ -34,7 +34,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentFidgetSettings, setcurrentFidgetSettings] =
-    useState<React.JSX.Element>(<></>);
+    useState<React.ReactNode>(<></>);
 
   function unselect() {
     setSelectedFidgetID("");

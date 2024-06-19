@@ -11,7 +11,7 @@ export interface SidebarProps {
   isEditable: boolean;
   unselect: () => void;
   selectedFidgetID: string | null;
-  currentFidgetSettings: React.JSX.Element;
+  currentFidgetSettings: React.ReactNode;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({

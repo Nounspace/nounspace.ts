@@ -10,7 +10,7 @@ export interface EditorPanelProps {
   saveTheme: (newTheme: ThemeSettings) => void;
   unselect: () => void;
   selectedFidgetID: string | null;
-  currentFidgetSettings: React.JSX.Element;
+  currentFidgetSettings: React.ReactNode;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
