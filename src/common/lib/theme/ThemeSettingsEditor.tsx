@@ -73,7 +73,7 @@ export function ThemeSettingsEditor({
           >
             <div className="flex items-center">
               <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
-              <span className="ml-4 mr-4">Save</span>
+              <span className="ml-4 mr-4">Save Space</span>
             </div>
           </button>
         </div>

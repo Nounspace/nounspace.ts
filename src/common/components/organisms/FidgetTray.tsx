@@ -4,13 +4,9 @@ import { Card, CardFooter } from "../atoms/card";
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({}) => {
   return (
-    <>
-      <Card className="inset-x-auto shadow-lg">
-        <CardFooter className="gap-2 p-3">
-          <div>Fidget Tray</div>
-        </CardFooter>
-      </Card>
-    </>
+    <div className="w-full h-full mx-4">
+      <div className="inset-x-auto shadow-lg shadow-inner h-full"></div>
+    </div>
   );
 };
 

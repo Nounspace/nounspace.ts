@@ -235,37 +235,45 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   }
 
   return (
-    <>
-      <BrandHeader />
-      <div className="text-lg font-medium">
-        <ul className="space-y-2">
-          <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-          <NavItem label="Explore" Icon={ExploreIcon} />
-          <NavItem label="Channels" Icon={ChannelsIcon} />
-          <NavItem label="Bookmark" Icon={BookmarkIcon} />
-        </ul>
-        <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-          <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            {isEditable && (
-              <button
-                onClick={turnOnEditMode}
-                className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <div className="flex items-center">
-                  <EditIcon />
-                </div>
-              </button>
-            )}
+    <aside
+      id="logo-sidebar"
+      className="absolute left-4 top-4 bottom-4 z-8 w-[270px] transition-transform -translate-x-full sm:translate-x-0"
+      aria-label="Sidebar"
+    >
+      <div className="flex-row h-full">
+        <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
+          <BrandHeader />
+          <div className="text-lg font-medium">
+            <ul className="space-y-2">
+              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+              <NavItem label="Explore" Icon={ExploreIcon} />
+              <NavItem label="Channels" Icon={ChannelsIcon} />
+              <NavItem label="Bookmark" Icon={BookmarkIcon} />
+            </ul>
+            <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                {isEditable && (
+                  <button
+                    onClick={turnOnEditMode}
+                    className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                  >
+                    <div className="flex items-center">
+                      <EditIcon />
+                    </div>
+                  </button>
+                )}
 
-            <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-              <div className="flex items-center">
-                <span className="mr-16 ml-16">Cast</span>
+                <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                  <div className="flex items-center">
+                    <span className="mr-16 ml-16">Cast</span>
+                  </div>
+                </button>
               </div>
-            </button>
+            </div>
           </div>
         </div>
       </div>
-    </>
+    </aside>
   );
 };
 

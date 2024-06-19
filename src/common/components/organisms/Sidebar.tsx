@@ -2,6 +2,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import React, { ReactNode } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
+import FidgetTray from "./FidgetTray";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -9,6 +10,7 @@ export interface SidebarProps {
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   isEditable: boolean;
+  unselect: () => void;
   selectedFidgetID: string | null;
   currentSettings: React.JSX.Element;
 }
@@ -19,6 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   theme,
   saveTheme,
   isEditable,
+  unselect,
   selectedFidgetID,
   currentSettings,
 }) => {
@@ -27,25 +30,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   return (
-    <aside
-      id="logo-sidebar"
-      className="absolute left-12 top-12 bottom-12 z-8 w-[270px] transition-transform -translate-x-full sm:translate-x-0"
-      aria-label="Sidebar"
-    >
-      <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
-        {editMode ? (
-          <EditorPanel
-            setEditMode={setEditMode}
-            theme={theme}
-            saveTheme={saveTheme}
-            selectedFidgetID={selectedFidgetID}
-            currentSettings={currentSettings}
-          />
-        ) : (
-          <Navigation isEditable={isEditable} setEditMode={setEditMode} />
-        )}
-      </div>
-    </aside>
+    <>
+      {editMode ? (
+        <EditorPanel
+          setEditMode={setEditMode}
+          theme={theme}
+          saveTheme={saveTheme}
+          unselect={unselect}
+          selectedFidgetID={selectedFidgetID}
+          currentSettings={currentSettings}
+        />
+      ) : (
+        <Navigation isEditable={isEditable} setEditMode={setEditMode} />
+      )}
+    </>
   );
 };
 

@@ -10,6 +10,7 @@ import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
+import FidgetTray from "../organisms/FidgetTray";
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -36,6 +37,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const [currentSettings, setCurrentSettings] = useState<React.JSX.Element>(
     <></>,
   );
+
   function unselect() {
     setSelectedFidgetID("");
     setCurrentSettings(<></>);
@@ -103,19 +105,32 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
         onClick={unselect}
       ></div>
       <div className="flex">
-        <div className="w-3/12 flex mx-auto">
+        <div
+          className={
+            editMode
+              ? "w-4/12 flex mx-auto transition-all duration-100 ease-out"
+              : "w-3/12 flex mx-auto transition-all duration-100 ease-out"
+          }
+        >
           <Sidebar
             editMode={editMode}
             setEditMode={setEditMode}
             theme={config.theme}
             saveTheme={saveTheme}
             isEditable={config.isEditable}
+            unselect={unselect}
             selectedFidgetID={selectedFidgetID}
             currentSettings={currentSettings}
           />
         </div>
 
-        <div className="w-9/12">
+        <div
+          className={
+            editMode
+              ? "w-8/12 transition-all duration-100 ease-out"
+              : "w-9/12 transition-all duration-100 ease-out"
+          }
+        >
           <LayoutFidget
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
