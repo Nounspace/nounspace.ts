@@ -112,7 +112,7 @@ async function handleGet(
     } else if (data !== null) {
       res.status(200).json({
         result: "success",
-        value: map(data, (d) => `${preKeysPath(identityPublicKey)}${d.name}}`),
+        value: map(data, (d) => `${preKeysPath(identityPublicKey)}${d.name}`),
       });
     } else {
       res.status(200).json({
