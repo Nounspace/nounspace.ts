@@ -72,6 +72,9 @@ async function handlePost(
             identityRequest.walletAddress,
           ),
           new Blob([stringify(file)], { type: "application/json" }),
+          {
+            upsert: true,
+          },
         );
       if (storageError) {
         throw storageError;

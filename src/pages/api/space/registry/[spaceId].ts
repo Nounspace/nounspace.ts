@@ -185,7 +185,9 @@ async function updateConfig(
   }
   const { error } = await supabase.storage
     .from("spaces")
-    .upload(spaceId, new Blob([stringify(req)], { type: "application/json" }));
+    .upload(spaceId, new Blob([stringify(req)], { type: "application/json" }), {
+      upsert: true,
+    });
   if (error) {
     return {
       result: "error",

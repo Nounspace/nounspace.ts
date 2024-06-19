@@ -63,6 +63,9 @@ async function handlePost(
       .upload(
         `${preKeysPath(identityPublicKey)}/${prekeyPublicKey}`,
         new Blob([stringify(file)], { type: "application/json" }),
+        {
+          upsert: true,
+        },
       );
     if (storageError) {
       console.error(storageError);
