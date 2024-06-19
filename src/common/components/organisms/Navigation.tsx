@@ -255,7 +255,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
                 {isEditable && (
                   <button
                     onClick={turnOnEditMode}
-                    className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                    className={mergeClasses(
+                      "flex items-center justify-between p-2 text-gray-900",
+                      "rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                    )}
                   >
                     <div className="flex items-center">
                       <EditIcon />
@@ -263,7 +266,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
                   </button>
                 )}
 
-                <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <button
+                  className={mergeClasses(
+                    "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",
+                    "hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                  )}
+                >
                   <div className="flex items-center">
                     <span className="mr-16 ml-16">Cast</span>
                   </div>
