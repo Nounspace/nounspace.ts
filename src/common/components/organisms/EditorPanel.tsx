@@ -1,9 +1,7 @@
-import React, { ReactNode, useState } from "react";
-import { RiPencilFill } from "react-icons/ri";
+import React from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import FidgetSettingsEditor from "./FidgetSettingsEditor";
 import FidgetTray from "./FidgetTray";
 
 export interface EditorPanelProps {
@@ -23,11 +21,6 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   selectedFidgetID,
   currentSettings,
 }) => {
-  // const toggleEditMode = useCallback(() => {
-  //   !disabled && setEditMode(!editMode);
-  // }, [editMode, setEditMode, disabled]);
-  const [editing, setEditing] = useState(false);
-
   return (
     <div className="flex w-full">
       <aside

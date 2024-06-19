@@ -1,6 +1,5 @@
 export interface FidgetTrayProps {}
 import React from "react";
-import { Card, CardFooter } from "../atoms/card";
 
 const PlusIcon = () => {
   return (

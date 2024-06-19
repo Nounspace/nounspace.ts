@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Link from "next/link";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import Image from "next/image";

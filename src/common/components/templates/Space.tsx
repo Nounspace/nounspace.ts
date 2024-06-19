@@ -10,7 +10,6 @@ import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
-import FidgetTray from "../organisms/FidgetTray";
 
 export type SpaceConfig = {
   fidgetConfigs: {
