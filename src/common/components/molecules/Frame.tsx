@@ -12,7 +12,7 @@ import SignupForNonLocalAccountCard from "../organisms/SignupForNonLocalAccountC
 // Implement the exact same thing again
 function FrameImageNext(
   props: ImgHTMLAttributes<HTMLImageElement> & { src: string },
-): React.JSX.Element {
+): React.ReactNode {
   return (
     <Image
       {...props}

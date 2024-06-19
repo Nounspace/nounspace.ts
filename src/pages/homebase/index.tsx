@@ -61,7 +61,7 @@ const Homebase: NextPageWithLayout = () => {
 
   const fidgets = {
     text1: {
-      fidgetName: "text",
+      fidgetType: "text",
       id: "text1",
       instanceConfig: {
         editable: true,
@@ -73,7 +73,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     text2: {
-      fidgetName: "text",
+      fidgetType: "text",
       id: "text2",
       instanceConfig: {
         editable: true,
@@ -85,7 +85,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     gallery: {
-      fidgetName: "gallery",
+      fidgetType: "gallery",
       id: "gallery",
       instanceConfig: {
         editable: false,
@@ -97,7 +97,7 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
     frame: {
-      fidgetName: "frame",
+      fidgetType: "frame",
       id: "frame",
       instanceConfig: {
         editable: false,
@@ -108,6 +108,44 @@ const Homebase: NextPageWithLayout = () => {
       },
     },
   };
+
+  const fidgetsInTray = [
+    {
+      fidgetType: "text",
+      id: "text3",
+      instanceConfig: {
+        editable: true,
+        settings: {
+          title: "Hello, World!",
+          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum eget tincidunt nunc. Vivamus vitae arcu placerat diam lacinia interdum.",
+        },
+        data: {},
+      },
+    },
+    {
+      fidgetType: "gallery",
+      id: "gallery2",
+      instanceConfig: {
+        editable: false,
+        settings: {
+          imageUrl:
+            "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+        },
+        data: {},
+      },
+    },
+    {
+      fidgetType: "frame",
+      id: "frame2",
+      instanceConfig: {
+        editable: false,
+        settings: {
+          url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
+        },
+        data: {},
+      },
+    },
+  ];
 
   const windowSize = useWindowSize();
 
@@ -141,6 +179,7 @@ const Homebase: NextPageWithLayout = () => {
     theme: DEFAULT_THEME,
     fidgetConfigs: fidgets,
     isEditable: true,
+    fidgetTray: fidgetsInTray,
   });
 
   useEffect(() => {

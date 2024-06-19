@@ -19,6 +19,7 @@ export type TextFidgetSettings = {
 };
 
 export const textConfig: FidgetEditConfig = {
+  fidgetName: "Text",
   fields: [
     {
       fieldName: "title",

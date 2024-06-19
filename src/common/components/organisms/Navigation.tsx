@@ -1,7 +1,91 @@
-import React, { useCallback } from "react";
+import React from "react";
 import Link from "next/link";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import Image from "next/image";
+
+type NavItemProps = {
+  label: string;
+  active?: boolean;
+  Icon: React.FC;
+};
+
+type NavProps = {
+  isEditable: boolean;
+  setEditMode: (editMode: boolean) => void;
+};
+
+const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
+  return (
+    <li>
+      <a
+        href="#"
+        className={mergeClasses(
+          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          active ? "bg-gray-100" : "",
+        )}
+      >
+        <Icon aria-hidden="true" />
+        <span className="ms-2">{label}</span>
+      </a>
+    </li>
+  );
+};
+
+const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
+  function turnOnEditMode() {
+    setEditMode(true);
+  }
+
+  return (
+    <aside
+      id="logo-sidebar"
+      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
+      aria-label="Sidebar"
+    >
+      <div className="flex-row h-full">
+        <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
+          <BrandHeader />
+          <div className="text-lg font-medium">
+            <ul className="space-y-2">
+              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+              <NavItem label="Explore" Icon={ExploreIcon} />
+              <NavItem label="Channels" Icon={ChannelsIcon} />
+              <NavItem label="Bookmark" Icon={BookmarkIcon} />
+            </ul>
+            <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                {isEditable && (
+                  <button
+                    onClick={turnOnEditMode}
+                    className={mergeClasses(
+                      "flex items-center justify-between p-2 text-gray-900",
+                      "rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                    )}
+                  >
+                    <div className="flex items-center">
+                      <EditIcon />
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  className={mergeClasses(
+                    "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",
+                    "hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                  )}
+                >
+                  <div className="flex items-center">
+                    <span className="mr-16 ml-16">Cast</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+};
 
 const HomeIcon = () => {
   return (
@@ -20,28 +104,6 @@ const HomeIcon = () => {
         strokeLinejoin="round"
         strokeWidth="2"
         d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"
-      />
-    </svg>
-  );
-};
-
-const FeedIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M11 9H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h6m0-6v6m0-6 5.419-3.87A1 1 0 0 1 18 5.942v12.114a1 1 0 0 1-1.581.814L11 15m7 0a3 3 0 0 0 0-6M6 15h3v5H6v-5Z"
       />
     </svg>
   );
@@ -112,35 +174,6 @@ const BookmarkIcon = () => {
   );
 };
 
-const SettingsIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z"
-      />
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
-      />
-    </svg>
-  );
-};
-
 const EditIcon = () => {
   return (
     <svg
@@ -156,27 +189,6 @@ const EditIcon = () => {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
-
-const ShareIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-        d="M7.926 10.898 15 7.727m-7.074 5.39L15 16.29M8 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm12 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Zm0-11a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"
       />
     </svg>
   );
@@ -198,74 +210,6 @@ const BrandHeader = () => {
         </span>
       )}
     </Link>
-  );
-};
-
-type NavItemProps = {
-  label: string;
-  active?: boolean;
-  Icon: React.FC;
-};
-
-type NavProps = {
-  isEditable: boolean;
-  setEditMode: (editMode: boolean) => void;
-};
-
-const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
-  return (
-    <li>
-      <a
-        href="#"
-        className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
-          active ? "bg-gray-100" : "",
-        )}
-      >
-        <Icon aria-hidden="true" />
-        <span className="ms-2">{label}</span>
-      </a>
-    </li>
-  );
-};
-
-const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
-  function turnOnEditMode() {
-    setEditMode(true);
-  }
-
-  return (
-    <>
-      <BrandHeader />
-      <div className="text-lg font-medium">
-        <ul className="space-y-2">
-          <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-          <NavItem label="Explore" Icon={ExploreIcon} />
-          <NavItem label="Channels" Icon={ChannelsIcon} />
-          <NavItem label="Bookmark" Icon={BookmarkIcon} />
-        </ul>
-        <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-          <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            {isEditable ? (
-              <button
-                onClick={turnOnEditMode}
-                className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-              >
-                <div className="flex items-center">
-                  <EditIcon />
-                </div>
-              </button>
-            ) : null}
-
-            <button className="flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-              <div className="flex items-center">
-                <span className="mr-16 ml-16">Cast</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </>
   );
 };
 

@@ -9,6 +9,7 @@ export type FrameFidgetSettings = {
 };
 
 const frameConfig: FidgetEditConfig = {
+  fidgetName: "Frame",
   fields: [
     {
       fieldName: "url",
