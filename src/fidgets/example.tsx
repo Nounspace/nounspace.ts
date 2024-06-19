@@ -7,6 +7,7 @@ export type ExampleFidgetSettings = {
 };
 
 const exampleConfig: FidgetEditConfig = {
+  fidgetName: "Example",
   fields: [
     {
       fieldName: "displayText",

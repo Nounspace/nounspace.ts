@@ -3,8 +3,8 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings } from "@/common/lib/theme";
 
-export type FidgetSettings = Reacord<string, any>;
-export type FidgetData = Reacord<string, any>;
+export type FidgetSettings = Record<string, any>;
+export type FidgetData = Record<string, any>;
 
 export type FidgetConfig<
   S extends FidgetSettings = FidgetSettings,
@@ -26,7 +26,9 @@ export type FidgetFieldConfig = {
   readonly required: boolean;
 };
 
+// Developer Defined Variables (inaccessible to the user)
 export type FidgetEditConfig = {
+  fidgetName: string;
   fields: FidgetFieldConfig[];
   size: {
     minHeight: NumericRange<1, 36>;

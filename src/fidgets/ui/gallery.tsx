@@ -7,6 +7,7 @@ export type GalleryFidgetSettings = {
 };
 
 const galleryConfig: FidgetEditConfig = {
+  fidgetName: "Gallery",
   fields: [
     {
       fieldName: "imageUrl",

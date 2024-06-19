@@ -4,11 +4,13 @@ import {
   FidgetEditConfig,
   FidgetFieldConfig,
 } from "@/common/fidgets";
+import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export type FidgetSettingsEditorProps = {
   readonly editConfig: FidgetEditConfig;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings) => void;
+  unselect: () => void;
 };
 
 type FidgetSettingsRowProps = {
@@ -25,9 +27,9 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   const InputComponent = field.inputSelector;
 
   return (
-    <div className="text-gray-700 md:flex md:items-center">
+    <div className="text-gray-700 md:flex-col md:items-center m-2">
       <div className="md:mb-0 md:w-1/3">
-        <label className="text-sm font-medium text-gray-900 dark:text-white">
+        <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
           {field.fieldName}
         </label>
       </div>
@@ -46,6 +48,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   editConfig,
   settings,
   onSave,
+  unselect,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
 
@@ -56,6 +59,14 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   return (
     <form onSubmit={_onSave}>
+      <div className="flex">
+        <button onClick={unselect} className="my-auto">
+          <BackArrowIcon />
+        </button>
+        <h1 className="capitalize text-lg pl-4">
+          Edit {editConfig.fidgetName} Fidget
+        </h1>
+      </div>
       <div className="gap-3 flex flex-col">
         {editConfig.fields.map((field, i) => (
           <FidgetSettingsRow
@@ -71,13 +82,15 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           />
         ))}
       </div>
-      <div className="text-right border-t pt-3 mt-3 border-gray-100">
-        <button
-          type="submit"
-          className="text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        >
-          Save
-        </button>
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+        <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex">
+          <button
+            type="submit"
+            className="mx-auto text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            <span className="ml-16 mr-16">Save</span>
+          </button>
+        </div>
       </div>
     </form>
   );
