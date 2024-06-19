@@ -22,7 +22,7 @@ const PlusIcon = () => {
 };
 
 export interface FidgetTrayProps {
-  trayFidgetStorage: {
+  trayFidgetStorage?: {
     [key: string]: {
       instanceConfig: FidgetConfig<FidgetSettings>;
       fidgetName: string;
