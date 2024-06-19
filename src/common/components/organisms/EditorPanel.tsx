@@ -25,7 +25,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     <div className="flex w-full">
       <aside
         id="editor-panel"
-        className="flex-col h-full z-8 w-7/12 transition-transform -translate-x-full sm:translate-x-0"
+        className="flex-col h-10/12 z-8 w-7/12 transition-transform -translate-x-full sm:translate-x-0"
         aria-label="Editor"
       >
         <div className="w-full h-full">
@@ -38,7 +38,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                       <BackArrowIcon />
                     </button>
                     <h1 className="capitalize text-lg pl-4">
-                      Edit {selectedFidgetID}
+                      Edit {selectedFidgetID} Fidget
                     </h1>
                   </div>
                   {currentFidgetSettings}

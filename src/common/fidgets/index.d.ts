@@ -26,7 +26,9 @@ export type FidgetFieldConfig = {
   readonly required: boolean;
 };
 
+// Developer Defined Variables (inaccessible to the user)
 export type FidgetEditConfig = {
+  fidgetName: string;
   fields: FidgetFieldConfig[];
   size: {
     minHeight: NumericRange<1, 36>;

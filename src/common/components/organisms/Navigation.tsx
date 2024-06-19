@@ -3,6 +3,90 @@ import Link from "next/link";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import Image from "next/image";
 
+type NavItemProps = {
+  label: string;
+  active?: boolean;
+  Icon: React.FC;
+};
+
+type NavProps = {
+  isEditable: boolean;
+  setEditMode: (editMode: boolean) => void;
+};
+
+const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
+  return (
+    <li>
+      <a
+        href="#"
+        className={mergeClasses(
+          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          active ? "bg-gray-100" : "",
+        )}
+      >
+        <Icon aria-hidden="true" />
+        <span className="ms-2">{label}</span>
+      </a>
+    </li>
+  );
+};
+
+const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
+  function turnOnEditMode() {
+    setEditMode(true);
+  }
+
+  return (
+    <aside
+      id="logo-sidebar"
+      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
+      aria-label="Sidebar"
+    >
+      <div className="flex-row h-full">
+        <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
+          <BrandHeader />
+          <div className="text-lg font-medium">
+            <ul className="space-y-2">
+              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+              <NavItem label="Explore" Icon={ExploreIcon} />
+              <NavItem label="Channels" Icon={ChannelsIcon} />
+              <NavItem label="Bookmark" Icon={BookmarkIcon} />
+            </ul>
+            <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                {isEditable && (
+                  <button
+                    onClick={turnOnEditMode}
+                    className={mergeClasses(
+                      "flex items-center justify-between p-2 text-gray-900",
+                      "rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                    )}
+                  >
+                    <div className="flex items-center">
+                      <EditIcon />
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  className={mergeClasses(
+                    "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",
+                    "hover:bg-gray-100 dark:hover:bg-gray-700 group",
+                  )}
+                >
+                  <div className="flex items-center">
+                    <span className="mr-16 ml-16">Cast</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  );
+};
+
 const HomeIcon = () => {
   return (
     <svg
@@ -126,90 +210,6 @@ const BrandHeader = () => {
         </span>
       )}
     </Link>
-  );
-};
-
-type NavItemProps = {
-  label: string;
-  active?: boolean;
-  Icon: React.FC;
-};
-
-type NavProps = {
-  isEditable: boolean;
-  setEditMode: (editMode: boolean) => void;
-};
-
-const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
-  return (
-    <li>
-      <a
-        href="#"
-        className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
-          active ? "bg-gray-100" : "",
-        )}
-      >
-        <Icon aria-hidden="true" />
-        <span className="ms-2">{label}</span>
-      </a>
-    </li>
-  );
-};
-
-const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
-  function turnOnEditMode() {
-    setEditMode(true);
-  }
-
-  return (
-    <aside
-      id="logo-sidebar"
-      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
-      aria-label="Sidebar"
-    >
-      <div className="flex-row h-full">
-        <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
-          <BrandHeader />
-          <div className="text-lg font-medium">
-            <ul className="space-y-2">
-              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-              <NavItem label="Explore" Icon={ExploreIcon} />
-              <NavItem label="Channels" Icon={ChannelsIcon} />
-              <NavItem label="Bookmark" Icon={BookmarkIcon} />
-            </ul>
-            <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                {isEditable && (
-                  <button
-                    onClick={turnOnEditMode}
-                    className={mergeClasses(
-                      "flex items-center justify-between p-2 text-gray-900",
-                      "rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
-                    )}
-                  >
-                    <div className="flex items-center">
-                      <EditIcon />
-                    </div>
-                  </button>
-                )}
-
-                <button
-                  className={mergeClasses(
-                    "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",
-                    "hover:bg-gray-100 dark:hover:bg-gray-700 group",
-                  )}
-                >
-                  <div className="flex items-center">
-                    <span className="mr-16 ml-16">Cast</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </aside>
   );
 };
 
