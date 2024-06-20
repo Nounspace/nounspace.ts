@@ -99,7 +99,7 @@ export function FidgetWrapper({
     setcurrentFidgetSettings(<></>);
   }
 
-  const userStyles = config.editConfig.fields
+  const userStyles = config.properties.fields
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
