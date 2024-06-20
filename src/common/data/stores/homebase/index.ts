@@ -1,6 +1,5 @@
 import { StoreGet, StoreSet } from "../createStore";
 import { AppStore } from "..";
-import { SaveableSpaceConfig } from "../accounts/spaceStore";
 import axios from "axios";
 import { createClient } from "../../database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
@@ -8,15 +7,17 @@ import { SignedFile } from "@/common/lib/signedFiles";
 import { debounce } from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../api/backend";
+import { SpaceConfig } from "@/common/components/templates/Space";
+import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 
 interface HomeBaseStoreState {
-  homebaseConfig?: SaveableSpaceConfig;
+  homebaseConfig?: SpaceConfig;
 }
 
 interface HomeBaseStoreActions {
-  loadHomebase: () => Promise<SaveableSpaceConfig>;
+  loadHomebase: () => Promise<SpaceConfig>;
   commitHomebaseToDatabase: () => Promise<void>;
-  saveHomebaseConfig: (config: SaveableSpaceConfig) => Promise<void>;
+  saveHomebaseConfig: (config: SpaceConfig) => Promise<void>;
 }
 
 export type HomeBaseStore = HomeBaseStoreState & HomeBaseStoreActions;
@@ -35,17 +36,24 @@ export const createHomeBaseStoreFunc = (
     } = supabase.storage
       .from("private")
       .getPublicUrl(homebasePath(get().account.currentSpaceIdentityPublicKey!));
-    const { data } = await axios.get<Blob>(publicUrl, {
-      responseType: "blob",
-    });
-    const fileData = JSON.parse(await data.text()) as SignedFile;
-    const spaceConfig = JSON.parse(
-      await get().account.decryptEncryptedSignedFile(fileData),
-    ) as SaveableSpaceConfig;
-    set((draft) => {
-      draft.homebase.homebaseConfig = spaceConfig;
-    });
-    return spaceConfig;
+    try {
+      const { data } = await axios.get<Blob>(publicUrl, {
+        responseType: "blob",
+      });
+      const fileData = JSON.parse(await data.text()) as SignedFile;
+      const spaceConfig = JSON.parse(
+        await get().account.decryptEncryptedSignedFile(fileData),
+      ) as SpaceConfig;
+      set((draft) => {
+        draft.homebase.homebaseConfig = spaceConfig;
+      });
+      return spaceConfig;
+    } catch (e) {
+      set((draft) => {
+        draft.homebase.homebaseConfig = INITIAL_HOMEBASE_CONFIG;
+      });
+      return INITIAL_HOMEBASE_CONFIG;
+    }
   },
   commitHomebaseToDatabase: async () => {
     debounce(async () => {
@@ -57,12 +65,7 @@ export const createHomeBaseStoreFunc = (
           true,
         );
         // TO DO: Error handling
-        await axiosBackend.post(
-          `/api/space/registry/${get().account.currentSpaceId}/`,
-          {
-            config: file,
-          },
-        );
+        await axiosBackend.post(`/api/space/homebase/`, file);
       }
     })();
   },
@@ -70,5 +73,6 @@ export const createHomeBaseStoreFunc = (
     set((draft) => {
       draft.homebase.homebaseConfig = config;
     });
+    get().homebase.commitHomebaseToDatabase();
   },
 });

@@ -148,6 +148,7 @@ const Homebase: NextPageWithLayout = () => {
     },
   ];
 
+  // To Do: Move window resizing to be part of the Grid component
   const windowSize = useWindowSize();
 
   const gridDetails: GridLayout = {
@@ -156,8 +157,6 @@ const Homebase: NextPageWithLayout = () => {
     items: 4,
     cols: 12,
     rowHeight: 70,
-    onLayoutChange: () => {},
-    onDrop: () => {},
     // This turns off compaction so you can place items wherever.
     compactType: null,
     // This turns off rearrangement so items will not be pushed arround.

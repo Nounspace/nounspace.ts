@@ -18,8 +18,8 @@ async function updateHomebase(
   req: NextApiRequest,
   res: NextApiResponse<UpdateHomebaseResponse>,
 ) {
-  const request: UpdateHomebaseRequest = req.body;
-  if (!isSignedFile(request)) {
+  const file: UpdateHomebaseRequest = req.body;
+  if (!isSignedFile(file)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -29,7 +29,7 @@ async function updateHomebase(
     });
     return;
   }
-  if (!validateSignable(request)) {
+  if (!validateSignable(file)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -41,8 +41,8 @@ async function updateHomebase(
   const { error } = await supabase.storage
     .from("private")
     .upload(
-      homebasePath(request.publicKey),
-      new Blob([stringify(req)], { type: "application/json" }),
+      homebasePath(file.publicKey),
+      new Blob([stringify(file)], { type: "application/json" }),
       {
         upsert: true,
       },
