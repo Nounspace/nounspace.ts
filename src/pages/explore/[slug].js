@@ -1,4 +1,4 @@
-import { getMarkdownFileBySlug, getAllSlugs } from '../../../lib/markdown';
+import { getMarkdownFileBySlug, getAllSlugs } from 'src/common/lib/markdown';
 import { remark } from 'remark';
 import html from 'remark-html';
 
