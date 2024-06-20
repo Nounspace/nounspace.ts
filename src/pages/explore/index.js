@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getAllMarkdownFiles } from '../../../lib/markdown';
+import { getAllMarkdownFiles } from 'src/common/lib/markdown';
 
 export default function Explore({ posts }) {
   return (
