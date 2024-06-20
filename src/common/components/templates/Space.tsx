@@ -27,7 +27,7 @@ export type SpaceConfig = {
   layoutDetails: LayoutFidgetDetails;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
-  theme: GlobalTheme;
+  theme: UserTheme;
 };
 
 type SpaceArgs = {
