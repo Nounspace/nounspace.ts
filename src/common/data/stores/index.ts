@@ -7,10 +7,12 @@ import {
 } from "./accounts";
 import { SetupStore, createSetupStoreFunc } from "./setup";
 import { merge } from "lodash";
+import { HomeBaseStore, createHomeBaseStoreFunc } from "./homebase";
 
 export type AppStore = {
   account: AccountStore;
   setup: SetupStore;
+  homebase: HomeBaseStore;
 };
 
 export function createAppStore() {
@@ -18,6 +20,7 @@ export function createAppStore() {
     (set, get, state) => ({
       setup: createSetupStoreFunc(set, get),
       account: createAccountStoreFunc(set, get, state),
+      homebase: createHomeBaseStoreFunc(set, get),
     }),
     {
       name: "nounspace-setup-store",
