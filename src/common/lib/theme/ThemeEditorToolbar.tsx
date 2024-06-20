@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Card, CardFooter } from "@/common/components/atoms/card";
 import { FaFloppyDisk } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
-import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import defaultUserTheme from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 
@@ -14,7 +14,7 @@ export type ThemeEditorToolbarArgs = {
 };
 
 export function ThemeEditorToolbar({
-  theme = DEFAULT_THEME,
+  theme = defaultUserTheme,
   saveTheme,
   setEditMode,
 }: ThemeEditorToolbarArgs) {
@@ -32,19 +32,7 @@ export function ThemeEditorToolbar({
     };
   }
 
-  function setCSSVar(key: string, value: string) {
-    document.documentElement.style.setProperty(key, value);
-  }
-
   const { background, font } = theme.properties;
-
-  useEffect(() => {
-    setCSSVar("--user-theme-background", background);
-  }, [background]);
-
-  useEffect(() => {
-    setCSSVar("--user-theme-font", font);
-  }, [font]);
 
   function saveAndClose() {
     saveTheme(theme);

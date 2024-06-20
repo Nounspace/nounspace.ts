@@ -1,9 +1,7 @@
 export interface ThemeSettings {
   id: string;
   name: string;
-  properties: {
-    [key: string]: Color | CSSSize | FontFamily;
-  };
+  properties: ThemeProperties;
 }
 
 export interface GlobalTheme extends ThemeSettings {
@@ -12,6 +10,10 @@ export interface GlobalTheme extends ThemeSettings {
     background: Color;
   };
 }
+
+export type ThemeProperties = {
+  [key: string]: Color | CSSSize | FontFamily;
+};
 
 // Sizes
 export type CSSUnit =

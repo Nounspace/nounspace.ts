@@ -9,7 +9,7 @@ import {
 import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { ThemeSettings } from "@/common/lib/theme";
+import { GlobalTheme } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 
 export type SpaceConfig = {
@@ -18,9 +18,9 @@ export type SpaceConfig = {
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
-  theme: ThemeSettings;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
+  theme: GlobalTheme;
 };
 
 type SpaceArgs = {
