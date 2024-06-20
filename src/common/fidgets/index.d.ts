@@ -1,4 +1,5 @@
 import TextInput from "@/common/components/molecules/TextInput";
+import CSSInput from "@/common/ui/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings } from "@/common/lib/theme";
@@ -21,7 +22,8 @@ export type FidgetFieldConfig = {
   readonly inputSelector:
     | typeof TextInput
     | typeof ColorSelector
-    | typeof FontSelector;
+    | typeof FontSelector
+    | typeof CSSInput;
   readonly default?: any;
   readonly required: boolean;
 };
