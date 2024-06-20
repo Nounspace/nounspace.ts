@@ -41,9 +41,8 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
 }) => {
   return (
     <div className="w-full h-full mx-4 flex-col justify-center items-center">
-      <div className="flex">
+      <div className="flex justify-center items-center">
         <div
-          onClick={addFidgetToTray}
           className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
           draggable={true}
           unselectable="on"
@@ -52,11 +51,12 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           // which we can do by adding this attribute
           // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
           onDragStart={(e) => e.dataTransfer.setData("text/plain", "")}
+          onDrop={(e) => e.dataTransfer.setData("text/plain", "<>Hi!</>")}
         >
-          <PlusIcon />
+          Fidget
         </div>
       </div>
-      <div className="flex">
+      <div className="flex justify-center items-center">
         <button
           onClick={addFidgetToTray}
           className="z-10 justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"

@@ -50,7 +50,7 @@ export interface GridLayout extends LayoutFidgetConfig {
   margin: [number, number];
   containerPadding: [number, number];
   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
-  onDrop: (layout: PlacedGridItem[], item: PlacedGridItem) => unknown;
+  onDrop: (layout: PlacedGridItem[], item: PlacedGridItem, _event: any) => void;
 }
 
 export type GridArgs = LayoutFidgetProps & {
