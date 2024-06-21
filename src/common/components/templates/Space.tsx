@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, DragEvent } from "react";
 import {
   FidgetConfig,
   FidgetSettings,
@@ -10,6 +10,7 @@ import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
+import { PlacedGridItem } from "@/fidgets/layout/Grid";
 
 type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -35,6 +36,10 @@ type SpaceArgs = {
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
+  const [externalDraggedItem, setExternalDraggedItem] = useState<{
+    w: number;
+    h: number;
+  }>();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
@@ -79,8 +84,6 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     }),
   );
 
-  function OnDrop() {}
-
   function saveLayout(layout: LayoutFidgetConfig) {
     return saveConfig({
       ...config,
@@ -92,6 +95,28 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
         },
       },
     });
+  }
+
+  function handleDrop(
+    layout: LayoutFidgetConfig,
+    item: PlacedGridItem,
+    e: DragEvent<HTMLDivElement>,
+  ) {
+    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+    const newItem = {
+      i: `${Object.keys(config.fidgetConfigs).length + 1}`,
+      x: 0,
+      y: 0,
+      w: data.width, // Use the passed width
+      h: data.height, // Use the passed height
+      minW: data.width,
+      maxW: data.width,
+      minH: data.height,
+      maxH: data.height,
+    };
+
+    setExternalDraggedItem({ w: newItem.w, h: newItem.h });
   }
 
   function saveTheme(newTheme) {
@@ -124,6 +149,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             unselect={unselect}
             selectedFidgetID={selectedFidgetID}
             currentFidgetSettings={currentFidgetSettings}
+            setExternalDraggedItem={setExternalDraggedItem}
           />
         </div>
 
@@ -138,7 +164,12 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
               onLayoutChange: saveLayout,
-              onDrop: saveLayout,
+              onDrop: handleDrop,
+              droppingItem: {
+                i: "TODO: GENERATE ID",
+                w: externalDraggedItem?.w,
+                h: externalDraggedItem?.h,
+              },
             }}
             fidgets={fidgets}
             inEditMode={editMode}

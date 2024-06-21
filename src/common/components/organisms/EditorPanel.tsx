@@ -1,10 +1,13 @@
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
 
 export interface EditorPanelProps {
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ w: number; h: number } | undefined>
+  >;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
@@ -14,6 +17,7 @@ export interface EditorPanelProps {
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
+  setExternalDraggedItem,
   setEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
@@ -48,7 +52,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         </div>
       </aside>
       <div className="w-4/12">
-        <FidgetTray />
+        <FidgetTray setExternalDraggedItem={setExternalDraggedItem} />
       </div>
     </div>
   );

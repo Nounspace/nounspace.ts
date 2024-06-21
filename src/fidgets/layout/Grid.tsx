@@ -1,11 +1,10 @@
 import React, { ReactNode } from "react";
-import RGL, { WidthProvider } from "react-grid-layout";
+import RGL, { WidthProvider, DragOverEvent } from "react-grid-layout";
 import {
   LayoutFidgetConfig,
   LayoutFidget,
   LayoutFidgetProps,
 } from "@/common/fidgets";
-import { PlusIcon } from "@radix-ui/react-icons";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -50,7 +49,8 @@ export interface GridLayout extends LayoutFidgetConfig {
   margin: [number, number];
   containerPadding: [number, number];
   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
-  onDrop: (layout: PlacedGridItem[], item: PlacedGridItem, _event: any) => void;
+  onDrop: (layout: PlacedGridItem[]) => void;
+  droppingItem?: { i: string; w: number; h: number };
 }
 
 export type GridArgs = LayoutFidgetProps & {

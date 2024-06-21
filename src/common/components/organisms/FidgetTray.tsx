@@ -1,7 +1,9 @@
 import { FidgetConfig, FidgetSettings } from "@/common/fidgets";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import _ from "lodash";
 import { Responsive, WidthProvider } from "react-grid-layout";
+import { PlacedGridItem } from "@/fidgets/layout/Grid";
+import { number } from "prop-types";
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
@@ -27,6 +29,9 @@ const PlusIcon = () => {
 function addFidgetToTray() {}
 
 export interface FidgetTrayProps {
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ w: number; h: number } | undefined>
+  >;
   trayFidgetStorage?: {
     [key: string]: {
       instanceConfig: FidgetConfig<FidgetSettings>;
@@ -38,6 +43,7 @@ export interface FidgetTrayProps {
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
   trayFidgetStorage,
+  setExternalDraggedItem,
 }) => {
   return (
     <div className="w-full h-full mx-4 flex-col justify-center items-center">
@@ -46,12 +52,11 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
           draggable={true}
           unselectable="on"
-          // this is a hack for firefox
-          // Firefox requires some kind of initialization
-          // which we can do by adding this attribute
-          // @see https://bugzilla.mozilla.org/show_bug.cgi?id=568313
-          onDragStart={(e) => e.dataTransfer.setData("text/plain", "")}
-          onDrop={(e) => e.dataTransfer.setData("text/plain", "<>Hi!</>")}
+          onDragStart={(e) => {
+            const data = { w: 2, h: 3 }; // Set minimum width and height
+            e.dataTransfer.setData("text/plain", JSON.stringify(data));
+            setExternalDraggedItem({ w: data.w, h: data.h });
+          }}
         >
           Fidget
         </div>

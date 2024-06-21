@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, DragEvent } from "react";
 import Space, { SpaceConfig } from "@/common/components/templates/Space";
 import { useState } from "react";
 import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
@@ -149,13 +149,6 @@ const Homebase: NextPageWithLayout = () => {
 
   const windowSize = useWindowSize();
 
-  function onDrop(layout, layoutItem, _event) {
-    console.log("dropped item");
-    alert(
-      `Dropped element props:\n${JSON.stringify(layoutItem, ["x", "y", "w", "h"], 2)}`,
-    );
-  }
-
   const gridDetails: GridLayout = {
     isDroppable: true,
     isDraggable: false,
@@ -164,7 +157,7 @@ const Homebase: NextPageWithLayout = () => {
     cols: 12,
     rowHeight: 70,
     onLayoutChange: () => {},
-    onDrop: onDrop,
+    onDrop: () => {},
     // This turns off compaction so you can place items wherever.
     compactType: null,
     // This turns off rearrangement so items will not be pushed arround.
