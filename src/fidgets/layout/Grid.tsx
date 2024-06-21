@@ -34,24 +34,47 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-export interface GridLayout extends LayoutFidgetConfig {
-  readonly cols: number;
-  readonly maxRows: number;
+const gridDetails = {
+  isDraggable: false,
+  isResizable: false,
+  items: 4,
+  cols: 12,
+  rowHeight: 70,
+  // This turns off compaction so you can place items wherever.
+  compactType: null,
+  // This turns off rearrangement so items will not be pushed arround.
+  preventCollision: true,
+  maxRows: 9,
+  layout: [],
+  isBounded: false,
+  margin: [16, 16],
+  containerPadding: [0, 0],
+};
+
+// export interface GridLayout {
+//   readonly cols: number;
+//   readonly maxRows: number;
+//   layout: PlacedGridItem[];
+//   items: number;
+//   isResizable: boolean;
+//   isDraggable: boolean;
+//   isDroppable: boolean;
+//   isBounded?: boolean;
+//   rowHeight: number;
+//   compactType?: string | null;
+//   preventCollision?: boolean;
+//   margin: [number, number];
+//   containerPadding: [number, number];
+//   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
+//   onDrop: (layout: PlacedGridItem[]) => void;
+//   droppingItem?: { i: string; w: number; h: number };
+// }
+
+type GridDetails = typeof gridDetails;
+
+type GridLayout = {
   layout: PlacedGridItem[];
-  items: number;
-  isResizable: boolean;
-  isDraggable: boolean;
-  isDroppable: boolean;
-  isBounded?: boolean;
-  rowHeight: number;
-  compactType?: string | null;
-  preventCollision?: boolean;
-  margin: [number, number];
-  containerPadding: [number, number];
-  onLayoutChange: (layout: PlacedGridItem[]) => unknown;
-  onDrop: (layout: PlacedGridItem[]) => void;
-  droppingItem?: { i: string; w: number; h: number };
-}
+};
 
 export type GridArgs = LayoutFidgetProps & {
   layoutConfig: GridLayout;
@@ -63,7 +86,7 @@ export type GridArgs = LayoutFidgetProps & {
 
 const ReactGridLayout = WidthProvider(RGL);
 
-const Gridlines: React.FC<GridLayout> = ({
+const Gridlines: React.FC<GridDetails> = ({
   maxRows,
   cols,
   rowHeight,
@@ -105,7 +128,7 @@ const Grid: LayoutFidget<GridArgs> = ({
 }: GridArgs) => {
   return (
     <>
-      {inEditMode && <Gridlines {...layoutConfig} />}
+      {inEditMode && <Gridlines {...gridDetails} />}
       <ReactGridLayout
         {...layoutConfig}
         isDraggable={inEditMode}
