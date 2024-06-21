@@ -45,11 +45,10 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
     <div className="w-full h-full mx-4 flex-col justify-center items-center">
       {contents.map((fidget: FidgetInstanceData) => {
         return (
-          <div className="flex justify-center items-center">
+          <div key={fidget.id} className="flex justify-center items-center">
             <div
               className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
               draggable={true}
-              unselectable="on"
               onDragStart={(e) => {
                 const data = {
                   w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
