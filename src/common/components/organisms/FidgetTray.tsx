@@ -49,6 +49,9 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
             <div
               className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
               draggable={true}
+              // unselectable helps with IE support
+              // eslint-disable-next-line react/no-unknown-property
+              unselectable="on"
               onDragStart={(e) => {
                 const data = {
                   w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
