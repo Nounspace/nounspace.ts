@@ -1,6 +1,6 @@
-import { GlobalTheme } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
 
-export const DEFAULT_THEME: GlobalTheme = {
+export const defaultUserTheme: UserTheme = {
   id: "default",
   name: "Default",
   properties: {
@@ -10,4 +10,4 @@ export const DEFAULT_THEME: GlobalTheme = {
   },
 };
 
-export default DEFAULT_THEME;
+export default defaultUserTheme;

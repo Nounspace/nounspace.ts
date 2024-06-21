@@ -8,7 +8,8 @@ import {
 import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { GlobalTheme } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
 
 export type SpaceFidgetConfig = {
@@ -16,10 +17,6 @@ export type SpaceFidgetConfig = {
   fidgetType: string;
   id: string;
 };
-
-import ThemeEditorOverlay from "@/common/components/organisms/ThemeEditorOverlay";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-
 
 export type SpaceConfig = {
   fidgetConfigs: {
@@ -29,7 +26,7 @@ export type SpaceConfig = {
   layoutDetails: LayoutFidgetDetails;
   isEditable: boolean;
   fidgetTray?: SpaceFidgetConfig[];
-  theme: GlobalTheme;
+  theme: UserTheme;
 };
 
 type SpaceArgs = {

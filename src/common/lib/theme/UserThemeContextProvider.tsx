@@ -1,11 +1,11 @@
 import React, { createContext, useState, useCallback, useEffect } from "react";
 import defaultTheme from "@/common/lib/theme/defaultTheme";
 import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
-import { GlobalTheme } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
 
 export interface UserThemeContextValue {
-  userTheme: GlobalTheme;
-  saveUserTheme: (theme: GlobalTheme) => void;
+  userTheme: UserTheme;
+  saveUserTheme: (theme: UserTheme) => void;
 }
 
 export const UserThemeContext = createContext<
@@ -13,11 +13,11 @@ export const UserThemeContext = createContext<
 >(undefined);
 
 export const UserThemeContextProvider = ({ children }) => {
-  const [userTheme, setUserTheme] = useState<GlobalTheme>(defaultTheme);
+  const [userTheme, setUserTheme] = useState<UserTheme>(defaultTheme);
 
   const { background, font } = userTheme.properties;
 
-  const saveUserTheme = useCallback((_theme: GlobalTheme): void => {
+  const saveUserTheme = useCallback((_theme: UserTheme): void => {
     setUserTheme(_theme);
   }, []);
 
