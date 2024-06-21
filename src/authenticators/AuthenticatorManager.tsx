@@ -1,31 +1,44 @@
-import React, { createContext, useContext, useRef } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
-  AuthenticatorComponent,
+  AuthenticatorCreatorFunction,
   AuthenticatorData,
-  AuthenticatorMethod,
+  AuthenticatorInitializer,
   AuthenticatorMethods,
-  AuthenticatorRef,
 } from ".";
 import {
+  concat,
+  first,
+  fromPairs,
   get,
-  includes,
   isNull,
   isUndefined,
   map,
   mapValues,
-  pickBy,
+  noop,
+  reject,
+  tail,
 } from "lodash";
 import authenticators from "./authenticators";
+import Modal from "@/common/components/molecules/Modal";
 
 type AuthenticatorPermissions = {
   [fidgetId: string]: string[];
 };
 
+type SingleAuthenticatorConfig = {
+  data: AuthenticatorData;
+  permissions: AuthenticatorPermissions;
+};
+
 export type AuthenticatorConfig = {
-  [authenticatorName: string]: {
-    data: AuthenticatorData;
-    permissions: AuthenticatorPermissions;
-  };
+  [authenticatorId: string]: SingleAuthenticatorConfig;
 };
 
 type AuthenticatorManagerProviderProps = {
@@ -58,54 +71,28 @@ type AuthenticatorManagerResponse =
   | AuthenticatorManagerDeniedResponse
   | AuthenticatorManagerUnknownMethodResponse;
 
-type AuthenticatorPermissionRequest = {
-  authenticatorName: string;
-  methods: {
-    required: boolean;
-    name: string;
-    description?: string;
-  }[];
-};
-
-type AuthenticatorPermissionResponse = {
-  authenticatorName: string;
-  methods: string[];
-};
-
 // TO DO: Define FidgetId Type (with information about UUID + Space is installed in + Fidget Name)
 
 type AuthenticatorManager = {
   // If Authenticator is not initialized, will always return denied
   callMethod: (
     requestingFidgetId: string,
-    authenticatorName: string,
+    authenticatorId: string,
     methodName: string,
     ...args: any[]
   ) => Promise<AuthenticatorManagerResponse>;
-  // If Authenticator is not initialized, it will initialize it before asking
-  // the user to grant the permission to the Fidget
-  requestPermissions: (
-    requestingFidgetId: string,
-    permissionsRequested: AuthenticatorPermissionRequest[],
-  ) => Promise<AuthenticatorPermissionResponse[]>;
-  // If Authenticator is not initialized, returns an empty array
-  grantedPermissions: (
-    requestingFidgetId: string,
-  ) => Promise<AuthenticatorPermissionResponse[]>;
-  openManagementPanel: () => void;
+  initializeAuthenticators: (authenticatorIds: string[]) => void;
+  getInitializedAuthenticators: () => Promise<string[]>;
+  installAuthenticators: (authenticatorIds: string[]) => Promise<void>;
+  authConfig: AuthenticatorConfig;
 };
-
-// type InitializerRecord<D> = {
-//   Initalizer: AuthenticatorInitializer<D>;
-//   authenticatorName: string;
-// };
 
 const AuthenticatorContext = createContext<AuthenticatorManager | null>(null);
 
 function authenticatorForName(
   name: string,
 ):
-  | AuthenticatorComponent<
+  | AuthenticatorCreatorFunction<
       AuthenticatorData,
       AuthenticatorMethods<AuthenticatorData>
     >
@@ -117,60 +104,73 @@ function authenticatorForName(
 export const AuthenticatorManagerProvider: React.FC<
   AuthenticatorManagerProviderProps
 > = ({ authenticatorConfig, saveAuthenticatorConfig, children }) => {
-  const installedAuthenticators = mapValues(
-    authenticatorConfig,
-    (config, authenticatorName) => {
-      const component = authenticatorForName(authenticatorName);
-      if (isUndefined(component))
-        return {
-          component: null,
-          ref: null,
+  function saveSingleAuthenticatorData(
+    parentConfig: AuthenticatorConfig,
+    authenticatorId: string,
+    config: SingleAuthenticatorConfig,
+  ) {
+    return (data: AuthenticatorData) =>
+      saveAuthenticatorConfig({
+        ...parentConfig,
+        [authenticatorId]: {
+          permissions: config.permissions,
+          data,
+        },
+      });
+  }
+
+  const installedAuthenticators = useMemo(() => {
+    return mapValues(authenticatorConfig, (config, authenticatorId) => {
+      const auth = authenticatorForName(authenticatorId);
+      if (isUndefined(auth)) {
+        return auth;
+      }
+      return auth({
+        data: config.data,
+        saveData: saveSingleAuthenticatorData(
+          authenticatorConfig,
+          authenticatorId,
           config,
-        };
-      type ComponentMethods<X> =
-        X extends AuthenticatorComponent<any, infer M> ? M : never;
-      return {
-        component,
-        ref: useRef<
-          AuthenticatorRef<
-            typeof config.data,
-            ComponentMethods<typeof component>
-          >
-        >(null),
-        config,
-      };
-    },
-  );
+        ),
+      });
+    });
+  }, [authenticatorConfig]);
 
-  // const [currentInitializer, setCurrentInitializer] = useState<InitializerRecord<unknown>>();
-  // const [showModal, setShowModal] = useState(false);
-  const authenticatorManager = useRef<AuthenticatorManager>();
+  const [currentInitializer, setCurrentInitializer] = useState<{
+    initializer: AuthenticatorInitializer<AuthenticatorData>;
+    name: string;
+    id: string;
+  }>();
+  const [initializationQueue, setInitializationQueue] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
-  if (isUndefined(authenticatorManager.current)) {
-    authenticatorManager.current = {
+  const authenticatorManager = useMemo<AuthenticatorManager>(
+    () => ({
+      authConfig: authenticatorConfig,
+      installedAuthenticators,
       callMethod: async (
-        requestingFidgetId: string,
-        authenticatorName: string,
+        _requestingFidgetId: string,
+        authenticatorId: string,
         methodName: string,
         ...args: any[]
-      ) => {
-        const authenticator = installedAuthenticators[authenticatorName];
-        if (isUndefined(authenticator) || isNull(authenticator.ref)) {
+      ): Promise<AuthenticatorManagerResponse> => {
+        const authenticator = installedAuthenticators[authenticatorId];
+        if (isUndefined(authenticator)) {
           return {
             result: "error",
             reason: "denied",
           };
         }
-        const allowedMethods =
-          authenticator.config.permissions[requestingFidgetId] || [];
-        if (!includes(allowedMethods, methodName)) {
-          return {
-            result: "error",
-            reason: "denied",
-          };
-        }
+        // const allowedMethods =
+        //   authenticatorConfig[authenticatorId].permissions[requestingFidgetId] || [];
+        // if (!includes(allowedMethods, methodName)) {
+        //   return {
+        //     result: "error",
+        //     reason: "denied",
+        //   } as AuthenticatorManagerDeniedResponse;
+        // }
         try {
-          const method = authenticator.ref[methodName] as AuthenticatorMethod;
+          const method = authenticator.methods[methodName];
           if (isUndefined(method)) {
             return {
               result: "error",
@@ -189,75 +189,97 @@ export const AuthenticatorManagerProvider: React.FC<
           };
         }
       },
-      requestPermissions: async (requestingFidgetId, permissionsRequested) => {
-        return [];
-      },
-      grantedPermissions: async (requestingFidgetId) => {
-        // TO DO: Change this to support permission grants to spaces or Fidget types, not just single instances
-        return map(
-          // Get all of the auth configs that contain the figet ID
-          pickBy(authenticatorConfig, (conf) =>
-            includes(conf.permissions, [requestingFidgetId]),
+      getInitializedAuthenticators: async () => {
+        return reject(
+          await Promise.all(
+            map(installedAuthenticators, async (auth, name) => {
+              if (isUndefined(auth)) {
+                return null;
+              }
+              const isReady = await auth.methods.isReady();
+              return isReady ? name : null;
+            }),
           ),
-          // Map these configs into the return type
-          (config, authenticatorName) => {
-            return {
-              authenticatorName,
-              methods: config.permissions[requestingFidgetId],
-            };
-          },
-        );
+          (i) => isNull(i),
+        ) as string[];
       },
-      openManagementPanel: () => undefined,
-    };
-  }
+      installAuthenticators: async (authenticatorIds) => {
+        await saveAuthenticatorConfig({
+          ...fromPairs(
+            map(authenticatorIds, (name) => [
+              name,
+              { data: {}, permissions: {} },
+            ]),
+          ),
+          ...authenticatorConfig,
+        });
+      },
+      initializeAuthenticators: (authenticatorIds) => {
+        setInitializationQueue(concat(initializationQueue, authenticatorIds));
+      },
+    }),
+    [authenticatorConfig, installedAuthenticators],
+  );
 
-  function saveSingleAuthenticatorData(authenticatorName, config) {
-    return (data) =>
-      saveAuthenticatorConfig({
-        ...authenticatorConfig,
-        [authenticatorName]: {
-          permissions: config.permissions,
-          data,
-        },
-      });
-  }
+  const initializeAuthentictator = useCallback(
+    async (authenticatorId: string) => {
+      const authenticator = installedAuthenticators[authenticatorId];
+      if (
+        isUndefined(authenticator) ||
+        (await authenticator.methods.isReady())
+      ) {
+        setInitializationQueue(tail(initializationQueue));
+        return;
+      } else {
+        setCurrentInitializer({
+          initializer: authenticator.initializer,
+          name: authenticator.name,
+          id: authenticatorId,
+        });
+        setShowModal(true);
+      }
+    },
+    [installedAuthenticators],
+  );
 
-  // function initializationCompleted() {
-  //   setCurrentInitializer(undefined);
-  //   setShowModal(false);
-  // }
+  useEffect(() => {
+    const authenticatorToInitializer = first(initializationQueue);
+    if (!isUndefined(authenticatorToInitializer)) {
+      initializeAuthentictator(authenticatorToInitializer);
+    }
+  }, [initializationQueue]);
+
+  function completeInstallingCurrentInitializer() {
+    setInitializationQueue(tail(initializationQueue));
+    setCurrentInitializer(undefined);
+    setShowModal(false);
+  }
 
   return (
-    <AuthenticatorContext.Provider value={authenticatorManager.current}>
-      {map(
-        installedAuthenticators,
-        ({ component, ref, config }, authenticatorName) =>
-          component
-            ? React.createElement(component, {
-                ref,
-                data: config.data,
-                saveData: saveSingleAuthenticatorData(
-                  authenticatorName,
-                  config,
-                ),
-              })
-            : null,
-      )}
-      {/* <Modal open={showModal} setOpen={setShowModal}>
-        {
-          !isUndefined(currentInitializer) ?
-          <currentInitializer.Initalizer
-            data={authenticatorConfig[currentInitializer.authenticatorName]}
-            saveData={saveSingleAuthenticatorData(
-              currentInitializer.authenticatorName,
-              authenticatorConfig[currentInitializer.authenticatorName]
-            )}
-            done={initializationCompleted}
-          /> :
-          null
+    <AuthenticatorContext.Provider value={authenticatorManager}>
+      <Modal
+        open={showModal}
+        setOpen={noop}
+        focusMode
+        title={
+          !isUndefined(currentInitializer)
+            ? `Installing ${currentInitializer.name}`
+            : ""
         }
-      </Modal> */}
+        showClose={false}
+      >
+        {!isUndefined(currentInitializer) ? (
+          <currentInitializer.initializer
+            data={authenticatorConfig[currentInitializer.id].data}
+            saveData={saveSingleAuthenticatorData(
+              authenticatorConfig,
+              currentInitializer.id,
+              authenticatorConfig[currentInitializer.id],
+            )}
+            done={completeInstallingCurrentInitializer}
+          />
+        ) : null}
+      </Modal>
       {children}
     </AuthenticatorContext.Provider>
   );

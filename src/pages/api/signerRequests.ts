@@ -2,7 +2,7 @@ import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import { APP_FID } from "@/constants/app";
-import { AppSigner } from "@/constants/app-server-side";
+import { AppSigner } from "@/constants/appServerSide";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 import { ALCHEMY_API, WARPCAST_API } from "@/constants/urls";
 import {
@@ -59,6 +59,7 @@ export type SignedKeyRequestResponse = {
   key: `0x${string}`;
   state: "pending" | "completed" | "approved";
   requestFid: number;
+  userFid?: number;
 };
 
 type SignedKeyRequestResponseBody = {
@@ -116,7 +117,6 @@ async function handlePost(
       shouldSponsor = data.isHolderOfContract;
     } catch (e) {
       console.error(e);
-      console.log("Failed to check ");
     }
   }
 
@@ -150,7 +150,7 @@ async function handlePost(
     return res.status(500).json({
       result: "error",
       error: {
-        message: "An error occurred registering the signer with Neynar",
+        message: "An error occurred registering the signer",
       },
     });
   }
@@ -190,16 +190,25 @@ async function handleGet(
       },
     );
 
+    const value: SignedKeyRequestResponse =
+      process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
+        ? {
+            ...data.result.signedKeyRequest,
+            state: "completed",
+            userFid: 1,
+          }
+        : data.result.signedKeyRequest;
+
     return res.status(200).json({
       result: "success",
-      value: data.result.signedKeyRequest,
+      value,
     });
   } catch (e) {
     console.error(e);
     return res.status(500).json({
       result: "error",
       error: {
-        message: "An error occurred registering the signer with Neynar",
+        message: "An error occurred registering the signer",
       },
     });
   }

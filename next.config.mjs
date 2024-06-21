@@ -27,10 +27,15 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        source: "/",
+        destination: "/login",
+        permanent: true,
+      },
+      {
         source: '/signatures',
         destination: 'https://docs.nounspace.com/nounspace-alpha/accounts/signatures',
         permanent: true,
-      }
+      },
     ]
   },
 }

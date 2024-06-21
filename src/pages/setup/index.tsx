@@ -2,8 +2,27 @@ import React, { useEffect, useState } from "react";
 import { Wallet, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import Spinner from "@/common/components/atoms/spinner";
-import { useAccountStore } from "@/common/data/stores/accounts";
+import { useAppStore } from "@/common/data/stores";
 import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
+
+/**
+ * Set up flow:
+ * - Check local storage for identity, if none
+ * -- Check database identity related to wallet
+ * -- If no identity, create one
+ * -- If identity, load keys
+ * - Local storage now has identity
+ * - Load fresh authenticator data from database
+ * - Check that all "requiredAuthenticators" are installed
+ * - Install all authenticators not currently installed
+ * - Check that Identity has been linked to FID, link if not
+ * - Push to homebase
+ *
+ * Store needs to have a check for all of the following data in local storage
+ * - Identity Root Keys
+ * - Authenticator Data
+ * - FID registration
+ */
 
 const SETUP_STATES = {
   wallet: "Loading Wallet...",
@@ -24,12 +43,12 @@ export default function Setup() {
     createIdentityForWallet,
     decryptIdentityKeys,
     setCurrentIdentity,
-  } = useAccountStore((state) => ({
-    loadIdentitiesForWallet: state.loadIdentitiesForWallet,
-    getIdentitiesForWallet: state.getIdentitiesForWallet,
-    createIdentityForWallet: state.createIdentityForWallet,
-    decryptIdentityKeys: state.decryptIdentityKeys,
-    setCurrentIdentity: state.setCurrentIdentity,
+  } = useAppStore((state) => ({
+    loadIdentitiesForWallet: state.account.loadIdentitiesForWallet,
+    getIdentitiesForWallet: state.account.getIdentitiesForWallet,
+    createIdentityForWallet: state.account.createIdentityForWallet,
+    decryptIdentityKeys: state.account.decryptIdentityKeys,
+    setCurrentIdentity: state.account.setCurrentIdentity,
   }));
   const [currentStep, setCurrentStep] = useState(SETUP_STATES.wallet);
   // const [selectedIdentity, setSelectedIdentity] = useState("");

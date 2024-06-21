@@ -2,7 +2,7 @@ import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
-import { SignedFile, validateFileSignature } from "@/common/lib/signedFiles";
+import { SignedFile, validateSignable } from "@/common/lib/signedFiles";
 import { preKeysPath } from "@/constants/supabase";
 import stringify from "fast-json-stable-stringify";
 import { isArray, isUndefined, map } from "lodash";
@@ -49,7 +49,7 @@ async function handlePost(
       });
       return;
     }
-    if (!validateFileSignature(file)) {
+    if (!validateSignable(file)) {
       res.status(400).json({
         result: "error",
         error: {
@@ -63,6 +63,9 @@ async function handlePost(
       .upload(
         `${preKeysPath(identityPublicKey)}/${prekeyPublicKey}`,
         new Blob([stringify(file)], { type: "application/json" }),
+        {
+          upsert: true,
+        },
       );
     if (storageError) {
       console.error(storageError);
@@ -109,7 +112,7 @@ async function handleGet(
     } else if (data !== null) {
       res.status(200).json({
         result: "success",
-        value: map(data, (d) => `${preKeysPath(identityPublicKey)}${d.name}}`),
+        value: map(data, (d) => `${preKeysPath(identityPublicKey)}${d.name}`),
       });
     } else {
       res.status(200).json({
