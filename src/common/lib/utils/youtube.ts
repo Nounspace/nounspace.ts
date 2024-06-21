@@ -1,7 +1,17 @@
 import { youtube, youtube_v3 } from "@googleapis/youtube";
 
-const YOUTUBE_ID_REGEX =
-  /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+const YOUTUBE_ID_REGEX = new RegExp(
+  [
+    "(?:https?:\\/\\/)?",
+    "(?:www\\.)?",
+    "(?:youtube\\.com\\/",
+    "(?:[^\\/\\n\\s]+\\/\\S+\\/|",
+    "(?:v|e(?:mbed)?)\\/|",
+    "\\S*?[?&]v=)|",
+    "youtu\\.be\\/)",
+    "([a-zA-Z0-9_-]{11})",
+  ].join(""),
+);
 
 export const getYouTubeVideoId = (url: string): string | null => {
   const regex = YOUTUBE_ID_REGEX;
