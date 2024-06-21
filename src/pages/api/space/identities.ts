@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import supabase from "@/common/data/database/supabase/clients/server";
 import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { ed25519 } from "@noble/curves/ed25519";
 import stringify from "fast-json-stable-stringify";
 import requestHandler, {
   NounspaceResponse,
@@ -10,7 +10,7 @@ import requestHandler, {
 import {
   SignedFile,
   hashObject,
-  validateFileSignature,
+  validateSignable,
 } from "@/common/lib/signedFiles";
 
 export interface UnsignedIdentityRequest {
@@ -39,9 +39,7 @@ function validateRequestSignature(req: IdentityRequest) {
     ...req,
     signature: undefined,
   });
-  return secp256k1.verify(req.signature, message, req.identityPublicKey, {
-    prehash: true,
-  });
+  return ed25519.verify(req.signature, message, req.identityPublicKey);
 }
 
 async function handlePost(
@@ -57,7 +55,7 @@ async function handlePost(
       throw Error("Invalid signature on request");
     }
     if (identityRequest.type === "Create" && !isUndefined(file)) {
-      if (!validateFileSignature(file)) {
+      if (!validateSignable(file)) {
         throw Error("Invalid signature on keys file");
       }
       const { error } = await supabase
@@ -74,6 +72,9 @@ async function handlePost(
             identityRequest.walletAddress,
           ),
           new Blob([stringify(file)], { type: "application/json" }),
+          {
+            upsert: true,
+          },
         );
       if (storageError) {
         throw storageError;
@@ -114,7 +115,7 @@ async function handleGet(
     } else {
       res.status(200).json({
         result: "success",
-        value: data,
+        value: data as IdentityRequest | IdentityRequest[],
       });
     }
   } else {
