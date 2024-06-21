@@ -17,6 +17,10 @@ export type SpaceFidgetConfig = {
   id: string;
 };
 
+import ThemeEditorOverlay from "@/common/components/organisms/ThemeEditorOverlay";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+
+
 export type SpaceConfig = {
   fidgetConfigs: {
     [key: string]: SpaceFidgetConfig;
@@ -101,6 +105,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
         onClick={unselect}
@@ -142,6 +147,14 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           />
         </div>
       </div>
+      <LayoutFidget
+        layoutConfig={{
+          ...config.layoutDetails.layoutConfig,
+          onLayoutChange: saveLayout,
+        }}
+        fidgets={fidgets}
+        inEditMode={editMode}
+      />
     </>
   );
 }
