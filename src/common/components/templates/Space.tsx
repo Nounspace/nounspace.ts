@@ -19,10 +19,6 @@ export type SpaceFidgetConfig = {
   id: string;
 };
 
-import ThemeEditorOverlay from "@/common/components/organisms/ThemeEditorOverlay";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-
-
 export type SpaceConfig = {
   fidgetInstances: {
     [key: string]: FidgetInstanceData;
