@@ -9,6 +9,7 @@ export type ModalProps = {
   description?: string;
   children?: React.ReactNode;
   overlay?: boolean;
+  showClose?: boolean;
 
   // The modality of the dialog. When set to true, interaction with outside elements
   // will be disabled and only dialog content will be visible to screen readers.
@@ -22,6 +23,7 @@ const Modal = ({
   description,
   children,
   focusMode,
+  showClose = true,
   overlay = true,
 }: ModalProps) => (
   <Dialog.Root open={open} onOpenChange={setOpen} modal={focusMode || true}>
@@ -44,14 +46,16 @@ const Modal = ({
           </Dialog.Description>
         )}
         {children}
-        <Dialog.Close asChild>
-          <button
-            className="text-card-foreground/80 bg-background/90 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
-            aria-label="Close"
-          >
-            <Cross2Icon />
-          </button>
-        </Dialog.Close>
+        {showClose ? (
+          <Dialog.Close asChild>
+            <button
+              className="text-card-foreground/80 bg-background/90 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+              aria-label="Close"
+            >
+              <Cross2Icon />
+            </button>
+          </Dialog.Close>
+        ) : null}
       </Dialog.Content>
     </Dialog.Portal>
   </Dialog.Root>

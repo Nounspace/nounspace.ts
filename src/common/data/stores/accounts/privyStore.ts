@@ -4,8 +4,8 @@ import {
   usePrivy,
   useWallets,
 } from "@privy-io/react-auth";
-import type { AccountStore } from ".";
-import { StoreSet } from "..";
+import type { AppStore } from "..";
+import { StoreSet } from "../createStore";
 import { find, isUndefined } from "lodash";
 import { signMessage as signExternalWalletMessage } from "@/common/lib/wallets";
 import { useEffect, useState } from "react";
@@ -68,13 +68,13 @@ export function useSignMessage() {
   return { signMessage, ready };
 }
 
-export const privyStore = (set: StoreSet<AccountStore>): PrivyStore => ({
+export const privyStore = (set: StoreSet<AppStore>): PrivyStore => ({
   ...privyDefault,
   setPrivyUser: (user: PrivyUser) => {
     set((draft) => {
-      draft.privyUser = user;
+      draft.account.privyUser = user;
     });
   },
 });
 
-export const partializedPrivyStore = (_state: AccountStore) => ({});
+export const partializedPrivyStore = (_state: AppStore) => ({});

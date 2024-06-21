@@ -6,6 +6,7 @@ import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
 
 const Homebase: NextPageWithLayout = () => {
   const defaultLayoutData = [
@@ -217,12 +218,14 @@ const Homebase: NextPageWithLayout = () => {
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <div
-      className="min-h-screen max-w-screen"
-      style={{ background: "var(--user-theme-background)" }}
-    >
-      {page}
-    </div>
+    <LoggedInStateManager>
+      <div
+        className="min-h-screen max-w-screen"
+        style={{ background: "var(--user-theme-background)" }}
+      >
+        {page}
+      </div>
+    </LoggedInStateManager>
   );
 };
 
