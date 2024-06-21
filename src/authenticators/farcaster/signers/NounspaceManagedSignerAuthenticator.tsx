@@ -22,6 +22,7 @@ import {
   SignerResponse,
 } from "@/pages/api/signerRequests";
 import QRCode from "@/common/components/atoms/qr-code";
+import { SignatureScheme } from "@farcaster/core";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -86,6 +87,11 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
           !isUndefined(data.publicKeyHex) &&
           !isUndefined(data.privateKeyHex)
         );
+      };
+    },
+    getSignerScheme: () => {
+      return async () => {
+        return SignatureScheme.ED25519;
       };
     },
     signMessage: (data) => {
