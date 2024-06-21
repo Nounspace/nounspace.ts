@@ -9,9 +9,9 @@ import {
 import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { GlobalTheme } from "@/common/lib/theme";
-import Sidebar from "../organisms/Sidebar";
+import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import Sidebar from "../organisms/Sidebar";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;

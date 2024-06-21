@@ -4,7 +4,7 @@ export interface ThemeSettings {
   properties: ThemeProperties;
 }
 
-export interface GlobalTheme extends ThemeSettings {
+export interface UserTheme extends ThemeSettings {
   properties: {
     font: FontFamily;
     background: Color;
