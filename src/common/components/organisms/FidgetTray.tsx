@@ -4,7 +4,8 @@ import _ from "lodash";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { number } from "prop-types";
-import { FidgetInstance } from "../templates/Space";
+import { FidgetInstanceData } from "@/common/fidgets";
+import { CompleteFidgets } from "@/fidgets";
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
@@ -33,7 +34,7 @@ export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ w: number; h: number } | undefined>
   >;
-  contents: FidgetInstance[];
+  contents: FidgetInstanceData[];
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
@@ -42,7 +43,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
 }) => {
   return (
     <div className="w-full h-full mx-4 flex-col justify-center items-center">
-      {contents.map((fidget: FidgetInstance) => {
+      {contents.map((fidget: FidgetInstanceData) => {
         return (
           <div className="flex justify-center items-center">
             <div
@@ -50,10 +51,14 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
               draggable={true}
               unselectable="on"
               onDragStart={(e) => {
-                e.dataTransfer.setData("text/plain", JSON.stringify(fidget));
+                const data = {
+                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                }; // Set minimum width and height
+                e.dataTransfer.setData("text/plain", JSON.stringify(data));
                 setExternalDraggedItem({
-                  w: fidget.config.data.minWidth,
-                  h: fidget.config.data.minHeight,
+                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
                 });
               }}
             >

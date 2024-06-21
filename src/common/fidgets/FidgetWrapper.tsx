@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   FidgetConfig,
   FidgetSettings,
-  FidgetDetails,
+  FidgetBundle,
   FidgetArgs,
   FidgetData,
   FidgetProperties,
@@ -15,7 +15,7 @@ import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
-  config: FidgetDetails;
+  bundle: FidgetBundle;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
   setcurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
@@ -40,7 +40,7 @@ export const getSettingsWithDefaults = (
 
 export function FidgetWrapper({
   fidget,
-  config,
+  bundle: config,
   context,
   saveConfig,
   setcurrentFidgetSettings,
@@ -65,13 +65,13 @@ export function FidgetWrapper({
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
-      ...config.instanceConfig,
+      ...config.config,
       data,
     });
   };
 
   const settingsWithDefaults = getSettingsWithDefaults(
-    config.instanceConfig.settings,
+    config.config.settings,
     config.properties,
   );
 
@@ -79,7 +79,7 @@ export function FidgetWrapper({
     setSaving(true);
     try {
       await saveConfig({
-        ...config.instanceConfig,
+        ...config.config,
         settings: newSettings,
       });
       setEditing(false);
@@ -105,7 +105,7 @@ export function FidgetWrapper({
           : "size-full overflow-scroll"
       }
     >
-      {config.instanceConfig.editable && (
+      {config.config.editable && (
         <button
           onMouseDown={onClickEdit}
           className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
@@ -114,7 +114,7 @@ export function FidgetWrapper({
       <CardContent className="size-full">
         {fidget({
           settings: settingsWithDefaults,
-          data: config.instanceConfig.data,
+          data: config.config.data,
           saveData,
         })}
       </CardContent>

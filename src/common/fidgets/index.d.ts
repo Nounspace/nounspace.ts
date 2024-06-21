@@ -42,14 +42,21 @@ export type FidgetRenderContext = {
   theme: ThemeSettings;
 };
 
-export interface FidgetDetails<
+export type FidgetInstanceData<
   S extends FidgetSettings = FidgetSettings,
   D extends FidgetData = FidgetData,
-> {
-  properties: FidgetProperties;
-  instanceConfig: FidgetConfig<S, D>;
+> = {
+  config: FidgetConfig<S, D>;
+  fidgetType: string;
   id: string;
-}
+};
+
+export type FidgetBundle<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+> = FidgetInstanceData<S, D> & {
+  properties: FidgetProperties;
+};
 
 export interface LayoutFidgetConfig {}
 

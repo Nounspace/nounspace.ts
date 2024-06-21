@@ -1,6 +1,7 @@
 import React, { useState, DragEvent } from "react";
 import {
   FidgetConfig,
+  FidgetInstanceData,
   FidgetSettings,
   LayoutFidgetConfig,
   LayoutFidgetDetails,
@@ -12,21 +13,15 @@ import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 
-export type FidgetInstance = {
-  config: FidgetConfig<FidgetSettings>;
-  fidgetType: string;
-  id: string;
-};
-
 export type SpaceConfig = {
   fidgetInstances: {
-    [key: string]: FidgetInstance;
+    [key: string]: FidgetInstanceData;
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   theme: ThemeSettings;
   isEditable: boolean;
-  fidgetTrayContents: FidgetInstance[];
+  fidgetTrayContents: FidgetInstanceData[];
 };
 
 type SpaceArgs = {
@@ -53,9 +48,10 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const fidgets = mapValues(config.fidgetInstances, (details, key) =>
     FidgetWrapper({
       fidget: CompleteFidgets[details.fidgetType].fidget,
-      config: {
+      bundle: {
+        fidgetType: details.fidgetType,
         id: details.id,
-        instanceConfig: {
+        config: {
           editable: editMode,
           settings: details.config.settings,
           data: details.config.data,

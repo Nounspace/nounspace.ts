@@ -3,7 +3,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
-import { FidgetInstance } from "../templates/Space";
+import { FidgetInstanceData } from "@/common/fidgets";
 
 export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
@@ -15,7 +15,7 @@ export interface EditorPanelProps {
   unselect: () => void;
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
-  fidgetTrayContents: FidgetInstance[];
+  fidgetTrayContents: FidgetInstanceData[];
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({

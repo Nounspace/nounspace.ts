@@ -2,8 +2,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import React, { Dispatch, ReactNode, SetStateAction } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
-import { FidgetInstance } from "../templates/Space";
+import { FidgetInstanceData } from "@/common/fidgets";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -17,7 +16,7 @@ export interface SidebarProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ w: number; h: number } | undefined>
   >;
-  fidgetTrayContents: FidgetInstance[];
+  fidgetTrayContents: FidgetInstanceData[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
