@@ -12,21 +12,21 @@ import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 
-type SpaceFidgetConfig = {
-  instanceConfig: FidgetConfig<FidgetSettings>;
+export type FidgetInstance = {
+  config: FidgetConfig<FidgetSettings>;
   fidgetType: string;
   id: string;
 };
 
 export type SpaceConfig = {
-  fidgetConfigs: {
-    [key: string]: SpaceFidgetConfig;
+  fidgetInstances: {
+    [key: string]: FidgetInstance;
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   theme: ThemeSettings;
   isEditable: boolean;
-  fidgetTray: SpaceFidgetConfig[];
+  fidgetTrayContents: FidgetInstance[];
 };
 
 type SpaceArgs = {
@@ -44,23 +44,23 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
 
-  function unselect() {
+  function unselectFidget() {
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
   }
 
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
-  const fidgets = mapValues(config.fidgetConfigs, (details, key) =>
+  const fidgets = mapValues(config.fidgetInstances, (details, key) =>
     FidgetWrapper({
       fidget: CompleteFidgets[details.fidgetType].fidget,
       config: {
         id: details.id,
         instanceConfig: {
           editable: editMode,
-          settings: details.instanceConfig.settings,
-          data: details.instanceConfig.data,
+          settings: details.config.settings,
+          data: details.config.data,
         },
-        editConfig: CompleteFidgets[details.fidgetType].editConfig,
+        properties: CompleteFidgets[details.fidgetType].properties,
       },
       context: {
         theme: config.theme,
@@ -68,10 +68,10 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
       saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
         return await saveConfig({
           ...config,
-          fidgetConfigs: {
-            ...config.fidgetConfigs,
+          fidgetInstances: {
+            ...config.fidgetInstances,
             [key]: {
-              instanceConfig: newInstanceConfig,
+              config: newInstanceConfig,
               id: details.id,
               fidgetType: details.fidgetType,
             },
@@ -105,7 +105,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     const data = JSON.parse(e.dataTransfer.getData("text/plain"));
 
     const newItem = {
-      i: `${Object.keys(config.fidgetConfigs).length + 1}`,
+      i: `${Object.keys(config.fidgetInstances).length + 1}`,
       x: 0,
       y: 0,
       w: data.width, // Use the passed width
@@ -130,7 +130,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     <>
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
-        onClick={unselect}
+        onClick={unselectFidget}
       ></div>
       <div className="flex">
         <div
@@ -146,10 +146,11 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             theme={config.theme}
             saveTheme={saveTheme}
             isEditable={config.isEditable}
-            unselect={unselect}
+            unselect={unselectFidget}
             selectedFidgetID={selectedFidgetID}
             currentFidgetSettings={currentFidgetSettings}
             setExternalDraggedItem={setExternalDraggedItem}
+            fidgetTrayContents={config.fidgetTrayContents}
           />
         </div>
 

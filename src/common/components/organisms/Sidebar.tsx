@@ -3,6 +3,7 @@ import React, { Dispatch, ReactNode, SetStateAction } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
+import { FidgetInstance } from "../templates/Space";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -16,6 +17,7 @@ export interface SidebarProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ w: number; h: number } | undefined>
   >;
+  fidgetTrayContents: FidgetInstance[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -28,6 +30,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedFidgetID,
   currentFidgetSettings,
   setExternalDraggedItem,
+  fidgetTrayContents,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -44,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           selectedFidgetID={selectedFidgetID}
           currentFidgetSettings={currentFidgetSettings}
           setExternalDraggedItem={setExternalDraggedItem}
+          fidgetTrayContents={fidgetTrayContents}
         />
       ) : (
         <Navigation isEditable={isEditable} setEditMode={setEditMode} />

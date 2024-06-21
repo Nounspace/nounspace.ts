@@ -4,6 +4,7 @@ import _ from "lodash";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { number } from "prop-types";
+import { FidgetInstance } from "../templates/Space";
 const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
@@ -32,35 +33,36 @@ export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ w: number; h: number } | undefined>
   >;
-  trayFidgetStorage?: {
-    [key: string]: {
-      instanceConfig: FidgetConfig<FidgetSettings>;
-      fidgetName: string;
-      id: string;
-    };
-  };
+  contents: FidgetInstance[];
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
-  trayFidgetStorage,
+  contents,
   setExternalDraggedItem,
 }) => {
   return (
     <div className="w-full h-full mx-4 flex-col justify-center items-center">
-      <div className="flex justify-center items-center">
-        <div
-          className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
-          draggable={true}
-          unselectable="on"
-          onDragStart={(e) => {
-            const data = { w: 2, h: 3 }; // Set minimum width and height
-            e.dataTransfer.setData("text/plain", JSON.stringify(data));
-            setExternalDraggedItem({ w: data.w, h: data.h });
-          }}
-        >
-          Fidget
-        </div>
-      </div>
+      {contents.map((fidget: FidgetInstance) => {
+        return (
+          <div className="flex justify-center items-center">
+            <div
+              className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+              draggable={true}
+              unselectable="on"
+              onDragStart={(e) => {
+                e.dataTransfer.setData("text/plain", JSON.stringify(fidget));
+                setExternalDraggedItem({
+                  w: fidget.config.data.minWidth,
+                  h: fidget.config.data.minHeight,
+                });
+              }}
+            >
+              {fidget.fidgetType}
+            </div>
+          </div>
+        );
+      })}
+
       <div className="flex justify-center items-center">
         <button
           onClick={addFidgetToTray}

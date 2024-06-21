@@ -3,6 +3,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
+import { FidgetInstance } from "../templates/Space";
 
 export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
@@ -14,6 +15,7 @@ export interface EditorPanelProps {
   unselect: () => void;
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
+  fidgetTrayContents: FidgetInstance[];
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -24,6 +26,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   unselect,
   selectedFidgetID,
   currentFidgetSettings,
+  fidgetTrayContents,
 }) => {
   return (
     <div className="flex w-full">
@@ -52,7 +55,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         </div>
       </aside>
       <div className="w-4/12">
-        <FidgetTray setExternalDraggedItem={setExternalDraggedItem} />
+        <FidgetTray
+          setExternalDraggedItem={setExternalDraggedItem}
+          contents={fidgetTrayContents}
+        />
       </div>
     </div>
   );

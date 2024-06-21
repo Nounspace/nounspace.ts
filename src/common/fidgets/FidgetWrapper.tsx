@@ -7,7 +7,7 @@ import {
   FidgetDetails,
   FidgetArgs,
   FidgetData,
-  FidgetEditConfig,
+  FidgetProperties,
   FidgetRenderContext,
 } from ".";
 import { reduce } from "lodash";
@@ -25,7 +25,7 @@ export type FidgetWrapperProps = {
 
 export const getSettingsWithDefaults = (
   settings: FidgetSettings,
-  config: FidgetEditConfig,
+  config: FidgetProperties,
 ): FidgetSettings => {
   return reduce(
     config.fields,
@@ -55,7 +55,7 @@ export function FidgetWrapper({
     setEditing(true);
     setcurrentFidgetSettings(
       <FidgetSettingsEditor
-        editConfig={config.editConfig}
+        properties={config.properties}
         settings={settingsWithDefaults}
         onSave={onSave}
         unselect={unselect}
@@ -72,7 +72,7 @@ export function FidgetWrapper({
 
   const settingsWithDefaults = getSettingsWithDefaults(
     config.instanceConfig.settings,
-    config.editConfig,
+    config.properties,
   );
 
   const onSave = async (newSettings: FidgetSettings) => {

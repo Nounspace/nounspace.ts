@@ -63,7 +63,7 @@ const Homebase: NextPageWithLayout = () => {
     text1: {
       fidgetType: "text",
       id: "text1",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Hello, World!",
@@ -75,7 +75,7 @@ const Homebase: NextPageWithLayout = () => {
     text2: {
       fidgetType: "text",
       id: "text2",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Text Fidget",
@@ -87,7 +87,7 @@ const Homebase: NextPageWithLayout = () => {
     gallery: {
       fidgetType: "gallery",
       id: "gallery",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           imageUrl:
@@ -99,7 +99,7 @@ const Homebase: NextPageWithLayout = () => {
     frame: {
       fidgetType: "frame",
       id: "frame",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
@@ -113,7 +113,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "text",
       id: "text3",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Hello, World!",
@@ -125,7 +125,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "gallery",
       id: "gallery2",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           imageUrl:
@@ -137,7 +137,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "frame",
       id: "frame2",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
@@ -178,9 +178,9 @@ const Homebase: NextPageWithLayout = () => {
     layoutID,
     layoutDetails,
     theme: DEFAULT_THEME,
-    fidgetConfigs: fidgets,
+    fidgetInstances: fidgets,
     isEditable: true,
-    fidgetTray: fidgetsInTray,
+    fidgetTrayContents: fidgetsInTray,
   });
 
   useEffect(() => {
