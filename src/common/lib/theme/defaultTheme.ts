@@ -6,6 +6,7 @@ export const DEFAULT_THEME: GlobalTheme = {
   properties: {
     font: "Inter",
     background: "#ffffff",
+    backgroundHTML: "",
   },
 };
 

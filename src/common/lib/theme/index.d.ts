@@ -8,6 +8,7 @@ export interface GlobalTheme extends ThemeSettings {
   properties: {
     font: FontFamily;
     background: Color;
+    backgroundHTML: string;
   };
 }
 

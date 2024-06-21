@@ -1,12 +1,12 @@
 import React, { forwardRef, useCallback } from "react";
 import { Textarea, TextareaProps } from "../atoms/textarea";
 
-export interface CSSInputProps extends Omit<TextareaProps, "onChange"> {
+export interface HTMLInputProps extends Omit<TextareaProps, "onChange"> {
   value: string;
   onChange?: (value: string) => void;
 }
 
-const CSSInput = forwardRef<HTMLTextAreaElement, CSSInputProps>(
+const HTMLInput = forwardRef<HTMLTextAreaElement, HTMLInputProps>(
   (props, ref) => {
     const onChange = useCallback<React.ChangeEventHandler<HTMLTextAreaElement>>(
       (event) => {
@@ -27,6 +27,6 @@ const CSSInput = forwardRef<HTMLTextAreaElement, CSSInputProps>(
   },
 );
 
-CSSInput.displayName = "CSSInput";
+HTMLInput.displayName = "HTMLInput";
 
-export default CSSInput;
+export default HTMLInput;

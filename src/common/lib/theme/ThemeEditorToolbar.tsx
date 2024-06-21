@@ -1,11 +1,11 @@
 import React from "react";
 import { Card, CardFooter } from "@/common/components/atoms/card";
-import { FaFloppyDisk } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
 import defaultUserTheme from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
 
 export type ThemeEditorToolbarArgs = {
   theme: ThemeSettings;
@@ -32,7 +32,7 @@ export function ThemeEditorToolbar({
     };
   }
 
-  const { background, font } = theme.properties;
+  const { background, font, backgroundHTML } = theme.properties;
 
   function saveAndClose() {
     saveTheme(theme);
@@ -51,6 +51,10 @@ export function ThemeEditorToolbar({
             value={font}
             onChange={themePropSetter<FontFamily>("font")}
           />
+          <HTMLInputPopoverButton
+            value={backgroundHTML}
+            onChange={themePropSetter<string>("backgroundHTML")}
+          />
         </CardFooter>
       </Card>
       <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
@@ -60,7 +64,6 @@ export function ThemeEditorToolbar({
             className="flex justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
           >
             <div className="flex items-center">
-              <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
               <span className="ml-4 mr-4">Save</span>
             </div>
           </button>

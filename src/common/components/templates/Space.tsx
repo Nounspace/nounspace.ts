@@ -11,6 +11,13 @@ import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { GlobalTheme } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+
+export type SpaceFidgetConfig = {
+  instanceConfig: FidgetConfig<FidgetSettings>;
+  fidgetType: string;
+  id: string;
+};
 
 export type SpaceConfig = {
   fidgetInstances: {
@@ -101,6 +108,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
         onClick={unselectFidget}
@@ -150,6 +158,14 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           />
         </div>
       </div>
+      <LayoutFidget
+        layoutConfig={{
+          ...config.layoutDetails.layoutConfig,
+          onLayoutChange: saveLayout,
+        }}
+        fidgets={fidgets}
+        inEditMode={editMode}
+      />
     </>
   );
 }
