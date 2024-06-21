@@ -9,3 +9,7 @@ export function preKeysPath(identityPublicKey: string) {
 export function authenticatorsPath(identityPublicKey: string) {
   return `${identityPublicKey}/authenticators`;
 }
+
+export function homebasePath(identityPublicKey: string) {
+  return `${identityPublicKey}/homebase`;
+}

@@ -1,4 +1,7 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import {
+  SpaceConfig,
+  SpaceFidgetConfig,
+} from "@/common/components/templates/Space";
 import { AppStore } from "..";
 import { FidgetSettings } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../createStore";
@@ -25,15 +28,22 @@ type SpaceId = string;
 // But a space that is saved in the DB doesn't store
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
-type SaveableSpaceConfig = Omit<SpaceConfig, "fidgetConfigs"> & {
-  fidgetConfigs: Record<string, FidgetSettings>;
+export type SaveableSpaceConfig = Omit<SpaceConfig, "fidgetConfigs"> & {
+  fidgetConfigs: {
+    [key: string]: Omit<SpaceFidgetConfig, "instanceConfig"> & {
+      instanceConfig: FidgetSettings;
+    };
+  };
+};
+
+export type UpdatableSpaceConfig = SaveableSpaceConfig & {
   isPrivate: boolean;
 };
 
 interface CachedSpace {
   // Machine generated ID, immutable
   id: SpaceId;
-  config: SaveableSpaceConfig;
+  config: UpdatableSpaceConfig;
   updatedAt: string;
 }
 
@@ -41,7 +51,7 @@ interface SpaceState {
   spaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
   currentSpaceId: string;
-  editableSpace?: SaveableSpaceConfig;
+  editableSpace?: UpdatableSpaceConfig;
 }
 
 interface SpaceActions {
@@ -78,10 +88,13 @@ export const spaceStore = (
     const fileData = JSON.parse(await data.text()) as SignedFile;
     const spaceConfig = JSON.parse(
       await get().account.decryptEncryptedSignedFile(fileData),
-    );
+    ) as SaveableSpaceConfig;
     const cachedSpace: CachedSpace = {
       id: spaceId,
-      config: spaceConfig,
+      config: {
+        ...spaceConfig,
+        isPrivate: fileData.isEncrypted,
+      },
       updatedAt: moment().toISOString(),
     };
     set((draft) => {
@@ -102,7 +115,7 @@ export const spaceStore = (
     );
     // TO DO: Error handling
     const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
-      "/api/spaces/registry/",
+      "/api/space/registry/",
       registration,
     );
     const newSpaceId = data.value!.spaceId;
@@ -169,14 +182,20 @@ export const spaceStore = (
       if (localCopy) {
         const file = localCopy.isPrivate
           ? await get().account.createEncryptedSignedFile(
-              stringify(localCopy),
+              stringify({
+                ...localCopy,
+                isPrivate: undefined,
+              }),
               "json",
               true,
             )
-          : await get().account.createSignedFile(stringify(localCopy), "json");
+          : await get().account.createSignedFile(
+              stringify({ ...localCopy, isPrivate: undefined }),
+              "json",
+            );
         // TO DO: Error handling
         await axiosBackend.post(
-          `/api/spaces/registry/${get().account.currentSpaceId}/`,
+          `/api/space/registry/${get().account.currentSpaceId}/`,
           {
             config: file,
           },
@@ -186,7 +205,10 @@ export const spaceStore = (
   },
   saveSpace: async (config) => {
     set((draft) => {
-      draft.account.editableSpace = config;
+      draft.account.editableSpace = {
+        ...config,
+        isPrivate: draft.account.editableSpace?.isPrivate || true,
+      };
     });
   },
   setCurrentSpace: async (spaceId) => {
