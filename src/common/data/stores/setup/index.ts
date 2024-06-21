@@ -28,7 +28,7 @@ const setupStoreDefaults: SetupStoreState = {
 
 export const createSetupStoreFunc = (
   set: StoreSet<AppStore>,
-  get: StoreGet<AppStore>,
+  _get: StoreGet<AppStore>,
 ): SetupStore => ({
   ...setupStoreDefaults,
   setCurrentStep: (step) => {

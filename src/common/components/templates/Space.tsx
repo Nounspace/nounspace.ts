@@ -13,6 +13,12 @@ import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 
+export type SpaceFidgetConfig = {
+  instanceConfig: FidgetConfig<FidgetSettings>;
+  fidgetType: string;
+  id: string;
+};
+
 export type SpaceConfig = {
   fidgetInstances: {
     [key: string]: FidgetInstanceData;
