@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import {
   FarcasterFrameContext,
   FrameActionBodyPayload,
@@ -47,7 +47,7 @@ export type FrameFidgetSettings = {
   url: string;
 };
 
-const frameConfig: FidgetEditConfig = {
+const frameProperties: FidgetProperties = {
   fidgetName: "Frame",
   fields: [
     {
@@ -256,5 +256,5 @@ const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = async ({
 
 export default {
   fidget: Frame,
-  editConfig: frameConfig,
+  properties: frameProperties,
 } as FidgetModule<FidgetArgs<FrameFidgetSettings>>;
