@@ -1,7 +1,10 @@
 import React, {
+  Dispatch,
   DragEvent,
   ReactNode,
+  SetStateAction,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
 } from "react";
@@ -14,6 +17,9 @@ import {
   FidgetInstanceData,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
+import { createPortal } from "react-dom";
+import EditorPanel from "@/common/components/organisms/EditorPanel";
+import { ThemeSettings } from "@/common/lib/theme";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -110,6 +116,7 @@ interface GridArgs {
     [key: string]: ReactNode;
   };
   inEditMode: boolean;
+  portalRef: React.RefObject<HTMLDivElement>;
   saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
   addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
   droppingItem: {
@@ -117,23 +124,84 @@ interface GridArgs {
     w: 1;
     h: 1;
   };
+
+  setEditMode: (editMode: boolean) => void;
+  theme: ThemeSettings;
+  saveTheme: (newTheme: ThemeSettings) => void;
+  unselect: () => void;
+  selectedFidgetID: string | null;
+  currentFidgetSettings: React.ReactNode;
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
+  >;
+  fidgetTrayContents: FidgetInstanceData[];
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
 }
 
 const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
   fidgets,
   inEditMode,
+  setEditMode,
   saveLayout,
   addFidget,
   droppingItem,
+  portalRef,
+  theme,
+  saveTheme,
+  unselect,
+  selectedFidgetID,
+  currentFidgetSettings,
+  setExternalDraggedItem,
+  fidgetTrayContents,
+  saveTrayContents,
 }: GridArgs) => {
+  const [element, setElement] = useState<HTMLDivElement | null>(
+    portalRef.current,
+  );
   const windowSize = useWindowSize();
+
   const rowHeight = useMemo(() => {
     windowSize
       ? Math.round(windowSize.height / gridDetails.maxRows) -
         gridDetails.margin[0]
       : 70;
   }, [windowSize]);
+
+  useEffect(() => {
+    // Force a rerender, so it can be passed to the child.
+    // If this causes an unwanted flicker, use useLayoutEffect instead
+    setElement(portalRef.current);
+  }, []);
+
+  function editorPanelPortal(portalNode: HTMLDivElement | null) {
+    return (
+      <>
+        {inEditMode ? (
+          portalNode ? (
+            createPortal(
+              <EditorPanel
+                setEditMode={setEditMode}
+                theme={theme}
+                saveTheme={saveTheme}
+                unselect={unselect}
+                selectedFidgetID={selectedFidgetID}
+                currentFidgetSettings={currentFidgetSettings}
+                setExternalDraggedItem={setExternalDraggedItem}
+                fidgetTrayContents={fidgetTrayContents}
+                saveTrayContents={saveTrayContents}
+              />,
+              portalNode,
+            )
+          ) : (
+            <></>
+          )
+        ) : (
+          <></>
+        )}
+      </>
+    );
+  }
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -175,6 +243,7 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
+      {editorPanelPortal(element)}
       {inEditMode && <Gridlines {...gridDetails} />}
       <ReactGridLayout
         {...gridDetails}

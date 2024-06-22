@@ -91,6 +91,7 @@ type LayoutFidgetDefaultProps = {
   fidgets: object;
   layoutConfig: object;
   inEditMode: boolean;
+  portalRef: React.RefObject<HTMLDivElement>;
   saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
   addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
   droppingItem:
@@ -100,6 +101,18 @@ type LayoutFidgetDefaultProps = {
         h: number;
       }
     | undefined;
+
+  setEditMode: (editMode: boolean) => void;
+  theme: ThemeSettings;
+  saveTheme: (newTheme: ThemeSettings) => void;
+  unselect: () => void;
+  selectedFidgetID: string | null;
+  currentFidgetSettings: React.ReactNode;
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
+  >;
+  fidgetTrayContents: FidgetInstanceData[];
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
 };
 
 export interface LayoutFidget<

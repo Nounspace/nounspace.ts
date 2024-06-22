@@ -1,4 +1,4 @@
-import React, { useState, DragEvent, useEffect, useMemo } from "react";
+import React, { useState, DragEvent, useEffect, useMemo, useRef } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -29,6 +29,8 @@ type SpaceArgs = {
 };
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
+  const portalRef = useRef<HTMLDivElement>(null);
+
   const [editMode, setEditMode] = useState(false);
   const [externalDraggedItem, setExternalDraggedItem] = useState<{
     i: string;
@@ -152,15 +154,8 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           <Sidebar
             editMode={editMode}
             setEditMode={setEditMode}
-            theme={config.theme}
-            saveTheme={saveTheme}
             isEditable={config.isEditable}
-            unselect={unselectFidget}
-            selectedFidgetID={selectedFidgetID}
-            currentFidgetSettings={currentFidgetSettings}
-            setExternalDraggedItem={setExternalDraggedItem}
-            fidgetTrayContents={config.fidgetTrayContents}
-            saveTrayContents={saveTrayContents}
+            portalRef={portalRef}
           />
         </div>
 
@@ -172,14 +167,24 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           }
         >
           <LayoutFidget
-            fidgets={fidgetWrappers}
-            inEditMode={editMode}
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
             }}
+            fidgets={fidgetWrappers}
+            inEditMode={editMode}
+            setEditMode={setEditMode}
             saveLayout={saveLayout}
             addFidget={addFidget}
             droppingItem={externalDraggedItem}
+            portalRef={portalRef}
+            theme={config.theme}
+            saveTheme={saveTheme}
+            unselect={unselectFidget}
+            selectedFidgetID={selectedFidgetID}
+            currentFidgetSettings={currentFidgetSettings}
+            setExternalDraggedItem={setExternalDraggedItem}
+            fidgetTrayContents={config.fidgetTrayContents}
+            saveTrayContents={saveTrayContents}
           />
         </div>
       </div>
