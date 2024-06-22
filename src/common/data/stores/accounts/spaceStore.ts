@@ -198,7 +198,7 @@ export const spaceStore = (
           },
         );
       }
-    })();
+    }, 1000)();
   },
   saveSpace: async (config) => {
     set((draft) => {
