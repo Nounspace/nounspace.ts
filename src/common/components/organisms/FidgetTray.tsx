@@ -34,6 +34,7 @@ export interface FidgetTrayProps {
   >;
   contents: FidgetInstanceData[];
   openFidgetPicker: () => void;
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
@@ -42,10 +43,10 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-screen mx-4 flex-col justify-center items-center bg-sky-100 -m-8 p-8">
-      {contents.map((fidget: FidgetInstanceData) => {
+    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100">
+      {contents.map((fidgetData: FidgetInstanceData) => {
         return (
-          <div key={fidget.id} className="flex justify-center items-center">
+          <div key={fidgetData.id} className="flex justify-center items-center">
             <div
               className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
               draggable={true}
@@ -53,18 +54,17 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
               // eslint-disable-next-line react/no-unknown-property
               unselectable="on"
               onDragStart={(e) => {
-                const data = {
-                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
-                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
-                }; // Set minimum width and height
-                e.dataTransfer.setData("text/plain", JSON.stringify(data));
+                e.dataTransfer.setData(
+                  "text/plain",
+                  JSON.stringify(fidgetData),
+                );
                 setExternalDraggedItem({
-                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
-                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                  w: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
+                  h: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
                 });
               }}
             >
-              {fidget.fidgetType}
+              {fidgetData.fidgetType}
             </div>
           </div>
         );

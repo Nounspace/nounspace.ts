@@ -11,7 +11,9 @@ import {
   LayoutFidgetConfig,
   LayoutFidget,
   LayoutFidgetProps,
+  FidgetInstanceData,
 } from "@/common/fidgets";
+import { CompleteFidgets } from "..";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -42,6 +44,7 @@ export interface PlacedGridItem extends GridItem {
 }
 
 const gridDetails = {
+  items: 0,
   isDraggable: false,
   isResizable: false,
   isDroppable: true,
@@ -50,53 +53,19 @@ const gridDetails = {
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
-  items: 4,
   cols: 12,
   maxRows: 9,
   rowHeight: 70,
   layout: [],
   margin: [16, 16],
   containerPadding: [0, 0],
-  //onLayoutChange: (layout: PlacedGridItem[]) => unknown,
-  onDrop: handleDrop,
-  //droppingItem?: { i: string; w: number; h: number },
 };
 
 type GridDetails = typeof gridDetails;
 
-type GridLayout = {
+type GridLayoutConfig = {
   layout: PlacedGridItem[];
 };
-
-export type GridArgs = LayoutFidgetProps & {
-  layoutConfig: GridLayout;
-  fidgets: {
-    [key: string]: ReactNode;
-  };
-  inEditMode: boolean;
-};
-
-function handleDrop(
-  layout: LayoutFidgetConfig,
-  item: PlacedGridItem,
-  e: DragEvent<HTMLDivElement>,
-) {
-  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-
-  const newItem = {
-    i: `0`,
-    x: 0,
-    y: 0,
-    w: data.width, // Use the passed width
-    h: data.height, // Use the passed height
-    minW: data.width,
-    maxW: data.width,
-    minH: data.height,
-    maxH: data.height,
-  };
-
-  //setExternalDraggedItem({ w: newItem.w, h: newItem.h });
-}
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -109,7 +78,7 @@ const Gridlines: React.FC<GridDetails> = ({
 }) => {
   return (
     <div
-      className="absolute inset-0 rounded-lg h-max w-8/12 ml-auto"
+      className="absolute p-8 inset-8 rounded-lg h-max w-8/12 ml-auto"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",
@@ -135,15 +104,75 @@ const Gridlines: React.FC<GridDetails> = ({
   );
 };
 
+interface GridArgs {
+  layoutConfig: GridLayoutConfig;
+  fidgets: {
+    [key: string]: ReactNode;
+  };
+  inEditMode: boolean;
+  saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
+  addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
+  droppingItem: {
+    i: string;
+    w: number;
+    h: number;
+  };
+}
+
 const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
   fidgets,
   inEditMode,
+  saveLayout,
+  addFidget,
+  droppingItem,
 }: GridArgs) => {
   const windowSize = useWindowSize();
   const rowHeight = useMemo(() => {
-    windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
+    windowSize
+      ? Math.round(windowSize.height / gridDetails.maxRows) -
+        gridDetails.margin[0]
+      : 70;
   }, [windowSize]);
+
+  function handleDrop(
+    layout: PlacedGridItem[],
+    item: PlacedGridItem,
+    e: DragEvent<HTMLDivElement>,
+    saveGrid?: () => {},
+  ) {
+    const fidgetData: FidgetInstanceData = JSON.parse(
+      e.dataTransfer.getData("text/plain"),
+    );
+
+    const newItem = {
+      i: fidgetData.id,
+      minW: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
+      maxW: CompleteFidgets[fidgetData.fidgetType].properties.maxWidth,
+      minH: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
+      maxH: CompleteFidgets[fidgetData.fidgetType].properties.maxWidth,
+      x: 0,
+      y: 0,
+      w: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
+      h: CompleteFidgets[fidgetData.fidgetType].properties.minHeight,
+      isDraggable: true,
+      isResizable: true,
+      isBounded: true,
+    };
+
+    item = newItem;
+
+    const newLayoutConfig: GridLayoutConfig = {
+      ...layoutConfig,
+      layout: [...layoutConfig.layout, newItem],
+    };
+
+    saveLayout(newLayoutConfig);
+
+    addFidget(fidgetData.id, fidgetData);
+
+    alert("saved ur shit");
+  }
 
   return (
     <>
@@ -152,7 +181,14 @@ const Grid: LayoutFidget<GridArgs> = ({
         {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
+        layout={layoutConfig.layout}
+        items={layoutConfig.layout.length}
         rowheight={rowHeight}
+        isDroppable={true}
+        droppingItem={droppingItem}
+        onDrop={handleDrop}
+        onLayoutChange={saveLayout}
+        className="h-full"
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
           return <div key={gridItem.i}>{fidgets[gridItem.i]}</div>;

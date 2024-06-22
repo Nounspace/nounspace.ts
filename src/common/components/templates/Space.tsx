@@ -44,6 +44,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   }
 
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
+
   const fidgets = mapValues(config.fidgetInstances, (details, key) =>
     FidgetWrapper({
       fidget: CompleteFidgets[details.fidgetType].fidget,
@@ -79,16 +80,40 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     }),
   );
 
-  function saveLayout(layout: LayoutFidgetConfig) {
+  function saveLayout(newLayoutConfig: LayoutFidgetConfig) {
     return saveConfig({
       ...config,
       layoutDetails: {
         ...config.layoutDetails,
         layoutConfig: {
           ...config.layoutDetails.layoutConfig,
-          layout: layout,
+          ...newLayoutConfig,
         },
       },
+    });
+  }
+
+  function addFidget(key: string, fidgetData: FidgetInstanceData) {
+    const newFidgets: { [key: string]: FidgetInstanceData } = {
+      ...config.fidgetInstances,
+    };
+
+    newFidgets[key] = fidgetData;
+
+    saveFidgets(newFidgets);
+  }
+
+  function saveFidgets(fidgetInstances: { [key: string]: FidgetInstanceData }) {
+    return saveConfig({
+      ...config,
+      fidgetInstances: fidgetInstances,
+    });
+  }
+
+  function saveTrayContents(fidgetTrayContents: FidgetInstanceData[]) {
+    return saveConfig({
+      ...config,
+      fidgetTrayContents: fidgetTrayContents,
     });
   }
 
@@ -124,21 +149,22 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             currentFidgetSettings={currentFidgetSettings}
             setExternalDraggedItem={setExternalDraggedItem}
             fidgetTrayContents={config.fidgetTrayContents}
+            saveTrayContents={saveTrayContents}
           />
         </div>
 
         <div
           className={
             editMode
-              ? "w-8/12 transition-all duration-100 ease-out"
-              : "w-9/12 transition-all duration-100 ease-out"
+              ? "w-8/12 transition-all duration-100 ease-out p-8"
+              : "w-9/12 transition-all duration-100 ease-out p-8"
           }
         >
           <LayoutFidget
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
-              onLayoutChange: saveLayout,
-              //onDrop: handleDrop,
+              saveLayout: { saveLayout },
+              addFidget: { addFidget },
               droppingItem: {
                 i: "TODO: GENERATE ID",
                 w: externalDraggedItem?.w,

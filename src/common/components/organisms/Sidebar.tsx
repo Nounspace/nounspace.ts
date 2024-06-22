@@ -17,6 +17,7 @@ export interface SidebarProps {
     SetStateAction<{ w: number; h: number } | undefined>
   >;
   fidgetTrayContents: FidgetInstanceData[];
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,6 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   currentFidgetSettings,
   setExternalDraggedItem,
   fidgetTrayContents,
+  saveTrayContents,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -47,6 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           currentFidgetSettings={currentFidgetSettings}
           setExternalDraggedItem={setExternalDraggedItem}
           fidgetTrayContents={fidgetTrayContents}
+          saveTrayContents={saveTrayContents}
         />
       ) : (
         <Navigation isEditable={isEditable} setEditMode={setEditMode} />

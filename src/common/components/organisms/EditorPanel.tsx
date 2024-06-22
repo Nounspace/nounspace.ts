@@ -3,8 +3,16 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
-import { FidgetInstanceData } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetFieldConfig,
+  FidgetInstanceData,
+  FidgetModule,
+} from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
+import { v4 as uuidv4 } from "uuid";
+import _ from "lodash";
+import { mapValues } from "lodash";
 
 export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
@@ -17,6 +25,7 @@ export interface EditorPanelProps {
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
   fidgetTrayContents: FidgetInstanceData[];
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -28,6 +37,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   selectedFidgetID,
   currentFidgetSettings,
   fidgetTrayContents,
+  saveTrayContents,
 }) => {
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
@@ -36,8 +46,31 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     unselect();
   }
 
-  function addFidgetToTray(fidget): undefined {
-    return;
+  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
+    function allFields(fidget: FidgetModule<FidgetArgs>) {
+      return mapValues(fidget.properties.fields, (field) => {
+        return {
+          fieldName: field.fieldName,
+          default: field.default,
+          required: field.required,
+          inputSelector: field.inputSelector,
+        };
+      });
+    }
+
+    const newTrayContents = [...fidgetTrayContents];
+
+    newTrayContents.push({
+      config: {
+        editable: true,
+        data: {},
+        settings: allFields(fidget),
+      },
+      fidgetType: fidget.properties.fidgetName,
+      id: fidget.properties.fidgetName + ":" + uuidv4(),
+    });
+
+    saveTrayContents(newTrayContents);
   }
 
   return (
@@ -49,7 +82,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       >
         <div className="w-full h-full">
           <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
-            <div className="flex-col">
+            <div className="flex-col h-full">
               {selectedFidgetID ? (
                 <>{currentFidgetSettings}</>
               ) : (
@@ -69,11 +102,12 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           </div>
         </div>
       </aside>
-      <div className="w-4/12">
+      <div className="w-5/12">
         <FidgetTray
           setExternalDraggedItem={setExternalDraggedItem}
           contents={fidgetTrayContents}
           openFidgetPicker={openFidgetPicker}
+          saveTrayContents={saveTrayContents}
         />
       </div>
     </div>

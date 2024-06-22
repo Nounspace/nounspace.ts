@@ -19,7 +19,7 @@ export type TextFidgetSettings = {
 };
 
 export const textConfig: FidgetProperties = {
-  fidgetName: "Text",
+  fidgetName: "text",
   fields: [
     {
       fieldName: "title",
