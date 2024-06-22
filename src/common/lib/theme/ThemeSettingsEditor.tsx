@@ -6,6 +6,7 @@ import { Color, FontFamily } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -36,7 +37,7 @@ export function ThemeSettingsEditor({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font } = theme.properties;
+  const { background, font, backgroundHTML } = theme.properties;
 
   useEffect(() => {
     setCSSVar("--user-theme-background", background);
@@ -62,6 +63,10 @@ export function ThemeSettingsEditor({
           <FontSelector
             value={font}
             onChange={themePropSetter<FontFamily>("font")}
+          />
+          <HTMLInputPopoverButton
+            value={backgroundHTML}
+            onChange={themePropSetter<string>("backgroundHTML")}
           />
         </CardFooter>
       </Card>

@@ -144,14 +144,6 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           />
         </div>
       </div>
-      <LayoutFidget
-        layoutConfig={{
-          ...config.layoutDetails.layoutConfig,
-          onLayoutChange: saveLayout,
-        }}
-        fidgets={fidgets}
-        inEditMode={editMode}
-      />
     </>
   );
 }
