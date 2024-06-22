@@ -31,6 +31,7 @@ type SpaceArgs = {
 export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
   const [externalDraggedItem, setExternalDraggedItem] = useState<{
+    i: string;
     w: number;
     h: number;
   }>();
@@ -100,7 +101,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
     newFidgets[key] = fidgetData;
 
-    saveFidgets(newFidgets);
+    return saveFidgets(newFidgets);
   }
 
   function saveFidgets(fidgetInstances: { [key: string]: FidgetInstanceData }) {
@@ -161,18 +162,14 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           }
         >
           <LayoutFidget
-            layoutConfig={{
-              ...config.layoutDetails.layoutConfig,
-              saveLayout: { saveLayout },
-              addFidget: { addFidget },
-              droppingItem: {
-                i: "TODO: GENERATE ID",
-                w: externalDraggedItem?.w,
-                h: externalDraggedItem?.h,
-              },
-            }}
             fidgets={fidgets}
             inEditMode={editMode}
+            layoutConfig={{
+              ...config.layoutDetails.layoutConfig,
+            }}
+            saveLayout={saveLayout}
+            addFidget={addFidget}
+            droppingItem={externalDraggedItem}
           />
         </div>
       </div>

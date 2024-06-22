@@ -30,7 +30,7 @@ const PlusIcon = () => {
 
 export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
-    SetStateAction<{ w: number; h: number } | undefined>
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
   contents: FidgetInstanceData[];
   openFidgetPicker: () => void;
@@ -59,8 +59,11 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
                   JSON.stringify(fidgetData),
                 );
                 setExternalDraggedItem({
-                  w: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
-                  h: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
+                  i: fidgetData.id,
+                  w: CompleteFidgets[fidgetData.fidgetType].properties.size
+                    .minWidth,
+                  h: CompleteFidgets[fidgetData.fidgetType].properties.size
+                    .minHeight,
                 });
               }}
             >

@@ -113,9 +113,9 @@ interface GridArgs {
   saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
   addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
   droppingItem: {
-    i: string;
-    w: number;
-    h: number;
+    i: "";
+    w: 1;
+    h: 1;
   };
 }
 
@@ -147,31 +147,28 @@ const Grid: LayoutFidget<GridArgs> = ({
 
     const newItem = {
       i: fidgetData.id,
-      minW: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
-      maxW: CompleteFidgets[fidgetData.fidgetType].properties.maxWidth,
-      minH: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
-      maxH: CompleteFidgets[fidgetData.fidgetType].properties.maxWidth,
+      minW: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      maxW: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
+      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
       x: 0,
       y: 0,
-      w: CompleteFidgets[fidgetData.fidgetType].properties.minWidth,
-      h: CompleteFidgets[fidgetData.fidgetType].properties.minHeight,
+      w: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      h: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
       isDraggable: true,
       isResizable: true,
       isBounded: true,
     };
-
-    item = newItem;
 
     const newLayoutConfig: GridLayoutConfig = {
       ...layoutConfig,
       layout: [...layoutConfig.layout, newItem],
     };
 
-    saveLayout(newLayoutConfig);
+    alert(CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth);
 
     addFidget(fidgetData.id, fidgetData);
-
-    alert("saved ur shit");
+    saveLayout(newLayoutConfig);
   }
 
   return (
@@ -185,6 +182,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         items={layoutConfig.layout.length}
         rowheight={rowHeight}
         isDroppable={true}
+        isBounded={true}
         droppingItem={droppingItem}
         onDrop={handleDrop}
         onLayoutChange={saveLayout}

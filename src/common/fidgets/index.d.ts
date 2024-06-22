@@ -91,6 +91,15 @@ type LayoutFidgetDefaultProps = {
   fidgets: object;
   layoutConfig: object;
   inEditMode: boolean;
+  saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
+  addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
+  droppingItem:
+    | {
+        i: string;
+        w: number;
+        h: number;
+      }
+    | undefined;
 };
 
 export interface LayoutFidget<

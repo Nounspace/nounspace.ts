@@ -16,7 +16,7 @@ import { mapValues } from "lodash";
 
 export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
-    SetStateAction<{ w: number; h: number } | undefined>
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;

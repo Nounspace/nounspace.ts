@@ -14,7 +14,7 @@ export interface SidebarProps {
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
   setExternalDraggedItem: Dispatch<
-    SetStateAction<{ w: number; h: number } | undefined>
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
   fidgetTrayContents: FidgetInstanceData[];
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
