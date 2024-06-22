@@ -36,7 +36,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     unselect();
   }
 
-  function addFidgetToTray(fidget: Object): undefined {
+  function addFidgetToTray(fidget): undefined {
     return;
   }
 

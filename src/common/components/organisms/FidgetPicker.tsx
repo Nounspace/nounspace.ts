@@ -1,3 +1,4 @@
+import React from "react";
 import { CompleteFidgets } from "@/fidgets";
 import { Button } from "../atoms/button";
 import { Card, CardContent } from "../atoms/card";
@@ -12,7 +13,7 @@ import {
 import { MouseEventHandler } from "react";
 
 export interface FidgetPickerProps {
-  addFidgetToTray: (fidgetObj: Object) => undefined;
+  addFidgetToTray: (fidgetObj) => undefined;
 }
 
 export const FidgetPicker: React.FC<FidgetPickerProps> = ({
@@ -31,10 +32,10 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
     return _.map(CompleteFidgets, (fidgetModule, fidgetName) => {
       return (
         <Button
-          className="flex items-center justify-center absolute inset-0 z-10"
+          className="flex items-center justify-center"
           onClick={addFidgetToTray(fidgetModule)}
         >
-          <Card className="size-full">
+          <Card className="">
             <CardContent className="size-full overflow-hidden">
               <img
                 src={fidgetCoverImages[fidgetName]}
@@ -42,7 +43,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                 alt="fidget"
                 className="h-4/12 w-4/12 object-cover rounded-t-xl"
               />
-              <div className="px-4 py-3 w-72">
+              <div className="px-2 py-2">
                 <span className="text-gray-400 mr-3 uppercase text-xs">
                   Nounspace
                 </span>
@@ -65,7 +66,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
       <section
         id="Fidgets"
-        className="w-11/12 mx-auto grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 justify-items-center justify-center gap-y-10 mt-10 mb-5"
+        className="w-11/12 mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 justify-items-center justify-center gap-y-10 mt-10 mb-5"
       >
         {generateFidgetCards()}
       </section>

@@ -140,8 +140,8 @@ const Grid: LayoutFidget<GridArgs> = ({
   fidgets,
   inEditMode,
 }: GridArgs) => {
-  var windowSize = useWindowSize();
-  var rowHeight = useMemo(() => {
+  const windowSize = useWindowSize();
+  const rowHeight = useMemo(() => {
     windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
   }, [windowSize]);
 
