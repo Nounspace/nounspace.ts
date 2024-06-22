@@ -49,7 +49,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           fidgetTrayContents={fidgetTrayContents}
         />
       ) : (
-        <Navigation isEditable={isEditable} setEditMode={setEditMode} />
+        <Navigation
+          isEditable={isEditable}
+          setEditMode={setEditMode}
+          theme={theme}
+        />
       )}
     </>
   );
