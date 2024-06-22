@@ -147,25 +147,27 @@ const Grid: LayoutFidget<GridArgs> = ({
 
     const newItem = {
       i: fidgetData.id,
-      minW: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
-      maxW: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
-      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
-      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
+
       x: 0,
       y: 0,
+
       w: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      minW: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      maxW: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
+
       h: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
+      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
+
+      resizeHandles: resizeDirections,
       isDraggable: true,
       isResizable: true,
-      isBounded: true,
     };
 
     const newLayoutConfig: GridLayoutConfig = {
       ...layoutConfig,
       layout: [...layoutConfig.layout, newItem],
     };
-
-    alert(CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth);
 
     addFidget(fidgetData.id, fidgetData);
     saveLayout(newLayoutConfig);
@@ -182,7 +184,6 @@ const Grid: LayoutFidget<GridArgs> = ({
         items={layoutConfig.layout.length}
         rowheight={rowHeight}
         isDroppable={true}
-        isBounded={true}
         droppingItem={droppingItem}
         onDrop={handleDrop}
         onLayoutChange={saveLayout}

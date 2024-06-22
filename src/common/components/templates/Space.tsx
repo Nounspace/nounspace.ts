@@ -1,4 +1,4 @@
-import React, { useState, DragEvent, useEffect } from "react";
+import React, { useState, DragEvent, useEffect, useMemo } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -13,7 +13,7 @@ import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
 
 export type SpaceConfig = {
-  fidgetInstances: {
+  fidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   };
   layoutID: string;
@@ -46,41 +46,48 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
 
-  const fidgets = mapValues(config.fidgetInstances, (details, key) =>
-    FidgetWrapper({
-      fidget: CompleteFidgets[details.fidgetType].fidget,
-      bundle: {
-        fidgetType: details.fidgetType,
-        id: details.id,
-        config: {
-          editable: editMode,
-          settings: details.config.settings,
-          data: details.config.data,
-        },
-        properties: CompleteFidgets[details.fidgetType].properties,
-      },
-      context: {
-        theme: config.theme,
-      },
-      saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-        return await saveConfig({
-          ...config,
-          fidgetInstances: {
-            ...config.fidgetInstances,
-            [key]: {
-              config: newInstanceConfig,
-              id: details.id,
-              fidgetType: details.fidgetType,
-            },
-          },
-        });
-      },
-      setcurrentFidgetSettings: setcurrentFidgetSettings,
-      setSelectedFidgetID: setSelectedFidgetID,
-      selectedFidgetID: selectedFidgetID,
-    }),
+  const [fidgetWrappers, setFidgetWrappers] = useState<object>(
+    generateFidgetWrappers(config.fidgetInstanceDatums),
   );
 
+  function generateFidgetWrappers(fidgetInstances: {
+    [key: string]: FidgetInstanceData;
+  }) {
+    return mapValues(fidgetInstances, (details, key) =>
+      FidgetWrapper({
+        fidget: CompleteFidgets[details.fidgetType].fidget,
+        bundle: {
+          fidgetType: details.fidgetType,
+          id: details.id,
+          config: {
+            editable: editMode,
+            settings: details.config.settings,
+            data: details.config.data,
+          },
+          properties: CompleteFidgets[details.fidgetType].properties,
+        },
+        context: {
+          theme: config.theme,
+        },
+        saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+          return await saveConfig({
+            ...config,
+            fidgetInstanceDatums: {
+              ...config.fidgetInstanceDatums,
+              [key]: {
+                config: newInstanceConfig,
+                id: details.id,
+                fidgetType: details.fidgetType,
+              },
+            },
+          });
+        },
+        setcurrentFidgetSettings: setcurrentFidgetSettings,
+        setSelectedFidgetID: setSelectedFidgetID,
+        selectedFidgetID: selectedFidgetID,
+      }),
+    );
+  }
   function saveLayout(newLayoutConfig: LayoutFidgetConfig) {
     return saveConfig({
       ...config,
@@ -95,19 +102,22 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   }
 
   function addFidget(key: string, fidgetData: FidgetInstanceData) {
-    const newFidgets: { [key: string]: FidgetInstanceData } = {
-      ...config.fidgetInstances,
+    const newFidgetInstanceData: { [key: string]: FidgetInstanceData } = {
+      ...config.fidgetInstanceDatums,
     };
 
-    newFidgets[key] = fidgetData;
+    newFidgetInstanceData[key] = fidgetData;
 
-    return saveFidgets(newFidgets);
+    setFidgetWrappers(generateFidgetWrappers(newFidgetInstanceData));
+    return saveFidgetInstanceDatums(newFidgetInstanceData);
   }
 
-  function saveFidgets(fidgetInstances: { [key: string]: FidgetInstanceData }) {
+  function saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }) {
     return saveConfig({
       ...config,
-      fidgetInstances: fidgetInstances,
+      fidgetInstanceDatums: newFidgetInstanceDatums,
     });
   }
 
@@ -162,7 +172,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           }
         >
           <LayoutFidget
-            fidgets={fidgets}
+            fidgets={fidgetWrappers}
             inEditMode={editMode}
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
