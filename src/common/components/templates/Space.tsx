@@ -1,4 +1,4 @@
-import React, { useState, DragEvent } from "react";
+import React, { useState, DragEvent, useEffect } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -11,7 +11,6 @@ import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { ThemeSettings } from "@/common/lib/theme";
 import Sidebar from "../organisms/Sidebar";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -99,28 +98,6 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
     });
   }
 
-  function handleDrop(
-    layout: LayoutFidgetConfig,
-    item: PlacedGridItem,
-    e: DragEvent<HTMLDivElement>,
-  ) {
-    const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-
-    const newItem = {
-      i: `${Object.keys(config.fidgetInstances).length + 1}`,
-      x: 0,
-      y: 0,
-      w: data.width, // Use the passed width
-      h: data.height, // Use the passed height
-      minW: data.width,
-      maxW: data.width,
-      minH: data.height,
-      maxH: data.height,
-    };
-
-    setExternalDraggedItem({ w: newItem.w, h: newItem.h });
-  }
-
   function saveTheme(newTheme) {
     return saveConfig({
       ...config,
@@ -134,7 +111,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
         onClick={unselectFidget}
       ></div>
-      <div className="flex">
+      <div className="flex w-full h-full">
         <div
           className={
             editMode
@@ -167,7 +144,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
               onLayoutChange: saveLayout,
-              onDrop: handleDrop,
+              //onDrop: handleDrop,
               droppingItem: {
                 i: "TODO: GENERATE ID",
                 w: externalDraggedItem?.w,

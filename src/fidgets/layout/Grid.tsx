@@ -1,4 +1,5 @@
-import React, { ReactNode } from "react";
+import React, { DragEvent, ReactNode, useEffect, useState } from "react";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider, DragOverEvent } from "react-grid-layout";
 import {
   LayoutFidgetConfig,
@@ -37,38 +38,23 @@ export interface PlacedGridItem extends GridItem {
 const gridDetails = {
   isDraggable: false,
   isResizable: false,
-  items: 4,
-  cols: 12,
-  rowHeight: 70,
+  isDroppable: true,
+  isBounded: false,
   // This turns off compaction so you can place items wherever.
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
+  items: 4,
+  cols: 12,
   maxRows: 9,
+  rowHeight: 70,
   layout: [],
-  isBounded: false,
   margin: [16, 16],
   containerPadding: [0, 0],
+  //onLayoutChange: (layout: PlacedGridItem[]) => unknown,
+  onDrop: handleDrop,
+  //droppingItem?: { i: string; w: number; h: number },
 };
-
-// export interface GridLayout {
-//   readonly cols: number;
-//   readonly maxRows: number;
-//   layout: PlacedGridItem[];
-//   items: number;
-//   isResizable: boolean;
-//   isDraggable: boolean;
-//   isDroppable: boolean;
-//   isBounded?: boolean;
-//   rowHeight: number;
-//   compactType?: string | null;
-//   preventCollision?: boolean;
-//   margin: [number, number];
-//   containerPadding: [number, number];
-//   onLayoutChange: (layout: PlacedGridItem[]) => unknown;
-//   onDrop: (layout: PlacedGridItem[]) => void;
-//   droppingItem?: { i: string; w: number; h: number };
-// }
 
 type GridDetails = typeof gridDetails;
 
@@ -83,6 +69,28 @@ export type GridArgs = LayoutFidgetProps & {
   };
   inEditMode: boolean;
 };
+
+function handleDrop(
+  layout: LayoutFidgetConfig,
+  item: PlacedGridItem,
+  e: DragEvent<HTMLDivElement>,
+) {
+  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+  const newItem = {
+    i: `0`,
+    x: 0,
+    y: 0,
+    w: data.width, // Use the passed width
+    h: data.height, // Use the passed height
+    minW: data.width,
+    maxW: data.width,
+    minH: data.height,
+    maxH: data.height,
+  };
+
+  //setExternalDraggedItem({ w: newItem.w, h: newItem.h });
+}
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -126,13 +134,21 @@ const Grid: LayoutFidget<GridArgs> = ({
   fidgets,
   inEditMode,
 }: GridArgs) => {
+  var windowSize = useWindowSize();
+  var rowHeight = 70;
+
+  useEffect(() => {
+    rowHeight = windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
+  });
+
   return (
     <>
       {inEditMode && <Gridlines {...gridDetails} />}
       <ReactGridLayout
-        {...layoutConfig}
+        {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
+        rowheight={rowHeight}
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
           return <div key={gridItem.i}>{fidgets[gridItem.i]}</div>;
