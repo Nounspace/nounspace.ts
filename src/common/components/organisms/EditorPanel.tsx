@@ -1,9 +1,10 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
 import { FidgetInstanceData } from "@/common/fidgets";
+import FidgetPicker from "./FidgetPicker";
 
 export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
@@ -28,6 +29,17 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   currentFidgetSettings,
   fidgetTrayContents,
 }) => {
+  const [isPickingFidget, setIsPickingFidget] = useState(false);
+
+  function openFidgetPicker() {
+    setIsPickingFidget(true);
+    unselect();
+  }
+
+  function addFidgetToTray(fidget: Object): undefined {
+    return;
+  }
+
   return (
     <div className="flex w-full">
       <aside
@@ -42,12 +54,15 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <>{currentFidgetSettings}</>
               ) : (
                 <>
-                  <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
-                  <ThemeSettingsEditor
-                    theme={theme}
-                    saveTheme={saveTheme}
-                    setEditMode={setEditMode}
-                  />
+                  {isPickingFidget ? (
+                    <FidgetPicker addFidgetToTray={addFidgetToTray} />
+                  ) : (
+                    <ThemeSettingsEditor
+                      theme={theme}
+                      saveTheme={saveTheme}
+                      setEditMode={setEditMode}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -58,6 +73,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         <FidgetTray
           setExternalDraggedItem={setExternalDraggedItem}
           contents={fidgetTrayContents}
+          openFidgetPicker={openFidgetPicker}
         />
       </div>
     </div>

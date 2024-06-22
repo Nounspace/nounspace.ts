@@ -1,4 +1,10 @@
-import React, { DragEvent, ReactNode, useEffect, useState } from "react";
+import React, {
+  DragEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider, DragOverEvent } from "react-grid-layout";
 import {
@@ -135,11 +141,9 @@ const Grid: LayoutFidget<GridArgs> = ({
   inEditMode,
 }: GridArgs) => {
   var windowSize = useWindowSize();
-  var rowHeight = 70;
-
-  useEffect(() => {
-    rowHeight = windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
-  });
+  var rowHeight = useMemo(() => {
+    windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
+  }, [windowSize]);
 
   return (
     <>

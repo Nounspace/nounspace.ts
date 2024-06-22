@@ -28,21 +28,21 @@ const PlusIcon = () => {
   );
 };
 
-function addFidgetToTray() {}
-
 export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ w: number; h: number } | undefined>
   >;
   contents: FidgetInstanceData[];
+  openFidgetPicker: () => void;
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
   contents,
   setExternalDraggedItem,
+  openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-full mx-4 flex-col justify-center items-center">
+    <div className="w-full h-screen mx-4 flex-col justify-center items-center bg-sky-100 -m-8 p-8">
       {contents.map((fidget: FidgetInstanceData) => {
         return (
           <div key={fidget.id} className="flex justify-center items-center">
@@ -72,7 +72,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
 
       <div className="flex justify-center items-center">
         <button
-          onClick={addFidgetToTray}
+          onClick={openFidgetPicker}
           className="z-10 justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
         >
           <PlusIcon />

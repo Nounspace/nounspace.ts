@@ -6,7 +6,7 @@ export type ExampleFidgetSettings = {
   text: string;
 };
 
-const exampleConfig: FidgetProperties = {
+const exampleProperties: FidgetProperties = {
   fidgetName: "Example",
   fields: [
     {
@@ -30,5 +30,5 @@ const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = ({
 
 export default {
   fidget: Example,
-  properties: exampleConfig,
+  properties: exampleProperties,
 } as FidgetModule<FidgetArgs<ExampleFidgetSettings>>;
