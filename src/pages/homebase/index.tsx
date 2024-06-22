@@ -15,22 +15,14 @@ const Homebase: NextPageWithLayout = () => {
     loadConfig();
   }, []);
 
-  return (
-    <div>
-      <div className="p-8">
-        <div className="relative">
-          <SpaceWithLoader config={homebaseConfig} saveConfig={saveConfig} />
-        </div>
-      </div>
-    </div>
-  );
+  return <SpaceWithLoader config={homebaseConfig} saveConfig={saveConfig} />;
 };
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <LoggedInStateManager>
       <div
-        className="min-h-screen max-w-screen"
+        className="min-h-screen max-w-screen h-screen w-screen p-8"
         style={{ background: "var(--user-theme-background)" }}
       >
         {page}

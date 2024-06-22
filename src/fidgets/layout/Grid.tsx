@@ -1,5 +1,12 @@
-import React, { ReactNode } from "react";
-import RGL, { WidthProvider } from "react-grid-layout";
+import React, {
+  DragEvent,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import RGL, { WidthProvider, DragOverEvent } from "react-grid-layout";
 import {
   LayoutFidgetConfig,
   LayoutFidget,
@@ -34,20 +41,32 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-export interface GridLayout extends LayoutFidgetConfig {
-  readonly cols: number;
-  readonly maxRows: number;
+const gridDetails = {
+  isDraggable: false,
+  isResizable: false,
+  isDroppable: true,
+  isBounded: false,
+  // This turns off compaction so you can place items wherever.
+  compactType: null,
+  // This turns off rearrangement so items will not be pushed arround.
+  preventCollision: true,
+  items: 4,
+  cols: 12,
+  maxRows: 9,
+  rowHeight: 70,
+  layout: [],
+  margin: [16, 16],
+  containerPadding: [0, 0],
+  //onLayoutChange: (layout: PlacedGridItem[]) => unknown,
+  onDrop: handleDrop,
+  //droppingItem?: { i: string; w: number; h: number },
+};
+
+type GridDetails = typeof gridDetails;
+
+type GridLayout = {
   layout: PlacedGridItem[];
-  items: number;
-  isResizable: boolean;
-  isDraggable: boolean;
-  isBounded?: boolean;
-  rowHeight: number;
-  compactType?: string | null;
-  preventCollision?: boolean;
-  margin: [number, number];
-  containerPadding: [number, number];
-}
+};
 
 export type GridArgs = LayoutFidgetProps & {
   layoutConfig: GridLayout;
@@ -57,9 +76,31 @@ export type GridArgs = LayoutFidgetProps & {
   inEditMode: boolean;
 };
 
+function handleDrop(
+  layout: LayoutFidgetConfig,
+  item: PlacedGridItem,
+  e: DragEvent<HTMLDivElement>,
+) {
+  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+  const newItem = {
+    i: `0`,
+    x: 0,
+    y: 0,
+    w: data.width, // Use the passed width
+    h: data.height, // Use the passed height
+    minW: data.width,
+    maxW: data.width,
+    minH: data.height,
+    maxH: data.height,
+  };
+
+  //setExternalDraggedItem({ w: newItem.w, h: newItem.h });
+}
+
 const ReactGridLayout = WidthProvider(RGL);
 
-const Gridlines: React.FC<GridLayout> = ({
+const Gridlines: React.FC<GridDetails> = ({
   maxRows,
   cols,
   rowHeight,
@@ -99,13 +140,19 @@ const Grid: LayoutFidget<GridArgs> = ({
   fidgets,
   inEditMode,
 }: GridArgs) => {
+  const windowSize = useWindowSize();
+  const rowHeight = useMemo(() => {
+    windowSize ? Math.round(windowSize.height / 9) - 16 - 8 : 70;
+  }, [windowSize]);
+
   return (
     <>
-      {inEditMode && <Gridlines {...layoutConfig} />}
+      {inEditMode && <Gridlines {...gridDetails} />}
       <ReactGridLayout
-        {...layoutConfig}
+        {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
+        rowheight={rowHeight}
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
           return <div key={gridItem.i}>{fidgets[gridItem.i]}</div>;

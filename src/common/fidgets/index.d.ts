@@ -26,8 +26,8 @@ export type FidgetFieldConfig = {
   readonly required: boolean;
 };
 
-// Developer Defined Variables (inaccessible to the user)
-export type FidgetEditConfig = {
+// Properties are developer defined variables (they are inaccessible to the user)
+export type FidgetProperties = {
   fidgetName: string;
   fields: FidgetFieldConfig[];
   size: {
@@ -42,14 +42,21 @@ export type FidgetRenderContext = {
   theme: ThemeSettings;
 };
 
-export interface FidgetDetails<
+export type FidgetInstanceData<
   S extends FidgetSettings = FidgetSettings,
   D extends FidgetData = FidgetData,
-> {
-  editConfig: FidgetEditConfig;
-  instanceConfig: FidgetConfig<S, D>;
+> = {
+  config: FidgetConfig<S, D>;
+  fidgetType: string;
   id: string;
-}
+};
+
+export type FidgetBundle<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+> = FidgetInstanceData<S, D> & {
+  properties: FidgetProperties;
+};
 
 export interface LayoutFidgetConfig {}
 
@@ -69,7 +76,7 @@ export interface FidgetArgs<
 
 export interface FidgetModule<P extends FidgetArgs> {
   fidget: React.FC<P>;
-  editConfig: FidgetEditConfig;
+  properties: FidgetProperties;
 }
 
 interface LayoutFidgetProps {

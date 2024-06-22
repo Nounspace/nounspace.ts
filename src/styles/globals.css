@@ -76,6 +76,13 @@
   }
 } */
 
+.droppable-element {
+  text-align: center;
+  background: #ddf8ff;
+  margin: 10px 0;
+  padding: 10px;
+}
+
 .react-grid-layout {
   position: relative;
   transition: height 200ms ease;

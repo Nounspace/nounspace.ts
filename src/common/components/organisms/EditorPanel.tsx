@@ -1,26 +1,45 @@
-import React from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
+import { FidgetInstanceData } from "@/common/fidgets";
+import FidgetPicker from "./FidgetPicker";
 
 export interface EditorPanelProps {
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ w: number; h: number } | undefined>
+  >;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   unselect: () => void;
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
+  fidgetTrayContents: FidgetInstanceData[];
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
+  setExternalDraggedItem,
   setEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
   unselect,
   selectedFidgetID,
   currentFidgetSettings,
+  fidgetTrayContents,
 }) => {
+  const [isPickingFidget, setIsPickingFidget] = useState(false);
+
+  function openFidgetPicker() {
+    setIsPickingFidget(true);
+    unselect();
+  }
+
+  function addFidgetToTray(fidget): undefined {
+    return;
+  }
+
   return (
     <div className="flex w-full">
       <aside
@@ -35,12 +54,15 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <>{currentFidgetSettings}</>
               ) : (
                 <>
-                  <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
-                  <ThemeSettingsEditor
-                    theme={theme}
-                    saveTheme={saveTheme}
-                    setEditMode={setEditMode}
-                  />
+                  {isPickingFidget ? (
+                    <FidgetPicker addFidgetToTray={addFidgetToTray} />
+                  ) : (
+                    <ThemeSettingsEditor
+                      theme={theme}
+                      saveTheme={saveTheme}
+                      setEditMode={setEditMode}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -48,7 +70,11 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         </div>
       </aside>
       <div className="w-4/12">
-        <FidgetTray />
+        <FidgetTray
+          setExternalDraggedItem={setExternalDraggedItem}
+          contents={fidgetTrayContents}
+          openFidgetPicker={openFidgetPicker}
+        />
       </div>
     </div>
   );
