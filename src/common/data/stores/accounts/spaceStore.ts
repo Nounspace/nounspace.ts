@@ -1,9 +1,6 @@
-import {
-  SpaceConfig,
-  SpaceFidgetConfig,
-} from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/common/components/templates/Space";
 import { AppStore } from "..";
-import { FidgetSettings } from "@/common/fidgets";
+import { FidgetInstanceData, FidgetSettings } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../createStore";
 import axiosBackend from "../../api/backend";
 import {
@@ -30,7 +27,7 @@ type SpaceId = string;
 // So we rebuild the details, but without those fields
 export type SaveableSpaceConfig = Omit<SpaceConfig, "fidgetConfigs"> & {
   fidgetConfigs: {
-    [key: string]: Omit<SpaceFidgetConfig, "instanceConfig"> & {
+    [key: string]: Omit<FidgetInstanceData, "instanceConfig"> & {
       instanceConfig: FidgetSettings;
     };
   };

@@ -1,11 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Space, { SpaceConfig } from "@/common/components/templates/Space";
 import { useState } from "react";
-import { GridLayout, resizeDirections } from "@/fidgets/layout/Grid";
+import { resizeDirections } from "@/fidgets/layout/Grid";
 import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
 
 const Homebase: NextPageWithLayout = () => {
@@ -64,7 +63,7 @@ const Homebase: NextPageWithLayout = () => {
     text1: {
       fidgetType: "text",
       id: "text1",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Hello, World!",
@@ -76,7 +75,7 @@ const Homebase: NextPageWithLayout = () => {
     text2: {
       fidgetType: "text",
       id: "text2",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Text Fidget",
@@ -88,7 +87,7 @@ const Homebase: NextPageWithLayout = () => {
     gallery: {
       fidgetType: "gallery",
       id: "gallery",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           imageUrl:
@@ -100,7 +99,7 @@ const Homebase: NextPageWithLayout = () => {
     frame: {
       fidgetType: "frame",
       id: "frame",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
@@ -114,7 +113,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "text",
       id: "text3",
-      instanceConfig: {
+      config: {
         editable: true,
         settings: {
           title: "Hello, World!",
@@ -126,7 +125,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "gallery",
       id: "gallery2",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           imageUrl:
@@ -138,7 +137,7 @@ const Homebase: NextPageWithLayout = () => {
     {
       fidgetType: "frame",
       id: "frame2",
-      instanceConfig: {
+      config: {
         editable: false,
         settings: {
           url: "https://altumbase.com/degen/4888/dIVWKaIQZR",
@@ -148,28 +147,9 @@ const Homebase: NextPageWithLayout = () => {
     },
   ];
 
-  // To Do: Move window resizing to be part of the Grid component
-  const windowSize = useWindowSize();
-
-  const gridDetails: GridLayout = {
-    isDraggable: false,
-    isResizable: false,
-    items: 4,
-    cols: 12,
-    rowHeight: 70,
-    // This turns off compaction so you can place items wherever.
-    compactType: null,
-    // This turns off rearrangement so items will not be pushed arround.
-    preventCollision: true,
-    maxRows: 9,
-    layout: defaultLayoutData,
-    isBounded: false,
-    margin: [16, 16],
-    containerPadding: [0, 0],
-  };
   const layoutID = "";
   const layoutDetails: LayoutFidgetDetails = {
-    layoutConfig: gridDetails,
+    layoutConfig: { layout: defaultLayoutData },
     layoutFidget: "grid",
   };
 
@@ -177,27 +157,10 @@ const Homebase: NextPageWithLayout = () => {
     layoutID,
     layoutDetails,
     theme: DEFAULT_THEME,
-    fidgetConfigs: fidgets,
+    fidgetInstances: fidgets,
     isEditable: true,
-    fidgetTray: fidgetsInTray,
+    fidgetTrayContents: fidgetsInTray,
   });
-
-  useEffect(() => {
-    setSpaceConfig({
-      ...spaceConfig,
-      layoutDetails: {
-        layoutFidget: "grid",
-        layoutConfig: {
-          ...gridDetails,
-          rowHeight: windowSize
-            ? Math.round(windowSize.height / gridDetails.maxRows) -
-              gridDetails.margin[0] -
-              8
-            : 70,
-        },
-      },
-    });
-  }, [windowSize]);
 
   async function saveConfig(config: SpaceConfig) {
     setSpaceConfig(config);
@@ -205,10 +168,8 @@ const Homebase: NextPageWithLayout = () => {
 
   return (
     <div>
-      <div className="p-8">
-        <div className="relative">
-          <Space config={spaceConfig} saveConfig={saveConfig} />
-        </div>
+      <div className="relative">
+        <Space config={spaceConfig} saveConfig={saveConfig} />
       </div>
     </div>
   );

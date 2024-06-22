@@ -2,7 +2,7 @@ import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
@@ -18,7 +18,7 @@ export type TextFidgetSettings = {
   background: Color;
 };
 
-export const textConfig: FidgetEditConfig = {
+export const textConfig: FidgetProperties = {
   fidgetName: "Text",
   fields: [
     {
@@ -83,5 +83,5 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
 
 export default {
   fidget: Text,
-  editConfig: textConfig,
+  properties: textConfig,
 } as FidgetModule<FidgetArgs<TextFidgetSettings>>;

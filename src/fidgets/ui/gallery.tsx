@@ -1,12 +1,12 @@
 import React, { CSSProperties } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetEditConfig, FidgetModule } from "@/common/fidgets";
+import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
 };
 
-const galleryConfig: FidgetEditConfig = {
+const galleryConfig: FidgetProperties = {
   fidgetName: "Gallery",
   fields: [
     {
@@ -42,5 +42,5 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({
 
 export default {
   fidget: Gallery,
-  editConfig: galleryConfig,
+  properties: galleryConfig,
 } as FidgetModule<FidgetArgs<GalleryFidgetSettings>>;
