@@ -123,6 +123,8 @@
     "react-qr-code": "^2.0.14",
     "react-router-dom": "^6.22.0",
     "react-tweet": "^3.2.1",
+    "remark": "^15.0.1",
+    "remark-html": "^16.0.1",
     "sharp": "^0.33.4",
     "sonner": "^1.4.41",
     "tailwind-merge": "^2.2.0",
