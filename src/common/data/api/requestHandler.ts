@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 
 type ResponseError = {
   message?: string;
+  [key: string]: any;
 };
 
 export type NounspaceResponse<
@@ -14,25 +15,26 @@ export type NounspaceResponse<
   value?: D;
 };
 
-type HandlerFunction<R extends NounspaceResponse> = (
+type HandlerFunction<R extends NounspaceResponse = NounspaceResponse> = (
   req: NextApiRequest,
   res: NextApiResponse<R>,
 ) => Promise<void>;
 
-type RequestHandlerArgs<R extends NounspaceResponse> = {
-  get?: HandlerFunction<R>;
-  post?: HandlerFunction<R>;
-  patch?: HandlerFunction<R>;
-  delete?: HandlerFunction<R>;
-  put?: HandlerFunction<R>;
+type RequestHandlerArgs = {
+  get?: HandlerFunction;
+  post?: HandlerFunction;
+  patch?: HandlerFunction;
+  delete?: HandlerFunction;
+  put?: HandlerFunction;
 };
 
-export default async function requestHandler<R extends NounspaceResponse>(
-  args: RequestHandlerArgs<R>,
-) {
+export default function requestHandler(args: RequestHandlerArgs) {
   const allowedMethods = map(keys(args), (m) => m.toUpperCase());
 
-  return async (req: NextApiRequest, res: NextApiResponse<R>) => {
+  return async (
+    req: NextApiRequest,
+    res: NextApiResponse<NounspaceResponse>,
+  ) => {
     const method = req.method ? args[req.method.toLowerCase()] : undefined;
 
     if (!isUndefined(method)) {
@@ -43,7 +45,7 @@ export default async function requestHandler<R extends NounspaceResponse>(
         error: {
           message: `Allowed methods: ${allowedMethods}`,
         },
-      } as R);
+      });
     }
   };
 }

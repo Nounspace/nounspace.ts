@@ -10,7 +10,7 @@ import {
   FarcasterRegistrationType,
   SignerStatus,
 } from ".";
-import { isUndefined } from "lodash";
+import { isEqual, isUndefined, startsWith } from "lodash";
 import { ed25519 } from "@noble/curves/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
@@ -33,7 +33,7 @@ export type NounspaceDeveloperManagedSignerData =
     requestingWallet?: string;
   };
 
-const BACKEND_POLL_FREQUENCY = 2000;
+const BACKEND_POLL_FREQUENCY = 1000;
 
 class SignerNotProperlyInitializedError extends Error {
   constructor(message = "Signer not properly initialized", ...args) {
@@ -70,13 +70,23 @@ const retrieveSignerData = (data) => {
   };
 };
 
+function stripKeyOhEx(key: string) {
+  if (startsWith(key, "0x")) {
+    return key.slice(2);
+  }
+  return key;
+}
+
 const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData> =
   {
     isReady: (data) => {
-      return async () =>
-        data.status === "completed" &&
-        !isUndefined(data.publicKeyHex) &&
-        !isUndefined(data.privateKeyHex);
+      return async () => {
+        return (
+          data.status === "completed" &&
+          !isUndefined(data.publicKeyHex) &&
+          !isUndefined(data.privateKeyHex)
+        );
+      };
     },
     signMessage: (data) => {
       return async (messageHash: Uint8Array) => {
@@ -84,13 +94,13 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
           throw new SignerNotProperlyInitializedError();
         }
 
-        return ed25519.sign(messageHash, data.privateKeyHex);
+        return ed25519.sign(messageHash, stripKeyOhEx(data.privateKeyHex));
       };
     },
     getSignerPublicKey: (data) => {
       return async () => {
         isDataInitialized(data, true);
-        return hexToBytes(data.publicKeyHex!);
+        return hexToBytes(stripKeyOhEx(data.publicKeyHex!));
       };
     },
     getSignerStatus: (data) => {
@@ -108,12 +118,14 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
           return;
         }
         const resp = await retrieveSignerData(data)();
-        await saveData({
+        const newData = {
           ...data,
           signerFid: resp.requestFid || data.signerFid,
+          accountFid: resp.userFid || data.accountFid,
           status: resp.state || data.status || "pending",
           signerUrl: resp.deeplinkUrl || data.signerUrl,
-        });
+        };
+        if (!isEqual(newData, data)) await saveData(newData);
       };
     },
     createNewSigner: (data, saveData) => {
@@ -135,6 +147,7 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
           status: signerData.state || "pending",
           signerUrl: signerData.deeplinkUrl,
           token: signerData.token,
+          accountFid: signerData.userFid,
         });
         return signerData.deeplinkUrl;
       };
@@ -171,7 +184,7 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
 const initializer: AuthenticatorInitializer<
   NounspaceDeveloperManagedSignerData
 > = ({ data, saveData, done }) => {
-  const self = makeAuthenticatorMethods(methods, { data, saveData });
+  const self = makeAuthenticatorMethods(methods, { data, saveData }, true);
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
   const doneInterval = useRef<NodeJS.Timeout | undefined>();
@@ -184,7 +197,7 @@ const initializer: AuthenticatorInitializer<
   function startPolling() {
     setLoading(true);
     pollInterval.current = setInterval(
-      () => self.updateSignerInfo(),
+      self.updateSignerInfo,
       BACKEND_POLL_FREQUENCY,
     );
     doneInterval.current = setInterval(() => {
@@ -195,7 +208,7 @@ const initializer: AuthenticatorInitializer<
   }
 
   useEffect(() => {
-    if (data.state === "pending") {
+    if (isDataInitialized(data)) {
       startPolling();
     }
     return () => {
@@ -211,17 +224,21 @@ const initializer: AuthenticatorInitializer<
       data.status === "revoked" ? (
         <Button onClick={createSigner}>Link Warpcast Account</Button>
       ) : loading && data.signerUrl ? (
-        <QRCode value={data.signerUrl} maxWidth={256} />
+        <>
+          <QRCode value={data.signerUrl} maxWidth={256} />
+          <p>{data.signerUrl}</p>
+        </>
       ) : (
         <Spinner />
       )}
     </>
   );
 };
+initializer.displayName = "NounspaceDeveloperManagedSignerInitializer";
 
 const auth = createAuthenticator<
   NounspaceDeveloperManagedSignerData,
   FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSignerData>
->("NounspaceFarcasterAuthenticator", methods, initializer);
+>("Nounspace Managed Farcaster Signer", methods, initializer);
 
 export default auth;

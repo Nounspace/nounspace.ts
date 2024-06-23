@@ -1,8 +1,7 @@
-import { useAccountStore } from "@/common/data/stores/accounts";
+import { useAppStore } from "@/common/data/stores";
 import { Button } from "@/common/components/atoms/button";
 import Spinner from "@/common/components/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
-import { isUndefined } from "lodash";
 import Image from "next/image";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
@@ -10,11 +9,9 @@ import React, { useState } from "react";
 export default function Login() {
   const router = useRouter();
   const { ready, authenticated, logout: privyLogout } = usePrivy();
-  const { currentSpaceIdentityPublicKey, logout: accountStoreLogout } =
-    useAccountStore((state) => ({
-      currentSpaceIdentityPublicKey: state.currentSpaceIdentityPublicKey,
-      logout: state.logout,
-    }));
+  const { logout: accountStoreLogout } = useAppStore((state) => ({
+    logout: state.account.logout,
+  }));
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
       // Add User to Local Store if not already present
@@ -23,7 +20,7 @@ export default function Login() {
           // Trigger creating use store data
           // redirect to the new user tutorial
         }
-        router.push("/setup");
+        router.push("/homebase");
       }
     },
     onError: () => {
@@ -41,11 +38,7 @@ export default function Login() {
   const proceedToHomebase = (
     <>
       <Button
-        onClick={() =>
-          router.push(
-            isUndefined(currentSpaceIdentityPublicKey) ? "/setup" : "/homebase",
-          )
-        }
+        onClick={() => router.push("/homebase")}
         size="lg"
         className="p-6 text-black bg-white"
         type="button"
@@ -80,7 +73,7 @@ export default function Login() {
         Sign In or Create Account{" "}
       </Button>
       {errored ? (
-        <div className="bg-red">
+        <div className="bg-red text-white">
           An error occurred signing you in. Please try again or contact support
           if the problem persists
         </div>
