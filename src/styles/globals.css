@@ -189,12 +189,14 @@
   top: 10px;
   height: 100%;
   width: 5%;
+  opacity: 0;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-e {
   right: 0;
   top: 10px;
   height: 100%;
   width: 5%;
+  opacity: 0;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-n,
 .react-grid-item > .react-resizable-handle.react-resizable-handle-s {
@@ -207,10 +209,12 @@
   left: 10px;
   height: 5%;
   width: 100%;
+  opacity: 0;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-s {
   bottom: 0;
   left: 10px;
   height: 5%;
   width: 100%;
+  opacity: 0;
 }

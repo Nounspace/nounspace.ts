@@ -15,6 +15,7 @@ import _ from "lodash";
 import { mapValues } from "lodash";
 
 export interface EditorPanelProps {
+  setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
@@ -34,6 +35,7 @@ export interface EditorPanelProps {
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
+  setCurrentlyDragging,
   setExternalDraggedItem,
   setEditMode,
   theme = DEFAULT_THEME,
@@ -116,6 +118,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       </aside>
       <div className="w-5/12">
         <FidgetTray
+          setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}
           contents={fidgetTrayContents}
           openFidgetPicker={openFidgetPicker}

@@ -36,9 +36,11 @@ export interface FidgetTrayProps {
   openFidgetPicker: () => void;
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
   removeFidgetFromGrid(fidgetId: string): void;
+  setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
+  setCurrentlyDragging,
   contents,
   setExternalDraggedItem,
   openFidgetPicker,
@@ -56,6 +58,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
               // eslint-disable-next-line react/no-unknown-property
               unselectable="on"
               onDragStart={(e) => {
+                setCurrentlyDragging(true);
                 e.dataTransfer.setData(
                   "text/plain",
                   JSON.stringify(fidgetData),

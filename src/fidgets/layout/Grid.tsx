@@ -181,6 +181,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     h: number;
   }>();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
+  const [currentlyDragging, setCurrentlyDragging] = useState(false);
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
 
@@ -231,10 +232,9 @@ const Grid: LayoutFidget<GridArgs> = ({
       maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxHeight,
 
       resizeHandles: resizeDirections,
-      isDraggable: true,
-      isResizable: true,
     };
 
+    setCurrentlyDragging(false);
     moveFidgetFromTrayToGrid(newItem, fidgetData);
   }
 
@@ -280,6 +280,14 @@ const Grid: LayoutFidget<GridArgs> = ({
     saveFidgets(newLayoutConfig, fidgetInstanceDatums);
   }
 
+  function saveLayoutConditional(newLayout: PlacedGridItem[]) {
+    console.log("Layout Config", layoutConfig);
+    layoutConfig.layout = newLayout;
+    if (!currentlyDragging) {
+      saveLayout(newLayout);
+    }
+  }
+
   function editorPanelPortal(portalNode: HTMLDivElement | null) {
     return (
       <>
@@ -287,6 +295,7 @@ const Grid: LayoutFidget<GridArgs> = ({
           portalNode ? (
             createPortal(
               <EditorPanel
+                setCurrentlyDragging={setCurrentlyDragging}
                 setEditMode={setEditMode}
                 theme={theme}
                 saveTheme={saveTheme}
@@ -312,10 +321,6 @@ const Grid: LayoutFidget<GridArgs> = ({
     );
   }
 
-  function saveLayoutLocally(layout: PlacedGridItem[]) {
-    layoutConfig.layout = layout;
-  }
-
   return (
     <>
       {/* <div
@@ -337,14 +342,14 @@ const Grid: LayoutFidget<GridArgs> = ({
         isDroppable={true}
         droppingItem={externalDraggedItem}
         onDrop={handleDrop}
-        onLayoutChange={saveLayoutLocally}
+        onLayoutChange={saveLayoutConditional}
         className="h-full"
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
-          console.log("Layout Config", layoutConfig);
-          console.log("Fidget Instances", fidgetInstanceDatums);
-          console.log("Grid Item", gridItem.i);
-          console.log("Specific Instance", fidgetInstanceDatums[gridItem.i]);
+          // console.log("Layout Config", layoutConfig);
+          // console.log("Fidget Instances", fidgetInstanceDatums);
+          // console.log("Grid Item", gridItem.i);
+          // console.log("Specific Instance", fidgetInstanceDatums[gridItem.i]);
           return (
             <div key={gridItem.i}>
               {FidgetWrapper({
@@ -355,6 +360,7 @@ const Grid: LayoutFidget<GridArgs> = ({
                   fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
                   id: fidgetInstanceDatums[gridItem.i].id,
                   config: {
+                    // TODO: Determine what this editable variable is being used for
                     editable: inEditMode,
                     settings: fidgetInstanceDatums[gridItem.i].config.settings,
                     data: fidgetInstanceDatums[gridItem.i].config.data,
