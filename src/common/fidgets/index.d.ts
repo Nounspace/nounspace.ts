@@ -80,13 +80,7 @@ export interface FidgetModule<P extends FidgetArgs> {
 }
 
 interface LayoutFidgetProps {
-  layoutConfig: LayoutFidgetConfig;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  inEditMode: boolean;
-}
-
-type LayoutFidgetDefaultProps = {
-  layoutConfig: LayoutFidgetConfig;
+  layoutConfig: GridLayoutConfig;
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   fidgetTrayContents: FidgetInstanceData[];
   theme: ThemeSettings;
@@ -106,7 +100,30 @@ type LayoutFidgetDefaultProps = {
 
   inEditMode: boolean;
   setEditMode: (editMode: boolean) => void;
+  portalRef: React.RefObject<HTMLDivElement>;
+}
 
+type LayoutFidgetDefaultProps = {
+  layoutConfig: GridLayoutConfig;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  fidgetTrayContents: FidgetInstanceData[];
+  theme: ThemeSettings;
+
+  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
+  saveFidgets(
+    newLayoutConfig: LayoutFidgetConfig,
+    newFidgetInstanceDatums: {
+      [key: string]: FidgetInstanceData;
+    },
+  ): Promise<void>;
+  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }): Promise<void>;
+  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
+  saveTheme(newTheme: any): Promise<void>;
+
+  inEditMode: boolean;
+  setEditMode: (editMode: boolean) => void;
   portalRef: React.RefObject<HTMLDivElement>;
 };
 
