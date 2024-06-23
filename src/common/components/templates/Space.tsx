@@ -1,4 +1,4 @@
-import React, { useState, DragEvent, useEffect } from "react";
+import React, { useState } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -26,9 +26,10 @@ export type SpaceConfig = {
 type SpaceArgs = {
   config: SpaceConfig;
   saveConfig: (config: SpaceConfig) => Promise<void>;
+  commitConfig: () => Promise<void>;
 };
 
-export default function Space({ config, saveConfig }: SpaceArgs) {
+export default function Space({ config, saveConfig, commitConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
   const [externalDraggedItem, setExternalDraggedItem] = useState<{
     w: number;
