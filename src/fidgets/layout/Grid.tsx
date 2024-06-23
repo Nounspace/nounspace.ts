@@ -220,15 +220,16 @@ const Grid: LayoutFidget<GridArgs> = ({
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
+    console.log("Dropped: ", item, "Onto: ", layout);
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
 
     const newItem = {
-      i: fidgetData.id,
+      i: item.i,
 
-      x: 0,
-      y: 0,
+      x: item.x,
+      y: item.y,
 
       w: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
       minW: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
@@ -242,9 +243,6 @@ const Grid: LayoutFidget<GridArgs> = ({
       isDraggable: true,
       isResizable: true,
     };
-
-    console.log(fidgetData);
-    console.log(newItem);
 
     const newLayoutConfig: GridLayoutConfig = {
       layout: [...layoutConfig.layout, newItem],
@@ -283,9 +281,9 @@ const Grid: LayoutFidget<GridArgs> = ({
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
           console.log("Layout Config", layoutConfig);
-          console.log("Grid Item ID", gridItem.i);
           console.log("Fidget Instances", fidgetInstanceDatums);
-          console.log("Fidget at ID", fidgetInstanceDatums[gridItem.i]);
+          console.log("Grid Item", gridItem.i);
+          console.log("Specific Instance", fidgetInstanceDatums[gridItem.i]);
           return (
             <div key={gridItem.i}>
               {FidgetWrapper({

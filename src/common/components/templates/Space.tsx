@@ -59,7 +59,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
       },
       layoutDetails: {
         ...config.layoutDetails,
-        layoutConfig: { layout: [newLayoutConfig] },
+        layoutConfig: newLayoutConfig,
       },
     });
   }

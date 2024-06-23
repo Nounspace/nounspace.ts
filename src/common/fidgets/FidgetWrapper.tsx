@@ -47,12 +47,8 @@ export function FidgetWrapper({
   setSelectedFidgetID,
   selectedFidgetID,
 }: FidgetWrapperProps) {
-  const [_saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
-
-  const onClickEdit = useCallback(() => {
+  function onClickEdit() {
     setSelectedFidgetID(config.id);
-    setEditing(true);
     setcurrentFidgetSettings(
       <FidgetSettingsEditor
         properties={config.properties}
@@ -61,7 +57,7 @@ export function FidgetWrapper({
         unselect={unselect}
       />,
     );
-  }, [setEditing]);
+  }
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
@@ -76,18 +72,14 @@ export function FidgetWrapper({
   );
 
   const onSave = async (newSettings: FidgetSettings) => {
-    setSaving(true);
     try {
       await saveConfig({
         ...config.config,
         settings: newSettings,
       });
-      setEditing(false);
     } catch (e) {
       toast.error("Failed to save fidget settings", { duration: 1000 });
     }
-    setSaving(false);
-    setEditing(false);
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
   };

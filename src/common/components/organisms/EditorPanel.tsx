@@ -76,11 +76,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
 
     const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
 
-    console.log("FidgetInstancesBefore", fidgetInstanceDatums);
     fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    console.log("FidgetInstancesAfter", fidgetInstanceDatums);
 
-    //saveFidgetInstanceDatums(fidgetInstanceDatums);
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
     saveTrayContents(newTrayContents);
   }
 
