@@ -67,7 +67,7 @@ export const createHomeBaseStoreFunc = (
         // TO DO: Error handling
         await axiosBackend.post(`/api/space/homebase/`, file);
       }
-    })();
+    }, 1000)();
   },
   saveHomebaseConfig: async (config) => {
     set((draft) => {

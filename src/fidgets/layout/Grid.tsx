@@ -78,6 +78,28 @@ type GridLayoutConfig = {
   layout: PlacedGridItem[];
 };
 
+function handleDrop(
+  layout: LayoutFidgetConfig,
+  item: PlacedGridItem,
+  e: DragEvent<HTMLDivElement>,
+) {
+  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+
+  const newItem = {
+    i: `0`,
+    x: 0,
+    y: 0,
+    w: data.width, // Use the passed width
+    h: data.height, // Use the passed height
+    minW: data.width,
+    maxW: data.width,
+    minH: data.height,
+    maxH: data.height,
+  };
+
+  //setExternalDraggedItem({ w: newItem.w, h: newItem.h });
+}
+
 const ReactGridLayout = WidthProvider(RGL);
 
 const Gridlines: React.FC<GridDetails> = ({

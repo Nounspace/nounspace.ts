@@ -72,7 +72,6 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           </div>
         );
       })}
-
       <div className="flex justify-center items-center h-16 w-full">
         <button
           onClick={openFidgetPicker}
