@@ -236,8 +236,8 @@ const Grid: LayoutFidget<GridArgs> = ({
       maxW: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
 
       h: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
-      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
-      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxWidth,
+      minH: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
+      maxH: CompleteFidgets[fidgetData.fidgetType].properties.size.maxHeight,
 
       resizeHandles: resizeDirections,
       isDraggable: true,

@@ -43,7 +43,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100">
+    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100 p-8">
       {contents.map((fidgetData: FidgetInstanceData) => {
         return (
           <div key={fidgetData.id} className="flex justify-center items-center">
@@ -73,10 +73,10 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
         );
       })}
 
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center h-16 w-full">
         <button
           onClick={openFidgetPicker}
-          className="z-10 justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+          className="z-10 flex justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group h-16 w-16 mx-auto"
         >
           <PlusIcon />
         </button>

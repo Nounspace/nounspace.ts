@@ -47,9 +47,9 @@ export const textConfig: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 3,
     maxWidth: 36,
   },
 };
