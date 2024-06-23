@@ -13,6 +13,8 @@ const galleryConfig: FidgetProperties = {
       fieldName: "imageUrl",
       required: true,
       inputSelector: TextInput,
+      default:
+        "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
     },
   ],
   size: {

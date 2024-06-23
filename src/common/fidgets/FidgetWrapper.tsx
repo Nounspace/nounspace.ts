@@ -93,8 +93,8 @@ export function FidgetWrapper({
     <Card
       className={
         selectedFidgetID === config.id
-          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-scroll"
-          : "size-full overflow-scroll"
+          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+          : "size-full overflow-hidden"
       }
     >
       {config.config.editable && (

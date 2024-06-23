@@ -248,14 +248,20 @@ const Grid: LayoutFidget<GridArgs> = ({
       layout: [...layoutConfig.layout],
     };
 
-    const itemIndex = newLayoutConfig.layout.findIndex((x) => x.i == item.i);
-    newLayoutConfig.layout[itemIndex] = newItem;
+    const itemLayoutIndex = newLayoutConfig.layout.findIndex(
+      (x) => x.i == item.i,
+    );
+    newLayoutConfig.layout[itemLayoutIndex] = newItem;
 
     const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
       ...fidgetInstanceDatums,
       [fidgetData.id]: fidgetData,
     };
 
+    const itemTrayIndex = fidgetTrayContents.findIndex((x) => x.i == item.i);
+    const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex, 1);
+
+    saveTrayContents(newFidgetTrayContents);
     saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
   }
 
