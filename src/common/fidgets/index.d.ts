@@ -79,6 +79,8 @@ export interface FidgetModule<P extends FidgetArgs> {
   properties: FidgetProperties;
 }
 
+//TODO: Clean up this mess and do it properly
+
 interface LayoutFidgetProps {
   layoutConfig: GridLayoutConfig;
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData };

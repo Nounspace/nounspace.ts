@@ -192,14 +192,12 @@ const Grid: LayoutFidget<GridArgs> = ({
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
   );
-  const windowSize = useWindowSize();
 
-  const rowHeight = useMemo(() => {
-    windowSize
-      ? Math.round(windowSize.height / gridDetails.maxRows) -
-        gridDetails.margin[0]
-      : 70;
-  }, [windowSize]);
+  const { width, height } = useWindowSize();
+
+  const rowHeight = height
+    ? Math.round((height - 200) / gridDetails.maxRows)
+    : 70;
 
   useEffect(() => {
     // Force a rerender, so it can be passed to the child.
@@ -330,7 +328,7 @@ const Grid: LayoutFidget<GridArgs> = ({
 
       {editorPanelPortal(element)}
 
-      {inEditMode && <Gridlines {...gridDetails} />}
+      {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
       <ReactGridLayout
         {...gridDetails}
@@ -338,7 +336,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         isResizable={inEditMode}
         layout={layoutConfig.layout}
         items={layoutConfig.layout.length}
-        rowheight={rowHeight}
+        rowHeight={rowHeight}
         isDroppable={true}
         droppingItem={externalDraggedItem}
         onDrop={handleDrop}
@@ -346,10 +344,6 @@ const Grid: LayoutFidget<GridArgs> = ({
         className="h-full"
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
-          // console.log("Layout Config", layoutConfig);
-          // console.log("Fidget Instances", fidgetInstanceDatums);
-          // console.log("Grid Item", gridItem.i);
-          // console.log("Specific Instance", fidgetInstanceDatums[gridItem.i]);
           return (
             <div key={gridItem.i}>
               {FidgetWrapper({
@@ -375,6 +369,7 @@ const Grid: LayoutFidget<GridArgs> = ({
                 saveConfig: async (
                   newInstanceConfig: FidgetConfig<FidgetSettings>,
                 ) => {
+                  saveLayout(layoutConfig.layout);
                   return await saveFidgetInstanceDatums(
                     (fidgetInstanceDatums = {
                       ...fidgetInstanceDatums,

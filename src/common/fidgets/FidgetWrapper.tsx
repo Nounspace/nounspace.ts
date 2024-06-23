@@ -80,8 +80,8 @@ export function FidgetWrapper({
     } catch (e) {
       toast.error("Failed to save fidget settings", { duration: 1000 });
     }
-    setSelectedFidgetID("");
-    setcurrentFidgetSettings(<></>);
+
+    unselect();
   };
 
   function unselect() {
