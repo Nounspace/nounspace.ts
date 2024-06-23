@@ -258,7 +258,7 @@ const Grid: LayoutFidget<GridArgs> = ({
       [fidgetData.id]: fidgetData,
     };
 
-    const itemTrayIndex = fidgetTrayContents.findIndex((x) => x.i == item.i);
+    const itemTrayIndex = fidgetTrayContents.findIndex((x) => x.id == item.i);
     const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex, 1);
 
     saveTrayContents(newFidgetTrayContents);
