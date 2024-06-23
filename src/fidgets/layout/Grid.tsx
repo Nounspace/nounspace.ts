@@ -206,37 +206,6 @@ const Grid: LayoutFidget<GridArgs> = ({
     setElement(portalRef.current);
   }, []);
 
-  function editorPanelPortal(portalNode: HTMLDivElement | null) {
-    return (
-      <>
-        {inEditMode ? (
-          portalNode ? (
-            createPortal(
-              <EditorPanel
-                setEditMode={setEditMode}
-                theme={theme}
-                saveTheme={saveTheme}
-                unselect={unselectFidget}
-                selectedFidgetID={selectedFidgetID}
-                currentFidgetSettings={currentFidgetSettings}
-                setExternalDraggedItem={setExternalDraggedItem}
-                fidgetTrayContents={fidgetTrayContents}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-                saveTrayContents={saveTrayContents}
-              />,
-              portalNode,
-            )
-          ) : (
-            <></>
-          )
-        ) : (
-          <></>
-        )}
-      </>
-    );
-  }
-
   function handleDrop(
     layout: PlacedGridItem[],
     item: PlacedGridItem,
@@ -266,25 +235,81 @@ const Grid: LayoutFidget<GridArgs> = ({
       isResizable: true,
     };
 
+    moveFidgetFromTrayToGrid(newItem, fidgetData);
+  }
+
+  function moveFidgetFromTrayToGrid(
+    gridItem: PlacedGridItem,
+    fidgetData: FidgetInstanceData,
+  ) {
     const newLayoutConfig: GridLayoutConfig = {
       layout: [...layoutConfig.layout],
     };
 
     const itemLayoutIndex = newLayoutConfig.layout.findIndex(
-      (x) => x.i == item.i,
+      (x) => x.i == gridItem.i,
     );
-    newLayoutConfig.layout[itemLayoutIndex] = newItem;
+    newLayoutConfig.layout[itemLayoutIndex] = gridItem;
 
     const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
       ...fidgetInstanceDatums,
       [fidgetData.id]: fidgetData,
     };
 
-    const itemTrayIndex = fidgetTrayContents.findIndex((x) => x.id == item.i);
+    const itemTrayIndex = fidgetTrayContents.findIndex(
+      (x) => x.id == gridItem.i,
+    );
     const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex, 1);
 
     saveTrayContents(newFidgetTrayContents);
     saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
+  }
+
+  function removeFidgetFromGrid(fidgetId: string) {
+    // Note that this function does not remove it from the list of instances (fidgetInstanceDatums
+
+    const newLayoutConfig: GridLayoutConfig = {
+      layout: [...layoutConfig.layout],
+    };
+
+    const itemLayoutIndex = newLayoutConfig.layout.findIndex(
+      (x) => x.i == fidgetId,
+    );
+    newLayoutConfig.layout = newLayoutConfig.layout.splice(itemLayoutIndex, 1);
+
+    saveFidgets(newLayoutConfig, fidgetInstanceDatums);
+  }
+
+  function editorPanelPortal(portalNode: HTMLDivElement | null) {
+    return (
+      <>
+        {inEditMode ? (
+          portalNode ? (
+            createPortal(
+              <EditorPanel
+                setEditMode={setEditMode}
+                theme={theme}
+                saveTheme={saveTheme}
+                unselect={unselectFidget}
+                selectedFidgetID={selectedFidgetID}
+                currentFidgetSettings={currentFidgetSettings}
+                setExternalDraggedItem={setExternalDraggedItem}
+                fidgetTrayContents={fidgetTrayContents}
+                fidgetInstanceDatums={fidgetInstanceDatums}
+                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+                saveTrayContents={saveTrayContents}
+                removeFidgetFromGrid={removeFidgetFromGrid}
+              />,
+              portalNode,
+            )
+          ) : (
+            <></>
+          )
+        ) : (
+          <></>
+        )}
+      </>
+    );
   }
 
   return (

@@ -30,6 +30,7 @@ export interface EditorPanelProps {
   saveFidgetInstanceDatums(newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
+  removeFidgetFromGrid(fidgetId: string): void;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -44,6 +45,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   saveTrayContents,
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
+  removeFidgetFromGrid,
 }) => {
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
@@ -118,6 +120,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           contents={fidgetTrayContents}
           openFidgetPicker={openFidgetPicker}
           saveTrayContents={saveTrayContents}
+          removeFidgetFromGrid={removeFidgetFromGrid}
         />
       </div>
     </div>
