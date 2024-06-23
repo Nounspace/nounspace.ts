@@ -26,6 +26,10 @@ export interface EditorPanelProps {
   currentFidgetSettings: React.ReactNode;
   fidgetTrayContents: FidgetInstanceData[];
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }): Promise<void>;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -38,6 +42,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   currentFidgetSettings,
   fidgetTrayContents,
   saveTrayContents,
+  fidgetInstanceDatums,
+  saveFidgetInstanceDatums,
 }) => {
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
@@ -58,9 +64,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       });
     }
 
-    const newTrayContents = [...fidgetTrayContents];
-
-    newTrayContents.push({
+    const newFidgetInstanceData = {
       config: {
         editable: true,
         data: {},
@@ -68,8 +72,15 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       },
       fidgetType: fidget.properties.fidgetName,
       id: fidget.properties.fidgetName + ":" + uuidv4(),
-    });
+    };
 
+    const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+
+    console.log("FidgetInstancesBefore", fidgetInstanceDatums);
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+    console.log("FidgetInstancesAfter", fidgetInstanceDatums);
+
+    //saveFidgetInstanceDatums(fidgetInstanceDatums);
     saveTrayContents(newTrayContents);
   }
 

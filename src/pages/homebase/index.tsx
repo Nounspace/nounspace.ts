@@ -15,6 +15,8 @@ const Homebase: NextPageWithLayout = () => {
     loadConfig();
   }, []);
 
+  console.log(homebaseConfig);
+
   return <SpaceWithLoader config={homebaseConfig} saveConfig={saveConfig} />;
 };
 

@@ -81,38 +81,33 @@ export interface FidgetModule<P extends FidgetArgs> {
 
 interface LayoutFidgetProps {
   layoutConfig: LayoutFidgetConfig;
-  fidgets: {
-    [key: string]: ReactNode;
-  };
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   inEditMode: boolean;
 }
 
 type LayoutFidgetDefaultProps = {
-  fidgets: object;
-  layoutConfig: object;
-  inEditMode: boolean;
-  portalRef: React.RefObject<HTMLDivElement>;
-  saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
-  addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
-  droppingItem:
-    | {
-        i: string;
-        w: number;
-        h: number;
-      }
-    | undefined;
-
-  setEditMode: (editMode: boolean) => void;
-  theme: ThemeSettings;
-  saveTheme: (newTheme: ThemeSettings) => void;
-  unselect: () => void;
-  selectedFidgetID: string | null;
-  currentFidgetSettings: React.ReactNode;
-  setExternalDraggedItem: Dispatch<
-    SetStateAction<{ i: string; w: number; h: number } | undefined>
-  >;
+  layoutConfig: LayoutFidgetConfig;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   fidgetTrayContents: FidgetInstanceData[];
-  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
+  theme: ThemeSettings;
+
+  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
+  saveFidgets(
+    newLayoutConfig: LayoutFidgetConfig,
+    newFidgetInstanceDatums: {
+      [key: string]: FidgetInstanceData;
+    },
+  ): Promise<void>;
+  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }): Promise<void>;
+  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
+  saveTheme(newTheme: any): Promise<void>;
+
+  inEditMode: boolean;
+  setEditMode: (editMode: boolean) => void;
+
+  portalRef: React.RefObject<HTMLDivElement>;
 };
 
 export interface LayoutFidget<

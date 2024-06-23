@@ -30,88 +30,38 @@ type SpaceArgs = {
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
   const portalRef = useRef<HTMLDivElement>(null);
-
   const [editMode, setEditMode] = useState(false);
-  const [externalDraggedItem, setExternalDraggedItem] = useState<{
-    i: string;
-    w: number;
-    h: number;
-  }>();
-  const [selectedFidgetID, setSelectedFidgetID] = useState("");
-  const [currentFidgetSettings, setcurrentFidgetSettings] =
-    useState<React.ReactNode>(<></>);
-
-  function unselectFidget() {
-    setSelectedFidgetID("");
-    setcurrentFidgetSettings(<></>);
-  }
 
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
 
-  const [fidgetWrappers, setFidgetWrappers] = useState<object>(
-    generateFidgetWrappers(config.fidgetInstanceDatums),
-  );
-
-  function generateFidgetWrappers(fidgetInstances: {
-    [key: string]: FidgetInstanceData;
-  }) {
-    return mapValues(fidgetInstances, (details, key) =>
-      FidgetWrapper({
-        fidget: CompleteFidgets[details.fidgetType].fidget,
-        bundle: {
-          fidgetType: details.fidgetType,
-          id: details.id,
-          config: {
-            editable: editMode,
-            settings: details.config.settings,
-            data: details.config.data,
-          },
-          properties: CompleteFidgets[details.fidgetType].properties,
-        },
-        context: {
-          theme: config.theme,
-        },
-        saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-          return await saveConfig({
-            ...config,
-            fidgetInstanceDatums: {
-              ...config.fidgetInstanceDatums,
-              [key]: {
-                config: newInstanceConfig,
-                id: details.id,
-                fidgetType: details.fidgetType,
-              },
-            },
-          });
-        },
-        setcurrentFidgetSettings: setcurrentFidgetSettings,
-        setSelectedFidgetID: setSelectedFidgetID,
-        selectedFidgetID: selectedFidgetID,
-      }),
-    );
-  }
-  function saveLayout(newLayoutConfig: LayoutFidgetConfig) {
+  function saveLayout(layout: LayoutFidgetConfig) {
     return saveConfig({
       ...config,
       layoutDetails: {
         ...config.layoutDetails,
         layoutConfig: {
           ...config.layoutDetails.layoutConfig,
-          ...newLayoutConfig,
+          layout: layout,
         },
       },
     });
   }
 
-  function addFidget(key: string, fidgetData: FidgetInstanceData) {
-    const newFidgetInstanceData: { [key: string]: FidgetInstanceData } = {
-      ...config.fidgetInstanceDatums,
-    };
-
-    newFidgetInstanceData[key] = fidgetData;
-
-    setFidgetWrappers(generateFidgetWrappers(newFidgetInstanceData));
-    return saveFidgetInstanceDatums(newFidgetInstanceData);
+  function saveFidgets(
+    newLayoutConfig: LayoutFidgetConfig,
+    newFidgetInstanceDatums: { [key: string]: FidgetInstanceData },
+  ) {
+    return saveConfig({
+      ...config,
+      fidgetInstanceDatums: {
+        ...config.fidgetInstanceDatums,
+        ...newFidgetInstanceDatums,
+      },
+      layoutDetails: {
+        ...config.layoutDetails,
+        layoutConfig: { layout: [newLayoutConfig] },
+      },
+    });
   }
 
   function saveFidgetInstanceDatums(newFidgetInstanceDatums: {
@@ -139,10 +89,6 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
-      <div
-        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
-        onClick={unselectFidget}
-      ></div>
       <div className="flex w-full h-full">
         <div
           className={
@@ -170,21 +116,17 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
             }}
-            fidgets={fidgetWrappers}
+            fidgetInstanceDatums={config.fidgetInstanceDatums}
+            theme={config.theme}
+            fidgetTrayContents={config.fidgetTrayContents}
+            saveLayout={saveLayout}
+            saveFidgets={saveFidgets}
+            saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+            saveTrayContents={saveTrayContents}
+            saveTheme={saveTheme}
             inEditMode={editMode}
             setEditMode={setEditMode}
-            saveLayout={saveLayout}
-            addFidget={addFidget}
-            droppingItem={externalDraggedItem}
             portalRef={portalRef}
-            theme={config.theme}
-            saveTheme={saveTheme}
-            unselect={unselectFidget}
-            selectedFidgetID={selectedFidgetID}
-            currentFidgetSettings={currentFidgetSettings}
-            setExternalDraggedItem={setExternalDraggedItem}
-            fidgetTrayContents={config.fidgetTrayContents}
-            saveTrayContents={saveTrayContents}
           />
         </div>
       </div>

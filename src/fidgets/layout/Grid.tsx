@@ -15,11 +15,16 @@ import {
   LayoutFidget,
   LayoutFidgetProps,
   FidgetInstanceData,
+  FidgetConfig,
+  FidgetSettings,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
+import { SpaceConfig } from "@/common/components/templates/Space";
+import { mapValues } from "lodash";
+import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -112,50 +117,55 @@ const Gridlines: React.FC<GridDetails> = ({
 
 interface GridArgs {
   layoutConfig: GridLayoutConfig;
-  fidgets: {
-    [key: string]: ReactNode;
-  };
-  inEditMode: boolean;
-  portalRef: React.RefObject<HTMLDivElement>;
-  saveLayout: (newLayoutConfig: LayoutFidgetConfig) => Promise<void>;
-  addFidget: (key: string, fidgetData: FidgetInstanceData) => Promise<void>;
-  droppingItem: {
-    i: "";
-    w: 1;
-    h: 1;
-  };
-
-  setEditMode: (editMode: boolean) => void;
-  theme: ThemeSettings;
-  saveTheme: (newTheme: ThemeSettings) => void;
-  unselect: () => void;
-  selectedFidgetID: string | null;
-  currentFidgetSettings: React.ReactNode;
-  setExternalDraggedItem: Dispatch<
-    SetStateAction<{ i: string; w: number; h: number } | undefined>
-  >;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   fidgetTrayContents: FidgetInstanceData[];
-  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
+  theme: ThemeSettings;
+
+  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
+  saveFidgets(
+    newLayoutConfig: LayoutFidgetConfig,
+    newFidgetInstanceDatums: {
+      [key: string]: FidgetInstanceData;
+    },
+  ): Promise<void>;
+  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }): Promise<void>;
+  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
+  saveTheme(newTheme: any): Promise<void>;
+
+  inEditMode: boolean;
+  setEditMode: (editMode: boolean) => void;
+  portalRef: React.RefObject<HTMLDivElement>;
 }
 
 const Grid: LayoutFidget<GridArgs> = ({
   layoutConfig,
-  fidgets,
+  fidgetInstanceDatums,
+  fidgetTrayContents,
+  theme,
+  saveLayout,
+  saveFidgets,
+  saveFidgetInstanceDatums,
+  saveTrayContents,
+  saveTheme,
   inEditMode,
   setEditMode,
-  saveLayout,
-  addFidget,
-  droppingItem,
   portalRef,
-  theme,
-  saveTheme,
-  unselect,
-  selectedFidgetID,
-  currentFidgetSettings,
-  setExternalDraggedItem,
-  fidgetTrayContents,
-  saveTrayContents,
 }: GridArgs) => {
+  const [externalDraggedItem, setExternalDraggedItem] = useState<{
+    i: string;
+    w: number;
+    h: number;
+  }>();
+  const [selectedFidgetID, setSelectedFidgetID] = useState("");
+  const [currentFidgetSettings, setcurrentFidgetSettings] =
+    useState<React.ReactNode>(<></>);
+
+  function unselectFidget() {
+    setSelectedFidgetID("");
+    setcurrentFidgetSettings(<></>);
+  }
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
   );
@@ -184,11 +194,13 @@ const Grid: LayoutFidget<GridArgs> = ({
                 setEditMode={setEditMode}
                 theme={theme}
                 saveTheme={saveTheme}
-                unselect={unselect}
+                unselect={unselectFidget}
                 selectedFidgetID={selectedFidgetID}
                 currentFidgetSettings={currentFidgetSettings}
                 setExternalDraggedItem={setExternalDraggedItem}
                 fidgetTrayContents={fidgetTrayContents}
+                fidgetInstanceDatums={fidgetInstanceDatums}
+                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
                 saveTrayContents={saveTrayContents}
               />,
               portalNode,
@@ -207,7 +219,6 @@ const Grid: LayoutFidget<GridArgs> = ({
     layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
-    saveGrid?: () => {},
   ) {
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
@@ -232,19 +243,31 @@ const Grid: LayoutFidget<GridArgs> = ({
       isResizable: true,
     };
 
+    console.log(fidgetData);
+    console.log(newItem);
+
     const newLayoutConfig: GridLayoutConfig = {
-      ...layoutConfig,
       layout: [...layoutConfig.layout, newItem],
     };
 
-    addFidget(fidgetData.id, fidgetData);
-    saveLayout(newLayoutConfig);
+    const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
+      [fidgetData.id]: fidgetData,
+    };
+
+    saveFidgets({ newLayoutConfig }, newFidgetInstanceDatums);
   }
 
   return (
     <>
+      {/* <div
+        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
+        onClick={unselectFidget}
+      ></div> */}
+
       {editorPanelPortal(element)}
+
       {inEditMode && <Gridlines {...gridDetails} />}
+
       <ReactGridLayout
         {...gridDetails}
         isDraggable={inEditMode}
@@ -253,13 +276,57 @@ const Grid: LayoutFidget<GridArgs> = ({
         items={layoutConfig.layout.length}
         rowheight={rowHeight}
         isDroppable={true}
-        droppingItem={droppingItem}
+        droppingItem={externalDraggedItem}
         onDrop={handleDrop}
         onLayoutChange={saveLayout}
         className="h-full"
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
-          return <div key={gridItem.i}>{fidgets[gridItem.i]}</div>;
+          console.log("Layout Config", layoutConfig);
+          console.log("Grid Item ID", gridItem.i);
+          console.log("Fidget Instances", fidgetInstanceDatums);
+          console.log("Fidget at ID", fidgetInstanceDatums[gridItem.i]);
+          return (
+            <div key={gridItem.i}>
+              {FidgetWrapper({
+                fidget:
+                  CompleteFidgets[fidgetInstanceDatums[gridItem.i].fidgetType]
+                    .fidget,
+                bundle: {
+                  fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
+                  id: fidgetInstanceDatums[gridItem.i].id,
+                  config: {
+                    editable: inEditMode,
+                    settings: fidgetInstanceDatums[gridItem.i].config.settings,
+                    data: fidgetInstanceDatums[gridItem.i].config.data,
+                  },
+                  properties:
+                    CompleteFidgets[fidgetInstanceDatums[gridItem.i].fidgetType]
+                      .properties,
+                },
+                context: {
+                  theme: theme,
+                },
+                saveConfig: async (
+                  newInstanceConfig: FidgetConfig<FidgetSettings>,
+                ) => {
+                  return await saveFidgetInstanceDatums(
+                    (fidgetInstanceDatums = {
+                      ...fidgetInstanceDatums,
+                      [fidgetInstanceDatums[gridItem.i].id]: {
+                        config: newInstanceConfig,
+                        fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
+                        id: fidgetInstanceDatums[gridItem.i].id,
+                      },
+                    }),
+                  );
+                },
+                setcurrentFidgetSettings: setcurrentFidgetSettings,
+                setSelectedFidgetID: setSelectedFidgetID,
+                selectedFidgetID: selectedFidgetID,
+              })}
+            </div>
+          );
         })}
       </ReactGridLayout>
     </>
