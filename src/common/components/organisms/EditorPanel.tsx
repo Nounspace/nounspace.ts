@@ -93,7 +93,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         aria-label="Editor"
       >
         <div className="w-full h-full">
-          <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
+          <div className="h-full px-4 py-4 border border-blue-100 rounded-xl relative bg-card">
             <div className="flex-col h-full">
               {selectedFidgetID ? (
                 <>{currentFidgetSettings}</>

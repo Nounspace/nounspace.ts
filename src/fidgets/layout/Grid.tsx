@@ -312,6 +312,10 @@ const Grid: LayoutFidget<GridArgs> = ({
     );
   }
 
+  function saveLayoutLocally(layout: PlacedGridItem[]) {
+    layoutConfig.layout = layout;
+  }
+
   return (
     <>
       {/* <div
@@ -333,7 +337,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         isDroppable={true}
         droppingItem={externalDraggedItem}
         onDrop={handleDrop}
-        onLayoutChange={saveLayout}
+        onLayoutChange={saveLayoutLocally}
         className="h-full"
       >
         {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
