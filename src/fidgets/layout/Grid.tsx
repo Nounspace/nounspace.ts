@@ -244,15 +244,16 @@ const Grid: LayoutFidget<GridArgs> = ({
       isResizable: true,
     };
 
-    const newLayoutConfig: GridLayoutConfig = {
-      layout: [...layoutConfig.layout, newItem],
-    };
+    const itemIndex = layoutConfig.layout.findIndex((x) => x.i == item.i);
+    layoutConfig.layout[itemIndex] = newItem;
 
-    const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
-      [fidgetData.id]: fidgetData,
-    };
-
-    saveFidgets({ newLayoutConfig }, newFidgetInstanceDatums);
+    // const newLayoutConfig: GridLayoutConfig = {
+    //   layout: [...layoutConfig.layout, newItem],
+    // };
+    // const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
+    //   [fidgetData.id]: fidgetData,
+    // };
+    //saveFidgets({ newLayoutConfig }, newFidgetInstanceDatums);
   }
 
   return (
