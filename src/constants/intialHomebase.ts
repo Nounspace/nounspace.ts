@@ -12,7 +12,7 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   layoutID,
   layoutDetails,
   theme: DEFAULT_THEME,
-  fidgetInstances: {},
+  fidgetInstanceDatums: {},
   isEditable: true,
   fidgetTrayContents: [],
 };

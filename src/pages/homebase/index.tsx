@@ -5,24 +5,33 @@ import { useAppStore } from "@/common/data/stores";
 import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
 
 const Homebase: NextPageWithLayout = () => {
-  const { homebaseConfig, saveConfig, loadConfig } = useAppStore((state) => ({
-    homebaseConfig: state.homebase.homebaseConfig,
-    saveConfig: state.homebase.saveHomebaseConfig,
-    loadConfig: state.homebase.loadHomebase,
-  }));
+  const { homebaseConfig, saveConfig, loadConfig, commitConfig } = useAppStore(
+    (state) => ({
+      homebaseConfig: state.homebase.homebaseConfig,
+      saveConfig: state.homebase.saveHomebaseConfig,
+      loadConfig: state.homebase.loadHomebase,
+      commitConfig: state.homebase.commitHomebaseToDatabase,
+    }),
+  );
 
   useEffect(() => {
     loadConfig();
   }, []);
 
-  return <SpaceWithLoader config={homebaseConfig} saveConfig={saveConfig} />;
+  return (
+    <SpaceWithLoader
+      config={homebaseConfig}
+      saveConfig={saveConfig}
+      commitConfig={commitConfig}
+    />
+  );
 };
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <LoggedInStateManager>
       <div
-        className="min-h-screen max-w-screen h-screen w-screen p-8"
+        className="min-h-screen max-w-screen h-screen w-screen"
         style={{ background: "var(--user-theme-background)" }}
       >
         {page}

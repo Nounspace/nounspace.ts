@@ -12,6 +12,8 @@ import {
 } from ".";
 import { reduce } from "lodash";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
+import CSSInput from "@/common/components/molecules/CSSInput";
+import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
@@ -47,12 +49,8 @@ export function FidgetWrapper({
   setSelectedFidgetID,
   selectedFidgetID,
 }: FidgetWrapperProps) {
-  const [_saving, setSaving] = useState(false);
-  const [editing, setEditing] = useState(false);
-
-  const onClickEdit = useCallback(() => {
+  function onClickEdit() {
     setSelectedFidgetID(config.id);
-    setEditing(true);
     setcurrentFidgetSettings(
       <FidgetSettingsEditor
         properties={config.properties}
@@ -61,7 +59,7 @@ export function FidgetWrapper({
         unselect={unselect}
       />,
     );
-  }, [setEditing]);
+  }
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
@@ -76,20 +74,16 @@ export function FidgetWrapper({
   );
 
   const onSave = async (newSettings: FidgetSettings) => {
-    setSaving(true);
     try {
       await saveConfig({
         ...config.config,
         settings: newSettings,
       });
-      setEditing(false);
     } catch (e) {
       toast.error("Failed to save fidget settings", { duration: 1000 });
     }
-    setSaving(false);
-    setEditing(false);
-    setSelectedFidgetID("");
-    setcurrentFidgetSettings(<></>);
+
+    unselect();
   };
 
   function unselect() {
@@ -97,12 +91,16 @@ export function FidgetWrapper({
     setcurrentFidgetSettings(<></>);
   }
 
+  const userStyles = config.properties.fields
+    .filter((f) => f.inputSelector === CSSInput)
+    .map((f) => settingsWithDefaults[f.fieldName]);
+
   return (
     <Card
       className={
         selectedFidgetID === config.id
-          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-scroll"
-          : "size-full overflow-scroll"
+          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+          : "size-full overflow-hidden"
       }
     >
       {config.config.editable && (
@@ -111,13 +109,15 @@ export function FidgetWrapper({
           className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
         ></button>
       )}
-      <CardContent className="size-full">
-        {fidget({
-          settings: settingsWithDefaults,
-          data: config.config.data,
-          saveData,
-        })}
-      </CardContent>
+      <ScopedStyles cssStyles={userStyles} className="size-full">
+        <CardContent className="size-full">
+          {fidget({
+            settings: settingsWithDefaults,
+            data: config.config.data,
+            saveData,
+          })}
+        </CardContent>
+      </ScopedStyles>
     </Card>
   );
 }

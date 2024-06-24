@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
+import Player from "@/common/components/organisms/Player";
+import { useAppStore } from "@/common/data/stores";
 
 type NavItemProps = {
   label: string;
@@ -31,6 +33,18 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
+  const { homebaseConfig, saveConfig, loadConfig } = useAppStore((state) => ({
+    homebaseConfig: state.homebase.homebaseConfig,
+    saveConfig: state.homebase.saveHomebaseConfig,
+    loadConfig: state.homebase.loadHomebase,
+  }));
+
+  useEffect(() => {
+    loadConfig();
+  }, []);
+
+  const userTheme = homebaseConfig?.theme;
+
   function turnOnEditMode() {
     setEditMode(true);
   }
@@ -38,7 +52,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
+      className="mx-24 my-40 left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
       aria-label="Sidebar"
     >
       <div className="flex-row h-full">
@@ -52,7 +66,8 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
               <NavItem label="Bookmark" Icon={BookmarkIcon} />
             </ul>
             <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <Player url={userTheme?.properties.musicURL} />
+              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex flex-0 items-center justify-between">
                 {isEditable && (
                   <button
                     onClick={turnOnEditMode}
@@ -66,7 +81,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
                     </div>
                   </button>
                 )}
-
                 <button
                   className={mergeClasses(
                     "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",

@@ -6,18 +6,26 @@ import SpaceLoading from "./SpaceLoading";
 type SpaceWithLoaderArgs = {
   config?: SpaceConfig;
   saveConfig?: (config: SpaceConfig) => Promise<void>;
+  commitConfig?: () => Promise<void>;
 };
 
 export default function SpaceWithLoader({
   config,
   saveConfig,
+  commitConfig,
 }: SpaceWithLoaderArgs) {
   return (
     <>
-      {isUndefined(config) || isUndefined(saveConfig) ? (
+      {isUndefined(config) ||
+      isUndefined(saveConfig) ||
+      isUndefined(commitConfig) ? (
         <SpaceLoading />
       ) : (
-        <Space config={config} saveConfig={saveConfig} />
+        <Space
+          config={config}
+          saveConfig={saveConfig}
+          commitConfig={commitConfig}
+        />
       )}
     </>
   );
