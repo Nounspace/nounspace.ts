@@ -104,30 +104,28 @@ export function FidgetWrapper({
     .map((f) => settingsWithDefaults[f.fieldName]);
 
   return (
-    <>
-      <Card
-        className={
-          selectedFidgetID === config.id
-            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-scroll"
-            : "size-full overflow-scroll"
-        }
-      >
-        <ScopedStyles cssStyles={userStyles} className="size-full">
-          <CardContent className="size-full">
-            {fidget({
-              settings: settingsWithDefaults,
-              data: config.config.data,
-              saveData,
-            })}
-          </CardContent>
-        </ScopedStyles>
-        {config.config.editable && (
-          <button
-            onMouseDown={onClickEdit}
-            className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
-          ></button>
-        )}
-      </Card>
-    </>
+    <Card
+      className={
+        selectedFidgetID === config.id
+          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-scroll"
+          : "size-full overflow-scroll"
+      }
+    >
+      {config.config.editable && (
+        <button
+          onMouseDown={onClickEdit}
+          className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+        ></button>
+      )}
+      <ScopedStyles cssStyles={userStyles} className="size-full">
+        <CardContent className="size-full">
+          {fidget({
+            settings: settingsWithDefaults,
+            data: config.config.data,
+            saveData,
+          })}
+        </CardContent>
+      </ScopedStyles>
+    </Card>
   );
 }
