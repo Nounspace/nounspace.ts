@@ -9,8 +9,15 @@ import {
 import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { ThemeSettings } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
+
+export type SpaceFidgetConfig = {
+  instanceConfig: FidgetConfig<FidgetSettings>;
+  fidgetType: string;
+  id: string;
+};
 
 export type SpaceConfig = {
   fidgetInstanceDatums: {
@@ -18,9 +25,9 @@ export type SpaceConfig = {
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
-  theme: ThemeSettings;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
+  theme: UserTheme;
 };
 
 type SpaceArgs = {
@@ -88,7 +95,11 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   }
 
   return (
-    <>
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      <div
+        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
+        onClick={unselectFidget}
+      ></div>
       <div className="flex w-full h-full">
         <div
           className={
@@ -130,6 +141,14 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           />
         </div>
       </div>
+      <LayoutFidget
+        layoutConfig={{
+          ...config.layoutDetails.layoutConfig,
+          onLayoutChange: saveLayout,
+        }}
+        fidgets={fidgets}
+        inEditMode={editMode}
+      />
     </>
   );
 }

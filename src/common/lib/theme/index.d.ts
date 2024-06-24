@@ -1,17 +1,21 @@
 export interface ThemeSettings {
   id: string;
   name: string;
-  properties: {
-    [key: string]: Color | CSSSize | FontFamily;
-  };
+  properties: ThemeProperties;
 }
 
-export interface GlobalTheme extends ThemeSettings {
+export interface UserTheme extends ThemeSettings {
   properties: {
     font: FontFamily;
     background: Color;
+    backgroundHTML: string;
+    musicURL: string;
   };
 }
+
+export type ThemeProperties = {
+  [key: string]: Color | FontFamily | MusicSource | string;
+};
 
 // Sizes
 export type CSSUnit =

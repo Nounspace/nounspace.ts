@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { Card, CardFooter } from "@/common/components/atoms/card";
-import { FaFloppyDisk } from "react-icons/fa6";
+import { FaFloppyDisk, FaMusic } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
+import TextInputPopoverButton from "@/common/components/molecules/TextInputPopoverButton";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -36,7 +38,7 @@ export function ThemeSettingsEditor({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font } = theme.properties;
+  const { background, font, backgroundHTML, musicURL } = theme.properties;
 
   useEffect(() => {
     setCSSVar("--user-theme-background", background);
@@ -65,6 +67,16 @@ export function ThemeSettingsEditor({
               value={font}
               onChange={themePropSetter<FontFamily>("font")}
             />
+            <HTMLInputPopoverButton
+              value={backgroundHTML}
+              onChange={themePropSetter<string>("backgroundHTML")}
+            />
+            <TextInputPopoverButton
+              value={musicURL}
+              onChange={themePropSetter<string>("musicURL")}
+            >
+              <FaMusic />
+            </TextInputPopoverButton>
           </CardFooter>
         </Card>
         <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
