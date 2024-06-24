@@ -7,6 +7,7 @@ import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
 import { mapValues } from "lodash";
+import { Button } from "../atoms/button";
 
 export interface EditorPanelProps {
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,7 +26,7 @@ export interface EditorPanelProps {
   saveFidgetInstanceDatums(newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
-  removeFidgetFromGrid(fidgetId: string): void;
+  removeFidget(fidgetId: string): void;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -41,7 +42,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   saveTrayContents,
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
-  removeFidgetFromGrid,
+  removeFidget,
 }) => {
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
@@ -92,7 +93,16 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           <div className="h-full px-4 py-4 border border-blue-100 rounded-xl relative bg-card">
             <div className="flex-col h-full">
               {selectedFidgetID ? (
-                <>{currentFidgetSettings}</>
+                <>
+                  {currentFidgetSettings}
+                  <Button
+                    onClick={() => {
+                      removeFidget(selectedFidgetID);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </>
               ) : (
                 <>
                   {isPickingFidget ? (
@@ -117,7 +127,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           contents={fidgetTrayContents}
           openFidgetPicker={openFidgetPicker}
           saveTrayContents={saveTrayContents}
-          removeFidgetFromGrid={removeFidgetFromGrid}
+          removeFidget={removeFidget}
         />
       </div>
     </div>
