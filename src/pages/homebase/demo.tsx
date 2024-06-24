@@ -6,6 +6,7 @@ import { LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
+import { noop } from "lodash";
 
 const Homebase: NextPageWithLayout = () => {
   const defaultLayoutData = [
@@ -169,7 +170,11 @@ const Homebase: NextPageWithLayout = () => {
   return (
     <div>
       <div className="relative">
-        <Space config={spaceConfig} saveConfig={saveConfig} />
+        <Space
+          config={spaceConfig}
+          saveConfig={saveConfig}
+          commitConfig={async () => noop()}
+        />
       </div>
     </div>
   );

@@ -73,6 +73,5 @@ export const createHomeBaseStoreFunc = (
     set((draft) => {
       draft.homebase.homebaseConfig = config;
     });
-    get().homebase.commitHomebaseToDatabase();
   },
 });
