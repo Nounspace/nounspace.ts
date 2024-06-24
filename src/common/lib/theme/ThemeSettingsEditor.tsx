@@ -9,7 +9,6 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
 import TextInputPopoverButton from "@/common/components/molecules/TextInputPopoverButton";
 
-
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
@@ -94,7 +93,7 @@ export function ThemeSettingsEditor({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
