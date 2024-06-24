@@ -8,6 +8,7 @@ export type ExampleFidgetSettings = {
 
 const exampleProperties: FidgetProperties = {
   fidgetName: "example",
+  icon: 0x2747,
   fields: [
     {
       fieldName: "displayText",
