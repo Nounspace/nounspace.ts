@@ -20,7 +20,7 @@ export type TextFidgetSettings = {
 };
 
 export const textConfig: FidgetProperties = {
-  fidgetName: "Text",
+  fidgetName: "text",
   fields: [
     {
       fieldName: "title",
@@ -54,9 +54,9 @@ export const textConfig: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 3,
     maxWidth: 36,
   },
 };
