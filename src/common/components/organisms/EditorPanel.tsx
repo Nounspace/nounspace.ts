@@ -86,7 +86,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     <div className="flex w-full">
       <aside
         id="editor-panel"
-        className="pl-16 pr-8 py-40 flex-col h-10/12 z-8 w-7/12 transition-transform -translate-x-full sm:translate-x-0"
+        className="pl-16 pr-8 py-40 flex-col h-10/12 z-8 w-10/12 transition-transform -translate-x-full sm:translate-x-0"
         aria-label="Editor"
       >
         <div className="w-full h-full">
@@ -120,7 +120,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           </div>
         </div>
       </aside>
-      <div className="w-5/12">
+      <div className="w-2/12">
         <FidgetTray
           setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}

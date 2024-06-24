@@ -66,7 +66,9 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
                 });
               }}
             >
-              {fidgetData.fidgetType}
+              {String.fromCodePoint(
+                CompleteFidgets[fidgetData.fidgetType].properties.icon,
+              )}
             </div>
           </div>
         );

@@ -8,6 +8,7 @@ export type GalleryFidgetSettings = {
 
 const galleryConfig: FidgetProperties = {
   fidgetName: "gallery",
+  icon: 0x1f5bc,
   fields: [
     {
       fieldName: "imageUrl",
