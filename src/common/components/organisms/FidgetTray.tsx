@@ -1,12 +1,7 @@
-import { FidgetConfig, FidgetSettings } from "@/common/fidgets";
-import React, { Dispatch, SetStateAction, DragEvent } from "react";
-import _ from "lodash";
-import { Responsive, WidthProvider } from "react-grid-layout";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
-import { number } from "prop-types";
+import React, { Dispatch, SetStateAction } from "react";
+import { map } from "lodash";
 import { FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
-const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
   return (
@@ -44,11 +39,10 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   contents,
   setExternalDraggedItem,
   openFidgetPicker,
-  removeFidgetFromGrid,
 }) => {
   return (
     <div className="w-full h-screen flex-col justify-center items-center bg-sky-100 p-8 overflow-auto">
-      {contents.map((fidgetData: FidgetInstanceData) => {
+      {map(contents, (fidgetData: FidgetInstanceData) => {
         return (
           <div key={fidgetData.id} className="flex justify-center items-center">
             <div
