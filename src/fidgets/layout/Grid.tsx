@@ -229,19 +229,24 @@ const Grid: LayoutFidget<GridArgs> = ({
     saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
   }
 
-  function removeFidgetFromGrid(fidgetId: string) {
-    // Note that this function does not remove it from the list of instances (fidgetInstanceDatums
+  function removeFidget(fidgetId: string) {
+    // New set of instances
+    const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
+    delete newFidgetInstanceDatums[fidgetId];
 
+    // New layout
     const newLayoutConfig: GridLayoutConfig = {
       layout: [...layoutConfig.layout],
     };
-
     const itemLayoutIndex = newLayoutConfig.layout.findIndex(
       (x) => x.i == fidgetId,
     );
     newLayoutConfig.layout = newLayoutConfig.layout.splice(itemLayoutIndex, 1);
 
-    saveFidgets(newLayoutConfig, fidgetInstanceDatums);
+    // Clear editor panel
+    unselectFidget();
+
+    saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
@@ -272,7 +277,7 @@ const Grid: LayoutFidget<GridArgs> = ({
                 fidgetInstanceDatums={fidgetInstanceDatums}
                 saveFidgetInstanceDatums={saveFidgetInstanceDatums}
                 saveTrayContents={saveTrayContents}
-                removeFidgetFromGrid={removeFidgetFromGrid}
+                removeFidget={removeFidget}
               />,
               portalNode,
             )
