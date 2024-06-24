@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Space, { SpaceConfig } from "@/common/components/templates/Space";
 import { useState } from "react";
 import { resizeDirections } from "@/fidgets/layout/Grid";
@@ -7,8 +7,6 @@ import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
 import { noop } from "lodash";
-import { useAppStore } from "@/common/data/stores";
-import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
 
 const Homebase: NextPageWithLayout = () => {
   const defaultLayoutData = [
@@ -165,26 +163,21 @@ const Homebase: NextPageWithLayout = () => {
     fidgetTrayContents: fidgetsInTray,
   });
 
-  const { homebaseConfig, saveConfig, loadConfig, commitConfig, resetConfig } =
-    useAppStore((state) => ({
-      homebaseConfig: state.homebase.homebaseConfig,
-      saveConfig: state.homebase.saveHomebaseConfig,
-      loadConfig: state.homebase.loadHomebase,
-      commitConfig: state.homebase.commitHomebaseToDatabase,
-      resetConfig: state.homebase.resetHomebaseConfig,
-    }));
-
-  useEffect(() => {
-    loadConfig();
-  }, []);
+  async function saveConfig(config: SpaceConfig) {
+    setSpaceConfig(config);
+  }
 
   return (
-    <SpaceWithLoader
-      config={spaceConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-    />
+    <div>
+      <div className="relative">
+        <Space
+          config={spaceConfig}
+          saveConfig={saveConfig}
+          commitConfig={async () => noop()}
+          resetConfig={async () => noop()}
+        />
+      </div>
+    </div>
   );
 };
 
