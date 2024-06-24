@@ -33,9 +33,8 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
-  const { homebaseConfig, saveConfig, loadConfig } = useAppStore((state) => ({
+  const { homebaseConfig, loadConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
-    saveConfig: state.homebase.saveHomebaseConfig,
     loadConfig: state.homebase.loadHomebase,
   }));
 

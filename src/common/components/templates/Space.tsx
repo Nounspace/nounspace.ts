@@ -1,4 +1,4 @@
-import React, { useState, DragEvent, useEffect, useMemo, useRef } from "react";
+import React, { useState, useRef } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -6,9 +6,7 @@ import {
   LayoutFidgetConfig,
   LayoutFidgetDetails,
 } from "@/common/fidgets";
-import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
-import { mapValues } from "lodash";
-import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";

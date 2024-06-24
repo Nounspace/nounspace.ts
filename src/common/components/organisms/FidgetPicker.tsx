@@ -1,9 +1,8 @@
 import React from "react";
 import { CompleteFidgets } from "@/fidgets";
-import { Button } from "../atoms/button";
-import { Card, CardContent, CardFooter } from "../atoms/card";
-import _ from "lodash";
-import { FidgetArgs, FidgetModule } from "@/common/fidgets";
+import { Card, CardContent } from "../atoms/card";
+import { map } from "lodash";
+import { FidgetModule } from "@/common/fidgets";
 
 export interface FidgetPickerProps {
   addFidgetToTray: (fidget: FidgetModule<any>) => void;
@@ -23,7 +22,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   };
 
   function generateFidgetCards() {
-    return _.map(CompleteFidgets, (fidgetModule, fidgetName) => {
+    return map(CompleteFidgets, (fidgetModule, fidgetName) => {
       return (
         <button
           key={fidgetName}

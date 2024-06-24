@@ -3,15 +3,9 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
-import {
-  FidgetArgs,
-  FidgetFieldConfig,
-  FidgetInstanceData,
-  FidgetModule,
-} from "@/common/fidgets";
+import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
-import _ from "lodash";
 import { mapValues } from "lodash";
 
 export interface EditorPanelProps {

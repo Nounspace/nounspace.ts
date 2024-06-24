@@ -1,16 +1,5 @@
-import { ThemeSettings } from "@/common/lib/theme";
-import React, {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
-import EditorPanel from "./EditorPanel";
+import React from "react";
 import Navigation from "./Navigation";
-import { FidgetInstanceData } from "@/common/fidgets";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -25,10 +14,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isEditable,
   portalRef,
 }) => {
-  function turnOnEditMode() {
-    setEditMode(true);
-  }
-
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>

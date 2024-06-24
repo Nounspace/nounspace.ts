@@ -1,19 +1,9 @@
-import React, {
-  Dispatch,
-  DragEvent,
-  ReactNode,
-  SetStateAction,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { DragEvent, useEffect, useState } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
-import RGL, { WidthProvider, DragOverEvent } from "react-grid-layout";
+import RGL, { WidthProvider } from "react-grid-layout";
 import {
   LayoutFidgetConfig,
   LayoutFidget,
-  LayoutFidgetProps,
   FidgetInstanceData,
   FidgetConfig,
   FidgetSettings,
@@ -22,8 +12,6 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
-import { SpaceConfig } from "@/common/components/templates/Space";
-import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -77,28 +65,6 @@ type GridDetails = typeof gridDetails;
 type GridLayoutConfig = {
   layout: PlacedGridItem[];
 };
-
-function handleDrop(
-  layout: LayoutFidgetConfig,
-  item: PlacedGridItem,
-  e: DragEvent<HTMLDivElement>,
-) {
-  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
-
-  const newItem = {
-    i: `0`,
-    x: 0,
-    y: 0,
-    w: data.width, // Use the passed width
-    h: data.height, // Use the passed height
-    minW: data.width,
-    maxW: data.width,
-    minH: data.height,
-    maxH: data.height,
-  };
-
-  //setExternalDraggedItem({ w: newItem.w, h: newItem.h });
-}
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -193,7 +159,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     portalRef.current,
   );
 
-  const { width, height } = useWindowSize();
+  const { height } = useWindowSize();
 
   const rowHeight = height
     ? Math.round((height - 200) / gridDetails.maxRows)
