@@ -246,8 +246,9 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
     console.log("Layout Config", layoutConfig);
-    layoutConfig.layout = newLayout;
-    if (!currentlyDragging) {
+    if (currentlyDragging) {
+      layoutConfig.layout = newLayout;
+    } else {
       saveLayout(newLayout);
     }
   }
