@@ -7,18 +7,20 @@ export type GalleryFidgetSettings = {
 };
 
 const galleryConfig: FidgetProperties = {
-  fidgetName: "Gallery",
+  fidgetName: "gallery",
   fields: [
     {
       fieldName: "imageUrl",
       required: true,
       inputSelector: TextInput,
+      default:
+        "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 2,
     maxWidth: 36,
   },
 };

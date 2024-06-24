@@ -3,12 +3,21 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
-import { FidgetInstanceData } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetFieldConfig,
+  FidgetInstanceData,
+  FidgetModule,
+} from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
+import { v4 as uuidv4 } from "uuid";
+import _ from "lodash";
+import { mapValues } from "lodash";
 
 export interface EditorPanelProps {
+  setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
   setExternalDraggedItem: Dispatch<
-    SetStateAction<{ w: number; h: number } | undefined>
+    SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
   setEditMode: (editMode: boolean) => void;
   theme?: ThemeSettings;
@@ -17,9 +26,16 @@ export interface EditorPanelProps {
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
   fidgetTrayContents: FidgetInstanceData[];
+  saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  }): Promise<void>;
+  removeFidgetFromGrid(fidgetId: string): void;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
+  setCurrentlyDragging,
   setExternalDraggedItem,
   setEditMode,
   theme = DEFAULT_THEME,
@@ -28,6 +44,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   selectedFidgetID,
   currentFidgetSettings,
   fidgetTrayContents,
+  saveTrayContents,
+  fidgetInstanceDatums,
+  saveFidgetInstanceDatums,
+  removeFidgetFromGrid,
 }) => {
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
@@ -36,20 +56,47 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     unselect();
   }
 
-  function addFidgetToTray(fidget): undefined {
-    return;
+  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
+    function allFields(fidget: FidgetModule<FidgetArgs>) {
+      return mapValues(fidget.properties.fields, (field) => {
+        return {
+          fieldName: field.fieldName,
+          default: field.default,
+          required: field.required,
+          inputSelector: field.inputSelector,
+        };
+      });
+    }
+
+    const newFidgetInstanceData = {
+      config: {
+        editable: true,
+        data: {},
+        settings: allFields(fidget),
+      },
+      fidgetType: fidget.properties.fidgetName,
+      id: fidget.properties.fidgetName + ":" + uuidv4(),
+    };
+
+    const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+
+    setIsPickingFidget(false);
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
+    saveTrayContents(newTrayContents);
   }
 
   return (
     <div className="flex w-full">
       <aside
         id="editor-panel"
-        className="flex-col h-10/12 z-8 w-7/12 transition-transform -translate-x-full sm:translate-x-0"
+        className="pl-16 pr-8 py-40 flex-col h-10/12 z-8 w-7/12 transition-transform -translate-x-full sm:translate-x-0"
         aria-label="Editor"
       >
         <div className="w-full h-full">
-          <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
-            <div className="flex-col">
+          <div className="h-full px-4 py-4 border border-blue-100 rounded-xl relative bg-card">
+            <div className="flex-col h-full">
               {selectedFidgetID ? (
                 <>{currentFidgetSettings}</>
               ) : (
@@ -69,11 +116,14 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           </div>
         </div>
       </aside>
-      <div className="w-4/12">
+      <div className="w-5/12">
         <FidgetTray
+          setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}
           contents={fidgetTrayContents}
           openFidgetPicker={openFidgetPicker}
+          saveTrayContents={saveTrayContents}
+          removeFidgetFromGrid={removeFidgetFromGrid}
         />
       </div>
     </div>

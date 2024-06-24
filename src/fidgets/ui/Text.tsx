@@ -1,5 +1,6 @@
 import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
+import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
@@ -19,7 +20,7 @@ export type TextFidgetSettings = {
 };
 
 export const textConfig: FidgetProperties = {
-  fidgetName: "Text",
+  fidgetName: "text",
   fields: [
     {
       fieldName: "title",
@@ -41,15 +42,21 @@ export const textConfig: FidgetProperties = {
     },
     {
       fieldName: "background",
-      default: "var(--user-theme-background)",
+      default: "",
       required: false,
       inputSelector: ColorSelector,
     },
+    {
+      fieldName: "css",
+      default: "",
+      required: false,
+      inputSelector: CSSInput,
+    },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 3,
     maxWidth: 36,
   },
 };
