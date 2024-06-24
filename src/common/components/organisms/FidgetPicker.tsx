@@ -36,7 +36,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                 src={fidgetCoverImages[fidgetName]}
                 id={fidgetName}
                 alt="fidget"
-                className="min-h-24"
+                className="min-h-24 rounded-xl"
               />
               <span className="text-md font-bold text-black block capitalize">
                 {fidgetName}

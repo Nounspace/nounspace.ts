@@ -47,7 +47,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   removeFidgetFromGrid,
 }) => {
   return (
-    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100 p-8">
+    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100 p-8 overflow-auto">
       {contents.map((fidgetData: FidgetInstanceData) => {
         return (
           <div key={fidgetData.id} className="flex justify-center items-center">
