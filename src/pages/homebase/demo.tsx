@@ -174,6 +174,7 @@ const Homebase: NextPageWithLayout = () => {
           config={spaceConfig}
           saveConfig={saveConfig}
           commitConfig={async () => noop()}
+          resetConfig={async () => noop()}
         />
       </div>
     </div>

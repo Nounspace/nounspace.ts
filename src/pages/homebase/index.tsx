@@ -5,14 +5,14 @@ import { useAppStore } from "@/common/data/stores";
 import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
 
 const Homebase: NextPageWithLayout = () => {
-  const { homebaseConfig, saveConfig, loadConfig, commitConfig } = useAppStore(
-    (state) => ({
+  const { homebaseConfig, saveConfig, loadConfig, commitConfig, resetConfig } =
+    useAppStore((state) => ({
       homebaseConfig: state.homebase.homebaseConfig,
       saveConfig: state.homebase.saveHomebaseConfig,
       loadConfig: state.homebase.loadHomebase,
       commitConfig: state.homebase.commitHomebaseToDatabase,
-    }),
-  );
+      resetConfig: state.homebase.resetHomebaseConfig,
+    }));
 
   useEffect(() => {
     loadConfig();
@@ -23,6 +23,7 @@ const Homebase: NextPageWithLayout = () => {
       config={homebaseConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
+      resetConfig={resetConfig}
     />
   );
 };
