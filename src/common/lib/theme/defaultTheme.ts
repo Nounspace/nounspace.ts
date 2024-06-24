@@ -1,12 +1,13 @@
-import { GlobalTheme } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
 
-export const DEFAULT_THEME: GlobalTheme = {
+export const defaultUserTheme: UserTheme = {
   id: "default",
   name: "Default",
   properties: {
     font: "Inter",
     background: "#ffffff",
+    backgroundHTML: "",
   },
 };
 
-export default DEFAULT_THEME;
+export default defaultUserTheme;

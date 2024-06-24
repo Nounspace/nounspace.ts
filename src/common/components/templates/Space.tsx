@@ -9,7 +9,8 @@ import {
 import { CompleteFidgets, LayoutFidgets } from "@/fidgets";
 import { mapValues } from "lodash";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { ThemeSettings } from "@/common/lib/theme";
+import { UserTheme } from "@/common/lib/theme";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
 
 export type SpaceConfig = {
@@ -18,8 +19,8 @@ export type SpaceConfig = {
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
-  theme: ThemeSettings;
   isEditable: boolean;
+  theme: UserTheme;
   fidgetTrayContents: FidgetInstanceData[];
 };
 
@@ -101,6 +102,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
 
   return (
     <>
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
         onClick={unselectFidget}
