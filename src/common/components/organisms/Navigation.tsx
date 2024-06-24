@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -33,14 +33,9 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
-  const { homebaseConfig, loadConfig } = useAppStore((state) => ({
+  const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
-    loadConfig: state.homebase.loadHomebase,
   }));
-
-  useEffect(() => {
-    loadConfig();
-  }, []);
 
   const userTheme = homebaseConfig?.theme;
 

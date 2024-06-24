@@ -48,11 +48,13 @@ export const createHomeBaseStoreFunc = (
       ) as SpaceConfig;
       set((draft) => {
         draft.homebase.homebaseConfig = spaceConfig;
+        draft.homebase.remoteHomebaseConfig = spaceConfig;
       });
       return spaceConfig;
     } catch (e) {
       set((draft) => {
         draft.homebase.homebaseConfig = INITIAL_HOMEBASE_CONFIG;
+        draft.homebase.remoteHomebaseConfig = INITIAL_HOMEBASE_CONFIG;
       });
       return INITIAL_HOMEBASE_CONFIG;
     }
