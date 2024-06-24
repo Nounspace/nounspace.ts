@@ -83,7 +83,7 @@ export function ThemeSettingsEditor({
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

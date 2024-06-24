@@ -1,7 +1,8 @@
 import { ThemeSettings } from "@/common/lib/theme";
-import React, { ReactNode } from "react";
+import React, { Dispatch, ReactNode, SetStateAction } from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
+import { FidgetInstanceData } from "@/common/fidgets";
 
 export interface SidebarProps {
   editMode: boolean;
@@ -12,6 +13,10 @@ export interface SidebarProps {
   unselect: () => void;
   selectedFidgetID: string | null;
   currentFidgetSettings: React.ReactNode;
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ w: number; h: number } | undefined>
+  >;
+  fidgetTrayContents: FidgetInstanceData[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -23,6 +28,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   unselect,
   selectedFidgetID,
   currentFidgetSettings,
+  setExternalDraggedItem,
+  fidgetTrayContents,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -38,6 +45,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           unselect={unselect}
           selectedFidgetID={selectedFidgetID}
           currentFidgetSettings={currentFidgetSettings}
+          setExternalDraggedItem={setExternalDraggedItem}
+          fidgetTrayContents={fidgetTrayContents}
         />
       ) : (
         <Navigation isEditable={isEditable} setEditMode={setEditMode} />

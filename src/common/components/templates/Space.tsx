@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, DragEvent, useEffect } from "react";
 import {
   FidgetConfig,
+  FidgetInstanceData,
   FidgetSettings,
   LayoutFidgetConfig,
   LayoutFidgetDetails,
@@ -12,21 +13,15 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
 
-export type SpaceFidgetConfig = {
-  instanceConfig: FidgetConfig<FidgetSettings>;
-  fidgetType: string;
-  id: string;
-};
-
 export type SpaceConfig = {
-  fidgetConfigs: {
-    [key: string]: SpaceFidgetConfig;
+  fidgetInstances: {
+    [key: string]: FidgetInstanceData;
   };
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   isEditable: boolean;
-  fidgetTray?: SpaceFidgetConfig[];
   theme: UserTheme;
+  fidgetTrayContents: FidgetInstanceData[];
 };
 
 type SpaceArgs = {
@@ -36,27 +31,32 @@ type SpaceArgs = {
 
 export default function Space({ config, saveConfig }: SpaceArgs) {
   const [editMode, setEditMode] = useState(false);
+  const [externalDraggedItem, setExternalDraggedItem] = useState<{
+    w: number;
+    h: number;
+  }>();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
 
-  function unselect() {
+  function unselectFidget() {
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
   }
 
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
-  const fidgets = mapValues(config.fidgetConfigs, (details, key) =>
+  const fidgets = mapValues(config.fidgetInstances, (details, key) =>
     FidgetWrapper({
       fidget: CompleteFidgets[details.fidgetType].fidget,
-      config: {
+      bundle: {
+        fidgetType: details.fidgetType,
         id: details.id,
-        instanceConfig: {
+        config: {
           editable: editMode,
-          settings: details.instanceConfig.settings,
-          data: details.instanceConfig.data,
+          settings: details.config.settings,
+          data: details.config.data,
         },
-        editConfig: CompleteFidgets[details.fidgetType].editConfig,
+        properties: CompleteFidgets[details.fidgetType].properties,
       },
       context: {
         theme: config.theme,
@@ -64,10 +64,10 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
       saveConfig: async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
         return await saveConfig({
           ...config,
-          fidgetConfigs: {
-            ...config.fidgetConfigs,
+          fidgetInstances: {
+            ...config.fidgetInstances,
             [key]: {
-              instanceConfig: newInstanceConfig,
+              config: newInstanceConfig,
               id: details.id,
               fidgetType: details.fidgetType,
             },
@@ -105,9 +105,9 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
-        onClick={unselect}
+        onClick={unselectFidget}
       ></div>
-      <div className="flex">
+      <div className="flex w-full h-full">
         <div
           className={
             editMode
@@ -121,9 +121,11 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             theme={config.theme}
             saveTheme={saveTheme}
             isEditable={config.isEditable}
-            unselect={unselect}
+            unselect={unselectFidget}
             selectedFidgetID={selectedFidgetID}
             currentFidgetSettings={currentFidgetSettings}
+            setExternalDraggedItem={setExternalDraggedItem}
+            fidgetTrayContents={config.fidgetTrayContents}
           />
         </div>
 
@@ -138,6 +140,12 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
             layoutConfig={{
               ...config.layoutDetails.layoutConfig,
               onLayoutChange: saveLayout,
+              //onDrop: handleDrop,
+              droppingItem: {
+                i: "TODO: GENERATE ID",
+                w: externalDraggedItem?.w,
+                h: externalDraggedItem?.h,
+              },
             }}
             fidgets={fidgets}
             inEditMode={editMode}

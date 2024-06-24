@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 // Adapted from
 // https://stackoverflow.com/questions/63406435/how-to-detect-window-size-in-next-js-ssr-using-react-hook
 
-type WindowSize = {
+export type WindowSize = {
   width: number;
   height: number;
 };

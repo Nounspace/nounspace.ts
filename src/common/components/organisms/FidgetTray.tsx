@@ -1,5 +1,12 @@
 import { FidgetConfig, FidgetSettings } from "@/common/fidgets";
-import React from "react";
+import React, { Dispatch, SetStateAction } from "react";
+import _ from "lodash";
+import { Responsive, WidthProvider } from "react-grid-layout";
+import { PlacedGridItem } from "@/fidgets/layout/Grid";
+import { number } from "prop-types";
+import { FidgetInstanceData } from "@/common/fidgets";
+import { CompleteFidgets } from "@/fidgets";
+const ResponsiveReactGridLayout = WidthProvider(Responsive);
 
 const PlusIcon = () => {
   return (
@@ -22,20 +29,56 @@ const PlusIcon = () => {
 };
 
 export interface FidgetTrayProps {
-  trayFidgetStorage?: {
-    [key: string]: {
-      instanceConfig: FidgetConfig<FidgetSettings>;
-      fidgetName: string;
-      id: string;
-    };
-  };
+  setExternalDraggedItem: Dispatch<
+    SetStateAction<{ w: number; h: number } | undefined>
+  >;
+  contents: FidgetInstanceData[];
+  openFidgetPicker: () => void;
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
-  trayFidgetStorage,
+  contents,
+  setExternalDraggedItem,
+  openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-full mx-4 inset-x-auto shadow-lg shadow-inner h-full"></div>
+    <div className="w-full h-screen mx-4 flex-col justify-center items-center bg-sky-100 -m-8 p-8">
+      {contents.map((fidget: FidgetInstanceData) => {
+        return (
+          <div key={fidget.id} className="flex justify-center items-center">
+            <div
+              className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+              draggable={true}
+              // unselectable helps with IE support
+              // eslint-disable-next-line react/no-unknown-property
+              unselectable="on"
+              onDragStart={(e) => {
+                const data = {
+                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                }; // Set minimum width and height
+                e.dataTransfer.setData("text/plain", JSON.stringify(data));
+                setExternalDraggedItem({
+                  w: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                  h: CompleteFidgets[fidget.fidgetType].properties.minWidth,
+                });
+              }}
+            >
+              {fidget.fidgetType}
+            </div>
+          </div>
+        );
+      })}
+
+      <div className="flex justify-center items-center">
+        <button
+          onClick={openFidgetPicker}
+          className="z-10 justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+        >
+          <PlusIcon />
+        </button>
+      </div>
+    </div>
   );
 };
 
