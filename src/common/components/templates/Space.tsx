@@ -32,9 +32,15 @@ type SpaceArgs = {
   config: SpaceConfig;
   saveConfig: (config: SpaceConfig) => Promise<void>;
   commitConfig: () => Promise<void>;
+  resetConfig: () => Promise<void>;
 };
 
-export default function Space({ config, saveConfig, commitConfig }: SpaceArgs) {
+export default function Space({
+  config,
+  saveConfig,
+  commitConfig,
+  resetConfig,
+}: SpaceArgs) {
   const portalRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState(false);
 
