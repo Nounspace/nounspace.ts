@@ -1170,7 +1170,6 @@
   version "0.2.2"
   resolved "https://registry.yarnpkg.com/@mod-protocol/mod-registry/-/mod-registry-0.2.2.tgz#13980827252c5138ea73f4306575d145834a79be"
   integrity sha512-iiprU3xAw2QtRcEA7BJDagYDBjuNdd7pdEQdOaKCWW5u9b1d4x+9j8CoiwSSgcsgZRLX2gNRIPK7ARb9MEuvWA==
-
   dependencies:
     "@mod-protocol/core" "*"
 
@@ -1606,7 +1605,6 @@
   version "1.71.0"
   resolved "https://registry.yarnpkg.com/@privy-io/react-auth/-/react-auth-1.71.0.tgz#cfca3504080592f52f033b61cf275954fec8d120"
   integrity sha512-K/kixeK1sIsochC28uRica6Yz4U/TqVMZBEDkDmkMMXOWLZmqc0cSCGXPyEToYF8LuAyu/Zyr6wduM5r4X3UpQ==
-
   dependencies:
     "@coinbase/wallet-sdk" "4.0.3"
     "@ethersproject/abstract-signer" "^5.7.0"
@@ -3418,7 +3416,6 @@
   version "5.0.14"
   resolved "https://registry.yarnpkg.com/@wagmi/connectors/-/connectors-5.0.14.tgz#91bf08fd21296d439e389ab6efc8147f2b7709c0"
   integrity sha512-DXSn0zTLFCKWyj0yOhHcdqR2IZotlr0vK3hYBjFhZNEdxYvPqoPDjBDUX0Z00CFGjsEmJtswI/Er1iQbot6saA==
-
   dependencies:
     "@coinbase/wallet-sdk" "4.0.3"
     "@metamask/sdk" "0.20.5"
@@ -3432,7 +3429,6 @@
   version "2.11.2"
   resolved "https://registry.yarnpkg.com/@wagmi/core/-/core-2.11.2.tgz#305cd24e9d516c38761e767cf2a14768598e269f"
   integrity sha512-M4Yu6SBQoSTlodC+D1iEijuZTyAMYy+XLIIdaDRQ/oVwsOmAMe+YZzbAeCO51UGduekam6QkX2WGeNFEHFtYOA==
-
   dependencies:
     eventemitter3 "5.0.1"
     mipd "0.0.5"
@@ -6792,13 +6788,6 @@ iconv-lite@^0.4.24:
   integrity sha512-v3MXnZAcvnywkTUEZomIActle7RXXeedOR31wwl7VlyoXO4Qi9arvSenNQWne1TcRwhCL1HwLI21bEqdpj8/rA==
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
-
-iconv-lite@^0.6.2:
-  version "0.6.3"
-  resolved "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.6.3.tgz"
-  integrity sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==
-  dependencies:
-    safer-buffer ">= 2.1.2 < 3.0.0"
 
 idb-keyval@^6.2.1:
   version "6.2.1"
@@ -11226,6 +11215,11 @@ unist-util-visit@^5.0.0:
     unist-util-is "^6.0.0"
     unist-util-visit-parents "^6.0.0"
 
+universalify@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.2.0.tgz#6451760566fa857534745ab1dde952d1b1761be0"
+  integrity sha512-CJ1QgKmNg3CwvAv/kOFmtnEN05f0D/cn9QntgNOQlQF9dgvVTHj3t+8JPdjqawCHk7V/KA+fbUqzZ9XWhcqPUg==
+
 universalify@^2.0.0:
   version "2.0.1"
   resolved "https://registry.npmjs.org/universalify/-/universalify-2.0.1.tgz"
@@ -11452,7 +11446,6 @@ viem@2.x, viem@^2.7.8, viem@^2.9.28:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/viem/-/viem-2.16.1.tgz#6be85ab69e2948d878d7b42f5d0e22333a8f6b33"
   integrity sha512-rmgXcxif740m2ARqPFoiXRHkljXhsruCZgRXf6XuS6n+Lymy7X2ma5vuzBw3mDKiA2BmxjbyJC4Wxi7kaIwHhw==
-
   dependencies:
     "@adraffy/ens-normalize" "1.10.0"
     "@noble/curves" "1.2.0"
@@ -11493,7 +11486,6 @@ wagmi@^2.10.2:
   version "2.10.2"
   resolved "https://registry.yarnpkg.com/wagmi/-/wagmi-2.10.2.tgz#0050daaf3af5eef2220d84d08517562f2b4d8ff8"
   integrity sha512-0/Fg1ldMnLLpcKghY94kBLsqEo+qs4kYVUx3opfELiZjyB9JKWaqCMCKzae8j21V4FWa6ATkK2pRzy0FiXJSig==
-
   dependencies:
     "@wagmi/connectors" "5.0.14"
     "@wagmi/core" "2.11.2"
@@ -11827,7 +11819,7 @@ write-file-atomic@^5.0.0:
     imurmurhash "^0.1.4"
     signal-exit "^4.0.1"
 
-ws@7.4.6, ws@^7.3.1:
+ws@7.4.6:
   version "7.4.6"
   resolved "https://registry.npmjs.org/ws/-/ws-7.4.6.tgz"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
@@ -11837,7 +11829,7 @@ ws@8.13.0:
   resolved "https://registry.npmjs.org/ws/-/ws-8.13.0.tgz"
   integrity sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA==
 
-ws@8.17.1, ws@^8.14.2:
+ws@8.17.1, ws@^8.17.0:
   version "8.17.1"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.17.1.tgz#9293da530bb548febc95371d90f9c878727d919b"
   integrity sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==
@@ -11847,7 +11839,7 @@ ws@8.5.0:
   resolved "https://registry.npmjs.org/ws/-/ws-8.5.0.tgz"
   integrity sha512-BWX0SWVgLPzYwF8lTzEy1egjhS4S4OEAHfsO8o65WOVsrnSRGaSiUaa9e0ggGlkMTtBlmOpEXiie9RUcBO86qg==
 
-ws@^7.3.1, ws@^7.5.1:
+ws@^7.3.1:
   version "7.5.10"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.5.10.tgz#58b5c20dc281633f6c19113f39b349bd8bd558d9"
   integrity sha512-+dbF1tHwZpXcbOJdVOkzLDxZP1ailvSxM6ZweXTegylPny803bFhA+vqBYw4s31NSAk4S2Qz+AKXK9a4wkdjcQ==
