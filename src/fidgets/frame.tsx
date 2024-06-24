@@ -10,6 +10,7 @@ export type FrameFidgetSettings = {
 
 const frameConfig: FidgetProperties = {
   fidgetName: "frame",
+  icon: 0x23f9,
   fields: [
     {
       fieldName: "url",

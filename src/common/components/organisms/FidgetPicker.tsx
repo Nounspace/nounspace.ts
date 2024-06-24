@@ -11,16 +11,6 @@ export interface FidgetPickerProps {
 export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   addFidgetToTray: addFidgetToTray,
 }) => {
-  const fidgetCoverImages = {
-    example:
-      "https://i.fbcd.co/products/resized/resized-750-500/2992-2e43bbf282e5f024b49b9d0e380c2e60c119e50418e2233456517844da4386a2.jpg",
-    frame:
-      "https://media.istockphoto.com/id/1147136165/vector/photo-frame-icon-stock-vector.jpg?s=612x612&w=0&k=20&c=BvQKIbtwz4Z2MXEK8MT62IQ1Xl6GM3iW68VEyWGXS-U=",
-    gallery:
-      "https://t4.ftcdn.net/jpg/02/98/19/59/360_F_298195987_xCfHMVXXk694FwTMPXZkyqb5mFplKVe8.jpg",
-    text: "https://t4.ftcdn.net/jpg/02/98/19/59/360_F_298195987_xCfHMVXXk694FwTMPXZkyqb5mFplKVe8.jpg",
-  };
-
   function generateFidgetCards() {
     return map(CompleteFidgets, (fidgetModule, fidgetName) => {
       return (
@@ -31,12 +21,9 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
         >
           <Card className="size-full">
             <CardContent className="overflow-hidden">
-              <img
-                src={fidgetCoverImages[fidgetName]}
-                id={fidgetName}
-                alt="fidget"
-                className="min-h-24 rounded-xl"
-              />
+              <span className={""} role="img" aria-label={fidgetName}>
+                {String.fromCodePoint(fidgetModule.properties.icon)}
+              </span>
               <span className="text-md font-bold text-black block capitalize">
                 {fidgetName}
               </span>

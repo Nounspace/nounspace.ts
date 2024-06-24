@@ -33,6 +33,7 @@ export type FidgetFieldConfig = {
 // Properties are developer defined variables (they are inaccessible to the user)
 export type FidgetProperties = {
   fidgetName: string;
+  icon: number;
   fields: FidgetFieldConfig[];
   size: {
     minHeight: NumericRange<1, 36>;

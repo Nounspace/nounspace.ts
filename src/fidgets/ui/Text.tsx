@@ -21,6 +21,7 @@ export type TextFidgetSettings = {
 
 export const textConfig: FidgetProperties = {
   fidgetName: "text",
+  icon: 0x1f4c4,
   fields: [
     {
       fieldName: "title",
