@@ -9,11 +9,12 @@ export interface UserTheme extends ThemeSettings {
     font: FontFamily;
     background: Color;
     backgroundHTML: string;
+    musicURL: string;
   };
 }
 
 export type ThemeProperties = {
-  [key: string]: Color | CSSSize | FontFamily;
+  [key: string]: Color | FontFamily | MusicSource | string;
 };
 
 // Sizes

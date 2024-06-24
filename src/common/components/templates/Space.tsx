@@ -13,6 +13,12 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
 
+export type SpaceFidgetConfig = {
+  instanceConfig: FidgetConfig<FidgetSettings>;
+  fidgetType: string;
+  id: string;
+};
+
 export type SpaceConfig = {
   fidgetInstances: {
     [key: string]: FidgetInstanceData;
@@ -20,8 +26,8 @@ export type SpaceConfig = {
   layoutID: string;
   layoutDetails: LayoutFidgetDetails;
   isEditable: boolean;
-  theme: UserTheme;
   fidgetTrayContents: FidgetInstanceData[];
+  theme: UserTheme;
 };
 
 type SpaceArgs = {
@@ -152,6 +158,14 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
           />
         </div>
       </div>
+      <LayoutFidget
+        layoutConfig={{
+          ...config.layoutDetails.layoutConfig,
+          onLayoutChange: saveLayout,
+        }}
+        fidgets={fidgets}
+        inEditMode={editMode}
+      />
     </>
   );
 }
