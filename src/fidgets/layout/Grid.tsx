@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import { map } from "lodash";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -151,6 +152,10 @@ const Grid: LayoutFidget<GridArgs> = ({
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
 
+  const [localLayout, setLocalLayout] = useState<PlacedGridItem[]>(
+    layoutConfig.layout,
+  );
+
   function unselectFidget() {
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
@@ -170,6 +175,10 @@ const Grid: LayoutFidget<GridArgs> = ({
     // If this causes an unwanted flicker, use useLayoutEffect instead
     setElement(portalRef.current);
   }, []);
+
+  useEffect(() => {
+    setLocalLayout(layoutConfig.layout);
+  }, [layoutConfig]);
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -207,7 +216,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     fidgetData: FidgetInstanceData,
   ) {
     const newLayoutConfig: GridLayoutConfig = {
-      layout: [...layoutConfig.layout],
+      layout: localLayout,
     };
 
     const itemLayoutIndex = newLayoutConfig.layout.findIndex(
@@ -253,9 +262,8 @@ const Grid: LayoutFidget<GridArgs> = ({
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    console.log("Layout Config", layoutConfig);
     if (currentlyDragging) {
-      layoutConfig.layout = newLayout;
+      setLocalLayout(newLayout);
     } else {
       saveLayout(newLayout);
     }
@@ -296,11 +304,6 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
-      {/* <div
-        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
-        onClick={unselectFidget}
-      ></div> */}
-
       {editorPanelPortal(element)}
 
       {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
@@ -309,8 +312,8 @@ const Grid: LayoutFidget<GridArgs> = ({
         {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
-        layout={layoutConfig.layout}
-        items={layoutConfig.layout.length}
+        layout={localLayout}
+        items={localLayout.length}
         rowHeight={rowHeight}
         isDroppable={true}
         droppingItem={externalDraggedItem}
@@ -318,7 +321,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         onLayoutChange={saveLayoutConditional}
         className="h-full"
       >
-        {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
+        {map(localLayout, (gridItem: PlacedGridItem) => {
           return (
             <div key={gridItem.i}>
               {FidgetWrapper({
@@ -344,7 +347,7 @@ const Grid: LayoutFidget<GridArgs> = ({
                 saveConfig: async (
                   newInstanceConfig: FidgetConfig<FidgetSettings>,
                 ) => {
-                  saveLayout(layoutConfig.layout);
+                  saveLayout(localLayout);
                   return await saveFidgetInstanceDatums(
                     (fidgetInstanceDatums = {
                       ...fidgetInstanceDatums,
