@@ -7,7 +7,11 @@ import {
 } from "./accounts";
 import { SetupStore, createSetupStoreFunc } from "./setup";
 import { merge } from "lodash";
-import { HomeBaseStore, createHomeBaseStoreFunc } from "./homebase";
+import {
+  HomeBaseStore,
+  createHomeBaseStoreFunc,
+  partializedHomebaseStore,
+} from "./homebase";
 
 export type AppStore = {
   account: AccountStore;
@@ -27,6 +31,7 @@ export function createAppStore() {
       storage: createJSONStorage(() => sessionStorage),
       partialize: (state: AppStore) => ({
         account: partializedAccountStore(state),
+        homebase: partializedHomebaseStore(state),
       }),
       merge: (persistedState, currentState: AppStore) => {
         return merge(currentState, persistedState);

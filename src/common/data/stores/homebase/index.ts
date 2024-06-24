@@ -90,3 +90,10 @@ export const createHomeBaseStoreFunc = (
     });
   },
 });
+
+export function partializedHomebaseStore(state: AppStore) {
+  return {
+    homebaseConfig: state.homebase.homebaseConfig,
+    remoteHomebaseConfig: state.homebase.remoteHomebaseConfig,
+  };
+}
