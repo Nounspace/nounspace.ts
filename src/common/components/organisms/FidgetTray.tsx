@@ -30,7 +30,7 @@ export interface FidgetTrayProps {
   contents: FidgetInstanceData[];
   openFidgetPicker: () => void;
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
-  removeFidgetFromGrid(fidgetId: string): void;
+  removeFidget(fidgetId: string): void;
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
