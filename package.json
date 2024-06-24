@@ -146,7 +146,7 @@
     "@next/eslint-plugin-next": "^14.2.3",
     "@stylistic/eslint-plugin": "^2.1.0",
     "@stylistic/eslint-plugin-js": "^2.1.0",
-    "@stylistic/eslint-plugin-jsx": "^2.1.0",
+    "@stylistic/eslint-plugin-jsx": "^2.2.2",
     "@stylistic/eslint-plugin-ts": "^2.1.0",
     "@types/node": "^18.7.15",
     "@types/ramda": "^0.29.11",

@@ -2711,7 +2711,7 @@
     neverthrow "^6.0.0"
     viem "^1.12.2"
 
-"@stylistic/eslint-plugin-js@2.1.0", "@stylistic/eslint-plugin-js@^2.1.0":
+"@stylistic/eslint-plugin-js@2.1.0":
   version "2.1.0"
   resolved "https://registry.npmjs.org/@stylistic/eslint-plugin-js/-/eslint-plugin-js-2.1.0.tgz"
   integrity sha512-gdXUjGNSsnY6nPyqxu6lmDTtVrwCOjun4x8PUn0x04d5ucLI74N3MT1Q0UhdcOR9No3bo5PGDyBgXK+KmD787A==
@@ -2721,12 +2721,32 @@
     eslint-visitor-keys "^4.0.0"
     espree "^10.0.1"
 
-"@stylistic/eslint-plugin-jsx@2.1.0", "@stylistic/eslint-plugin-jsx@^2.1.0":
+"@stylistic/eslint-plugin-js@^2.1.0", "@stylistic/eslint-plugin-js@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-js/-/eslint-plugin-js-2.2.2.tgz#7e4e7e7572e1409712d569205976bfbc7a4f3735"
+  integrity sha512-Vj2Q1YHVvJw+ThtOvmk5Yx7wZanVrIBRUTT89horLDb4xdP9GA1um9XOYQC6j67VeUC2gjZQnz5/RVJMzaOhtw==
+  dependencies:
+    "@types/eslint" "^8.56.10"
+    acorn "^8.11.3"
+    eslint-visitor-keys "^4.0.0"
+    espree "^10.0.1"
+
+"@stylistic/eslint-plugin-jsx@2.1.0":
   version "2.1.0"
   resolved "https://registry.npmjs.org/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-2.1.0.tgz"
   integrity sha512-mMD7S+IndZo2vxmwpHVTCwx2O1VdtE5tmpeNwgaEcXODzWV1WTWpnsc/PECQKIr/mkLPFWiSIqcuYNhQ/3l6AQ==
   dependencies:
     "@stylistic/eslint-plugin-js" "^2.1.0"
+    "@types/eslint" "^8.56.10"
+    estraverse "^5.3.0"
+    picomatch "^4.0.2"
+
+"@stylistic/eslint-plugin-jsx@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-2.2.2.tgz#f3775d778be76dd3ca3ba1406acf00a37273ec20"
+  integrity sha512-xfIMdLivoMV1wV+5Tl0PtkLN/oUwjIt7LuIu48vhrZfJ2jCXwjlTGPGSoM7dnLZYD65XjtrHHIFAvPuvvvjlaw==
+  dependencies:
+    "@stylistic/eslint-plugin-js" "^2.2.2"
     "@types/eslint" "^8.56.10"
     estraverse "^5.3.0"
     picomatch "^4.0.2"
