@@ -157,7 +157,7 @@ const Homebase: NextPageWithLayout = () => {
     layoutID,
     layoutDetails,
     theme: DEFAULT_THEME,
-    fidgetInstances: fidgets,
+    fidgetInstanceDatums: fidgets,
     isEditable: true,
     fidgetTrayContents: fidgetsInTray,
   });

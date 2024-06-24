@@ -7,7 +7,7 @@ export type ExampleFidgetSettings = {
 };
 
 const exampleProperties: FidgetProperties = {
-  fidgetName: "Example",
+  fidgetName: "example",
   fields: [
     {
       fieldName: "displayText",

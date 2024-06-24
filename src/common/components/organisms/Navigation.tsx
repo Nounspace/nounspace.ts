@@ -52,7 +52,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0 h-full"
+      className="mx-24 my-40 left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
       aria-label="Sidebar"
     >
       <div className="flex-row h-full">

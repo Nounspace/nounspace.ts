@@ -1,5 +1,13 @@
 import { ThemeSettings } from "@/common/lib/theme";
-import React, { Dispatch, ReactNode, SetStateAction } from "react";
+import React, {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import EditorPanel from "./EditorPanel";
 import Navigation from "./Navigation";
 import { FidgetInstanceData } from "@/common/fidgets";
@@ -7,29 +15,15 @@ import { FidgetInstanceData } from "@/common/fidgets";
 export interface SidebarProps {
   editMode: boolean;
   setEditMode: (editMode: boolean) => void;
-  theme?: ThemeSettings;
-  saveTheme: (newTheme: ThemeSettings) => void;
   isEditable: boolean;
-  unselect: () => void;
-  selectedFidgetID: string | null;
-  currentFidgetSettings: React.ReactNode;
-  setExternalDraggedItem: Dispatch<
-    SetStateAction<{ w: number; h: number } | undefined>
-  >;
-  fidgetTrayContents: FidgetInstanceData[];
+  portalRef: React.RefObject<HTMLDivElement>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   editMode,
   setEditMode,
-  theme,
-  saveTheme,
   isEditable,
-  unselect,
-  selectedFidgetID,
-  currentFidgetSettings,
-  setExternalDraggedItem,
-  fidgetTrayContents,
+  portalRef,
 }) => {
   function turnOnEditMode() {
     setEditMode(true);
@@ -37,18 +31,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {editMode ? (
-        <EditorPanel
-          setEditMode={setEditMode}
-          theme={theme}
-          saveTheme={saveTheme}
-          unselect={unselect}
-          selectedFidgetID={selectedFidgetID}
-          currentFidgetSettings={currentFidgetSettings}
-          setExternalDraggedItem={setExternalDraggedItem}
-          fidgetTrayContents={fidgetTrayContents}
-        />
-      ) : (
+      <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
+      {!editMode && (
         <Navigation isEditable={isEditable} setEditMode={setEditMode} />
       )}
     </>
