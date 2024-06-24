@@ -12,12 +12,14 @@ import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 
 interface HomeBaseStoreState {
   homebaseConfig?: SpaceConfig;
+  remoteHomebaseConfig?: SpaceConfig;
 }
 
 interface HomeBaseStoreActions {
   loadHomebase: () => Promise<SpaceConfig>;
   commitHomebaseToDatabase: () => Promise<void>;
   saveHomebaseConfig: (config: SpaceConfig) => Promise<void>;
+  resetHomebaseConfig: () => Promise<void>;
 }
 
 export type HomeBaseStore = HomeBaseStoreState & HomeBaseStoreActions;
@@ -65,13 +67,26 @@ export const createHomeBaseStoreFunc = (
           true,
         );
         // TO DO: Error handling
-        await axiosBackend.post(`/api/space/homebase/`, file);
+        try {
+          await axiosBackend.post(`/api/space/homebase/`, file);
+          set((draft) => {
+            draft.homebase.remoteHomebaseConfig = localCopy;
+          });
+        } catch (e) {
+          console.error(e);
+          throw e;
+        }
       }
     }, 1000)();
   },
   saveHomebaseConfig: async (config) => {
     set((draft) => {
       draft.homebase.homebaseConfig = config;
+    });
+  },
+  resetHomebaseConfig: async () => {
+    set((draft) => {
+      draft.homebase.homebaseConfig = draft.homebase.remoteHomebaseConfig;
     });
   },
 });
