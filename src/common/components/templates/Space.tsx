@@ -95,6 +95,7 @@ export default function Space({ config, saveConfig }: SpaceArgs) {
   }
 
   return (
+    <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
         className="fixed top-0 left-0 h-screen w-screen bg-transparent"
