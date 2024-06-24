@@ -99,7 +99,7 @@ export function FidgetWrapper({
     setcurrentFidgetSettings(<></>);
   }
 
-  const userStyles = config.editConfig.fields
+  const userStyles = config.properties.fields
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
@@ -116,12 +116,12 @@ export function FidgetWrapper({
           <CardContent className="size-full">
             {fidget({
               settings: settingsWithDefaults,
-              data: config.instanceConfig.data,
+              data: config.config.data,
               saveData,
             })}
           </CardContent>
         </ScopedStyles>
-        {config.instanceConfig.editable && (
+        {config.config.editable && (
           <button
             onMouseDown={onClickEdit}
             className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
