@@ -223,7 +223,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     const itemTrayIndex = fidgetTrayContents.findIndex(
       (x) => x.id == gridItem.i,
     );
-    const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex, 1);
+    const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex);
 
     saveTrayContents(newFidgetTrayContents);
     saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
@@ -234,14 +234,17 @@ const Grid: LayoutFidget<GridArgs> = ({
     const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
     delete newFidgetInstanceDatums[fidgetId];
 
-    // New layout
-    const newLayoutConfig: GridLayoutConfig = {
-      layout: [...layoutConfig.layout],
-    };
-    const itemLayoutIndex = newLayoutConfig.layout.findIndex(
+    // Find fidget index
+    const itemLayoutIndex = layoutConfig.layout.findIndex(
       (x) => x.i == fidgetId,
     );
-    newLayoutConfig.layout = newLayoutConfig.layout.splice(itemLayoutIndex, 1);
+
+    //Make new layout with item removed
+    const newLayoutConfig: GridLayoutConfig = {
+      layout: layoutConfig.layout
+        .slice(0, itemLayoutIndex)
+        .concat(layoutConfig.layout.slice(itemLayoutIndex + 1)),
+    };
 
     // Clear editor panel
     unselectFidget();
