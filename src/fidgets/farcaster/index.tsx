@@ -2,6 +2,8 @@ import { AuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { HubError, Signer } from "@farcaster/core";
 import { err, ok } from "neverthrow";
 
+export const FARCASTER_AUTHENTICATOR_NAME = "farcaster:nounspace";
+
 export const createFarcasterSignerFromAuthenticatorManager = async (
   authenticatorManager: AuthenticatorManager,
   fidgetId: string,
