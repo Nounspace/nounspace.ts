@@ -29,7 +29,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
       (fidgetModule: FidgetModule<FidgetArgs>, fidgetName) => {
         return (
           <div
-            className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+            className="z-20 droppable-element"
             draggable={true}
             // unselectable helps with IE support
             // eslint-disable-next-line react/no-unknown-property
@@ -51,7 +51,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
           >
             <Card className="size-full">
               <CardContent className="overflow-hidden">
-                <span className={""} role="img" aria-label={fidgetName}>
+                <span className={"flex"} role="img" aria-label={fidgetName}>
                   {String.fromCodePoint(fidgetModule.properties.icon)}
                 </span>
                 <span className="text-md font-bold text-black block capitalize">
@@ -88,7 +88,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
       <section
         id="Fidgets"
-        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 justify-items-center justify-center gap-y-4 mt-10 mb-5"
+        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4"
       >
         {generateFidgetCards()}
       </section>

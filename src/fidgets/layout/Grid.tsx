@@ -74,7 +74,6 @@ const ReactGridLayout = WidthProvider(RGL);
 const Gridlines: React.FC<GridDetails> = ({
   maxRows,
   cols,
-  rowHeight,
   margin,
   containerPadding,
 }) => {
@@ -332,7 +331,7 @@ const Grid: LayoutFidget<GridArgs> = ({
       ) : null}
       {editorPanelPortal(element)}
       <div ref={gridElementRef} className="flex-1 grid-container grow">
-        {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+        {inEditMode && <Gridlines {...gridDetails} />}
 
         <ReactGridLayout
           {...gridDetails}
