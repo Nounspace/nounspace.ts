@@ -58,15 +58,16 @@ export const authenticatorStore = (
           return;
         }
         const fileData = JSON.parse(await data.text()) as SignedFile;
-        const authConfig = JSON.parse(
-          await get().account.decryptEncryptedSignedFile(fileData),
-        ) as AuthenticatorConfig;
+        const decryptedFile =
+          await get().account.decryptEncryptedSignedFile(fileData);
+        const authConfig = JSON.parse(decryptedFile) as AuthenticatorConfig;
         set((draft) => {
           draft.account.authenticatorConfig = authConfig;
           draft.account.authenticatorRemoteConfig = authConfig;
         });
       }
-    } catch {
+    } catch (e) {
+      console.debug(e);
       console.debug("Could not locate authenticator data");
     }
   },
