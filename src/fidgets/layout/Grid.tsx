@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import { map } from "lodash";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -110,12 +111,6 @@ interface GridArgs {
   theme: ThemeSettings;
 
   saveLayout(layout: LayoutFidgetConfig): Promise<void>;
-  saveFidgets(
-    newLayoutConfig: LayoutFidgetConfig,
-    newFidgetInstanceDatums: {
-      [key: string]: FidgetInstanceData;
-    },
-  ): Promise<void>;
   saveFidgetInstanceDatums(newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
@@ -133,7 +128,6 @@ const Grid: LayoutFidget<GridArgs> = ({
   fidgetTrayContents,
   theme,
   saveLayout,
-  saveFidgets,
   saveFidgetInstanceDatums,
   saveTrayContents,
   saveTheme,
@@ -150,6 +144,10 @@ const Grid: LayoutFidget<GridArgs> = ({
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
   const [currentFidgetSettings, setcurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
+
+  const [localLayout, setLocalLayout] = useState<PlacedGridItem[]>(
+    layoutConfig.layout,
+  );
 
   function unselectFidget() {
     setSelectedFidgetID("");
@@ -171,24 +169,23 @@ const Grid: LayoutFidget<GridArgs> = ({
     setElement(portalRef.current);
   }, []);
 
+  // useEffect(() => {
+  //   setLocalLayout(layoutConfig.layout);
+  // }, [layoutConfig]);
+
   function handleDrop(
     layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
+    console.log("Dropped: ", item, "Onto: ", layout);
+    setCurrentlyDragging(false);
+
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
 
-    // Make sure it is in the list of instances
-    if (!(fidgetData.id in fidgetInstanceDatums)) {
-      const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
-        ...fidgetInstanceDatums,
-        [fidgetData.id]: fidgetData,
-      };
-    }
-
-    const gridItem = {
+    const newItem = {
       i: fidgetData.id,
 
       x: item.x,
@@ -205,22 +202,23 @@ const Grid: LayoutFidget<GridArgs> = ({
       resizeHandles: resizeDirections,
     };
 
-    setCurrentlyDragging(false);
-    moveFidgetFromTrayToGrid(gridItem, fidgetData);
+    // Make sure it is in the list of instances
+    if (!(fidgetData.id in fidgetInstanceDatums)) {
+      const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
+        ...fidgetInstanceDatums,
+        [fidgetData.id]: fidgetData,
+      };
+    }
+
+    setLocalLayout([...localLayout, newItem]);
+    moveFidgetFromTrayToGrid(newItem, fidgetData);
   }
 
   function moveFidgetFromTrayToGrid(
     gridItem: PlacedGridItem,
     fidgetData: FidgetInstanceData,
   ) {
-    const newLayoutConfig: GridLayoutConfig = {
-      layout: [...layoutConfig.layout],
-    };
-
-    const itemLayoutIndex = newLayoutConfig.layout.findIndex(
-      (x) => x.i == gridItem.i,
-    );
-    newLayoutConfig.layout[itemLayoutIndex] = gridItem;
+    const newLayout = [...localLayout, gridItem];
 
     const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
       ...fidgetInstanceDatums,
@@ -233,7 +231,8 @@ const Grid: LayoutFidget<GridArgs> = ({
     const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex);
 
     saveTrayContents(newFidgetTrayContents);
-    saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
+    saveLayoutConditional(newLayout);
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
@@ -256,14 +255,13 @@ const Grid: LayoutFidget<GridArgs> = ({
     // Clear editor panel
     unselectFidget();
 
-    saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
+    saveLayoutConditional(newLayoutConfig.layout);
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    console.log("Layout Config", layoutConfig);
-    if (currentlyDragging) {
-      layoutConfig.layout = newLayout;
-    } else {
+    if (!currentlyDragging) {
+      setLocalLayout(newLayout);
       saveLayout(newLayout);
     }
   }
@@ -303,11 +301,6 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
-      {/* <div
-        className="fixed top-0 left-0 h-screen w-screen bg-transparent"
-        onClick={unselectFidget}
-      ></div> */}
-
       {editorPanelPortal(element)}
 
       {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
@@ -316,8 +309,9 @@ const Grid: LayoutFidget<GridArgs> = ({
         {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
-        layout={layoutConfig.layout}
-        items={layoutConfig.layout.length}
+        resizeHandles={resizeDirections}
+        layout={localLayout}
+        items={localLayout.length}
         rowHeight={rowHeight}
         isDroppable={true}
         droppingItem={externalDraggedItem}
@@ -325,7 +319,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         onLayoutChange={saveLayoutConditional}
         className="h-full"
       >
-        {layoutConfig.layout.map((gridItem: PlacedGridItem) => {
+        {map(localLayout, (gridItem: PlacedGridItem) => {
           return (
             <div key={gridItem.i}>
               {FidgetWrapper({
@@ -351,7 +345,7 @@ const Grid: LayoutFidget<GridArgs> = ({
                 saveConfig: async (
                   newInstanceConfig: FidgetConfig<FidgetSettings>,
                 ) => {
-                  saveLayout(layoutConfig.layout);
+                  saveLayout(localLayout);
                   return await saveFidgetInstanceDatums(
                     (fidgetInstanceDatums = {
                       ...fidgetInstanceDatums,

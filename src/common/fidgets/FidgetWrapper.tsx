@@ -34,7 +34,9 @@ export const getSettingsWithDefaults = (
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
-        f.fieldName in settings ? settings[f.fieldName] : f.default || null,
+        f.fieldName in settings
+          ? settings[f.fieldName]
+          : f.default || undefined,
     }),
     {},
   );
