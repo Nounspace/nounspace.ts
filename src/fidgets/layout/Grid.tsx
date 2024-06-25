@@ -1,4 +1,4 @@
-import React, { DragEvent, useEffect, useState } from "react";
+import React, { DragEvent, useEffect, useState, useRef } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
 import {
@@ -159,14 +159,20 @@ const Grid: LayoutFidget<GridArgs> = ({
     portalRef.current,
   );
 
-  const { height } = useWindowSize();
+  const [height, setHeight] = useState(0);
+  const gridElementRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setHeight(
+      gridElementRef.current !== null ? gridElementRef.current.clientHeight : 0,
+    );
+  }, []);
 
   const rowHeight = height
     ? Math.round(
         (height -
           gridDetails.margin[0] * gridDetails.maxRows -
-          2 * gridDetails.containerPadding[0] -
-          28) /
+          gridDetails.containerPadding[0]) /
           gridDetails.maxRows,
       )
     : 70;
@@ -176,10 +182,6 @@ const Grid: LayoutFidget<GridArgs> = ({
     // If this causes an unwanted flicker, use useLayoutEffect instead
     setElement(portalRef.current);
   }, []);
-
-  // useEffect(() => {
-  //   setLocalLayout(layoutConfig.layout);
-  // }, [layoutConfig]);
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -310,7 +312,7 @@ const Grid: LayoutFidget<GridArgs> = ({
   return (
     <>
       {editorPanelPortal(element)}
-      <div className="grid-container h-full">
+      <div ref={gridElementRef} className="grid-container h-full">
         {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
         <ReactGridLayout
