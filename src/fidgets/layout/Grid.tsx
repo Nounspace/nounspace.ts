@@ -187,14 +187,13 @@ const Grid: LayoutFidget<GridArgs> = ({
   ) {
     console.log("Dropped: ", item, "Onto: ", layout);
     setCurrentlyDragging(false);
-    setLocalLayout(layout);
 
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
 
     const newItem = {
-      i: item.i,
+      i: fidgetData.id,
 
       x: item.x,
       y: item.y,
@@ -210,6 +209,7 @@ const Grid: LayoutFidget<GridArgs> = ({
       resizeHandles: resizeDirections,
     };
 
+    setLocalLayout([...localLayout, newItem]);
     moveFidgetFromTrayToGrid(newItem, fidgetData);
   }
 
@@ -217,14 +217,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     gridItem: PlacedGridItem,
     fidgetData: FidgetInstanceData,
   ) {
-    const newLayoutConfig: GridLayoutConfig = {
-      layout: localLayout,
-    };
-
-    const itemLayoutIndex = newLayoutConfig.layout.findIndex(
-      (x) => x.i == gridItem.i,
-    );
-    newLayoutConfig.layout[itemLayoutIndex] = gridItem;
+    const newLayout = [...localLayout, gridItem];
 
     const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
       ...fidgetInstanceDatums,
@@ -237,7 +230,8 @@ const Grid: LayoutFidget<GridArgs> = ({
     const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex);
 
     saveTrayContents(newFidgetTrayContents);
-    saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
+    saveLayoutConditional(newLayout);
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
@@ -260,7 +254,8 @@ const Grid: LayoutFidget<GridArgs> = ({
     // Clear editor panel
     unselectFidget();
 
-    saveFidgets(newLayoutConfig, newFidgetInstanceDatums);
+    saveLayoutConditional(newLayoutConfig.layout);
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
@@ -313,6 +308,7 @@ const Grid: LayoutFidget<GridArgs> = ({
         {...gridDetails}
         isDraggable={inEditMode}
         isResizable={inEditMode}
+        resizeHandles={resizeDirections}
         layout={localLayout}
         items={localLayout.length}
         rowHeight={rowHeight}
