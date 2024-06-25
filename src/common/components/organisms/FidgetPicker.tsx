@@ -74,7 +74,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
   return (
     <>
-      <div className="flex">
+      <div className="flex pb-4 m-2">
         <button
           onClick={() => {
             setIsPickingFidget(false);
@@ -88,7 +88,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
       <section
         id="Fidgets"
-        className="w-11/12 mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 justify-items-center justify-center gap-y-4 mt-10 mb-5"
+        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 justify-items-center justify-center gap-y-4 mt-10 mb-5"
       >
         {generateFidgetCards()}
       </section>

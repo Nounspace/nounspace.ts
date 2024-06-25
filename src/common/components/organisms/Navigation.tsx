@@ -46,11 +46,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="transition-transform -translate-x-full sm:translate-x-0 border-r-2"
+      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2"
       aria-label="Sidebar"
     >
-      <div className="pl-24 pt-24 pb-24 pr-16 h-full">
-        <div className="flex-col flex h-full px-4 py-4 overflow-y-auto">
+      <div className="pt-24 pb-24 h-full">
+        <div className="flex-col flex h-full w-64 mx-auto px-8 py-4 overflow-y-auto">
           <BrandHeader />
           <div className="text-lg font-medium">
             <ul className="space-y-2">
@@ -62,20 +62,20 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
             <div className="mt-10">
               <Player url={userTheme?.properties.musicURL} />
             </div>
-            <div className="mt-40 pt-2 flex items-center justify-between">
+            <div className="mt-40 pt-2 flex items-center justify-center">
               {isEditable && (
                 <button
                   onClick={turnOnEditMode}
-                  className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
                 >
                   <div className="flex items-center">
                     <EditIcon />
                   </div>
                 </button>
               )}
-              <button className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
-                <div className="flex items-center">
-                  <span className="mr-16 ml-16">Cast</span>
+              <button className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
+                <div className="flex ml-8 mr-8 items-center">
+                  <span className="">Cast</span>
                 </div>
               </button>
             </div>

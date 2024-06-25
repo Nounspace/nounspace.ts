@@ -59,7 +59,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   return (
     <form onSubmit={_onSave}>
-      <div className="flex">
+      <div className="flex pb-4 m-2 ">
         <button onClick={unselect} className="my-auto">
           <BackArrowIcon />
         </button>

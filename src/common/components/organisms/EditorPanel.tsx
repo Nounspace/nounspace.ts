@@ -93,50 +93,46 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   }
 
   return (
-    <div className="flex w-full">
-      <aside
-        id="editor-panel"
-        className="pl-16 pr-8 py-40 flex-col h-10/12 z-8 w-10/12 transition-transform -translate-x-full sm:translate-x-0"
-        aria-label="Editor"
-      >
-        <div className="w-full h-full">
-          <div className="h-full px-4 py-4 border border-blue-100 rounded-xl relative bg-card">
-            <div className="flex-col h-full">
-              {selectedFidgetID ? (
-                <>
-                  {currentFidgetSettings}
-                  <Button
-                    onClick={() => {
-                      removeFidget(selectedFidgetID);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </>
+    <aside
+      id="logo-sidebar"
+      className="h-full flex-row flex transition-transform -translate-x-full sm:translate-x-0"
+      aria-label="Sidebar"
+    >
+      <div className="flex-1 min-w-64 h-full pl-8 pt-24 pb-24 flex-col flex px-4 py-4 overflow-y-hidden border-r-2">
+        <div className="h-full flex-col">
+          {selectedFidgetID ? (
+            <>
+              {currentFidgetSettings}
+              <Button
+                onClick={() => {
+                  removeFidget(selectedFidgetID);
+                }}
+              >
+                Delete
+              </Button>
+            </>
+          ) : (
+            <>
+              {isPickingFidget ? (
+                <FidgetPicker
+                  addFidgetToTray={addFidgetToTray}
+                  setCurrentlyDragging={setCurrentlyDragging}
+                  setExternalDraggedItem={setExternalDraggedItem}
+                  generateFidgetInstance={generateFidgetInstance}
+                  setIsPickingFidget={setIsPickingFidget}
+                />
               ) : (
-                <>
-                  {isPickingFidget ? (
-                    <FidgetPicker
-                      addFidgetToTray={addFidgetToTray}
-                      setCurrentlyDragging={setCurrentlyDragging}
-                      setExternalDraggedItem={setExternalDraggedItem}
-                      generateFidgetInstance={generateFidgetInstance}
-                      setIsPickingFidget={setIsPickingFidget}
-                    />
-                  ) : (
-                    <ThemeSettingsEditor
-                      theme={theme}
-                      saveTheme={saveTheme}
-                      setEditMode={setEditMode}
-                    />
-                  )}
-                </>
+                <ThemeSettingsEditor
+                  theme={theme}
+                  saveTheme={saveTheme}
+                  setEditMode={setEditMode}
+                />
               )}
-            </div>
-          </div>
+            </>
+          )}
         </div>
-      </aside>
-      <div className="w-2/12">
+      </div>
+      <div className="w-24">
         <FidgetTray
           setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}
@@ -146,7 +142,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           removeFidget={removeFidget}
         />
       </div>
-    </div>
+    </aside>
   );
 };
 
