@@ -25,8 +25,9 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
   }
   return (
     typeof maybe["spaceName"] === "string" &&
-    typeof maybe["fid"] === "string" &&
-    typeof maybe["timestamp"] === "string"
+    typeof maybe["fid"] === "number" &&
+    typeof maybe["timestamp"] === "string" &&
+    typeof maybe["isDefault"] === "boolean"
   );
 }
 
@@ -60,12 +61,12 @@ async function registerNewSpace(
       result: "error",
       error: {
         message:
-          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, and signature",
+          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, isDefault and signature",
       },
     });
     return;
   }
-  if (!validateSignable(registration)) {
+  if (!validateSignable(registration, "identityPublicKey")) {
     res.status(400).json({
       result: "error",
       error: {
