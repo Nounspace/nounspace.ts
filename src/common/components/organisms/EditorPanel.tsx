@@ -121,6 +121,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                       setCurrentlyDragging={setCurrentlyDragging}
                       setExternalDraggedItem={setExternalDraggedItem}
                       generateFidgetInstance={generateFidgetInstance}
+                      setIsPickingFidget={setIsPickingFidget}
                     />
                   ) : (
                     <ThemeSettingsEditor

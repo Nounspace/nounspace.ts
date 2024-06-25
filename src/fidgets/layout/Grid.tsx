@@ -319,17 +319,17 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
-      <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
-        <button
-          onClick={openFidgetPicker}
-          className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6]"
-        >
-          <AddFidgetIcon />
-          <span className="ml-2 text-[#1C64F2] font-semibold font-semibold	">
-            Fidget
-          </span>
-        </button>
-      </div>
+      {inEditMode ? (
+        <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
+          <button
+            onClick={openFidgetPicker}
+            className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+          >
+            <AddFidgetIcon />
+            <span className="ml-2">Fidget</span>
+          </button>
+        </div>
+      ) : null}
       {editorPanelPortal(element)}
       <div ref={gridElementRef} className="flex-1 grid-container grow">
         {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}

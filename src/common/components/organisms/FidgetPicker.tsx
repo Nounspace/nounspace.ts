@@ -4,6 +4,7 @@ import { Card, CardContent } from "../atoms/card";
 import { map } from "lodash";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import { Button } from "../atoms/button";
+import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
   addFidgetToTray: (fidget: FidgetModule<any>) => void;
@@ -12,6 +13,7 @@ export interface FidgetPickerProps {
   >;
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
   generateFidgetInstance(fidget: FidgetModule<FidgetArgs>): FidgetInstanceData;
+  setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const FidgetPicker: React.FC<FidgetPickerProps> = ({
@@ -19,6 +21,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   setExternalDraggedItem,
   setCurrentlyDragging,
   generateFidgetInstance,
+  setIsPickingFidget,
 }) => {
   function generateFidgetCards() {
     return map(
@@ -71,8 +74,16 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
   return (
     <>
-      <div className="text-center pt-10">
-        <h1 className="font-bold text-xl">Add Fidget</h1>
+      <div className="flex">
+        <button
+          onClick={() => {
+            setIsPickingFidget(false);
+          }}
+          className="my-auto"
+        >
+          <BackArrowIcon />
+        </button>
+        <h1 className="capitalize text-lg pl-4">Add Fidget</h1>
       </div>
 
       <section

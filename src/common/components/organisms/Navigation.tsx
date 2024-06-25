@@ -46,11 +46,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="mx-24 my-40 left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
+      className="transition-transform -translate-x-full sm:translate-x-0 border-r-2"
       aria-label="Sidebar"
     >
-      <div className="flex-row h-full">
-        <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
+      <div className="pl-24 pt-24 pb-24 pr-16 h-full">
+        <div className="flex-col flex h-full px-4 py-4 overflow-y-auto">
           <BrandHeader />
           <div className="text-lg font-medium">
             <ul className="space-y-2">
@@ -59,33 +59,25 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
               <NavItem label="Channels" Icon={ChannelsIcon} />
               <NavItem label="Bookmark" Icon={BookmarkIcon} />
             </ul>
-            <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
+            <div className="mt-10">
               <Player url={userTheme?.properties.musicURL} />
-              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex flex-0 items-center justify-between">
-                {isEditable && (
-                  <button
-                    onClick={turnOnEditMode}
-                    className={mergeClasses(
-                      "flex items-center justify-between p-2 text-gray-900",
-                      "rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
-                    )}
-                  >
-                    <div className="flex items-center">
-                      <EditIcon />
-                    </div>
-                  </button>
-                )}
+            </div>
+            <div className="mt-40 pt-2 flex items-center justify-between">
+              {isEditable && (
                 <button
-                  className={mergeClasses(
-                    "flex items-center justify-between p-2 text-gray-900 rounded-lg dark:text-white",
-                    "hover:bg-gray-100 dark:hover:bg-gray-700 group",
-                  )}
+                  onClick={turnOnEditMode}
+                  className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
                 >
                   <div className="flex items-center">
-                    <span className="mr-16 ml-16">Cast</span>
+                    <EditIcon />
                   </div>
                 </button>
-              </div>
+              )}
+              <button className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
+                <div className="flex items-center">
+                  <span className="mr-16 ml-16">Cast</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -192,7 +184,7 @@ const EditIcon = () => {
     >
       <path
         d="M10.779 17.779L4.361 19.918L6.5 13.5M10.779 17.779L19.143 9.13599C19.7101 8.56839 20.0287 7.79885 20.0287 6.99649C20.0287 6.19413 19.7101 5.42459 19.143 4.85699C18.5754 4.28987 17.8059 3.97131 17.0035 3.97131C16.2011 3.97131 15.4316 4.28987 14.864 4.85699L6.5 13.5M10.779 17.779L6.5 13.5M8.639 15.64L14.8518 9.13599M12.7511 7.04036L17 11.279"
-        stroke="#383838"
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

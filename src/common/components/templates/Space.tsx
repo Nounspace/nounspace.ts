@@ -89,8 +89,8 @@ export default function Space({
         <div
           className={
             editMode
-              ? "w-4/12 flex mx-auto transition-all duration-100 ease-out"
-              : "w-3/12 flex mx-auto transition-all duration-100 ease-out"
+              ? "w-2/6 flex mx-auto transition-all duration-100 ease-out"
+              : "w-2/6 flex mx-auto transition-all duration-100 ease-out"
           }
         >
           <Sidebar
@@ -104,8 +104,8 @@ export default function Space({
         <div
           className={
             editMode
-              ? "w-8/12 transition-all duration-100 ease-out h-full"
-              : "w-9/12 transition-all duration-100 ease-out h-full"
+              ? "w-full transition-all duration-100 ease-out h-full"
+              : "w-full transition-all duration-100 ease-out h-full"
           }
         >
           <div className={"h-full flex flex-col"}>
