@@ -55,7 +55,7 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     loadFidsForCurrentIdentity: state.account.getFidsForCurrentIdentity,
     registerFidForCurrentIdentity: state.account.registerFidForCurrentIdentity,
     // Logout
-    storeLogout: state.account.logout,
+    storeLogout: state.logout,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
