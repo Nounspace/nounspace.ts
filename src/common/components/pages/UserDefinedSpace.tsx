@@ -112,10 +112,21 @@ export default function UserDefinedSpace({
     [spaceId, isEditable, localSpaces],
   );
 
+  useEffect(() => {
+    if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
+      registerSpace(currentUserFid, "profile").then((newSpaceId) =>
+        setSpaceId(newSpaceId),
+      );
+    }
+  }, [isEditable, spaceId, currentUserFid]);
+
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfig) => {
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
+      }
+      if (isNil(spaceId)) {
+        throw new Error("Cannot save config until space is registered");
       }
       const saveableConfig: UpdatableSpaceConfig = {
         ...spaceConfig,
@@ -131,13 +142,7 @@ export default function UserDefinedSpace({
         ),
         isPrivate: false,
       };
-      if (isNil(spaceId)) {
-        const newSpaceId = await registerSpace(currentUserFid, "profile");
-        saveLocalCopy(newSpaceId, saveableConfig);
-        setSpaceId(newSpaceId);
-      } else {
-        saveLocalCopy(spaceId, saveableConfig);
-      }
+      await saveLocalCopy(spaceId, saveableConfig);
     },
     [currentUserFid, spaceId],
   );
