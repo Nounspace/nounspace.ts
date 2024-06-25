@@ -29,7 +29,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
       (fidgetModule: FidgetModule<FidgetArgs>, fidgetName) => {
         return (
           <div
-            className="z-20 droppable-element"
+            className="z-20 droppable-element h-full"
             draggable={true}
             // unselectable helps with IE support
             // eslint-disable-next-line react/no-unknown-property
@@ -49,23 +49,30 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
               });
             }}
           >
-            <Card className="size-full">
-              <CardContent className="overflow-hidden">
-                <span className={"flex"} role="img" aria-label={fidgetName}>
-                  {String.fromCodePoint(fidgetModule.properties.icon)}
-                </span>
-                <span className="text-md font-bold text-black block capitalize">
-                  {fidgetName}
-                </span>
-                <Button
-                  key={fidgetName}
-                  className="w-10/12 flex items-center justify-center"
-                  onClick={() => addFidgetToTray(fidgetModule)}
-                >
-                  Add to Tray
-                </Button>
-              </CardContent>
-            </Card>
+            <button
+              key={fidgetName}
+              className="size-full"
+              onClick={() => addFidgetToTray(fidgetModule)}
+            >
+              <Card className="size-full bg-[#F3F4F6]">
+                <CardContent className="overflow-hidden">
+                  <div className="bg-white m-2 rounded-lg h-20">
+                    <span
+                      className={
+                        "size-full flex items-center justify-center text-5xl"
+                      }
+                      role="img"
+                      aria-label={fidgetName}
+                    >
+                      {String.fromCodePoint(fidgetModule.properties.icon)}
+                    </span>
+                  </div>
+                  <span className="text-md text-black block capitalize">
+                    {fidgetName}
+                  </span>
+                </CardContent>
+              </Card>
+            </button>
           </div>
         );
       },
