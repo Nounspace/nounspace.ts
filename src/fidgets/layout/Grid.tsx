@@ -111,12 +111,6 @@ interface GridArgs {
   theme: ThemeSettings;
 
   saveLayout(layout: LayoutFidgetConfig): Promise<void>;
-  saveFidgets(
-    newLayoutConfig: LayoutFidgetConfig,
-    newFidgetInstanceDatums: {
-      [key: string]: FidgetInstanceData;
-    },
-  ): Promise<void>;
   saveFidgetInstanceDatums(newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
