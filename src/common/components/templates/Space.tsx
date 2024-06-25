@@ -59,23 +59,6 @@ export default function Space({
     });
   }
 
-  function saveFidgets(
-    newLayoutConfig: LayoutFidgetConfig,
-    newFidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  ) {
-    return saveConfig({
-      ...config,
-      fidgetInstanceDatums: {
-        ...config.fidgetInstanceDatums,
-        ...newFidgetInstanceDatums,
-      },
-      layoutDetails: {
-        ...config.layoutDetails,
-        layoutConfig: { ...newLayoutConfig },
-      },
-    });
-  }
-
   function saveFidgetInstanceDatums(newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }) {
@@ -133,7 +116,6 @@ export default function Space({
             theme={config.theme}
             fidgetTrayContents={config.fidgetTrayContents}
             saveLayout={saveLayout}
-            saveFidgets={saveFidgets}
             saveFidgetInstanceDatums={saveFidgetInstanceDatums}
             saveTrayContents={saveTrayContents}
             saveTheme={saveTheme}
