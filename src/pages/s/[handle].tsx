@@ -75,7 +75,7 @@ export const getServerSideProps = (async ({
   }
 }) satisfies GetServerSideProps<SpacePageProps>;
 
-const UserPrimarySpace: NextPageWithLayout = async ({
+const UserPrimarySpace: NextPageWithLayout = ({
   handle,
   spaceId,
   fid,
