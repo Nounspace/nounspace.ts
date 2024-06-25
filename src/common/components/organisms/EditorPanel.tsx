@@ -51,7 +51,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     unselect();
   }
 
-  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
+  function generateFidgetInstance(
+    fidget: FidgetModule<FidgetArgs>,
+  ): FidgetInstanceData {
     function allFields(fidget: FidgetModule<FidgetArgs>) {
       return mapValues(fidget.properties.fields, (field) => {
         return {
@@ -73,13 +75,22 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       id: fidget.properties.fidgetName + ":" + uuidv4(),
     };
 
-    const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+    return newFidgetInstanceData;
+  }
 
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-
+  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
     setIsPickingFidget(false);
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
+
+    // Generate new fidget instance
+    const newFidgetInstanceData = generateFidgetInstance(fidget);
+
+    // Add it to the tray
+    const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
     saveTrayContents(newTrayContents);
+
+    // Add it to the instance data list
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
   }
 
   return (
@@ -106,7 +117,12 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
               ) : (
                 <>
                   {isPickingFidget ? (
-                    <FidgetPicker addFidgetToTray={addFidgetToTray} />
+                    <FidgetPicker
+                      addFidgetToTray={addFidgetToTray}
+                      setCurrentlyDragging={setCurrentlyDragging}
+                      setExternalDraggedItem={setExternalDraggedItem}
+                      generateFidgetInstance={generateFidgetInstance}
+                    />
                   ) : (
                     <ThemeSettingsEditor
                       theme={theme}

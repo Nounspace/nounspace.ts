@@ -176,13 +176,20 @@ const Grid: LayoutFidget<GridArgs> = ({
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
-    console.log("Dropped: ", item, "Onto: ", layout);
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
 
-    const newItem = {
-      i: item.i,
+    // Make sure it is in the list of instances
+    if (!(fidgetData.id in fidgetInstanceDatums)) {
+      const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
+        ...fidgetInstanceDatums,
+        [fidgetData.id]: fidgetData,
+      };
+    }
+
+    const gridItem = {
+      i: fidgetData.id,
 
       x: item.x,
       y: item.y,
@@ -199,7 +206,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     };
 
     setCurrentlyDragging(false);
-    moveFidgetFromTrayToGrid(newItem, fidgetData);
+    moveFidgetFromTrayToGrid(gridItem, fidgetData);
   }
 
   function moveFidgetFromTrayToGrid(
