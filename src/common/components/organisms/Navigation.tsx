@@ -12,7 +12,7 @@ type NavItemProps = {
 
 type NavProps = {
   isEditable: boolean;
-  setEditMode: (editMode: boolean) => void;
+  enterEditMode: () => void;
 };
 
 const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
@@ -32,7 +32,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -40,7 +40,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, setEditMode }) => {
   const userTheme = homebaseConfig?.theme;
 
   function turnOnEditMode() {
-    setEditMode(true);
+    enterEditMode();
   }
 
   return (
