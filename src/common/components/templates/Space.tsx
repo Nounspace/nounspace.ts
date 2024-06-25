@@ -104,25 +104,28 @@ export default function Space({
         <div
           className={
             editMode
-              ? "w-8/12 transition-all duration-100 ease-out p-8"
-              : "w-9/12 transition-all duration-100 ease-out p-8"
+              ? "w-8/12 transition-all duration-100 ease-out h-full flex-col flex"
+              : "w-9/12 transition-all duration-100 ease-out h-full flex-col flex"
           }
         >
-          <LayoutFidget
-            layoutConfig={{
-              ...config.layoutDetails.layoutConfig,
-            }}
-            fidgetInstanceDatums={config.fidgetInstanceDatums}
-            theme={config.theme}
-            fidgetTrayContents={config.fidgetTrayContents}
-            saveLayout={saveLayout}
-            saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-            saveTrayContents={saveTrayContents}
-            saveTheme={saveTheme}
-            inEditMode={editMode}
-            setEditMode={setEditMode}
-            portalRef={portalRef}
-          />
+          <div className={"flex-row h-10"}>Tab Row</div>
+          <div className={"h-full"}>
+            <LayoutFidget
+              layoutConfig={{
+                ...config.layoutDetails.layoutConfig,
+              }}
+              fidgetInstanceDatums={config.fidgetInstanceDatums}
+              theme={config.theme}
+              fidgetTrayContents={config.fidgetTrayContents}
+              saveLayout={saveLayout}
+              saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+              saveTrayContents={saveTrayContents}
+              saveTheme={saveTheme}
+              inEditMode={editMode}
+              setEditMode={setEditMode}
+              portalRef={portalRef}
+            />
+          </div>
         </div>
       </div>
     </>
