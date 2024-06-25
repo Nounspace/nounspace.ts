@@ -47,7 +47,6 @@ interface CachedSpace {
 interface SpaceState {
   spaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
-  currentSpaceId: string;
   editableSpace?: UpdatableSpaceConfig;
 }
 
@@ -58,7 +57,6 @@ interface SpaceActions {
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   commitSpaceToDatabase: (spaceId: string) => Promise<void>;
   saveSpace: (config: SaveableSpaceConfig) => Promise<void>;
-  setCurrentSpace: (spaceId: string) => Promise<void>;
 }
 
 export type SpaceStore = SpaceState & SpaceActions;
@@ -66,7 +64,6 @@ export type SpaceStore = SpaceState & SpaceActions;
 export const spaceStoreDefaults: SpaceState = {
   spaces: {},
   editableSpaces: {},
-  currentSpaceId: "",
 };
 
 export const createSpaceStoreFunc = (
@@ -75,6 +72,7 @@ export const createSpaceStoreFunc = (
 ): SpaceStore => ({
   ...spaceStoreDefaults,
   loadSpace: async (spaceId) => {
+    // TO DO: skip if cached copy is recent enough
     const supabase = createClient();
     const {
       data: { publicUrl },
@@ -203,11 +201,6 @@ export const createSpaceStoreFunc = (
         ...config,
         isPrivate: draft.space.editableSpace?.isPrivate || true,
       };
-    });
-  },
-  setCurrentSpace: async (spaceId) => {
-    set((draft) => {
-      draft.space.currentSpaceId = spaceId;
     });
   },
 });
