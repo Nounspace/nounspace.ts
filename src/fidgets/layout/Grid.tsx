@@ -123,9 +123,9 @@ interface GridArgs {
 }
 
 const Grid: LayoutFidget<GridArgs> = ({
-  layoutConfig,
   fidgetInstanceDatums,
   fidgetTrayContents,
+  layoutConfig,
   theme,
   saveLayout,
   saveFidgetInstanceDatums,
