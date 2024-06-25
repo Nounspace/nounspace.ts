@@ -45,9 +45,9 @@ interface CachedSpace {
 }
 
 interface SpaceState {
-  spaces: Record<string, CachedSpace>;
+  remoteSpaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
-  editableSpace?: UpdatableSpaceConfig;
+  localSpaces: Record<string, UpdatableSpaceConfig>;
 }
 
 interface SpaceActions {
@@ -56,14 +56,18 @@ interface SpaceActions {
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   commitSpaceToDatabase: (spaceId: string) => Promise<void>;
-  saveSpace: (config: SaveableSpaceConfig) => Promise<void>;
+  saveLocalSpace: (
+    spaceId: string,
+    config: UpdatableSpaceConfig,
+  ) => Promise<void>;
 }
 
 export type SpaceStore = SpaceState & SpaceActions;
 
 export const spaceStoreDefaults: SpaceState = {
-  spaces: {},
+  remoteSpaces: {},
   editableSpaces: {},
+  localSpaces: {},
 };
 
 export const createSpaceStoreFunc = (
@@ -84,16 +88,18 @@ export const createSpaceStoreFunc = (
     const spaceConfig = JSON.parse(
       await get().account.decryptEncryptedSignedFile(fileData),
     ) as SaveableSpaceConfig;
+    const updatableSpaceConfig = {
+      ...spaceConfig,
+      isPrivate: fileData.isEncrypted,
+    };
     const cachedSpace: CachedSpace = {
       id: spaceId,
-      config: {
-        ...spaceConfig,
-        isPrivate: fileData.isEncrypted,
-      },
+      config: updatableSpaceConfig,
       updatedAt: moment().toISOString(),
     };
     set((draft) => {
-      draft.space.spaces[spaceId] = cachedSpace;
+      draft.space.remoteSpaces[spaceId] = cachedSpace;
+      draft.space.localSpaces[spaceId] = updatableSpaceConfig;
     });
     return cachedSpace;
   },
@@ -138,7 +144,7 @@ export const createSpaceStoreFunc = (
       );
       if (!isUndefined(data.value) && data.value.name) {
         set((draft) => {
-          draft[spaceId] = data.value!.name;
+          draft.space.editableSpaces[spaceId] = data.value!.name;
         });
       }
     } catch (e) {
@@ -173,7 +179,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceToDatabase: async (spaceId) => {
     debounce(async () => {
-      const localCopy = get().space.editableSpace;
+      const localCopy = get().space.localSpaces[spaceId];
       if (localCopy) {
         const file = localCopy.isPrivate
           ? await get().account.createEncryptedSignedFile(
@@ -192,20 +198,26 @@ export const createSpaceStoreFunc = (
         await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
           config: file,
         });
+
+        set((draft) => {
+          draft.space.remoteSpaces[spaceId] = {
+            id: spaceId,
+            config: localCopy,
+            updatedAt: moment().toISOString(),
+          };
+        });
       }
     }, 1000)();
   },
-  saveSpace: async (config) => {
+  saveLocalSpace: async (spaceId, config) => {
     set((draft) => {
-      draft.space.editableSpace = {
-        ...config,
-        isPrivate: draft.space.editableSpace?.isPrivate || true,
-      };
+      draft.space.localSpaces[spaceId] = config;
     });
   },
 });
 
-export const partializedSpaceStore = (state: AppStore) => ({
-  spaces: state.space.spaces,
+export const partializedSpaceStore = (state: AppStore): SpaceState => ({
+  remoteSpaces: state.space.remoteSpaces,
   editableSpaces: state.space.editableSpaces,
+  localSpaces: state.space.localSpaces,
 });
