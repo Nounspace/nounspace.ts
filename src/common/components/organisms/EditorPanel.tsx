@@ -79,18 +79,18 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   }
 
   function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
-    setIsPickingFidget(false);
-
     // Generate new fidget instance
     const newFidgetInstanceData = generateFidgetInstance(fidget);
+
+    // Add it to the instance data list
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
 
     // Add it to the tray
     const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
     saveTrayContents(newTrayContents);
 
-    // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
+    setIsPickingFidget(false);
   }
 
   return (
