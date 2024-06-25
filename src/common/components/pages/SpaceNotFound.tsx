@@ -2,7 +2,7 @@ import React from "react";
 import Navigation from "../organisms/Navigation";
 import { noop } from "lodash";
 
-export default async function SpaceNotFound({
+export default function SpaceNotFound({
   handle,
 }: {
   handle: string | string[] | undefined;
