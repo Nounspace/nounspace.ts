@@ -20,7 +20,12 @@ import {
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { ed25519 } from "@noble/curves/ed25519";
 import { managedNonce } from "@noble/ciphers/webcrypto";
-import { bytesToHex, bytesToUtf8, utf8ToBytes } from "@noble/ciphers/utils";
+import {
+  bytesToHex,
+  bytesToUtf8,
+  hexToBytes,
+  utf8ToBytes,
+} from "@noble/ciphers/utils";
 import moment from "moment";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../api/backend";
@@ -92,7 +97,7 @@ export const prekeyStore = (
       stringToCipherKey(key.privateKey),
     );
     const file: UnsignedFile = {
-      fileData: bytesToUtf8(cipher.encrypt(utf8ToBytes(data))),
+      fileData: bytesToHex(cipher.encrypt(utf8ToBytes(data))),
       fileType,
       publicKey: key.publicKey,
       isEncrypted: true,
@@ -105,7 +110,7 @@ export const prekeyStore = (
       return file.fileData;
     }
     const encryptingKey = file.publicKey;
-    let keyPair;
+    let keyPair: SpaceKeys | undefined;
     if (encryptingKey === get().account.currentSpaceIdentityPublicKey) {
       keyPair = get().account.getCurrentIdentity()?.rootKeys;
     } else {
@@ -126,7 +131,7 @@ export const prekeyStore = (
     const cipher = managedNonce(xchacha20poly1305)(
       stringToCipherKey(keyPair.privateKey),
     );
-    return bytesToUtf8(cipher.decrypt(utf8ToBytes(file.fileData)));
+    return bytesToUtf8(cipher.decrypt(hexToBytes(file.fileData)));
   },
   generatePreKey: async () => {
     const privateKey = ed25519.utils.randomPrivateKey();
