@@ -87,9 +87,17 @@ export const createHomeBaseStoreFunc = (
     });
   },
   resetHomebaseConfig: async () => {
+    console.log(
+      get().homebase.homebaseConfig,
+      get().homebase.remoteHomebaseConfig,
+    );
     set((draft) => {
       draft.homebase.homebaseConfig = draft.homebase.remoteHomebaseConfig;
     });
+    console.log(
+      get().homebase.homebaseConfig,
+      get().homebase.remoteHomebaseConfig,
+    );
   },
 });
 
