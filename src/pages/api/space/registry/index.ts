@@ -12,6 +12,7 @@ export type SpaceRegistration = {
   fid: number;
   signature: string;
   timestamp: string;
+  isDefault: boolean;
 };
 
 type SpaceInfo = SpaceRegistration & {
@@ -102,7 +103,7 @@ async function registerNewSpace(
   }
   const { data: result, error } = await supabaseClient
     .from("spaceRegistrations")
-    .insert([{ ...registration, isDefault: false }])
+    .insert([registration])
     .select();
   if (error) {
     res.status(500).json({
