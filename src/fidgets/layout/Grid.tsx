@@ -14,6 +14,8 @@ import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { map } from "lodash";
+import { PlusIcon } from "@radix-ui/react-icons";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -79,6 +81,7 @@ const Gridlines: React.FC<GridDetails> = ({
   return (
     <div
       className={`
+      opacity-50
       h-full w-full 
       grid 
       grid-cols-${cols}
@@ -155,17 +158,25 @@ const Grid: LayoutFidget<GridArgs> = ({
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
   }
-  const [element, setElement] = useState<HTMLDivElement | null>(
-    portalRef.current,
-  );
+
+  const [isPickingFidget, setIsPickingFidget] = useState(false);
+
+  function openFidgetPicker() {
+    setIsPickingFidget(true);
+    unselectFidget();
+  }
 
   const [height, setHeight] = useState(0);
   const gridElementRef = useRef<HTMLDivElement>(null);
+  const [element, setElement] = useState<HTMLDivElement | null>(
+    portalRef.current,
+  );
 
   useEffect(() => {
     setHeight(
       gridElementRef.current !== null ? gridElementRef.current.clientHeight : 0,
     );
+    setElement(portalRef.current);
   }, []);
 
   const rowHeight = height
@@ -176,12 +187,6 @@ const Grid: LayoutFidget<GridArgs> = ({
           gridDetails.maxRows,
       )
     : 70;
-
-  useEffect(() => {
-    // Force a rerender, so it can be passed to the child.
-    // If this causes an unwanted flicker, use useLayoutEffect instead
-    setElement(portalRef.current);
-  }, []);
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -296,6 +301,9 @@ const Grid: LayoutFidget<GridArgs> = ({
                 saveFidgetInstanceDatums={saveFidgetInstanceDatums}
                 saveTrayContents={saveTrayContents}
                 removeFidget={removeFidget}
+                isPickingFidget={isPickingFidget}
+                setIsPickingFidget={setIsPickingFidget}
+                openFidgetPicker={openFidgetPicker}
               />,
               portalNode,
             )
@@ -311,8 +319,19 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
+      <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
+        <button
+          onClick={openFidgetPicker}
+          className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6]"
+        >
+          <AddFidgetIcon />
+          <span className="ml-2 text-[#1C64F2] font-semibold font-semibold	">
+            Fidget
+          </span>
+        </button>
+      </div>
       {editorPanelPortal(element)}
-      <div ref={gridElementRef} className="grid-container h-full">
+      <div ref={gridElementRef} className="flex-1 grid-container grow">
         {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
         <ReactGridLayout

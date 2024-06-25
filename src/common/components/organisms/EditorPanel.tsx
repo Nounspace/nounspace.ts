@@ -27,6 +27,9 @@ export interface EditorPanelProps {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
   removeFidget(fidgetId: string): void;
+  isPickingFidget: boolean;
+  setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
+  openFidgetPicker(): void;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -43,14 +46,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
   removeFidget,
+  isPickingFidget,
+  setIsPickingFidget,
+  openFidgetPicker,
 }) => {
-  const [isPickingFidget, setIsPickingFidget] = useState(false);
-
-  function openFidgetPicker() {
-    setIsPickingFidget(true);
-    unselect();
-  }
-
   function generateFidgetInstance(
     fidget: FidgetModule<FidgetArgs>,
   ): FidgetInstanceData {

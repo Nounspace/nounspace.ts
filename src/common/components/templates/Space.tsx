@@ -104,12 +104,11 @@ export default function Space({
         <div
           className={
             editMode
-              ? "w-8/12 transition-all duration-100 ease-out h-full flex-col flex"
-              : "w-9/12 transition-all duration-100 ease-out h-full flex-col flex"
+              ? "w-8/12 transition-all duration-100 ease-out h-full"
+              : "w-9/12 transition-all duration-100 ease-out h-full"
           }
         >
-          <div className={"flex-row h-10"}>Tab Row</div>
-          <div className={"h-full"}>
+          <div className={"h-full flex flex-col"}>
             <LayoutFidget
               layoutConfig={{
                 ...config.layoutDetails.layoutConfig,
