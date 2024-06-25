@@ -54,7 +54,7 @@ interface SpaceState {
 }
 
 interface SpaceActions {
-  loadSpace: (spaceId: string) => Promise<CachedSpace>;
+  loadSpace: (spaceId: string) => Promise<CachedSpace | null>;
   registerSpace: (fid: number, name: string) => Promise<string>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
@@ -80,31 +80,36 @@ export const createSpaceStoreFunc = (
   ...spaceStoreDefaults,
   loadSpace: async (spaceId) => {
     // TO DO: skip if cached copy is recent enough
-    const supabase = createClient();
-    const {
-      data: { publicUrl },
-    } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
-    const { data } = await axios.get<Blob>(publicUrl, {
-      responseType: "blob",
-    });
-    const fileData = JSON.parse(await data.text()) as SignedFile;
-    const spaceConfig = JSON.parse(
-      await get().account.decryptEncryptedSignedFile(fileData),
-    ) as SaveableSpaceConfig;
-    const updatableSpaceConfig = {
-      ...spaceConfig,
-      isPrivate: fileData.isEncrypted,
-    };
-    const cachedSpace: CachedSpace = {
-      id: spaceId,
-      config: updatableSpaceConfig,
-      updatedAt: moment().toISOString(),
-    };
-    set((draft) => {
-      draft.space.remoteSpaces[spaceId] = cachedSpace;
-      draft.space.localSpaces[spaceId] = updatableSpaceConfig;
-    });
-    return cachedSpace;
+    try {
+      const supabase = createClient();
+      const {
+        data: { publicUrl },
+      } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
+      const { data } = await axios.get<Blob>(publicUrl, {
+        responseType: "blob",
+      });
+      const fileData = JSON.parse(await data.text()) as SignedFile;
+      const spaceConfig = JSON.parse(
+        await get().account.decryptEncryptedSignedFile(fileData),
+      ) as SaveableSpaceConfig;
+      const updatableSpaceConfig = {
+        ...spaceConfig,
+        isPrivate: fileData.isEncrypted,
+      };
+      const cachedSpace: CachedSpace = {
+        id: spaceId,
+        config: updatableSpaceConfig,
+        updatedAt: moment().toISOString(),
+      };
+      set((draft) => {
+        draft.space.remoteSpaces[spaceId] = cachedSpace;
+        draft.space.localSpaces[spaceId] = updatableSpaceConfig;
+      });
+      return cachedSpace;
+    } catch (e) {
+      console.debug(e);
+      return null;
+    }
   },
   registerSpace: async (fid, name) => {
     const unsignedRegistration: Omit<SpaceRegistration, "signature"> = {
