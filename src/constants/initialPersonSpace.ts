@@ -1,19 +1,49 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
-import { LayoutFidgetDetails } from "@/common/fidgets";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 
-const layoutID = "";
-const layoutDetails: LayoutFidgetDetails = {
-  layoutConfig: { layout: [] },
-  layoutFidget: "grid",
+const createIntialPersonSpaceConfigForFid = (
+  fid: number,
+): Omit<SpaceConfig, "isEditable"> => {
+  return {
+    layoutID: "",
+    layoutDetails: {
+      layoutConfig: {
+        layout: [
+          {
+            w: 3,
+            h: 2,
+            x: 2,
+            y: 1,
+            i: "text:profile",
+            minW: 3,
+            maxW: 36,
+            minH: 2,
+            maxH: 36,
+            moved: false,
+            static: false,
+          },
+        ],
+      },
+      layoutFidget: "grid",
+    },
+    theme: DEFAULT_THEME,
+    fidgetInstanceDatums: {
+      "text:profile": {
+        config: {
+          editable: false,
+          settings: {
+            title: `User ${fid}`,
+            text: `THE USER YOUR ARE LOOKING AT HAS AN FID: ${fid}`,
+            fontFamily: "var(--user-theme-font)",
+          },
+          data: {},
+        },
+        fidgetType: "text",
+        id: "text:profile",
+      },
+    },
+    fidgetTrayContents: [],
+  };
 };
 
-const INITIAL_PERSONAL_SPACE_CONFIG: Omit<SpaceConfig, "isEditable"> = {
-  layoutID,
-  layoutDetails,
-  theme: DEFAULT_THEME,
-  fidgetInstanceDatums: {},
-  fidgetTrayContents: [],
-};
-
-export default INITIAL_PERSONAL_SPACE_CONFIG;
+export default createIntialPersonSpaceConfigForFid;

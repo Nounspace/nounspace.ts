@@ -1,6 +1,6 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import { AppStore } from "..";
-import { FidgetInstanceData, FidgetSettings } from "@/common/fidgets";
+import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../createStore";
 import axiosBackend from "../../api/backend";
 import {
@@ -25,10 +25,13 @@ type SpaceId = string;
 // But a space that is saved in the DB doesn't store
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
-export type SaveableSpaceConfig = Omit<SpaceConfig, "fidgetConfigs"> & {
-  fidgetConfigs: {
-    [key: string]: Omit<FidgetInstanceData, "instanceConfig"> & {
-      instanceConfig: FidgetSettings;
+export type SaveableSpaceConfig = Omit<
+  Omit<SpaceConfig, "fidgetInstanceDatums">,
+  "isEditable"
+> & {
+  fidgetInstanceDatums: {
+    [key: string]: Omit<FidgetInstanceData, "config"> & {
+      config: Omit<FidgetConfig, "data">;
     };
   };
 };
