@@ -58,7 +58,7 @@ const gridDetails = {
   rowHeight: 70,
   layout: [],
   margin: [16, 16],
-  containerPadding: [0, 0],
+  containerPadding: [16, 16],
 };
 
 type GridDetails = typeof gridDetails;
@@ -78,15 +78,17 @@ const Gridlines: React.FC<GridDetails> = ({
 }) => {
   return (
     <div
-      className="h-full w-full"
+      className={`
+      h-full w-full 
+      grid 
+      grid-cols-${cols}
+      grid-rows-${maxRows}
+      grid-overlap`}
       style={{
         transition: "background-color 1000ms linear",
-        display: "grid",
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridTemplateRows: `repeat(${maxRows}, ${rowHeight}px)`,
         gridGap: `${margin[0]}px`,
         rowGap: `${margin[1]}px`,
-        inset: `${containerPadding[0]}px ${containerPadding[1]}px`,
+        padding: `${containerPadding[0]}px`,
         background: "rgba(200, 227, 248, 0.3)",
       }}
     >
@@ -160,7 +162,13 @@ const Grid: LayoutFidget<GridArgs> = ({
   const { height } = useWindowSize();
 
   const rowHeight = height
-    ? Math.round((height - 200) / gridDetails.maxRows)
+    ? Math.round(
+        (height -
+          gridDetails.margin[0] * gridDetails.maxRows -
+          2 * gridDetails.containerPadding[0] -
+          28) /
+          gridDetails.maxRows,
+      )
     : 70;
 
   useEffect(() => {
@@ -302,8 +310,9 @@ const Grid: LayoutFidget<GridArgs> = ({
   return (
     <>
       {editorPanelPortal(element)}
-      <div className="grid-container">
+      <div className="grid-container h-full">
         {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+
         <ReactGridLayout
           {...gridDetails}
           isDraggable={inEditMode}
@@ -316,6 +325,7 @@ const Grid: LayoutFidget<GridArgs> = ({
           droppingItem={externalDraggedItem}
           onDrop={handleDrop}
           onLayoutChange={saveLayoutConditional}
+          className={"grid-overlap"}
           style={{ height: height + "px)" }}
         >
           {map(localLayout, (gridItem: PlacedGridItem) => {

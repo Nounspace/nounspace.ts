@@ -81,7 +81,7 @@
   grid-template-columns: 1fr;
 }
 
-.grid-container div {
+.grid-overlap {
   grid-row-start: 1;
   grid-column-start: 1;
 }
