@@ -176,9 +176,9 @@ const Grid: LayoutFidget<GridArgs> = ({
     setElement(portalRef.current);
   }, []);
 
-  useEffect(() => {
-    setLocalLayout(layoutConfig.layout);
-  }, [layoutConfig]);
+  // useEffect(() => {
+  //   setLocalLayout(layoutConfig.layout);
+  // }, [layoutConfig]);
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -186,6 +186,9 @@ const Grid: LayoutFidget<GridArgs> = ({
     e: DragEvent<HTMLDivElement>,
   ) {
     console.log("Dropped: ", item, "Onto: ", layout);
+    setCurrentlyDragging(false);
+    setLocalLayout(layout);
+
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
@@ -207,7 +210,6 @@ const Grid: LayoutFidget<GridArgs> = ({
       resizeHandles: resizeDirections,
     };
 
-    setCurrentlyDragging(false);
     moveFidgetFromTrayToGrid(newItem, fidgetData);
   }
 
@@ -262,9 +264,8 @@ const Grid: LayoutFidget<GridArgs> = ({
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    if (currentlyDragging) {
+    if (!currentlyDragging) {
       setLocalLayout(newLayout);
-    } else {
       saveLayout(newLayout);
     }
   }
