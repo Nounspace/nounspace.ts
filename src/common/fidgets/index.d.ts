@@ -106,7 +106,8 @@ interface LayoutFidgetProps {
   saveTheme(newTheme: any): Promise<void>;
 
   inEditMode: boolean;
-  setEditMode: (editMode: boolean) => void;
+  saveExitEditMode: () => void;
+  cancelExitEditMode: () => void;
   portalRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -130,7 +131,8 @@ type LayoutFidgetDefaultProps = {
   saveTheme(newTheme: any): Promise<void>;
 
   inEditMode: boolean;
-  setEditMode: (editMode: boolean) => void;
+  saveExitEditMode: () => void;
+  cancelExitEditMode: () => void;
   portalRef: React.RefObject<HTMLDivElement>;
 };
 

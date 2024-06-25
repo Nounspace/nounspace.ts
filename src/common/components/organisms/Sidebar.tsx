@@ -3,14 +3,14 @@ import Navigation from "./Navigation";
 
 export interface SidebarProps {
   editMode: boolean;
-  setEditMode: (editMode: boolean) => void;
+  enterEditMode: () => void;
   isEditable: boolean;
   portalRef: React.RefObject<HTMLDivElement>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   editMode,
-  setEditMode,
+  enterEditMode,
   isEditable,
   portalRef,
 }) => {
@@ -18,7 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
       {!editMode && (
-        <Navigation isEditable={isEditable} setEditMode={setEditMode} />
+        <Navigation isEditable={isEditable} enterEditMode={enterEditMode} />
       )}
     </>
   );

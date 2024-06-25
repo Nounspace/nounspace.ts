@@ -66,7 +66,8 @@ export const authenticatorStore = (
           draft.account.authenticatorRemoteConfig = authConfig;
         });
       }
-    } catch {
+    } catch (e) {
+      console.debug(e);
       console.debug("Could not locate authenticator data");
     }
   },
