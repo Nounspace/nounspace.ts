@@ -126,13 +126,13 @@ async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
-  const identity = req.query.indentityPublicKey;
+  const identity = req.query.identityPublicKey;
   if (isUndefined(identity) || isArray(identity)) {
     res.status(400).json({
       result: "error",
       error: {
         message:
-          "indentityPublicKey must be provided as a query parameter with a single value",
+          "identityPublicKey must be provided as a query parameter with a single value",
       },
     });
     return;
