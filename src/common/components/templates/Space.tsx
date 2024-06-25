@@ -44,6 +44,20 @@ export default function Space({
   const portalRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState(false);
 
+  function enterEditMode() {
+    setEditMode(true);
+  }
+
+  function saveExitEditMode() {
+    commitConfig();
+    setEditMode(false);
+  }
+
+  function cancleExitEditMode() {
+    resetConfig();
+    setEditMode(false);
+  }
+
   const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
 
   function saveLayout(layout: LayoutFidgetConfig) {
@@ -95,7 +109,7 @@ export default function Space({
         >
           <Sidebar
             editMode={editMode}
-            setEditMode={setEditMode}
+            enterEditMode={enterEditMode}
             isEditable={config.isEditable}
             portalRef={portalRef}
           />

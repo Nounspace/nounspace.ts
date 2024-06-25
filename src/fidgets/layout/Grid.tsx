@@ -120,7 +120,8 @@ interface GridArgs {
   saveTheme(newTheme: any): Promise<void>;
 
   inEditMode: boolean;
-  setEditMode: (editMode: boolean) => void;
+  saveExitEditMode: () => void;
+  cancelExitEditMode: () => void;
   portalRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -134,7 +135,8 @@ const Grid: LayoutFidget<GridArgs> = ({
   saveTrayContents,
   saveTheme,
   inEditMode,
-  setEditMode,
+  saveExitEditMode,
+  cancelExitEditMode,
   portalRef,
 }: GridArgs) => {
   const [externalDraggedItem, setExternalDraggedItem] = useState<{
@@ -286,7 +288,8 @@ const Grid: LayoutFidget<GridArgs> = ({
             createPortal(
               <EditorPanel
                 setCurrentlyDragging={setCurrentlyDragging}
-                setEditMode={setEditMode}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
                 theme={theme}
                 saveTheme={saveTheme}
                 unselect={unselectFidget}

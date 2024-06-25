@@ -6,7 +6,7 @@ import FidgetTray from "./FidgetTray";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
-import { mapValues } from "lodash";
+import { fromPairs, map } from "lodash";
 import { Button } from "../atoms/button";
 
 export interface EditorPanelProps {
@@ -14,7 +14,8 @@ export interface EditorPanelProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
-  setEditMode: (editMode: boolean) => void;
+  saveExitEditMode: () => void;
+  cancelExitEditMode: () => void;
   theme?: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   unselect: () => void;
@@ -35,7 +36,8 @@ export interface EditorPanelProps {
 export const EditorPanel: React.FC<EditorPanelProps> = ({
   setCurrentlyDragging,
   setExternalDraggedItem,
-  setEditMode,
+  saveExitEditMode,
+  cancelExitEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
   unselect,
@@ -54,14 +56,11 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     fidget: FidgetModule<FidgetArgs>,
   ): FidgetInstanceData {
     function allFields(fidget: FidgetModule<FidgetArgs>) {
-      return mapValues(fidget.properties.fields, (field) => {
-        return {
-          fieldName: field.fieldName,
-          default: field.default,
-          required: field.required,
-          inputSelector: field.inputSelector,
-        };
-      });
+      return fromPairs(
+        map(fidget.properties.fields, (field) => {
+          return [field.fieldName, field.default];
+        }),
+      );
     }
 
     const newFidgetInstanceData = {
