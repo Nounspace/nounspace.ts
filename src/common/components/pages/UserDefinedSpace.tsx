@@ -1,4 +1,4 @@
-import { findIndex, isNil, mapValues } from "lodash";
+import { indexOf, isNil, mapValues } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores";
@@ -16,7 +16,11 @@ export default function UserDefinedSpace({
   spaceId: string | null;
   fid: number;
 }) {
-  const authenticatorManager = useAuthenticatorManager();
+  const {
+    lastUpdatedAt: authManagerLastUpdatedAt,
+    getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
+    callMethod: authManagerCallMethod,
+  } = useAuthenticatorManager();
   const {
     editableSpaces,
     loadSpace,
@@ -45,30 +49,31 @@ export default function UserDefinedSpace({
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
-    authenticatorManager
-      .getInitializedAuthenticators()
-      .then((authNames) =>
-        setIsSignedIntoFarcaster(
-          findIndex(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
-        ),
+    console.log("requesting Auth Man Initialized");
+    authManagerGetInitializedAuthenticators().then((authNames) => {
+      console.log("Initialized auths", authNames);
+      console.log(
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
       );
-  }, [authenticatorManager]);
+      setIsSignedIntoFarcaster(
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
+      );
+    });
+  }, [authManagerLastUpdatedAt]);
 
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   useEffect(() => {
     if (!isSignedIntoFarcaster) return;
-    authenticatorManager
-      .callMethod(
-        "root",
-        FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
-        "getSignerFid",
-      )
-      .then((authManagerResp) => {
-        if (authManagerResp.result === "success") {
-          setCurrentUserFid(authManagerResp.value as number);
-        }
-      });
-  }, [isSignedIntoFarcaster, authenticatorManager]);
+    authManagerCallMethod(
+      "root",
+      FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
+      "getAccountFid",
+    ).then((authManagerResp) => {
+      if (authManagerResp.result === "success") {
+        setCurrentUserFid(authManagerResp.value as number);
+      }
+    });
+  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const isEditable = useMemo(() => {
     return (
