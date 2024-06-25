@@ -8,12 +8,11 @@ const layoutDetails: LayoutFidgetDetails = {
   layoutFidget: "grid",
 };
 
-const INITIAL_PERSONAL_SPACE_CONFIG: SpaceConfig = {
+const INITIAL_PERSONAL_SPACE_CONFIG: Omit<SpaceConfig, "isEditable"> = {
   layoutID,
   layoutDetails,
   theme: DEFAULT_THEME,
   fidgetInstanceDatums: {},
-  isEditable: true,
   fidgetTrayContents: [],
 };
 

@@ -69,7 +69,10 @@ export default async function UserDefinedSpace({
   const [spaceId, setSpaceId] = useState(providedSpaceId);
 
   const config = isNil(spaceId)
-    ? INITIAL_PERSONAL_SPACE_CONFIG
+    ? {
+        ...INITIAL_PERSONAL_SPACE_CONFIG,
+        isEditable,
+      }
     : localSpaces[spaceId];
   const saveConfig = async (spaceConfig: SpaceConfig) => {};
   const commitConfig = async () => {};
