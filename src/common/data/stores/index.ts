@@ -50,7 +50,7 @@ export function createAppStore() {
     }),
     {
       name: "nounspace-setup-store",
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => localStorage),
       partialize: (state: AppStore) => ({
         account: partializedAccountStore(state),
         homebase: partializedHomebaseStore(state),
