@@ -12,8 +12,8 @@ const createIntialPersonSpaceConfigForFid = (
           {
             w: 3,
             h: 2,
-            x: 2,
-            y: 1,
+            x: 0,
+            y: 0,
             i: "text:profile",
             minW: 3,
             maxW: 36,
