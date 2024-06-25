@@ -74,20 +74,18 @@ const ReactGridLayout = WidthProvider(RGL);
 const Gridlines: React.FC<GridDetails> = ({
   maxRows,
   cols,
+  rowHeight,
   margin,
   containerPadding,
 }) => {
   return (
     <div
-      className={`
-      opacity-50
-      h-full w-full 
-      grid 
-      grid-cols-${cols}
-      grid-rows-${maxRows}
-      grid-overlap`}
+      className="relative grid-overlap w-full h-full opacity-50"
       style={{
         transition: "background-color 1000ms linear",
+        display: "grid",
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${maxRows}, ${rowHeight}px)`,
         gridGap: `${margin[0]}px`,
         rowGap: `${margin[1]}px`,
         padding: `${containerPadding[0]}px`,
@@ -182,7 +180,7 @@ const Grid: LayoutFidget<GridArgs> = ({
     ? Math.round(
         (height -
           gridDetails.margin[0] * gridDetails.maxRows -
-          gridDetails.containerPadding[0]) /
+          gridDetails.containerPadding[0] * 2) /
           gridDetails.maxRows,
       )
     : 70;
@@ -331,7 +329,7 @@ const Grid: LayoutFidget<GridArgs> = ({
       ) : null}
       {editorPanelPortal(element)}
       <div ref={gridElementRef} className="flex-1 grid-container grow">
-        {inEditMode && <Gridlines {...gridDetails} />}
+        {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
         <ReactGridLayout
           {...gridDetails}
