@@ -12,6 +12,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import TextInput from "@/common/components/molecules/TextInput";
+import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
@@ -175,32 +176,38 @@ export function ThemeSettingsEditor({
         </div>
 
         {/* Actions */}
-        <div className="shrink-0 flex flex-col gap-2">
+        <div className="shrink-0 flex flex-col gap-3">
           {showConfirmCancel ? (
+            // Back Button and Exit Button (shows second)
             <>
-              <Button
-                onClick={cancelAndClose}
-                variant="destructive"
-                withIcon
-                width="full"
-              >
-                <FaTriangleExclamation
-                  className="shrink-0"
-                  aria-hidden="true"
-                />
-                Cancel
-              </Button>
-              <Button
-                onClick={() => setShowConfirmCancel(false)}
-                variant="secondary"
-                withIcon
-                width="full"
-              >
-                <FaX className="shrink-0" aria-hidden="true" />
-                Nevermind
-              </Button>
+              <div className="flex items-center justify-center">
+                <button
+                  onClick={() => setShowConfirmCancel(false)}
+                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+                >
+                  <div className="flex items-center">
+                    <BackArrowIcon />
+                  </div>
+                </button>
+                <button
+                  onClick={cancelAndClose}
+                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                >
+                  <div className="ml-4 flex items-center">
+                    <FaTriangleExclamation
+                      className="h-8l shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="ml-4 mr-4">Exit</span>
+                  </div>
+                </button>
+              </div>
+              <p className="w-full text-center text-xs pt-1 pl-16 pr-16">
+                If you exit, any changes made will not be saved.
+              </p>
             </>
           ) : (
+            // X Button and Save Button (shows first)
             <>
               <Button
                 onClick={saveAndClose}
@@ -209,17 +216,16 @@ export function ThemeSettingsEditor({
                 width="full"
               >
                 <FaFloppyDisk className="shrink-0" aria-hidden="true" />
-                Save Space
+                Save changes
               </Button>
-
               <Button
                 onClick={() => setShowConfirmCancel(true)}
-                variant="secondary"
+                variant="ghost"
                 withIcon
                 width="full"
               >
                 <FaX className="shrink-0" aria-hidden="true" />
-                Cancel
+                Discard
               </Button>
             </>
           )}
