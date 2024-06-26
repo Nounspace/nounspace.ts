@@ -1,20 +1,19 @@
-import React, { DragEvent, useEffect, useState, useRef } from "react";
+import React, { DragEvent, useEffect, useMemo, useState } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
 import {
-  LayoutFidgetConfig,
   LayoutFidget,
   FidgetInstanceData,
   FidgetConfig,
   FidgetSettings,
+  LayoutFidgetDefaultProps,
+  LayoutFidgetSavableConfig,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
-import { ThemeSettings } from "@/common/lib/theme";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { map } from "lodash";
-import { PlusIcon } from "@radix-ui/react-icons";
+import { debounce, map } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -106,39 +105,30 @@ const Gridlines: React.FC<GridDetails> = ({
   );
 };
 
-interface GridArgs {
+interface GridLayoutProps extends LayoutFidgetDefaultProps {
   layoutConfig: GridLayoutConfig;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  fidgetTrayContents: FidgetInstanceData[];
-  theme: ThemeSettings;
-
-  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
-  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
-    [key: string]: FidgetInstanceData;
-  }): Promise<void>;
-  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
-  saveTheme(newTheme: any): Promise<void>;
-
-  inEditMode: boolean;
-  saveExitEditMode: () => void;
-  cancelExitEditMode: () => void;
-  portalRef: React.RefObject<HTMLDivElement>;
 }
 
-const Grid: LayoutFidget<GridArgs> = ({
+const Grid: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
   fidgetTrayContents,
   layoutConfig,
   theme,
-  saveLayout,
-  saveFidgetInstanceDatums,
-  saveTrayContents,
-  saveTheme,
+  saveConfig,
   inEditMode,
   saveExitEditMode,
   cancelExitEditMode,
   portalRef,
-}: GridArgs) => {
+}) => {
+  console.log(layoutConfig);
+
+  // State to handle selecting, dragging, and Grid edit functionality
+  const [element, setElement] = useState<HTMLDivElement | null>(
+    portalRef.current,
+  );
+  useEffect(() => {
+    setElement(portalRef.current);
+  }, []);
   const [externalDraggedItem, setExternalDraggedItem] = useState<{
     i: string;
     w: number;
@@ -146,59 +136,89 @@ const Grid: LayoutFidget<GridArgs> = ({
   }>();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
-  const [currentFidgetSettings, setcurrentFidgetSettings] =
+  const [currentFidgetSettings, setCurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
+  const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  const [localLayout, setLocalLayout] = useState<PlacedGridItem[]>(
-    layoutConfig.layout,
-  );
+  // State to create a mutable local copy of the config
+  const [localFidgetInstanceDatums, setLocalFidgetInstanceDatums] =
+    useState(fidgetInstanceDatums);
+
+  const [localFidgetTrayContents, setLocalFidgetTrayContents] =
+    useState(fidgetTrayContents);
+  const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
+  const [localTheme, setLocalTheme] = useState(theme);
+
+  const saveCurrentConfig = debounce(() => {
+    const newConfig: LayoutFidgetSavableConfig = {
+      fidgetInstanceDatums: localFidgetInstanceDatums,
+      fidgetTrayContents: localFidgetTrayContents,
+      theme: localTheme,
+      layoutConfig: {
+        layout: localLayout,
+      },
+    };
+    return saveConfig(newConfig);
+  }, 1000);
+
+  async function saveTrayContents(newTrayData: typeof fidgetTrayContents) {
+    setLocalFidgetTrayContents(newTrayData);
+    await saveCurrentConfig();
+  }
+
+  async function saveFidgetInstanceDatums(datums: typeof fidgetInstanceDatums) {
+    setLocalFidgetInstanceDatums(datums);
+    await saveCurrentConfig();
+  }
+
+  async function saveTheme(newTheme: typeof theme) {
+    setLocalTheme(newTheme);
+    await saveCurrentConfig();
+  }
+
+  async function saveLayout(newLayout: PlacedGridItem[]) {
+    setLocalLayout(newLayout);
+    await saveCurrentConfig();
+  }
 
   function unselectFidget() {
     setSelectedFidgetID("");
-    setcurrentFidgetSettings(<></>);
+    setCurrentFidgetSettings(<></>);
   }
-
-  const [isPickingFidget, setIsPickingFidget] = useState(false);
 
   function openFidgetPicker() {
     setIsPickingFidget(true);
     unselectFidget();
   }
 
-  const [element, setElement] = useState<HTMLDivElement | null>(
-    portalRef.current,
+  const { height } = useWindowSize();
+  const rowHeight = useMemo(
+    () =>
+      height
+        ? Math.round(
+            // The 64 magic number here is the height of the tabs bar above the grid
+            (height -
+              64 -
+              gridDetails.margin[0] * gridDetails.maxRows -
+              gridDetails.containerPadding[0] * 2) /
+              gridDetails.maxRows,
+          )
+        : 70,
+    [height],
   );
 
-  useEffect(() => {
-    setElement(portalRef.current);
-  }, []);
-
-  const { height } = useWindowSize();
-
-  const rowHeight = height
-    ? Math.round(
-        // The 64 magic number here is the height of the tabs bar above the grid
-        (height -
-          64 -
-          gridDetails.margin[0] * gridDetails.maxRows -
-          gridDetails.containerPadding[0] * 2) /
-          gridDetails.maxRows,
-      )
-    : 70;
-
   function handleDrop(
-    layout: PlacedGridItem[],
+    _layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
-    console.log("Dropped: ", item, "Onto: ", layout);
     setCurrentlyDragging(false);
 
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
 
-    const newItem = {
+    const newItem: PlacedGridItem = {
       i: fidgetData.id,
 
       x: item.x,
@@ -215,15 +235,7 @@ const Grid: LayoutFidget<GridArgs> = ({
       resizeHandles: resizeDirections,
     };
 
-    // Make sure it is in the list of instances
-    if (!(fidgetData.id in fidgetInstanceDatums)) {
-      const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
-        ...fidgetInstanceDatums,
-        [fidgetData.id]: fidgetData,
-      };
-    }
-
-    setLocalLayout([...localLayout, newItem]);
+    saveLayout([...localLayout, newItem]);
     moveFidgetFromTrayToGrid(newItem, fidgetData);
   }
 
@@ -233,11 +245,6 @@ const Grid: LayoutFidget<GridArgs> = ({
   ) {
     const newLayout = [...localLayout, gridItem];
 
-    const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
-      ...fidgetInstanceDatums,
-      [fidgetData.id]: fidgetData,
-    };
-
     const itemTrayIndex = fidgetTrayContents.findIndex(
       (x) => x.id == gridItem.i,
     );
@@ -245,12 +252,11 @@ const Grid: LayoutFidget<GridArgs> = ({
 
     saveTrayContents(newFidgetTrayContents);
     saveLayoutConditional(newLayout);
-    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
     // New set of instances
-    const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
+    const newFidgetInstanceDatums = { ...localFidgetInstanceDatums };
     delete newFidgetInstanceDatums[fidgetId];
 
     // Find fidget index
@@ -260,9 +266,9 @@ const Grid: LayoutFidget<GridArgs> = ({
 
     //Make new layout with item removed
     const newLayoutConfig: GridLayoutConfig = {
-      layout: layoutConfig.layout
+      layout: localLayout
         .slice(0, itemLayoutIndex)
-        .concat(layoutConfig.layout.slice(itemLayoutIndex + 1)),
+        .concat(localLayout.slice(itemLayoutIndex + 1)),
     };
 
     // Clear editor panel
@@ -274,7 +280,6 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
     if (!currentlyDragging && inEditMode) {
-      setLocalLayout(newLayout);
       saveLayout(newLayout);
     }
   }
@@ -289,14 +294,14 @@ const Grid: LayoutFidget<GridArgs> = ({
                 setCurrentlyDragging={setCurrentlyDragging}
                 saveExitEditMode={saveExitEditMode}
                 cancelExitEditMode={cancelExitEditMode}
-                theme={theme}
+                theme={localTheme}
                 saveTheme={saveTheme}
                 unselect={unselectFidget}
                 selectedFidgetID={selectedFidgetID}
                 currentFidgetSettings={currentFidgetSettings}
                 setExternalDraggedItem={setExternalDraggedItem}
-                fidgetTrayContents={fidgetTrayContents}
-                fidgetInstanceDatums={fidgetInstanceDatums}
+                fidgetTrayContents={localFidgetTrayContents}
+                fidgetInstanceDatums={localFidgetInstanceDatums}
                 saveFidgetInstanceDatums={saveFidgetInstanceDatums}
                 saveTrayContents={saveTrayContents}
                 removeFidget={removeFidget}
@@ -351,26 +356,22 @@ const Grid: LayoutFidget<GridArgs> = ({
           style={{ height: height + "px)" }}
         >
           {map(localLayout, (gridItem: PlacedGridItem) => {
+            const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
             return (
               <div key={gridItem.i}>
                 {FidgetWrapper({
-                  fidget:
-                    CompleteFidgets[fidgetInstanceDatums[gridItem.i].fidgetType]
-                      .fidget,
+                  fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
                   bundle: {
-                    fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
-                    id: fidgetInstanceDatums[gridItem.i].id,
+                    fidgetType: fidgetDatum.fidgetType,
+                    id: fidgetDatum.id,
                     config: {
                       // TODO: Determine what this editable variable is being used for
                       editable: inEditMode,
-                      settings:
-                        fidgetInstanceDatums[gridItem.i].config.settings,
-                      data: fidgetInstanceDatums[gridItem.i].config.data,
+                      settings: fidgetDatum.config.settings,
+                      data: fidgetDatum.config.data,
                     },
                     properties:
-                      CompleteFidgets[
-                        fidgetInstanceDatums[gridItem.i].fidgetType
-                      ].properties,
+                      CompleteFidgets[fidgetDatum.fidgetType].properties,
                   },
                   context: {
                     theme: theme,
@@ -378,22 +379,18 @@ const Grid: LayoutFidget<GridArgs> = ({
                   saveConfig: async (
                     newInstanceConfig: FidgetConfig<FidgetSettings>,
                   ) => {
-                    saveLayout(localLayout);
-                    return await saveFidgetInstanceDatums(
-                      (fidgetInstanceDatums = {
-                        ...fidgetInstanceDatums,
-                        [fidgetInstanceDatums[gridItem.i].id]: {
-                          config: newInstanceConfig,
-                          fidgetType:
-                            fidgetInstanceDatums[gridItem.i].fidgetType,
-                          id: fidgetInstanceDatums[gridItem.i].id,
-                        },
-                      }),
-                    );
+                    return await saveFidgetInstanceDatums({
+                      ...localFidgetInstanceDatums,
+                      [fidgetDatum.id]: {
+                        config: newInstanceConfig,
+                        fidgetType: fidgetDatum.fidgetType,
+                        id: fidgetDatum.id,
+                      },
+                    });
                   },
-                  setcurrentFidgetSettings: setcurrentFidgetSettings,
-                  setSelectedFidgetID: setSelectedFidgetID,
-                  selectedFidgetID: selectedFidgetID,
+                  setCurrentFidgetSettings,
+                  setSelectedFidgetID,
+                  selectedFidgetID,
                 })}
               </div>
             );

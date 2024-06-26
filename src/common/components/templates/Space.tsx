@@ -3,8 +3,8 @@ import {
   FidgetConfig,
   FidgetInstanceData,
   FidgetSettings,
-  LayoutFidgetConfig,
   LayoutFidgetDetails,
+  LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
@@ -58,43 +58,25 @@ export default function Space({
     setEditMode(false);
   }
 
-  const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
-
-  function saveLayout(layout: LayoutFidgetConfig) {
+  async function saveLocalConfig({
+    theme,
+    layoutConfig,
+    fidgetInstanceDatums,
+    fidgetTrayContents,
+  }: LayoutFidgetSaveableConfig) {
     return saveConfig({
       ...config,
       layoutDetails: {
         ...config.layoutDetails,
-        layoutConfig: {
-          ...config.layoutDetails.layoutConfig,
-          layout: layout,
-        },
+        layoutConfig,
       },
+      theme,
+      fidgetInstanceDatums,
+      fidgetTrayContents,
     });
   }
 
-  function saveFidgetInstanceDatums(newFidgetInstanceDatums: {
-    [key: string]: FidgetInstanceData;
-  }) {
-    return saveConfig({
-      ...config,
-      fidgetInstanceDatums: newFidgetInstanceDatums,
-    });
-  }
-
-  function saveTrayContents(fidgetTrayContents: FidgetInstanceData[]) {
-    return saveConfig({
-      ...config,
-      fidgetTrayContents: fidgetTrayContents,
-    });
-  }
-
-  function saveTheme(newTheme) {
-    return saveConfig({
-      ...config,
-      theme: newTheme,
-    });
-  }
+  const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
 
   return (
     <>
@@ -129,14 +111,11 @@ export default function Space({
               fidgetInstanceDatums={config.fidgetInstanceDatums}
               theme={config.theme}
               fidgetTrayContents={config.fidgetTrayContents}
-              saveLayout={saveLayout}
-              saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-              saveTrayContents={saveTrayContents}
-              saveTheme={saveTheme}
               inEditMode={editMode}
               saveExitEditMode={saveExitEditMode}
               cancelExitEditMode={cancleExitEditMode}
               portalRef={portalRef}
+              saveConfig={saveLocalConfig}
             />
           </div>
         </div>

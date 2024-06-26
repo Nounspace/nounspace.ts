@@ -18,5 +18,5 @@ export const CompleteFidgets = {
 export const LayoutFidgets = {
   grid: Grid,
 } as {
-  [key: string]: LayoutFidget;
+  [key: string]: LayoutFidget<any>;
 };
