@@ -13,7 +13,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, map } from "lodash";
+import { debounce, isUndefined, map } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -120,8 +120,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   cancelExitEditMode,
   portalRef,
 }) => {
-  console.log(layoutConfig);
-
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
@@ -357,41 +355,44 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         >
           {map(localLayout, (gridItem: PlacedGridItem) => {
             const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
+            if (isUndefined(fidgetDatum)) return null;
             return (
               <div key={gridItem.i}>
-                {FidgetWrapper({
-                  fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
-                  bundle: {
-                    fidgetType: fidgetDatum.fidgetType,
-                    id: fidgetDatum.id,
-                    config: {
-                      // TODO: Determine what this editable variable is being used for
-                      editable: inEditMode,
-                      settings: fidgetDatum.config.settings,
-                      data: fidgetDatum.config.data,
-                    },
-                    properties:
-                      CompleteFidgets[fidgetDatum.fidgetType].properties,
-                  },
-                  context: {
-                    theme: theme,
-                  },
-                  saveConfig: async (
-                    newInstanceConfig: FidgetConfig<FidgetSettings>,
-                  ) => {
-                    return await saveFidgetInstanceDatums({
-                      ...localFidgetInstanceDatums,
-                      [fidgetDatum.id]: {
-                        config: newInstanceConfig,
-                        fidgetType: fidgetDatum.fidgetType,
-                        id: fidgetDatum.id,
+                <FidgetWrapper
+                  {...{
+                    fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
+                    bundle: {
+                      fidgetType: fidgetDatum.fidgetType,
+                      id: fidgetDatum.id,
+                      config: {
+                        // TODO: Determine what this editable variable is being used for
+                        editable: inEditMode,
+                        settings: fidgetDatum.config.settings,
+                        data: fidgetDatum.config.data,
                       },
-                    });
-                  },
-                  setCurrentFidgetSettings,
-                  setSelectedFidgetID,
-                  selectedFidgetID,
-                })}
+                      properties:
+                        CompleteFidgets[fidgetDatum.fidgetType].properties,
+                    },
+                    context: {
+                      theme: theme,
+                    },
+                    saveConfig: async (
+                      newInstanceConfig: FidgetConfig<FidgetSettings>,
+                    ) => {
+                      return await saveFidgetInstanceDatums({
+                        ...localFidgetInstanceDatums,
+                        [fidgetDatum.id]: {
+                          config: newInstanceConfig,
+                          fidgetType: fidgetDatum.fidgetType,
+                          id: fidgetDatum.id,
+                        },
+                      });
+                    },
+                    setCurrentFidgetSettings,
+                    setSelectedFidgetID,
+                    selectedFidgetID,
+                  }}
+                />
               </div>
             );
           })}
