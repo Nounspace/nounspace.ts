@@ -105,9 +105,9 @@ const Gridlines: React.FC<GridDetails> = ({
   );
 };
 
-type GridLayoutProps = LayoutFidgetDefaultProps & {
+interface GridLayoutProps extends LayoutFidgetDefaultProps {
   layoutConfig: GridLayoutConfig;
-};
+}
 
 const Grid: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
