@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 
@@ -27,7 +27,20 @@ const exampleProperties: FidgetProperties = {
 
 const Example: React.FC<FidgetArgs<ExampleFidgetSettings>> = ({
   settings: { text },
-}) => <div className="">{text}</div>;
+}) => {
+  const [timesClicked, setTimesClicked] = useState(0);
+
+  function incrementClicker() {
+    setTimesClicked(timesClicked + 1);
+  }
+
+  return (
+    <div>
+      <button onClick={incrementClicker}>{text || "click me"}</button>I have
+      been clicked {timesClicked}
+    </div>
+  );
+};
 
 export default {
   fidget: Example,

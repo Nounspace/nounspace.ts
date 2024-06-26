@@ -359,39 +359,41 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
             return (
               <div key={gridItem.i}>
-                {FidgetWrapper({
-                  fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
-                  bundle: {
-                    fidgetType: fidgetDatum.fidgetType,
-                    id: fidgetDatum.id,
-                    config: {
-                      // TODO: Determine what this editable variable is being used for
-                      editable: inEditMode,
-                      settings: fidgetDatum.config.settings,
-                      data: fidgetDatum.config.data,
-                    },
-                    properties:
-                      CompleteFidgets[fidgetDatum.fidgetType].properties,
-                  },
-                  context: {
-                    theme: theme,
-                  },
-                  saveConfig: async (
-                    newInstanceConfig: FidgetConfig<FidgetSettings>,
-                  ) => {
-                    return await saveFidgetInstanceDatums({
-                      ...localFidgetInstanceDatums,
-                      [fidgetDatum.id]: {
-                        config: newInstanceConfig,
-                        fidgetType: fidgetDatum.fidgetType,
-                        id: fidgetDatum.id,
+                <FidgetWrapper
+                  {...{
+                    fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
+                    bundle: {
+                      fidgetType: fidgetDatum.fidgetType,
+                      id: fidgetDatum.id,
+                      config: {
+                        // TODO: Determine what this editable variable is being used for
+                        editable: inEditMode,
+                        settings: fidgetDatum.config.settings,
+                        data: fidgetDatum.config.data,
                       },
-                    });
-                  },
-                  setCurrentFidgetSettings,
-                  setSelectedFidgetID,
-                  selectedFidgetID,
-                })}
+                      properties:
+                        CompleteFidgets[fidgetDatum.fidgetType].properties,
+                    },
+                    context: {
+                      theme: theme,
+                    },
+                    saveConfig: async (
+                      newInstanceConfig: FidgetConfig<FidgetSettings>,
+                    ) => {
+                      return await saveFidgetInstanceDatums({
+                        ...localFidgetInstanceDatums,
+                        [fidgetDatum.id]: {
+                          config: newInstanceConfig,
+                          fidgetType: fidgetDatum.fidgetType,
+                          id: fidgetDatum.id,
+                        },
+                      });
+                    },
+                    setCurrentFidgetSettings,
+                    setSelectedFidgetID,
+                    selectedFidgetID,
+                  }}
+                />
               </div>
             );
           })}
