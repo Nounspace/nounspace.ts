@@ -69,87 +69,89 @@ export function ThemeSettingsEditor({
   }
 
   return (
-    <>
-      <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
-      <div className="text-lg font-medium">
-        <Card className="inset-x-auto shadow-lg">
-          <CardFooter className="gap-2 p-3">
-            <ColorSelector
-              value={background as Color}
-              onChange={themePropSetter<Color>("background")}
-            />
-            <FontSelector
-              value={font}
-              onChange={themePropSetter<FontFamily>("font")}
-            />
-            <HTMLInputPopoverButton
-              value={backgroundHTML}
-              onChange={themePropSetter<string>("backgroundHTML")}
-            />
-            <TextInputPopoverButton
-              value={musicURL}
-              onChange={themePropSetter<string>("musicURL")}
-            >
-              <FaMusic />
-            </TextInputPopoverButton>
-          </CardFooter>
-        </Card>
-        <div className="flex flex-col">
-          {showConfirmCancel ? (
-            // Back Button and Exit Button (shows second)
-            <>
-              <div className="mt-40 pt-2 flex items-center justify-center">
-                <button
-                  onClick={() => setShowConfirmCancel(false)}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
-                >
-                  <div className="flex items-center">
-                    <BackArrowIcon />
-                  </div>
-                </button>
-                <button
-                  onClick={cancelAndClose}
-                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
-                >
-                  <div className="ml-4 flex items-center">
-                    <FaTriangleExclamation
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-4 mr-4">Exit</span>
-                  </div>
-                </button>
-              </div>
-              <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
-                If you exit, any changes made will not be saved.
-              </p>
-            </>
-          ) : (
-            // X Button and Save Button (shows first)
-            <div className="mt-40 pt-2 flex items-center justify-center">
-              <button
-                onClick={() => setShowConfirmCancel(true)}
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+    <div className="flex-col flex h-full">
+      <div className="h-5/6">
+        <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
+        <div className="text-lg font-medium">
+          <Card className="inset-x-auto shadow-lg">
+            <CardFooter className="gap-2 p-3">
+              <ColorSelector
+                value={background as Color}
+                onChange={themePropSetter<Color>("background")}
+              />
+              <FontSelector
+                value={font}
+                onChange={themePropSetter<FontFamily>("font")}
+              />
+              <HTMLInputPopoverButton
+                value={backgroundHTML}
+                onChange={themePropSetter<string>("backgroundHTML")}
+              />
+              <TextInputPopoverButton
+                value={musicURL}
+                onChange={themePropSetter<string>("musicURL")}
               >
-                <div className="flex items-center p-1">
-                  <FaX className="h-8l shrink-0" aria-hidden="true" />
+                <FaMusic />
+              </TextInputPopoverButton>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
+      <div className="flex flex-col h-1/6">
+        {showConfirmCancel ? (
+          // Back Button and Exit Button (shows second)
+          <>
+            <div className="pt-2 flex items-center justify-center">
+              <button
+                onClick={() => setShowConfirmCancel(false)}
+                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+              >
+                <div className="flex items-center">
+                  <BackArrowIcon />
                 </div>
               </button>
-
               <button
-                onClick={saveAndClose}
-                className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                onClick={cancelAndClose}
+                className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
               >
                 <div className="ml-4 flex items-center">
-                  <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
-                  <span className="ml-4 mr-4">Save</span>
+                  <FaTriangleExclamation
+                    className="h-8l shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="ml-4 mr-4">Exit</span>
                 </div>
               </button>
             </div>
-          )}
-        </div>
+            <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
+              If you exit, any changes made will not be saved.
+            </p>
+          </>
+        ) : (
+          // X Button and Save Button (shows first)
+          <div className="pt-2 flex items-center justify-center">
+            <button
+              onClick={() => setShowConfirmCancel(true)}
+              className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+            >
+              <div className="flex items-center p-1">
+                <FaX className="h-8l shrink-0" aria-hidden="true" />
+              </div>
+            </button>
+
+            <button
+              onClick={saveAndClose}
+              className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+            >
+              <div className="ml-4 flex items-center">
+                <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+                <span className="ml-4 mr-4">Save</span>
+              </div>
+            </button>
+          </div>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
