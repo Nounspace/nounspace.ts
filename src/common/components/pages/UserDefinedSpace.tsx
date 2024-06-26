@@ -49,12 +49,7 @@ export default function UserDefinedSpace({
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
-    console.log("requesting Auth Man Initialized");
     authManagerGetInitializedAuthenticators().then((authNames) => {
-      console.log("Initialized auths", authNames);
-      console.log(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
-      );
       setIsSignedIntoFarcaster(
         indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
       );

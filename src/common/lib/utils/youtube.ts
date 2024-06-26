@@ -52,7 +52,7 @@ export async function getYouTubeMetadataById(
     if (response.data.items && response.data.items.length > 0) {
       return response.data.items[0];
     } else {
-      console.log("No video found with the given ID.");
+      console.debug("No video found with the given ID.");
       return null;
     }
   } catch (error) {
