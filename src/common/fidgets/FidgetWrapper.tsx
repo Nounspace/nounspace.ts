@@ -101,28 +101,39 @@ export function FidgetWrapper({
     .map((f) => settingsWithDefaults[f.fieldName]);
 
   return (
-    <Card
-      className={
-        selectedFidgetID === bundle.id
-          ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
-          : "size-full overflow-hidden"
-      }
-    >
-      {bundle.config.editable && (
-        <button
-          onMouseDown={onClickEdit}
-          className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
-        ></button>
-      )}
-      <ScopedStyles cssStyles={userStyles} className="size-full">
-        <CardContent className="size-full">
-          {fidget({
-            settings: settingsWithDefaults,
-            data: bundle.config.data,
-            saveData,
-          })}
-        </CardContent>
-      </ScopedStyles>
-    </Card>
+    <>
+      <div
+        className={
+          selectedFidgetID === bundle.id
+            ? "absolute -mt-8 opacity-80 text-center"
+            : "hidden opacity-0"
+        }
+      >
+        <Card className="px-2">⸬</Card>
+      </div>
+      <Card
+        className={
+          selectedFidgetID === bundle.id
+            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+            : "size-full overflow-hidden"
+        }
+      >
+        {bundle.config.editable && (
+          <button
+            onMouseDown={onClickEdit}
+            className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+          ></button>
+        )}
+        <ScopedStyles cssStyles={userStyles} className="size-full">
+          <CardContent className="size-full">
+            {fidget({
+              settings: settingsWithDefaults,
+              data: bundle.config.data,
+              saveData,
+            })}
+          </CardContent>
+        </ScopedStyles>
+      </Card>
+    </>
   );
 }
