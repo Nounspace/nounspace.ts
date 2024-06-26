@@ -5,6 +5,7 @@ import Frame from "./frame";
 import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
+import Profile from "./ui/profile";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 
@@ -16,6 +17,7 @@ export const CompleteFidgets = {
   text: TextFidget,
   governance: NounishGovernance,
   iframe: IFrame,
+  profile: Profile,
 };
 
 export const LayoutFidgets = {
