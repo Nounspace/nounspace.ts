@@ -11,13 +11,14 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        primary: "rounded-xl text-white bg-blue-500 hover:bg-blue-600",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "bg-secondary text-[#1C64F2] rounded-xl shadow-sm hover:bg-sky-100",
+        ghost: "hover:bg-accent hover:text-accent-foreground rounded-xl",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -25,6 +26,13 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
+      },
+      width: {
+        auto: "w-auto",
+        full: "w-full",
+      },
+      withIcon: {
+        true: "gap-2",
       },
     },
     defaultVariants: {
@@ -40,20 +48,36 @@ export interface ButtonProps
   asChild?: boolean;
   variant?:
     | "default"
+    | "primary"
     | "destructive"
     | "outline"
     | "secondary"
     | "ghost"
     | "link";
   size?: "default" | "sm" | "lg" | "icon";
+  width?: "auto" | "full";
+  withIcon?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      withIcon,
+      width = "auto",
+      asChild = false,
+      ...props
+    },
+    ref,
+  ) => {
     const Comp = asChild ? Slot : "button";
     return (
       <Comp
-        className={mergeClasses(buttonVariants({ variant, size, className }))}
+        className={mergeClasses(
+          buttonVariants({ variant, size, withIcon, width, className }),
+        )}
         ref={ref}
         {...props}
       />
