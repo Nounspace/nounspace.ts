@@ -13,7 +13,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, map } from "lodash";
+import { debounce, isUndefined, map } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -218,6 +218,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
+    saveFidgetInstanceDatums({
+      ...fidgetInstanceDatums,
+      [fidgetData.id]: fidgetData,
+    });
+
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
 
@@ -236,13 +241,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     };
 
     saveLayout([...localLayout, newItem]);
-    moveFidgetFromTrayToGrid(newItem, fidgetData);
+    moveFidgetFromTrayToGrid(newItem);
   }
 
-  function moveFidgetFromTrayToGrid(
-    gridItem: PlacedGridItem,
-    fidgetData: FidgetInstanceData,
-  ) {
+  function moveFidgetFromTrayToGrid(gridItem: PlacedGridItem) {
     const newLayout = [...localLayout, gridItem];
 
     const itemTrayIndex = fidgetTrayContents.findIndex(
@@ -357,6 +359,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         >
           {map(localLayout, (gridItem: PlacedGridItem) => {
             const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
+            if (isUndefined(fidgetDatum)) return null;
             return (
               <div key={gridItem.i}>
                 {FidgetWrapper({
