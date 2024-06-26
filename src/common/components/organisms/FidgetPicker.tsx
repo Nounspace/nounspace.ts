@@ -1,9 +1,8 @@
 import React, { Dispatch, SetStateAction } from "react";
 import { CompleteFidgets } from "@/fidgets";
 import { Card, CardContent } from "../atoms/card";
-import { map } from "lodash";
+import { isUndefined, map } from "lodash";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
-import { Button } from "../atoms/button";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
@@ -26,7 +25,8 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   function generateFidgetCards() {
     return map(
       CompleteFidgets,
-      (fidgetModule: FidgetModule<FidgetArgs>, fidgetName) => {
+      (fidgetModule: FidgetModule<FidgetArgs> | undefined, fidgetName) => {
+        if (isUndefined(fidgetModule)) return null;
         return (
           <div
             className="z-20 droppable-element h-full"
