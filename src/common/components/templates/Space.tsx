@@ -99,8 +99,8 @@ export default function Space({
         <div
           className={
             editMode
-              ? "w-full transition-all duration-100 ease-out h-full"
-              : "w-full transition-all duration-100 ease-out h-full"
+              ? "w-8/12 transition-all duration-100 ease-out h-full"
+              : "w-9/12 transition-all duration-100 ease-out h-full"
           }
         >
           <div className={"h-full flex flex-col"}>

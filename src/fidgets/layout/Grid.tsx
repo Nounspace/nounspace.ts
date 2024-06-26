@@ -378,6 +378,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                     context: {
                       theme: theme,
                     },
+                    removeFidget: removeFidget,
                     saveConfig: async (
                       newInstanceConfig: FidgetConfig<FidgetSettings>,
                     ) => {

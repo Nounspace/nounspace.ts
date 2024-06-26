@@ -100,16 +100,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       <div className="flex-1 min-w-64 h-full pl-8 pt-24 pb-24 flex-col flex px-4 py-4 overflow-y-hidden border-r-2">
         <div className="h-full flex-col">
           {selectedFidgetID ? (
-            <>
-              {currentFidgetSettings}
-              <Button
-                onClick={() => {
-                  removeFidget(selectedFidgetID);
-                }}
-              >
-                Delete
-              </Button>
-            </>
+            <>{currentFidgetSettings}</>
           ) : (
             <>
               {isPickingFidget ? (
