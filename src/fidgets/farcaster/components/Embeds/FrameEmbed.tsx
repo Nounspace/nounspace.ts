@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FarcasterFrameContext,
   FrameActionBodyPayload,
@@ -103,34 +103,35 @@ async function createFrameActionMessage(
   return { message: message.unwrapOr(null), trustedBytes };
 }
 
-const FrameEmbed: React.FC<{ url: string }> = async ({ url }) => {
+const FrameEmbed: React.FC<{ url: string }> = ({ url }) => {
   const authenticatorManager = useAuthenticatorManager();
-  const isLoadingSigner = await useMemo(
-    async () =>
-      findIndex(
-        await authenticatorManager.getInitializedAuthenticators(),
-        FARCASTER_AUTHENTICATOR_NAME,
-      ) === -1,
-    [authenticatorManager],
-  );
-  const signer = await useMemo(
-    async () =>
-      await createFarcasterSignerFromAuthenticatorManager(
-        authenticatorManager,
-        "frame",
-      ),
-    [authenticatorManager],
-  );
-  const fid = await useMemo(async () => {
-    const methodResult = await authenticatorManager.callMethod(
+  const [isLoadingSigner, setIsLoadingSigner] = useState(true);
+  useEffect(() => {
+    authenticatorManager
+      .getInitializedAuthenticators()
+      .then((initilizedAuths) =>
+        setIsLoadingSigner(
+          findIndex(initilizedAuths, FARCASTER_AUTHENTICATOR_NAME) === -1,
+        ),
+      );
+  }, [authenticatorManager]);
+  const [signer, setSigner] = useState<Signer>();
+  useEffect(() => {
+    createFarcasterSignerFromAuthenticatorManager(
+      authenticatorManager,
       "frame",
-      FARCASTER_AUTHENTICATOR_NAME,
-      "getAccountFid",
-    );
-    if (methodResult.result === "success") {
-      return methodResult.value as number;
-    }
-    return -1;
+    ).then((signer) => setSigner(signer));
+  }, [authenticatorManager]);
+  const [fid, setFid] = useState(-1);
+  useEffect(() => {
+    authenticatorManager
+      .callMethod("frame", FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
+      .then((methodResult) => {
+        if (methodResult.result === "success") {
+          setFid(methodResult.value as number);
+        }
+        return setFid(-1);
+      });
   }, [authenticatorManager]);
 
   const signFrameAction = async ({
@@ -155,7 +156,7 @@ const FrameEmbed: React.FC<{ url: string }> = async ({ url }) => {
     body: FrameActionBodyPayload;
     searchParams: URLSearchParams;
   }> => {
-    const { message, trustedBytes } = await createFrameActionMessage(signer, {
+    const { message, trustedBytes } = await createFrameActionMessage(signer!, {
       fid,
       buttonIndex,
       castId: {
