@@ -22,9 +22,10 @@ const frameProperties: FidgetProperties = {
     minWidth: 1,
     maxWidth: 36,
   },
+  icon: 0x23f9,
 };
 
-const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = async ({
+const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
   settings: { url },
 }) => {
   return <FrameEmbed url={url} />;
