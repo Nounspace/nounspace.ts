@@ -1,4 +1,4 @@
-import React, { DragEvent, useEffect, useState } from "react";
+import React, { DragEvent, useEffect, useState, useRef } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
 import {
@@ -14,6 +14,8 @@ import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { ThemeSettings } from "@/common/lib/theme";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { map } from "lodash";
+import { PlusIcon } from "@radix-ui/react-icons";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -54,11 +56,11 @@ const gridDetails = {
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
   cols: 12,
-  maxRows: 9,
+  maxRows: 10,
   rowHeight: 70,
   layout: [],
   margin: [16, 16],
-  containerPadding: [0, 0],
+  containerPadding: [16, 16],
 };
 
 type GridDetails = typeof gridDetails;
@@ -78,7 +80,7 @@ const Gridlines: React.FC<GridDetails> = ({
 }) => {
   return (
     <div
-      className="absolute p-8 inset-8 rounded-lg h-max w-8/12 ml-auto"
+      className="relative grid-overlap w-full h-full opacity-50"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",
@@ -86,7 +88,7 @@ const Gridlines: React.FC<GridDetails> = ({
         gridTemplateRows: `repeat(${maxRows}, ${rowHeight}px)`,
         gridGap: `${margin[0]}px`,
         rowGap: `${margin[1]}px`,
-        inset: `${containerPadding[0]}px ${containerPadding[1]}px`,
+        padding: `${containerPadding[0]}px`,
         background: "rgba(200, 227, 248, 0.3)",
       }}
     >
@@ -124,9 +126,9 @@ interface GridArgs {
 }
 
 const Grid: LayoutFidget<GridArgs> = ({
-  layoutConfig,
   fidgetInstanceDatums,
   fidgetTrayContents,
+  layoutConfig,
   theme,
   saveLayout,
   saveFidgetInstanceDatums,
@@ -155,21 +157,34 @@ const Grid: LayoutFidget<GridArgs> = ({
     setSelectedFidgetID("");
     setcurrentFidgetSettings(<></>);
   }
+
+  const [isPickingFidget, setIsPickingFidget] = useState(false);
+
+  function openFidgetPicker() {
+    setIsPickingFidget(true);
+    unselectFidget();
+  }
+
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
   );
 
+  useEffect(() => {
+    setElement(portalRef.current);
+  }, []);
+
   const { height } = useWindowSize();
 
   const rowHeight = height
-    ? Math.round((height - 200) / gridDetails.maxRows)
+    ? Math.round(
+        // The 64 magic number here is the height of the tabs bar above the grid
+        (height -
+          64 -
+          gridDetails.margin[0] * gridDetails.maxRows -
+          gridDetails.containerPadding[0] * 2) /
+          gridDetails.maxRows,
+      )
     : 70;
-
-  useEffect(() => {
-    // Force a rerender, so it can be passed to the child.
-    // If this causes an unwanted flicker, use useLayoutEffect instead
-    setElement(portalRef.current);
-  }, []);
 
   function handleDrop(
     layout: PlacedGridItem[],
@@ -199,6 +214,14 @@ const Grid: LayoutFidget<GridArgs> = ({
 
       resizeHandles: resizeDirections,
     };
+
+    // Make sure it is in the list of instances
+    if (!(fidgetData.id in fidgetInstanceDatums)) {
+      const newFidgetInstanceDatums: { [key: string]: FidgetInstanceData } = {
+        ...fidgetInstanceDatums,
+        [fidgetData.id]: fidgetData,
+      };
+    }
 
     setLocalLayout([...localLayout, newItem]);
     moveFidgetFromTrayToGrid(newItem, fidgetData);
@@ -277,6 +300,9 @@ const Grid: LayoutFidget<GridArgs> = ({
                 saveFidgetInstanceDatums={saveFidgetInstanceDatums}
                 saveTrayContents={saveTrayContents}
                 removeFidget={removeFidget}
+                isPickingFidget={isPickingFidget}
+                setIsPickingFidget={setIsPickingFidget}
+                openFidgetPicker={openFidgetPicker}
               />,
               portalNode,
             )
@@ -294,68 +320,86 @@ const Grid: LayoutFidget<GridArgs> = ({
     <>
       {editorPanelPortal(element)}
 
-      {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+      {inEditMode ? (
+        <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
+          <button
+            onClick={openFidgetPicker}
+            className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+          >
+            <AddFidgetIcon />
+            <span className="ml-2">Fidget</span>
+          </button>
+        </div>
+      ) : null}
 
-      <ReactGridLayout
-        {...gridDetails}
-        isDraggable={inEditMode}
-        isResizable={inEditMode}
-        resizeHandles={resizeDirections}
-        layout={localLayout}
-        items={localLayout.length}
-        rowHeight={rowHeight}
-        isDroppable={true}
-        droppingItem={externalDraggedItem}
-        onDrop={handleDrop}
-        onLayoutChange={saveLayoutConditional}
-        className="h-full"
-      >
-        {map(localLayout, (gridItem: PlacedGridItem) => {
-          return (
-            <div key={gridItem.i}>
-              {FidgetWrapper({
-                fidget:
-                  CompleteFidgets[fidgetInstanceDatums[gridItem.i].fidgetType]
-                    .fidget,
-                bundle: {
-                  fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
-                  id: fidgetInstanceDatums[gridItem.i].id,
-                  config: {
-                    // TODO: Determine what this editable variable is being used for
-                    editable: inEditMode,
-                    settings: fidgetInstanceDatums[gridItem.i].config.settings,
-                    data: fidgetInstanceDatums[gridItem.i].config.data,
-                  },
-                  properties:
+      <div className="flex-1 grid-container grow">
+        {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+
+        <ReactGridLayout
+          {...gridDetails}
+          isDraggable={inEditMode}
+          isResizable={inEditMode}
+          resizeHandles={resizeDirections}
+          layout={localLayout}
+          items={localLayout.length}
+          rowHeight={rowHeight}
+          isDroppable={true}
+          droppingItem={externalDraggedItem}
+          onDrop={handleDrop}
+          onLayoutChange={saveLayoutConditional}
+          className={"grid-overlap"}
+          style={{ height: height + "px)" }}
+        >
+          {map(localLayout, (gridItem: PlacedGridItem) => {
+            return (
+              <div key={gridItem.i}>
+                {FidgetWrapper({
+                  fidget:
                     CompleteFidgets[fidgetInstanceDatums[gridItem.i].fidgetType]
-                      .properties,
-                },
-                context: {
-                  theme: theme,
-                },
-                saveConfig: async (
-                  newInstanceConfig: FidgetConfig<FidgetSettings>,
-                ) => {
-                  saveLayout(localLayout);
-                  return await saveFidgetInstanceDatums(
-                    (fidgetInstanceDatums = {
-                      ...fidgetInstanceDatums,
-                      [fidgetInstanceDatums[gridItem.i].id]: {
-                        config: newInstanceConfig,
-                        fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
-                        id: fidgetInstanceDatums[gridItem.i].id,
-                      },
-                    }),
-                  );
-                },
-                setcurrentFidgetSettings: setcurrentFidgetSettings,
-                setSelectedFidgetID: setSelectedFidgetID,
-                selectedFidgetID: selectedFidgetID,
-              })}
-            </div>
-          );
-        })}
-      </ReactGridLayout>
+                      .fidget,
+                  bundle: {
+                    fidgetType: fidgetInstanceDatums[gridItem.i].fidgetType,
+                    id: fidgetInstanceDatums[gridItem.i].id,
+                    config: {
+                      // TODO: Determine what this editable variable is being used for
+                      editable: inEditMode,
+                      settings:
+                        fidgetInstanceDatums[gridItem.i].config.settings,
+                      data: fidgetInstanceDatums[gridItem.i].config.data,
+                    },
+                    properties:
+                      CompleteFidgets[
+                        fidgetInstanceDatums[gridItem.i].fidgetType
+                      ].properties,
+                  },
+                  context: {
+                    theme: theme,
+                  },
+                  saveConfig: async (
+                    newInstanceConfig: FidgetConfig<FidgetSettings>,
+                  ) => {
+                    saveLayout(localLayout);
+                    return await saveFidgetInstanceDatums(
+                      (fidgetInstanceDatums = {
+                        ...fidgetInstanceDatums,
+                        [fidgetInstanceDatums[gridItem.i].id]: {
+                          config: newInstanceConfig,
+                          fidgetType:
+                            fidgetInstanceDatums[gridItem.i].fidgetType,
+                          id: fidgetInstanceDatums[gridItem.i].id,
+                        },
+                      }),
+                    );
+                  },
+                  setcurrentFidgetSettings: setcurrentFidgetSettings,
+                  setSelectedFidgetID: setSelectedFidgetID,
+                  selectedFidgetID: selectedFidgetID,
+                })}
+              </div>
+            );
+          })}
+        </ReactGridLayout>
+      </div>
     </>
   );
 };

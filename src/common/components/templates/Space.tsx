@@ -114,30 +114,31 @@ export default function Space({
             portalRef={portalRef}
           />
         </div>
-
         <div
           className={
             editMode
-              ? "w-8/12 transition-all duration-100 ease-out p-8"
-              : "w-9/12 transition-all duration-100 ease-out p-8"
+              ? "w-full transition-all duration-100 ease-out h-full"
+              : "w-full transition-all duration-100 ease-out h-full"
           }
         >
-          <LayoutFidget
-            layoutConfig={{
-              ...config.layoutDetails.layoutConfig,
-            }}
-            fidgetInstanceDatums={config.fidgetInstanceDatums}
-            theme={config.theme}
-            fidgetTrayContents={config.fidgetTrayContents}
-            saveLayout={saveLayout}
-            saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-            saveTrayContents={saveTrayContents}
-            saveTheme={saveTheme}
-            inEditMode={editMode}
-            saveExitEditMode={saveExitEditMode}
-            cancelExitEditMode={cancleExitEditMode}
-            portalRef={portalRef}
-          />
+          <div className={"h-full flex flex-col"}>
+            <LayoutFidget
+              layoutConfig={{
+                ...config.layoutDetails.layoutConfig,
+              }}
+              fidgetInstanceDatums={config.fidgetInstanceDatums}
+              theme={config.theme}
+              fidgetTrayContents={config.fidgetTrayContents}
+              saveLayout={saveLayout}
+              saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+              saveTrayContents={saveTrayContents}
+              saveTheme={saveTheme}
+              inEditMode={editMode}
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancleExitEditMode}
+              portalRef={portalRef}
+            />
+          </div>
         </div>
       </div>
     </>
