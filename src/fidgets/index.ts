@@ -8,7 +8,8 @@ import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 
 export const CompleteFidgets = {
-  example: Example,
+  example:
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Example : undefined,
   frame: Frame,
   gallery: Gallery,
   text: TextFidget,
