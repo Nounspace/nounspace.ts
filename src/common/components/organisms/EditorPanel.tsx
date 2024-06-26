@@ -124,7 +124,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                 <ThemeSettingsEditor
                   theme={theme}
                   saveTheme={saveTheme}
-                  setEditMode={setEditMode}
+                  saveExitEditMode={saveExitEditMode}
+                  cancelExitEditMode={cancelExitEditMode}
                 />
               )}
             </>

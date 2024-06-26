@@ -114,7 +114,6 @@ export default function Space({
             portalRef={portalRef}
           />
         </div>
-
         <div
           className={
             editMode
@@ -135,7 +134,8 @@ export default function Space({
               saveTrayContents={saveTrayContents}
               saveTheme={saveTheme}
               inEditMode={editMode}
-              setEditMode={setEditMode}
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancleExitEditMode}
               portalRef={portalRef}
             />
           </div>

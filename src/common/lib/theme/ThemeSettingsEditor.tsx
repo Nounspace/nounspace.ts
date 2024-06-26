@@ -64,7 +64,6 @@ export function ThemeSettingsEditor({
   }
 
   function cancelAndClose() {
-    saveTheme(theme);
     cancelExitEditMode();
   }
 
