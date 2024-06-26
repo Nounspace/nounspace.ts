@@ -4,6 +4,7 @@ import Example from "./example";
 import Frame from "./farcaster/Frame";
 import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
+import IFrame from "./ui/IFrame";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 
@@ -14,6 +15,7 @@ export const CompleteFidgets = {
   gallery: Gallery,
   text: TextFidget,
   governance: NounishGovernance,
+  iframe: IFrame,
 };
 
 export const LayoutFidgets = {
