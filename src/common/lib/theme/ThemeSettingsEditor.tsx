@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { Card, CardFooter } from "@/common/components/atoms/card";
 import {
-  FaCommentDots,
   FaFloppyDisk,
-  FaMusic,
   FaTriangleExclamation,
   FaX,
+  FaArrowLeftLong,
 } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
-import TextInputPopoverButton from "@/common/components/molecules/TextInputPopoverButton";
-import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import HTMLInput from "@/common/components/molecules/HTMLInput";
+import TextInput from "@/common/components/molecules/TextInput";
+import { Button } from "@/common/components/atoms/button";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/common/components/atoms/tabs";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -22,6 +26,12 @@ export type ThemeSettingsEditorArgs = {
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
 };
+
+const tabListClasses = "w-full p-0 justify-between bg-transparent rounded-none";
+const tabTriggerClasses =
+  "data-[state=active]:text-blue-600 text-md data-[state=active]:shadow-none data-[state=active]:border-b data-[state=active]:rounded-none data-[state=active]:border-blue-600 data-[state=active]:border-solid px-3 py-2";
+const tabContentClasses =
+  "py-4 flex flex-col gap-4 hidden data-[state=active]:flex";
 
 export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,
@@ -49,7 +59,8 @@ export function ThemeSettingsEditor({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font, backgroundHTML, musicURL } = theme.properties;
+  const { background, font, fontColor, backgroundHTML, musicURL } =
+    theme.properties;
 
   useEffect(() => {
     setCSSVar("--user-theme-background", background);
@@ -58,6 +69,10 @@ export function ThemeSettingsEditor({
   useEffect(() => {
     setCSSVar("--user-theme-font", font);
   }, [font]);
+
+  useEffect(() => {
+    setCSSVar("--user-theme-font-color", fontColor);
+  }, [fontColor]);
 
   function saveAndClose() {
     saveTheme(theme);
@@ -69,90 +84,157 @@ export function ThemeSettingsEditor({
   }
 
   return (
-    <div className="flex-col flex h-full">
-      <div className="h-5/6">
-        <h1 className="capitalize pb-4 m-2 text-lg">Edit Theme</h1>
-        <div className="text-lg font-medium">
-          <Card className="inset-x-auto shadow-lg">
-            <CardFooter className="gap-2 p-3">
-              <ColorSelector
-                value={background as Color}
-                onChange={themePropSetter<Color>("background")}
-              />
-              <FontSelector
-                value={font}
-                onChange={themePropSetter<FontFamily>("font")}
-              />
-              <HTMLInputPopoverButton
-                value={backgroundHTML}
-                onChange={themePropSetter<string>("backgroundHTML")}
-              />
-              <TextInputPopoverButton
-                value={musicURL}
-                onChange={themePropSetter<string>("musicURL")}
+    <>
+      <div className="flex flex-col h-full gap-6">
+        {/* Back */}
+        <div>
+          <button
+            onClick={cancelAndClose}
+            className="flex items-center gap-3 text-lg font-semibold"
+          >
+            <FaArrowLeftLong className="shrink-0" /> Customize
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="h-full overflow-auto flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <ThemeCard />
+          </div>
+
+          <Tabs defaultValue="fonts">
+            <TabsList className={tabListClasses}>
+              <TabsTrigger value="fonts" className={tabTriggerClasses}>
+                Fonts
+              </TabsTrigger>
+              <TabsTrigger value="style" className={tabTriggerClasses}>
+                Style
+              </TabsTrigger>
+              <TabsTrigger value="code" className={tabTriggerClasses}>
+                Code
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="fonts" className={tabContentClasses}>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Headings</h4>
+                <div className="flex items-center gap-1">
+                  <ColorSelector
+                    className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                    innerClassName="rounded-full"
+                    value={fontColor as Color}
+                    onChange={themePropSetter<Color>("fontColor")}
+                  />
+                  <FontSelector
+                    className="ring-0 focus:ring-0 border-0 shadow-none"
+                    value={font}
+                    onChange={themePropSetter<FontFamily>("font")}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Body</h4>
+                <div className="flex items-center gap-1">
+                  <ColorSelector
+                    className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                    innerClassName="rounded-full"
+                    value={background as Color}
+                    onChange={themePropSetter<Color>("background")}
+                  />
+                  <FontSelector
+                    className="ring-0 focus:ring-0 border-0 shadow-none"
+                    value={font}
+                    onChange={themePropSetter<FontFamily>("font")}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="style" className={tabContentClasses}>
+              <div className="grid gap-2 grid-cols-2">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <ThemeCard key={i} />
+                ))}
+              </div>
+            </TabsContent>
+            <TabsContent value="code" className={tabContentClasses}>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Custom styles</h4>
+                <HTMLInput
+                  value={backgroundHTML}
+                  onChange={themePropSetter<string>("backgroundHTML")}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Music</h4>
+                <TextInput
+                  value={musicURL}
+                  onChange={themePropSetter<string>("musicURL")}
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Actions */}
+        <div className="shrink-0 flex flex-col gap-2">
+          {showConfirmCancel ? (
+            <>
+              <Button
+                onClick={cancelAndClose}
+                variant="destructive"
+                withIcon
+                width="full"
               >
-                <FaMusic />
-              </TextInputPopoverButton>
-            </CardFooter>
-          </Card>
+                <FaTriangleExclamation
+                  className="shrink-0"
+                  aria-hidden="true"
+                />
+                Cancel
+              </Button>
+              <Button
+                onClick={() => setShowConfirmCancel(false)}
+                variant="secondary"
+                withIcon
+                width="full"
+              >
+                <FaX className="shrink-0" aria-hidden="true" />
+                Nevermind
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                onClick={saveAndClose}
+                variant="primary"
+                withIcon
+                width="full"
+              >
+                <FaFloppyDisk className="shrink-0" aria-hidden="true" />
+                Save Space
+              </Button>
+
+              <Button
+                onClick={() => setShowConfirmCancel(true)}
+                variant="secondary"
+                withIcon
+                width="full"
+              >
+                <FaX className="shrink-0" aria-hidden="true" />
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
       </div>
-      <div className="flex flex-col h-1/6">
-        {showConfirmCancel ? (
-          // Back Button and Exit Button (shows second)
-          <>
-            <div className="pt-2 flex items-center justify-center">
-              <button
-                onClick={() => setShowConfirmCancel(false)}
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
-              >
-                <div className="flex items-center">
-                  <BackArrowIcon />
-                </div>
-              </button>
-              <button
-                onClick={cancelAndClose}
-                className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
-              >
-                <div className="ml-4 flex items-center">
-                  <FaTriangleExclamation
-                    className="h-8l shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="ml-4 mr-4">Exit</span>
-                </div>
-              </button>
-            </div>
-            <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
-              If you exit, any changes made will not be saved.
-            </p>
-          </>
-        ) : (
-          // X Button and Save Button (shows first)
-          <div className="pt-2 flex items-center justify-center">
-            <button
-              onClick={() => setShowConfirmCancel(true)}
-              className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
-            >
-              <div className="flex items-center p-1">
-                <FaX className="h-8l shrink-0" aria-hidden="true" />
-              </div>
-            </button>
-
-            <button
-              onClick={saveAndClose}
-              className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
-              <div className="ml-4 flex items-center">
-                <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
-                <span className="ml-4 mr-4">Save</span>
-              </div>
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    </>
   );
 }
+
+const ThemeCard = () => (
+  <div className="bg-gray-50 hover:bg-gray-100 rounded-lg flex gap-2 px-4 py-2 items-center cursor-pointer">
+    <div className="text-lg font-bold">Aa</div>
+    <div className="rounded-full w-5 h-5 bg-blue-500"></div>
+    <div className="rounded-full w-5 h-5 bg-slate-800"></div>
+  </div>
+);
 
 export default ThemeSettingsEditor;
