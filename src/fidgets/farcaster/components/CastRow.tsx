@@ -10,8 +10,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
 import { localize, timeDiff } from "@/common/lib/utils/date";
-import { publishReaction, removeReaction } from "../utils";
-import { includes, isObject, map } from "lodash";
+import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
+import { includes, isObject, isUndefined, map } from "lodash";
 import get from "lodash.get";
 import Linkify from "linkify-react";
 import { ErrorBoundary } from "@sentry/react";
@@ -28,11 +28,8 @@ import {
 } from "@/common/lib/utils/linkify";
 import { Button } from "@/common/components/atoms/button";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import {
-  createFarcasterSignerFromAuthenticatorManager,
-  FARCASTER_AUTHENTICATOR_NAME,
-} from "..";
-import { CastReactionType } from "../types";
+import { useFarcasterSigner } from "@/fidgets/farcaster/index";
+import { CastReactionType } from "@/fidgets/farcaster/types";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -150,7 +147,7 @@ const linkifyOptions = {
   truncate: 42,
 };
 
-export const CastRow = async ({
+export const CastRow = ({
   cast,
   showChannel,
   isEmbed = false,
@@ -161,25 +158,10 @@ export const CastRow = async ({
   const [didRecast, setDidRecast] = useState(false);
 
   const authenticatorManager = useAuthenticatorManager();
-  const signer = await useMemo(
-    async () =>
-      await createFarcasterSignerFromAuthenticatorManager(
-        authenticatorManager,
-        "frame",
-      ),
-    [authenticatorManager],
+  const { signer, fid: userFid } = useFarcasterSigner(
+    authenticatorManager,
+    "render-cast",
   );
-  const userFid = await useMemo(async () => {
-    const methodResult = await authenticatorManager.callMethod(
-      "frame",
-      FARCASTER_AUTHENTICATOR_NAME,
-      "getAccountFid",
-    );
-    if (methodResult.result === "success") {
-      return methodResult.value as number;
-    }
-    return -1;
-  }, [authenticatorManager]);
 
   const authorFid = cast?.author.fid;
   const now = new Date();
@@ -272,6 +254,7 @@ export const CastRow = async ({
       setDidRecast(!isActive);
     }
 
+    if (isUndefined(signer)) return;
     try {
       if (key === CastReactionType.replies) {
         onReply?.();

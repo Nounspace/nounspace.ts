@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   FarcasterFrameContext,
   FrameActionBodyPayload,
@@ -9,12 +9,8 @@ import type { FrameButton } from "frames.js";
 import { useFrame } from "@frames.js/render/use-frame";
 import Image from "next/image";
 import type { ImgHTMLAttributes } from "react";
-import { findIndex } from "lodash";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import {
-  createFarcasterSignerFromAuthenticatorManager,
-  FARCASTER_AUTHENTICATOR_NAME,
-} from "../..";
+import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import {
   CastId,
   FarcasterNetwork,
@@ -105,34 +101,10 @@ async function createFrameActionMessage(
 
 const FrameEmbed: React.FC<{ url: string }> = ({ url }) => {
   const authenticatorManager = useAuthenticatorManager();
-  const [isLoadingSigner, setIsLoadingSigner] = useState(true);
-  useEffect(() => {
-    authenticatorManager
-      .getInitializedAuthenticators()
-      .then((initilizedAuths) =>
-        setIsLoadingSigner(
-          findIndex(initilizedAuths, FARCASTER_AUTHENTICATOR_NAME) === -1,
-        ),
-      );
-  }, [authenticatorManager]);
-  const [signer, setSigner] = useState<Signer>();
-  useEffect(() => {
-    createFarcasterSignerFromAuthenticatorManager(
-      authenticatorManager,
-      "frame",
-    ).then((signer) => setSigner(signer));
-  }, [authenticatorManager]);
-  const [fid, setFid] = useState(-1);
-  useEffect(() => {
-    authenticatorManager
-      .callMethod("frame", FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
-      .then((methodResult) => {
-        if (methodResult.result === "success") {
-          setFid(methodResult.value as number);
-        }
-        return setFid(-1);
-      });
-  }, [authenticatorManager]);
+  const { signer, isLoadingSigner, fid } = useFarcasterSigner(
+    authenticatorManager,
+    "frame",
+  );
 
   const signFrameAction = async ({
     buttonIndex,

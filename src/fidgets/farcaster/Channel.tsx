@@ -71,6 +71,7 @@ const channelFidgetProperties: FidgetProperties = {
     maxWidth: 2,
     minWidth: 2,
   },
+  icon: 0x1f4c1,
 };
 
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({

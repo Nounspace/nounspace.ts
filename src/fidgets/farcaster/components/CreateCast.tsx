@@ -14,7 +14,7 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { debounce, map, isEmpty, isUndefined, indexOf } from "lodash";
+import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "@mod-protocol/react-ui-shadcn/dist/components/mention-list";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
@@ -29,12 +29,11 @@ import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
 import { PhotoIcon } from "@heroicons/react/20/solid";
-import { Skeleton } from "@/common/components/atoms//skeleton";
+import { Skeleton } from "@/common/components/atoms/skeleton";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { Signer } from "@farcaster/core";
-import { createFarcasterSignerFromAuthenticatorManager } from "..";
+import { useFarcasterSigner } from "..";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { FARCASTER_AUTHENTICATOR_NAME } from "..";
 
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
@@ -92,23 +91,10 @@ const CreateCast: React.FC = () => {
   const isReply = draft?.parentCastId !== undefined;
 
   const authenticatorManager = useAuthenticatorManager();
-  const [isLoadingSigner, setIsLoadingSigner] = useState(true);
-  useEffect(() => {
-    authenticatorManager
-      .getInitializedAuthenticators()
-      .then((initilizedAuths) =>
-        setIsLoadingSigner(
-          indexOf(initilizedAuths, FARCASTER_AUTHENTICATOR_NAME) === -1,
-        ),
-      );
-  }, [authenticatorManager.lastUpdatedAt]);
-  const [signer, setSigner] = useState<Signer>();
-  useEffect(() => {
-    createFarcasterSignerFromAuthenticatorManager(
-      authenticatorManager,
-      "frame",
-    ).then((signer) => setSigner(signer));
-  }, [authenticatorManager.lastUpdatedAt]);
+  const { signer, isLoadingSigner } = useFarcasterSigner(
+    authenticatorManager,
+    "create-cast",
+  );
 
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
@@ -219,12 +205,12 @@ const CreateCast: React.FC = () => {
           {!isReply && (
             <div className="text-foreground/80">
               {isPublishing || isLoadingSigner ? (
-                getChannel().name
+                channel.name
               ) : (
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
                   onSelect={setChannel}
-                  value={getChannel()}
+                  value={channel}
                 />
               )}
             </div>
@@ -251,8 +237,8 @@ const CreateCast: React.FC = () => {
                 <h4 className="font-medium leading-none">{currentMod?.name}</h4>
                 <hr />
                 <CreationMod
-                  input={getText()}
-                  embeds={getEmbeds()}
+                  input={text}
+                  embeds={embeds}
                   api={API_URL}
                   variant="creation"
                   manifest={currentMod!}
@@ -279,7 +265,7 @@ const CreateCast: React.FC = () => {
           </Button>
         </div>
       </form>
-      {/* {hasEmbeds && (
+      {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (
             <div
@@ -289,7 +275,7 @@ const CreateCast: React.FC = () => {
             </div>
           ))}
         </div>
-      )} */}
+      )}
     </div>
   );
 };
