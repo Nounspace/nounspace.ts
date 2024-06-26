@@ -10,7 +10,8 @@ import { CardContent } from "@/common/components/atoms/card";
 export type NounishGovernanceSettings = object;
 
 export const nounishGovernanceConfig: FidgetProperties = {
-  fidgetName: "nounish-governance",
+  fidgetName: "governance",
+  icon: 0x1f3db,
   fields: [],
   size: {
     minHeight: 2,

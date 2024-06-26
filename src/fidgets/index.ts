@@ -12,7 +12,7 @@ export const CompleteFidgets = {
   frame: Frame,
   gallery: Gallery,
   text: TextFidget,
-  "nounish-governance": NounishGovernance,
+  governance: NounishGovernance,
 };
 
 export const LayoutFidgets = {
