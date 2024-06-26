@@ -84,20 +84,21 @@ export interface FidgetModule<P extends FidgetArgs> {
   properties: FidgetProperties;
 }
 
-//TODO: Clean up this mess and do it properly
+type LayoutFidgetSavableConfig = {
+  fidgetInstanceDatums: {
+    [key: string]: FidgetInstanceData;
+  };
+  layoutConfig: any;
+  fidgetTrayContents: FidgetInstanceData[];
+  theme: UserTheme;
+};
 
 interface LayoutFidgetProps {
-  layoutConfig: GridLayoutConfig;
+  layoutConfig: LayoutFidgetConfig;
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   fidgetTrayContents: FidgetInstanceData[];
   theme: ThemeSettings;
-
-  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
-  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
-    [key: string]: FidgetInstanceData;
-  }): Promise<void>;
-  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
-  saveTheme(newTheme: any): Promise<void>;
+  saveConfig(config: LayoutFidgetSavableConfig): Promise<void>;
 
   inEditMode: boolean;
   saveExitEditMode: () => void;
@@ -105,24 +106,7 @@ interface LayoutFidgetProps {
   portalRef: React.RefObject<HTMLDivElement>;
 }
 
-type LayoutFidgetDefaultProps = {
-  layoutConfig: GridLayoutConfig;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  fidgetTrayContents: FidgetInstanceData[];
-  theme: ThemeSettings;
-
-  saveLayout(layout: LayoutFidgetConfig): Promise<void>;
-  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
-    [key: string]: FidgetInstanceData;
-  }): Promise<void>;
-  saveTrayContents(fidgetTrayContents: FidgetInstanceData[]): Promise<void>;
-  saveTheme(newTheme: any): Promise<void>;
-
-  inEditMode: boolean;
-  saveExitEditMode: () => void;
-  cancelExitEditMode: () => void;
-  portalRef: React.RefObject<HTMLDivElement>;
-};
+type LayoutFidgetDefaultProps = LayoutFidgetProps;
 
 export interface LayoutFidget<
   P extends LayoutFidgetProps = LayoutFidgetDefaultProps,
