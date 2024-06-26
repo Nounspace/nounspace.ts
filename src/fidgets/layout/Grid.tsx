@@ -13,7 +13,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, map } from "lodash";
+import { debounce, isNil, isUndefined, map } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -120,8 +120,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   cancelExitEditMode,
   portalRef,
 }) => {
-  console.log(layoutConfig);
-
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
@@ -357,6 +355,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         >
           {map(localLayout, (gridItem: PlacedGridItem) => {
             const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
+            if (isUndefined(fidgetDatum)) return null;
             return (
               <div key={gridItem.i}>
                 <FidgetWrapper
