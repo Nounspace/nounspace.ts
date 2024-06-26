@@ -14,6 +14,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInputPopoverButton from "@/common/components/molecules/HTMLInputPopoverButton";
 import TextInputPopoverButton from "@/common/components/molecules/TextInputPopoverButton";
+import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -93,58 +94,59 @@ export function ThemeSettingsEditor({
             </TextInputPopoverButton>
           </CardFooter>
         </Card>
-        <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-          <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700">
-            {showConfirmCancel ? (
-              <>
+        <div className="flex flex-col">
+          {showConfirmCancel ? (
+            // Back Button and Exit Button (shows second)
+            <>
+              <div className="mt-40 pt-2 flex items-center justify-center">
                 <button
-                  onClick={cancelAndClose}
-                  className="flex color-red justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
+                  onClick={() => setShowConfirmCancel(false)}
+                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
                 >
                   <div className="flex items-center">
+                    <BackArrowIcon />
+                  </div>
+                </button>
+                <button
+                  onClick={cancelAndClose}
+                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                >
+                  <div className="ml-4 flex items-center">
                     <FaTriangleExclamation
                       className="h-8l shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="ml-4 mr-4">CANCEL</span>
+                    <span className="ml-4 mr-4">Exit</span>
                   </div>
                 </button>
-                <button
-                  onClick={() => setShowConfirmCancel(false)}
-                  className="flex justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                >
-                  <div className="flex items-center">
-                    <FaX className="h-8l shrink-0" aria-hidden="true" />
-                    <span className="ml-4 mr-4">Nevermind</span>
-                  </div>
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={saveAndClose}
-                  className="flex justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                >
-                  <div className="flex items-center">
-                    <FaFloppyDisk
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-4 mr-4">Save Space</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setShowConfirmCancel(true)}
-                  className="flex justify-center w-full p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
-                >
-                  <div className="flex items-center">
-                    <FaX className="h-8l shrink-0" aria-hidden="true" />
-                    <span className="ml-4 mr-4">Cancel</span>
-                  </div>
-                </button>
-              </>
-            )}
-          </div>
+              </div>
+              <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
+                If you exit, any changes made will not be saved.
+              </p>
+            </>
+          ) : (
+            // X Button and Save Button (shows first)
+            <div className="mt-40 pt-2 flex items-center justify-center">
+              <button
+                onClick={() => setShowConfirmCancel(true)}
+                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+              >
+                <div className="flex items-center p-1">
+                  <FaX className="h-8l shrink-0" aria-hidden="true" />
+                </div>
+              </button>
+
+              <button
+                onClick={saveAndClose}
+                className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              >
+                <div className="ml-4 flex items-center">
+                  <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+                  <span className="ml-4 mr-4">Save</span>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>
