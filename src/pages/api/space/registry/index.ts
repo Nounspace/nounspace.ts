@@ -12,6 +12,7 @@ export type SpaceRegistration = {
   fid: number;
   signature: string;
   timestamp: string;
+  isDefault: boolean;
 };
 
 type SpaceInfo = SpaceRegistration & {
@@ -24,8 +25,9 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
   }
   return (
     typeof maybe["spaceName"] === "string" &&
-    typeof maybe["fid"] === "string" &&
-    typeof maybe["timestamp"] === "string"
+    typeof maybe["fid"] === "number" &&
+    typeof maybe["timestamp"] === "string" &&
+    typeof maybe["isDefault"] === "boolean"
   );
 }
 
@@ -59,12 +61,12 @@ async function registerNewSpace(
       result: "error",
       error: {
         message:
-          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, and signature",
+          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, isDefault and signature",
       },
     });
     return;
   }
-  if (!validateSignable(registration)) {
+  if (!validateSignable(registration, "identityPublicKey")) {
     res.status(400).json({
       result: "error",
       error: {
@@ -102,7 +104,7 @@ async function registerNewSpace(
   }
   const { data: result, error } = await supabaseClient
     .from("spaceRegistrations")
-    .insert([{ ...registration, isDefault: false }])
+    .insert([registration])
     .select();
   if (error) {
     res.status(500).json({
@@ -125,13 +127,13 @@ async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
-  const identity = req.query.indentityPublicKey;
+  const identity = req.query.identityPublicKey;
   if (isUndefined(identity) || isArray(identity)) {
     res.status(400).json({
       result: "error",
       error: {
         message:
-          "indentityPublicKey must be provided as a query parameter with a single value",
+          "identityPublicKey must be provided as a query parameter with a single value",
       },
     });
     return;

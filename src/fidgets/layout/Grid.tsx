@@ -273,7 +273,7 @@ const Grid: LayoutFidget<GridArgs> = ({
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    if (!currentlyDragging) {
+    if (!currentlyDragging && inEditMode) {
       setLocalLayout(newLayout);
       saveLayout(newLayout);
     }

@@ -22,7 +22,7 @@ interface SetupStoreActions {
 
 export type SetupStore = SetupStoreState & SetupStoreActions;
 
-const setupStoreDefaults: SetupStoreState = {
+export const setupStoreDefaults: SetupStoreState = {
   currentStep: SetupStep.START,
 };
 

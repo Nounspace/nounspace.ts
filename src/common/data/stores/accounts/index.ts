@@ -11,7 +11,6 @@ import {
   privyDefault,
   privyStore,
 } from "./privyStore";
-import { rawReturn } from "mutative";
 import { PreKeyStore, prekeyStore } from "./prekeyStore";
 import {
   AuthenticatorStore,
@@ -19,42 +18,31 @@ import {
   authenticatorStore,
   partializedAuthenticatorStore,
 } from "./authenticatorStore";
-import { SpaceStore, spaceDefault, spaceStore } from "./spaceStore";
 import { FarcasterStore, farcasterStore } from "./farcasterStore";
 import { AppStore } from "..";
 
 export type AccountStore = IdentityStore &
   AuthenticatorStore &
   PreKeyStore &
-  SpaceStore &
   FarcasterStore &
-  PrivyStore & {
-    logout: () => void;
-  };
+  PrivyStore;
 
-const accountStoreDefaults: Partial<AccountStore> = {
+export const accountStoreDefaults: Partial<AccountStore> = {
   ...privyDefault,
   ...identityDefault,
-  ...spaceDefault,
   ...authenticatorDefaults,
 };
 
 export const createAccountStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
-  state: AppStore,
+  _state: AppStore,
 ): AccountStore => ({
   ...identityStore(set, get),
   ...prekeyStore(set, get),
   ...privyStore(set),
   ...authenticatorStore(set, get),
   ...farcasterStore(set, get),
-  ...spaceStore(set, get),
-  logout: () => {
-    set((_draft) => {
-      return rawReturn(accountStoreDefaults);
-    });
-  },
 });
 
 export const partializedAccountStore = (state: AppStore) => ({

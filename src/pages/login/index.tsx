@@ -10,7 +10,7 @@ export default function Login() {
   const router = useRouter();
   const { ready, authenticated, logout: privyLogout } = usePrivy();
   const { logout: accountStoreLogout } = useAppStore((state) => ({
-    logout: state.account.logout,
+    logout: state.logout,
   }));
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {

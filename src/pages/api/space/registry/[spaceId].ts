@@ -232,7 +232,6 @@ async function updateSpace(
     error: {
       name: updateNameResult ? updateNameResult.error : undefined,
       spaceConfig: updateConfigResult ? updateConfigResult.error : undefined,
-      message: "errors",
     },
     value,
   });
