@@ -27,6 +27,7 @@ import {
 } from "lodash";
 import authenticators from "./authenticators";
 import Modal from "@/common/components/molecules/Modal";
+import moment from "moment";
 
 type AuthenticatorPermissions = {
   [fidgetId: string]: string[];
@@ -84,7 +85,7 @@ type AuthenticatorManager = {
   initializeAuthenticators: (authenticatorIds: string[]) => void;
   getInitializedAuthenticators: () => Promise<string[]>;
   installAuthenticators: (authenticatorIds: string[]) => Promise<void>;
-  authConfig: AuthenticatorConfig;
+  lastUpdatedAt: string;
 };
 
 const AuthenticatorContext = createContext<AuthenticatorManager | null>(null);
@@ -146,8 +147,6 @@ export const AuthenticatorManagerProvider: React.FC<
 
   const authenticatorManager = useMemo<AuthenticatorManager>(
     () => ({
-      authConfig: authenticatorConfig,
-      installedAuthenticators,
       callMethod: async (
         _requestingFidgetId: string,
         authenticatorId: string,
@@ -217,6 +216,7 @@ export const AuthenticatorManagerProvider: React.FC<
       initializeAuthenticators: (authenticatorIds) => {
         setInitializationQueue(concat(initializationQueue, authenticatorIds));
       },
+      lastUpdatedAt: moment().toISOString(),
     }),
     [authenticatorConfig, installedAuthenticators],
   );

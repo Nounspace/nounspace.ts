@@ -1,6 +1,6 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import { AppStore } from "..";
-import { FidgetInstanceData, FidgetSettings } from "@/common/fidgets";
+import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../createStore";
 import axiosBackend from "../../api/backend";
 import {
@@ -25,10 +25,13 @@ type SpaceId = string;
 // But a space that is saved in the DB doesn't store
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
-export type SaveableSpaceConfig = Omit<SpaceConfig, "fidgetConfigs"> & {
-  fidgetConfigs: {
-    [key: string]: Omit<FidgetInstanceData, "instanceConfig"> & {
-      instanceConfig: FidgetSettings;
+export type SaveableSpaceConfig = Omit<
+  Omit<SpaceConfig, "fidgetInstanceDatums">,
+  "isEditable"
+> & {
+  fidgetInstanceDatums: {
+    [key: string]: Omit<FidgetInstanceData, "config"> & {
+      config: Omit<FidgetConfig, "data">;
     };
   };
 };
@@ -45,59 +48,68 @@ interface CachedSpace {
 }
 
 interface SpaceState {
-  spaces: Record<string, CachedSpace>;
+  remoteSpaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
-  currentSpaceId: string;
-  editableSpace?: UpdatableSpaceConfig;
+  localSpaces: Record<string, UpdatableSpaceConfig>;
 }
 
 interface SpaceActions {
-  loadSpace: (spaceId: string) => Promise<CachedSpace>;
+  loadSpace: (spaceId: string) => Promise<CachedSpace | null>;
   registerSpace: (fid: number, name: string) => Promise<string>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
-  commitCurrentSpaceToDatabase: () => Promise<void>;
-  saveSpace: (config: SaveableSpaceConfig) => Promise<void>;
-  setCurrentSpace: (spaceId: string) => Promise<void>;
+  commitSpaceToDatabase: (spaceId: string) => Promise<void>;
+  saveLocalSpace: (
+    spaceId: string,
+    config: UpdatableSpaceConfig,
+  ) => Promise<void>;
 }
 
 export type SpaceStore = SpaceState & SpaceActions;
 
-export const spaceDefault: SpaceState = {
-  spaces: {},
+export const spaceStoreDefaults: SpaceState = {
+  remoteSpaces: {},
   editableSpaces: {},
-  currentSpaceId: "",
+  localSpaces: {},
 };
 
-export const spaceStore = (
+export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
-  ...spaceDefault,
+  ...spaceStoreDefaults,
   loadSpace: async (spaceId) => {
-    const supabase = createClient();
-    const {
-      data: { publicUrl },
-    } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
-    const { data } = await axios.get<Blob>(publicUrl, {
-      responseType: "blob",
-    });
-    const fileData = JSON.parse(await data.text()) as SignedFile;
-    const spaceConfig = JSON.parse(
-      await get().account.decryptEncryptedSignedFile(fileData),
-    ) as SaveableSpaceConfig;
-    const cachedSpace: CachedSpace = {
-      id: spaceId,
-      config: {
+    // TO DO: skip if cached copy is recent enough
+    try {
+      const supabase = createClient();
+      const {
+        data: { publicUrl },
+      } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
+      const { data } = await axios.get<Blob>(publicUrl, {
+        responseType: "blob",
+      });
+      const fileData = JSON.parse(await data.text()) as SignedFile;
+      const spaceConfig = JSON.parse(
+        await get().account.decryptEncryptedSignedFile(fileData),
+      ) as SaveableSpaceConfig;
+      const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
-      },
-      updatedAt: moment().toISOString(),
-    };
-    set((draft) => {
-      draft.account.spaces[spaceId] = cachedSpace;
-    });
-    return cachedSpace;
+      };
+      const cachedSpace: CachedSpace = {
+        id: spaceId,
+        config: updatableSpaceConfig,
+        updatedAt: moment().toISOString(),
+      };
+      set((draft) => {
+        draft.space.remoteSpaces[spaceId] = cachedSpace;
+        draft.space.localSpaces[spaceId] = updatableSpaceConfig;
+      });
+      return cachedSpace;
+    } catch (e) {
+      console.debug(e);
+      return null;
+    }
   },
   registerSpace: async (fid, name) => {
     const unsignedRegistration: Omit<SpaceRegistration, "signature"> = {
@@ -105,6 +117,7 @@ export const spaceStore = (
       spaceName: name,
       timestamp: moment().toISOString(),
       fid,
+      isDefault: true,
     };
     const registration = signSignable(
       unsignedRegistration,
@@ -117,7 +130,7 @@ export const spaceStore = (
     );
     const newSpaceId = data.value!.spaceId;
     set((draft) => {
-      draft.account.editableSpaces[newSpaceId] = name;
+      draft.space.editableSpaces[newSpaceId] = name;
     });
     return newSpaceId;
   },
@@ -140,7 +153,7 @@ export const spaceStore = (
       );
       if (!isUndefined(data.value) && data.value.name) {
         set((draft) => {
-          draft[spaceId] = data.value!.name;
+          draft.space.editableSpaces[spaceId] = data.value!.name;
         });
       }
     } catch (e) {
@@ -163,7 +176,7 @@ export const spaceStore = (
           map(data.value.spaces, (si) => [si.spaceId, si.spaceName]),
         );
         set((draft) => {
-          draft.account.editableSpaces = editableSpaces;
+          draft.space.editableSpaces = editableSpaces;
         });
         return editableSpaces;
       }
@@ -173,9 +186,9 @@ export const spaceStore = (
       return {};
     }
   },
-  commitCurrentSpaceToDatabase: async () => {
+  commitSpaceToDatabase: async (spaceId) => {
     debounce(async () => {
-      const localCopy = get().account.editableSpace;
+      const localCopy = get().space.localSpaces[spaceId];
       if (localCopy) {
         const file = localCopy.isPrivate
           ? await get().account.createEncryptedSignedFile(
@@ -191,31 +204,29 @@ export const spaceStore = (
               "json",
             );
         // TO DO: Error handling
-        await axiosBackend.post(
-          `/api/space/registry/${get().account.currentSpaceId}/`,
-          {
-            config: file,
-          },
-        );
+        await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
+          config: file,
+        });
+
+        set((draft) => {
+          draft.space.remoteSpaces[spaceId] = {
+            id: spaceId,
+            config: localCopy,
+            updatedAt: moment().toISOString(),
+          };
+        });
       }
     }, 1000)();
   },
-  saveSpace: async (config) => {
+  saveLocalSpace: async (spaceId, config) => {
     set((draft) => {
-      draft.account.editableSpace = {
-        ...config,
-        isPrivate: draft.account.editableSpace?.isPrivate || true,
-      };
-    });
-  },
-  setCurrentSpace: async (spaceId) => {
-    set((draft) => {
-      draft.account.currentSpaceId = spaceId;
+      draft.space.localSpaces[spaceId] = config;
     });
   },
 });
 
-export const partializedSpaceStore = (state: AppStore) => ({
-  spaces: state.account.spaces,
-  editableSpaces: state.account.editableSpaces,
+export const partializedSpaceStore = (state: AppStore): SpaceState => ({
+  remoteSpaces: state.space.remoteSpaces,
+  editableSpaces: state.space.editableSpaces,
+  localSpaces: state.space.localSpaces,
 });

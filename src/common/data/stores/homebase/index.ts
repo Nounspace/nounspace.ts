@@ -24,13 +24,13 @@ interface HomeBaseStoreActions {
 
 export type HomeBaseStore = HomeBaseStoreState & HomeBaseStoreActions;
 
-const HomeBaseStoreDefaults: HomeBaseStoreState = {};
+export const homeBaseStoreDefaults: HomeBaseStoreState = {};
 
 export const createHomeBaseStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): HomeBaseStore => ({
-  ...HomeBaseStoreDefaults,
+  ...homeBaseStoreDefaults,
   loadHomebase: async () => {
     const supabase = createClient();
     const {
