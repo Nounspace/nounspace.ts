@@ -165,22 +165,21 @@ const Grid: LayoutFidget<GridArgs> = ({
     unselectFidget();
   }
 
-  const [height, setHeight] = useState(0);
-  const gridElementRef = useRef<HTMLDivElement>(null);
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
   );
 
   useEffect(() => {
-    setHeight(
-      gridElementRef.current !== null ? gridElementRef.current.clientHeight : 0,
-    );
     setElement(portalRef.current);
   }, []);
 
+  const { height } = useWindowSize();
+
   const rowHeight = height
     ? Math.round(
+        // The 64 magic number here is the height of the tabs bar above the grid
         (height -
+          64 -
           gridDetails.margin[0] * gridDetails.maxRows -
           gridDetails.containerPadding[0] * 2) /
           gridDetails.maxRows,
@@ -319,6 +318,8 @@ const Grid: LayoutFidget<GridArgs> = ({
 
   return (
     <>
+      {editorPanelPortal(element)}
+
       {inEditMode ? (
         <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
           <button
@@ -330,8 +331,8 @@ const Grid: LayoutFidget<GridArgs> = ({
           </button>
         </div>
       ) : null}
-      {editorPanelPortal(element)}
-      <div ref={gridElementRef} className="flex-1 grid-container grow">
+
+      <div className="flex-1 grid-container grow">
         {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
         <ReactGridLayout
