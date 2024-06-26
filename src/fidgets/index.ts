@@ -5,12 +5,14 @@ import Frame from "./frame";
 import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import Grid from "./layout/Grid";
+import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 
 export const CompleteFidgets = {
   example: Example,
   frame: Frame,
   gallery: Gallery,
   text: TextFidget,
+  "nounish-governance": NounishGovernance,
 };
 
 export const LayoutFidgets = {
