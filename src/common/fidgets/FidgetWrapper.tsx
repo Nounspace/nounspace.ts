@@ -23,6 +23,7 @@ export type FidgetWrapperProps = {
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
+  removeFidget: (fidgetId: string) => void;
 };
 
 export const getSettingsWithDefaults = (
@@ -49,15 +50,18 @@ export function FidgetWrapper({
   setCurrentFidgetSettings,
   setSelectedFidgetID,
   selectedFidgetID,
+  removeFidget,
 }: FidgetWrapperProps) {
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
       <FidgetSettingsEditor
+        fidgetId={bundle.id}
         properties={bundle.properties}
         settings={settingsWithDefaults}
         onSave={onSave}
         unselect={unselect}
+        removeFidget={removeFidget}
       />,
     );
   }
