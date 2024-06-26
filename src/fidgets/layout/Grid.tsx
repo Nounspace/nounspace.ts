@@ -216,6 +216,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
+    saveFidgetInstanceDatums({
+      ...fidgetInstanceDatums,
+      [fidgetData.id]: fidgetData,
+    });
+
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
 
@@ -234,13 +239,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     };
 
     saveLayout([...localLayout, newItem]);
-    moveFidgetFromTrayToGrid(newItem, fidgetData);
+    moveFidgetFromTrayToGrid(newItem);
   }
 
-  function moveFidgetFromTrayToGrid(
-    gridItem: PlacedGridItem,
-    fidgetData: FidgetInstanceData,
-  ) {
+  function moveFidgetFromTrayToGrid(gridItem: PlacedGridItem) {
     const newLayout = [...localLayout, gridItem];
 
     const itemTrayIndex = fidgetTrayContents.findIndex(
