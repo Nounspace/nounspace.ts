@@ -5,12 +5,19 @@ import {
   FidgetFieldConfig,
 } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
+import {
+  FaFloppyDisk,
+  FaTrashCan,
+  FaTriangleExclamation,
+} from "react-icons/fa6";
 
 export type FidgetSettingsEditorProps = {
+  fidgetId: string;
   readonly properties: FidgetProperties;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings) => void;
   unselect: () => void;
+  removeFidget: (fidgetId: string) => void;
 };
 
 type FidgetSettingsRowProps = {
@@ -45,11 +52,14 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
 };
 
 export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
+  fidgetId,
   properties,
   settings,
   onSave,
   unselect,
+  removeFidget,
 }) => {
+  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
 
   const _onSave = (e) => {
@@ -82,16 +92,60 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           />
         ))}
       </div>
-      <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-        <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex">
+      {showConfirmCancel ? (
+        // Back Button and Exit Button (shows second)
+        <>
+          <div className="mt-20 pt-2 flex items-center justify-center">
+            <button
+              onClick={() => setShowConfirmCancel(false)}
+              className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+            >
+              <div className="flex items-center">
+                <BackArrowIcon />
+              </div>
+            </button>
+            <button
+              onClick={() => {
+                removeFidget(fidgetId);
+              }}
+              className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+            >
+              <div className="ml-4 flex items-center">
+                <FaTriangleExclamation
+                  className="h-8l shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="ml-4 mr-4">Delete</span>
+              </div>
+            </button>
+          </div>
+          <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
+            This cannot be undone.
+          </p>
+        </>
+      ) : (
+        // X Button and Save Button (shows first)
+        <div className="mt-20 pt-2 flex items-center justify-center">
+          <button
+            onClick={() => setShowConfirmCancel(true)}
+            className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+          >
+            <div className="flex items-center p-1">
+              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
+            </div>
+          </button>
+
           <button
             type="submit"
-            className="mx-auto text-white bg-blue-600 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-3 py-1.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
-            <span className="ml-16 mr-16">Save</span>
+            <div className="ml-4 flex items-center">
+              <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+              <span className="ml-4 mr-4">Save</span>
+            </div>
           </button>
         </div>
-      </div>
+      )}
     </form>
   );
 };
