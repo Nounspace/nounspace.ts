@@ -13,7 +13,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, isNil, isUndefined, map } from "lodash";
+import { debounce, isUndefined, map } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
