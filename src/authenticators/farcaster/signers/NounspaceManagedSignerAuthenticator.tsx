@@ -3,7 +3,7 @@ import {
   AuthenticatorInitializer,
   createAuthenticator,
   makeAuthenticatorMethods,
-} from "../..";
+} from "@/authenticators/index";
 import {
   FarcasterSignerAuthenticatorData,
   FarcasterSignerAuthenticatorMethods,

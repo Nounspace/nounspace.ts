@@ -6,18 +6,6 @@ const ReactHlsPlayer = dynamic(() => import("@gumlet/react-hls-player"), {
 });
 
 const VideoEmbed = ({ url }: { url: string }) => {
-  // function playVideo() {
-  //   playerRef.current.play();
-  // }
-
-  // function pauseVideo() {
-  //   playerRef.current.pause();
-  // }
-
-  // function toggleControls() {
-  //   playerRef.current.controls = !playerRef.current.controls;
-  // }
-
   const playerRef = React.useRef<HTMLVideoElement | null>(null);
 
   return (

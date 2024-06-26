@@ -24,7 +24,7 @@ import {
 } from "@standard-crypto/farcaster-js-hub-rest";
 import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
-import { publicClient } from "@/constants/optimismChainClient";
+import { optimismChaninClient } from "@/constants/optimismChainClient";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
@@ -197,7 +197,7 @@ export const getTimestamp = (): number => {
 };
 
 export const readNoncesFromKeyGateway = async (account: `0x${string}`) => {
-  return await publicClient.readContract({
+  return await optimismChaninClient.readContract({
     abi: keyGatewayABI,
     address: KEY_GATEWAY_ADDRESS,
     functionName: "nonces",
@@ -210,7 +210,7 @@ export async function isValidSignedKeyRequest(
   key: `0x${string}`,
   signedKeyRequest: `0x${string}`,
 ): Promise<boolean> {
-  const res = await publicClient.readContract({
+  const res = await optimismChaninClient.readContract({
     address: SIGNED_KEY_REQUEST_VALIDATOR_ADDRESS,
     abi: signedKeyRequestValidatorABI,
     functionName: "validate",
@@ -289,7 +289,7 @@ export const getFidForAddress = async (
 ): Promise<bigint | undefined> => {
   if (!address) return;
 
-  const client = publicClient;
+  const client = optimismChaninClient;
 
   return await client.readContract({
     ...IdContract,
