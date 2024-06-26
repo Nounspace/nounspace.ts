@@ -101,6 +101,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           <>
             <div className="pt-2 flex items-center justify-center">
               <button
+                type="button"
                 onClick={() => setShowConfirmCancel(false)}
                 className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
               >
@@ -109,6 +110,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                 </div>
               </button>
               <button
+                type="button"
                 onClick={() => {
                   removeFidget(fidgetId);
                 }}
@@ -131,6 +133,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           // X Button and Save Button (shows first)
           <div className="pt-2 flex items-center justify-center">
             <button
+              type="button"
               onClick={() => setShowConfirmCancel(true)}
               className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
             >
