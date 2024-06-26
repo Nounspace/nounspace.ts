@@ -20,7 +20,7 @@ export type FidgetWrapperProps = {
   bundle: FidgetBundle;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
-  setcurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
+  setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
 };
@@ -44,18 +44,17 @@ export const getSettingsWithDefaults = (
 
 export function FidgetWrapper({
   fidget,
-  bundle: config,
-  context,
+  bundle,
   saveConfig,
-  setcurrentFidgetSettings,
+  setCurrentFidgetSettings,
   setSelectedFidgetID,
   selectedFidgetID,
 }: FidgetWrapperProps) {
   function onClickEdit() {
-    setSelectedFidgetID(config.id);
-    setcurrentFidgetSettings(
+    setSelectedFidgetID(bundle.id);
+    setCurrentFidgetSettings(
       <FidgetSettingsEditor
-        properties={config.properties}
+        properties={bundle.properties}
         settings={settingsWithDefaults}
         onSave={onSave}
         unselect={unselect}
@@ -65,20 +64,20 @@ export function FidgetWrapper({
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
-      ...config.config,
+      ...bundle.config,
       data,
     });
   };
 
   const settingsWithDefaults = getSettingsWithDefaults(
-    config.config.settings,
-    config.properties,
+    bundle.config.settings,
+    bundle.properties,
   );
 
   const onSave = async (newSettings: FidgetSettings) => {
     try {
       await saveConfig({
-        ...config.config,
+        ...bundle.config,
         settings: newSettings,
       });
     } catch (e) {
@@ -90,22 +89,22 @@ export function FidgetWrapper({
 
   function unselect() {
     setSelectedFidgetID("");
-    setcurrentFidgetSettings(<></>);
+    setCurrentFidgetSettings(<></>);
   }
 
-  const userStyles = config.properties.fields
+  const userStyles = bundle.properties.fields
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
   return (
     <Card
       className={
-        selectedFidgetID === config.id
+        selectedFidgetID === bundle.id
           ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
           : "size-full overflow-hidden"
       }
     >
-      {config.config.editable && (
+      {bundle.config.editable && (
         <button
           onMouseDown={onClickEdit}
           className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
@@ -115,7 +114,7 @@ export function FidgetWrapper({
         <CardContent className="size-full">
           {fidget({
             settings: settingsWithDefaults,
-            data: config.config.data,
+            data: bundle.config.data,
             saveData,
           })}
         </CardContent>
