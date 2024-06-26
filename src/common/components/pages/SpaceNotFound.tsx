@@ -13,7 +13,7 @@ export default function SpaceNotFound({
         <div
           className={"w-3/12 flex mx-auto transition-all duration-100 ease-out"}
         >
-          <Navigation isEditable={false} setEditMode={noop} />
+          <Navigation isEditable={false} enterEditMode={noop} />
         </div>
 
         <div className={"w-9/12 transition-all duration-100 ease-out p-8"}>
