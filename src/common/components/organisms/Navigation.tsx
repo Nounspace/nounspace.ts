@@ -73,8 +73,8 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   </div>
                 </button>
               )}
-              <button className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
-                <div className="flex ml-8 mr-8 items-center">
+              <button className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
+                <div className="flex ml-12 mr-12 items-center">
                   <span className="">Cast</span>
                 </div>
               </button>
