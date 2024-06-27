@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
-import { isEmpty } from "lodash";
-import { CastParamType, NeynarAPIClient } from "@neynar/nodejs-sdk";
+import { isEmpty, isString } from "lodash";
+import { CastParamType } from "@neynar/nodejs-sdk";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { CastResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import type { CastEmbed } from ".";
+import { bytesToHex } from "@noble/ciphers/utils";
+import axiosBackend from "@/common/data/api/backend";
 
 const EmbededCast = ({ url, castId }: CastEmbed) => {
   const [cast, setCast] = useState<CastWithInteractions | null>(null);
@@ -12,22 +14,23 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        // TO DO: Load channels from backend
-        const neynarClient = new NeynarAPIClient(
-          process.env.NEXT_PUBLIC_NEYNAR_API_KEY!,
-        );
-
         let res: CastResponse | null;
         if (url) {
-          res = await neynarClient.lookUpCastByHashOrWarpcastUrl(
-            url,
-            CastParamType.Url,
-          );
+          res = await axiosBackend.get("/api/farcaster/cast", {
+            params: {
+              identified: url,
+              type: CastParamType.Url,
+            },
+          });
         } else if (castId) {
-          res = await neynarClient.lookUpCastByHashOrWarpcastUrl(
-            castId.hash,
-            CastParamType.Hash,
-          );
+          res = await axiosBackend.get("/api/farcaster/cast", {
+            params: {
+              identified: isString(castId.hash)
+                ? castId.hash
+                : bytesToHex(castId.hash),
+              type: CastParamType.Hash,
+            },
+          });
         } else {
           return;
         }
