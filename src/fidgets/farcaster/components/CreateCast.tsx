@@ -111,11 +111,17 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
       : undefined,
   };
 
-  return await submitCast({
-    ...castBodyWithStrings,
-    fid,
-    signer,
-  });
+  try {
+    return await submitCast(
+      {
+        ...castBodyWithStrings,
+      },
+      fid,
+      signer,
+    );
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
