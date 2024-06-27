@@ -33,7 +33,7 @@ import { renderEmbedForUrl } from "./Embeds";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { Skeleton } from "@/common/components/atoms/skeleton";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
-import { Signer } from "@farcaster/core";
+import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
 import { submitCast } from "../utils";
 import { bytesToHex } from "@noble/ciphers/utils";
@@ -85,8 +85,15 @@ type CreateCastProps = {
   initialDraft?: DraftType;
 };
 
+export type ModProtocolCastAddBody = Exclude<
+  Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
+  false
+> & {
+  type: CastType;
+};
+
 async function publishPost(draft: DraftType, fid: number, signer: Signer) {
-  const castBody = await formatPlaintextToHubCastMessage({
+  const unsignedCastBody = await formatPlaintextToHubCastMessage({
     text: draft.text,
     embeds: draft.embeds || [],
     parentUrl: draft.parentUrl,
@@ -97,30 +104,17 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     getMentionFidsByUsernames: getMentionFids,
   });
 
-  if (!castBody) {
-    throw new Error("Failed to prepare cast");
-  }
-
-  const castBodyWithStrings = {
-    ...castBody,
-    parentCastId: !isUndefined(castBody.parentCastId)
-      ? {
-          fid: castBody.parentCastId.fid,
-          hash: bytesToHex(castBody.parentCastId.hash),
-        }
-      : undefined,
-  };
+  if (!unsignedCastBody) return false;
 
   try {
     return await submitCast(
-      {
-        ...castBodyWithStrings,
-      },
+      { ...unsignedCastBody, type: CastType.CAST },
       fid,
       signer,
     );
   } catch (e) {
     console.log(e);
+    return false;
   }
 }
 

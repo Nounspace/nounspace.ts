@@ -1,9 +1,7 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import {
-  Embed,
   ID_REGISTRY_ADDRESS,
   KEY_GATEWAY_ADDRESS,
-  Message,
   SIGNED_KEY_REQUEST_TYPE,
   SIGNED_KEY_REQUEST_VALIDATOR_ADDRESS,
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
@@ -13,15 +11,19 @@ import {
   keyGatewayABI,
   makeUserDataAdd,
   signedKeyRequestValidatorABI,
+  FarcasterNetwork,
+  makeCastAdd,
 } from "@farcaster/hub-web";
-import {
-  CastId,
-  HubRestAPIClient,
-} from "@standard-crypto/farcaster-js-hub-rest";
+import { Message } from "@farcaster/core";
 import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
+import { ModProtocolCastAddBody } from "./components/CreateCast";
+import {
+  HubRestAPIClient,
+  CastId,
+} from "@standard-crypto/farcaster-js-hub-rest";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
@@ -30,6 +32,22 @@ const writeClient = new HubRestAPIClient({
   hubUrl: "/api/farcaster/hubble",
   axiosInstance: axiosBackend,
 });
+
+async function submitMessageToBackend(message: Message) {
+  try {
+    await axiosBackend.post(
+      "/api/farcaster/neynar/publishMessage",
+      Message.toJSON(message),
+    );
+    return true;
+  } catch (e) {
+    if (isAxiosError(e)) {
+      return false;
+    } else {
+      throw e;
+    }
+  }
+}
 
 type PublishReactionParams = {
   authorFid: number;
@@ -101,19 +119,19 @@ export const unfollowUser = async (
 };
 
 export const submitCast = async (
-  args: {
-    text: string;
-    embeds?: Embed[];
-    embedsDeprecated?: string[];
-    mentions?: number[];
-    mentionsPositions?: number[];
-    parentCastId?: CastId;
-    parentUrl?: string;
-  },
+  unsignedCastBody: ModProtocolCastAddBody,
   fid: number,
-  signer: string | Signer,
+  signer: Signer,
 ) => {
-  return await writeClient.submitCast(args, fid, signer);
+  const castAddMessageResp = await makeCastAdd(
+    unsignedCastBody,
+    { fid, network: FarcasterNetwork.MAINNET },
+    signer,
+  );
+  if (castAddMessageResp.isOk()) {
+    return await submitMessageToBackend(castAddMessageResp.value);
+  }
+  return false;
 };
 
 export const getDeadline = (): bigint => {
