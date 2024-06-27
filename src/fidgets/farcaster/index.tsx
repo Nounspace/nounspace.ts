@@ -80,7 +80,7 @@ export function useFarcasterSigner(
       .callMethod(fidgetId, FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
       .then((methodResult) => {
         if (methodResult.result === "success") {
-          setFid(methodResult.value as number);
+          return setFid(methodResult.value as number);
         }
         return setFid(-1);
       });
