@@ -69,7 +69,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   return (
     <form onSubmit={_onSave} className="flex-col flex h-full">
-      <div className="h-5/6">
+      <div className="h-full overflow-auto">
         <div className="flex pb-4 m-2">
           <button onClick={unselect} className="my-auto">
             <BackArrowIcon />
@@ -95,7 +95,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
         </div>
       </div>
 
-      <div className="h-1/6">
+      <div className="shrink-0 flex flex-col gap-3 pb-8">
         {showConfirmCancel ? (
           // Back Button and Exit Button (shows second)
           <>
@@ -125,9 +125,6 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                 </div>
               </button>
             </div>
-            <p className="w-full text-center text-xs pt-4 pl-16 pr-16">
-              This cannot be undone.
-            </p>
           </>
         ) : (
           // X Button and Save Button (shows first)
@@ -146,10 +143,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
               type="submit"
               className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
             >
-              <div className="ml-4 flex items-center">
-                <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
-                <span className="ml-4 mr-4">Save</span>
-              </div>
+              <div className="ml-4 mr-4 flex items-center">Done</div>
             </button>
           </div>
         )}

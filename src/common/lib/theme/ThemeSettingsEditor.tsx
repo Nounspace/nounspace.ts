@@ -88,14 +88,7 @@ export function ThemeSettingsEditor({
     <>
       <div className="flex flex-col h-full gap-6">
         {/* Back */}
-        <div>
-          <button
-            onClick={cancelAndClose}
-            className="flex items-center gap-3 text-lg font-semibold"
-          >
-            <FaArrowLeftLong className="shrink-0" /> Customize
-          </button>
-        </div>
+        <div>Customize</div>
 
         {/* Content */}
         <div className="h-full overflow-auto flex flex-col gap-4">
@@ -176,10 +169,13 @@ export function ThemeSettingsEditor({
         </div>
 
         {/* Actions */}
-        <div className="shrink-0 flex flex-col gap-3">
+        <div className="shrink-0 flex flex-col gap-3 pb-8">
           {showConfirmCancel ? (
             // Back Button and Exit Button (shows second)
             <>
+              <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
+                If you exit, any changes made will not be saved.
+              </p>
               <div className="flex items-center justify-center">
                 <button
                   onClick={() => setShowConfirmCancel(false)}
@@ -202,31 +198,33 @@ export function ThemeSettingsEditor({
                   </div>
                 </button>
               </div>
-              <p className="w-full text-center text-xs pt-1 pl-16 pr-16">
-                If you exit, any changes made will not be saved.
-              </p>
             </>
           ) : (
             // X Button and Save Button (shows first)
             <>
-              <Button
-                onClick={saveAndClose}
-                variant="primary"
-                withIcon
-                width="full"
-              >
-                <FaFloppyDisk className="shrink-0" aria-hidden="true" />
-                Save changes
-              </Button>
-              <Button
-                onClick={() => setShowConfirmCancel(true)}
-                variant="ghost"
-                withIcon
-                width="full"
-              >
-                <FaX className="shrink-0" aria-hidden="true" />
-                Discard
-              </Button>
+              <div className="mt-40 pt-2 flex items-center justify-center">
+                <button
+                  onClick={() => setShowConfirmCancel(true)}
+                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+                >
+                  <div className="flex items-center p-1">
+                    <FaX className="h-8l shrink-0" aria-hidden="true" />
+                  </div>
+                </button>
+
+                <button
+                  onClick={saveAndClose}
+                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                >
+                  <div className="ml-4 flex items-center">
+                    <FaFloppyDisk
+                      className="h-8l shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="ml-4 mr-4">Save</span>
+                  </div>
+                </button>
+              </div>
             </>
           )}
         </div>

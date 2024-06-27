@@ -109,7 +109,7 @@ export function FidgetWrapper({
             : "hidden opacity-0"
         }
       >
-        <Card className="px-2">⸬</Card>
+        <Card className="px-2 grabbable">⸬</Card>
       </div>
       <Card
         className={
