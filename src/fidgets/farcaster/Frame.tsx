@@ -31,7 +31,9 @@ const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
   return <FrameEmbed url={url} />;
 };
 
-export default {
+const exp = {
   fidget: Frame,
   properties: frameProperties,
 } as FidgetModule<FidgetArgs<FrameFidgetSettings>>;
+
+export default exp;
