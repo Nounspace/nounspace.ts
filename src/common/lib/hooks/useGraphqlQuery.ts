@@ -52,7 +52,7 @@ export const useGraphqlQuery = ({
 
       setData(result?.data);
     } catch (e) {
-      setError(e.message);
+      setError((e as Error).message);
     } finally {
       setLoading(false);
     }
