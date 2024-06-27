@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -75,14 +76,19 @@ export function ThemeSettingsEditor({
   }, [background]);
 
   useEffect(() => {
-    setCSSVar("--user-theme-font", font);
-    setCSSVar("--user-theme-font-color", fontColor);
-  }, [font, fontColor]);
+    const fontFamily =
+      FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style.fontFamily;
+    const headingsFontFamily =
+      FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily;
+
+    setCSSVar("--user-theme-font", fontFamily);
+    setCSSVar("--user-theme-headings-font", headingsFontFamily);
+  }, [font, headingsFont]);
 
   useEffect(() => {
-    setCSSVar("--user-theme-headings-font", headingsFont);
+    setCSSVar("--user-theme-font-color", fontColor);
     setCSSVar("--user-theme-headings-font-color", headingsFontColor);
-  }, [headingsFont, headingsFontColor]);
+  }, [fontColor, headingsFontColor]);
 
   function saveAndClose() {
     saveTheme(theme);
