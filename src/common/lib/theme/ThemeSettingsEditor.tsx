@@ -60,8 +60,15 @@ export function ThemeSettingsEditor({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font, fontColor, backgroundHTML, musicURL } =
-    theme.properties;
+  const {
+    background,
+    font,
+    fontColor,
+    headingsFont,
+    headingsFontColor,
+    backgroundHTML,
+    musicURL,
+  } = theme.properties;
 
   useEffect(() => {
     setCSSVar("--user-theme-background", background);
@@ -69,11 +76,13 @@ export function ThemeSettingsEditor({
 
   useEffect(() => {
     setCSSVar("--user-theme-font", font);
-  }, [font]);
+    setCSSVar("--user-theme-font-color", fontColor);
+  }, [font, fontColor]);
 
   useEffect(() => {
-    setCSSVar("--user-theme-font-color", fontColor);
-  }, [fontColor]);
+    setCSSVar("--user-theme-headings-font", headingsFont);
+    setCSSVar("--user-theme-headings-font-color", headingsFontColor);
+  }, [headingsFont, headingsFontColor]);
 
   function saveAndClose() {
     saveTheme(theme);
@@ -122,13 +131,13 @@ export function ThemeSettingsEditor({
                   <ColorSelector
                     className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                     innerClassName="rounded-full"
-                    value={fontColor as Color}
-                    onChange={themePropSetter<Color>("fontColor")}
+                    value={headingsFontColor as Color}
+                    onChange={themePropSetter<Color>("headingsFontColor")}
                   />
                   <FontSelector
                     className="ring-0 focus:ring-0 border-0 shadow-none"
-                    value={font}
-                    onChange={themePropSetter<FontFamily>("font")}
+                    value={headingsFont}
+                    onChange={themePropSetter<FontFamily>("headingsFont")}
                   />
                 </div>
               </div>
@@ -138,8 +147,8 @@ export function ThemeSettingsEditor({
                   <ColorSelector
                     className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                     innerClassName="rounded-full"
-                    value={background as Color}
-                    onChange={themePropSetter<Color>("background")}
+                    value={fontColor as Color}
+                    onChange={themePropSetter<Color>("fontColor")}
                   />
                   <FontSelector
                     className="ring-0 focus:ring-0 border-0 shadow-none"

@@ -131,6 +131,16 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
     },
   },
   {
+    name: "var(--user-theme-headings-font)",
+    config: {
+      variable: "--user-theme-headings-font",
+      className: ".user-theme-headings-font",
+      style: {
+        fontFamily: "var(--user-theme-headings-font)",
+      },
+    },
+  },
+  {
     name: "Inter",
     config: inter,
   },

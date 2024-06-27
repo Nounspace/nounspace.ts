@@ -16,6 +16,9 @@ export type TextFidgetSettings = {
   title?: string;
   text: string;
   fontFamily: FontFamily;
+  fontColor: Color;
+  headingsFontFamily: FontFamily;
+  headingsFontColor: Color;
   background: Color;
 };
 
@@ -38,6 +41,12 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "fontFamily",
       default: "var(--user-theme-font)",
+      required: false,
+      inputSelector: FontSelector,
+    },
+    {
+      fieldName: "headingsFontFamily",
+      default: "var(--user-theme-headings-font)",
       required: false,
       inputSelector: FontSelector,
     },
@@ -69,18 +78,31 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
     <div
       style={{
         background: settings.background,
-        fontFamily: settings.fontFamily,
         height: "100%",
       }}
     >
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-2xl font-bold">{settings.title}</CardTitle>
+          <CardTitle
+            className="text-2xl font-bold"
+            style={{
+              fontFamily: settings.headingsFontFamily,
+              color: "var(--user-theme-headings-font-color)",
+            }}
+          >
+            {settings.title}
+          </CardTitle>
         </CardHeader>
       )}
       {settings?.text && (
         <CardContent className="p-4 pt-2">
-          <CardDescription className="text-base font-normal text-black dark:text-white">
+          <CardDescription
+            className="text-base font-normal text-black dark:text-white"
+            style={{
+              fontFamily: settings.fontFamily,
+              color: "var(--user-theme-font-color)",
+            }}
+          >
             {settings.text}
           </CardDescription>
         </CardContent>
