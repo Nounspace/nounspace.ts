@@ -63,11 +63,13 @@ export type FidgetBundle<
   properties: FidgetProperties;
 };
 
-export interface LayoutFidgetConfig {}
+export interface LayoutFidgetConfig<L> {
+  layout: L;
+}
 
-export interface LayoutFidgetDetails {
+export interface LayoutFidgetDetails<C extends LayoutFidgetConfig> {
   layoutFidget: string;
-  layoutConfig: LayoutFidgetConfig;
+  layoutConfig: C;
 }
 
 export interface FidgetArgs<
@@ -84,21 +86,21 @@ export interface FidgetModule<P extends FidgetArgs> {
   properties: FidgetProperties;
 }
 
-type LayoutFidgetSavableConfig = {
+type LayoutFidgetSavableConfig<C extends LayoutFidgetConfig> = {
   fidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   };
-  layoutConfig: any;
+  layoutConfig: C;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;
 };
 
-interface LayoutFidgetProps {
-  layoutConfig: LayoutFidgetConfig;
+interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
+  layoutConfig: C;
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
   fidgetTrayContents: FidgetInstanceData[];
   theme: ThemeSettings;
-  saveConfig(config: LayoutFidgetSavableConfig): Promise<void>;
+  saveConfig(config: LayoutFidgetSavableConfig<C>): Promise<void>;
 
   inEditMode: boolean;
   saveExitEditMode: () => void;
@@ -108,6 +110,6 @@ interface LayoutFidgetProps {
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;
 
-export interface LayoutFidget<
+export type LayoutFidget<
   P extends LayoutFidgetProps = LayoutFidgetDefaultProps,
-> extends React.FC<P> {}
+> = React.FC<P>;
