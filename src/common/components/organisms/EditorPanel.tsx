@@ -39,7 +39,6 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   cancelExitEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
-  unselect,
   selectedFidgetID,
   currentFidgetSettings,
   fidgetTrayContents,
