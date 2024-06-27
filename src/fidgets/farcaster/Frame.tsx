@@ -22,7 +22,7 @@ const frameProperties: FidgetProperties = {
     minWidth: 1,
     maxWidth: 36,
   },
-  icon: 0x23f9,
+  icon: 0x23f9, // ⏹
 };
 
 const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
