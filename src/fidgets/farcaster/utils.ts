@@ -1,7 +1,5 @@
 import axios from "axios";
 import {
-  CastAddBody,
-  CastType,
   Embed,
   ID_REGISTRY_ADDRESS,
   KEY_GATEWAY_ADDRESS,
@@ -11,30 +9,26 @@ import {
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
   Signer,
   UserDataType,
-  hexStringToBytes,
   idRegistryABI,
   keyGatewayABI,
-  makeCastAdd,
   makeUserDataAdd,
   signedKeyRequestValidatorABI,
 } from "@farcaster/hub-web";
 import {
-  CastAdd,
   CastId,
   HubRestAPIClient,
 } from "@standard-crypto/farcaster-js-hub-rest";
 import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
+import axiosBackend from "@/common/data/api/backend";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
 
-const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-    api_key: process.env.NEXT_PUBLIC_NEYNAR_API_KEY,
-  },
+const writeClient = new HubRestAPIClient({
+  hubUrl: "/api/farcaster/hubble",
+  axiosInstance: axiosBackend,
 });
 
 type PublishReactionParams = {
@@ -73,11 +67,6 @@ export const removeReaction = async ({
   signer,
   reaction,
 }: RemoveReactionParams) => {
-  const writeClient = new HubRestAPIClient({
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-    axiosInstance,
-  });
-
   await writeClient.removeReaction(reaction, authorFid, signer);
 };
 
@@ -86,11 +75,6 @@ export const publishReaction = async ({
   signer,
   reaction,
 }: PublishReactionParams) => {
-  const writeClient = new HubRestAPIClient({
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-    axiosInstance,
-  });
-
   await writeClient.submitReaction(reaction, authorFid, signer);
 };
 
@@ -99,11 +83,7 @@ export const followUser = async (
   fid: number,
   signer: Signer,
 ) => {
-  const client = new HubRestAPIClient({
-    axiosInstance,
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-  });
-  const followResponse = await client.followUser(targetFid, fid, signer);
+  const followResponse = await writeClient.followUser(targetFid, fid, signer);
   console.log(`follow hash: ${followResponse?.hash}`);
 };
 
@@ -112,80 +92,28 @@ export const unfollowUser = async (
   fid: number,
   signer: Signer,
 ) => {
-  const client = new HubRestAPIClient({
-    axiosInstance,
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-  });
-  const unfollowResponse = await client.unfollowUser(targetFid, fid, signer);
+  const unfollowResponse = await writeClient.unfollowUser(
+    targetFid,
+    fid,
+    signer,
+  );
   console.log(`unfollow hash: ${unfollowResponse?.hash}`);
 };
 
-type SubmitCastParams = {
-  text: string;
-  embeds?: Embed[];
-  mentions?: number[];
-  mentionsPositions?: number[];
-  parentCastId?: CastId;
-  parentUrl?: string;
-  fid: number;
-  signer: Signer;
-};
-
-export const submitCast = async ({
-  text,
-  embeds,
-  mentions,
-  mentionsPositions,
-  parentCastId,
-  parentUrl,
-  signer,
-  fid,
-}: SubmitCastParams) => {
-  const writeClient = new HubRestAPIClient({
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-    axiosInstance,
-  });
-
-  // below is copy and adapted from farcaster-js, because the package is missing parentUrl parameter
-  // https://github.com/standard-crypto/farcaster-js/blob/be57dedec70ebadbb55118d3a64143457102adb4/packages/farcaster-js-hub-rest/src/hubRestApiClient.ts#L173
-
-  const dataOptions = getDataOptions(fid);
-  const castAdd: CastAddBody = {
-    text,
-    embeds: embeds ?? [],
-    embedsDeprecated: [],
-    mentions: mentions ?? [],
-    mentionsPositions: mentionsPositions ?? [],
-    parentUrl,
-    type: CastType.CAST,
-  };
-  if (parentCastId !== undefined) {
-    const parentHashBytes = hexStringToBytes(parentCastId.hash);
-    const parentFid = parentCastId.fid;
-    parentHashBytes.match(
-      (bytes) => {
-        castAdd.parentCastId = {
-          fid: parentFid,
-          hash: bytes,
-        };
-      },
-      (err) => {
-        console.log("submitCast parentCastId error", err);
-        throw err;
-      },
-    );
-  }
-  const msg = await makeCastAdd(castAdd, dataOptions, signer);
-  if (msg.isErr()) {
-    throw msg.error;
-  }
-  const messageBytes = Buffer.from(Message.encode(msg.value).finish());
-
-  const response = await writeClient.apis.submitMessage.submitMessage({
-    body: messageBytes,
-  });
-  const publishCastResponse = response.data as CastAdd;
-  console.log(`new cast hash: ${publishCastResponse.hash}`);
+export const submitCast = async (
+  args: {
+    text: string;
+    embeds?: Embed[];
+    embedsDeprecated?: string[];
+    mentions?: number[];
+    mentionsPositions?: number[];
+    parentCastId?: CastId;
+    parentUrl?: string;
+  },
+  fid: number,
+  signer: string | Signer,
+) => {
+  return await writeClient.submitCast(args, fid, signer);
 };
 
 export const getDeadline = (): bigint => {
@@ -413,10 +341,6 @@ export const setUserDataInProtocol = async (
     throw msg.error;
   }
   const messageBytes = Buffer.from(Message.encode(msg.value).finish());
-  const writeClient = new HubRestAPIClient({
-    hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-    axiosInstance,
-  });
   const response = await writeClient.apis.submitMessage.submitMessage({
     body: messageBytes,
   });
