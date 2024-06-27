@@ -26,8 +26,8 @@ type SpaceId = string;
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
 export type SaveableSpaceConfig = Omit<
-  Omit<SpaceConfig, "fidgetInstanceDatums">,
-  "isEditable"
+  SpaceConfig,
+  "fidgetInstanceDatums" | "isEditable"
 > & {
   fidgetInstanceDatums: {
     [key: string]: Omit<FidgetInstanceData, "config"> & {
