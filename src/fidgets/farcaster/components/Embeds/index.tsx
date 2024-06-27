@@ -45,6 +45,9 @@ export const renderEmbedForUrl = ({ url, castId }: CastEmbed) => {
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} />;
   } else if (!isImageUrl(url)) {
+    // NOTE: Need a better resolver
+    // Currently all URLs that aren't otherise caputured try
+    // To be frames, including things like youtube videos
     return <FrameEmbed url={url} />;
   } else {
     return null;

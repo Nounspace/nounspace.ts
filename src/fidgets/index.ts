@@ -7,6 +7,7 @@ import IFrame from "./ui/IFrame";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
+import Feed from "./farcaster/Feed";
 
 export const CompleteFidgets = {
   //
@@ -15,6 +16,7 @@ export const CompleteFidgets = {
   // Farcaster
   frame: Frame,
   cast: Cast,
+  feed: Feed,
   // Basic UI elements
   gallery: Gallery,
   text: TextFidget,
