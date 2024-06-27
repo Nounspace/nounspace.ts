@@ -82,7 +82,7 @@ export type DraftType = {
 };
 
 type CreateCastProps = {
-  initialDraft?: DraftType;
+  initialDraft?: Partial<DraftType>;
 };
 
 export type ModProtocolCastAddBody = Exclude<

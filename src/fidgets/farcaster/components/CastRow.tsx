@@ -30,6 +30,8 @@ import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
+import CreateCast, { DraftType } from "./CreateCast";
+import Modal from "@/common/components/molecules/Modal";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -161,18 +163,31 @@ export const CastRow = ({
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
+  const castId = {
+    fid: authorFid,
+    hash: castHashBytes,
+  };
   const now = new Date();
 
+  const [showModal, setShowModal] = useState(false);
+  const [replyCastDraft, setReplyCastDraft] = useState<Partial<DraftType>>();
+  type ReplyCastType = "reply" | "quote";
+  const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
+
   const onReply = () => {
-    // setCastModalView(CastModalView.Reply);
-    // updateSelectedCast(cast);
-    // openNewCastModal();
+    setReplyCastDraft({
+      parentCastId: castId,
+    });
+    setReplyCastType("reply");
+    setShowModal(true);
   };
 
   const onQuote = () => {
-    // setCastModalView(CastModalView.Quote);
-    // updateSelectedCast(cast);
-    // openNewCastModal();
+    setReplyCastDraft({
+      embeds: [{ castId }],
+    });
+    setReplyCastType("quote");
+    setShowModal(true);
   };
 
   const getCastReactionsObj = () => {
@@ -268,7 +283,7 @@ export const CastRow = ({
           : ReactionType.RECAST;
       const reaction = {
         type: reactionBodyType,
-        target: { fid: authorFid, hash: castHashBytes },
+        target: castId,
       };
       if (isActive) {
         await removeReaction({
@@ -427,6 +442,19 @@ export const CastRow = ({
 
   return (
     <div className="flex min-w-full w-full max-w-2xl">
+      <Modal
+        open={showModal}
+        setOpen={setShowModal}
+        focusMode
+        showClose={false}
+      >
+        <div className="mb-4">
+          {replyCastType === "reply" ? <CastRow cast={cast} isEmbed /> : null}
+        </div>
+        <div className="flex">
+          <CreateCast initialDraft={replyCastDraft} />
+        </div>
+      </Modal>
       <div
         className={classNames(
           "p-3",
