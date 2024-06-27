@@ -22,10 +22,9 @@ export const CompleteFidgets = {
   gallery: Gallery,
   text: TextFidget,
   iframe: IFrame,
+  profile: Profile,
   // Nouns
   governance: NounishGovernance,
-  iframe: IFrame,
-  profile: Profile,
 };
 
 export const LayoutFidgets = {
