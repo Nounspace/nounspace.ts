@@ -173,15 +173,18 @@ export function ThemeSettingsEditor({
                   onChange={themePropSetter<string>("backgroundHTML")}
                 />
               </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Music</h4>
-                <TextInput
-                  value={musicURL}
-                  onChange={themePropSetter<string>("musicURL")}
-                />
-              </div>
             </TabsContent>
           </Tabs>
+
+          <div className="my-2 bg-slate-100 h-px"></div>
+
+          <div className="flex flex-col gap-1">
+            <h4 className="text-sm">Music</h4>
+            <TextInput
+              value={musicURL}
+              onChange={themePropSetter<string>("musicURL")}
+            />
+          </div>
         </div>
 
         {/* Actions */}
