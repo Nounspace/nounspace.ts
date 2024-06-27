@@ -9,7 +9,6 @@ import type { FrameButton } from "frames.js";
 import { useFrame } from "@frames.js/render/use-frame";
 import Image from "next/image";
 import type { ImgHTMLAttributes } from "react";
-import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import {
   CastId,
@@ -100,11 +99,7 @@ async function createFrameActionMessage(
 }
 
 const FrameEmbed: React.FC<{ url: string }> = ({ url }) => {
-  const authenticatorManager = useAuthenticatorManager();
-  const { signer, isLoadingSigner, fid } = useFarcasterSigner(
-    authenticatorManager,
-    "frame",
-  );
+  const { signer, isLoadingSigner, fid } = useFarcasterSigner("frame");
 
   const signFrameAction = async ({
     buttonIndex,

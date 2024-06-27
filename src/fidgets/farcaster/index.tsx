@@ -1,4 +1,7 @@
-import { AuthenticatorManager } from "@/authenticators/AuthenticatorManager";
+import {
+  AuthenticatorManager,
+  useAuthenticatorManager,
+} from "@/authenticators/AuthenticatorManager";
 import { HubError, SignatureScheme, Signer } from "@farcaster/core";
 import { indexOf } from "lodash";
 import { err, ok } from "neverthrow";
@@ -49,10 +52,10 @@ const createFarcasterSignerFromAuthenticatorManager = async (
 };
 
 export function useFarcasterSigner(
-  authenticatorManager: AuthenticatorManager,
   fidgetId: string,
   authenticatorName: string = "farcaster:nounspace",
 ) {
+  const authenticatorManager = useAuthenticatorManager();
   const [isLoadingSigner, setIsLoadingSigner] = useState(true);
   useEffect(() => {
     authenticatorManager
@@ -74,16 +77,17 @@ export function useFarcasterSigner(
   const [fid, setFid] = useState(-1);
   useEffect(() => {
     authenticatorManager
-      .callMethod("frame", FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
+      .callMethod(fidgetId, FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
       .then((methodResult) => {
         if (methodResult.result === "success") {
           setFid(methodResult.value as number);
         }
         return setFid(-1);
       });
-  }, [authenticatorManager]);
+  }, [authenticatorManager.lastUpdatedAt]);
 
   return {
+    authenticatorManager,
     isLoadingSigner,
     signer,
     fid,

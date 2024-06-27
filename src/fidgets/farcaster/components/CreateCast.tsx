@@ -11,6 +11,8 @@ import {
 import {
   getFarcasterMentions,
   getFarcasterChannels,
+  formatPlaintextToHubCastMessage,
+  getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -33,7 +35,8 @@ import { Skeleton } from "@/common/components/atoms/skeleton";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
-import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
+import { submitCast } from "../utils";
+import { bytesToHex } from "@noble/ciphers/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
@@ -48,6 +51,7 @@ const debouncedGetChannels = debounce(getChannels, 200, {
 });
 
 const getUrlMetadata = fetchUrlMetadata(API_URL);
+const getMentionFids = getMentionFidsByUsernames(API_URL);
 
 const onError = (err) => {
   console.error(err);
@@ -77,29 +81,61 @@ export type DraftType = {
   parentCastId?: ParentCastIdType;
 };
 
-async function publishPost(draft: DraftType, signer: Signer) {}
+type CreateCastProps = {
+  initialDraft?: DraftType;
+};
 
-const CreateCast: React.FC = () => {
+async function publishPost(draft: DraftType, fid: number, signer: Signer) {
+  const castBody = await formatPlaintextToHubCastMessage({
+    text: draft.text,
+    embeds: draft.embeds || [],
+    parentUrl: draft.parentUrl,
+    parentCastFid: draft.parentCastId?.fid || undefined,
+    parentCastHash: !isUndefined(draft.parentCastId?.hash)
+      ? bytesToHex(draft.parentCastId.hash)
+      : undefined,
+    getMentionFidsByUsernames: getMentionFids,
+  });
+
+  if (!castBody) {
+    throw new Error("Failed to prepare cast");
+  }
+
+  const castBodyWithStrings = {
+    ...castBody,
+    parentCastId: !isUndefined(castBody.parentCastId)
+      ? {
+          fid: castBody.parentCastId.fid,
+          hash: bytesToHex(castBody.parentCastId.hash),
+        }
+      : undefined,
+  };
+
+  return await submitCast({
+    ...castBodyWithStrings,
+    fid,
+    signer,
+  });
+}
+
+const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
     text: "",
     status: DraftStatus.writing,
+    ...initialDraft,
   });
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
 
-  const authenticatorManager = useAuthenticatorManager();
-  const { signer, isLoadingSigner } = useFarcasterSigner(
-    authenticatorManager,
-    "create-cast",
-  );
+  const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
-    await publishPost(draft, signer);
+    await publishPost(draft, fid, signer);
     return true;
   };
 

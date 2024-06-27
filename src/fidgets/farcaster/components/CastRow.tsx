@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Properties } from "csstype";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import {
@@ -11,8 +11,7 @@ import {
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
 import { localize, timeDiff } from "@/common/lib/utils/date";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
-import { includes, isObject, isUndefined, map } from "lodash";
-import get from "lodash.get";
+import { includes, isObject, isUndefined, map, get } from "lodash";
 import Linkify from "linkify-react";
 import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";
@@ -27,7 +26,6 @@ import {
   channelPlugin,
 } from "@/common/lib/utils/linkify";
 import { Button } from "@/common/components/atoms/button";
-import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 
@@ -157,11 +155,7 @@ export const CastRow = ({
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
 
-  const authenticatorManager = useAuthenticatorManager();
-  const { signer, fid: userFid } = useFarcasterSigner(
-    authenticatorManager,
-    "render-cast",
-  );
+  const { signer, fid: userFid } = useFarcasterSigner("render-cast");
 
   const authorFid = cast?.author.fid;
   const now = new Date();
@@ -200,7 +194,6 @@ export const CastRow = ({
 
   const reactions = getCastReactionsObj();
 
-  // TO DO: Pull from Neynar list of channels
   const getChannelForParentUrl = (
     _parentUrl: string | null,
   ): { name: string } | null => null;
