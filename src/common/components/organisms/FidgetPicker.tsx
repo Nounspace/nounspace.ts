@@ -6,12 +6,15 @@ import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
-  addFidgetToTray: (fidget: FidgetModule<any>) => void;
+  addFidgetToTray: (fidgetId: string, fidget: FidgetModule<any>) => void;
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
-  generateFidgetInstance(fidget: FidgetModule<FidgetArgs>): FidgetInstanceData;
+  generateFidgetInstance(
+    fidgetId: string,
+    fidget: FidgetModule<FidgetArgs>,
+  ): FidgetInstanceData;
   setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -25,7 +28,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   function generateFidgetCards() {
     return map(
       CompleteFidgets,
-      (fidgetModule: FidgetModule<FidgetArgs> | undefined, fidgetName) => {
+      (fidgetModule: FidgetModule<FidgetArgs> | undefined, fidgetId) => {
         if (isUndefined(fidgetModule)) return null;
         return (
           <div
@@ -38,21 +41,19 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
               setCurrentlyDragging(true);
               e.dataTransfer.setData(
                 "text/plain",
-                JSON.stringify(generateFidgetInstance(fidgetModule)),
+                JSON.stringify(generateFidgetInstance(fidgetId, fidgetModule)),
               );
               setExternalDraggedItem({
-                i: fidgetModule.properties.fidgetName,
-                w: CompleteFidgets[fidgetModule.properties.fidgetName]
-                  .properties.size.minWidth,
-                h: CompleteFidgets[fidgetModule.properties.fidgetName]
-                  .properties.size.minHeight,
+                i: fidgetId,
+                w: fidgetModule.properties.size.minWidth,
+                h: fidgetModule.properties.size.minHeight,
               });
             }}
           >
             <button
-              key={fidgetName}
+              key={fidgetId}
               className="size-full"
-              onClick={() => addFidgetToTray(fidgetModule)}
+              onClick={() => addFidgetToTray(fidgetId, fidgetModule)}
             >
               <Card className="size-full bg-[#F3F4F6]">
                 <CardContent className="overflow-hidden">
@@ -62,13 +63,13 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                         "size-full flex items-center justify-center text-5xl"
                       }
                       role="img"
-                      aria-label={fidgetName}
+                      aria-label={fidgetModule.properties.fidgetName}
                     >
                       {String.fromCodePoint(fidgetModule.properties.icon)}
                     </span>
                   </div>
                   <span className="text-md text-black block capitalize">
-                    {fidgetName}
+                    {fidgetModule.properties.fidgetName}
                   </span>
                 </CardContent>
               </Card>

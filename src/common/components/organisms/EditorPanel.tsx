@@ -51,6 +51,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   openFidgetPicker,
 }) => {
   function generateFidgetInstance(
+    fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,
   ): FidgetInstanceData {
     function allFields(fidget: FidgetModule<FidgetArgs>) {
@@ -67,16 +68,16 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         data: {},
         settings: allFields(fidget),
       },
-      fidgetType: fidget.properties.fidgetName,
-      id: fidget.properties.fidgetName + ":" + uuidv4(),
+      fidgetType: fidgetId,
+      id: fidgetId + ":" + uuidv4(),
     };
 
     return newFidgetInstanceData;
   }
 
-  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
+  function addFidgetToTray(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
     // Generate new fidget instance
-    const newFidgetInstanceData = generateFidgetInstance(fidget);
+    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
 
     // Add it to the instance data list
     fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
