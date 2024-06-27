@@ -13,25 +13,25 @@ import {
   signedKeyRequestValidatorABI,
   FarcasterNetwork,
   makeCastAdd,
+  CastId,
 } from "@farcaster/hub-web";
-import { Message } from "@farcaster/core";
+import {
+  LinkBody,
+  makeLinkAdd,
+  makeLinkRemove,
+  makeReactionAdd,
+  makeReactionRemove,
+  Message,
+  ReactionType,
+} from "@farcaster/core";
 import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 import { ModProtocolCastAddBody } from "./components/CreateCast";
-import {
-  HubRestAPIClient,
-  CastId,
-} from "@standard-crypto/farcaster-js-hub-rest";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
-
-const writeClient = new HubRestAPIClient({
-  hubUrl: "/api/farcaster/hubble",
-  axiosInstance: axiosBackend,
-});
 
 async function submitMessageToBackend(message: Message) {
   try {
@@ -53,7 +53,7 @@ type PublishReactionParams = {
   authorFid: number;
   signer: Signer;
   reaction: {
-    type: "like" | "recast";
+    type: ReactionType;
     target:
       | CastId
       | {
@@ -66,7 +66,7 @@ type RemoveReactionParams = {
   authorFid: number;
   signer: Signer;
   reaction: {
-    type: "like" | "recast";
+    type: ReactionType;
     target:
       | CastId
       | {
@@ -85,7 +85,15 @@ export const removeReaction = async ({
   signer,
   reaction,
 }: RemoveReactionParams) => {
-  await writeClient.removeReaction(reaction, authorFid, signer);
+  const msg = await makeReactionRemove(
+    reaction,
+    { fid: authorFid, network: FarcasterNetwork.MAINNET },
+    signer,
+  );
+  if (msg.isOk()) {
+    return await submitMessageToBackend(msg.value);
+  }
+  return false;
 };
 
 export const publishReaction = async ({
@@ -93,7 +101,15 @@ export const publishReaction = async ({
   signer,
   reaction,
 }: PublishReactionParams) => {
-  await writeClient.submitReaction(reaction, authorFid, signer);
+  const msg = await makeReactionAdd(
+    reaction,
+    { fid: authorFid, network: FarcasterNetwork.MAINNET },
+    signer,
+  );
+  if (msg.isOk()) {
+    return await submitMessageToBackend(msg.value);
+  }
+  return false;
 };
 
 export const followUser = async (
@@ -101,8 +117,19 @@ export const followUser = async (
   fid: number,
   signer: Signer,
 ) => {
-  const followResponse = await writeClient.followUser(targetFid, fid, signer);
-  console.log(`follow hash: ${followResponse?.hash}`);
+  const linkBody: LinkBody = {
+    type: "follow",
+    targetFid,
+  };
+  const msg = await makeLinkAdd(
+    linkBody,
+    { fid, network: FarcasterNetwork.MAINNET },
+    signer,
+  );
+  if (msg.isOk()) {
+    return await submitMessageToBackend(msg.value);
+  }
+  return false;
 };
 
 export const unfollowUser = async (
@@ -110,12 +137,19 @@ export const unfollowUser = async (
   fid: number,
   signer: Signer,
 ) => {
-  const unfollowResponse = await writeClient.unfollowUser(
+  const linkBody: LinkBody = {
+    type: "follow",
     targetFid,
-    fid,
+  };
+  const msg = await makeLinkRemove(
+    linkBody,
+    { fid, network: FarcasterNetwork.MAINNET },
     signer,
   );
-  console.log(`unfollow hash: ${unfollowResponse?.hash}`);
+  if (msg.isOk()) {
+    return await submitMessageToBackend(msg.value);
+  }
+  return false;
 };
 
 export const submitCast = async (
@@ -357,12 +391,9 @@ export const setUserDataInProtocol = async (
 
   if (msg.isErr()) {
     throw msg.error;
+  } else {
+    return await submitMessageToBackend(msg.value);
   }
-  const messageBytes = Buffer.from(Message.encode(msg.value).finish());
-  const response = await writeClient.apis.submitMessage.submitMessage({
-    body: messageBytes,
-  });
-  return response.data;
 };
 
 const EIP_712_USERNAME_PROOF = [

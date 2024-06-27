@@ -28,6 +28,8 @@ import {
 import { Button } from "@/common/components/atoms/button";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
+import { ReactionType } from "@farcaster/core";
+import { hexToBytes } from "@noble/ciphers/utils";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -157,7 +159,8 @@ export const CastRow = ({
 
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
 
-  const authorFid = cast?.author.fid;
+  const authorFid = cast.author.fid;
+  const castHashBytes = hexToBytes(cast.hash.slice(2));
   const now = new Date();
 
   const onReply = () => {
@@ -259,11 +262,13 @@ export const CastRow = ({
         return;
       }
 
-      const reactionBodyType: "like" | "recast" =
-        key === CastReactionType.likes ? "like" : "recast";
+      const reactionBodyType: ReactionType =
+        key === CastReactionType.likes
+          ? ReactionType.LIKE
+          : ReactionType.RECAST;
       const reaction = {
         type: reactionBodyType,
-        target: { fid: Number(authorFid), hash: cast.hash },
+        target: { fid: authorFid, hash: castHashBytes },
       };
       if (isActive) {
         await removeReaction({
