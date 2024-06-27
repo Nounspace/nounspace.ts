@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -7,7 +7,6 @@ import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
 import { fromPairs, map } from "lodash";
-import { Button } from "../atoms/button";
 
 export interface EditorPanelProps {
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;

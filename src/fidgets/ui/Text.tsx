@@ -45,10 +45,22 @@ export const textConfig: FidgetProperties = {
       inputSelector: FontSelector,
     },
     {
+      fieldName: "fontColor",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: ColorSelector,
+    },
+    {
       fieldName: "headingsFontFamily",
       default: "var(--user-theme-headings-font)",
       required: false,
       inputSelector: FontSelector,
+    },
+    {
+      fieldName: "headingsFontColor",
+      default: "var(--user-theme-headings-font-color)",
+      required: false,
+      inputSelector: ColorSelector,
     },
     {
       fieldName: "background",
@@ -87,7 +99,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
             className="text-2xl font-bold"
             style={{
               fontFamily: settings.headingsFontFamily,
-              color: "var(--user-theme-headings-font-color)",
+              color: settings.headingsFontColor,
             }}
           >
             {settings.title}
@@ -100,7 +112,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
             className="text-base font-normal text-black dark:text-white"
             style={{
               fontFamily: settings.fontFamily,
-              color: "var(--user-theme-font-color)",
+              color: settings.fontColor,
             }}
           >
             {settings.text}

@@ -159,10 +159,17 @@ export function ThemeSettingsEditor({
               </div>
             </TabsContent>
             <TabsContent value="style" className={tabContentClasses}>
-              <div className="grid gap-2 grid-cols-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <ThemeCard key={i} />
-                ))}
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Space background color</h4>
+                <ColorSelector
+                  className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                  innerClassName="rounded-full"
+                  value={background as Color}
+                  onChange={themePropSetter<Color>("background")}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Fidget style</h4>
               </div>
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
