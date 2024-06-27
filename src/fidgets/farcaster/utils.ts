@@ -1,6 +1,7 @@
 import axios from "axios";
 import {
   CastAddBody,
+  CastType,
   Embed,
   ID_REGISTRY_ADDRESS,
   KEY_GATEWAY_ADDRESS,
@@ -156,6 +157,7 @@ export const submitCast = async ({
     mentions: mentions ?? [],
     mentionsPositions: mentionsPositions ?? [],
     parentUrl,
+    type: CastType.CAST,
   };
   if (parentCastId !== undefined) {
     const parentHashBytes = hexStringToBytes(parentCastId.hash);
