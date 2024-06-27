@@ -7,6 +7,7 @@ import { CastResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import type { CastEmbed } from ".";
 import { bytesToHex } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
+import { AxiosResponse } from "axios";
 
 const EmbededCast = ({ url, castId }: CastEmbed) => {
   const [cast, setCast] = useState<CastWithInteractions | null>(null);
@@ -14,18 +15,18 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
   useEffect(() => {
     const getData = async () => {
       try {
-        let res: CastResponse | null;
+        let res: AxiosResponse<CastResponse> | null;
         if (url) {
           res = await axiosBackend.get("/api/farcaster/neynar/cast", {
             params: {
-              identified: url,
+              identifier: url,
               type: CastParamType.Url,
             },
           });
         } else if (castId) {
           res = await axiosBackend.get("/api/farcaster/neynar/cast", {
             params: {
-              identified: isString(castId.hash)
+              identifier: isString(castId.hash)
                 ? castId.hash
                 : bytesToHex(castId.hash),
               type: CastParamType.Hash,
@@ -35,8 +36,8 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
           return;
         }
 
-        if (res && res.cast) {
-          setCast(res.cast);
+        if (res && res.data && res.data.cast) {
+          setCast(res.data.cast);
         }
       } catch (err) {
         console.log(`Error in CastEmbed: ${err} ${url} ${castId}`);
