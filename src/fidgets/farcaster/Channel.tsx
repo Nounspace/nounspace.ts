@@ -18,7 +18,7 @@ export const useLookupChannel = (channel: string) => {
     staleTime: 1000 * 60 * 1,
     queryFn: async () => {
       const { data } = await axiosBackend.get<ChannelResponse>(
-        "/api/farcaster/channels",
+        "/api/farcaster/neynar/channels",
         {
           params: {
             id: channel,
@@ -37,7 +37,7 @@ export const useGetChannelCasts = (channel: string) => {
     staleTime: 1000 * 60 * 1,
     queryFn: async () => {
       const { data } = await axiosBackend.get<FeedResponse>(
-        "/api/farcaster/feed",
+        "/api/farcaster/neynar/feed",
         {
           params: {
             channelId: channel,

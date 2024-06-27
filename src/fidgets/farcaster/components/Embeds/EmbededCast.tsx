@@ -16,14 +16,14 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
       try {
         let res: CastResponse | null;
         if (url) {
-          res = await axiosBackend.get("/api/farcaster/cast", {
+          res = await axiosBackend.get("/api/farcaster/neynar/cast", {
             params: {
               identified: url,
               type: CastParamType.Url,
             },
           });
         } else if (castId) {
-          res = await axiosBackend.get("/api/farcaster/cast", {
+          res = await axiosBackend.get("/api/farcaster/neynar/cast", {
             params: {
               identified: isString(castId.hash)
                 ? castId.hash
