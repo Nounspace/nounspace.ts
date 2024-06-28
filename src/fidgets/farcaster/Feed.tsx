@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { ScrollArea } from "@/common/components/atoms/scroll-area";
 import { map } from "lodash";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
+import Loading from "@/common/components/molecules/Loading";
 
 export type feedFidgetSettings = {
   feedType: FeedType;
@@ -78,11 +79,40 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   // https://tanstack.com/query/latest/docs/framework/react/reference/useInfiniteQuery
   // https://www.radix-ui.com/primitives/docs/components/scroll-area
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [loadedNextSection, setLoadedNextSection] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollableSection = scrollRef.current;
+      if (scrollableSection !== null) {
+        if (
+          scrollableSection.scrollTop + scrollableSection.clientHeight >=
+          scrollableSection.scrollHeight
+        ) {
+          // User has reached the end of the scrollable area
+          alert("Fetching");
+          fetchNextPage();
+        }
+      }
+    };
+
+    const scrollable = scrollRef.current;
+    if (scrollable) {
+      scrollable.addEventListener("scroll", handleScroll);
+    }
+
+    // Cleanup event listener on component unmount
+    return () => {
+      if (scrollable) {
+        scrollable.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [scrollRef]);
+
   return (
-    <div>
-      {isLoading ? (
-        "LOADING..."
-      ) : (
+    <div className="h-full overflow-scroll" ref={scrollRef}>
+      {isLoading ? null : (
         <ScrollArea>
           {map(data?.pages, (page) => {
             return map(page.casts, (cast) => {
@@ -91,6 +121,9 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
           })}
         </ScrollArea>
       )}
+      <div className="bg-[#E6E6E6] h-full flex flex-col justify-center items-center">
+        <Loading />
+      </div>
     </div>
   );
 };
