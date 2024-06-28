@@ -141,7 +141,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // State to create a mutable local copy of the config
   const [localFidgetInstanceDatums, setLocalFidgetInstanceDatums] =
     useState(fidgetInstanceDatums);
-
   const [localFidgetTrayContents, setLocalFidgetTrayContents] =
     useState(fidgetTrayContents);
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
@@ -248,10 +247,22 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const itemTrayIndex = fidgetTrayContents.findIndex(
       (x) => x.id == gridItem.i,
     );
-    const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex);
+    const newFidgetTrayContents = fidgetTrayContents
+      .slice(0, itemTrayIndex)
+      .concat(fidgetTrayContents.slice(itemTrayIndex + 1));
 
     saveTrayContents(newFidgetTrayContents);
     saveLayoutConditional(newLayout);
+  }
+
+  function moveFidgetFromGridToTray(fidgetId: string) {
+    const newFidgetTrayContents = [
+      ...fidgetTrayContents,
+      fidgetInstanceDatums[fidgetId],
+    ];
+    saveTrayContents(newFidgetTrayContents);
+
+    removeFidget(fidgetId);
   }
 
   function removeFidget(fidgetId: string) {
@@ -386,6 +397,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                         theme: theme,
                       },
                       removeFidget: removeFidget,
+                      minimizeFidget: moveFidgetFromGridToTray,
                       saveConfig: async (
                         newInstanceConfig: FidgetConfig<FidgetSettings>,
                       ) => {

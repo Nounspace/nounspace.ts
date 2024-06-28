@@ -9,11 +9,16 @@ import {
   FidgetData,
   FidgetProperties,
   FidgetRenderContext,
+  FidgetInstanceData,
 } from ".";
 import { reduce } from "lodash";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
+import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
+import StashIcon from "../components/atoms/icons/Stash";
+import { TrashIcon } from "@radix-ui/react-icons";
+import { FaX } from "react-icons/fa6";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
@@ -24,6 +29,7 @@ export type FidgetWrapperProps = {
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
+  minimizeFidget: (fidgetId: string) => void;
 };
 
 export const getSettingsWithDefaults = (
@@ -51,6 +57,7 @@ export function FidgetWrapper({
   setSelectedFidgetID,
   selectedFidgetID,
   removeFidget,
+  minimizeFidget,
 }: FidgetWrapperProps) {
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -105,11 +112,27 @@ export function FidgetWrapper({
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "absolute -mt-8 opacity-80 text-center"
-            : "hidden opacity-0"
+            ? "absolute -mt-7 opacity-80 transition-opacity transition-transform ease-in flex flex-row h-6"
+            : "absolute opacity-0 transition-opacity transition-transform ease-in flex flex-row h-6"
         }
       >
-        <Card className="px-2 grabbable">⸬</Card>
+        <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+          <GrabHandleIcon />
+        </Card>
+        <button
+          onClick={() => {
+            minimizeFidget(bundle.id);
+          }}
+        >
+          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+            <StashIcon />
+          </Card>
+        </button>
+        <button>
+          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+            <FaX className="w-5/12" />
+          </Card>
+        </button>
       </div>
       <Card
         className={
