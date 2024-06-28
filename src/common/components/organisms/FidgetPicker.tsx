@@ -32,7 +32,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
         if (isUndefined(fidgetModule)) return null;
         return (
           <div
-            key={fidgetName}
+            key={fidgetModule.properties.fidgetName}
             className="z-20 droppable-element h-full"
             draggable={true}
             // unselectable helps with IE support
