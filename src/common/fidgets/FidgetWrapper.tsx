@@ -9,7 +9,6 @@ import {
   FidgetData,
   FidgetProperties,
   FidgetRenderContext,
-  FidgetInstanceData,
 } from ".";
 import { reduce } from "lodash";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
@@ -17,7 +16,6 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
 import StashIcon from "../components/atoms/icons/Stash";
-import { TrashIcon } from "@radix-ui/react-icons";
 import { FaX } from "react-icons/fa6";
 import BackArrowIcon from "../components/atoms/icons/BackArrow";
 
@@ -73,6 +71,8 @@ export function FidgetWrapper({
       />,
     );
   }
+
+  const Fidget = fidget;
 
   const saveData = (data: FidgetData) => {
     return saveConfig({
@@ -179,11 +179,13 @@ export function FidgetWrapper({
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
           <CardContent className="size-full">
-            {fidget({
-              settings: settingsWithDefaults,
-              data: bundle.config.data,
-              saveData,
-            })}
+            <Fidget
+              {...{
+                settings: settingsWithDefaults,
+                data: bundle.config.data,
+                saveData,
+              }}
+            />
           </CardContent>
         </ScopedStyles>
       </Card>
