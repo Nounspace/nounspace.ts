@@ -12,19 +12,12 @@ import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
 import { localize, timeDiff } from "@/common/lib/utils/date";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
 import { includes, isObject, isUndefined, map, get } from "lodash";
-import Linkify from "linkify-react";
 import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";
 import {
   CastWithInteractions,
   EmbedUrl,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { registerPlugin } from "linkifyjs";
-import {
-  mentionPlugin,
-  cashtagPlugin,
-  channelPlugin,
-} from "@/common/lib/utils/linkify";
 import { Button } from "@/common/components/atoms/button";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
@@ -33,6 +26,7 @@ import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import Link from "next/link";
+import FarcasterLinkify from "./linkify";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -58,10 +52,6 @@ const castTextStyle = {
   hyphens: "auto",
 } as Properties<string | number, string & any>;
 
-registerPlugin("mention", mentionPlugin);
-registerPlugin("cashtag", cashtagPlugin);
-registerPlugin("channel", channelPlugin);
-
 interface CastRowProps {
   cast: CastWithInteractions & {
     inclusion_context?: {
@@ -74,78 +64,6 @@ interface CastRowProps {
   isEmbed?: boolean;
   hideReactions?: boolean;
 }
-
-const renderMention = ({ content }) => {
-  return (
-    <Link
-      className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      href={`/s/${content}`}
-    >
-      {content}
-    </Link>
-  );
-};
-
-const renderLink = ({ attributes, content }) => {
-  const { href } = attributes;
-  return (
-    <span
-      className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      onClick={(event) => {
-        event.stopPropagation();
-        window.open(href, "_blank");
-      }}
-      rel="noopener noreferrer"
-    >
-      {content}
-    </span>
-  );
-};
-
-const renderChannel = ({ content }) => {
-  return (
-    <span
-      className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
-      rel="noopener noreferrer"
-    >
-      {content}
-    </span>
-  );
-};
-
-const renderCashtag = ({ content }) => {
-  if (!content || content.length < 3) {
-    return content;
-  }
-
-  const tokenSymbol = content.slice(1);
-  if (tokenSymbol === "usd") return null;
-
-  return (
-    <span
-      className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
-      rel="noopener noreferrer"
-    >
-      {content}
-    </span>
-  );
-};
-
-const linkifyOptions = {
-  render: {
-    url: renderLink,
-    mention: renderMention,
-    cashtag: renderCashtag,
-    channel: renderChannel,
-  },
-  truncate: 42,
-};
 
 export const CastRow = ({
   cast,
@@ -374,17 +292,7 @@ export const CastRow = ({
 
   const getText = () =>
     "text" in cast && cast.text ? (
-      <ErrorBoundary>
-        <Linkify
-          as="span"
-          options={{
-            ...linkifyOptions,
-            attributes: { userFid },
-          }}
-        >
-          {cast.text}{" "}
-        </Linkify>
-      </ErrorBoundary>
+      <FarcasterLinkify attributes={userFid}>{cast.text} </FarcasterLinkify>
     ) : null;
 
   const renderEmbeds = () => {
