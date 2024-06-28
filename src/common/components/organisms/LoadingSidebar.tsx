@@ -6,7 +6,7 @@ export default function LoadingSidebar() {
   return (
     <aside
       id="logo-sidebar"
-      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0"
+      className="left-4 top-4 bottom-4 z-8 w-9/12 transition-transform -translate-x-full sm:translate-x-0 bg-white"
       aria-label="Sidebar"
     >
       <div className="flex-row h-full">

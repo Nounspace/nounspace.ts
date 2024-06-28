@@ -7,7 +7,9 @@ export interface ThemeSettings {
 export interface UserTheme extends ThemeSettings {
   properties: {
     font: FontFamily;
-    fontColor: string;
+    fontColor: Color;
+    headingsFont: FontFamily;
+    headingsFontColor: Color;
     background: Color;
     backgroundHTML: string;
     musicURL: string;
