@@ -29,6 +29,8 @@
     --user-theme-background: initial;
     --user-theme-font: initial;
     --user-theme-font-color: initial;
+    --user-theme-headings-font: initial;
+    --user-theme-headings-font-color: initial;
   }
 
   .dark {

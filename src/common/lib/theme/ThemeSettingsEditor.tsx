@@ -7,6 +7,7 @@ import {
 } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -60,20 +61,34 @@ export function ThemeSettingsEditor({
     document.documentElement.style.setProperty(key, value);
   }
 
-  const { background, font, fontColor, backgroundHTML, musicURL } =
-    theme.properties;
+  const {
+    background,
+    font,
+    fontColor,
+    headingsFont,
+    headingsFontColor,
+    backgroundHTML,
+    musicURL,
+  } = theme.properties;
 
   useEffect(() => {
     setCSSVar("--user-theme-background", background);
   }, [background]);
 
   useEffect(() => {
-    setCSSVar("--user-theme-font", font);
-  }, [font]);
+    const fontFamily =
+      FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style.fontFamily;
+    const headingsFontFamily =
+      FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily;
+
+    setCSSVar("--user-theme-font", fontFamily);
+    setCSSVar("--user-theme-headings-font", headingsFontFamily);
+  }, [font, headingsFont]);
 
   useEffect(() => {
     setCSSVar("--user-theme-font-color", fontColor);
-  }, [fontColor]);
+    setCSSVar("--user-theme-headings-font-color", headingsFontColor);
+  }, [fontColor, headingsFontColor]);
 
   function saveAndClose() {
     saveTheme(theme);
@@ -122,6 +137,22 @@ export function ThemeSettingsEditor({
                   <ColorSelector
                     className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                     innerClassName="rounded-full"
+                    value={headingsFontColor as Color}
+                    onChange={themePropSetter<Color>("headingsFontColor")}
+                  />
+                  <FontSelector
+                    className="ring-0 focus:ring-0 border-0 shadow-none"
+                    value={headingsFont}
+                    onChange={themePropSetter<FontFamily>("headingsFont")}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Body</h4>
+                <div className="flex items-center gap-1">
+                  <ColorSelector
+                    className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                    innerClassName="rounded-full"
                     value={fontColor as Color}
                     onChange={themePropSetter<Color>("fontColor")}
                   />
@@ -132,28 +163,19 @@ export function ThemeSettingsEditor({
                   />
                 </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Body</h4>
-                <div className="flex items-center gap-1">
-                  <ColorSelector
-                    className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                    innerClassName="rounded-full"
-                    value={background as Color}
-                    onChange={themePropSetter<Color>("background")}
-                  />
-                  <FontSelector
-                    className="ring-0 focus:ring-0 border-0 shadow-none"
-                    value={font}
-                    onChange={themePropSetter<FontFamily>("font")}
-                  />
-                </div>
-              </div>
             </TabsContent>
             <TabsContent value="style" className={tabContentClasses}>
-              <div className="grid gap-2 grid-cols-2">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <ThemeCard key={i} />
-                ))}
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Space background color</h4>
+                <ColorSelector
+                  className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                  innerClassName="rounded-full"
+                  value={background as Color}
+                  onChange={themePropSetter<Color>("background")}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm">Fidget style</h4>
               </div>
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
@@ -164,15 +186,18 @@ export function ThemeSettingsEditor({
                   onChange={themePropSetter<string>("backgroundHTML")}
                 />
               </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Music</h4>
-                <TextInput
-                  value={musicURL}
-                  onChange={themePropSetter<string>("musicURL")}
-                />
-              </div>
             </TabsContent>
           </Tabs>
+
+          <div className="my-2 bg-slate-100 h-px"></div>
+
+          <div className="flex flex-col gap-1">
+            <h4 className="text-sm">Music</h4>
+            <TextInput
+              value={musicURL}
+              onChange={themePropSetter<string>("musicURL")}
+            />
+          </div>
         </div>
 
         {/* Actions */}

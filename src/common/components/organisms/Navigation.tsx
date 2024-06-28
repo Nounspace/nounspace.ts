@@ -53,7 +53,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2"
+      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
     >
       <Modal
