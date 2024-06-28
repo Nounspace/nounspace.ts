@@ -70,11 +70,13 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     );
   }
 
+  // Note: allow-same-origin allows the embedded website to access *its own* resources
+  // as if it were coming from its own origin (not nounspace's origin).
   return (
     <iframe
       src={sanitizedUrl}
       title="IFrame Fidget"
-      sandbox="allow-scripts"
+      sandbox="allow-scripts allow-same-origin"
       className="size-full"
     />
   );
