@@ -80,6 +80,7 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   // https://www.radix-ui.com/primitives/docs/components/scroll-area
 
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [loadedNextSection, setLoadedNextSection] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,11 +88,11 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
       if (scrollableSection !== null) {
         if (
           scrollableSection.scrollTop + scrollableSection.clientHeight >=
-          scrollableSection.scrollHeight
+          scrollableSection.scrollHeight - 10
         ) {
-          // User has reached the end of the scrollable area
-          alert("Fetching");
-          fetchNextPage();
+          if (!isFetching && hasNextPage) {
+            fetchNextPage();
+          }
         }
       }
     };
@@ -107,11 +108,18 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
         scrollable.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [scrollRef]);
+  }, []);
 
   return (
-    <div className="h-full overflow-scroll" ref={scrollRef}>
-      {isLoading ? null : (
+    <div
+      className="h-full overflow-scroll justify-center items-center"
+      ref={scrollRef}
+    >
+      {isLoading ? (
+        <div className="bg-[#E6E6E6] h-full w-full flex flex-col justify-center items-center">
+          <Loading />
+        </div>
+      ) : (
         <ScrollArea>
           {map(data?.pages, (page) => {
             return map(page.casts, (cast) => {
@@ -120,7 +128,7 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
           })}
         </ScrollArea>
       )}
-      <div className="bg-[#E6E6E6] h-full flex flex-col justify-center items-center">
+      <div className="bg-[#E6E6E6] h-1/6 w-full flex flex-col">
         <Loading />
       </div>
     </div>
