@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -7,7 +7,6 @@ import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
 import { fromPairs, map } from "lodash";
-import { Button } from "../atoms/button";
 
 export interface EditorPanelProps {
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -40,7 +39,6 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   cancelExitEditMode,
   theme = DEFAULT_THEME,
   saveTheme,
-  unselect,
   selectedFidgetID,
   currentFidgetSettings,
   fidgetTrayContents,
@@ -53,6 +51,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   openFidgetPicker,
 }) => {
   function generateFidgetInstance(
+    fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,
   ): FidgetInstanceData {
     function allFields(fidget: FidgetModule<FidgetArgs>) {
@@ -69,16 +68,16 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
         data: {},
         settings: allFields(fidget),
       },
-      fidgetType: fidget.properties.fidgetName,
-      id: fidget.properties.fidgetName + ":" + uuidv4(),
+      fidgetType: fidgetId,
+      id: fidgetId + ":" + uuidv4(),
     };
 
     return newFidgetInstanceData;
   }
 
-  function addFidgetToTray(fidget: FidgetModule<FidgetArgs>) {
+  function addFidgetToTray(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
     // Generate new fidget instance
-    const newFidgetInstanceData = generateFidgetInstance(fidget);
+    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
 
     // Add it to the instance data list
     fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;

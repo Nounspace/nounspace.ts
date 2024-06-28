@@ -2,7 +2,7 @@ import React from "react";
 import Space, { SpaceConfig } from "@/common/components/templates/Space";
 import { useState } from "react";
 import { resizeDirections } from "@/fidgets/layout/Grid";
-import { LayoutFidgetDetails } from "@/common/fidgets";
+import { LayoutFidgetConfig, LayoutFidgetDetails } from "@/common/fidgets";
 import { NextPageWithLayout } from "../_app";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
@@ -149,7 +149,7 @@ const Homebase: NextPageWithLayout = () => {
   ];
 
   const layoutID = "";
-  const layoutDetails: LayoutFidgetDetails = {
+  const layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any[]>> = {
     layoutConfig: { layout: defaultLayoutData },
     layoutFidget: "grid",
   };

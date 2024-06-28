@@ -3,6 +3,7 @@ import {
   FidgetConfig,
   FidgetInstanceData,
   FidgetSettings,
+  LayoutFidgetConfig,
   LayoutFidgetDetails,
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
@@ -22,7 +23,7 @@ export type SpaceConfig = {
     [key: string]: FidgetInstanceData;
   };
   layoutID: string;
-  layoutDetails: LayoutFidgetDetails;
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;
@@ -63,7 +64,7 @@ export default function Space({
     layoutConfig,
     fidgetInstanceDatums,
     fidgetTrayContents,
-  }: LayoutFidgetSaveableConfig) {
+  }: LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>) {
     return saveConfig({
       ...config,
       layoutDetails: {

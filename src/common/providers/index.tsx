@@ -5,7 +5,7 @@ import Query from "./Query";
 import Theme from "./Theme";
 import Privy from "./Privy";
 import AuthenticatorProvider from "./AutheticatorProvider";
-import { AppStoreProvider } from "../data/stores";
+import { AppStoreProvider } from "@/common/data/stores";
 import { UserThemeContextProvider } from "@/common/lib/theme/UserThemeContextProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {

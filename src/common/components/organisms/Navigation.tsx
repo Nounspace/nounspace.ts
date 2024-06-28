@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
 import { useAppStore } from "@/common/data/stores";
+import Modal from "../molecules/Modal";
+import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 
 type NavItemProps = {
   label: string;
@@ -43,12 +45,25 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     enterEditMode();
   }
 
+  const [showModal, setShowModal] = useState(false);
+  function openCastModal() {
+    setShowModal(true);
+  }
+
   return (
     <aside
       id="logo-sidebar"
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2"
       aria-label="Sidebar"
     >
+      <Modal
+        open={showModal}
+        setOpen={setShowModal}
+        focusMode
+        showClose={false}
+      >
+        <CreateCast />
+      </Modal>
       <div className="pt-24 pb-24 h-full">
         <div className="flex-col flex h-full w-64 mx-auto px-8 py-4 overflow-y-auto">
           <BrandHeader />
@@ -73,7 +88,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   </div>
                 </button>
               )}
-              <button className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold">
+              <button
+                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                onClick={openCastModal}
+              >
                 <div className="flex ml-12 mr-12 items-center">
                   <span className="">Cast</span>
                 </div>

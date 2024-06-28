@@ -1,6 +1,6 @@
 import React from "react";
 import { SetupStep } from "@/common/data/stores/setup";
-import LoadingScreen from "../molecules/LoadingScreen";
+import LoadingScreen from "./LoadingScreen";
 
 type SetupCompletionManagerProps = {
   currentStep: SetupStep;

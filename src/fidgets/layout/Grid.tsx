@@ -6,8 +6,9 @@ import {
   FidgetInstanceData,
   FidgetConfig,
   FidgetSettings,
-  LayoutFidgetDefaultProps,
   LayoutFidgetSavableConfig,
+  LayoutFidgetProps,
+  LayoutFidgetConfig,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
@@ -64,9 +65,7 @@ const gridDetails = {
 
 type GridDetails = typeof gridDetails;
 
-type GridLayoutConfig = {
-  layout: PlacedGridItem[];
-};
+type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -105,9 +104,7 @@ const Gridlines: React.FC<GridDetails> = ({
   );
 };
 
-interface GridLayoutProps extends LayoutFidgetDefaultProps {
-  layoutConfig: GridLayoutConfig;
-}
+type GridLayoutProps = LayoutFidgetProps<GridLayoutConfig>;
 
 const Grid: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
@@ -148,7 +145,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [localTheme, setLocalTheme] = useState(theme);
 
   const saveCurrentConfig = debounce(() => {
-    const newConfig: LayoutFidgetSavableConfig = {
+    const newConfig: LayoutFidgetSavableConfig<GridLayoutConfig> = {
       fidgetInstanceDatums: localFidgetInstanceDatums,
       fidgetTrayContents: localFidgetTrayContents,
       theme: localTheme,

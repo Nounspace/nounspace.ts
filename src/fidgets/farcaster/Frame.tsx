@@ -1,16 +1,14 @@
 import React from "react";
-import FrameComponent from "@/common/components/molecules/Frame";
 import TextInput from "@/common/components/molecules/TextInput";
-
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
   url: string;
 };
 
-const frameConfig: FidgetProperties = {
-  fidgetName: "frame",
-  icon: 0x23f9,
+const frameProperties: FidgetProperties = {
+  fidgetName: "Frame",
   fields: [
     {
       fieldName: "url",
@@ -24,15 +22,18 @@ const frameConfig: FidgetProperties = {
     minWidth: 1,
     maxWidth: 36,
   },
+  icon: 0x23f9, // ⏹
 };
 
 const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
   settings: { url },
 }) => {
-  return <FrameComponent url={url} />;
+  return <FrameEmbed url={url} />;
 };
 
-export default {
+const exp = {
   fidget: Frame,
-  properties: frameConfig,
+  properties: frameProperties,
 } as FidgetModule<FidgetArgs<FrameFidgetSettings>>;
+
+export default exp;
