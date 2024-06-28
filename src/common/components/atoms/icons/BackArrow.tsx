@@ -11,7 +11,7 @@ const BackArrowIcon = () => {
     >
       <path
         d="M5 12H19M5 12L9 8M5 12L9 16"
-        stroke="#383838"
+        stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"

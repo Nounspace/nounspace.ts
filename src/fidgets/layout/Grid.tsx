@@ -138,7 +138,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // State to create a mutable local copy of the config
   const [localFidgetInstanceDatums, setLocalFidgetInstanceDatums] =
     useState(fidgetInstanceDatums);
-
   const [localFidgetTrayContents, setLocalFidgetTrayContents] =
     useState(fidgetTrayContents);
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
@@ -245,10 +244,22 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const itemTrayIndex = fidgetTrayContents.findIndex(
       (x) => x.id == gridItem.i,
     );
-    const newFidgetTrayContents = fidgetTrayContents.splice(itemTrayIndex);
+    const newFidgetTrayContents = fidgetTrayContents
+      .slice(0, itemTrayIndex)
+      .concat(fidgetTrayContents.slice(itemTrayIndex + 1));
 
     saveTrayContents(newFidgetTrayContents);
     saveLayoutConditional(newLayout);
+  }
+
+  function moveFidgetFromGridToTray(fidgetId: string) {
+    const newFidgetTrayContents = [
+      ...fidgetTrayContents,
+      fidgetInstanceDatums[fidgetId],
+    ];
+    saveTrayContents(newFidgetTrayContents);
+
+    removeFidget(fidgetId);
   }
 
   function removeFidget(fidgetId: string) {
@@ -322,81 +333,90 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      {inEditMode ? (
-        <div className={"flex-row justify-center h-16 bg-[#F7FBFD]"}>
-          <button
-            onClick={openFidgetPicker}
-            className="flex float-right rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-          >
-            <AddFidgetIcon />
-            <span className="ml-2">Fidget</span>
-          </button>
-        </div>
-      ) : null}
-
-      <div className="flex-1 grid-container grow">
-        {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
-
-        <ReactGridLayout
-          {...gridDetails}
-          isDraggable={inEditMode}
-          isResizable={inEditMode}
-          resizeHandles={resizeDirections}
-          layout={localLayout}
-          items={localLayout.length}
-          rowHeight={rowHeight}
-          isDroppable={true}
-          droppingItem={externalDraggedItem}
-          onDrop={handleDrop}
-          onLayoutChange={saveLayoutConditional}
-          className={"grid-overlap"}
-          style={{ height: height + "px)" }}
+      <div className="flex flex-col">
+        <div
+          className={
+            inEditMode
+              ? "bg-[#c8e3f84d] flex-row justify-center h-16"
+              : "flex-row justify-center h-16"
+          }
         >
-          {map(localLayout, (gridItem: PlacedGridItem) => {
-            const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
-            if (isUndefined(fidgetDatum)) return null;
-            return (
-              <div key={gridItem.i}>
-                <FidgetWrapper
-                  {...{
-                    fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
-                    bundle: {
-                      fidgetType: fidgetDatum.fidgetType,
-                      id: fidgetDatum.id,
-                      config: {
-                        // TODO: Determine what this editable variable is being used for
-                        editable: inEditMode,
-                        settings: fidgetDatum.config.settings,
-                        data: fidgetDatum.config.data,
-                      },
-                      properties:
-                        CompleteFidgets[fidgetDatum.fidgetType].properties,
-                    },
-                    context: {
-                      theme: theme,
-                    },
-                    removeFidget: removeFidget,
-                    saveConfig: async (
-                      newInstanceConfig: FidgetConfig<FidgetSettings>,
-                    ) => {
-                      return await saveFidgetInstanceDatums({
-                        ...localFidgetInstanceDatums,
-                        [fidgetDatum.id]: {
-                          config: newInstanceConfig,
-                          fidgetType: fidgetDatum.fidgetType,
-                          id: fidgetDatum.id,
+          {inEditMode ? (
+            <button
+              onClick={openFidgetPicker}
+              className="flex float-right rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+            >
+              <AddFidgetIcon />
+              <span className="ml-2">Fidget</span>
+            </button>
+          ) : null}
+        </div>
+
+        <div className="flex-1 grid-container grow">
+          {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+
+          <ReactGridLayout
+            {...gridDetails}
+            isDraggable={inEditMode}
+            isResizable={inEditMode}
+            resizeHandles={resizeDirections}
+            layout={localLayout}
+            items={localLayout.length}
+            rowHeight={rowHeight}
+            isDroppable={true}
+            droppingItem={externalDraggedItem}
+            onDrop={handleDrop}
+            onLayoutChange={saveLayoutConditional}
+            className={"grid-overlap"}
+            style={{ height: height + "px)" }}
+          >
+            {map(localLayout, (gridItem: PlacedGridItem) => {
+              const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
+              if (isUndefined(fidgetDatum)) return null;
+              return (
+                <div key={gridItem.i}>
+                  <FidgetWrapper
+                    {...{
+                      fidget: CompleteFidgets[fidgetDatum.fidgetType].fidget,
+                      bundle: {
+                        fidgetType: fidgetDatum.fidgetType,
+                        id: fidgetDatum.id,
+                        config: {
+                          // TODO: Determine what this editable variable is being used for
+                          editable: inEditMode,
+                          settings: fidgetDatum.config.settings,
+                          data: fidgetDatum.config.data,
                         },
-                      });
-                    },
-                    setCurrentFidgetSettings,
-                    setSelectedFidgetID,
-                    selectedFidgetID,
-                  }}
-                />
-              </div>
-            );
-          })}
-        </ReactGridLayout>
+                        properties:
+                          CompleteFidgets[fidgetDatum.fidgetType].properties,
+                      },
+                      context: {
+                        theme: theme,
+                      },
+                      removeFidget: removeFidget,
+                      minimizeFidget: moveFidgetFromGridToTray,
+                      saveConfig: async (
+                        newInstanceConfig: FidgetConfig<FidgetSettings>,
+                      ) => {
+                        return await saveFidgetInstanceDatums({
+                          ...localFidgetInstanceDatums,
+                          [fidgetDatum.id]: {
+                            config: newInstanceConfig,
+                            fidgetType: fidgetDatum.fidgetType,
+                            id: fidgetDatum.id,
+                          },
+                        });
+                      },
+                      setCurrentFidgetSettings,
+                      setSelectedFidgetID,
+                      selectedFidgetID,
+                    }}
+                  />
+                </div>
+              );
+            })}
+          </ReactGridLayout>
+        </div>
       </div>
     </>
   );
