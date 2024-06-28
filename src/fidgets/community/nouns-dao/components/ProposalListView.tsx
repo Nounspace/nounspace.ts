@@ -7,20 +7,29 @@ import {
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
+import moment from "moment";
+import { MdAccessTimeFilled } from "react-icons/md";
 
-const baseBadgeClassNames = "rounded-lg shadow-none font-semibold text-[11px]";
+const baseBadgeClassNames =
+  "rounded-lg shadow-none font-semibold text-[11px] gap-1";
 
 const statusBadgeClassNames = {
-  Active: "bg-emerald-600",
-  Executed: "bg-blue-600",
-  Canceled: "bg-gray-500",
-  Defeated: "bg-red-600",
-  Pending: "bg-white border border-orange-600 text-orange-600",
+  ACTIVE: "bg-[#0E9F6E]",
+  EXECUTED: "bg-blue-600",
+  CANCELLED: "bg-gray-500",
+  DEFEATED: "bg-red-600",
+  QUEUED: "bg-gray-500",
+  PENDING: "bg-white border border-orange-600 text-orange-600",
   "": "text-gray-600 bg-gray-200",
 };
 
 const statusTextOverrides = {
-  Pending: "Updatable",
+  ACTIVE: "Active",
+  EXECUTED: "Executed",
+  CANCELLED: "Cancelled",
+  DEFEATED: "Defeated",
+  QUEUED: "Queued",
+  PENDING: "Updatable",
 };
 
 export const StatusBadge = ({
@@ -46,45 +55,84 @@ export const StatusBadge = ({
   );
 };
 
+export const estimateBlockTime = (
+  blockNumber: number,
+  currentBlockNumber: number,
+  currentBlockTimestamp: number,
+  secondsPerBlock: number = 12,
+) => {
+  const blocksDelta = blockNumber - currentBlockNumber;
+  const secondsDelta = blocksDelta * secondsPerBlock;
+  const estimatedUnix = (currentBlockTimestamp + secondsDelta) * 1000;
+  return new Date(estimatedUnix);
+};
+
 const ProposalListRowItem = ({
   proposal,
   setProposal,
+  currentBlock,
 }: {
   proposal: ProposalData;
   setProposal: (proposal: ProposalData) => void;
+  currentBlock: any;
 }) => {
-  const status = proposal.status.currentStatus;
-  const dateBadgeText = "";
+  const getDateBadgeText = () => {
+    if (!["ACTIVE", "PENDING"].includes(proposal.status)) {
+      return null;
+    }
+    const startBlock = Number(proposal.startBlock);
+    const endBlock = Number(proposal.endBlock);
 
-  const dateBadgeClassName = mergeClasses(
-    baseBadgeClassNames,
-    "text-gray-600 bg-gray-200",
-  );
+    if (currentBlock.number < startBlock) {
+      const startDate = estimateBlockTime(
+        startBlock,
+        currentBlock.number,
+        currentBlock.timestamp,
+      );
+      return "Starts " + moment(startDate).fromNow();
+    } else if (currentBlock.number < endBlock) {
+      const endDate = estimateBlockTime(
+        endBlock,
+        currentBlock.number,
+        currentBlock.timestamp,
+      );
+      return "Ends " + moment(endDate).fromNow();
+    }
+    return null;
+  };
+  const dateBadgeText = getDateBadgeText();
 
   return (
     <div
-      onClick={() => setProposal(proposal.proposalId)}
+      onClick={() => setProposal(proposal.id)}
       className={mergeClasses(
         "flex overflow-hidden border border-gray-200 bg-gray-50 rounded-[8px]",
         "p-3 py-2.5 gap-3 cursor-pointer hover:bg-white items-center",
       )}
     >
-      <div className="grid md:flex flex-auto flex-nowrap gap-2">
+      <div className="flex flex-col md:flex flex-auto flex-nowrap gap-1.5">
         <p className="flex-auto font-medium text-sm/[1.25] mb-0">
           <span className="flex-none mr-2 text-gray-400 font-bold">
-            {proposal.proposalId}
+            {proposal.id}
           </span>
           {proposal.title}
         </p>
         {dateBadgeText && (
-          <div className="">
-            <Badge className={dateBadgeClassName} variant="secondary">
+          <div>
+            <Badge
+              className={mergeClasses(
+                baseBadgeClassNames,
+                "text-gray-600 bg-gray-200",
+              )}
+              variant="secondary"
+            >
+              <MdAccessTimeFilled size={12} className="text-gray-500" />
               {dateBadgeText}
             </Badge>
           </div>
         )}
       </div>
-      <StatusBadge status={status} />
+      <StatusBadge status={proposal.status} />
     </div>
   );
 };
@@ -92,10 +140,12 @@ const ProposalListRowItem = ({
 export const ProposalListView = ({
   proposals,
   setProposal,
+  currentBlock,
   loading,
 }: {
   proposals: ProposalData[];
   setProposal: (proposal: ProposalData) => void;
+  currentBlock: any;
   loading: boolean;
 }) => {
   if (loading) {
@@ -116,6 +166,7 @@ export const ProposalListView = ({
             key={i}
             proposal={proposal}
             setProposal={setProposal}
+            currentBlock={currentBlock}
           />
         ))}
       </div>
