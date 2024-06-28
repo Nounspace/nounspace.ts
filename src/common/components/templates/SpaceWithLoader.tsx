@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactNode } from "react";
 import { isUndefined } from "lodash";
 import Space, { SpaceConfig } from "./Space";
 import SpaceLoading from "./SpaceLoading";
@@ -8,6 +8,7 @@ type SpaceWithLoaderArgs = {
   saveConfig?: (config: SpaceConfig) => Promise<void>;
   commitConfig?: () => Promise<void>;
   resetConfig?: () => Promise<void>;
+  profile?: ReactNode;
 };
 
 export default function SpaceWithLoader({
@@ -15,6 +16,7 @@ export default function SpaceWithLoader({
   saveConfig,
   commitConfig,
   resetConfig,
+  profile,
 }: SpaceWithLoaderArgs) {
   return (
     <>
@@ -29,6 +31,7 @@ export default function SpaceWithLoader({
           saveConfig={saveConfig}
           commitConfig={commitConfig}
           resetConfig={resetConfig}
+          profile={profile}
         />
       )}
     </>
