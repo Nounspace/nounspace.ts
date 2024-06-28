@@ -4,7 +4,7 @@ import * as ProgressPrimitive from "@radix-ui/react-progress";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 type CustomProgressProps = {
-  indicatorStyles?: object;
+  indicatorStyles?: Record<string, string | number>;
 };
 
 const Progress = React.forwardRef<
