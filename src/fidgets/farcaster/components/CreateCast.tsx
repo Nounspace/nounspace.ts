@@ -31,7 +31,6 @@ import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
 import { PhotoIcon } from "@heroicons/react/20/solid";
-import { Skeleton } from "@/common/components/atoms/skeleton";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
@@ -217,11 +216,7 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
     >
       <form onSubmit={handleSubmit} className="w-full">
         {isPublishing ? (
-          <div className="w-full h-full min-h-[150px]">
-            <Skeleton className="px-2 py-1 w-full h-full min-h-[150px] text-foreground/80">
-              {draft.text}
-            </Skeleton>
-          </div>
+          <div className="w-full h-full min-h-[150px]">{draft.text}</div>
         ) : (
           <div className="p-2 border-slate-200 rounded-lg border">
             <EditorContent

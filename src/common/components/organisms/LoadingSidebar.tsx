@@ -1,6 +1,5 @@
 import React from "react";
 import BrandHeader from "../molecules/BrandHeader";
-import { Skeleton } from "../atoms/skeleton";
 
 export default function LoadingSidebar() {
   return (
@@ -13,13 +12,9 @@ export default function LoadingSidebar() {
         <div className="h-full px-4 py-4 overflow-y-auto border border-blue-100 rounded-xl relative bg-card">
           <BrandHeader />
           <div className="text-lg font-medium">
-            <ul className="space-y-2">
-              <Skeleton></Skeleton>
-            </ul>
+            <ul className="space-y-2"></ul>
             <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
-              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <Skeleton></Skeleton>
-              </div>
+              <div className="mt-5 pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between"></div>
             </div>
           </div>
         </div>
