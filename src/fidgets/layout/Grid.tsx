@@ -14,7 +14,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, isUndefined, map } from "lodash";
+import { debounce, isUndefined, map, reject } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -235,21 +235,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     };
 
     saveLayout([...localLayout, newItem]);
-    moveFidgetFromTrayToGrid(newItem);
+    removeFidgetFromTray(fidgetData.id);
   }
 
-  function moveFidgetFromTrayToGrid(gridItem: PlacedGridItem) {
-    const newLayout = [...localLayout, gridItem];
-
-    const itemTrayIndex = fidgetTrayContents.findIndex(
-      (x) => x.id == gridItem.i,
+  function removeFidgetFromTray(fidgetId: string) {
+    const newFidgetTrayContents = reject(
+      fidgetTrayContents,
+      (fidget) => fidget.id === fidgetId,
     );
-    const newFidgetTrayContents = fidgetTrayContents
-      .slice(0, itemTrayIndex)
-      .concat(fidgetTrayContents.slice(itemTrayIndex + 1));
 
     saveTrayContents(newFidgetTrayContents);
-    saveLayoutConditional(newLayout);
   }
 
   function moveFidgetFromGridToTray(fidgetId: string) {
