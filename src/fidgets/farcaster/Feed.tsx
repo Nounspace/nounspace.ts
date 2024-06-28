@@ -80,7 +80,6 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   // https://www.radix-ui.com/primitives/docs/components/scroll-area
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [loadedNextSection, setLoadedNextSection] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
