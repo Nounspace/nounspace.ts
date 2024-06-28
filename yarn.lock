@@ -956,7 +956,7 @@
   dependencies:
     tslib "^2.4.0"
 
-"@frames.js/render@^0.2.5":
+"@frames.js/render@^0.2.15":
   version "0.2.15"
   resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.2.15.tgz#4bb218bf02113413f6997f9ada7c74642b203391"
   integrity sha512-N0g6KquR+37OzHH9Zq6zOdymgztaiJmXPKVR7mqxQNTD8a3UATdLS9QDIwB6RbKBL4u1AoYkqQgDkz81pDz3bA==
