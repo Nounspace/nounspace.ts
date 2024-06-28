@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect } from "react";
+import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import axiosBackend from "@/common/data/api/backend";
 import {
   FeedResponse,
