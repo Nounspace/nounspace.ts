@@ -32,6 +32,7 @@ import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
+import Link from "next/link";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -476,7 +477,10 @@ export const CastRow = ({
           <div className="flex flex-col w-full">
             <div className="flex flex-row justify-between gap-x-4 leading-5">
               <div className="flex flex-row">
-                <span className="items-center flex font-semibold text-foreground/80 truncate cursor-pointer w-full max-w-54 lg:max-w-full">
+                <Link
+                  className="items-center flex font-semibold text-foreground/80 truncate cursor-pointer w-full max-w-54 lg:max-w-full"
+                  href={`/s/${cast.author.username}`}
+                >
                   {isEmbed && (
                     <img
                       className="relative h-4 w-4 mr-1 flex-none bg-background rounded-full"
@@ -496,7 +500,7 @@ export const CastRow = ({
                       />
                     )}
                   </span>
-                </span>
+                </Link>
                 {showChannel && channel && (
                   <Button
                     variant="outline"
