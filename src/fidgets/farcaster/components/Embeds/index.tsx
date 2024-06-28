@@ -48,7 +48,7 @@ export const renderEmbedForUrl = ({ url, castId }: CastEmbed) => {
     // NOTE: Need a better resolver
     // Currently all URLs that aren't otherise caputured try
     // To be frames, including things like youtube videos
-    return <FrameEmbed url={url} />;
+    return <FrameEmbed url={url} showError={false} />;
   } else {
     return null;
   }

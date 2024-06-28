@@ -20,6 +20,7 @@ import {
   makeFrameAction,
 } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
+import { isUndefined } from "lodash";
 
 // Due to issue with FrameImageNext from @frame.js/render/next
 // Implement the exact same thing again
@@ -98,7 +99,10 @@ async function createFrameActionMessage(
   return { message: message.unwrapOr(null), trustedBytes };
 }
 
-const FrameEmbed: React.FC<{ url: string }> = ({ url }) => {
+const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
+  url,
+  showError = true,
+}) => {
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("frame");
 
   const signFrameAction = async ({
@@ -194,6 +198,15 @@ const FrameEmbed: React.FC<{ url: string }> = ({ url }) => {
         ),
     },
   });
+
+  if (
+    !isUndefined(frameState.currentFrameStackItem) &&
+    frameState.currentFrameStackItem.status === "done" &&
+    frameState.currentFrameStackItem.frameResult.status === "failure" &&
+    !showError
+  ) {
+    return null;
+  }
 
   return <FrameUI frameState={frameState} FrameImage={FrameImageNext} />;
 };
