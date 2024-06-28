@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -42,7 +42,7 @@ const feedProperties: FidgetProperties = {
 
 export const useGetCasts = (feedType: FeedType, fid: number) => {
   return useInfiniteQuery({
-    queryKey: ["channelCasts", feedType],
+    queryKey: ["channelCasts", feedType, fid],
     staleTime: 1000 * 60 * 1,
     queryFn: async ({ pageParam: cursor }) => {
       const { data } = await axiosBackend.get<FeedResponse>(
@@ -71,7 +71,6 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   const { fetchNextPage, hasNextPage, data, isLoading, error, isFetching } =
     useGetCasts(feedType, fid);
 
-  useEffect(() => console.log(data), [data]);
   // TO DO: trigger new page loading as inifite scroll
   // TO DO: Handle respons errors
   // TO DO: show loading at end of inifinite scroll
@@ -80,7 +79,7 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   // https://www.radix-ui.com/primitives/docs/components/scroll-area
 
   return (
-    <>
+    <div>
       {isLoading ? (
         "LOADING..."
       ) : (
@@ -92,7 +91,7 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
           })}
         </ScrollArea>
       )}
-    </>
+    </div>
   );
 };
 
