@@ -74,7 +74,7 @@ type AuthenticatorManagerResponse =
 
 // TO DO: Define FidgetId Type (with information about UUID + Space is installed in + Fidget Name)
 
-type AuthenticatorManager = {
+export type AuthenticatorManager = {
   // If Authenticator is not initialized, will always return denied
   callMethod: (
     requestingFidgetId: string,

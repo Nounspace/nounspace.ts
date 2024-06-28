@@ -35,7 +35,8 @@
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true
       }
-    ]
+    ],
+    "@next/next/no-img-element": "off"
   },
   "settings": {
     "react": {

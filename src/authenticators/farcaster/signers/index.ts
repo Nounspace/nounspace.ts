@@ -1,3 +1,4 @@
+import { SignatureScheme } from "@farcaster/core";
 import {
   AuthenticatorData,
   AuthenticatorMethodWrapper,
@@ -23,6 +24,11 @@ export interface FarcasterSignerAuthenticatorMethods<
   >;
   // Same as the account's public key for account type
   getSignerPublicKey: AuthenticatorMethodWrapper<() => Promise<Uint8Array>, D>;
+  // Returns the signature scheme
+  getSignerScheme: AuthenticatorMethodWrapper<
+    () => Promise<SignatureScheme>,
+    D
+  >;
   // Always returns "approved" for "account"
   getSignerStatus: AuthenticatorMethodWrapper<() => Promise<SignerStatus>, D>;
   // Returns the URL for the user to auth

@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback } from "react";
-import { Textarea, TextareaProps } from "../atoms/textarea";
+import { Textarea, TextareaProps } from "@/common/components/atoms/textarea";
 
 export interface HTMLInputProps extends Omit<TextareaProps, "onChange"> {
   value: string;

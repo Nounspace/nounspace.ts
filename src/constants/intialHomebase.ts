@@ -1,9 +1,9 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
-import { LayoutFidgetDetails } from "@/common/fidgets";
+import { LayoutFidgetConfig, LayoutFidgetDetails } from "@/common/fidgets";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 
 const layoutID = "";
-const layoutDetails: LayoutFidgetDetails = {
+const layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any[]>> = {
   layoutConfig: { layout: [] },
   layoutFidget: "grid",
 };
