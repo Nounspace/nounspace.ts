@@ -205,7 +205,7 @@ export const createSpaceStoreFunc = (
             );
         // TO DO: Error handling
         await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
-          config: file,
+          spaceConfig: file,
         });
 
         set((draft) => {
