@@ -87,6 +87,11 @@ export const createSpaceStoreFunc = (
       } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
       const { data } = await axios.get<Blob>(publicUrl, {
         responseType: "blob",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
       });
       const fileData = JSON.parse(await data.text()) as SignedFile;
       const spaceConfig = JSON.parse(
