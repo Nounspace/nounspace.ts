@@ -77,15 +77,12 @@ interface CastRowProps {
 
 const renderMention = ({ content }) => {
   return (
-    <span
+    <Link
       className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      onClick={(event) => {
-        event.stopPropagation();
-      }}
-      rel="noopener noreferrer"
+      href={`/s/${content}`}
     >
       {content}
-    </span>
+    </Link>
   );
 };
 
