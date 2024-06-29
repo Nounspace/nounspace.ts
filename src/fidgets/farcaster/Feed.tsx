@@ -34,9 +34,9 @@ const feedProperties: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 4,
     maxWidth: 36,
   },
   icon: 0x1f4f0,
@@ -95,7 +95,7 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   }, [inView]);
 
   return (
-    <div className="h-full overflow-scroll justify-center items-center">
+    <div className="h-full overflow-y-scroll justify-center items-center">
       <div>
         {/* data.pages: Page[] */}
         {isError ? (
