@@ -60,9 +60,9 @@ export const useGetCasts = (feedType: FeedType, fid: number) => {
 
       return data;
     },
-    initialPageParam: undefined as NextCursor | undefined,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage, _allPages, _lastPageParam, _allPageParams) =>
-      lastPage.next,
+      lastPage.next.cursor,
   });
 };
 
@@ -111,15 +111,15 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
         )}
       </div>
       {/* Pagination Controls */}
-      <div ref={ref} className="bg-[#E6E6E6]">
+      <div ref={ref} className="h-3/6">
         {isFetchingNextPage ? (
-          <div className="bg-[#E6E6E6] h-3/6 w-full flex flex-col justify-center items-center">
+          <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
             <Loading />
           </div>
         ) : hasNextPage ? (
           "Fetch More Data"
         ) : (
-          <div className="bg-[#E6E6E6] h-full w-full flex flex-col justify-center items-center">
+          <div className="h-full w-full flex flex-col justify-center items-center">
             <Loading />
           </div>
         )}
