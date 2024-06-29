@@ -52,6 +52,11 @@ export const authenticatorStore = (
       if (publicUrl) {
         const { data }: { data: Blob } = await axios.get(publicUrl, {
           responseType: "blob",
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+            Expires: "0",
+          },
         });
         if (isNull(data)) {
           console.debug("Could not locate authenticator data");

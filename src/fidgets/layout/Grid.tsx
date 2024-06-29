@@ -1,4 +1,10 @@
-import React, { DragEvent, useEffect, useMemo, useState } from "react";
+import React, {
+  DragEvent,
+  useEffect,
+  useMemo,
+  useState,
+  useCallback,
+} from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
 import {
@@ -142,38 +148,66 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState(fidgetTrayContents);
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
   const [localTheme, setLocalTheme] = useState(theme);
+  const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
-  const saveCurrentConfig = debounce(() => {
-    const newConfig: LayoutFidgetSavableConfig<GridLayoutConfig> = {
-      fidgetInstanceDatums: localFidgetInstanceDatums,
-      fidgetTrayContents: localFidgetTrayContents,
-      theme: localTheme,
-      layoutConfig: {
-        layout: localLayout,
-      },
-    };
-    return saveConfig(newConfig);
-  }, 1000);
+  const saveCurrentConfig = useCallback(
+    debounce(() => {
+      const newConfig: LayoutFidgetSavableConfig<GridLayoutConfig> = {
+        fidgetInstanceDatums: localFidgetInstanceDatums,
+        fidgetTrayContents: localFidgetTrayContents,
+        theme: localTheme,
+        layoutConfig: {
+          layout: localLayout,
+        },
+      };
+      return saveConfig(newConfig);
+    }, 10),
+    [
+      saveConfig,
+      localFidgetInstanceDatums,
+      localFidgetTrayContents,
+      localTheme,
+      localLayout,
+    ],
+  );
 
-  async function saveTrayContents(newTrayData: typeof fidgetTrayContents) {
-    setLocalFidgetTrayContents(newTrayData);
-    await saveCurrentConfig();
-  }
+  const saveTrayContents = useCallback(
+    async (newTrayData: typeof fidgetTrayContents) => {
+      setLocalFidgetTrayContents(newTrayData);
+      setHasLocalChanges(true);
+    },
+    [],
+  );
 
-  async function saveFidgetInstanceDatums(datums: typeof fidgetInstanceDatums) {
-    setLocalFidgetInstanceDatums(datums);
-    await saveCurrentConfig();
-  }
+  const saveFidgetInstanceDatums = useCallback(
+    async (datums: typeof fidgetInstanceDatums) => {
+      setLocalFidgetInstanceDatums(datums);
+      setHasLocalChanges(true);
+    },
+    [],
+  );
 
-  async function saveTheme(newTheme: typeof theme) {
+  const saveTheme = useCallback(async (newTheme: typeof theme) => {
     setLocalTheme(newTheme);
-    await saveCurrentConfig();
-  }
+    setHasLocalChanges(true);
+  }, []);
 
-  async function saveLayout(newLayout: PlacedGridItem[]) {
+  const saveLayout = useCallback(async (newLayout: PlacedGridItem[]) => {
     setLocalLayout(newLayout);
-    await saveCurrentConfig();
-  }
+    setHasLocalChanges(true);
+  }, []);
+
+  useEffect(() => {
+    if (hasLocalChanges) {
+      saveCurrentConfig();
+    }
+  }, [
+    localFidgetInstanceDatums,
+    localFidgetTrayContents,
+    localTheme,
+    localLayout,
+    hasLocalChanges,
+  ]);
 
   function unselectFidget() {
     setSelectedFidgetID("");

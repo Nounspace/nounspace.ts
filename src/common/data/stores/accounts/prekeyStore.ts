@@ -195,6 +195,11 @@ export const prekeyStore = (
             } = await supabase.storage.from("private").getPublicUrl(loc);
             const { data }: { data: Blob } = await axios.get(publicUrl, {
               responseType: "blob",
+              headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+                Expires: "0",
+              },
             });
             const fileData = JSON.parse(await data.text()) as SignedFile;
             const decryptedFile =
