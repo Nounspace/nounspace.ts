@@ -1,14 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { CgProfile } from "react-icons/cg";
-import {
-  BulkUsersResponse,
-  User,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import axiosBackend from "@/common/data/api/backend";
+import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { first, isUndefined } from "lodash";
 import FarcasterLinkify from "../farcaster/components/linkify";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -36,19 +33,7 @@ const profileProperties: FidgetProperties = {
 const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   settings: { fid },
 }) => {
-  const [userData, setUserData] = useState<BulkUsersResponse>();
-
-  useEffect(() => {
-    axiosBackend
-      .get<BulkUsersResponse>("/api/farcaster/neynar/users", {
-        params: {
-          fids: fid,
-        },
-      })
-      .then((resp) => {
-        setUserData(resp.data);
-      });
-  }, []);
+  const { data: userData } = useLoadFarcasterUser(fid);
 
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {
