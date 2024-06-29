@@ -16,6 +16,7 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  hidden: boolean;
 };
 
 const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
@@ -35,7 +36,11 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  hidden,
+}) => {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -56,6 +61,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       id="logo-sidebar"
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r bg-white"
       aria-label="Sidebar"
+      style={{ display: hidden ? "none" : "" }}
     >
       <Modal
         open={showModal}
