@@ -11,6 +11,7 @@ import { CgLogIn, CgLogOut, CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
+import { Button } from "../atoms/button";
 
 type NavItemProps = {
   label: string;
@@ -106,78 +107,76 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       >
         <CreateCast />
       </Modal>
-      <div className="pt-24 pb-24 h-full">
-        <div className="flex-col flex h-full w-64 mx-auto px-8 py-4 overflow-y-auto">
+      <div className="pt-12 pb-12 h-full md:block hidden">
+        <div className="flex flex-col h-full w-[270px] ml-auto">
           <BrandHeader />
-          <div className="text-lg font-medium">
-            <ul className="space-y-2">
-              <NavItem
-                label="Homebase"
-                Icon={HomeIcon}
-                active={true}
-                href="/homebase"
-              />
-              <NavItem
-                label="Fair Launch"
-                Icon={IoMdRocket}
-                href="https://space.nounspace.com/"
-                openInNewTab
-              />
-              {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
-              {isLoggedIn && (
+          <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
+            <div className="flex-auto">
+              <ul className="space-y-2">
                 <NavItem
-                  label={username || "Loading..."}
-                  Icon={CurrentUserImage}
-                  href={`/s/${username}`}
+                  label="Homebase"
+                  Icon={HomeIcon}
+                  active={true}
+                  href="/homebase"
                 />
-              )}
-              <li>
-                {isLoggedIn ? (
-                  <button
-                    className={mergeClasses(
-                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                    )}
-                    onClick={logout}
-                  >
-                    <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
-                    <span className="ms-2">Logout</span>
-                  </button>
-                ) : (
-                  <button
-                    className={mergeClasses(
-                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                    )}
-                    onClick={openModal}
-                  >
-                    <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
-                    <span className="ms-2">Login</span>
-                  </button>
+                <NavItem
+                  label="Fair Launch"
+                  Icon={IoMdRocket}
+                  href="https://space.nounspace.com/"
+                  openInNewTab
+                />
+                {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
+                {isLoggedIn && (
+                  <NavItem
+                    label={username || "Loading..."}
+                    Icon={CurrentUserImage}
+                    href={`/s/${username}`}
+                  />
                 )}
-              </li>
-            </ul>
-            <div className="mt-10">
+                <li>
+                  {isLoggedIn ? (
+                    <button
+                      className={mergeClasses(
+                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                      )}
+                      onClick={logout}
+                    >
+                      <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
+                      <span className="ms-2">Logout</span>
+                    </button>
+                  ) : (
+                    <button
+                      className={mergeClasses(
+                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                      )}
+                      onClick={openModal}
+                    >
+                      <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
+                      <span className="ms-2">Login</span>
+                    </button>
+                  )}
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col flex-auto justify-between border-t px-4">
+            <div className="mt-8 px-2">
               <Player url={userTheme?.properties.musicURL} />
             </div>
             {isLoggedIn && (
-              <div className="mt-40 pt-2 flex items-center justify-center">
+              <div className="pt-3 flex items-center gap-2 justify-center">
                 {isEditable && (
-                  <button
+                  <Button
                     onClick={turnOnEditMode}
-                    className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                    size="icon"
+                    variant="secondary"
                   >
-                    <div className="flex items-center">
-                      <EditIcon />
-                    </div>
-                  </button>
+                    <EditIcon />
+                  </Button>
                 )}
-                <button
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                  onClick={openCastModal}
-                >
-                  <div className="flex ml-12 mr-12 items-center">
-                    <span className="">Cast</span>
-                  </div>
-                </button>
+                <Button onClick={openCastModal} variant="primary" width="auto">
+                  Cast
+                </Button>
               </div>
             )}
           </div>

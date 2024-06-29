@@ -16,8 +16,8 @@ const profileProperties: FidgetProperties = {
   icon: 0x1f464, // This is the hex code for an emoji
   fields: [
     {
-      fieldName: "Bio",
-      default: "Hello World!",
+      fieldName: "fid",
+      default: null,
       required: true,
       inputSelector: TextInput,
     },

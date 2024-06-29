@@ -85,14 +85,11 @@ export default function Space({
   return (
     <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="flex w-full h-full">
-        <div
-          className={
-            editMode
-              ? "w-4/12 flex mx-auto transition-all duration-100 ease-out max-w-96"
-              : "w-3/12 flex mx-auto transition-all duration-100 ease-out max-w-96"
-          }
-        >
+      <div
+        className="flex w-full h-full"
+        style={{ background: "var(--user-theme-background)" }}
+      >
+        <div className="flex mx-auto transition-all duration-100 ease-out">
           <Sidebar
             editMode={editMode}
             enterEditMode={enterEditMode}
@@ -104,7 +101,7 @@ export default function Space({
           className={
             editMode
               ? "w-full transition-all duration-100 ease-out h-full"
-              : "w-9/12 transition-all duration-100 ease-out h-full"
+              : "w-full transition-all duration-100 ease-out h-full"
           }
         >
           <div className="h-full flex flex-col">

@@ -10,6 +10,7 @@ import {
   FaTrashCan,
   FaTriangleExclamation,
 } from "react-icons/fa6";
+import { Button } from "@/common/components/atoms/button";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -40,11 +41,11 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
           {field.fieldName}
         </label>
       </div>
-      <div className="md:w-2/3">
+      <div>
         <InputComponent
           value={value}
           onChange={onChange}
-          className="w-full !h-9 !rounded-lg font-medium !shadow-none"
+          className="!h-9 !rounded-md font-medium !shadow-none"
         />
       </div>
     </div>
@@ -99,52 +100,46 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
         {showConfirmCancel ? (
           // Back Button and Exit Button (shows second)
           <>
-            <div className="pt-2 flex items-center justify-center">
-              <button
+            <div className="pt-2 flex gap-2 items-center justify-center">
+              <Button
                 type="button"
                 onClick={() => setShowConfirmCancel(false)}
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+                size="icon"
+                variant="secondary"
               >
-                <div className="flex items-center">
-                  <BackArrowIcon />
-                </div>
-              </button>
-              <button
+                <BackArrowIcon />
+              </Button>
+              <Button
                 type="button"
                 onClick={() => {
                   removeFidget(fidgetId);
                 }}
-                className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                variant="destructive"
+                width="auto"
               >
-                <div className="ml-4 flex items-center">
-                  <FaTriangleExclamation
-                    className="h-8l shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="ml-4 mr-4">Delete</span>
-                </div>
-              </button>
+                <FaTriangleExclamation
+                  className="h-8l shrink-0"
+                  aria-hidden="true"
+                />
+                <span className="ml-4 mr-4">Delete</span>
+              </Button>
             </div>
           </>
         ) : (
           // X Button and Save Button (shows first)
-          <div className="pt-2 flex items-center justify-center">
-            <button
+          <div className="flex pt-2 gap-2 flex items-center justify-center">
+            <Button
               type="button"
               onClick={() => setShowConfirmCancel(true)}
-              className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+              size="icon"
+              variant="secondary"
             >
-              <div className="flex items-center p-1">
-                <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
-              </div>
-            </button>
+              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
+            </Button>
 
-            <button
-              type="submit"
-              className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
-              <div className="ml-4 mr-4 flex items-center">Done</div>
-            </button>
+            <Button type="submit" variant="primary" width="auto">
+              <div className="flex items-center">Done</div>
+            </Button>
           </div>
         )}
       </div>

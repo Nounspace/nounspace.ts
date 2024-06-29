@@ -99,7 +99,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
 
   return (
     <>
-      <div className="flex items-center border border-gray-200 rounded-full md:rounded-xl overflow-hidden">
+      <div className="flex items-center border border-gray-200 rounded-full md:rounded-lg overflow-hidden">
         <div className="overflow-hidden relative w-8 h-8 md:w-16 md:h-auto ml-2 md:ml-auto flex-shrink-0 self-center md:self-stretch rounded-lg md:rounded-none">
           {metadata?.thumbnail && (
             <Image

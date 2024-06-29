@@ -23,7 +23,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
-    --radius: 0.3rem;
+    --radius: 8px;
 
     /* User Theme Variables */
     --user-theme-background: initial;
@@ -238,6 +238,10 @@
   height: 5%;
   width: 100%;
   opacity: 0;
+}
+
+.react-tweet-theme {
+  --tweet-container-margin: 0px !important;
 }
 
 /* Color picker. Because the `disableDarkMode` prop does not work currently */
