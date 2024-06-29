@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
 import { PhotoIcon } from "@heroicons/react/24/solid";
-import { Skeleton } from "@/common/components/atoms/skeleton";
 import { Label } from "@/common/components/atoms/label";
 
 const getImageViaCdnUrl = (imgUrl: string, skipCdn: boolean) => {
@@ -24,10 +23,10 @@ const WarpcastImage = ({ url }: { url: string }) => {
 
   const renderLoadingPlaceholder = () => {
     return (
-      <Skeleton className="h-36 w-48 object-left relative block rounded-lg py-10 text-center">
+      <div className="h-36 w-48 object-left relative block rounded-lg py-10 text-center animate-pulse rounded-md bg-primary/10">
         <PhotoIcon className="mx-auto h-12 w-12 text-foreground/70" />
         <Label>Loading image...</Label>
-      </Skeleton>
+      </div>
     );
   };
 

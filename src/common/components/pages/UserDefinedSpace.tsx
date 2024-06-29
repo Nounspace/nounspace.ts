@@ -1,4 +1,4 @@
-import { indexOf, isNil, mapValues } from "lodash";
+import { indexOf, isNil, mapValues, noop } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores";
@@ -6,6 +6,7 @@ import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace"
 import SpaceWithLoader from "../templates/SpaceWithLoader";
 import { SpaceConfig } from "../templates/Space";
 import { UpdatableSpaceConfig } from "@/common/data/stores/space/spaceStore";
+import Profile from "@/fidgets/ui/profile";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -38,10 +39,16 @@ export default function UserDefinedSpace({
     commitSpaceToDb: state.space.commitSpaceToDatabase,
     registerSpace: state.space.registerSpace,
   }));
+  const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  const [loadSuccess, setLoadSuccesss] = useState(false);
 
   useEffect(() => {
+    console.log("loading space", providedSpaceId);
     if (!isNil(providedSpaceId)) {
-      loadSpace(providedSpaceId);
+      loadSpace(providedSpaceId).then((res) => {
+        setLoadSuccesss(res !== null);
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -82,30 +89,34 @@ export default function UserDefinedSpace({
     [fid],
   );
 
-  const config: SpaceConfig = useMemo(
-    () =>
-      isNil(spaceId)
-        ? {
-            ...INITIAL_PERSONAL_SPACE_CONFIG,
-            isEditable,
-          }
-        : {
-            ...localSpaces[spaceId],
-            isEditable,
-            fidgetInstanceDatums: mapValues(
-              localSpaces[spaceId].fidgetInstanceDatums,
-              (datum) => ({
-                ...datum,
-                config: {
-                  settings: datum.config.settings,
-                  editable: datum.config.editable,
-                  data: {}, // TO DO: Inject fidget data here
-                },
-              }),
-            ),
-          },
-    [spaceId, isEditable, localSpaces],
-  );
+  const config: SpaceConfig | undefined = useMemo(() => {
+    if (!isNil(spaceId)) {
+      if (loading) {
+        return undefined;
+      }
+      if (loadSuccess) {
+        return {
+          ...localSpaces[spaceId],
+          isEditable,
+          fidgetInstanceDatums: mapValues(
+            localSpaces[spaceId].fidgetInstanceDatums,
+            (datum) => ({
+              ...datum,
+              config: {
+                settings: datum.config.settings,
+                editable: datum.config.editable,
+                data: {}, // TO DO: Inject fidget data here
+              },
+            }),
+          ),
+        };
+      }
+    }
+    return {
+      ...INITIAL_PERSONAL_SPACE_CONFIG,
+      isEditable,
+    };
+  }, [spaceId, isEditable, localSpaces, loading, loadSuccess]);
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
@@ -159,12 +170,21 @@ export default function UserDefinedSpace({
     }
   }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces]);
 
+  const profile = (
+    <Profile.fidget
+      settings={{ fid }}
+      saveData={async () => noop()}
+      data={{}}
+    />
+  );
+
   return (
     <SpaceWithLoader
       config={config}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
+      profile={profile}
     />
   );
 }
