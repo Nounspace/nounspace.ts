@@ -13,6 +13,7 @@ import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { current } from "mutative";
+import { FaPaintbrush } from "react-icons/fa6";
 
 type NavItemProps = {
   label: string;
@@ -171,7 +172,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     size="icon"
                     variant="secondary"
                   >
-                    <EditIcon />
+                    <div className="flex items-center p-1">
+                      <FaPaintbrush />
+                    </div>
                   </Button>
                 )}
                 <Button onClick={openCastModal} variant="primary" width="auto">
