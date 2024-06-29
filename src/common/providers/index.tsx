@@ -7,7 +7,7 @@ import Privy from "./Privy";
 import AuthenticatorProvider from "./AutheticatorProvider";
 import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
-import LoggedInStateManager from "../components/templates/LoggedInStateManager";
+import LoggedInStateProvider from "./LoggedInStateProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <AppStoreProvider>
               <UserThemeProvider>
                 <AuthenticatorProvider>
-                  <LoggedInStateManager>{children}</LoggedInStateManager>
+                  <LoggedInStateProvider>{children}</LoggedInStateProvider>
                 </AuthenticatorProvider>
               </UserThemeProvider>
             </AppStoreProvider>

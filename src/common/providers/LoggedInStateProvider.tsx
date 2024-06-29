@@ -7,13 +7,13 @@ import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { isEqual, isUndefined } from "lodash";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
 import { bytesToHex } from "@noble/ciphers/utils";
-import Modal from "../molecules/Modal";
+import Modal from "@/common/components/molecules/Modal";
 
 type LoggedInLayoutProps = {
   children: React.ReactNode;
 };
 
-const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
+const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   const {
     ready,
     authenticated,
@@ -35,6 +35,10 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     loadPreKeys,
     loadFidsForCurrentIdentity,
     registerFidForCurrentIdentity,
+    modalOpen,
+    modalContent,
+    setModalOpen,
+    keepModalOpen,
   } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -54,6 +58,10 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     registerFidForCurrentIdentity: state.account.registerFidForCurrentIdentity,
     // Logout
     storeLogout: state.logout,
+    modalOpen: state.setup.modalOpen,
+    modalContent: state.setup.modalContent,
+    setModalOpen: state.setup.setModalOpen,
+    keepModalOpen: state.setup.keepModalOpen,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
@@ -211,10 +219,17 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
 
   return (
     <>
-      <Modal></Modal>
+      <Modal
+        open={modalOpen}
+        setOpen={setModalOpen}
+        focusMode
+        showClose={!keepModalOpen}
+      >
+        {modalContent}
+      </Modal>
       {children}
     </>
   );
 };
 
-export default LoggedInStateManager;
+export default LoggedInStateProvider;
