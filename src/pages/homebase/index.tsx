@@ -27,23 +27,19 @@ const Homebase: NextPageWithLayout = () => {
     isLoggedIn && loadConfig();
   }, [isLoggedIn]);
 
-  const args = useMemo(
-    () =>
-      isLoggedIn
-        ? {
-            config: homebaseConfig,
-            saveConfig,
-            commitConfig,
-            resetConfig,
-          }
-        : {
-            config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
-            saveConfig: async () => {},
-            commitConfig: async () => {},
-            resetConfig: async () => {},
-          },
-    [isLoggedIn],
-  );
+  const args = isLoggedIn
+    ? {
+        config: homebaseConfig,
+        saveConfig,
+        commitConfig,
+        resetConfig,
+      }
+    : {
+        config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+        saveConfig: async () => {},
+        commitConfig: async () => {},
+        resetConfig: async () => {},
+      };
 
   return <SpaceWithLoader {...args} />;
 };
