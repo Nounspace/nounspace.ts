@@ -1,4 +1,9 @@
-import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
+import {
+  createSetterFunction,
+  SetterFunction,
+  StoreGet,
+  StoreSet,
+} from "../../createStore";
 import { AppStore } from "..";
 
 export enum SetupStep {
@@ -14,16 +19,35 @@ export enum SetupStep {
   DONE = "DONE",
 }
 
+export const RECHECK_BACKOFF_FACTOR = 2;
+export const RECHECK_INITIAL_TIME = 10000; // ten seconds
+
 interface SetupStoreState {
   currentStep: SetupStep;
   modalOpen: boolean;
   keepModalOpen: boolean;
+  nogsRecheckTimerLength: number; // How long to reque for (ms)
+  nogsTimeoutTimer: ReturnType<typeof setTimeout> | undefined;
+  nogsIsChecking: boolean;
+  nogsRecheckCountDown: number; // How long until next recheck (seconds)
+  nogsRecheckCountDownTimer: ReturnType<typeof setTimeout> | undefined;
+  nogsShouldRecheck: boolean;
 }
 
 interface SetupStoreActions {
   setCurrentStep: (step: SetupStep) => void;
   setModalOpen: SetterFunction<boolean>;
   setKeepModalOpen: SetterFunction<boolean>;
+  setNogsRecheckTimerLength: SetterFunction<number>;
+  setNogsIsChecking: SetterFunction<boolean>;
+  setNogsShouldRecheck: SetterFunction<boolean>;
+  setNogsRecheckCountDown: SetterFunction<number>;
+  setNogsRecheckCountDownTimer: SetterFunction<
+    ReturnType<typeof setTimeout> | undefined
+  >;
+  setNogsTimeoutTimer: SetterFunction<
+    ReturnType<typeof setTimeout> | undefined
+  >;
 }
 
 export type SetupStore = SetupStoreState & SetupStoreActions;
@@ -32,6 +56,13 @@ export const setupStoreDefaults: SetupStoreState = {
   currentStep: SetupStep.NOT_SIGNED_IN,
   modalOpen: false,
   keepModalOpen: false,
+
+  nogsRecheckTimerLength: RECHECK_INITIAL_TIME,
+  nogsIsChecking: false,
+  nogsShouldRecheck: false,
+  nogsRecheckCountDown: 0,
+  nogsTimeoutTimer: undefined,
+  nogsRecheckCountDownTimer: undefined,
 };
 
 export const createSetupStoreFunc = (
@@ -52,4 +83,34 @@ export const createSetupStoreFunc = (
     set((draft) => {
       draft.setup.keepModalOpen = val;
     }, "setKeepModalOpen"),
+  setNogsRecheckTimerLength: createSetterFunction(
+    "setup.nogsRecheckTimerLength",
+    "setNogsRecheckTimerLength",
+    set,
+  ),
+  setNogsIsChecking: createSetterFunction(
+    "setup.nogsIsChecking",
+    "setNogsIsChecking",
+    set,
+  ),
+  setNogsShouldRecheck: createSetterFunction(
+    "setup.nogsShouldRecheck",
+    "setNogsShouldRecheck",
+    set,
+  ),
+  setNogsRecheckCountDown: createSetterFunction(
+    "setup.nogsRecheckCountDown",
+    "setNogsRecheckCountDown",
+    set,
+  ),
+  setNogsRecheckCountDownTimer: createSetterFunction(
+    "setup.nogsRecheckCountDownTimer",
+    "setNogsRecheckCountDownTimer",
+    set,
+  ),
+  setNogsTimeoutTimer: createSetterFunction(
+    "setup.nogsTimeoutTimer",
+    "setNogsTimeoutTimer",
+    set,
+  ),
 });
