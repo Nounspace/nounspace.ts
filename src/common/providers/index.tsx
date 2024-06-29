@@ -6,7 +6,7 @@ import Theme from "./Theme";
 import Privy from "./Privy";
 import AuthenticatorProvider from "./AutheticatorProvider";
 import { AppStoreProvider } from "@/common/data/stores";
-import { UserThemeContextProvider } from "@/common/lib/theme/UserThemeContextProvider";
+import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -14,11 +14,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <Query>
         <Wagmi>
           <Theme>
-            <UserThemeContextProvider>
-              <AppStoreProvider>
+            <AppStoreProvider>
+              <UserThemeProvider>
                 <AuthenticatorProvider>{children}</AuthenticatorProvider>
-              </AppStoreProvider>
-            </UserThemeContextProvider>
+              </UserThemeProvider>
+            </AppStoreProvider>
           </Theme>
         </Wagmi>
       </Query>

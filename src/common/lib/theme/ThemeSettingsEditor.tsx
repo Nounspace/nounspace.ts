@@ -57,10 +57,6 @@ export function ThemeSettingsEditor({
     };
   }
 
-  function setCSSVar(key: string, value: string) {
-    document.documentElement.style.setProperty(key, value);
-  }
-
   const {
     background,
     font,
@@ -70,25 +66,6 @@ export function ThemeSettingsEditor({
     backgroundHTML,
     musicURL,
   } = theme.properties;
-
-  useEffect(() => {
-    setCSSVar("--user-theme-background", background);
-  }, [background]);
-
-  useEffect(() => {
-    const fontFamily =
-      FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style.fontFamily;
-    const headingsFontFamily =
-      FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily;
-
-    setCSSVar("--user-theme-font", fontFamily);
-    setCSSVar("--user-theme-headings-font", headingsFontFamily);
-  }, [font, headingsFont]);
-
-  useEffect(() => {
-    setCSSVar("--user-theme-font-color", fontColor);
-    setCSSVar("--user-theme-headings-font-color", headingsFontColor);
-  }, [fontColor, headingsFontColor]);
 
   function saveAndClose() {
     saveTheme(theme);
