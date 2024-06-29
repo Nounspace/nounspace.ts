@@ -39,7 +39,7 @@ const feedProperties: FidgetProperties = {
     minWidth: 1,
     maxWidth: 36,
   },
-  icon: 0x1f310, // 🌐
+  icon: 0x1f4f0,
 };
 
 export const useGetCasts = (feedType: FeedType, fid: number) => {
