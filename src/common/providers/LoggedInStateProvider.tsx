@@ -2,12 +2,19 @@ import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore, useLogout } from "@/common/data/stores/app";
 import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
-import { SetupStep } from "@/common/data/stores/app/setup";
+import {
+  RECHECK_BACKOFF_FACTOR,
+  SetupStep,
+} from "@/common/data/stores/app/setup";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { isEqual, isUndefined } from "lodash";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
 import { bytesToHex } from "@noble/ciphers/utils";
 import LoginModal from "../components/templates/LoginModal";
+import { ALCHEMY_API } from "@/constants/urls";
+import { AlchemyIsHolderOfContract } from "@/pages/api/signerRequests";
+import axios from "axios";
+import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 
 type LoggedInLayoutProps = { children: React.ReactNode };
 
@@ -29,6 +36,21 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     modalOpen,
     setModalOpen,
     keepModalOpen,
+    // nogs
+    setNogsIsChecking,
+    nogsTimeoutTimer,
+    nogsRecheckCountDownTimer,
+    setNogsRecheckCountDown,
+    setNogsShouldRecheck,
+    setNogsRecheckTimerLength,
+    nogsRecheckTimerLength,
+    setNogsTimeoutTimer,
+    nogsRecheckCountDown,
+    setNogsRecheckCountDownTimer,
+    nogsShouldRecheck,
+    // wallet signatures
+    isRequestingWalletSignature,
+    setIsRequestingWalletSignature,
   } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -50,6 +72,21 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     modalOpen: state.setup.modalOpen,
     setModalOpen: state.setup.setModalOpen,
     keepModalOpen: state.setup.keepModalOpen,
+    // nogs
+    setNogsIsChecking: state.setup.setNogsIsChecking,
+    nogsTimeoutTimer: state.setup.nogsTimeoutTimer,
+    nogsRecheckCountDownTimer: state.setup.nogsRecheckCountDownTimer,
+    setNogsRecheckCountDown: state.setup.setNogsRecheckCountDown,
+    setNogsShouldRecheck: state.setup.setNogsShouldRecheck,
+    setNogsRecheckTimerLength: state.setup.setNogsRecheckTimerLength,
+    nogsRecheckTimerLength: state.setup.nogsRecheckTimerLength,
+    setNogsTimeoutTimer: state.setup.setNogsTimeoutTimer,
+    nogsRecheckCountDown: state.setup.nogsRecheckCountDown,
+    setNogsRecheckCountDownTimer: state.setup.setNogsRecheckCountDownTimer,
+    nogsShouldRecheck: state.setup.nogsShouldRecheck,
+    // wallet signatures
+    isRequestingWalletSignature: state.setup.isRequestingWalletSignature,
+    setIsRequestingWalletSignature: state.setup.setIsRequestingWalletSignature,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
@@ -72,6 +109,8 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   async function loadIdentity() {
     if (walletsReady && ready && authenticated && user) {
       if (isUndefined(getCurrentIdentity())) {
+        if (isRequestingWalletSignature) return;
+        setIsRequestingWalletSignature(true);
         const wallet = user.wallet!;
         await loadIdentitiesForWallet(wallet);
         const identities = getIdentitiesForWallet(wallet);
@@ -94,6 +133,8 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
           console.error(e);
           logout();
           return;
+        } finally {
+          setIsRequestingWalletSignature(false);
         }
       }
       setCurrentStep(SetupStep.IDENTITY_LOADED);
@@ -184,29 +225,87 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (ready) {
-      if (!authenticated) logout();
-      else {
-        if (authenticated && currentStep === SetupStep.NOT_SIGNED_IN) {
-          setCurrentStep(SetupStep.SIGNED_IN);
-        } else if (walletsReady) {
-          if (currentStep === SetupStep.SIGNED_IN) {
-            loadWallet();
-          } else if (currentStep === SetupStep.TOKENS_FOUND) {
-            loadIdentity();
-          } else if (currentStep === SetupStep.IDENTITY_LOADED) {
-            loadAuthenticators();
-          } else if (currentStep === SetupStep.AUTHENTICATORS_LOADED) {
-            installRequiredAuthenticators();
-          } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
-            registerAccounts();
-          } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
-            setCurrentStep(SetupStep.DONE);
-          }
+    if (ready && authenticated) {
+      if (currentStep === SetupStep.NOT_SIGNED_IN) {
+        setCurrentStep(SetupStep.SIGNED_IN);
+      } else if (walletsReady) {
+        if (currentStep === SetupStep.SIGNED_IN) {
+          loadWallet();
+        } else if (currentStep === SetupStep.WALLET_CONNECTED) {
+          checkForNogs();
+        } else if (currentStep === SetupStep.TOKENS_FOUND) {
+          loadIdentity();
+        } else if (currentStep === SetupStep.IDENTITY_LOADED) {
+          loadAuthenticators();
+        } else if (currentStep === SetupStep.AUTHENTICATORS_LOADED) {
+          installRequiredAuthenticators();
+        } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
+          registerAccounts();
+        } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
+          setCurrentStep(SetupStep.DONE);
         }
       }
     }
   }, [currentStep, walletsReady, ready, authenticated]);
+
+  async function isHoldingNogs(address): Promise<boolean> {
+    setNogsIsChecking(true);
+    if (process.env.NODE_ENV === "development") {
+      setNogsIsChecking(false);
+      return true;
+    }
+    try {
+      const { data } = await axios.get<AlchemyIsHolderOfContract>(
+        `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+        {
+          params: {
+            wallet: address,
+            contractAddress: NOGS_CONTRACT_ADDR,
+          },
+        },
+      );
+      return data.isHolderOfContract;
+    } catch {
+      return false;
+    } finally {
+      setNogsIsChecking(false);
+    }
+  }
+
+  async function checkForNogs() {
+    clearTimeout(nogsTimeoutTimer);
+    clearTimeout(nogsRecheckCountDownTimer);
+    setNogsRecheckCountDown(0);
+    setNogsShouldRecheck(false);
+    if (user && user.wallet) {
+      if (await isHoldingNogs(user.wallet.address))
+        setCurrentStep(SetupStep.TOKENS_FOUND);
+      else {
+        setNogsRecheckTimerLength(
+          nogsRecheckTimerLength * RECHECK_BACKOFF_FACTOR,
+        );
+        setNogsTimeoutTimer(
+          setTimeout(() => setNogsShouldRecheck(true), nogsRecheckTimerLength),
+        );
+        setNogsRecheckCountDown(nogsRecheckTimerLength / 1000);
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (nogsRecheckCountDown > 0) {
+      setNogsRecheckCountDownTimer(
+        setTimeout(
+          () => setNogsRecheckCountDown(nogsRecheckCountDown - 1),
+          1000,
+        ),
+      );
+    }
+  }, [nogsRecheckCountDown]);
+
+  useEffect(() => {
+    nogsShouldRecheck && checkForNogs();
+  }, [nogsShouldRecheck]);
 
   return (
     <>

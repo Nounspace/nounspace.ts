@@ -12,7 +12,6 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
-import { current } from "mutative";
 import { FaPaintbrush } from "react-icons/fa6";
 
 type NavItemProps = {

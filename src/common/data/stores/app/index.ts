@@ -3,20 +3,13 @@ import { createJSONStorage } from "zustand/middleware";
 import { createStore, createStoreBindings } from "../createStore";
 import {
   AccountStore,
-  accountStoreDefaults,
   createAccountStoreFunc,
   partializedAccountStore,
 } from "./accounts";
-import {
-  SetupStep,
-  SetupStore,
-  createSetupStoreFunc,
-  setupStoreDefaults,
-} from "./setup";
+import { SetupStep, SetupStore, createSetupStoreFunc } from "./setup";
 import { isUndefined, merge } from "lodash";
 import {
   HomeBaseStore,
-  homeBaseStoreDefaults,
   createHomeBaseStoreFunc,
   partializedHomebaseStore,
 } from "./homebase";
@@ -24,7 +17,6 @@ import {
   createSpaceStoreFunc,
   partializedSpaceStore,
   SpaceStore,
-  spaceStoreDefaults,
 } from "./space/spaceStore";
 import { usePrivy } from "@privy-io/react-auth";
 
@@ -37,14 +29,17 @@ export type AppStore = {
   getIsAccountReady: () => boolean;
 };
 
-const makeStoreFunc = (set, get, state) => ({
+const makeStoreFunc = (set, get, state): AppStore => ({
   setup: createSetupStoreFunc(set, get),
   account: createAccountStoreFunc(set, get, state),
   homebase: createHomeBaseStoreFunc(set, get),
   space: createSpaceStoreFunc(set, get),
   logout: () => {
     set((_draft) => {
-      return rawReturn(makeStoreFunc(set, get, state));
+      return rawReturn({
+        ...makeStoreFunc(set, get, state),
+        isLoggingOut: true,
+      });
     }, "logout");
   },
   getIsAccountReady: () => {
@@ -79,8 +74,8 @@ function useLogout() {
     storeLogout: state.logout,
   }));
 
-  function logout() {
-    if (authenticated) privyLogout();
+  async function logout() {
+    if (authenticated) await privyLogout();
     storeLogout();
   }
 
