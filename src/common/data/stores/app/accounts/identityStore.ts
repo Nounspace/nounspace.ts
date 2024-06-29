@@ -11,10 +11,10 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from "@noble/ciphers/utils";
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
-import { createClient } from "../../database/supabase/clients/component";
-import axiosBackend from "../../api/backend";
+import { createClient } from "../../../database/supabase/clients/component";
+import axiosBackend from "../../../api/backend";
 import {
   IdentityRequest,
   IdentityResponse,

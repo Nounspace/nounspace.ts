@@ -1,12 +1,11 @@
 import React from "react";
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import { first, isArray, isNil, isNull, isUndefined } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { useEffect } from "react";
 import { NextPageWithLayout } from "../_app";
-import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
 import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 
@@ -76,7 +75,6 @@ export const getServerSideProps = (async ({
 }) satisfies GetServerSideProps<SpacePageProps>;
 
 const UserPrimarySpace: NextPageWithLayout = ({
-  handle,
   spaceId,
   fid,
 }: SpacePageProps) => {
@@ -92,19 +90,17 @@ const UserPrimarySpace: NextPageWithLayout = ({
     return <UserDefinedSpace fid={fid} spaceId={spaceId} />;
   }
 
-  return <SpaceNotFound handle={handle} />;
+  return <SpaceNotFound />;
 };
 
 UserPrimarySpace.getLayout = (page: React.ReactElement) => {
   return (
-    <LoggedInStateManager>
-      <div
-        className="min-h-screen max-w-screen h-screen w-screen"
-        style={{ background: "var(--user-theme-background)" }}
-      >
-        {page}
-      </div>
-    </LoggedInStateManager>
+    <div
+      className="min-h-screen max-w-screen h-screen w-screen"
+      style={{ background: "var(--user-theme-background)" }}
+    >
+      {page}
+    </div>
   );
 };
 

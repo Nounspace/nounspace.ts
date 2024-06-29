@@ -35,16 +35,28 @@ const Modal = ({
         className="data-[state=open]:animate-contentShow fixed bg-background top-[40%] left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[6px] p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none"
         onMouseDown={(e) => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
       >
-        {title && (
-          <Dialog.Title className="text-card-foreground m-0 text-[17px] font-medium">
+        {
+          <Dialog.Title
+            className={
+              title
+                ? "text-card-foreground m-0 text-[17px] font-medium"
+                : "invisible"
+            }
+          >
             {title}
           </Dialog.Title>
-        )}
-        {description && (
-          <Dialog.Description className="text-card-foreground/80 mt-[10px] mb-5 text-[15px] leading-normal">
+        }
+        {
+          <Dialog.Description
+            className={
+              description
+                ? "text-card-foreground/80 mt-[10px] mb-5 text-[15px] leading-normal"
+                : "invisible"
+            }
+          >
             {description}
           </Dialog.Description>
-        )}
+        }
         {children}
         {showClose ? (
           <Dialog.Close asChild>

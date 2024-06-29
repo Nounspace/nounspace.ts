@@ -1,8 +1,8 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
-import { StoreGet, StoreSet } from "../createStore";
-import axiosBackend from "../../api/backend";
+import { StoreGet, StoreSet } from "../../createStore";
+import axiosBackend from "../../../api/backend";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -16,7 +16,7 @@ import {
 import moment from "moment";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
-import { createClient } from "../../database/supabase/clients/component";
+import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
 
 type SpaceId = string;
@@ -109,7 +109,7 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.remoteSpaces[spaceId] = cachedSpace;
         draft.space.localSpaces[spaceId] = updatableSpaceConfig;
-      });
+      }, "loadSpace");
       return cachedSpace;
     } catch (e) {
       console.debug(e);
@@ -136,7 +136,7 @@ export const createSpaceStoreFunc = (
     const newSpaceId = data.value!.spaceId;
     set((draft) => {
       draft.space.editableSpaces[newSpaceId] = name;
-    });
+    }, "registerSpace");
     return newSpaceId;
   },
   renameSpace: async (spaceId: string, name: string) => {

@@ -5,8 +5,9 @@ import Query from "./Query";
 import Theme from "./Theme";
 import Privy from "./Privy";
 import AuthenticatorProvider from "./AutheticatorProvider";
-import { AppStoreProvider } from "@/common/data/stores";
+import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
+import LoggedInStateProvider from "./LoggedInStateProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +17,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <Theme>
             <AppStoreProvider>
               <UserThemeProvider>
-                <AuthenticatorProvider>{children}</AuthenticatorProvider>
+                <AuthenticatorProvider>
+                  <LoggedInStateProvider>{children}</LoggedInStateProvider>
+                </AuthenticatorProvider>
               </UserThemeProvider>
             </AppStoreProvider>
           </Theme>

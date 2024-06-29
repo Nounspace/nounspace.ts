@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useAppStore } from "../data/stores";
+import { useAppStore } from "../data/stores/app";
 import { AuthenticatorManagerProvider } from "@/authenticators/AuthenticatorManager";
 
 const AuthenticatorProvider = ({ children }: { children: React.ReactNode }) => {

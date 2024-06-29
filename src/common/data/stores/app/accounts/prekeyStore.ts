@@ -5,7 +5,7 @@ import {
 } from "@/common/lib/signedFiles";
 import { PreKeyRequest, PreKeyResponse } from "@/pages/api/space/prekeys";
 import { SpaceKeys, stringToCipherKey } from "./identityStore";
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import {
   compact,
@@ -28,8 +28,8 @@ import {
 } from "@noble/ciphers/utils";
 import moment from "moment";
 import stringify from "fast-json-stable-stringify";
-import axiosBackend from "../../api/backend";
-import { createClient } from "../../database/supabase/clients/component";
+import axiosBackend from "../../../api/backend";
+import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
 
 class NoCurrentIdentity extends Error {

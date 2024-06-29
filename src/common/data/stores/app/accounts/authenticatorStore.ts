@@ -1,14 +1,14 @@
 import { AuthenticatorConfig } from "@/authenticators/AuthenticatorManager";
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { debounce, isNull, keys } from "lodash";
-import { createClient } from "../../database/supabase/clients/component";
+import { createClient } from "../../../database/supabase/clients/component";
 import { authenticatorsPath } from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
 import { AuthenticatorUpdateRequest } from "@/pages/api/space/authenticators";
-import axiosBackend from "../../api/backend";
+import axiosBackend from "../../../api/backend";
 
 export interface AuthenticatorState {
   // Local state
@@ -69,7 +69,7 @@ export const authenticatorStore = (
         set((draft) => {
           draft.account.authenticatorConfig = authConfig;
           draft.account.authenticatorRemoteConfig = authConfig;
-        });
+        }, "loadAuthenticators");
       }
     } catch (e) {
       console.debug(e);
@@ -101,7 +101,7 @@ export const authenticatorStore = (
         set((draft) => {
           draft.account.authenticatorRemoteConfig =
             get().account.authenticatorConfig;
-        });
+        }, "commitAuthenticatorUpdatesToDatabase");
       } catch (e) {
         console.debug("failed to save authenticator data, trying again");
         get().account.commitAuthenticatorUpdatesToDatabase();
@@ -111,7 +111,7 @@ export const authenticatorStore = (
   saveAuthenticatorConfig: async (newConfig) => {
     set((draft) => {
       draft.account.authenticatorConfig = newConfig;
-    });
+    }, "saveAuthenticatorConfig");
     get().account.commitAuthenticatorUpdatesToDatabase();
   },
 });
