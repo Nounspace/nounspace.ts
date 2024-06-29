@@ -4,8 +4,8 @@ import {
   FidsLinkedToIdentityResponse,
 } from "@/pages/api/fid-link";
 import { AppStore } from "..";
-import { StoreGet, StoreSet } from "../createStore";
-import axiosBackend from "../../api/backend";
+import { StoreGet, StoreSet } from "../../createStore";
+import axiosBackend from "../../../api/backend";
 import { concat, isUndefined } from "lodash";
 import { hashObject } from "@/common/lib/signedFiles";
 import moment from "moment";

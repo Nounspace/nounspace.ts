@@ -1,14 +1,19 @@
 import { rawReturn } from "mutative";
 import { createJSONStorage } from "zustand/middleware";
-import { createStore, createStoreBindings } from "./createStore";
+import { createStore, createStoreBindings } from "../createStore";
 import {
   AccountStore,
   accountStoreDefaults,
   createAccountStoreFunc,
   partializedAccountStore,
 } from "./accounts";
-import { SetupStore, createSetupStoreFunc, setupStoreDefaults } from "./setup";
-import { merge } from "lodash";
+import {
+  SetupStep,
+  SetupStore,
+  createSetupStoreFunc,
+  setupStoreDefaults,
+} from "./setup";
+import { isUndefined, merge } from "lodash";
 import {
   HomeBaseStore,
   homeBaseStoreDefaults,
@@ -28,6 +33,7 @@ export type AppStore = {
   homebase: HomeBaseStore;
   space: SpaceStore;
   logout: () => void;
+  getIsAccountReady: () => boolean;
 };
 
 export function createAppStore() {
@@ -46,6 +52,12 @@ export function createAppStore() {
             space: spaceStoreDefaults,
           });
         });
+      },
+      getIsAccountReady: () => {
+        return (
+          get().setup.currentStep === SetupStep.DONE &&
+          !isUndefined(get().account.getCurrentIdentity())
+        );
       },
     }),
     {

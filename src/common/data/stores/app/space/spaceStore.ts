@@ -1,8 +1,8 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
-import { StoreGet, StoreSet } from "../createStore";
-import axiosBackend from "../../api/backend";
+import { StoreGet, StoreSet } from "../../createStore";
+import axiosBackend from "../../../api/backend";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -16,7 +16,7 @@ import {
 import moment from "moment";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
-import { createClient } from "../../database/supabase/clients/component";
+import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
 
 type SpaceId = string;

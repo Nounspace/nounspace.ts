@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
-import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
 import { NextPageWithLayout } from "../_app";
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
 
 const Homebase: NextPageWithLayout = () => {
@@ -30,14 +29,12 @@ const Homebase: NextPageWithLayout = () => {
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <LoggedInStateManager>
-      <div
-        className="min-h-screen max-w-screen h-screen w-screen"
-        style={{ background: "var(--user-theme-background)" }}
-      >
-        {page}
-      </div>
-    </LoggedInStateManager>
+    <div
+      className="min-h-screen max-w-screen h-screen w-screen"
+      style={{ background: "var(--user-theme-background)" }}
+    >
+      {page}
+    </div>
   );
 };
 

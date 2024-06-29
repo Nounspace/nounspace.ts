@@ -1,14 +1,14 @@
 import { AuthenticatorConfig } from "@/authenticators/AuthenticatorManager";
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { debounce, isNull, keys } from "lodash";
-import { createClient } from "../../database/supabase/clients/component";
+import { createClient } from "../../../database/supabase/clients/component";
 import { authenticatorsPath } from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
 import { AuthenticatorUpdateRequest } from "@/pages/api/space/authenticators";
-import axiosBackend from "../../api/backend";
+import axiosBackend from "../../../api/backend";
 
 export interface AuthenticatorState {
   // Local state

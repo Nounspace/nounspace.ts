@@ -1,4 +1,4 @@
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 
 export enum SetupStep {

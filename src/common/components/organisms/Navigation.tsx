@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 

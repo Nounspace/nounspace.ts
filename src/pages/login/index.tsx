@@ -1,4 +1,4 @@
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import { Button } from "@/common/components/atoms/button";
 import Spinner from "@/common/components/atoms/spinner";
 import { useLogin, usePrivy } from "@privy-io/react-auth";

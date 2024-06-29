@@ -5,7 +5,7 @@ import {
   useWallets,
 } from "@privy-io/react-auth";
 import type { AppStore } from "..";
-import { StoreSet } from "../createStore";
+import { StoreSet } from "../../createStore";
 import { find, isUndefined } from "lodash";
 import { signMessage as signExternalWalletMessage } from "@/common/lib/wallets";
 import { useEffect, useState } from "react";

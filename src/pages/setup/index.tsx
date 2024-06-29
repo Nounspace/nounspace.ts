@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Wallet, usePrivy } from "@privy-io/react-auth";
 import { useRouter } from "next/router";
 import Spinner from "@/common/components/atoms/spinner";
-import { useAppStore } from "@/common/data/stores";
-import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
+import { useAppStore } from "@/common/data/stores/app";
+import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
 
 /**
  * Set up flow:
