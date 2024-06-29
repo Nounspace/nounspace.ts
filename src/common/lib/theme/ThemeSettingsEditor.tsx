@@ -178,7 +178,7 @@ export function ThemeSettingsEditor({
               <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
                 If you exit, any changes made will not be saved.
               </p>
-              <div className="flex items-center justify-center">
+              <div className="flex items-center gap-2 justify-center">
                 <button
                   onClick={() => setShowConfirmCancel(false)}
                   className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
@@ -189,14 +189,14 @@ export function ThemeSettingsEditor({
                 </button>
                 <button
                   onClick={cancelAndClose}
-                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                  className="flex-auto justify-center flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
                 >
-                  <div className="ml-4 flex items-center">
+                  <div className="gap-2 flex items-center">
                     <FaTriangleExclamation
                       className="h-8l shrink-0"
                       aria-hidden="true"
                     />
-                    <span className="ml-4 mr-4">Exit</span>
+                    <span>Exit</span>
                   </div>
                 </button>
               </div>
@@ -204,7 +204,7 @@ export function ThemeSettingsEditor({
           ) : (
             // X Button and Save Button (shows first)
             <>
-              <div className="mt-40 pt-2 flex items-center justify-center">
+              <div className="mt-40 gap-2 pt-2 flex items-center justify-center">
                 <button
                   onClick={() => setShowConfirmCancel(true)}
                   className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
@@ -216,15 +216,10 @@ export function ThemeSettingsEditor({
 
                 <button
                   onClick={saveAndClose}
-                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  className="flex-auto items-center justify-center gap-2 flex rounded-xl p-2 px-auto bg-[#1C64F2] hover:[#0d4ece] text-white font-semibold"
                 >
-                  <div className="ml-4 flex items-center">
-                    <FaFloppyDisk
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-4 mr-4">Save</span>
-                  </div>
+                  <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+                  <span>Save</span>
                 </button>
               </div>
             </>

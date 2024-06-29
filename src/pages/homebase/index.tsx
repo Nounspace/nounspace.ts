@@ -32,7 +32,7 @@ Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <LoggedInStateManager>
       <div
-        className="min-h-screen max-w-screen h-screen w-screen"
+        className="min-h-screen max-w-screen h-screen w-screen flex justify-center"
         style={{ background: "var(--user-theme-background)" }}
       >
         {page}

@@ -19,8 +19,8 @@ const profileProperties: FidgetProperties = {
   icon: 0x1f464, // This is the hex code for an emoji
   fields: [
     {
-      fieldName: "Bio",
-      default: "Hello World!",
+      fieldName: "fid",
+      default: null,
       required: true,
       inputSelector: TextInput,
     },
@@ -39,6 +39,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   const [userData, setUserData] = useState<BulkUsersResponse>();
 
   useEffect(() => {
+    if (!fid) return;
+
     axiosBackend
       .get<BulkUsersResponse>("/api/farcaster/neynar/users", {
         params: {
@@ -48,7 +50,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       .then((resp) => {
         setUserData(resp.data);
       });
-  }, []);
+  }, [fid]);
 
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {

@@ -23,7 +23,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
       <a
         href="#"
         className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          "flex items-center py-2 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
           active ? "bg-gray-100" : "",
         )}
       >
@@ -53,7 +53,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
+      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r bg-white"
       aria-label="Sidebar"
     >
       <Modal
@@ -64,24 +64,28 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       >
         <CreateCast />
       </Modal>
-      <div className="pt-24 pb-24 h-full">
-        <div className="flex-col flex h-full w-64 mx-auto px-8 py-4 overflow-y-auto">
+      <div className="pt-12 pb-12 h-full">
+        <div className="flex flex-col h-full w-[270px] ml-auto">
           <BrandHeader />
-          <div className="text-lg font-medium">
-            <ul className="space-y-2">
-              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-              <NavItem label="Explore" Icon={ExploreIcon} />
-              <NavItem label="Channels" Icon={ChannelsIcon} />
-              <NavItem label="Bookmark" Icon={BookmarkIcon} />
-            </ul>
-            <div className="mt-10">
+          <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
+            <div className="flex-auto">
+              <ul className="space-y-2">
+                <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+                <NavItem label="Explore" Icon={ExploreIcon} />
+                <NavItem label="Channels" Icon={ChannelsIcon} />
+                <NavItem label="Bookmark" Icon={BookmarkIcon} />
+              </ul>
+            </div>
+          </div>
+          <div className="flex flex-col flex-auto justify-between border-t px-4">
+            <div className="mt-8 px-2">
               <Player url={userTheme?.properties.musicURL} />
             </div>
-            <div className="mt-40 pt-2 flex items-center justify-center">
+            <div className="pt-3 flex items-center gap-2 justify-center">
               {isEditable && (
                 <button
                   onClick={turnOnEditMode}
-                  className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
                 >
                   <div className="flex items-center">
                     <EditIcon />
@@ -89,12 +93,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                 </button>
               )}
               <button
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                className="flex flex-1 justify-center flex-grow-1 rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
                 onClick={openCastModal}
               >
-                <div className="flex ml-12 mr-12 items-center">
-                  <span className="">Cast</span>
-                </div>
+                <span className="">Cast</span>
               </button>
             </div>
           </div>

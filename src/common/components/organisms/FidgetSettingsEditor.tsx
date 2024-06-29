@@ -128,7 +128,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           </>
         ) : (
           // X Button and Save Button (shows first)
-          <div className="pt-2 flex items-center justify-center">
+          <div className="pt-2 gap-2 flex items-center justify-center">
             <button
               type="button"
               onClick={() => setShowConfirmCancel(true)}
@@ -141,9 +141,9 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
             <button
               type="submit"
-              className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              className="flex flex-auto justify-center items-center rounded-xl p-2 px-auto bg-[#1C64F2] hover:[#0d4ece] text-white font-semibold"
             >
-              <div className="ml-4 mr-4 flex items-center">Done</div>
+              <div className="flex items-center">Done</div>
             </button>
           </div>
         )}
