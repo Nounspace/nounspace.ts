@@ -43,7 +43,6 @@ export default function UserDefinedSpace({
   const [loadSuccess, setLoadSuccesss] = useState(false);
 
   useEffect(() => {
-    console.log("loading space", providedSpaceId);
     if (!isNil(providedSpaceId)) {
       loadSpace(providedSpaceId).then((res) => {
         setLoadSuccesss(res !== null);
