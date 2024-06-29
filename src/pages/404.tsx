@@ -1,9 +1,9 @@
 import React from "react";
-import Navigation from "../organisms/Navigation";
+import Navigation from "@/common/components/organisms/Navigation";
 import { noop } from "lodash";
 import Image from "next/image";
 
-export default function SpaceNotFound() {
+export default function Custom404() {
   return (
     <>
       <div className="flex w-full h-full">
@@ -14,7 +14,7 @@ export default function SpaceNotFound() {
         </div>
 
         <div className={"w-9/12 transition-all duration-100 ease-out p-8"}>
-          <Image src="/images/UserNotFound.png" alt="User not found"></Image>
+          <Image src="/images/404.png" alt="User not found"></Image>
         </div>
       </div>
     </>
