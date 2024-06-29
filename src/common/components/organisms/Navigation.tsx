@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -12,6 +12,7 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
+import { current } from "mutative";
 
 type NavItemProps = {
   label: string;
@@ -25,32 +26,6 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
-};
-
-const NavItem: React.FC<NavItemProps> = ({
-  label,
-  active,
-  Icon,
-  href,
-  disable = false,
-  openInNewTab = false,
-}) => {
-  return (
-    <li>
-      <Link
-        href={disable ? "#" : href}
-        className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-          active ? "bg-gray-100" : "",
-        )}
-        rel={openInNewTab ? "noopener noreferrer" : undefined}
-        target={openInNewTab ? "_blank" : undefined}
-      >
-        <Icon aria-hidden="true" />
-        <span className="ms-2">{label}</span>
-      </Link>
-    </li>
-  );
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
@@ -93,6 +68,38 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     [user],
   );
 
+  const [currentUrl, setCurrentUrl] = useState("");
+
+  useEffect(() => {
+    // Get the current URL
+    setCurrentUrl(window.location.pathname);
+  }, []);
+
+  const NavItem: React.FC<NavItemProps> = ({
+    label,
+    Icon,
+    href,
+    disable = false,
+    openInNewTab = false,
+  }) => {
+    return (
+      <li>
+        <Link
+          href={disable ? "#" : href}
+          className={mergeClasses(
+            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+            href === currentUrl ? "bg-gray-100" : "",
+          )}
+          rel={openInNewTab ? "noopener noreferrer" : undefined}
+          target={openInNewTab ? "_blank" : undefined}
+        >
+          <Icon aria-hidden="true" />
+          <span className="ms-2">{label}</span>
+        </Link>
+      </li>
+    );
+  };
+
   return (
     <aside
       id="logo-sidebar"
@@ -113,12 +120,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem
-                  label="Homebase"
-                  Icon={HomeIcon}
-                  active={true}
-                  href="/homebase"
-                />
+                <NavItem label="Homebase" Icon={HomeIcon} href="/homebase" />
                 <NavItem
                   label="Fair Launch"
                   Icon={IoMdRocket}
@@ -133,29 +135,27 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     href={`/s/${username}`}
                   />
                 )}
-                <li>
-                  {isLoggedIn ? (
-                    <button
-                      className={mergeClasses(
-                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                      )}
-                      onClick={logout}
-                    >
-                      <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
-                      <span className="ms-2">Logout</span>
-                    </button>
-                  ) : (
-                    <button
-                      className={mergeClasses(
-                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                      )}
-                      onClick={openModal}
-                    >
-                      <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
-                      <span className="ms-2">Login</span>
-                    </button>
-                  )}
-                </li>
+                {isLoggedIn ? (
+                  <button
+                    className={mergeClasses(
+                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                    )}
+                    onClick={logout}
+                  >
+                    <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
+                    <span className="ms-2">Logout</span>
+                  </button>
+                ) : (
+                  <button
+                    className={mergeClasses(
+                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                    )}
+                    onClick={openModal}
+                  >
+                    <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
+                    <span className="ms-2">Login</span>
+                  </button>
+                )}
               </ul>
             </div>
           </div>
@@ -203,71 +203,6 @@ const HomeIcon = () => {
         strokeLinejoin="round"
         strokeWidth="2"
         d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"
-      />
-    </svg>
-  );
-};
-
-const ExploreIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeWidth="2"
-        d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
-      />
-    </svg>
-  );
-};
-
-const ChannelsIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="M19 7h1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h11.5M7 14h6m-6 3h6m0-10h.5m-.5 3h.5M7 7h3v3H7V7Z"
-      />
-    </svg>
-  );
-};
-
-const BookmarkIcon = () => {
-  return (
-    <svg
-      className="w-6 h-6 text-gray-800 dark:text-white"
-      aria-hidden="true"
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth="2"
-        d="m17 21-5-4-5 4V3.889a.92.92 0 0 1 .244-.629.808.808 0 0 1 .59-.26h8.333a.81.81 0 0 1 .589.26.92.92 0 0 1 .244.63V21Z"
       />
     </svg>
   );
