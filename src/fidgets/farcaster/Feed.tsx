@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -12,6 +12,8 @@ import { ScrollArea } from "@/common/components/atoms/scroll-area";
 import { map } from "lodash";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
+import Loading from "@/common/components/molecules/Loading";
+import { useInView } from "react-intersection-observer";
 
 export type feedFidgetSettings = {
   feedType: FeedType;
@@ -58,9 +60,9 @@ export const useGetCasts = (feedType: FeedType, fid: number) => {
 
       return data;
     },
-    initialPageParam: undefined as NextCursor | undefined,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage, _allPages, _lastPageParam, _allPageParams) =>
-      lastPage.next,
+      lastPage.next.cursor,
   });
 };
 
@@ -68,8 +70,14 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   settings: { feedType },
 }) => {
   const { fid } = useFarcasterSigner("feed");
-  const { fetchNextPage, hasNextPage, data, isLoading, error, isFetching } =
-    useGetCasts(feedType, fid);
+  const {
+    data,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    error,
+  } = useGetCasts(feedType, fid);
 
   // TO DO: trigger new page loading as inifite scroll
   // TO DO: Handle respons errors
@@ -78,19 +86,44 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   // https://tanstack.com/query/latest/docs/framework/react/reference/useInfiniteQuery
   // https://www.radix-ui.com/primitives/docs/components/scroll-area
 
+  const [ref, inView] = useInView();
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView]);
+
   return (
-    <div>
-      {isLoading ? (
-        "LOADING..."
-      ) : (
-        <ScrollArea>
-          {map(data?.pages, (page) => {
-            return map(page.casts, (cast) => {
-              return <CastRow cast={cast} />;
-            });
-          })}
-        </ScrollArea>
-      )}
+    <div className="h-full overflow-scroll justify-center items-center">
+      <div>
+        {/* data.pages: Page[] */}
+        {isError ? (
+          <div>{"Error"}</div>
+        ) : (
+          data?.pages.map((page, pageNum) => (
+            <React.Fragment key={pageNum}>
+              {page.casts.map((cast, index) => (
+                <CastRow cast={cast} key={index} />
+              ))}
+            </React.Fragment>
+          ))
+        )}
+      </div>
+      {/* Pagination Controls */}
+      <div ref={ref} className="h-3/6">
+        {isFetchingNextPage ? (
+          <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
+            <Loading />
+          </div>
+        ) : hasNextPage ? (
+          "Fetch More Data"
+        ) : (
+          <div className="h-full w-full flex flex-col justify-center items-center">
+            <Loading />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
