@@ -2,16 +2,33 @@ import { Draft, create as mutativeCreate } from "mutative";
 import { StoreApi, create, useStore } from "zustand";
 import { PersistOptions, persist, devtools } from "zustand/middleware";
 import React, { ReactNode, useRef, createContext, useContext } from "react";
+import { set as lodashSet } from "lodash";
 
 type MutativeFunction<T> = (draft: Draft<T>) => void;
 
+type MutativeConfigSetFunction<T> = (
+  fn: MutativeFunction<T>,
+  name?: string,
+) => void;
+
 type MatativeConfig<T> = (
-  set: (fn: MutativeFunction<T>, name?: string) => void,
+  set: MutativeConfigSetFunction<T>,
   get: StoreApi<T>["getState"],
   store: T,
 ) => T;
 
 export type SetterFunction<T> = (t: T) => void;
+
+export function createSetterFunction<T, S extends object>(
+  path: string,
+  name: string,
+  set: MutativeConfigSetFunction<S>,
+): SetterFunction<T> {
+  return (val) =>
+    set((draft: Draft<S>) => {
+      lodashSet(draft, path, val);
+    }, name);
+}
 
 type StoreSetFunction<T> = StoreApi<T>["setState"] extends (
   ...a: infer U
