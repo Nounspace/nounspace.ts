@@ -17,11 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
-      <Navigation
-        isEditable={isEditable}
-        enterEditMode={enterEditMode}
-        hidden={editMode}
-      />
+      <Navigation isEditable={isEditable} enterEditMode={enterEditMode} />
     </>
   );
 };
