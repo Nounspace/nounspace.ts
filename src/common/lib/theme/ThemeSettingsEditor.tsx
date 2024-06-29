@@ -136,16 +136,13 @@ export function ThemeSettingsEditor({
             </TabsContent>
             <TabsContent value="style" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Space background color</h4>
+                <h4 className="text-sm">Background color</h4>
                 <ColorSelector
                   className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                   innerClassName="rounded-full"
                   value={background as Color}
                   onChange={themePropSetter<Color>("background")}
                 />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Fidget style</h4>
               </div>
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
