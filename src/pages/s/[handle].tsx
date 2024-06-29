@@ -75,7 +75,6 @@ export const getServerSideProps = (async ({
 }) satisfies GetServerSideProps<SpacePageProps>;
 
 const UserPrimarySpace: NextPageWithLayout = ({
-  handle,
   spaceId,
   fid,
 }: SpacePageProps) => {
@@ -91,7 +90,7 @@ const UserPrimarySpace: NextPageWithLayout = ({
     return <UserDefinedSpace fid={fid} spaceId={spaceId} />;
   }
 
-  return <SpaceNotFound handle={handle} />;
+  return <SpaceNotFound />;
 };
 
 UserPrimarySpace.getLayout = (page: React.ReactElement) => {
