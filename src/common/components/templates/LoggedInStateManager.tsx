@@ -1,21 +1,19 @@
 import React, { useEffect } from "react";
-import { useRouter } from "next/router";
-import SetupLoadingScreen from "../organisms/SetupLoadingScreen";
 import { usePrivy } from "@privy-io/react-auth";
-import { useAppStore } from "@/common/data/stores";
-import { useSignMessage } from "@/common/data/stores/accounts/privyStore";
-import { SetupStep } from "@/common/data/stores/setup";
+import { useAppStore } from "@/common/data/stores/app";
+import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
+import { SetupStep } from "@/common/data/stores/app/setup";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { isEqual, isUndefined } from "lodash";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
 import { bytesToHex } from "@noble/ciphers/utils";
+import Modal from "../molecules/Modal";
 
 type LoggedInLayoutProps = {
   children: React.ReactNode;
 };
 
 const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
-  const router = useRouter();
   const {
     ready,
     authenticated,
@@ -63,7 +61,6 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
   function logout() {
     if (authenticated) privyLogout();
     storeLogout();
-    router.push("/login");
   }
 
   async function loadWallet() {
@@ -130,23 +127,6 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
     setCurrentStep(SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED);
   };
 
-  // For whatever reason, running this as a method that was triggered by
-  // switch case useEffect down the page didn't work
-  // but this does. Something to refactor later?
-  useEffect(() => {
-    if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED) {
-      Promise.resolve(authenticatorManager.getInitializedAuthenticators()).then(
-        (initializedAuthNames) => {
-          const initializedAuthenticators = new Set(initializedAuthNames);
-          const requiredAuthSet = new Set(requiredAuthenticators);
-          if (isEqual(initializedAuthenticators, requiredAuthSet)) {
-            setCurrentStep(SetupStep.AUTHENTICATORS_INITIALIZED);
-          }
-        },
-      );
-    }
-  }, [authenticatorManager, currentStep]);
-
   const registerAccounts = async () => {
     let currentIdentity = getCurrentIdentity()!;
     if (currentIdentity.associatedFids.length > 0) {
@@ -202,6 +182,15 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
             installRequiredAuthenticators();
             break;
           case SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED:
+            Promise.resolve(
+              authenticatorManager.getInitializedAuthenticators(),
+            ).then((initializedAuthNames) => {
+              const initializedAuthenticators = new Set(initializedAuthNames);
+              const requiredAuthSet = new Set(requiredAuthenticators);
+              if (isEqual(initializedAuthenticators, requiredAuthSet)) {
+                setCurrentStep(SetupStep.AUTHENTICATORS_INITIALIZED);
+              }
+            });
             break;
           case SetupStep.AUTHENTICATORS_INITIALIZED:
             registerAccounts();
@@ -212,15 +201,18 @@ const LoggedInStateManager: React.FC<LoggedInLayoutProps> = ({ children }) => {
         }
       }
     }
-  }, [currentStep, walletsReady, ready, authenticated]);
+  }, [
+    currentStep,
+    walletsReady,
+    ready,
+    authenticated,
+    authenticatorManager.lastUpdatedAt,
+  ]);
 
   return (
     <>
-      {currentStep !== SetupStep.DONE ? (
-        <SetupLoadingScreen currentStep={currentStep} />
-      ) : (
-        children
-      )}
+      <Modal></Modal>
+      {children}
     </>
   );
 };
