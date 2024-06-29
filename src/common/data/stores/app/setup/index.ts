@@ -26,12 +26,15 @@ interface SetupStoreState {
   currentStep: SetupStep;
   modalOpen: boolean;
   keepModalOpen: boolean;
+  // nogs
   nogsRecheckTimerLength: number; // How long to reque for (ms)
   nogsTimeoutTimer: ReturnType<typeof setTimeout> | undefined;
   nogsIsChecking: boolean;
   nogsRecheckCountDown: number; // How long until next recheck (seconds)
   nogsRecheckCountDownTimer: ReturnType<typeof setTimeout> | undefined;
   nogsShouldRecheck: boolean;
+  // wallet signatures
+  isRequestingWalletSignature: boolean;
 }
 
 interface SetupStoreActions {
@@ -48,6 +51,7 @@ interface SetupStoreActions {
   setNogsTimeoutTimer: SetterFunction<
     ReturnType<typeof setTimeout> | undefined
   >;
+  setIsRequestingWalletSignature: SetterFunction<boolean>;
 }
 
 export type SetupStore = SetupStoreState & SetupStoreActions;
@@ -56,13 +60,15 @@ export const setupStoreDefaults: SetupStoreState = {
   currentStep: SetupStep.NOT_SIGNED_IN,
   modalOpen: false,
   keepModalOpen: false,
-
+  // nogs
   nogsRecheckTimerLength: RECHECK_INITIAL_TIME,
   nogsIsChecking: false,
   nogsShouldRecheck: false,
   nogsRecheckCountDown: 0,
   nogsTimeoutTimer: undefined,
   nogsRecheckCountDownTimer: undefined,
+  // wallet signatures
+  isRequestingWalletSignature: false,
 };
 
 export const createSetupStoreFunc = (
@@ -111,6 +117,11 @@ export const createSetupStoreFunc = (
   setNogsTimeoutTimer: createSetterFunction(
     "setup.nogsTimeoutTimer",
     "setNogsTimeoutTimer",
+    set,
+  ),
+  setIsRequestingWalletSignature: createSetterFunction(
+    "setup.isRequestingWalletSignature",
+    "setIsRequestingWalletSignature",
     set,
   ),
 });

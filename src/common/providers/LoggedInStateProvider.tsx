@@ -48,6 +48,9 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     nogsRecheckCountDown,
     setNogsRecheckCountDownTimer,
     nogsShouldRecheck,
+    // wallet signatures
+    isRequestingWalletSignature,
+    setIsRequestingWalletSignature,
   } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -81,6 +84,9 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     nogsRecheckCountDown: state.setup.nogsRecheckCountDown,
     setNogsRecheckCountDownTimer: state.setup.setNogsRecheckCountDownTimer,
     nogsShouldRecheck: state.setup.nogsShouldRecheck,
+    // wallet signatures
+    isRequestingWalletSignature: state.setup.isRequestingWalletSignature,
+    setIsRequestingWalletSignature: state.setup.setIsRequestingWalletSignature,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
@@ -103,6 +109,8 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   async function loadIdentity() {
     if (walletsReady && ready && authenticated && user) {
       if (isUndefined(getCurrentIdentity())) {
+        if (isRequestingWalletSignature) return;
+        setIsRequestingWalletSignature(true);
         const wallet = user.wallet!;
         await loadIdentitiesForWallet(wallet);
         const identities = getIdentitiesForWallet(wallet);
@@ -125,6 +133,8 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
           console.error(e);
           logout();
           return;
+        } finally {
+          setIsRequestingWalletSignature(false);
         }
       }
       setCurrentStep(SetupStep.IDENTITY_LOADED);
