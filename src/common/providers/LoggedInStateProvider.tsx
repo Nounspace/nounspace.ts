@@ -225,27 +225,24 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   ]);
 
   useEffect(() => {
-    if (ready) {
-      if (!authenticated) logout();
-      else {
-        if (authenticated && currentStep === SetupStep.NOT_SIGNED_IN) {
-          setCurrentStep(SetupStep.SIGNED_IN);
-        } else if (walletsReady) {
-          if (currentStep === SetupStep.SIGNED_IN) {
-            loadWallet();
-          } else if (currentStep === SetupStep.WALLET_CONNECTED) {
-            checkForNogs();
-          } else if (currentStep === SetupStep.TOKENS_FOUND) {
-            loadIdentity();
-          } else if (currentStep === SetupStep.IDENTITY_LOADED) {
-            loadAuthenticators();
-          } else if (currentStep === SetupStep.AUTHENTICATORS_LOADED) {
-            installRequiredAuthenticators();
-          } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
-            registerAccounts();
-          } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
-            setCurrentStep(SetupStep.DONE);
-          }
+    if (ready && authenticated) {
+      if (currentStep === SetupStep.NOT_SIGNED_IN) {
+        setCurrentStep(SetupStep.SIGNED_IN);
+      } else if (walletsReady) {
+        if (currentStep === SetupStep.SIGNED_IN) {
+          loadWallet();
+        } else if (currentStep === SetupStep.WALLET_CONNECTED) {
+          checkForNogs();
+        } else if (currentStep === SetupStep.TOKENS_FOUND) {
+          loadIdentity();
+        } else if (currentStep === SetupStep.IDENTITY_LOADED) {
+          loadAuthenticators();
+        } else if (currentStep === SetupStep.AUTHENTICATORS_LOADED) {
+          installRequiredAuthenticators();
+        } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
+          registerAccounts();
+        } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
+          setCurrentStep(SetupStep.DONE);
         }
       }
     }
