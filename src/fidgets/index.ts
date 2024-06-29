@@ -15,6 +15,8 @@ export const CompleteFidgets = {
   //
   example:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Example : undefined,
+  profile:
+    process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
   frame: Frame,
   cast: Cast,
@@ -24,7 +26,6 @@ export const CompleteFidgets = {
   gallery: Gallery,
   text: TextFidget,
   iframe: IFrame,
-  profile: Profile,
   // Nouns
   governance: NounishGovernance,
 };

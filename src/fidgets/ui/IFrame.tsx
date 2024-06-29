@@ -17,7 +17,7 @@ const DISALLOW_URL_PATTERNS = [
 
 const frameConfig: FidgetProperties = {
   fidgetName: "iframe",
-  icon: 0x23f9,
+  icon: 0x1f310, // 🌐
   fields: [
     {
       fieldName: "url",

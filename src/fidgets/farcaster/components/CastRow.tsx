@@ -15,6 +15,7 @@ import { includes, isObject, isUndefined, map, get } from "lodash";
 import Linkify from "linkify-react";
 import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";
+import Image from "next/image";
 import {
   CastWithInteractions,
   EmbedUrl,
@@ -489,10 +490,12 @@ export const CastRow = ({
                   </span>
                   <span>
                     {cast.author.power_badge && (
-                      <img
+                      <Image
                         src="/images/ActiveBadge.webp"
                         className="ml-2 mt-0.5 h-[17px] w-[17px]"
                         alt="power badge"
+                        width={50}
+                        height={30}
                       />
                     )}
                   </span>

@@ -192,7 +192,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         ? Math.round(
             // The 64 magic number here is the height of the tabs bar above the grid
             (height -
-              64 -
+              48 -
               gridDetails.margin[0] * gridDetails.maxRows -
               gridDetails.containerPadding[0] * 2) /
               gridDetails.maxRows,
