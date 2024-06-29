@@ -5,6 +5,8 @@ import React, { ReactNode, useRef, createContext, useContext } from "react";
 
 type MutativeFunction<T> = (draft: Draft<T>) => void;
 
+export type SetterFunction<T> = (T) => void;
+
 export const mutative =
   <T>(config) =>
   (set: StoreApi<T>["setState"], get: StoreApi<T>["getState"], store: T) =>
