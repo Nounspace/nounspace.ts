@@ -240,6 +240,10 @@
   opacity: 0;
 }
 
+.react-tweet-theme {
+  --tweet-container-margin: 0px !important;
+}
+
 /* Color picker. Because the `disableDarkMode` prop does not work currently */
 @media (prefers-color-scheme: dark) {
   div[class*="core_rbgcpControlBtnWrapper"] {

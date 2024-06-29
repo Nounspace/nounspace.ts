@@ -33,7 +33,7 @@ const WarpcastImage = ({ url }: { url: string }) => {
   return (
     <>
       <img
-        className="mt-2 max-h-48 md:max-h-72 object-left rounded-md"
+        className="object-cover"
         style={{ display: isLoading ? "none" : "block" }}
         src={getImageViaCdnUrl(url, skipCdn)}
         alt=""
