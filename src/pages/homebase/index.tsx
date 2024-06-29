@@ -31,10 +31,7 @@ const Homebase: NextPageWithLayout = () => {
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
     <LoggedInStateManager>
-      <div
-        className="min-h-screen max-w-screen h-screen w-screen"
-        style={{ background: "var(--user-theme-background)" }}
-      >
+      <div className="min-h-screen max-w-screen h-screen w-screen flex justify-center">
         {page}
       </div>
     </LoggedInStateManager>

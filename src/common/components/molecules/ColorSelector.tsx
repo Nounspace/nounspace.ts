@@ -37,12 +37,12 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
         <Button
           variant="outline"
           className={mergeClasses(
-            "p-0.5 h-9 w-9 flex flex-shrink-0 items-stretch border cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none",
+            "p-0.5 h-9 w-9 flex flex-shrink-0 items-stretch border cursor-pointer rounded-md disabled:opacity-50 disabled:pointer-events-none",
             className,
           )}
         >
           <div
-            className={mergeClasses("flex-1 rounded-md", innerClassName)}
+            className={mergeClasses("flex-1 rounded-[6px]", innerClassName)}
             style={{ backgroundColor: value }}
           />
         </Button>

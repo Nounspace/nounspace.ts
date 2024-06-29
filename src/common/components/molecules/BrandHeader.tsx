@@ -9,8 +9,8 @@ const BrandHeader = () => {
         src="/images/noggles.svg"
         className="h-13 me-3"
         alt="Nounspace Logo"
-        width={50}
-        height={30}
+        width={60}
+        height={40}
       />
       {false && (
         <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
