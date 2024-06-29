@@ -1,5 +1,6 @@
-import { StoreGet, StoreSet } from "../../createStore";
+import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
+import { ReactNode } from "react";
 
 export enum SetupStep {
   START = "Connecting to wallet...",
@@ -18,6 +19,12 @@ interface SetupStoreState {
 
 interface SetupStoreActions {
   setCurrentStep: (step: SetupStep) => void;
+  modalContent: ReactNode | undefined;
+  setModalContent: SetterFunction<ReactNode | undefined>;
+  modalOpen: boolean;
+  setModalOpen: SetterFunction<boolean>;
+  keepModalOpen: boolean;
+  setKeepModalOpen: SetterFunction<boolean>;
 }
 
 export type SetupStore = SetupStoreState & SetupStoreActions;
@@ -36,4 +43,12 @@ export const createSetupStoreFunc = (
       draft.setup.currentStep = step;
     });
   },
+  modalContent: undefined,
+  setModalContent: (content) =>
+    set((draft) => (draft.setup.modalContent = content)),
+  modalOpen: false,
+  setModalOpen: (val) =>
+    set((draft) => (draft.setup.modalOpen = val || draft.setup.keepModalOpen)),
+  keepModalOpen: false,
+  setKeepModalOpen: (val) => set((draft) => (draft.setup.keepModalOpen = val)),
 });
