@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, ReactNode } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -11,6 +11,7 @@ import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
+import { isUndefined } from "lodash";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -34,6 +35,7 @@ type SpaceArgs = {
   saveConfig: (config: SpaceConfig) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
+  profile?: ReactNode;
 };
 
 export default function Space({
@@ -41,6 +43,7 @@ export default function Space({
   saveConfig,
   commitConfig,
   resetConfig,
+  profile,
 }: SpaceArgs) {
   const portalRef = useRef<HTMLDivElement>(null);
   const [editMode, setEditMode] = useState(false);
@@ -104,7 +107,8 @@ export default function Space({
               : "w-9/12 transition-all duration-100 ease-out h-full"
           }
         >
-          <div className={"h-full flex flex-col"}>
+          <div className="h-full flex flex-col">
+            {!isUndefined(profile) ? <div> {profile} </div> : null}
             <LayoutFidget
               layoutConfig={{
                 ...config.layoutDetails.layoutConfig,
