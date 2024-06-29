@@ -89,13 +89,7 @@ export default function Space({
         className="flex w-full h-full max-w-[1596px]"
         style={{ background: "var(--user-theme-background)" }}
       >
-        <div
-          className={
-            editMode
-              ? "flex mx-auto transition-all duration-100 ease-out"
-              : "flex mx-auto transition-all duration-100 ease-out"
-          }
-        >
+        <div className="flex mx-auto transition-all duration-100 ease-out">
           <Sidebar
             editMode={editMode}
             enterEditMode={enterEditMode}

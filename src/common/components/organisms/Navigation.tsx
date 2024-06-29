@@ -8,7 +8,7 @@ import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { Button } from "@/common/components/atoms/button";
 
 type NavItemProps = {
-  label: string;
+  label?: string;
   active?: boolean;
   Icon: React.FC;
 };
@@ -16,23 +16,34 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
-  hidden: boolean;
+  hidden?: boolean;
 };
 
 const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   return (
-    <li>
+    <div>
       <a
         href="#"
         className={mergeClasses(
-          "flex items-center py-2 px-4 text-gray-900 rounded-md dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          "flex items-center py-2 px-4 text-gray-900 rounded-md dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer",
           active ? "bg-gray-100" : "",
         )}
       >
         <Icon aria-hidden="true" />
-        <span className="ms-2">{label}</span>
+        {label && <span className="ms-2">{label}</span>}
       </a>
-    </li>
+    </div>
+  );
+};
+
+const MobileNav = () => {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 flex justify-around px-20 items-center border-t bg-white rounded-t-xl p-4 md:hidden bg-white z-10">
+      <NavItem Icon={HomeIcon} active={true} />
+      <NavItem Icon={ExploreIcon} />
+      <NavItem Icon={ChannelsIcon} />
+      <NavItem Icon={BookmarkIcon} />
+    </div>
   );
 };
 
@@ -57,55 +68,58 @@ const Navigation: React.FC<NavProps> = ({
   }
 
   return (
-    <aside
-      id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r bg-white"
-      aria-label="Sidebar"
-      style={{ display: hidden ? "none" : "" }}
-    >
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        focusMode
-        showClose={false}
+    <>
+      <MobileNav />
+      <aside
+        id="logo-sidebar"
+        className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r bg-white"
+        aria-label="Sidebar"
+        style={{ display: hidden ? "none" : "" }}
       >
-        <CreateCast />
-      </Modal>
-      <div className="pt-12 pb-12 h-full">
-        <div className="flex flex-col h-full w-[270px] ml-auto">
-          <BrandHeader />
-          <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
-            <div className="flex-auto">
-              <ul className="space-y-2">
-                <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-                <NavItem label="Explore" Icon={ExploreIcon} />
-                <NavItem label="Channels" Icon={ChannelsIcon} />
-                <NavItem label="Bookmark" Icon={BookmarkIcon} />
-              </ul>
+        <Modal
+          open={showModal}
+          setOpen={setShowModal}
+          focusMode
+          showClose={false}
+        >
+          <CreateCast />
+        </Modal>
+        <div className="pt-12 pb-12 h-full md:block hidden">
+          <div className="flex flex-col h-full w-[270px] ml-auto">
+            <BrandHeader />
+            <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
+              <div className="flex-auto">
+                <ul className="space-y-2">
+                  <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+                  <NavItem label="Explore" Icon={ExploreIcon} />
+                  <NavItem label="Channels" Icon={ChannelsIcon} />
+                  <NavItem label="Bookmark" Icon={BookmarkIcon} />
+                </ul>
+              </div>
             </div>
-          </div>
-          <div className="flex flex-col flex-auto justify-between border-t px-4">
-            <div className="mt-8 px-2">
-              <Player url={userTheme?.properties.musicURL} />
-            </div>
-            <div className="pt-3 flex items-center gap-2 justify-center">
-              {isEditable && (
-                <Button
-                  onClick={turnOnEditMode}
-                  size="icon"
-                  variant="secondary"
-                >
-                  <EditIcon />
+            <div className="flex flex-col flex-auto justify-between border-t px-4">
+              <div className="mt-8 px-2">
+                <Player url={userTheme?.properties.musicURL} />
+              </div>
+              <div className="pt-3 flex items-center gap-2 justify-center">
+                {isEditable && (
+                  <Button
+                    onClick={turnOnEditMode}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <EditIcon />
+                  </Button>
+                )}
+                <Button onClick={openCastModal} variant="primary" width="auto">
+                  Cast
                 </Button>
-              )}
-              <Button onClick={openCastModal} variant="primary" width="auto">
-                Cast
-              </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 
