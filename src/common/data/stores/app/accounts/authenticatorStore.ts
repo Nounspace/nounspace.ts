@@ -69,7 +69,7 @@ export const authenticatorStore = (
         set((draft) => {
           draft.account.authenticatorConfig = authConfig;
           draft.account.authenticatorRemoteConfig = authConfig;
-        });
+        }, "loadAuthenticators");
       }
     } catch (e) {
       console.debug(e);
@@ -101,7 +101,7 @@ export const authenticatorStore = (
         set((draft) => {
           draft.account.authenticatorRemoteConfig =
             get().account.authenticatorConfig;
-        });
+        }, "commitAuthenticatorUpdatesToDatabase");
       } catch (e) {
         console.debug("failed to save authenticator data, trying again");
         get().account.commitAuthenticatorUpdatesToDatabase();
@@ -111,7 +111,7 @@ export const authenticatorStore = (
   saveAuthenticatorConfig: async (newConfig) => {
     set((draft) => {
       draft.account.authenticatorConfig = newConfig;
-    });
+    }, "saveAuthenticatorConfig");
     get().account.commitAuthenticatorUpdatesToDatabase();
   },
 });

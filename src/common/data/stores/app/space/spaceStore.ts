@@ -109,7 +109,7 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.remoteSpaces[spaceId] = cachedSpace;
         draft.space.localSpaces[spaceId] = updatableSpaceConfig;
-      });
+      }, "loadSpace");
       return cachedSpace;
     } catch (e) {
       console.debug(e);
@@ -136,7 +136,7 @@ export const createSpaceStoreFunc = (
     const newSpaceId = data.value!.spaceId;
     set((draft) => {
       draft.space.editableSpaces[newSpaceId] = name;
-    });
+    }, "registerSpace");
     return newSpaceId;
   },
   renameSpace: async (spaceId: string, name: string) => {

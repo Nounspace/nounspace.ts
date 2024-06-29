@@ -41,7 +41,7 @@ export const farcasterStore = (
       draft.account.spaceIdentities[
         draft.account.getCurrentIdentityIndex()
       ].associatedFids = fids;
-    });
+    }, "setFidsForCurrentIdentity");
   },
   getFidsForCurrentIdentity: async () => {
     const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
