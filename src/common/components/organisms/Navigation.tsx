@@ -5,6 +5,7 @@ import Player from "@/common/components/organisms/Player";
 import { useAppStore } from "@/common/data/stores";
 import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
+import { Button } from "@/common/components/atoms/button";
 
 type NavItemProps = {
   label: string;
@@ -23,7 +24,7 @@ const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
       <a
         href="#"
         className={mergeClasses(
-          "flex items-center py-2 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          "flex items-center py-2 px-4 text-gray-900 rounded-md dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
           active ? "bg-gray-100" : "",
         )}
       >
@@ -83,21 +84,17 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             <div className="pt-3 flex items-center gap-2 justify-center">
               {isEditable && (
-                <button
+                <Button
                   onClick={turnOnEditMode}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  size="icon"
+                  variant="secondary"
                 >
-                  <div className="flex items-center">
-                    <EditIcon />
-                  </div>
-                </button>
+                  <EditIcon />
+                </Button>
               )}
-              <button
-                className="flex flex-1 justify-center flex-grow-1 rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                onClick={openCastModal}
-              >
-                <span className="">Cast</span>
-              </button>
+              <Button onClick={openCastModal} variant="primary" width="auto">
+                Cast
+              </Button>
             </div>
           </div>
         </div>

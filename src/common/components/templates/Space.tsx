@@ -85,7 +85,10 @@ export default function Space({
   return (
     <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="flex w-full h-full max-w-[1596px]">
+      <div
+        className="flex w-full h-full max-w-[1596px]"
+        style={{ background: "var(--user-theme-background)" }}
+      >
         <div
           className={
             editMode

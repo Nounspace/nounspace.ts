@@ -179,48 +179,48 @@ export function ThemeSettingsEditor({
                 If you exit, any changes made will not be saved.
               </p>
               <div className="flex items-center gap-2 justify-center">
-                <button
+                <Button
                   onClick={() => setShowConfirmCancel(false)}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+                  size="icon"
+                  variant="secondary"
                 >
-                  <div className="flex items-center">
-                    <BackArrowIcon />
-                  </div>
-                </button>
-                <button
+                  <BackArrowIcon />
+                </Button>
+                <Button
                   onClick={cancelAndClose}
-                  className="flex-auto justify-center flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                  variant="destructive"
+                  width="auto"
+                  withIcon
                 >
-                  <div className="gap-2 flex items-center">
-                    <FaTriangleExclamation
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span>Exit</span>
-                  </div>
-                </button>
+                  <FaTriangleExclamation
+                    className="h-8l shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>Exit</span>
+                </Button>
               </div>
             </>
           ) : (
             // X Button and Save Button (shows first)
             <>
-              <div className="mt-40 gap-2 pt-2 flex items-center justify-center">
-                <button
+              <div className="gap-2 pt-2 flex items-center justify-center">
+                <Button
                   onClick={() => setShowConfirmCancel(true)}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+                  size="icon"
+                  variant="secondary"
                 >
-                  <div className="flex items-center p-1">
-                    <FaX className="h-8l shrink-0" aria-hidden="true" />
-                  </div>
-                </button>
+                  <FaX aria-hidden="true" />
+                </Button>
 
-                <button
+                <Button
                   onClick={saveAndClose}
-                  className="flex-auto items-center justify-center gap-2 flex rounded-xl p-2 px-auto bg-[#1C64F2] hover:[#0d4ece] text-white font-semibold"
+                  variant="primary"
+                  width="auto"
+                  withIcon
                 >
-                  <FaFloppyDisk className="h-8l shrink-0" aria-hidden="true" />
+                  <FaFloppyDisk aria-hidden="true" />
                   <span>Save</span>
-                </button>
+                </Button>
               </div>
             </>
           )}
