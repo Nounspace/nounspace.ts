@@ -5,9 +5,10 @@ import Player from "@/common/components/organisms/Player";
 import { useAppStore } from "@/common/data/stores";
 import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
+import { Button } from "@/common/components/atoms/button";
 
 type NavItemProps = {
-  label: string;
+  label?: string;
   active?: boolean;
   Icon: React.FC;
 };
@@ -15,26 +16,42 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  hidden?: boolean;
 };
 
 const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
   return (
-    <li>
+    <div>
       <a
         href="#"
         className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          "flex items-center py-2 px-4 text-gray-900 rounded-md dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer",
           active ? "bg-gray-100" : "",
         )}
       >
         <Icon aria-hidden="true" />
-        <span className="ms-2">{label}</span>
+        {label && <span className="ms-2">{label}</span>}
       </a>
-    </li>
+    </div>
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const MobileNav = () => {
+  return (
+    <div className="fixed bottom-0 left-0 right-0 flex justify-around px-20 items-center border-t bg-white rounded-t-xl p-4 md:hidden bg-white z-10">
+      <NavItem Icon={HomeIcon} active={true} />
+      <NavItem Icon={ExploreIcon} />
+      <NavItem Icon={ChannelsIcon} />
+      <NavItem Icon={BookmarkIcon} />
+    </div>
+  );
+};
+
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  hidden,
+}) => {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -51,56 +68,58 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   }
 
   return (
-    <aside
-      id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
-      aria-label="Sidebar"
-    >
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        focusMode
-        showClose={false}
+    <>
+      <MobileNav />
+      <aside
+        id="logo-sidebar"
+        className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r bg-white"
+        aria-label="Sidebar"
+        style={{ display: hidden ? "none" : "" }}
       >
-        <CreateCast />
-      </Modal>
-      <div className="pt-24 pb-24 h-full">
-        <div className="flex-col flex h-full w-64 mx-auto px-8 py-4 overflow-y-auto">
-          <BrandHeader />
-          <div className="text-lg font-medium">
-            <ul className="space-y-2">
-              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-              <NavItem label="Explore" Icon={ExploreIcon} />
-              <NavItem label="Channels" Icon={ChannelsIcon} />
-              <NavItem label="Bookmark" Icon={BookmarkIcon} />
-            </ul>
-            <div className="mt-10">
-              <Player url={userTheme?.properties.musicURL} />
+        <Modal
+          open={showModal}
+          setOpen={setShowModal}
+          focusMode
+          showClose={false}
+        >
+          <CreateCast />
+        </Modal>
+        <div className="pt-12 pb-12 h-full md:block hidden">
+          <div className="flex flex-col h-full w-[270px] ml-auto">
+            <BrandHeader />
+            <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
+              <div className="flex-auto">
+                <ul className="space-y-2">
+                  <NavItem label="Homebase" Icon={HomeIcon} active={true} />
+                  <NavItem label="Explore" Icon={ExploreIcon} />
+                  <NavItem label="Channels" Icon={ChannelsIcon} />
+                  <NavItem label="Bookmark" Icon={BookmarkIcon} />
+                </ul>
+              </div>
             </div>
-            <div className="mt-40 pt-2 flex items-center justify-center">
-              {isEditable && (
-                <button
-                  onClick={turnOnEditMode}
-                  className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                >
-                  <div className="flex items-center">
+            <div className="flex flex-col flex-auto justify-between border-t px-4">
+              <div className="mt-8 px-2">
+                <Player url={userTheme?.properties.musicURL} />
+              </div>
+              <div className="pt-3 flex items-center gap-2 justify-center">
+                {isEditable && (
+                  <Button
+                    onClick={turnOnEditMode}
+                    size="icon"
+                    variant="secondary"
+                  >
                     <EditIcon />
-                  </div>
-                </button>
-              )}
-              <button
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                onClick={openCastModal}
-              >
-                <div className="flex ml-12 mr-12 items-center">
-                  <span className="">Cast</span>
-                </div>
-              </button>
+                  </Button>
+                )}
+                <Button onClick={openCastModal} variant="primary" width="auto">
+                  Cast
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 };
 

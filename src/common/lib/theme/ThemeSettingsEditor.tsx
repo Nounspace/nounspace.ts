@@ -136,16 +136,13 @@ export function ThemeSettingsEditor({
             </TabsContent>
             <TabsContent value="style" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Space background color</h4>
+                <h4 className="text-sm">Background color</h4>
                 <ColorSelector
                   className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                   innerClassName="rounded-full"
                   value={background as Color}
                   onChange={themePropSetter<Color>("background")}
                 />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Fidget style</h4>
               </div>
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
@@ -178,54 +175,49 @@ export function ThemeSettingsEditor({
               <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
                 If you exit, any changes made will not be saved.
               </p>
-              <div className="flex items-center justify-center">
-                <button
+              <div className="flex items-center gap-2 justify-center">
+                <Button
                   onClick={() => setShowConfirmCancel(false)}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]"
+                  size="icon"
+                  variant="secondary"
                 >
-                  <div className="flex items-center">
-                    <BackArrowIcon />
-                  </div>
-                </button>
-                <button
+                  <BackArrowIcon />
+                </Button>
+                <Button
                   onClick={cancelAndClose}
-                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2] font-semibold"
+                  variant="destructive"
+                  width="auto"
+                  withIcon
                 >
-                  <div className="ml-4 flex items-center">
-                    <FaTriangleExclamation
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-4 mr-4">Exit</span>
-                  </div>
-                </button>
+                  <FaTriangleExclamation
+                    className="h-8l shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span>Exit</span>
+                </Button>
               </div>
             </>
           ) : (
             // X Button and Save Button (shows first)
             <>
-              <div className="mt-40 pt-2 flex items-center justify-center">
-                <button
+              <div className="gap-2 pt-2 flex items-center justify-center">
+                <Button
                   onClick={() => setShowConfirmCancel(true)}
-                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]"
+                  size="icon"
+                  variant="secondary"
                 >
-                  <div className="flex items-center p-1">
-                    <FaX className="h-8l shrink-0" aria-hidden="true" />
-                  </div>
-                </button>
+                  <FaX aria-hidden="true" />
+                </Button>
 
-                <button
+                <Button
                   onClick={saveAndClose}
-                  className="ml-4 flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  variant="primary"
+                  width="auto"
+                  withIcon
                 >
-                  <div className="ml-4 flex items-center">
-                    <FaFloppyDisk
-                      className="h-8l shrink-0"
-                      aria-hidden="true"
-                    />
-                    <span className="ml-4 mr-4">Save</span>
-                  </div>
-                </button>
+                  <FaFloppyDisk aria-hidden="true" />
+                  <span>Save</span>
+                </Button>
               </div>
             </>
           )}
