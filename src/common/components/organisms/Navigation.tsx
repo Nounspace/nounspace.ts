@@ -1,15 +1,24 @@
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
-import { useAppStore } from "@/common/data/stores/app";
+import { useAppStore, useLogout } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
+import Link from "next/link";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { CgLogIn, CgLogOut, CgProfile } from "react-icons/cg";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { first } from "lodash";
+import { IoMdRocket } from "react-icons/io";
 
 type NavItemProps = {
   label: string;
   active?: boolean;
   Icon: React.FC;
+  href: string;
+  disable?: boolean;
+  openInNewTab?: boolean;
 };
 
 type NavProps = {
@@ -17,27 +26,41 @@ type NavProps = {
   enterEditMode: () => void;
 };
 
-const NavItem: React.FC<NavItemProps> = ({ label, active, Icon }) => {
+const NavItem: React.FC<NavItemProps> = ({
+  label,
+  active,
+  Icon,
+  href,
+  disable = false,
+  openInNewTab = false,
+}) => {
   return (
     <li>
-      <a
-        href="#"
+      <Link
+        href={disable ? "#" : href}
         className={mergeClasses(
-          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group",
+          "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
           active ? "bg-gray-100" : "",
         )}
+        rel={openInNewTab ? "noopener noreferrer" : undefined}
+        target={openInNewTab ? "_blank" : undefined}
       >
         <Icon aria-hidden="true" />
         <span className="ms-2">{label}</span>
-      </a>
+      </Link>
     </li>
   );
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
-  const { homebaseConfig } = useAppStore((state) => ({
-    homebaseConfig: state.homebase.homebaseConfig,
-  }));
+  const { homebaseConfig, setModalOpen, getIsLoggedIn } = useAppStore(
+    (state) => ({
+      setModalOpen: state.setup.setModalOpen,
+      homebaseConfig: state.homebase.homebaseConfig,
+      getIsLoggedIn: state.getIsAccountReady,
+    }),
+  );
+  const logout = useLogout();
 
   const userTheme = homebaseConfig?.theme;
 
@@ -45,10 +68,29 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     enterEditMode();
   }
 
-  const [showModal, setShowModal] = useState(false);
+  const openModal = () => setModalOpen(true);
+
+  const [showCastModal, setShowCastModal] = useState(false);
   function openCastModal() {
-    setShowModal(true);
+    setShowCastModal(true);
   }
+  const { fid } = useFarcasterSigner("navigation");
+  const isLoggedIn = getIsLoggedIn();
+  const { data } = useLoadFarcasterUser(fid);
+  const user = useMemo(() => first(data?.users), [data]);
+  const username = useMemo(() => user?.username, [user]);
+  const CurrentUserImage = useCallback(
+    () =>
+      user && user.pfp_url ? (
+        <img
+          className="aspect-square rounded-full w-6 h-6"
+          src={user.pfp_url}
+        />
+      ) : (
+        <CgProfile />
+      ),
+    [user],
+  );
 
   return (
     <aside
@@ -57,8 +99,8 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       aria-label="Sidebar"
     >
       <Modal
-        open={showModal}
-        setOpen={setShowModal}
+        open={showCastModal}
+        setOpen={setShowCastModal}
         focusMode
         showClose={false}
       >
@@ -69,34 +111,75 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <BrandHeader />
           <div className="text-lg font-medium">
             <ul className="space-y-2">
-              <NavItem label="Homebase" Icon={HomeIcon} active={true} />
-              <NavItem label="Explore" Icon={ExploreIcon} />
-              <NavItem label="Channels" Icon={ChannelsIcon} />
-              <NavItem label="Bookmark" Icon={BookmarkIcon} />
+              <NavItem
+                label="Homebase"
+                Icon={HomeIcon}
+                active={true}
+                href="/homebase"
+              />
+              <NavItem
+                label="Fair Launch"
+                Icon={IoMdRocket}
+                href="https://space.nounspace.com/"
+                openInNewTab
+              />
+              {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
+              {isLoggedIn && (
+                <NavItem
+                  label={username || "Loading..."}
+                  Icon={CurrentUserImage}
+                  href={`/s/${username}`}
+                />
+              )}
+              <li>
+                {isLoggedIn ? (
+                  <button
+                    className={mergeClasses(
+                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                    )}
+                    onClick={logout}
+                  >
+                    <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
+                    <span className="ms-2">Logout</span>
+                  </button>
+                ) : (
+                  <button
+                    className={mergeClasses(
+                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                    )}
+                    onClick={openModal}
+                  >
+                    <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
+                    <span className="ms-2">Login</span>
+                  </button>
+                )}
+              </li>
             </ul>
             <div className="mt-10">
               <Player url={userTheme?.properties.musicURL} />
             </div>
-            <div className="mt-40 pt-2 flex items-center justify-center">
-              {isEditable && (
+            {isLoggedIn && (
+              <div className="mt-40 pt-2 flex items-center justify-center">
+                {isEditable && (
+                  <button
+                    onClick={turnOnEditMode}
+                    className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  >
+                    <div className="flex items-center">
+                      <EditIcon />
+                    </div>
+                  </button>
+                )}
                 <button
-                  onClick={turnOnEditMode}
-                  className="flex rounded-xl p-2 m-4 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  onClick={openCastModal}
                 >
-                  <div className="flex items-center">
-                    <EditIcon />
+                  <div className="flex ml-12 mr-12 items-center">
+                    <span className="">Cast</span>
                   </div>
                 </button>
-              )}
-              <button
-                className="flex rounded-xl p-2 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                onClick={openCastModal}
-              >
-                <div className="flex ml-12 mr-12 items-center">
-                  <span className="">Cast</span>
-                </div>
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

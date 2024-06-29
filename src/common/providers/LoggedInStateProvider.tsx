@@ -1,26 +1,18 @@
 import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { useAppStore } from "@/common/data/stores/app";
+import { useAppStore, useLogout } from "@/common/data/stores/app";
 import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { isEqual, isUndefined } from "lodash";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
 import { bytesToHex } from "@noble/ciphers/utils";
-import Modal from "@/common/components/molecules/Modal";
+import LoginModal from "../components/templates/LoginModal";
 
-type LoggedInLayoutProps = {
-  children: React.ReactNode;
-};
+type LoggedInLayoutProps = { children: React.ReactNode };
 
 const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
-  const {
-    ready,
-    authenticated,
-    user,
-    logout: privyLogout,
-    createWallet,
-  } = usePrivy();
+  const { ready, authenticated, user, createWallet } = usePrivy();
   const {
     currentStep,
     setCurrentStep,
@@ -30,13 +22,11 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     createIdentityForWallet,
     decryptIdentityKeys,
     setCurrentIdentity,
-    storeLogout,
     getCurrentIdentity,
     loadPreKeys,
     loadFidsForCurrentIdentity,
     registerFidForCurrentIdentity,
     modalOpen,
-    modalContent,
     setModalOpen,
     keepModalOpen,
   } = useAppStore((state) => ({
@@ -57,19 +47,13 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     loadFidsForCurrentIdentity: state.account.getFidsForCurrentIdentity,
     registerFidForCurrentIdentity: state.account.registerFidForCurrentIdentity,
     // Logout
-    storeLogout: state.logout,
     modalOpen: state.setup.modalOpen,
-    modalContent: state.setup.modalContent,
     setModalOpen: state.setup.setModalOpen,
     keepModalOpen: state.setup.keepModalOpen,
   }));
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
-
-  function logout() {
-    if (authenticated) privyLogout();
-    storeLogout();
-  }
+  const logout = useLogout();
 
   async function loadWallet() {
     if (walletsReady && ready && authenticated && user) {
@@ -172,61 +156,65 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     setCurrentStep(SetupStep.ACCOUNTS_REGISTERED);
   };
 
+  // Has to be separate otherwise will cause retrigger chain
+  // due to depence on authenticatorManager
+  useEffect(() => {
+    if (
+      ready &&
+      walletsReady &&
+      authenticated &&
+      currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED
+    ) {
+      Promise.resolve(authenticatorManager.getInitializedAuthenticators()).then(
+        (initializedAuthNames) => {
+          const initializedAuthenticators = new Set(initializedAuthNames);
+          const requiredAuthSet = new Set(requiredAuthenticators);
+          if (isEqual(initializedAuthenticators, requiredAuthSet)) {
+            setCurrentStep(SetupStep.AUTHENTICATORS_INITIALIZED);
+          }
+        },
+      );
+    }
+  }, [
+    ready,
+    currentStep,
+    authenticated,
+    authenticatorManager.lastUpdatedAt,
+    walletsReady,
+  ]);
+
   useEffect(() => {
     if (ready) {
       if (!authenticated) logout();
-      else if (walletsReady) {
-        switch (currentStep) {
-          case SetupStep.START:
+      else {
+        if (authenticated && currentStep === SetupStep.NOT_SIGNED_IN) {
+          setCurrentStep(SetupStep.SIGNED_IN);
+        } else if (walletsReady) {
+          if (currentStep === SetupStep.SIGNED_IN) {
             loadWallet();
-            break;
-          case SetupStep.WALLET_CONNECTED:
+          } else if (currentStep === SetupStep.TOKENS_FOUND) {
             loadIdentity();
-            break;
-          case SetupStep.IDENTITY_LOADED:
+          } else if (currentStep === SetupStep.IDENTITY_LOADED) {
             loadAuthenticators();
-            break;
-          case SetupStep.AUTHENTICATORS_LOADED:
+          } else if (currentStep === SetupStep.AUTHENTICATORS_LOADED) {
             installRequiredAuthenticators();
-            break;
-          case SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED:
-            Promise.resolve(
-              authenticatorManager.getInitializedAuthenticators(),
-            ).then((initializedAuthNames) => {
-              const initializedAuthenticators = new Set(initializedAuthNames);
-              const requiredAuthSet = new Set(requiredAuthenticators);
-              if (isEqual(initializedAuthenticators, requiredAuthSet)) {
-                setCurrentStep(SetupStep.AUTHENTICATORS_INITIALIZED);
-              }
-            });
-            break;
-          case SetupStep.AUTHENTICATORS_INITIALIZED:
+          } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
             registerAccounts();
-            break;
-          case SetupStep.ACCOUNTS_REGISTERED:
+          } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
             setCurrentStep(SetupStep.DONE);
-            break;
+          }
         }
       }
     }
-  }, [
-    currentStep,
-    walletsReady,
-    ready,
-    authenticated,
-    authenticatorManager.lastUpdatedAt,
-  ]);
+  }, [currentStep, walletsReady, ready, authenticated]);
 
   return (
     <>
-      <Modal
+      <LoginModal
         open={modalOpen}
         setOpen={setModalOpen}
-        focusMode
         showClose={!keepModalOpen}
-      >
-        {modalContent}
-      </Modal>
+      />
       {children}
     </>
   );
