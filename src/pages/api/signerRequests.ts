@@ -68,7 +68,7 @@ type SignedKeyRequestResponseBody = {
   };
 };
 
-type AlchemyIsHolderOfContract = {
+export type AlchemyIsHolderOfContract = {
   isHolderOfContract: boolean;
 };
 
