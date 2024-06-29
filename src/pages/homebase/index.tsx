@@ -1,40 +1,61 @@
-import React, { useEffect } from "react";
-import LoggedInStateManager from "@/common/components/templates/LoggedInStateManager";
+import React, { useEffect, useMemo } from "react";
 import { NextPageWithLayout } from "../_app";
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
+import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 
 const Homebase: NextPageWithLayout = () => {
-  const { homebaseConfig, saveConfig, loadConfig, commitConfig, resetConfig } =
-    useAppStore((state) => ({
-      homebaseConfig: state.homebase.homebaseConfig,
-      saveConfig: state.homebase.saveHomebaseConfig,
-      loadConfig: state.homebase.loadHomebase,
-      commitConfig: state.homebase.commitHomebaseToDatabase,
-      resetConfig: state.homebase.resetHomebaseConfig,
-    }));
+  const {
+    homebaseConfig,
+    saveConfig,
+    loadConfig,
+    commitConfig,
+    resetConfig,
+    getIsLoggedIn,
+  } = useAppStore((state) => ({
+    homebaseConfig: state.homebase.homebaseConfig,
+    saveConfig: state.homebase.saveHomebaseConfig,
+    loadConfig: state.homebase.loadHomebase,
+    commitConfig: state.homebase.commitHomebaseToDatabase,
+    resetConfig: state.homebase.resetHomebaseConfig,
+    getIsLoggedIn: state.getIsAccountReady,
+  }));
+
+  const isLoggedIn = getIsLoggedIn();
 
   useEffect(() => {
-    loadConfig();
-  }, []);
+    isLoggedIn && loadConfig();
+  }, [isLoggedIn]);
 
-  return (
-    <SpaceWithLoader
-      config={homebaseConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-    />
+  const args = useMemo(
+    () =>
+      isLoggedIn
+        ? {
+            config: homebaseConfig,
+            saveConfig,
+            commitConfig,
+            resetConfig,
+          }
+        : {
+            config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+            saveConfig: async () => {},
+            commitConfig: async () => {},
+            resetConfig: async () => {},
+          },
+    [isLoggedIn],
   );
+
+  return <SpaceWithLoader {...args} />;
 };
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <LoggedInStateManager>
-      <div className="min-h-screen max-w-screen h-screen w-screen flex justify-center">
-        {page}
-      </div>
-    </LoggedInStateManager>
+    <div
+      className="min-h-screen max-w-screen h-screen w-screen"
+      style={{ background: "var(--user-theme-background)" }}
+    >
+      {page}
+    </div>
   );
 };
 

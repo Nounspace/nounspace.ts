@@ -1,12 +1,12 @@
-import { StoreGet, StoreSet } from "../createStore";
+import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import axios from "axios";
-import { createClient } from "../../database/supabase/clients/component";
+import { createClient } from "../../../database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
 import { debounce } from "lodash";
 import stringify from "fast-json-stable-stringify";
-import axiosBackend from "../../api/backend";
+import axiosBackend from "../../../api/backend";
 import { SpaceConfig } from "@/common/components/templates/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 

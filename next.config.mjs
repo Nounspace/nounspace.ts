@@ -1,6 +1,7 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundlerAnalyzer({
+  // eslint-disable-next-line no-undef
   enabled: process.env.ANALYZE === 'true',
 })
 
@@ -28,7 +29,7 @@ const nextConfig = {
     return [
       {
         source: "/",
-        destination: "/login",
+        destination: "/homebase",
         permanent: true,
       },
       {

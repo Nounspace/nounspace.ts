@@ -21,13 +21,12 @@ import {
   isUndefined,
   map,
   mapValues,
-  noop,
   reject,
   tail,
 } from "lodash";
 import authenticators from "./authenticators";
-import Modal from "@/common/components/molecules/Modal";
 import moment from "moment";
+import { useAppStore } from "@/common/data/stores/app";
 
 type AuthenticatorPermissions = {
   [fidgetId: string]: string[];
@@ -85,6 +84,7 @@ export type AuthenticatorManager = {
   initializeAuthenticators: (authenticatorIds: string[]) => void;
   getInitializedAuthenticators: () => Promise<string[]>;
   installAuthenticators: (authenticatorIds: string[]) => Promise<void>;
+  CurrentInitializerComponent?: React.FC;
   lastUpdatedAt: string;
 };
 
@@ -143,18 +143,30 @@ export const AuthenticatorManagerProvider: React.FC<
     id: string;
   }>();
   const [initializationQueue, setInitializationQueue] = useState<string[]>([]);
-  const [showModal, setShowModal] = useState(false);
+
+  const {
+    setup: { setModalOpen, modalOpen },
+  } = useAppStore((state) => state);
 
   const authenticatorManager = useMemo<AuthenticatorManager>(
     () => ({
       callMethod: async (
-        _requestingFidgetId: string,
+        requestingFidgetId: string,
         authenticatorId: string,
         methodName: string,
         ...args: any[]
       ): Promise<AuthenticatorManagerResponse> => {
         const authenticator = installedAuthenticators[authenticatorId];
         if (isUndefined(authenticator)) {
+          // Open the modal if a Fidget requests info
+          // Don't do it if Nav does
+          // THIS IS A HACK
+          // TO DO: When adding permissioning
+          // Allow client requests to not open modal
+          // While Fidget requests will
+          if (!modalOpen && requestingFidgetId !== "navigation") {
+            setModalOpen(true);
+          }
           return {
             result: "error",
             reason: "denied",
@@ -216,9 +228,21 @@ export const AuthenticatorManagerProvider: React.FC<
       initializeAuthenticators: (authenticatorIds) => {
         setInitializationQueue(concat(initializationQueue, authenticatorIds));
       },
+      CurrentInitializerComponent: () =>
+        currentInitializer && (
+          <currentInitializer.initializer
+            data={authenticatorConfig[currentInitializer.id].data}
+            saveData={saveSingleAuthenticatorData(
+              authenticatorConfig,
+              currentInitializer.id,
+              authenticatorConfig[currentInitializer.id],
+            )}
+            done={completeInstallingCurrentInitializer}
+          />
+        ),
       lastUpdatedAt: moment().toISOString(),
     }),
-    [authenticatorConfig, installedAuthenticators],
+    [authenticatorConfig, installedAuthenticators, currentInitializer],
   );
 
   const initializeAuthentictator = useCallback(
@@ -236,50 +260,25 @@ export const AuthenticatorManagerProvider: React.FC<
           name: authenticator.name,
           id: authenticatorId,
         });
-        setShowModal(true);
       }
     },
     [installedAuthenticators],
   );
 
   useEffect(() => {
-    const authenticatorToInitializer = first(initializationQueue);
-    if (!isUndefined(authenticatorToInitializer)) {
-      initializeAuthentictator(authenticatorToInitializer);
+    const authenticatorToInitialize = first(initializationQueue);
+    if (!isUndefined(authenticatorToInitialize)) {
+      initializeAuthentictator(authenticatorToInitialize);
     }
   }, [initializationQueue]);
 
   function completeInstallingCurrentInitializer() {
     setInitializationQueue(tail(initializationQueue));
     setCurrentInitializer(undefined);
-    setShowModal(false);
   }
 
   return (
     <AuthenticatorContext.Provider value={authenticatorManager}>
-      <Modal
-        open={showModal}
-        setOpen={noop}
-        focusMode
-        title={
-          !isUndefined(currentInitializer)
-            ? `Installing ${currentInitializer.name}`
-            : ""
-        }
-        showClose={false}
-      >
-        {!isUndefined(currentInitializer) ? (
-          <currentInitializer.initializer
-            data={authenticatorConfig[currentInitializer.id].data}
-            saveData={saveSingleAuthenticatorData(
-              authenticatorConfig,
-              currentInitializer.id,
-              authenticatorConfig[currentInitializer.id],
-            )}
-            done={completeInstallingCurrentInitializer}
-          />
-        ) : null}
-      </Modal>
       {children}
     </AuthenticatorContext.Provider>
   );

@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import defaultTheme from "@/common/lib/theme/defaultTheme";
 import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
 import { UserTheme } from "@/common/lib/theme";
-import { useAppStore } from "@/common/data/stores";
+import { useAppStore } from "@/common/data/stores/app";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 
 export interface UserThemeContextValue {
