@@ -121,7 +121,7 @@ export const work_sans = Work_Sans({
 
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
-    name: "var(--user-theme-font)",
+    name: "Theme Font",
     config: {
       variable: "--user-theme-font",
       className: ".user-theme-font",
@@ -131,7 +131,7 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
     },
   },
   {
-    name: "var(--user-theme-headings-font)",
+    name: "Theme Headings Font",
     config: {
       variable: "--user-theme-headings-font",
       className: ".user-theme-headings-font",
