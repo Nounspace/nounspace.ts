@@ -86,7 +86,7 @@ export default function Space({
     <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
-        className="flex w-full h-full max-w-[1596px]"
+        className="flex w-full h-full"
         style={{ background: "var(--user-theme-background)" }}
       >
         <div className="flex mx-auto transition-all duration-100 ease-out">
