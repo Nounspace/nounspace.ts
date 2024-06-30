@@ -3,6 +3,8 @@ import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import {
   CardHeader,
@@ -20,6 +22,9 @@ export type TextFidgetSettings = {
   headingsFontFamily: FontFamily;
   headingsFontColor: Color;
   background: Color;
+  fidgetBorderWidth: string;
+  fidgetBorderColor: Color;
+  fidgetShadow: string;
 };
 
 export const textConfig: FidgetProperties = {
@@ -64,9 +69,27 @@ export const textConfig: FidgetProperties = {
     },
     {
       fieldName: "background",
-      default: "",
+      default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: ColorSelector,
+    },
+    {
+      fieldName: "fidgetBorderWidth",
+      default: "var(--user-theme-fidget-border-width)",
+      required: false,
+      inputSelector: BorderSelector,
+    },
+    {
+      fieldName: "fidgetBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+    },
+    {
+      fieldName: "fidgetShadow",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: ShadowSelector,
     },
     {
       fieldName: "css",
@@ -91,6 +114,10 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
       style={{
         background: settings.background,
         height: "100%",
+        borderWidth: settings.fidgetBorderWidth,
+        borderColor: settings.fidgetBorderColor,
+        // Not visible because of the outer div having overflow: hidden
+        boxShadow: settings.fidgetShadow,
       }}
     >
       {settings?.title && (

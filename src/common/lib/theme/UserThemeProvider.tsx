@@ -20,8 +20,17 @@ export const useUserTheme = () => {
 export const UserThemeProvider = ({ children }) => {
   const userTheme = useUserTheme();
 
-  const { background, font, fontColor, headingsFont, headingsFontColor } =
-    userTheme.properties;
+  const {
+    background,
+    font,
+    fontColor,
+    headingsFont,
+    headingsFontColor,
+    fidgetBackground,
+    fidgetBorderWidth,
+    fidgetBorderColor,
+    fidgetShadow,
+  } = userTheme.properties;
 
   useEffect(() => {
     setGlobalStyleProperty("--user-theme-background", background);
@@ -51,6 +60,28 @@ export const UserThemeProvider = ({ children }) => {
       FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily,
     );
   }, [headingsFont]);
+
+  useEffect(() => {
+    setGlobalStyleProperty("--user-theme-fidget-background", fidgetBackground);
+  }, [fidgetBackground]);
+
+  useEffect(() => {
+    setGlobalStyleProperty(
+      "--user-theme-fidget-border-width",
+      fidgetBorderWidth,
+    );
+  }, [fidgetBorderWidth]);
+
+  useEffect(() => {
+    setGlobalStyleProperty(
+      "--user-theme-fidget-border-color",
+      fidgetBorderColor,
+    );
+  }, [fidgetBorderColor]);
+
+  useEffect(() => {
+    setGlobalStyleProperty("--user-theme-fidget-shadow", fidgetShadow);
+  }, [fidgetShadow]);
 
   return children;
 };

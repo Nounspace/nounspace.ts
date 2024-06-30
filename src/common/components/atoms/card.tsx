@@ -12,6 +12,9 @@ const Card = React.forwardRef<
       "rounded-xl border bg-card text-card-foreground",
       className,
     )}
+    style={{
+      boxShadow: "var(--user-theme-fidget-shadow)",
+    }}
     {...props}
   />
 ));
