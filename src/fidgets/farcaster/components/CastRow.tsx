@@ -70,7 +70,7 @@ const CastLeftAvatar = ({ isEmbed, cast }) => {
   return (
     !isEmbed && (
       <img
-        className="relative h-10 w-10 flex-none bg-background rounded-full"
+        className="relative h-10 w-10 flex-none bg-background rounded-full object-cover"
         src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
       />
     )

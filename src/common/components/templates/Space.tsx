@@ -57,7 +57,7 @@ export default function Space({
     setEditMode(false);
   }
 
-  function cancleExitEditMode() {
+  function cancelExitEditMode() {
     resetConfig();
     setEditMode(false);
   }
@@ -115,7 +115,7 @@ export default function Space({
               fidgetTrayContents={config.fidgetTrayContents}
               inEditMode={editMode}
               saveExitEditMode={saveExitEditMode}
-              cancelExitEditMode={cancleExitEditMode}
+              cancelExitEditMode={cancelExitEditMode}
               portalRef={portalRef}
               saveConfig={saveLocalConfig}
             />
