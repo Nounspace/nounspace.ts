@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
 import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
@@ -12,6 +12,7 @@ const Homebase: NextPageWithLayout = () => {
     commitConfig,
     resetConfig,
     getIsLoggedIn,
+    getIsInitializing,
   } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
@@ -19,27 +20,35 @@ const Homebase: NextPageWithLayout = () => {
     commitConfig: state.homebase.commitHomebaseToDatabase,
     resetConfig: state.homebase.resetHomebaseConfig,
     getIsLoggedIn: state.getIsAccountReady,
+    getIsInitializing: state.getIsInitializing,
   }));
-
   const isLoggedIn = getIsLoggedIn();
+  const isInitializing = getIsInitializing();
 
   useEffect(() => {
     isLoggedIn && loadConfig();
   }, [isLoggedIn]);
 
-  const args = isLoggedIn
+  const args = isInitializing
     ? {
-        config: homebaseConfig,
-        saveConfig,
-        commitConfig,
-        resetConfig,
+        config: homebaseConfig ?? undefined,
+        saveConfig: undefined,
+        commitConfig: undefined,
+        resetConfig: undefined,
       }
-    : {
-        config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
-        saveConfig: async () => {},
-        commitConfig: async () => {},
-        resetConfig: async () => {},
-      };
+    : !isLoggedIn
+      ? {
+          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+          saveConfig: async () => {},
+          commitConfig: async () => {},
+          resetConfig: async () => {},
+        }
+      : {
+          config: homebaseConfig,
+          saveConfig,
+          commitConfig,
+          resetConfig,
+        };
 
   return <SpaceWithLoader {...args} />;
 };

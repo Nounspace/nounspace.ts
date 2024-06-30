@@ -27,6 +27,7 @@ export type AppStore = {
   space: SpaceStore;
   logout: () => void;
   getIsAccountReady: () => boolean;
+  getIsInitializing: () => boolean;
 };
 
 const makeStoreFunc = (set, get, state): AppStore => ({
@@ -46,6 +47,12 @@ const makeStoreFunc = (set, get, state): AppStore => ({
     return (
       get().setup.currentStep === SetupStep.DONE &&
       !isUndefined(get().account.getCurrentIdentity())
+    );
+  },
+  getIsInitializing: () => {
+    const currentStep = get().setup.currentStep;
+    return (
+      currentStep !== SetupStep.NOT_SIGNED_IN && currentStep !== SetupStep.DONE
     );
   },
 });

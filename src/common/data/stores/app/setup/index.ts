@@ -7,6 +7,7 @@ import {
 import { AppStore } from "..";
 
 export enum SetupStep {
+  UNINITIALIZED = "Uninitialized",
   NOT_SIGNED_IN = "Please Sign in with Privy",
   SIGNED_IN = "Connecting to wallet...",
   WALLET_CONNECTED = "Checking for nOGs...",
@@ -57,7 +58,7 @@ interface SetupStoreActions {
 export type SetupStore = SetupStoreState & SetupStoreActions;
 
 export const setupStoreDefaults: SetupStoreState = {
-  currentStep: SetupStep.NOT_SIGNED_IN,
+  currentStep: SetupStep.UNINITIALIZED,
   modalOpen: false,
   keepModalOpen: false,
   // nogs

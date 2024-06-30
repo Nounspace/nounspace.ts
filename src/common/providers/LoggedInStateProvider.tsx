@@ -226,7 +226,10 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
 
   useEffect(() => {
     if (ready && authenticated) {
-      if (currentStep === SetupStep.NOT_SIGNED_IN) {
+      if (
+        currentStep === SetupStep.NOT_SIGNED_IN ||
+        currentStep === SetupStep.UNINITIALIZED
+      ) {
         setCurrentStep(SetupStep.SIGNED_IN);
       } else if (walletsReady) {
         if (currentStep === SetupStep.SIGNED_IN) {
@@ -245,6 +248,8 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
           setCurrentStep(SetupStep.DONE);
         }
       }
+    } else if (ready && !authenticated) {
+      setCurrentStep(SetupStep.NOT_SIGNED_IN);
     }
   }, [currentStep, walletsReady, ready, authenticated]);
 
