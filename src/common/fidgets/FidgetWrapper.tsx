@@ -172,7 +172,7 @@ export function FidgetWrapper({
         }
         style={{
           boxShadow: "var(--user-theme-fidget-shadow)",
-          borderWidth: "var(--user-theme-fidget-border-with)",
+          borderWidth: "var(--user-theme-fidget-border-width)",
           borderColor: "var(--user-theme-fidget-border-color)",
         }}
       >

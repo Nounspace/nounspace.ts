@@ -1,5 +1,5 @@
 export const BORDER_STYLES = [
-  { name: "Theme Border", value: "var(--user-theme-border-width)" },
+  { name: "Theme Border", value: "var(--user-theme-fidget-border-width)" },
   { name: "None", value: "0" },
   { name: "Small", value: "1px" },
   { name: "Medium", value: "2px" },
