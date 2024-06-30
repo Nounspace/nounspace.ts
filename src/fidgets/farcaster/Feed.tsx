@@ -4,16 +4,16 @@ import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axiosBackend from "@/common/data/api/backend";
 import {
+  CastResponse,
   FeedResponse,
   FeedType,
   NextCursor,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { ScrollArea } from "@/common/components/atoms/scroll-area";
-import { map } from "lodash";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
 import Loading from "@/common/components/molecules/Loading";
 import { useInView } from "react-intersection-observer";
+import { CastThreadView } from "./components/CastThreadView";
 
 export type feedFidgetSettings = {
   feedType: FeedType;
@@ -79,13 +79,8 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
     error,
   } = useGetCasts(feedType, fid);
 
-  // TO DO: trigger new page loading as inifite scroll
-  // TO DO: Handle respons errors
-  // TO DO: show loading at end of inifinite scroll
-  // Helpful links
-  // https://tanstack.com/query/latest/docs/framework/react/reference/useInfiniteQuery
-  // https://www.radix-ui.com/primitives/docs/components/scroll-area
-
+  const [showCastThreadView, setShowCastThreadView] = useState(false);
+  const [selectedCastHash, setSelectedCastHash] = useState("");
   const [ref, inView] = useInView();
 
   useEffect(() => {
@@ -94,36 +89,82 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
     }
   }, [inView]);
 
+  const onSelectCast = (hash) => {
+    setSelectedCastHash(hash);
+    setShowCastThreadView(true);
+  };
+
+  function getCast(castHash: string) {
+    async () => {
+      const { data } = await axiosBackend.get<CastResponse>(
+        "/api/farcaster/neynar/cast",
+        {
+          params: {
+            castHash,
+            type: "hash",
+            fid,
+          },
+        },
+      );
+
+      return data;
+    };
+  }
+
+  const renderThread = () => (
+    <CastThreadView
+      cast={{
+        hash: selectedCastHash,
+        author: {
+          fid: fid,
+        },
+      }}
+      onBack={() => setShowCastThreadView(false)}
+      setSelectedCastHash={setSelectedCastHash}
+    />
+  );
+
+  const renderFeed = () => {
+    return (
+      <>
+        <div>
+          {isError ? (
+            <div>{"Error"}</div>
+          ) : (
+            data?.pages.map((page, pageNum) => (
+              <React.Fragment key={pageNum}>
+                {page.casts.map((cast, index) => (
+                  <CastRow
+                    cast={cast}
+                    key={index}
+                    onSelect={() => onSelectCast(cast.hash)}
+                  />
+                ))}
+              </React.Fragment>
+            ))
+          )}
+        </div>
+
+        <div ref={ref} className="h-3/6">
+          {isFetchingNextPage ? (
+            <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
+              <Loading />
+            </div>
+          ) : hasNextPage ? (
+            "Fetch More Data"
+          ) : (
+            <div className="h-full w-full flex flex-col justify-center items-center">
+              <Loading />
+            </div>
+          )}
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="h-full overflow-y-scroll justify-center items-center">
-      <div>
-        {/* data.pages: Page[] */}
-        {isError ? (
-          <div>{"Error"}</div>
-        ) : (
-          data?.pages.map((page, pageNum) => (
-            <React.Fragment key={pageNum}>
-              {page.casts.map((cast, index) => (
-                <CastRow cast={cast} key={index} />
-              ))}
-            </React.Fragment>
-          ))
-        )}
-      </div>
-      {/* Pagination Controls */}
-      <div ref={ref} className="h-3/6">
-        {isFetchingNextPage ? (
-          <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
-            <Loading />
-          </div>
-        ) : hasNextPage ? (
-          "Fetch More Data"
-        ) : (
-          <div className="h-full w-full flex flex-col justify-center items-center">
-            <Loading />
-          </div>
-        )}
-      </div>
+      {showCastThreadView ? renderThread() : renderFeed()}
     </div>
   );
 };

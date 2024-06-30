@@ -60,6 +60,7 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
+  onSelect?: () => void;
   showChannel?: boolean;
   isThreadView?: boolean;
   isEmbed?: boolean;
@@ -118,7 +119,7 @@ const CastBody = ({
         isEmbed={isEmbed}
       />
       {cast.text && (
-        <p className="leading-[1.3]" style={castTextStyle}>
+        <p className="leading-[1.3] text-left" style={castTextStyle}>
           {cast.text}
         </p>
       )}
@@ -196,6 +197,7 @@ const CastAuthorAttribution = ({
 export const CastRow = ({
   cast,
   showChannel,
+  onSelect,
   isEmbed = false,
   isThreadView = false,
   hideReactions = false,
@@ -452,22 +454,24 @@ export const CastRow = ({
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div className="p-3">
-        <div className="flex items-top gap-x-2">
-          <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
-          <CastBody
-            cast={cast}
-            channel={channel}
-            isEmbed={isEmbed}
-            showChannel={showChannel}
-            castTextStyle={castTextStyle}
-            hideReactions={hideReactions}
-            renderRecastBadge={renderRecastBadge}
-            renderCastReactions={renderCastReactions}
-            userFid={userFid}
-          />
+      <button onClick={onSelect}>
+        <div className="p-3">
+          <div className="flex items-top gap-x-2">
+            <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
+            <CastBody
+              cast={cast}
+              channel={channel}
+              isEmbed={isEmbed}
+              showChannel={showChannel}
+              castTextStyle={castTextStyle}
+              hideReactions={hideReactions}
+              renderRecastBadge={renderRecastBadge}
+              renderCastReactions={renderCastReactions}
+              userFid={userFid}
+            />
+          </div>
         </div>
-      </div>
+      </button>
     </div>
   );
 };
