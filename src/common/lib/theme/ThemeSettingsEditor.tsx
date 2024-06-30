@@ -1,16 +1,12 @@
-import React, { useEffect, useState } from "react";
-import {
-  FaFloppyDisk,
-  FaTriangleExclamation,
-  FaX,
-  FaArrowLeftLong,
-} from "react-icons/fa6";
+import React, { useState } from "react";
+import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { ThemeSettings } from "@/common/lib/theme";
 import { Color, FontFamily } from "@/common/lib/theme";
-import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import TextInput from "@/common/components/molecules/TextInput";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
@@ -65,6 +61,10 @@ export function ThemeSettingsEditor({
     headingsFontColor,
     backgroundHTML,
     musicURL,
+    fidgetBackground,
+    fidgetBorderWidth,
+    fidgetBorderColor,
+    fidgetShadow,
   } = theme.properties;
 
   function saveAndClose() {
@@ -143,6 +143,47 @@ export function ThemeSettingsEditor({
                   value={background as Color}
                   onChange={themePropSetter<Color>("background")}
                 />
+              </div>
+
+              {/* Fidget styles */}
+              <div className="flex flex-col gap-1">
+                <h4 className="text-sm font-bold">Fidget</h4>
+
+                <div className="flex flex-col gap-1">
+                  <div className="">
+                    <h5 className="text-xs">Background color</h5>
+                    <ColorSelector
+                      className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
+                      innerClassName="rounded-full"
+                      value={fidgetBackground as Color}
+                      onChange={themePropSetter<Color>("fidgetBackground")}
+                    />
+                  </div>
+                  <div className="">
+                    <h5 className="text-xs">Border</h5>
+                    <div className="flex items-center gap-1">
+                      <ColorSelector
+                        className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                        innerClassName="rounded-full"
+                        value={fidgetBorderColor as Color}
+                        onChange={themePropSetter<Color>("fidgetBorderColor")}
+                      />
+                      <BorderSelector
+                        className="ring-0 focus:ring-0 border-0 shadow-none"
+                        value={fidgetBorderWidth as string}
+                        onChange={themePropSetter<string>("fidgetBorderWidth")}
+                      />
+                    </div>
+                  </div>
+                  <div className="">
+                    <h5 className="text-xs">Shadow</h5>
+                    <ShadowSelector
+                      className="ring-0 focus:ring-0 border-0 shadow-none"
+                      value={fidgetShadow as string}
+                      onChange={themePropSetter<string>("fidgetShadow")}
+                    />
+                  </div>
+                </div>
               </div>
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
@@ -227,12 +268,43 @@ export function ThemeSettingsEditor({
   );
 }
 
-const ThemeCard = () => (
-  <div className="bg-gray-50 hover:bg-gray-100 rounded-lg flex gap-2 px-4 py-2 items-center cursor-pointer">
-    <div className="text-lg font-bold">Aa</div>
-    <div className="rounded-full w-5 h-5 bg-blue-500"></div>
-    <div className="rounded-full w-5 h-5 bg-slate-800"></div>
-  </div>
-);
+const ThemeCard = () => {
+  return (
+    <div
+      className="bg-gray-50 hover:bg-gray-100 rounded-lg flex gap-2 px-4 py-2 items-center"
+      style={{
+        backgroundColor: "var(--user-theme-background)",
+      }}
+    >
+      <div className="text-lg font-bold">
+        <span
+          style={{
+            fontFamily: "var(--user-theme-headings-font)",
+            color: "var(--user-theme-headings-font-color)",
+          }}
+        >
+          A
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--user-theme-font)",
+            color: "var(--user-theme-font-color)",
+          }}
+        >
+          a
+        </span>
+      </div>
+      <div
+        className="rounded-full w-5 h-5 bg-blue-500"
+        style={{
+          backgroundColor: "var(--user-theme-fidget-background)",
+          borderWidth: "var(--user-theme-fidget-border-width)",
+          borderColor: "var(--user-theme-fidget-border-color)",
+          boxShadow: "var(--user-theme-fidget-shadow)",
+        }}
+      ></div>
+    </div>
+  );
+};
 
 export default ThemeSettingsEditor;

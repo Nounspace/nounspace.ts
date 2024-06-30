@@ -170,6 +170,11 @@ export function FidgetWrapper({
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
             : "size-full overflow-hidden"
         }
+        style={{
+          boxShadow: "var(--user-theme-fidget-shadow)",
+          borderWidth: "var(--user-theme-fidget-border-width)",
+          borderColor: "var(--user-theme-fidget-border-color)",
+        }}
       >
         {bundle.config.editable && (
           <button

@@ -13,6 +13,10 @@ export interface UserTheme extends ThemeSettings {
     background: Color;
     backgroundHTML: string;
     musicURL: string;
+    fidgetBackground: Color;
+    fidgetBorderWidth: string;
+    fidgetBorderColor: Color;
+    fidgetShadow: string;
   };
 }
 
