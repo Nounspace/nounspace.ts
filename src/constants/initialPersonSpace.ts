@@ -1,5 +1,6 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import { FeedType } from "@neynar/nodejs-sdk";
 
 const createIntialPersonSpaceConfigForFid = (
   fid: number,
@@ -14,13 +15,13 @@ const createIntialPersonSpaceConfigForFid = (
             h: 2,
             x: 0,
             y: 0,
-            i: "text:profile",
-            minW: 3,
+            i: "feed:profile",
+            minW: 4,
             maxW: 36,
-            minH: 2,
+            minH: 6,
             maxH: 36,
             moved: false,
-            static: false,
+            static: true,
           },
         ],
       },
@@ -28,18 +29,16 @@ const createIntialPersonSpaceConfigForFid = (
     },
     theme: DEFAULT_THEME,
     fidgetInstanceDatums: {
-      "text:profile": {
+      "feed:profile": {
         config: {
           editable: false,
           settings: {
-            title: `User ${fid}`,
-            text: `THE USER YOUR ARE LOOKING AT HAS AN FID: ${fid}`,
-            fontFamily: "var(--user-theme-font)",
+            feedType: FeedType.Filter,
           },
           data: {},
         },
-        fidgetType: "text",
-        id: "text:profile",
+        fidgetType: "feed",
+        id: "feed:profile",
       },
     },
     fidgetTrayContents: [],
