@@ -9,9 +9,9 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axiosBackend from "../api/backend";
 import { isUndefined } from "lodash";
 
-export const useLoadFarcasterUser = (fid: number) => {
+export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
   return useQuery({
-    queryKey: ["user", fid],
+    queryKey: ["user", fid, viewerFid],
     staleTime: 1000 * 60 * 1,
     queryFn: async () => {
       if (fid === -1) {
@@ -24,6 +24,7 @@ export const useLoadFarcasterUser = (fid: number) => {
         {
           params: {
             fids: fid,
+            viewer_fid: viewerFid,
           },
         },
       );
