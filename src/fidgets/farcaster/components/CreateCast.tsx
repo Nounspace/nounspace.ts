@@ -224,11 +224,13 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
               autoFocus
               className="w-full h-full min-h-[150px] text-foreground/80"
             />
-            <EmbedsEditor
-              embeds={[]}
-              setEmbeds={setEmbeds}
-              RichEmbed={() => <div />}
-            />
+            <div className="z-50">
+              <EmbedsEditor
+                embeds={[]}
+                setEmbeds={setEmbeds}
+                RichEmbed={() => <div />}
+              />
+            </div>
           </div>
         )}
 
