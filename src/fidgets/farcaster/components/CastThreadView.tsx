@@ -1,20 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { CastRow } from "./CastRow";
 import { CastList } from "./CastList";
-import axiosBackend from "@/common/data/api/backend";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Button } from "@/common/components/atoms/button";
-import { CastParamType } from "@neynar/nodejs-sdk";
-import {
-  CastResponse,
-  CastWithInteractions,
-  CastWithInteractionsReplies,
-  Conversation,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import neynar from "@/common/data/api/neynar";
+import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
 import { concat } from "lodash";
 
