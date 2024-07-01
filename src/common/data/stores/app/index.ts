@@ -39,7 +39,6 @@ const makeStoreFunc = (set, get, state): AppStore => ({
     set((_draft) => {
       return rawReturn({
         ...makeStoreFunc(set, get, state),
-        isLoggingOut: true,
       });
     }, "logout");
   },
@@ -76,14 +75,16 @@ const { useStore: useAppStore, provider: AppStoreProvider } =
   createStoreBindings<AppStore>("AppStore", createAppStore);
 
 function useLogout() {
-  const { logout: privyLogout, authenticated } = usePrivy();
-  const { storeLogout } = useAppStore((state) => ({
+  const { logout: privyLogout } = usePrivy();
+  const { storeLogout, setLoginModalOpen } = useAppStore((state) => ({
     storeLogout: state.logout,
+    setLoginModalOpen: state.setup.setModalOpen,
   }));
 
   async function logout() {
-    if (authenticated) await privyLogout();
+    await privyLogout();
     storeLogout();
+    setLoginModalOpen(false);
   }
 
   return logout;

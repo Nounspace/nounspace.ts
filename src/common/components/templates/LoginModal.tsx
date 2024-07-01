@@ -23,7 +23,7 @@ const LoginModal = ({
     setCurrentStep: state.setup.setCurrentStep,
   }));
 
-  const { authenticated, ready } = usePrivy();
+  const { authenticated, ready, isModalOpen } = usePrivy();
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
       if (!wasAlreadyAuthenticated) {
@@ -91,7 +91,7 @@ const LoginModal = ({
   return (
     <Modal
       setOpen={setOpen}
-      open={open && authenticated && currentStep !== SetupStep.DONE}
+      open={open && !isModalOpen && currentStep !== SetupStep.DONE}
       showClose={showClose}
     >
       {getModalContent()}

@@ -29,7 +29,7 @@ const Modal = ({
 }: ModalProps) => (
   <Dialog.Root open={open} onOpenChange={setOpen} modal={focusMode || true}>
     <Dialog.Portal>
-      {overlay && (
+      {overlay && open && (
         <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-infinity" />
       )}
       <Dialog.Content
