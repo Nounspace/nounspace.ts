@@ -3,10 +3,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import SpaceWithLoader from "../templates/SpaceWithLoader";
 import { SpaceConfig } from "../templates/Space";
 import { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
 import Profile from "@/fidgets/ui/profile";
+import SpacePage from "./SpacePage";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -178,7 +178,7 @@ export default function UserDefinedSpace({
   );
 
   return (
-    <SpaceWithLoader
+    <SpacePage
       config={config}
       saveConfig={saveConfig}
       commitConfig={commitConfig}

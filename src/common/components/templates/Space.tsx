@@ -1,4 +1,4 @@
-import React, { useState, useRef, ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -10,7 +10,6 @@ import {
 import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-import Sidebar from "../organisms/Sidebar";
 import { isNil, isUndefined } from "lodash";
 
 export type SpaceFidgetConfig = {
@@ -36,6 +35,10 @@ type SpaceArgs = {
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
   profile?: ReactNode;
+  setEditMode: (v: boolean) => void;
+  editMode: boolean;
+  setSidebarEditable: (v: boolean) => void;
+  portalRef: React.RefObject<HTMLDivElement>;
 };
 
 export default function Space({
@@ -44,13 +47,14 @@ export default function Space({
   commitConfig,
   resetConfig,
   profile,
+  setEditMode,
+  editMode,
+  setSidebarEditable,
+  portalRef,
 }: SpaceArgs) {
-  const portalRef = useRef<HTMLDivElement>(null);
-  const [editMode, setEditMode] = useState(false);
-
-  function enterEditMode() {
-    setEditMode(true);
-  }
+  useEffect(() => {
+    setSidebarEditable(config.isEditable);
+  }, [config.isEditable]);
 
   function saveExitEditMode() {
     commitConfig();
@@ -86,43 +90,30 @@ export default function Space({
     <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div
-        className="flex w-full h-full"
-        style={{ background: "var(--user-theme-background)" }}
+        className={
+          editMode
+            ? "w-full transition-all duration-100 ease-out h-full"
+            : "w-full transition-all duration-100 ease-out h-full"
+        }
       >
-        <div className="flex mx-auto transition-all duration-100 ease-out">
-          <Sidebar
-            editMode={editMode}
-            enterEditMode={enterEditMode}
-            isEditable={config.isEditable}
+        <div className="h-full flex flex-col">
+          {!isUndefined(profile) ? (
+            <div className="z-50 bg-white h-40">{profile}</div>
+          ) : null}
+          <LayoutFidget
+            layoutConfig={{
+              ...config.layoutDetails.layoutConfig,
+            }}
+            fidgetInstanceDatums={config.fidgetInstanceDatums}
+            theme={config.theme}
+            fidgetTrayContents={config.fidgetTrayContents}
+            inEditMode={editMode}
+            saveExitEditMode={saveExitEditMode}
+            cancelExitEditMode={cancelExitEditMode}
             portalRef={portalRef}
+            saveConfig={saveLocalConfig}
+            hasProfile={!isNil(profile)}
           />
-        </div>
-        <div
-          className={
-            editMode
-              ? "w-full transition-all duration-100 ease-out h-full"
-              : "w-full transition-all duration-100 ease-out h-full"
-          }
-        >
-          <div className="h-full flex flex-col">
-            {!isUndefined(profile) ? (
-              <div className="z-50 bg-white h-40">{profile}</div>
-            ) : null}
-            <LayoutFidget
-              layoutConfig={{
-                ...config.layoutDetails.layoutConfig,
-              }}
-              fidgetInstanceDatums={config.fidgetInstanceDatums}
-              theme={config.theme}
-              fidgetTrayContents={config.fidgetTrayContents}
-              inEditMode={editMode}
-              saveExitEditMode={saveExitEditMode}
-              cancelExitEditMode={cancelExitEditMode}
-              portalRef={portalRef}
-              saveConfig={saveLocalConfig}
-              hasProfile={!isNil(profile)}
-            />
-          </div>
         </div>
       </div>
     </>
