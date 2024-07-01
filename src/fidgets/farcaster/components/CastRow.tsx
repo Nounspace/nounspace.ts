@@ -119,9 +119,11 @@ const CastBody = ({
         isEmbed={isEmbed}
       />
       {cast.text && (
-        <p className="leading-[1.3] text-left" style={castTextStyle}>
-          {cast.text}
-        </p>
+        <FarcasterLinkify attributes={userFid}>
+          <p className="leading-[1.3] text-left" style={castTextStyle}>
+            {cast.text}
+          </p>
+        </FarcasterLinkify>
       )}
       {!isEmbed && <CastEmbeds cast={cast} />}
       {!hideReactions && renderCastReactions(cast as CastWithInteractions)}
