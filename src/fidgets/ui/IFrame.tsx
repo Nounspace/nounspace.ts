@@ -23,6 +23,7 @@ const frameConfig: FidgetProperties = {
       fieldName: "url",
       required: true,
       inputSelector: TextInput,
+      group: "settings",
     },
   ],
   size: {

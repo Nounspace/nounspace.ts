@@ -16,6 +16,7 @@ const galleryConfig: FidgetProperties = {
       inputSelector: TextInput,
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+      group: "settings",
     },
   ],
   size: {
