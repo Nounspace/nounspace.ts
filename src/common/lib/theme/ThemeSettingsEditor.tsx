@@ -17,6 +17,11 @@ import {
   TabsTrigger,
   TabsContent,
 } from "@/common/components/atoms/tabs";
+import {
+  tabListClasses,
+  tabTriggerClasses,
+  tabContentClasses,
+} from "@/common/lib/theme/helpers";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -24,12 +29,6 @@ export type ThemeSettingsEditorArgs = {
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
 };
-
-const tabListClasses = "w-full p-0 justify-between bg-transparent rounded-none";
-const tabTriggerClasses =
-  "data-[state=active]:text-blue-600 text-md data-[state=active]:shadow-none data-[state=active]:border-b data-[state=active]:rounded-none data-[state=active]:border-blue-600 data-[state=active]:border-solid px-3 py-2";
-const tabContentClasses =
-  "py-4 flex flex-col gap-4 hidden data-[state=active]:flex";
 
 export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,

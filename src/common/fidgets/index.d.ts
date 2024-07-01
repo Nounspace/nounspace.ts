@@ -17,6 +17,8 @@ export type FidgetConfig<
   data: D;
 };
 
+export type FidgetGroup = "settings" | "style" | "code";
+
 export type FidgetFieldConfig = {
   readonly fieldName: string;
   readonly validator?: (value) => boolean;
@@ -28,6 +30,7 @@ export type FidgetFieldConfig = {
     | typeof HTMLInput;
   readonly default?: any;
   readonly required: boolean;
+  readonly group?: FidgetGroup;
 };
 
 // Properties are developer defined variables (they are inaccessible to the user)

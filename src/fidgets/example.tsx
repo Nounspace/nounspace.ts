@@ -15,6 +15,7 @@ const exampleProperties: FidgetProperties = {
       default: "Hello World!",
       required: true,
       inputSelector: TextInput,
+      group: "settings",
     },
   ],
   size: {
