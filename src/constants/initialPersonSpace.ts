@@ -11,8 +11,8 @@ const createIntialPersonSpaceConfigForFid = (
       layoutConfig: {
         layout: [
           {
-            w: 3,
-            h: 2,
+            w: 5,
+            h: 8,
             x: 0,
             y: 0,
             i: "feed:profile",
@@ -21,7 +21,7 @@ const createIntialPersonSpaceConfigForFid = (
             minH: 6,
             maxH: 36,
             moved: false,
-            static: true,
+            static: false,
           },
         ],
       },
