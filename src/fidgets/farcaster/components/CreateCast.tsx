@@ -112,7 +112,7 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
       signer,
     );
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return false;
   }
 }

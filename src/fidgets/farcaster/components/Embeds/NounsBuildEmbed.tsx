@@ -103,7 +103,7 @@ const NounsBuildEmbed = ({ url }: { url: string }) => {
     try {
       getData();
     } catch (e) {
-      console.log("NounsBuildEmbed: ", url, "error", e);
+      console.error("NounsBuildEmbed: ", url, "error", e);
     }
   }, []);
 
