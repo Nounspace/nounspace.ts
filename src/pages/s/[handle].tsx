@@ -23,6 +23,7 @@ export const getServerSideProps = (async ({
       ? null
       : params.handle;
   if (isNull(handle)) {
+    console.log(`Invalid handle in ${params}`);
     return {
       props: {
         spaceId: null,
@@ -36,6 +37,8 @@ export const getServerSideProps = (async ({
     const {
       result: { user },
     } = await neynar.lookupUserByUsername(handle);
+
+    console.log(`Found user with ${user.fid} for handle ${handle}`);
 
     const { data } = await supabaseClient
       .from("spaceRegistrations")
@@ -63,7 +66,8 @@ export const getServerSideProps = (async ({
         handle,
       },
     };
-  } catch {
+  } catch (e) {
+    console.error(e);
     return {
       props: {
         spaceId: null,
