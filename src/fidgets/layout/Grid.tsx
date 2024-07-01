@@ -62,7 +62,7 @@ const makeGridDetails = (hasProfile: boolean) => ({
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
   cols: 12,
-  maxRows: hasProfile ? 10 : 6,
+  maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
   margin: [16, 16],
@@ -224,14 +224,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   const { height } = useWindowSize();
   const rowHeight = useMemo(() => {
-    // 64 = magic number here is the height of the tabs bar above the grid
-    // 172 = magic number for the profile height
-    const magicBase = hasProfile ? 64 + 172 : 64;
+    // 64 = 4rem = magic number here is the height of the tabs bar above the grid
+    // 160 = 10rem = magic number for the profile height
+    const magicBase = hasProfile ? 64 + 160 : 64;
     return height
       ? Math.round(
           (height -
             magicBase -
-            gridDetails.margin[0] * gridDetails.maxRows -
+            gridDetails.margin[0] * (gridDetails.maxRows - 1) -
             gridDetails.containerPadding[0] * 2) /
             gridDetails.maxRows,
         )
