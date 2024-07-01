@@ -19,8 +19,9 @@ export type FidgetConfig<
 
 export type FidgetGroup = "settings" | "style" | "code";
 
-export type FidgetFieldConfig = {
+export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
   readonly fieldName: string;
+  readonly displayName?: string;
   readonly validator?: (value) => boolean;
   readonly inputSelector:
     | typeof TextInput
@@ -31,13 +32,14 @@ export type FidgetFieldConfig = {
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;
+  readonly disabledIf?: (settings: S) => boolean;
 };
 
 // Properties are developer defined variables (they are inaccessible to the user)
-export type FidgetProperties = {
+export type FidgetProperties<S extends FidgetSettings = FidgetSettings> = {
   fidgetName: string;
   icon: number;
-  fields: FidgetFieldConfig[];
+  fields: FidgetFieldConfig<S>[];
   size: {
     minHeight: NumericRange<1, 36>;
     maxHeight: NumericRange<1, 36>;
