@@ -19,6 +19,9 @@ module.exports = {
       },
     },
     extend: {
+      zIndex: {
+        infinity: "10000000",
+      },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],
       },

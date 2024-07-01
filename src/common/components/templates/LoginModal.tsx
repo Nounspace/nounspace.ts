@@ -34,6 +34,7 @@ const LoginModal = ({
       setCurrentStep(SetupStep.SIGNED_IN);
     },
     onError: () => {
+      setOpen(false);
       setErrored(true);
     },
   });
