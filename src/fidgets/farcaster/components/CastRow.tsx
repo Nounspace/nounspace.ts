@@ -415,6 +415,14 @@ export const CastRow = ({
           undefined,
           getIconForCastReactionType(CastReactionType.quote),
         )}
+        {cast.channel && cast.channel.name && (
+          <div
+            key={`cast-${cast.hash}-channel-name`}
+            className="mt-1.5 flex align-center text-sm text-foreground/40 py-1 px-1.5 rounded-md"
+          >
+            /{cast.channel.name}
+          </div>
+        )}
       </div>
     );
   };
