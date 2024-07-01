@@ -9,6 +9,7 @@ type MutativeFunction<T> = (draft: Draft<T>) => void;
 type MutativeConfigSetFunction<T> = (
   fn: MutativeFunction<T>,
   name?: string,
+  commit?: boolean,
 ) => void;
 
 type MatativeConfig<T> = (
@@ -39,7 +40,11 @@ type StoreSetFunction<T> = StoreApi<T>["setState"] extends (
 export const mutative =
   <T>(config: MatativeConfig<T>) =>
   (set: StoreSetFunction<T>, get: StoreApi<T>["getState"], store: T) =>
-    config((fn, name) => set(mutativeCreate(fn), false, name), get, store);
+    config(
+      (fn, name, commit) => set(mutativeCreate(fn), commit || false, name),
+      get,
+      store,
+    );
 
 type StoreReset<T> = (newState: Draft<T>) => void;
 export type StoreSet<T> = (
