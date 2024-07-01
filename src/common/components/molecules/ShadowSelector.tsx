@@ -6,12 +6,20 @@ export const ShadowSelector: React.FC<{
   onChange: (value: string) => void;
   value: string;
   className?: string;
-}> = ({ onChange, value, className }) => {
+  hideGlobalSettings?: boolean;
+}> = ({ onChange, value, className, hideGlobalSettings }) => {
+  const settings = SHADOW_STYLES.filter((setting) => {
+    if (hideGlobalSettings) {
+      return !setting.global;
+    }
+    return true;
+  });
+
   return (
     <SettingsSelector
       onChange={onChange}
       value={value}
-      settings={SHADOW_STYLES}
+      settings={settings}
       className={className}
     />
   );

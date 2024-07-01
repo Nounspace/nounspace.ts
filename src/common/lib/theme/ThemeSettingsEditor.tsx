@@ -172,6 +172,7 @@ export function ThemeSettingsEditor({
                         className="ring-0 focus:ring-0 border-0 shadow-none"
                         value={fidgetBorderWidth as string}
                         onChange={themePropSetter<string>("fidgetBorderWidth")}
+                        hideGlobalSettings
                       />
                     </div>
                   </div>
@@ -181,6 +182,7 @@ export function ThemeSettingsEditor({
                       className="ring-0 focus:ring-0 border-0 shadow-none"
                       value={fidgetShadow as string}
                       onChange={themePropSetter<string>("fidgetShadow")}
+                      hideGlobalSettings
                     />
                   </div>
                 </div>
