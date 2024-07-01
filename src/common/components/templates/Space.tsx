@@ -105,7 +105,9 @@ export default function Space({
           }
         >
           <div className="h-full flex flex-col">
-            {!isUndefined(profile) ? <div> {profile} </div> : null}
+            {!isUndefined(profile) ? (
+              <div className="z-50 bg-white">{profile}</div>
+            ) : null}
             <LayoutFidget
               layoutConfig={{
                 ...config.layoutDetails.layoutConfig,
