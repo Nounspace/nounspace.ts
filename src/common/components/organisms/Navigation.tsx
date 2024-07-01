@@ -210,7 +210,7 @@ const HomeIcon = () => {
   );
 };
 
-const EditIcon = () => {
+const _EditIcon = () => {
   return (
     <svg
       width="24"

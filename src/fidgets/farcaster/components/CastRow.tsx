@@ -147,8 +147,6 @@ const CastAuthorAttribution = ({
 
   const timeAgoStr = localize(Number(timeAgo[0]), timeAgo[1].toString());
 
-  console.log(cast.author);
-
   return (
     <div className="flex flex-row justify-between gap-x-4 leading-6 tracking-tight leading-[1.3]">
       <div className="flex flex-row">

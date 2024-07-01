@@ -15,7 +15,6 @@ const writeClient = new HubRestAPIClient({
 });
 
 async function submitMessage(req: NextApiRequest, res: NextApiResponse) {
-  console.log(req.body);
   try {
     const result = await writeClient.apis.validateMessage.validateMessage({
       body: req.body,

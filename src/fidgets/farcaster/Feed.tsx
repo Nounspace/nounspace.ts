@@ -1,14 +1,8 @@
-import React, { useEffect, useRef, useState } from "react";
-import TextInput from "@/common/components/molecules/TextInput";
+import React, { useEffect, useState } from "react";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import axiosBackend from "@/common/data/api/backend";
-import {
-  CastResponse,
-  FeedResponse,
-  FeedType,
-  NextCursor,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { FeedResponse, FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
 import Loading from "@/common/components/molecules/Loading";
@@ -72,14 +66,8 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
   settings: { feedType },
 }) => {
   const { fid } = useFarcasterSigner("feed");
-  const {
-    data,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-    isError,
-    error,
-  } = useGetCasts(feedType, fid);
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isError } =
+    useGetCasts(feedType, fid);
 
   const [showCastThreadView, setShowCastThreadView] = useState(false);
   const [selectedCastHash, setSelectedCastHash] = useState("");
@@ -91,27 +79,10 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
     }
   }, [inView]);
 
-  const onSelectCast = (hash) => {
+  const onSelectCast = (hash: string) => {
     setSelectedCastHash(hash);
     setShowCastThreadView(true);
   };
-
-  function getCast(castHash: string) {
-    async () => {
-      const { data } = await axiosBackend.get<CastResponse>(
-        "/api/farcaster/neynar/cast",
-        {
-          params: {
-            castHash,
-            type: "hash",
-            fid,
-          },
-        },
-      );
-
-      return data;
-    };
-  }
 
   const renderThread = () => (
     <CastThreadView

@@ -41,7 +41,7 @@ const WarpcastImage = ({ url }: { url: string }) => {
         onError={(e) => {
           if (skipCdn) return;
 
-          console.log("error loading image, retry without CDN", url);
+          console.debug("error loading image, retry without CDN", url);
           setSkipCdn(true);
         }}
         onLoad={onImageLoad}
