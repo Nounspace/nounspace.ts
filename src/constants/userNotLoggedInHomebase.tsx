@@ -119,7 +119,9 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          feedType: "following",
+          feedType: "filter",
+          filterType: "channel_id",
+          channel: "nounspace",
         },
       },
       fidgetType: "feed",
