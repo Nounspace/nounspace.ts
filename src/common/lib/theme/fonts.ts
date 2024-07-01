@@ -21,6 +21,7 @@ import type { NextFontWithVariable } from "next/dist/compiled/@next/font";
 
 export type FontConfig = {
   name: FontFamily;
+  global?: boolean;
   config: NextFontWithVariable;
 };
 
@@ -122,6 +123,7 @@ export const work_sans = Work_Sans({
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
     name: "Theme Font",
+    global: true,
     config: {
       variable: "--user-theme-font",
       className: ".user-theme-font",
@@ -132,6 +134,7 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   },
   {
     name: "Theme Headings Font",
+    global: true,
     config: {
       variable: "--user-theme-headings-font",
       className: ".user-theme-headings-font",

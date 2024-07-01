@@ -6,12 +6,20 @@ export const BorderSelector: React.FC<{
   onChange: (value: string) => void;
   value: string;
   className?: string;
-}> = ({ onChange, value, className }) => {
+  hideGlobalSettings?: boolean;
+}> = ({ onChange, value, className, hideGlobalSettings = false }) => {
+  const settings = BORDER_STYLES.filter((setting) => {
+    if (hideGlobalSettings) {
+      return !setting.global;
+    }
+    return true;
+  });
+
   return (
     <SettingsSelector
       onChange={onChange}
       value={value}
-      settings={BORDER_STYLES}
+      settings={settings}
       className={className}
     />
   );
