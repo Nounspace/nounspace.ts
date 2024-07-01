@@ -18,7 +18,6 @@ async function loadUsers(req: NextApiRequest, res: NextApiResponse) {
 
     res.status(200).json(data);
   } catch (e) {
-    console.log(e);
     if (isAxiosError(e)) {
       res
         .status(e.response!.data.status || 500)

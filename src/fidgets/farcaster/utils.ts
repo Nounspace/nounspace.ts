@@ -286,8 +286,6 @@ const FARCASTER_FNAME_ENDPOINT = "https://fnames.farcaster.xyz/transfers";
 // https://github.com/us3r-network/u3/blob/a6910b01fa0cf5cdba384f935544c6ba94dc7d64/apps/u3/src/components/social/farcaster/signupv2/FnameRegister.tsx
 
 export const validateUsernameIsAvailable = async (username: string) => {
-  console.log("validateUsernameIsAvailable", username);
-
   const response = await axios.get(
     `${FARCASTER_FNAME_ENDPOINT}?name=${username}`,
   );
@@ -332,7 +330,6 @@ export const updateUsernameOffchain = async ({
   owner,
   signature,
 }: UpdateUsernameParams) => {
-  console.log("updateUsername", username, fid, fromFid, toFid);
   if (!fromFid && !toFid) {
     throw new Error("fromFid or toFid must be provided");
   }
@@ -345,9 +342,6 @@ export const updateUsernameOffchain = async ({
   //   "timestamp": 1641234567,  // Current timestamp in seconds
   //   "signature": "0x..."  // EIP-712 signature signed by the custody address of the fid
   // }
-  console.log(
-    `making request to ${FARCASTER_FNAME_ENDPOINT} with username: ${username}, fid: ${fid}, owner: ${owner}, signature: ${signature}`,
-  );
   try {
     const payload = {
       name: username,
@@ -359,9 +353,7 @@ export const updateUsernameOffchain = async ({
       signature,
     };
 
-    console.log("updateUsername payload", payload);
     const res = await axios.post(FARCASTER_FNAME_ENDPOINT, payload);
-    console.log("updateUsername response", res, res?.data);
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     return res.data;
@@ -431,6 +423,5 @@ export const getSignatureForUsernameProof = async (
     primaryType: "UserNameProof",
     message: message,
   });
-  console.log("getSignatureForUsernameProof:", signature);
   return signature;
 };

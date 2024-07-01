@@ -40,7 +40,7 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
           setCast(res.data.cast);
         }
       } catch (err) {
-        console.log(`Error in CastEmbed: ${err} ${url} ${castId}`);
+        console.error(`Error in CastEmbed: ${err} ${url} ${castId}`);
       }
     };
 
