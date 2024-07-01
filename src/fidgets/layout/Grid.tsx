@@ -228,13 +228,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // 160 = 10rem = magic number for the profile height
     const magicBase = hasProfile ? 64 + 160 : 64;
     return height
-      ? Math.round(
-          (height -
-            magicBase -
-            gridDetails.margin[0] * (gridDetails.maxRows - 1) -
-            gridDetails.containerPadding[0] * 2) /
-            gridDetails.maxRows,
-        )
+      ? (height -
+          magicBase -
+          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
+          gridDetails.containerPadding[0] * 2) /
+          gridDetails.maxRows
       : gridDetails.rowHeight;
   }, [height, hasProfile]);
 
