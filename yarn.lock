@@ -1909,10 +1909,10 @@
   dependencies:
     zod "^3.21.4"
 
-"@privy-io/js-sdk-core@0.23.2":
-  version "0.23.2"
-  resolved "https://registry.yarnpkg.com/@privy-io/js-sdk-core/-/js-sdk-core-0.23.2.tgz#31259ccf96a4c5c1a61e091867686505474d8335"
-  integrity sha512-LHADBZGrkoMs/0hg6fL+JTV/2y1VPIoKV+tH+aOjrlYSvWtqF5hOiBm8SlHNsKmjsU10B2DnfsvEasY4puM/KQ==
+"@privy-io/js-sdk-core@0.23.1":
+  version "0.23.1"
+  resolved "https://registry.yarnpkg.com/@privy-io/js-sdk-core/-/js-sdk-core-0.23.1.tgz#812819ac31577175fd896088c68c20881a700378"
+  integrity sha512-NW6sbc+5Zvln4swt3zyeGhtPTtOEDltj9ORswHFv1wER0N+AG8OYC7Jgolgj8xguM78vq/LH0w/Ddr0cbJ/hzA==
   dependencies:
     "@ethersproject/abstract-signer" "^5.7.0"
     "@ethersproject/bignumber" "^5.7.0"
@@ -1921,7 +1921,7 @@
     "@ethersproject/transactions" "^5.7.0"
     "@ethersproject/units" "^5.7.0"
     "@privy-io/api-base" "^1.2.0"
-    "@privy-io/public-api" "2.6.0"
+    "@privy-io/public-api" "2.5.1"
     eventemitter3 "^5.0.1"
     fetch-retry "^5.0.6"
     jose "^4.15.5"
@@ -1929,20 +1929,20 @@
     set-cookie-parser "^2.6.0"
     uuid ">=8 <10"
 
-"@privy-io/public-api@2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@privy-io/public-api/-/public-api-2.6.0.tgz#25de66fe10640aae24c1c0a2b0119da68ae6399b"
-  integrity sha512-c1zGyhoYN3jtwa6ETdzE/4yP+XUpgxbcQSzTlmG02HB7ESDhoe4VhuX+PihpL31RM8QF0nMbeL+YDeb6NnU+SA==
+"@privy-io/public-api@2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@privy-io/public-api/-/public-api-2.5.1.tgz#f0599d23d73d892c6879b595743d1712f55762ab"
+  integrity sha512-09aLU966Ys1ZXCm/FZngqubbWkXDS4XpwDBlF5hhrjVVgXTwzcHsX8mxFhFPZacZ+Ojg5inZvQ8ZKy+Y/MAcmA==
   dependencies:
     "@privy-io/api-base" "1.2.0"
     ethers "^5.7.2"
     libphonenumber-js "^1.10.31"
     zod "^3.22.4"
 
-"@privy-io/react-auth@^1.73.0":
-  version "1.73.0"
-  resolved "https://registry.yarnpkg.com/@privy-io/react-auth/-/react-auth-1.73.0.tgz#949ea03f617e71a94cb503512fdc54cb10d18772"
-  integrity sha512-KCnSXsYh+e7CgsIdy29OX5cbDloBtArcFlM7+m8iDXJHpy0Opwi6HJihvZNLRMxjd5ZaAmNTASfGGoj6t4EYLg==
+"@privy-io/react-auth@1.72":
+  version "1.72.0"
+  resolved "https://registry.yarnpkg.com/@privy-io/react-auth/-/react-auth-1.72.0.tgz#f04b48b0a0091f88d9ed423fc8f184178dbc7ae6"
+  integrity sha512-pDNiGb2zZgTZK/uFmm9Of7FQCjFtQjCWMOSCOqQIOOp9v6iOgSZSPwoIAoGoPSWNCioiwByaI0DcOFEM6fTWAA==
   dependencies:
     "@coinbase/wallet-sdk" "4.0.3"
     "@ethersproject/abstract-signer" "^5.7.0"
@@ -1959,7 +1959,7 @@
     "@heroicons/react" "^2.1.1"
     "@marsidev/react-turnstile" "^0.4.1"
     "@metamask/eth-sig-util" "^6.0.0"
-    "@privy-io/js-sdk-core" "0.23.2"
+    "@privy-io/js-sdk-core" "0.23.1"
     "@simplewebauthn/browser" "^9.0.1"
     "@walletconnect/ethereum-provider" "^2.13.3"
     "@walletconnect/modal" "^2.6.2"

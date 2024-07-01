@@ -24,9 +24,7 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
   };
 
   try {
-    console.log(options);
     const { data } = await axios.request(options);
-    console.log(data);
 
     res.status(200).json(data);
   } catch (e) {

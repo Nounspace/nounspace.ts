@@ -31,7 +31,6 @@ export type NounspaceDeveloperManagedSignerData =
     accountType?: FarcasterRegistrationType;
     status?: SignerStatus;
     signerUrl?: string;
-    requestingWallet?: string;
   };
 
 const BACKEND_POLL_FREQUENCY = 1000;
@@ -141,7 +140,7 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
         const resp: AxiosResponse<SignerResponse<SignedKeyRequestResponse>> =
           await axiosBackend.post("/api/signerRequests", {
             publicKey: publicKeyHex,
-            requestingWallet: data.requestingWallet,
+            requestingWallet: data.currentWalletAddress,
           });
         const signerData = resp.data.value!;
         await saveData({
