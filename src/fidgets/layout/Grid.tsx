@@ -51,7 +51,7 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const gridDetails = {
+const makeGridDetails = (hasProfile: boolean) => ({
   items: 0,
   isDraggable: false,
   isResizable: false,
@@ -62,14 +62,14 @@ const gridDetails = {
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
   cols: 12,
-  maxRows: 10,
+  maxRows: hasProfile ? 10 : 6,
   rowHeight: 70,
   layout: [],
   margin: [16, 16],
   containerPadding: [16, 16],
-};
+});
 
-type GridDetails = typeof gridDetails;
+type GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
@@ -122,6 +122,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   saveExitEditMode,
   cancelExitEditMode,
   portalRef,
+  hasProfile,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
@@ -149,6 +150,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
   const [localTheme, setLocalTheme] = useState(theme);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
+
+  const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
 
   const saveCurrentConfig = useCallback(
     debounce(() => {
@@ -220,20 +223,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   const { height } = useWindowSize();
-  const rowHeight = useMemo(
-    () =>
-      height
-        ? Math.round(
-            // The 64 magic number here is the height of the tabs bar above the grid
-            (height -
-              48 -
-              gridDetails.margin[0] * gridDetails.maxRows -
-              gridDetails.containerPadding[0] * 2) /
-              gridDetails.maxRows,
-          )
-        : 70,
-    [height],
-  );
+  const rowHeight = useMemo(() => {
+    // 64 = magic number here is the height of the tabs bar above the grid
+    // 172 = magic number for the profile height
+    const magicBase = hasProfile ? 64 + 172 : 64;
+    return height
+      ? Math.round(
+          (height -
+            magicBase -
+            gridDetails.margin[0] * gridDetails.maxRows -
+            gridDetails.containerPadding[0] * 2) /
+            gridDetails.maxRows,
+        )
+      : gridDetails.rowHeight;
+  }, [height, hasProfile]);
 
   function handleDrop(
     _layout: PlacedGridItem[],
@@ -363,7 +366,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      <div className="flex flex-col">
+      <div className="flex flex-col z-10">
         <div
           className={
             inEditMode
@@ -398,7 +401,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             onDrop={handleDrop}
             onLayoutChange={saveLayoutConditional}
             className="grid-overlap"
-            style={{ height: height + "px" }}
+            style={{ height: rowHeight * gridDetails.maxRows + "px" }}
           >
             {map(localLayout, (gridItem: PlacedGridItem) => {
               const fidgetDatum = localFidgetInstanceDatums[gridItem.i];

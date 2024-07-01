@@ -109,6 +109,8 @@ interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
   portalRef: React.RefObject<HTMLDivElement>;
+
+  hasProfile: boolean;
 }
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;

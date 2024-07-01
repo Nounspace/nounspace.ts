@@ -11,7 +11,7 @@ import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import Sidebar from "../organisms/Sidebar";
-import { isUndefined } from "lodash";
+import { isNil, isUndefined } from "lodash";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -120,6 +120,7 @@ export default function Space({
               cancelExitEditMode={cancelExitEditMode}
               portalRef={portalRef}
               saveConfig={saveLocalConfig}
+              hasProfile={!isNil(profile)}
             />
           </div>
         </div>
