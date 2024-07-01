@@ -1,7 +1,7 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import { FeedType } from "@neynar/nodejs-sdk";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
-import { isArray, isNil, isString, map, toInteger } from "lodash";
+import { isArray, isNil } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
@@ -9,12 +9,6 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
     isNil(req.query.feedType) || isArray(req.query.feedType)
       ? FeedType.Following
       : (req.query.feedType as FeedType);
-
-  const fids = isArray(req.query.fids)
-    ? map(req.query.fids, toInteger)
-    : isString(req.query.fids)
-      ? [toInteger(req.query.fids)]
-      : undefined;
 
   const options: AxiosRequestConfig = {
     method: "GET",
@@ -26,12 +20,13 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
     params: {
       ...req.query,
       feed_type: feedType,
-      fids,
     },
   };
 
   try {
+    console.log(options);
     const { data } = await axios.request(options);
+    console.log(data);
 
     res.status(200).json(data);
   } catch (e) {
