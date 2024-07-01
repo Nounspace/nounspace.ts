@@ -14,6 +14,7 @@ import { useFarcasterSigner } from ".";
 import Loading from "@/common/components/molecules/Loading";
 import { useInView } from "react-intersection-observer";
 import { CastThreadView } from "./components/CastThreadView";
+import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 
 export type feedFidgetSettings = {
   feedType: FeedType;
@@ -23,12 +24,8 @@ const feedProperties: FidgetProperties = {
   fidgetName: "feed",
   fields: [
     {
-      // TO DO: Change this to a drop down menu
-      // We probably want to make a function that you can pass
-      // drop down menu options to that returns a component that allows
-      // selecting one of those options
       fieldName: "feedType",
-      inputSelector: TextInput,
+      inputSelector: FeedTypeSelector,
       required: false,
       default: FeedType.Following,
     },
@@ -41,6 +38,11 @@ const feedProperties: FidgetProperties = {
   },
   icon: 0x1f4f0,
 };
+
+export const FEED_TYPES = [
+  { name: "Following", value: FeedType.Following },
+  { name: "Filter", value: FeedType.Filter },
+];
 
 export const useGetCasts = (feedType: FeedType, fid: number) => {
   return useInfiniteQuery({
