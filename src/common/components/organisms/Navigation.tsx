@@ -29,13 +29,13 @@ type NavProps = {
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
-  const { homebaseConfig, setModalOpen, getIsLoggedIn } = useAppStore(
-    (state) => ({
+  const { homebaseConfig, setModalOpen, getIsLoggedIn, getIsInitializing } =
+    useAppStore((state) => ({
       setModalOpen: state.setup.setModalOpen,
       homebaseConfig: state.homebase.homebaseConfig,
       getIsLoggedIn: state.getIsAccountReady,
-    }),
-  );
+      getIsInitializing: state.getIsInitializing,
+    }));
   const logout = useLogout();
 
   const userTheme = homebaseConfig?.theme;
@@ -52,6 +52,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   }
   const { fid } = useFarcasterSigner("navigation");
   const isLoggedIn = getIsLoggedIn();
+  const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
@@ -145,6 +146,27 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
                     <span className="ms-2">Logout</span>
                   </button>
+                ) : isInitializing ? (
+                  <>
+                    <button
+                      className={mergeClasses(
+                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                      )}
+                      onClick={logout}
+                    >
+                      <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
+                      <span className="ms-2">Logout</span>
+                    </button>
+                    <button
+                      className={mergeClasses(
+                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+                      )}
+                      onClick={openModal}
+                    >
+                      <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
+                      <span className="ms-2">Complete Sign Up</span>
+                    </button>
+                  </>
                 ) : (
                   <button
                     className={mergeClasses(

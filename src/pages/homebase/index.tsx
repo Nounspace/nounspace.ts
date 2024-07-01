@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
-import SpaceWithLoader from "@/common/components/templates/SpaceWithLoader";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
+import SpacePage from "@/common/components/pages/SpacePage";
 
 const Homebase: NextPageWithLayout = () => {
   const {
@@ -50,7 +50,7 @@ const Homebase: NextPageWithLayout = () => {
           resetConfig,
         };
 
-  return <SpaceWithLoader {...args} />;
+  return <SpacePage {...args} />;
 };
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
