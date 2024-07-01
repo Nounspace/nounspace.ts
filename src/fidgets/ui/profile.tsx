@@ -101,7 +101,12 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           </div>
           <div className="ml-4 flex w-full h-full items-center">
             {user.viewer_context && fid !== viewerFid && (
-              <Button onClick={toggleFollowing} variant="primary">
+              <Button
+                onClick={toggleFollowing}
+                variant={
+                  user.viewer_context?.following ? "secondary" : "primary"
+                }
+              >
                 {user.viewer_context?.following ? "Unfollow" : "Follow"}
               </Button>
             )}
