@@ -84,7 +84,7 @@ function useLogout() {
   async function logout() {
     await privyLogout();
     storeLogout();
-    setLoginModalOpen(false);
+    setLoginModalOpen(true);
   }
 
   return logout;
