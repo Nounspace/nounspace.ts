@@ -1,8 +1,7 @@
-import neynar from "@/common/data/api/neynar";
 import requestHandler from "@/common/data/api/requestHandler";
 import { FeedType } from "@neynar/nodejs-sdk";
-import { isAxiosError } from "axios";
-import { isArray, isNil } from "lodash";
+import axios, { AxiosRequestConfig, isAxiosError } from "axios";
+import { isArray, isNil, isString, map, toInteger } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
@@ -11,8 +10,28 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
       ? FeedType.Following
       : (req.query.feedType as FeedType);
 
+  const fids = isArray(req.query.fids)
+    ? map(req.query.fids, toInteger)
+    : isString(req.query.fids)
+      ? [toInteger(req.query.fids)]
+      : undefined;
+
+  const options: AxiosRequestConfig = {
+    method: "GET",
+    url: "https://api.neynar.com/v2/farcaster/feed",
+    headers: {
+      accept: "application/json",
+      api_key: process.env.NEYNAR_API_KEY!,
+    },
+    params: {
+      ...req.query,
+      feed_type: feedType,
+      fids,
+    },
+  };
+
   try {
-    const data = await neynar.fetchFeed(feedType, req.query);
+    const { data } = await axios.request(options);
 
     res.status(200).json(data);
   } catch (e) {

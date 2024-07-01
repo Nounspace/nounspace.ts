@@ -1,27 +1,85 @@
 import React, { useEffect, useState } from "react";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import axiosBackend from "@/common/data/api/backend";
-import { FeedResponse, FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
 import Loading from "@/common/components/molecules/Loading";
 import { useInView } from "react-intersection-observer";
 import { CastThreadView } from "./components/CastThreadView";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
+import SettingsSelector from "@/common/components/molecules/SettingsSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import { useGetCasts } from "@/common/data/queries/farcaster";
 
-export type feedFidgetSettings = {
+enum FilterType {
+  Channel = "channel_id",
+  Users = "fids",
+}
+
+export type FeedFidgetSettings = {
   feedType: FeedType;
+  filterType: FilterType;
+  users: string; // this should be a number array, but that requires special inputs to build later
+  channel: string;
 };
 
-const feedProperties: FidgetProperties = {
+const FILTER_TYPES = [
+  { name: "Channel", value: FilterType.Channel },
+  { name: "Users", value: FilterType.Users },
+];
+
+export const FilterTypeSelector: React.FC<{
+  onChange: (value: string) => void;
+  value: string;
+  className?: string;
+}> = ({ onChange, value, className }) => {
+  return (
+    <SettingsSelector
+      onChange={onChange}
+      value={value}
+      settings={FILTER_TYPES}
+      className={className}
+    />
+  );
+};
+
+const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "feed",
   fields: [
     {
       fieldName: "feedType",
+      displayName: "Feed Type",
       inputSelector: FeedTypeSelector,
       required: false,
       default: FeedType.Following,
+    },
+    {
+      fieldName: "filterType",
+      displayName: "Filter Type",
+      inputSelector: FilterTypeSelector,
+      required: false,
+      disabledIf: (settings) => settings.feedType !== FeedType.Filter,
+      default: FilterType.Users,
+    },
+    {
+      fieldName: "users",
+      displayName: "Users",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Users,
+      default: "",
+    },
+    {
+      fieldName: "channel",
+      displayName: "Channel",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Channel,
+      default: "",
     },
   ],
   size: {
@@ -38,36 +96,18 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
-export const useGetCasts = (feedType: FeedType, fid: number) => {
-  return useInfiniteQuery({
-    queryKey: ["channelCasts", feedType, fid],
-    staleTime: 1000 * 60 * 1,
-    queryFn: async ({ pageParam: cursor }) => {
-      const { data } = await axiosBackend.get<FeedResponse>(
-        "/api/farcaster/neynar/feed",
-        {
-          params: {
-            fid,
-            feedType,
-            cursor,
-          },
-        },
-      );
-
-      return data;
-    },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage, _allPages, _lastPageParam, _allPageParams) =>
-      lastPage.next.cursor,
-  });
-};
-
-const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
-  settings: { feedType },
+const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({
+  settings: { feedType, users, channel, filterType },
 }) => {
   const { fid } = useFarcasterSigner("feed");
   const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isError } =
-    useGetCasts(feedType, fid);
+    useGetCasts({
+      feedType,
+      fid,
+      filterType,
+      fids: users,
+      channel,
+    });
 
   const [showCastThreadView, setShowCastThreadView] = useState(false);
   const [selectedCastHash, setSelectedCastHash] = useState("");
@@ -145,6 +185,6 @@ const Feed: React.FC<FidgetArgs<feedFidgetSettings>> = ({
 const exp = {
   fidget: Feed,
   properties: feedProperties,
-} as FidgetModule<FidgetArgs<feedFidgetSettings>>;
+} as FidgetModule<FidgetArgs<FeedFidgetSettings>>;
 
 export default exp;
