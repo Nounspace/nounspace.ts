@@ -114,6 +114,7 @@ export function ThemeSettingsEditor({
                     className="ring-0 focus:ring-0 border-0 shadow-none"
                     value={headingsFont}
                     onChange={themePropSetter<FontFamily>("headingsFont")}
+                    hideGlobalSettings
                   />
                 </div>
               </div>
@@ -130,6 +131,7 @@ export function ThemeSettingsEditor({
                     className="ring-0 focus:ring-0 border-0 shadow-none"
                     value={font}
                     onChange={themePropSetter<FontFamily>("font")}
+                    hideGlobalSettings
                   />
                 </div>
               </div>

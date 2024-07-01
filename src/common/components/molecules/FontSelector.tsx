@@ -19,14 +19,22 @@ export interface FontSelectorProps {
   onChange: (fontConfig: FontFamily) => void;
   value: string;
   className?: string;
+  hideGlobalSettings?: boolean;
 }
 
 export const FontSelector: React.FC<FontSelectorProps> = ({
   onChange,
   value,
   className,
+  hideGlobalSettings = false,
 }) => {
   const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
+  const settings = FONT_FAMILY_OPTIONS.filter((setting) => {
+    if (hideGlobalSettings) {
+      return !setting.global;
+    }
+    return true;
+  });
 
   return (
     <Select onValueChange={onChange} value={value}>
@@ -39,7 +47,7 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {FONT_FAMILY_OPTIONS.map((font, i) => {
+        {settings.map((font, i) => {
           return (
             <SelectItem style={font.config.style} value={font.name} key={i}>
               {font.name}

@@ -7,7 +7,7 @@ export const BorderSelector: React.FC<{
   value: string;
   className?: string;
   hideGlobalSettings?: boolean;
-}> = ({ onChange, value, className, hideGlobalSettings }) => {
+}> = ({ onChange, value, className, hideGlobalSettings = false }) => {
   const settings = BORDER_STYLES.filter((setting) => {
     if (hideGlobalSettings) {
       return !setting.global;
