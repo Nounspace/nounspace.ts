@@ -18,6 +18,7 @@ import {
   tabTriggerClasses,
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -32,6 +33,7 @@ type FidgetSettingsRowProps = {
   field: FidgetFieldConfig;
   value: any;
   onChange: (value: any) => void;
+  hide?: boolean;
 };
 
 const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
@@ -55,14 +57,20 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   field,
   value,
   onChange,
+  hide,
 }) => {
   const InputComponent = field.inputSelector;
 
   return (
-    <div className="text-gray-700 md:flex-col md:items-center m-2">
+    <div
+      className={mergeClasses(
+        "text-gray-700 md:flex-col md:items-center m-2",
+        hide && "hidden",
+      )}
+    >
       <div className="md:mb-0 md:w-1/3">
         <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
-          {field.fieldName}
+          {field.displayName || field.fieldName}
         </label>
       </div>
       <div>
@@ -94,6 +102,7 @@ const FidgetSettingsGroup: React.FC<{
               [field.fieldName]: val,
             });
           }}
+          hide={field.disabledIf && field.disabledIf(state)}
         />
       ))}
     </>

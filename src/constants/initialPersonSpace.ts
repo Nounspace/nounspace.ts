@@ -1,6 +1,6 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { FeedType } from "@neynar/nodejs-sdk";
+import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 
 const createIntialPersonSpaceConfigForFid = (
   fid: number,
@@ -34,6 +34,8 @@ const createIntialPersonSpaceConfigForFid = (
           editable: false,
           settings: {
             feedType: FeedType.Filter,
+            users: fid,
+            FilterType: FilterType.Fids,
           },
           data: {},
         },
