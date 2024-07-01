@@ -5,12 +5,19 @@ import {
   FidgetFieldConfig,
 } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
-import {
-  FaFloppyDisk,
-  FaTrashCan,
-  FaTriangleExclamation,
-} from "react-icons/fa6";
+import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/common/components/atoms/tabs";
+import {
+  tabListClasses,
+  tabTriggerClasses,
+  tabContentClasses,
+} from "@/common/lib/theme/helpers";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -25,6 +32,23 @@ type FidgetSettingsRowProps = {
   field: FidgetFieldConfig;
   value: any;
   onChange: (value: any) => void;
+};
+
+const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
+  return fields.reduce(
+    (acc, field) => {
+      if (field.group) {
+        acc[field.group].push(field);
+      } else {
+        acc["settings"].push(field);
+      }
+      return acc;
+    },
+    { settings: [], style: [], code: [] } as Record<
+      string,
+      FidgetFieldConfig[]
+    >,
+  );
 };
 
 const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
@@ -52,6 +76,30 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   );
 };
 
+const FidgetSettingsGroup: React.FC<{
+  fields: FidgetFieldConfig[];
+  state: FidgetSettings;
+  setState: (state: FidgetSettings) => void;
+}> = ({ fields, state, setState }) => {
+  return (
+    <>
+      {fields.map((field, i) => (
+        <FidgetSettingsRow
+          field={field}
+          key={i}
+          value={state[field.fieldName]}
+          onChange={(val) => {
+            setState({
+              ...state,
+              [field.fieldName]: val,
+            });
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
 export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   fidgetId,
   properties,
@@ -68,6 +116,8 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     onSave(state);
   };
 
+  const groupedFields = fieldsByGroup(properties.fields);
+
   return (
     <form onSubmit={_onSave} className="flex-col flex h-full">
       <div className="h-full overflow-auto">
@@ -80,19 +130,48 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           </h1>
         </div>
         <div className="gap-3 flex flex-col">
-          {properties.fields.map((field, i) => (
-            <FidgetSettingsRow
-              field={field}
-              key={i}
-              value={state[field.fieldName]}
-              onChange={(val) => {
-                setState({
-                  ...state,
-                  [field.fieldName]: val,
-                });
-              }}
-            />
-          ))}
+          <Tabs defaultValue="settings">
+            <TabsList className={tabListClasses}>
+              <TabsTrigger value="settings" className={tabTriggerClasses}>
+                Settings
+              </TabsTrigger>
+              {groupedFields.style.length > 0 && (
+                <TabsTrigger value="style" className={tabTriggerClasses}>
+                  Style
+                </TabsTrigger>
+              )}
+              {groupedFields.code.length > 0 && (
+                <TabsTrigger value="code" className={tabTriggerClasses}>
+                  Code
+                </TabsTrigger>
+              )}
+            </TabsList>
+            <TabsContent value="settings" className={tabContentClasses}>
+              <FidgetSettingsGroup
+                fields={groupedFields.settings}
+                state={state}
+                setState={setState}
+              />
+            </TabsContent>
+            {groupedFields.style.length > 0 && (
+              <TabsContent value="style" className={tabContentClasses}>
+                <FidgetSettingsGroup
+                  fields={groupedFields.style}
+                  state={state}
+                  setState={setState}
+                />
+              </TabsContent>
+            )}
+            {groupedFields.code.length > 0 && (
+              <TabsContent value="code" className={tabContentClasses}>
+                <FidgetSettingsGroup
+                  fields={groupedFields.code}
+                  state={state}
+                  setState={setState}
+                />
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </div>
 
