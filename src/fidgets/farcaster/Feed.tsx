@@ -10,6 +10,7 @@ import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useGetCasts } from "@/common/data/queries/farcaster";
+import { isNil } from "lodash";
 
 enum FilterType {
   Channel = "channel_id",
@@ -100,14 +101,20 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({
   settings: { feedType, users, channel, filterType },
 }) => {
   const { fid } = useFarcasterSigner("feed");
-  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isError } =
-    useGetCasts({
-      feedType,
-      fid,
-      filterType,
-      fids: users,
-      channel,
-    });
+  const {
+    data,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isPending,
+  } = useGetCasts({
+    feedType,
+    fid,
+    filterType,
+    fids: users,
+    channel,
+  });
 
   const [showCastThreadView, setShowCastThreadView] = useState(false);
   const [selectedCastHash, setSelectedCastHash] = useState("");
@@ -140,37 +147,42 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({
   const renderFeed = () => {
     return (
       <>
-        <div>
-          {isError ? (
-            <div>{"Error"}</div>
-          ) : (
-            data?.pages.map((page, pageNum) => (
-              <React.Fragment key={pageNum}>
-                {page.casts.map((cast, index) => (
-                  <CastRow
-                    cast={cast}
-                    key={index}
-                    onSelect={() => onSelectCast(cast.hash)}
-                  />
-                ))}
-              </React.Fragment>
-            ))
-          )}
-        </div>
-
-        <div ref={ref} className="h-3/6">
-          {isFetchingNextPage ? (
-            <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
-              <Loading />
-            </div>
-          ) : hasNextPage ? (
-            "Fetch More Data"
-          ) : (
-            <div className="h-full w-full flex flex-col justify-center items-center">
-              <Loading />
-            </div>
-          )}
-        </div>
+        {!isPending && (
+          <div>
+            {isError ? (
+              <div>Error</div>
+            ) : !isNil(data) ? (
+              data.pages.map((page, pageNum) => (
+                <React.Fragment key={pageNum}>
+                  {page.casts.map((cast, index) => (
+                    <CastRow
+                      cast={cast}
+                      key={index}
+                      onSelect={() => onSelectCast(cast.hash)}
+                    />
+                  ))}
+                </React.Fragment>
+              ))
+            ) : (
+              <div>No casts found with these filter settings</div>
+            )}
+          </div>
+        )}
+        {!isError && (
+          <div ref={ref} className="h-3/6">
+            {isFetchingNextPage ? (
+              <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
+                <Loading />
+              </div>
+            ) : hasNextPage ? (
+              "Fetch More Data"
+            ) : (
+              <div className="h-full w-full flex flex-col justify-center items-center">
+                <Loading />
+              </div>
+            )}
+          </div>
+        )}
       </>
     );
   };
