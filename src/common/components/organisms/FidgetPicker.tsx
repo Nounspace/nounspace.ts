@@ -82,7 +82,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
   }
 
   return (
-    <div className="h-full overflow-scroll">
+    <div className="h-full overflow-y-auto">
       <div className="flex pb-4 m-2">
         <button
           onClick={() => {
