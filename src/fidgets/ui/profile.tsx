@@ -6,6 +6,8 @@ import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { first, isUndefined } from "lodash";
 import FarcasterLinkify from "../farcaster/components/linkify";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { useFarcasterSigner } from "../farcaster";
+import { followUser, unfollowUser } from "../farcaster/utils";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -33,7 +35,11 @@ const profileProperties: FidgetProperties = {
 const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   settings: { fid },
 }) => {
-  const { data: userData } = useLoadFarcasterUser(fid);
+  const { fid: viewerFid, signer } = useFarcasterSigner("profile");
+  const { data: userData } = useLoadFarcasterUser(
+    fid,
+    viewerFid > 0 ? viewerFid : undefined,
+  );
 
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {
@@ -41,6 +47,16 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
     }
     return first(userData.users);
   }, [userData]);
+
+  const toggleFollowing = async () => {
+    if (user && signer && viewerFid > 0) {
+      if (user?.viewer_context?.following) {
+        unfollowUser(fid, viewerFid, signer);
+      } else {
+        followUser(fid, viewerFid, signer);
+      }
+    }
+  };
 
   if (isUndefined(user)) {
     return (
@@ -75,11 +91,18 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
         )}
       </div>
       <div className="w-4/6 flex flex-col pl-6">
-        <div className="flex flex-col">
-          <span className="w-full text-xl">
-            {user.display_name || user.username}
-          </span>
-          <small className="text-slate-500">@{user.username}</small>
+        <div className="flex flex-row">
+          <div className="flex flex-col">
+            <span className="w-full text-xl">
+              {user.display_name || user.username}
+            </span>
+            <small className="text-slate-500">@{user.username}</small>
+          </div>
+          {user.viewer_context && fid !== viewerFid && (
+            <button onClick={toggleFollowing}>
+              {user.viewer_context?.following ? "Unfollow" : "Follow"}
+            </button>
+          )}
         </div>
         <div className="flex flex-row text-sm">
           <p className="mr-6">{user.following_count} Following</p>
