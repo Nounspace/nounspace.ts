@@ -45,6 +45,8 @@ type AuthenticatorManagerProviderProps = {
   children: React.ReactNode;
   authenticatorConfig: AuthenticatorConfig;
   saveAuthenticatorConfig: (newConfig: AuthenticatorConfig) => Promise<void>;
+  identityPublicKey: string | undefined;
+  walletAddress: string | undefined;
 };
 
 type AuthenticatorManagerAllowedResponse<R = unknown> = {
@@ -104,7 +106,13 @@ function authenticatorForName(
 
 export const AuthenticatorManagerProvider: React.FC<
   AuthenticatorManagerProviderProps
-> = ({ authenticatorConfig, saveAuthenticatorConfig, children }) => {
+> = ({
+  authenticatorConfig,
+  saveAuthenticatorConfig,
+  children,
+  identityPublicKey,
+  walletAddress,
+}) => {
   function saveSingleAuthenticatorData(
     parentConfig: AuthenticatorConfig,
     authenticatorId: string,
@@ -219,7 +227,13 @@ export const AuthenticatorManagerProvider: React.FC<
           ...fromPairs(
             map(authenticatorIds, (name) => [
               name,
-              { data: {}, permissions: {} },
+              {
+                data: {
+                  currentWalletAddress: walletAddress,
+                  identityPublicKey: identityPublicKey,
+                },
+                permissions: {},
+              },
             ]),
           ),
           ...authenticatorConfig,
@@ -242,7 +256,13 @@ export const AuthenticatorManagerProvider: React.FC<
         ),
       lastUpdatedAt: moment().toISOString(),
     }),
-    [authenticatorConfig, installedAuthenticators, currentInitializer],
+    [
+      authenticatorConfig,
+      installedAuthenticators,
+      currentInitializer,
+      identityPublicKey,
+      walletAddress,
+    ],
   );
 
   const initializeAuthentictator = useCallback(

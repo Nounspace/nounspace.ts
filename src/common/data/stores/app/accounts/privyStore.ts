@@ -8,7 +8,7 @@ import type { AppStore } from "..";
 import { StoreSet } from "../../createStore";
 import { find, isUndefined } from "lodash";
 import { signMessage as signExternalWalletMessage } from "@/common/lib/wallets";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 interface PrivyState {
   privyUser?: PrivyUser | null;
@@ -38,7 +38,6 @@ export type SignMessageFunctionSignature = (
 export function useSignMessage() {
   const { signMessage: signPrivyWalletMessage, ready: privyReady } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
-  const [ready, setReady] = useState(false);
 
   async function signMessage(
     wallet: Partial<ConnectedWallet>,
@@ -59,11 +58,10 @@ export function useSignMessage() {
     }
   }
 
-  useEffect(() => {
-    if (walletsReady && privyReady) {
-      setReady(true);
-    }
-  }, [walletsReady, privyReady]);
+  const ready = useMemo(
+    () => privyReady && walletsReady,
+    [privyReady, walletsReady],
+  );
 
   return { signMessage, ready };
 }
