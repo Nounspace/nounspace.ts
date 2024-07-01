@@ -1,5 +1,9 @@
 export const BORDER_STYLES = [
-  { name: "Theme Border", value: "var(--user-theme-fidget-border-width)" },
+  {
+    name: "Theme Border",
+    value: "var(--user-theme-fidget-border-width)",
+    global: true,
+  },
   { name: "None", value: "0" },
   { name: "Small", value: "1px" },
   { name: "Medium", value: "2px" },
@@ -7,7 +11,11 @@ export const BORDER_STYLES = [
 ];
 
 export const SHADOW_STYLES = [
-  { name: "Theme Shadow", value: "var(--user-theme-fidget-shadow)" },
+  {
+    name: "Theme Shadow",
+    value: "var(--user-theme-fidget-shadow)",
+    global: true,
+  },
   { name: "None", value: "none" },
   { name: "Small", value: "0 2px 5px rgba(0,0,0,0.15)" },
   { name: "Medium", value: "0 4px 8px rgba(0,0,0,0.25)" },

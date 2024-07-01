@@ -10,6 +10,7 @@ import {
 type Setting = {
   name: string;
   value: string;
+  global?: boolean;
 };
 
 interface SettingsSelectorProps {
