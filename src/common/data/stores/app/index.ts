@@ -30,17 +30,24 @@ export type AppStore = {
   getIsInitializing: () => boolean;
 };
 
+const LOCAL_STORAGE_LOCATION = "nounspace-app-store";
+
 const makeStoreFunc = (set, get, state): AppStore => ({
   setup: createSetupStoreFunc(set, get),
   account: createAccountStoreFunc(set, get, state),
   homebase: createHomeBaseStoreFunc(set, get),
   space: createSpaceStoreFunc(set, get),
   logout: () => {
-    set((_draft) => {
-      return rawReturn({
-        ...makeStoreFunc(set, get, state),
-      });
-    }, "logout");
+    set(
+      (_draft) => {
+        return rawReturn({
+          ...makeStoreFunc(set, get, state),
+        });
+      },
+      "logout",
+      true,
+    );
+    localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },
   getIsAccountReady: () => {
     return (
@@ -58,7 +65,7 @@ const makeStoreFunc = (set, get, state): AppStore => ({
 
 export function createAppStore() {
   return createStore<AppStore>(makeStoreFunc, {
-    name: "nounspace-app-store",
+    name: LOCAL_STORAGE_LOCATION,
     storage: createJSONStorage(() => localStorage),
     partialize: (state: AppStore) => ({
       account: partializedAccountStore(state),

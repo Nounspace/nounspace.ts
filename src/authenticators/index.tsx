@@ -22,6 +22,8 @@ export interface AuthenticatorMethods<D extends AuthenticatorData> {
 }
 
 export interface AuthenticatorData {
+  currentWalletAddress?: string;
+  identityPublicKey?: string;
   [key: string]: unknown;
 }
 
