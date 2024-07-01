@@ -120,7 +120,10 @@ const CastBody = ({
       />
       {cast.text && (
         <FarcasterLinkify attributes={userFid}>
-          <p className="leading-[1.3] text-left" style={castTextStyle}>
+          <p
+            className="leading-[1.3] text-left max-h-96 overflow-y-auto"
+            style={castTextStyle}
+          >
             {cast.text}
           </p>
         </FarcasterLinkify>
