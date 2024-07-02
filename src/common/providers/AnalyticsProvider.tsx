@@ -3,6 +3,7 @@ import React, { ReactNode, useEffect } from "react";
 import { useRouter } from "next/router";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
+import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 
 export enum AnalyticsEvent {
   SIGN_UP = "Sign Up",
@@ -16,7 +17,7 @@ export enum AnalyticsEvent {
 
 type AnalyticsEventProperties = {
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
-  [AnalyticsEvent.LINK_FID]: Record<string, never>;
+  [AnalyticsEvent.LINK_FID]: { fid: number };
   [AnalyticsEvent.SAVE_SPACE_THEME]: Record<string, never>;
   [AnalyticsEvent.SAVE_HOMEBASE_THEME]: Record<string, never>;
   [AnalyticsEvent.ADD_FIDGET]: { fidgetType: string };
@@ -33,8 +34,8 @@ export const analytics = {
   ) => {
     segment.track(eventName, properties);
   },
-  identify: (id: string) => {
-    segment.identify(id);
+  identify: (id: string, properties: any) => {
+    segment.identify(id, properties);
   },
 };
 
@@ -42,7 +43,8 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const router = useRouter();
-  const userId = useCurrentSpaceIdentityPublicKey();
+  const fid = useCurrentFid();
+  const identityPublicKey = useCurrentSpaceIdentityPublicKey();
   const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
 
   useEffect(() => {
@@ -54,10 +56,10 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
   }, [writeKey]);
 
   useEffect(() => {
-    if (userId) {
-      analytics.identify(userId);
+    if (identityPublicKey) {
+      analytics.identify(identityPublicKey, { fid });
     }
-  }, [userId]);
+  }, [identityPublicKey, fid]);
 
   useEffect(() => {
     segment.page();
