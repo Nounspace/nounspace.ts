@@ -25,7 +25,9 @@ export type AccountStore = IdentityStore &
   AuthenticatorStore &
   PreKeyStore &
   FarcasterStore &
-  PrivyStore;
+  PrivyStore & {
+    reset: () => void;
+  };
 
 export const accountStoreDefaults: Partial<AccountStore> = {
   ...privyDefault,
@@ -43,6 +45,10 @@ export const createAccountStoreFunc = (
   ...privyStore(set),
   ...authenticatorStore(set, get),
   ...farcasterStore(set, get),
+  reset: () => {
+    get().account.resetIdenities();
+    get().account.resetAuthenticators();
+  },
 });
 
 export const partializedAccountStore = (state: AppStore) => ({

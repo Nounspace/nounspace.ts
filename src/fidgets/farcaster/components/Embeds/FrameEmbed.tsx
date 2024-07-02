@@ -132,7 +132,7 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
       buttonIndex,
       castId: {
         fid: frameContext.castId.fid,
-        hash: hexToBytes(frameContext.castId.hash),
+        hash: hexToBytes(frameContext.castId.hash.slice(2)),
       },
       state: state !== undefined ? Buffer.from(state) : undefined,
       url: Buffer.from(url),
@@ -140,10 +140,12 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
       inputText: inputText !== undefined ? Buffer.from(inputText) : undefined,
       address:
         frameContext.address !== undefined
-          ? hexToBytes(frameContext.address)
+          ? hexToBytes(frameContext.address.slice(2))
           : undefined,
       transactionId:
-        transactionId !== undefined ? hexToBytes(transactionId) : undefined,
+        transactionId !== undefined
+          ? hexToBytes(transactionId.slice(2))
+          : undefined,
     });
 
     if (!message) {

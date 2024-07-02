@@ -76,6 +76,7 @@ interface IdentityActions {
   getCurrentIdentity: () => SpaceIdentity | undefined;
   getCurrentIdentityIndex: () => number;
   getIdentitiesForWallet: (wallet: Wallet) => IdentityRequest[];
+  resetIdenities: () => void;
 }
 
 export type IdentityStore = IdentityState & IdentityActions;
@@ -144,6 +145,17 @@ export const identityStore = (
   get: StoreGet<AppStore>,
 ): IdentityStore => ({
   ...identityDefault,
+  resetIdenities: () => {
+    set(
+      (draft) => {
+        draft.account.currentSpaceIdentityPublicKey = "";
+        draft.account.spaceIdentities = [];
+        draft.account.walletIdentities = {};
+      },
+      "resetIdenities",
+      true,
+    );
+  },
   getCurrentIdentity: () => {
     const state = get();
     return find(state.account.spaceIdentities, {

@@ -78,9 +78,12 @@ type AuthenticatorManagerResponse =
 export type AuthenticatorManager = {
   // If Authenticator is not initialized, will always return denied
   callMethod: (
-    requestingFidgetId: string,
-    authenticatorId: string,
-    methodName: string,
+    callSignature: {
+      requestingFidgetId: string;
+      authenticatorId: string;
+      methodName: string;
+      isLookup?: boolean;
+    },
     ...args: any[]
   ) => Promise<AuthenticatorManagerResponse>;
   initializeAuthenticators: (authenticatorIds: string[]) => void;
@@ -159,10 +162,8 @@ export const AuthenticatorManagerProvider: React.FC<
   const authenticatorManager = useMemo<AuthenticatorManager>(
     () => ({
       callMethod: async (
-        requestingFidgetId: string,
-        authenticatorId: string,
-        methodName: string,
-        ...args: any[]
+        { requestingFidgetId, authenticatorId, methodName, isLookup = false },
+        ...args
       ): Promise<AuthenticatorManagerResponse> => {
         const authenticator = installedAuthenticators[authenticatorId];
         if (isUndefined(authenticator)) {
@@ -172,7 +173,8 @@ export const AuthenticatorManagerProvider: React.FC<
           // TO DO: When adding permissioning
           // Allow client requests to not open modal
           // While Fidget requests will
-          if (!modalOpen && requestingFidgetId !== "navigation") {
+          if (!modalOpen && !isLookup) {
+            console.log("Auth Manager Calling Open Modal", requestingFidgetId);
             setModalOpen(true);
           }
           return {

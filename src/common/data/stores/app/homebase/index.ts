@@ -24,6 +24,7 @@ interface HomeBaseStoreActions {
   commitHomebaseToDatabase: () => Promise<void>;
   saveHomebaseConfig: (config: SpaceConfig) => Promise<void>;
   resetHomebaseConfig: () => Promise<void>;
+  clearHomebase: () => void;
 }
 
 export type HomeBaseStore = HomeBaseStoreState & HomeBaseStoreActions;
@@ -100,6 +101,16 @@ export const createHomeBaseStoreFunc = (
     set((draft) => {
       draft.homebase.homebaseConfig = draft.homebase.remoteHomebaseConfig;
     });
+  },
+  clearHomebase: () => {
+    set(
+      (draft) => {
+        draft.homebase.homebaseConfig = undefined;
+        draft.homebase.remoteHomebaseConfig = undefined;
+      },
+      "clearHomebase",
+      true,
+    );
   },
 });
 
