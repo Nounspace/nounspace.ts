@@ -165,7 +165,7 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          url: "https://jumpshare.com/s/9OglYjn8DYstXnEpVcBX",
+          url: "https://player.vimeo.com/video/973566244?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479",
         },
       },
       fidgetType: "iframe",
