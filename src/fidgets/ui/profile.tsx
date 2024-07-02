@@ -84,7 +84,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       <div className="h-full max-h-24 max-w-24">
         {user.pfp_url ? (
           <img
-            className="aspect-square rounded-full max-h-full"
+            className="aspect-square rounded-full max-h-full object-cover"
             src={user.pfp_url}
           />
         ) : (
