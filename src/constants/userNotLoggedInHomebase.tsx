@@ -1,4 +1,5 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
+import { NOUNISH_LOWFI_URL } from "./nounishLowfi";
 
 const layoutID = "";
 
@@ -110,7 +111,7 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
       fontColor: "#000000",
       headingsFont: "Inter",
       headingsFontColor: "#000000",
-      musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+      musicURL: NOUNISH_LOWFI_URL,
     },
   },
   fidgetInstanceDatums: {
