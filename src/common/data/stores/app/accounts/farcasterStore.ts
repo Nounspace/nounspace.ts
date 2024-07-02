@@ -10,6 +10,10 @@ import { concat, isUndefined } from "lodash";
 import { hashObject } from "@/common/lib/signedFiles";
 import moment from "moment";
 import { bytesToHex } from "@noble/ciphers/utils";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 type FarcasterActions = {
   getFidsForCurrentIdentity: () => Promise<void>;
@@ -73,6 +77,7 @@ export const farcasterStore = (
     );
     if (!isUndefined(data.value)) {
       get().account.addFidToCurrentIdentity(data.value!.fid);
+      analytics.track(AnalyticsEvent.LINK_FID);
     }
   },
 });
