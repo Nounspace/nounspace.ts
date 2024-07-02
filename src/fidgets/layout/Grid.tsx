@@ -155,16 +155,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [localFidgetTrayContents, setLocalFidgetTrayContents] =
     useState(fidgetTrayContents);
   useEffect(() => {
-    setLocalFidgetTrayContents(localFidgetTrayContents);
-  }, [localFidgetTrayContents]);
+    setLocalFidgetTrayContents(fidgetTrayContents);
+  }, [fidgetTrayContents]);
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
   useEffect(() => {
-    setLocalLayout(localLayout);
-  }, [localLayout]);
+    setLocalLayout(layoutConfig.layout);
+  }, [layoutConfig.layout]);
   const [localTheme, setLocalTheme] = useState(theme);
   useEffect(() => {
-    setLocalTheme(localTheme);
-  }, [localTheme]);
+    setLocalTheme(theme);
+  }, [theme]);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
