@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FidgetSettings,
   FidgetProperties,
@@ -125,10 +125,23 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     onSave(state);
   };
 
+  const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>): void => {
+    // 'keypress' event misbehaves on mobile so we track 'Enter' key via 'keydown' event
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      onSave(state);
+    }
+  };
+
   const groupedFields = fieldsByGroup(properties.fields);
 
   return (
-    <form onSubmit={_onSave} className="flex-col flex h-full">
+    <form
+      onSubmit={_onSave}
+      className="flex-col flex h-full"
+      onKeyDown={onKeyDown}
+    >
       <div className="h-full overflow-auto">
         <div className="flex pb-4 m-2">
           <button onClick={unselect} className="my-auto">

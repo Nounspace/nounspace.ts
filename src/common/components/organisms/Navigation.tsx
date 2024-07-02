@@ -13,6 +13,8 @@ import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { FaPaintbrush } from "react-icons/fa6";
+import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
+import { UserTheme } from "@/common/lib/theme";
 
 type NavItemProps = {
   label: string;
@@ -26,19 +28,22 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  theme?: UserTheme;
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
-  const { homebaseConfig, setModalOpen, getIsLoggedIn, getIsInitializing } =
-    useAppStore((state) => ({
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  theme: userTheme,
+}) => {
+  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+    (state) => ({
       setModalOpen: state.setup.setModalOpen,
-      homebaseConfig: state.homebase.homebaseConfig,
       getIsLoggedIn: state.getIsAccountReady,
       getIsInitializing: state.getIsInitializing,
-    }));
+    }),
+  );
   const logout = useLogout();
-
-  const userTheme = homebaseConfig?.theme;
 
   function turnOnEditMode() {
     enterEditMode();
@@ -183,7 +188,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           </div>
           <div className="flex flex-col flex-auto justify-between border-t px-4">
             <div className="mt-8 px-2">
-              <Player url={userTheme?.properties.musicURL} />
+              <Player
+                url={userTheme?.properties.musicURL || NOUNISH_LOWFI_URL}
+              />
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
