@@ -191,7 +191,7 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
           fontFamily: "var(--user-theme-font)",
           headingsFontColor: "var(--user-theme-headings-font-color)",
           headingsFontFamily: "var(--user-theme-headings-font)",
-          text: "Your space to create, customize, and explore. To customize your own space, you need to hold at least one pair of nOGs. If you don't have nOGs yet, you can mint them in the fidget below! If you're not sold on nOGs yet, don't worry, you can explore other customized spaces or check out the $SPACE Fair Launch, and then come back and mint nOGs any time :)",
+          text: "Your space to create, customize, and explore. To customize your own space, you need to hold at least one pair of nOGs. If you don't have nOGs yet, you can mint them in the fidget below!",
           title: "Welcome to nounspace! 🚀👾",
         },
       },
