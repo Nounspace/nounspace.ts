@@ -138,6 +138,10 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     setState(settings);
   }, [settings]);
 
+  useEffect(() => {
+    setState(settings);
+  }, [settings]);
+
   const _onSave = (e) => {
     e.preventDefault();
     onSave(state);
