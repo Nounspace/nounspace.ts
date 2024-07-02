@@ -38,6 +38,7 @@ export default function SpacePage({
           enterEditMode={enterEditMode}
           isEditable={sidebarEditable}
           portalRef={portalRef}
+          theme={config?.theme}
         />
       </div>
       {isUndefined(config) ||
