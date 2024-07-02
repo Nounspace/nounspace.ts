@@ -22,6 +22,7 @@ export interface AuthenticatorActions {
   commitAuthenticatorUpdatesToDatabase: () => Promise<void>;
   saveAuthenticatorConfig: (newConfig: AuthenticatorConfig) => Promise<void>;
   listInstalledAuthenticators: () => string[];
+  resetAuthenticators: () => void;
 }
 
 export type AuthenticatorStore = AuthenticatorState & AuthenticatorActions;
@@ -36,6 +37,16 @@ export const authenticatorStore = (
   get: StoreGet<AppStore>,
 ): AuthenticatorStore => ({
   ...authenticatorDefaults,
+  resetAuthenticators: () => {
+    set(
+      (draft) => {
+        draft.account.authenticatorConfig = {};
+        draft.account.authenticatorRemoteConfig = {};
+      },
+      "resetAuthenticators",
+      true,
+    );
+  },
   listInstalledAuthenticators: () => {
     return keys(get().account.authenticatorConfig);
   },

@@ -1,6 +1,9 @@
-import { rawReturn } from "mutative";
 import { createJSONStorage } from "zustand/middleware";
-import { createStore, createStoreBindings } from "../createStore";
+import {
+  createStore,
+  createStoreBindings,
+  MatativeConfig,
+} from "../createStore";
 import {
   AccountStore,
   createAccountStoreFunc,
@@ -32,21 +35,15 @@ export type AppStore = {
 
 const LOCAL_STORAGE_LOCATION = "nounspace-app-store";
 
-const makeStoreFunc = (set, get, state): AppStore => ({
+const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
   setup: createSetupStoreFunc(set, get),
   account: createAccountStoreFunc(set, get, state),
   homebase: createHomeBaseStoreFunc(set, get),
   space: createSpaceStoreFunc(set, get),
   logout: () => {
-    set(
-      (_draft) => {
-        return rawReturn({
-          ...makeStoreFunc(set, get, state),
-        });
-      },
-      "logout",
-      true,
-    );
+    get().account.reset();
+    get().homebase.clearHomebase();
+    get().space.clear();
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },
   getIsAccountReady: () => {
