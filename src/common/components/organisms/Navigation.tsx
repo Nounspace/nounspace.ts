@@ -13,6 +13,7 @@ import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { FaPaintbrush } from "react-icons/fa6";
+import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 
 type NavItemProps = {
   label: string;
@@ -183,7 +184,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           </div>
           <div className="flex flex-col flex-auto justify-between border-t px-4">
             <div className="mt-8 px-2">
-              <Player url={userTheme?.properties.musicURL} />
+              <Player
+                url={userTheme?.properties.musicURL || NOUNISH_LOWFI_URL}
+              />
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
