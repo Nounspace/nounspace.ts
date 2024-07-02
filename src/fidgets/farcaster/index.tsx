@@ -14,11 +14,12 @@ const createFarcasterSignerFromAuthenticatorManager = async (
   fidgetId: string,
   authenticatorName: string = "farcaster:nounspace",
 ): Promise<Signer> => {
-  const schemeResult = await authenticatorManager.callMethod(
-    fidgetId,
-    authenticatorName,
-    "getSignerScheme",
-  );
+  const schemeResult = await authenticatorManager.callMethod({
+    requestingFidgetId: fidgetId,
+    authenticatorId: authenticatorName,
+    methodName: "getSignerScheme",
+    isLookup: true,
+  });
   const scheme =
     schemeResult.result === "success"
       ? (schemeResult.value as SignatureScheme)
@@ -26,11 +27,12 @@ const createFarcasterSignerFromAuthenticatorManager = async (
   return {
     scheme,
     getSignerKey: async () => {
-      const methodResult = await authenticatorManager.callMethod(
-        fidgetId,
-        authenticatorName,
-        "getSignerPublicKey",
-      );
+      const methodResult = await authenticatorManager.callMethod({
+        requestingFidgetId: fidgetId,
+        authenticatorId: authenticatorName,
+        methodName: "getSignerPublicKey",
+        isLookup: true,
+      });
       if (methodResult.result === "success") {
         return ok(methodResult.value as Uint8Array);
       }
@@ -38,9 +40,12 @@ const createFarcasterSignerFromAuthenticatorManager = async (
     },
     signMessageHash: async (hash: Uint8Array) => {
       const methodResult = await authenticatorManager.callMethod(
-        fidgetId,
-        authenticatorName,
-        "signMessage",
+        {
+          requestingFidgetId: fidgetId,
+          authenticatorId: authenticatorName,
+          methodName: "signMessage",
+          isLookup: false,
+        },
         hash,
       );
       if (methodResult.result === "success") {
@@ -77,7 +82,12 @@ export function useFarcasterSigner(
   const [fid, setFid] = useState(-1);
   useEffect(() => {
     authenticatorManager
-      .callMethod(fidgetId, FARCASTER_AUTHENTICATOR_NAME, "getAccountFid")
+      .callMethod({
+        requestingFidgetId: fidgetId,
+        authenticatorId: FARCASTER_AUTHENTICATOR_NAME,
+        methodName: "getAccountFid",
+        isLookup: true,
+      })
       .then((methodResult) => {
         if (methodResult.result === "success") {
           return setFid(methodResult.value as number);
