@@ -1,9 +1,8 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundlerAnalyzer({
-  // eslint-disable-next-line no-undef
   enabled: process.env.ANALYZE === 'true',
-})
+});
 
 const cspHeader = `
     default-src 'self';
@@ -53,7 +52,7 @@ const nextConfig = {
         destination: 'https://docs.nounspace.com/nounspace-alpha/accounts/signatures',
         permanent: true,
       },
-    ]
+    ];
   },
   async headers() {
     return [
@@ -64,10 +63,14 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: cspHeader.replace(/\n/g, ''),
           },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
         ],
       },
-    ]
+    ];
   },
-}
+};
 
 export default withBundleAnalyzer(nextConfig);
