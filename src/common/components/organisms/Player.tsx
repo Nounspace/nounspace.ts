@@ -143,7 +143,6 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
           config={youtubeConfig}
           onReady={onReady}
           onStart={onStart}
-          onPlay={onPlay}
           onPause={onPause}
         />
       )}
