@@ -956,10 +956,10 @@
   dependencies:
     tslib "^2.4.0"
 
-"@frames.js/render@^0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.2.15.tgz#4bb218bf02113413f6997f9ada7c74642b203391"
-  integrity sha512-N0g6KquR+37OzHH9Zq6zOdymgztaiJmXPKVR7mqxQNTD8a3UATdLS9QDIwB6RbKBL4u1AoYkqQgDkz81pDz3bA==
+"@frames.js/render@^0.2.16":
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.2.16.tgz#d6186f0b494eca248e0e8858b7d947750d6bd314"
+  integrity sha512-wbrz6xfhUFH84GMz9lyCGn7CjHFCWp3W9ukuwujCKc35MhH5Xir8uBX3tctNWul2U5DAH2/VXvhv9lXj7xL9KA==
   dependencies:
     "@farcaster/core" "^0.14.7"
     frames.js "^0.17.1"
