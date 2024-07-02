@@ -8,6 +8,7 @@ import AuthenticatorProvider from "./AutheticatorProvider";
 import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
 import LoggedInStateProvider from "./LoggedInStateProvider";
+import AnalyticsProvider from "./AnalyticsProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -18,7 +19,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <AppStoreProvider>
               <UserThemeProvider>
                 <AuthenticatorProvider>
-                  <LoggedInStateProvider>{children}</LoggedInStateProvider>
+                  <LoggedInStateProvider>
+                    <AnalyticsProvider>{children}</AnalyticsProvider>
+                  </LoggedInStateProvider>
                 </AuthenticatorProvider>
               </UserThemeProvider>
             </AppStoreProvider>

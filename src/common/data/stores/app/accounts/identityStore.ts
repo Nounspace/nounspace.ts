@@ -32,6 +32,10 @@ import {
   signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 export interface SpaceKeys {
   publicKey: string;
@@ -284,6 +288,7 @@ export const identityStore = (
     await axiosBackend.post("/api/space/identities", postData, {
       headers: { "Content-Type": "application/json" },
     });
+    analytics.track(AnalyticsEvent.SIGN_UP);
     set((draft) => {
       draft.account.spaceIdentities.push({
         rootKeys: identityKeys,
