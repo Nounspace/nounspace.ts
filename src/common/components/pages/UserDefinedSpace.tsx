@@ -44,12 +44,14 @@ export default function UserDefinedSpace({
 
   useEffect(() => {
     if (!isNil(providedSpaceId)) {
+      setLoading(true);
       loadSpace(providedSpaceId).then((res) => {
         setLoadSuccesss(res !== null);
         setLoading(false);
+        setSpaceId(providedSpaceId);
       });
     }
-  }, []);
+  }, [providedSpaceId]);
 
   const [spaceId, setSpaceId] = useState(providedSpaceId);
 
@@ -115,12 +117,12 @@ export default function UserDefinedSpace({
       ...INITIAL_PERSONAL_SPACE_CONFIG,
       isEditable,
     };
-  }, [spaceId, isEditable, localSpaces, loading, loadSuccess]);
+  }, [spaceId, isEditable, localSpaces, loading, loadSuccess, fid]);
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
       registerSpace(currentUserFid, "profile").then((newSpaceId) =>
-        setSpaceId(newSpaceId),
+        setSpaceId(newSpaceId || null),
       );
     }
   }, [isEditable, spaceId, currentUserFid]);

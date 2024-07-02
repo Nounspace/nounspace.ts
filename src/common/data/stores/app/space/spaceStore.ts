@@ -55,7 +55,7 @@ interface SpaceState {
 
 interface SpaceActions {
   loadSpace: (spaceId: string) => Promise<CachedSpace | null>;
-  registerSpace: (fid: number, name: string) => Promise<string>;
+  registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   commitSpaceToDatabase: (spaceId: string) => Promise<void>;
@@ -129,15 +129,19 @@ export const createSpaceStoreFunc = (
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     // TO DO: Error handling
-    const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
-      "/api/space/registry/",
-      registration,
-    );
-    const newSpaceId = data.value!.spaceId;
-    set((draft) => {
-      draft.space.editableSpaces[newSpaceId] = name;
-    }, "registerSpace");
-    return newSpaceId;
+    try {
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry/",
+        registration,
+      );
+      const newSpaceId = data.value!.spaceId;
+      set((draft) => {
+        draft.space.editableSpaces[newSpaceId] = name;
+      }, "registerSpace");
+      return newSpaceId;
+    } catch (e) {
+      null;
+    }
   },
   renameSpace: async (spaceId: string, name: string) => {
     try {
