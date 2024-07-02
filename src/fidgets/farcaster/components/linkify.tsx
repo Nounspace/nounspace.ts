@@ -15,18 +15,24 @@ registerPlugin("mention", mentionPlugin);
 registerPlugin("cashtag", cashtagPlugin);
 registerPlugin("channel", channelPlugin);
 
-const renderMention = ({ content }) => {
+type RenderFunctionArgs = {
+  content: string;
+  attributes?: any;
+};
+
+const renderMention = ({ content }: RenderFunctionArgs) => {
+  const handleWithoutAt = content.slice(1);
   return (
     <Link
       className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
-      href={`/s/${content}`}
+      href={`/s/${handleWithoutAt}`}
     >
       {content}
     </Link>
   );
 };
 
-const renderLink = ({ attributes, content }) => {
+const renderLink = ({ attributes, content }: RenderFunctionArgs) => {
   const { href } = attributes;
   return (
     <span
@@ -42,7 +48,7 @@ const renderLink = ({ attributes, content }) => {
   );
 };
 
-const renderChannel = ({ content }) => {
+const renderChannel = ({ content }: RenderFunctionArgs) => {
   return (
     <span
       className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
@@ -56,7 +62,7 @@ const renderChannel = ({ content }) => {
   );
 };
 
-const renderCashtag = ({ content }) => {
+const renderCashtag = ({ content }: RenderFunctionArgs) => {
   if (!content || content.length < 3) {
     return content;
   }
