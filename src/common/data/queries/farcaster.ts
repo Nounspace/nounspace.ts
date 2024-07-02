@@ -77,15 +77,16 @@ export const useGetCasts = ({
   return useInfiniteQuery({
     queryKey: ["channelCasts", feedType, fid, filterType, fids, channel],
     staleTime: 1000 * 60 * 1,
+
     queryFn: async ({ pageParam: cursor }) => {
       const { data } = await axiosBackend.get<FeedResponse>(
         "/api/farcaster/neynar/feed",
         {
           params: {
-            fid,
+            fid: fid === -1 ? 456830 : fid,
+            viewer_fid: fid === -1 ? 456830 : fid,
             feedType,
             cursor,
-            viewer_fid: fid,
             channel_id: channel,
             fids,
             filter_type: filterType, // Add underscore as neynar wants it for the query
