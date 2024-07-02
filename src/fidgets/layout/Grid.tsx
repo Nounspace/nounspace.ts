@@ -22,6 +22,10 @@ import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { debounce, map, reject } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -279,6 +283,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     saveLayout([...localLayout, newItem]);
     removeFidgetFromTray(fidgetData.id);
+    analytics.track(AnalyticsEvent.ADD_FIDGET, {
+      fidgetType: fidgetData.fidgetType,
+    });
   }
 
   function removeFidgetFromTray(fidgetId: string) {

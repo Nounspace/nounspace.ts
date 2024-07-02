@@ -15,6 +15,10 @@ import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
+import {
+  AnalyticsEvent,
+  analytics,
+} from "@/common/providers/AnalyticsProvider";
 
 type NavItemProps = {
   label: string;
@@ -23,6 +27,7 @@ type NavItemProps = {
   href: string;
   disable?: boolean;
   openInNewTab?: boolean;
+  onClick?: () => void;
 };
 
 type NavProps = {
@@ -85,6 +90,7 @@ const Navigation: React.FC<NavProps> = ({
     label,
     Icon,
     href,
+    onClick,
     disable = false,
     openInNewTab = false,
   }) => {
@@ -96,6 +102,7 @@ const Navigation: React.FC<NavProps> = ({
             "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
             href === currentUrl ? "bg-gray-100" : "",
           )}
+          onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
@@ -131,6 +138,9 @@ const Navigation: React.FC<NavProps> = ({
                   label="Fair Launch"
                   Icon={IoMdRocket}
                   href="https://space.nounspace.com/"
+                  onClick={() =>
+                    analytics.track(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                  }
                   openInNewTab
                 />
                 {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
