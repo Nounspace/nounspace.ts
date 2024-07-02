@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FidgetSettings,
   FidgetProperties,
@@ -34,6 +34,7 @@ type FidgetSettingsRowProps = {
   value: any;
   onChange: (value: any) => void;
   hide?: boolean;
+  id: string;
 };
 
 const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
@@ -58,6 +59,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   value,
   onChange,
   hide,
+  id,
 }) => {
   const InputComponent = field.inputSelector;
 
@@ -67,6 +69,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
         "text-gray-700 md:flex-col md:items-center m-2",
         hide && "hidden",
       )}
+      id={id}
     >
       <div className="md:mb-0 md:w-1/3">
         <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
@@ -75,6 +78,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
       </div>
       <div>
         <InputComponent
+          id={id}
           value={value}
           onChange={onChange}
           className="!h-9 !rounded-md font-medium !shadow-none"
@@ -85,16 +89,18 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
 };
 
 const FidgetSettingsGroup: React.FC<{
+  fidgetId: string;
   fields: FidgetFieldConfig[];
   state: FidgetSettings;
   setState: (state: FidgetSettings) => void;
-}> = ({ fields, state, setState }) => {
+}> = ({ fields, state, setState, fidgetId }) => {
   return (
     <>
       {fields.map((field, i) => (
         <FidgetSettingsRow
           field={field}
-          key={i}
+          key={`${fidgetId}-${i}-${field.fieldName}`}
+          id={`${fidgetId}-${i}-${field.fieldName}`}
           value={state[field.fieldName]}
           onChange={(val) => {
             setState({
@@ -119,6 +125,9 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 }) => {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
+  useEffect(() => {
+    setState(settings);
+  }, [settings]);
 
   const _onSave = (e) => {
     e.preventDefault();
@@ -134,7 +143,10 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     }
   };
 
-  const groupedFields = fieldsByGroup(properties.fields);
+  const groupedFields = useMemo(
+    () => fieldsByGroup(properties.fields),
+    [properties.fields],
+  );
 
   return (
     <form
@@ -170,6 +182,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
             </TabsList>
             <TabsContent value="settings" className={tabContentClasses}>
               <FidgetSettingsGroup
+                fidgetId={fidgetId}
                 fields={groupedFields.settings}
                 state={state}
                 setState={setState}
@@ -178,6 +191,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
             {groupedFields.style.length > 0 && (
               <TabsContent value="style" className={tabContentClasses}>
                 <FidgetSettingsGroup
+                  fidgetId={fidgetId}
                   fields={groupedFields.style}
                   state={state}
                   setState={setState}
@@ -187,6 +201,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
             {groupedFields.code.length > 0 && (
               <TabsContent value="code" className={tabContentClasses}>
                 <FidgetSettingsGroup
+                  fidgetId={fidgetId}
                   fields={groupedFields.code}
                   state={state}
                   setState={setState}
