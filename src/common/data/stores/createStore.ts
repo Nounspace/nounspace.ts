@@ -10,9 +10,9 @@ type MutativeConfigSetFunction<T> = (
   fn: MutativeFunction<T>,
   name?: string,
   commit?: boolean,
-) => void;
+) => void | StoreReset<T>;
 
-type MatativeConfig<T> = (
+export type MatativeConfig<T> = (
   set: MutativeConfigSetFunction<T>,
   get: StoreApi<T>["getState"],
   store: T,
@@ -47,10 +47,7 @@ export const mutative =
     );
 
 type StoreReset<T> = (newState: Draft<T>) => void;
-export type StoreSet<T> = (
-  fn: MutativeFunction<T>,
-  name?: string,
-) => void | StoreReset<T>;
+export type StoreSet<T> = MutativeConfigSetFunction<T>;
 export type StoreGet<T> = () => T;
 
 export function createStore<T>(

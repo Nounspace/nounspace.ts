@@ -67,6 +67,7 @@ interface SpaceActions {
     spaceId: string,
     config: UpdatableSpaceConfig,
   ) => Promise<void>;
+  clear: () => void;
 }
 
 export type SpaceStore = SpaceState & SpaceActions;
@@ -237,6 +238,17 @@ export const createSpaceStoreFunc = (
     set((draft) => {
       draft.space.localSpaces[spaceId] = config;
     });
+  },
+  clear: () => {
+    set(
+      (draft) => {
+        draft.space.localSpaces = {};
+        draft.space.editableSpaces = {};
+        draft.space.remoteSpaces = {};
+      },
+      "clearSpaces",
+      true,
+    );
   },
 });
 
