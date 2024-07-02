@@ -1,14 +1,19 @@
-import React, { useState } from "react";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import type { ProposalData } from "@/fidgets/community/nouns-dao";
-import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
-import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import ProposalDetailView from "@/fidgets/community/nouns-dao/components/ProposalDetailView";
 import { CardContent } from "@/common/components/atoms/card";
 import TextInput from "@/common/components/molecules/TextInput";
+import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
+import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
+import {
+  NOUNSBUILD_PROPOSALS_QUERY,
+  NOUNS_PROPOSALS_QUERY,
+  NOUNS_PROPOSAL_DETAIL_QUERY,
+} from "@/common/lib/utils/queries";
+import ProposalDetailView from "@/fidgets/community/nouns-dao/components/ProposalDetailView";
+import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
+import React, { useEffect, useMemo, useState } from "react";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
+  daoContractAddress: string;
 };
 
 export const nounishGovernanceConfig: FidgetProperties = {
@@ -22,6 +27,12 @@ export const nounishGovernanceConfig: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+    {
+      fieldName: "daoContractAddress",
+      default: "Only for Builder Daos",
+      required: true,
+      inputSelector: TextInput,
+    },
   ],
   size: {
     minHeight: 2,
@@ -31,105 +42,95 @@ export const nounishGovernanceConfig: FidgetProperties = {
   },
 };
 
-const PROPOSALS_QUERY = `
-  query ProposalsQuery {
-    _meta {
-      block {
-        number
-        timestamp
-      }
-    }
-    proposals(orderBy: startBlock, orderDirection: desc) {
-      id
-      title
-      status
-      startBlock
-      endBlock
-    }
-  }
-`;
-
-const PROPOSAL_DETAIL_QUERY = `
-  query ProposalDetailQuery($id: ID = "") {
-    _meta {
-      block {
-        number
-        timestamp
-      }
-    }
-    proposal(id: $id) {
-      id
-      title
-      status
-      startBlock
-      endBlock
-      forVotes
-      againstVotes
-      abstainVotes
-      quorumVotes
-      createdTimestamp
-      voteSnapshotBlock
-      proposer {
-        id
-        nounsRepresented {
-          id
-        }
-      }
-      signers {
-        id
-        nounsRepresented {
-          id
-        }
-      }
-    }
-    proposalVersions(
-      where: {proposal_: {id: $id}}
-      orderBy: createdAt
-      orderDirection: desc
-    ) {
-      createdAt
-    }
-  }
-`;
-
 export const NounishGovernance: React.FC<
   FidgetArgs<NounishGovernanceSettings>
 > = ({ settings }) => {
-  const [proposalId, setProposalId] = useState<ProposalData | null>(null);
-  const { data: proposalsData, loading: listLoading } = useGraphqlQuery({
+  const [proposalId, setProposalId] = useState<string | null>(null);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
+  const [proposalVersions, setProposalVersions] = useState<any[]>([]);
+  const [proposalLoading, setProposalLoading] = useState<boolean>(false);
+
+  const isBuilderSubgraph = useMemo(
+    () => settings.subgraphUrl.includes("nouns-builder-base-mainnet"),
+    [settings.subgraphUrl],
+  );
+
+  const daoContractAddress = settings.daoContractAddress;
+
+  const {
+    data: proposalsData,
+    loading: listLoading,
+    error: listError,
+  } = useGraphqlQuery({
     url: settings.subgraphUrl,
-    query: PROPOSALS_QUERY,
+    query: isBuilderSubgraph
+      ? NOUNSBUILD_PROPOSALS_QUERY
+      : NOUNS_PROPOSALS_QUERY,
+    variables: {
+      where: isBuilderSubgraph ? { dao: daoContractAddress } : undefined,
+    },
   });
-  const { data: proposalDetailData, loading: detailLoading } = useGraphqlQuery({
+
+  const {
+    data: proposalDetailData,
+    loading: detailLoading,
+    error: detailError,
+  } = useGraphqlQuery({
     url: settings.subgraphUrl,
-    query: PROPOSAL_DETAIL_QUERY,
-    skip: !proposalId,
+    query: NOUNS_PROPOSAL_DETAIL_QUERY,
+    skip: !proposalId || isBuilderSubgraph,
     variables: {
       id: proposalId,
     },
   });
 
+  useEffect(() => {
+    if (proposalsData) {
+      setProposals(proposalsData.proposals || []);
+    }
+  }, [proposalsData]);
+
+  useEffect(() => {
+    if (proposalDetailData) {
+      setSelectedProposal(proposalDetailData.proposal || null);
+      setProposalVersions(proposalDetailData.proposalVersions || []);
+      setProposalLoading(detailLoading);
+    }
+  }, [proposalDetailData, detailLoading]);
+
   const currentBlock = proposalsData?._meta?.block;
-  const proposals = proposalsData?.proposals;
-  const proposal = proposalDetailData?.proposal;
-  const proposalVersions = proposalDetailData?.proposalVersions;
+
+  if (listError || detailError) {
+    return <div>Error loading data</div>;
+  }
+
+  const handleGoBack = () => {
+    setProposalId(null);
+    setSelectedProposal(null);
+    setProposalLoading(false);
+  };
 
   return (
     <CardContent className="size-full overflow-scroll p-4">
-      {proposalId ? (
+      {selectedProposal && !isBuilderSubgraph ? (
         <ProposalDetailView
-          proposal={proposal}
+          proposal={selectedProposal}
           versions={proposalVersions}
           currentBlock={currentBlock}
-          goBack={() => setProposalId(null)}
-          loading={detailLoading}
+          goBack={handleGoBack}
+          loading={proposalLoading}
         />
       ) : (
         <ProposalListView
-          proposals={proposals || []}
+          proposals={proposals}
           currentBlock={currentBlock}
           setProposal={setProposalId}
           loading={listLoading}
+          isBuilderSubgraph={isBuilderSubgraph}
+          selectedProposal={selectedProposal}
+          goBack={handleGoBack}
+          proposalLoading={proposalLoading}
         />
       )}
     </CardContent>
