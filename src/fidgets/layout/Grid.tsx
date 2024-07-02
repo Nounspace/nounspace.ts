@@ -145,10 +145,22 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // State to create a mutable local copy of the config
   const [localFidgetInstanceDatums, setLocalFidgetInstanceDatums] =
     useState(fidgetInstanceDatums);
+  useEffect(() => {
+    setLocalFidgetInstanceDatums(fidgetInstanceDatums);
+  }, [fidgetInstanceDatums]);
   const [localFidgetTrayContents, setLocalFidgetTrayContents] =
     useState(fidgetTrayContents);
+  useEffect(() => {
+    setLocalFidgetTrayContents(localFidgetTrayContents);
+  }, [localFidgetTrayContents]);
   const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
+  useEffect(() => {
+    setLocalLayout(localLayout);
+  }, [localLayout]);
   const [localTheme, setLocalTheme] = useState(theme);
+  useEffect(() => {
+    setLocalTheme(localTheme);
+  }, [localTheme]);
   const [hasLocalChanges, setHasLocalChanges] = useState(false);
 
   const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
