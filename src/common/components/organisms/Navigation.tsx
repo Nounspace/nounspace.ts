@@ -146,7 +146,7 @@ const Navigation: React.FC<NavProps> = ({
                 {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
                 {isLoggedIn && (
                   <NavItem
-                    label={username || "Loading..."}
+                    label={"My Space"}
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
                   />
