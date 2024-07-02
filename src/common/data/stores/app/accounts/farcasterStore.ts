@@ -77,7 +77,7 @@ export const farcasterStore = (
     );
     if (!isUndefined(data.value)) {
       get().account.addFidToCurrentIdentity(data.value!.fid);
-      analytics.track(AnalyticsEvent.LINK_FID);
+      analytics.track(AnalyticsEvent.LINK_FID, { fid });
     }
   },
 });
