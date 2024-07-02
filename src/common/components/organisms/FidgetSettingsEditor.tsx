@@ -129,6 +129,9 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 }) => {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
+  useEffect(() => {
+    setState(settings);
+  }, [settings]);
 
   useEffect(() => {
     setState(settings);
