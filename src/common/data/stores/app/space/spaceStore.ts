@@ -18,6 +18,10 @@ import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
 import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 type SpaceId = string;
 
@@ -216,6 +220,8 @@ export const createSpaceStoreFunc = (
         await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
           spaceConfig: file,
         });
+
+        analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
 
         set((draft) => {
           draft.space.remoteSpaces[spaceId] = {

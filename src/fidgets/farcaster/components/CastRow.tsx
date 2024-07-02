@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Properties } from "csstype";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import {
@@ -313,7 +313,7 @@ export const CastRow = ({
       setDidRecast(!isActive);
     }
 
-    if (isUndefined(signer)) return;
+    if (isUndefined(signer)) return console.error("NO SIGNER");
     try {
       if (key === CastReactionType.replies) {
         onReply?.();
@@ -331,7 +331,7 @@ export const CastRow = ({
           : ReactionType.RECAST;
       const reaction = {
         type: reactionBodyType,
-        target: castId,
+        targetCastId: castId,
       };
       if (isActive) {
         await removeReaction({
