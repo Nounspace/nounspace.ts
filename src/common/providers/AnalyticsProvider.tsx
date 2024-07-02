@@ -31,11 +31,9 @@ export const analytics = {
     eventName: T,
     properties?: AnalyticsEventProperties[T],
   ) => {
-    console.log(`analytics.track(${eventName})`);
     segment.track(eventName, properties);
   },
   identify: (id: string) => {
-    console.log(`analytics.identify(${id})`);
     segment.identify(id);
   },
 };
