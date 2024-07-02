@@ -27,6 +27,7 @@ export default function NogsChecker() {
           href="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
           rel="noopener noreferrer"
           target="_blank"
+          className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
         >
           here
         </a>
