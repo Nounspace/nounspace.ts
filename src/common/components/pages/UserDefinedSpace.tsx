@@ -67,11 +67,12 @@ export default function UserDefinedSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   useEffect(() => {
     if (!isSignedIntoFarcaster) return;
-    authManagerCallMethod(
-      "root",
-      FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
-      "getAccountFid",
-    ).then((authManagerResp) => {
+    authManagerCallMethod({
+      requestingFidgetId: "root",
+      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
+      methodName: "getAccountFid",
+      isLookup: true,
+    }).then((authManagerResp) => {
       if (authManagerResp.result === "success") {
         setCurrentUserFid(authManagerResp.value as number);
       }

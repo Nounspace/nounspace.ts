@@ -168,21 +168,26 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
       await loadFidsForCurrentIdentity();
       currentIdentity = getCurrentIdentity()!;
       if (currentIdentity.associatedFids.length === 0) {
-        const fidResult = (await authenticatorManager.callMethod(
-          "root",
-          "farcaster:nounspace",
-          "getAccountFid",
-        )) as { value: number };
-        const publicKeyResult = (await authenticatorManager.callMethod(
-          "root",
-          "farcaster:nounspace",
-          "getSignerPublicKey",
-        )) as { value: Uint8Array };
+        const fidResult = (await authenticatorManager.callMethod({
+          requestingFidgetId: "root",
+          authenticatorId: "farcaster:nounspace",
+          methodName: "getAccountFid",
+          isLookup: true,
+        })) as { value: number };
+        const publicKeyResult = (await authenticatorManager.callMethod({
+          requestingFidgetId: "root",
+          authenticatorId: "farcaster:nounspace",
+          methodName: "getSignerPublicKey",
+          isLookup: true,
+        })) as { value: Uint8Array };
         const signForFid = async (messageHash) => {
           const signResult = (await authenticatorManager.callMethod(
-            "root",
-            "farcaster:nounspace",
-            "signMessage",
+            {
+              requestingFidgetId: "root",
+              authenticatorId: "farcaster:nounspace",
+              methodName: "signMessage",
+              isLookup: false,
+            },
             messageHash,
           )) as { value: Uint8Array };
           return signResult.value;
@@ -245,6 +250,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
         } else if (currentStep === SetupStep.AUTHENTICATORS_INITIALIZED) {
           registerAccounts();
         } else if (currentStep === SetupStep.ACCOUNTS_REGISTERED) {
+          setModalOpen(false);
           setCurrentStep(SetupStep.DONE);
         }
       }
