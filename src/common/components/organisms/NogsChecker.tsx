@@ -1,6 +1,7 @@
 import { useAppStore } from "@/common/data/stores/app";
 import { RECHECK_INITIAL_TIME } from "@/common/data/stores/app/setup";
 import React from "react";
+import Script from "next/script";
 import { Button } from "../atoms/button";
 
 export default function NogsChecker() {
@@ -43,10 +44,10 @@ export default function NogsChecker() {
           __html: `
         <link rel="stylesheet" href="https://mint.highlight.xyz/assets/embed.css" />
         <div data-widget="highlight-mint-card" data-mint-collection-id="663d2717dffb7b3a490f398f"></div>
-        <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1"></script>
       `,
         }}
       />
+      <Script src="https://mint.highlight.xyz/assets/embed.js?v=1" />
     </>
   );
 }
