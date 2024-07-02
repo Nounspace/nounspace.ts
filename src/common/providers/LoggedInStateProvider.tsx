@@ -254,7 +254,11 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
           setCurrentStep(SetupStep.DONE);
         }
       }
-    } else if (ready && !authenticated) {
+    } else if (
+      ready &&
+      !authenticated &&
+      currentStep !== SetupStep.NOT_SIGNED_IN
+    ) {
       setCurrentStep(SetupStep.NOT_SIGNED_IN);
     }
   }, [currentStep, walletsReady, ready, authenticated]);
