@@ -80,15 +80,13 @@ const { useStore: useAppStore, provider: AppStoreProvider } =
 
 function useLogout() {
   const { logout: privyLogout } = usePrivy();
-  const { storeLogout, setLoginModalOpen } = useAppStore((state) => ({
+  const { storeLogout } = useAppStore((state) => ({
     storeLogout: state.logout,
-    setLoginModalOpen: state.setup.setModalOpen,
   }));
 
   async function logout() {
     await privyLogout();
     storeLogout();
-    setLoginModalOpen(true);
   }
 
   return logout;
