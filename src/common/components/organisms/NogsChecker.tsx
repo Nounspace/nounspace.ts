@@ -4,17 +4,14 @@ import React from "react";
 import { Button } from "../atoms/button";
 
 export default function NogsChecker() {
-  const {
-    setRecheckTimerLength,
-    setShouldRecheck,
-    recheckCountDown,
-    isChecking,
-  } = useAppStore((state) => ({
-    setRecheckTimerLength: state.setup.setNogsRecheckTimerLength,
-    setShouldRecheck: state.setup.setNogsShouldRecheck,
-    isChecking: state.setup.nogsIsChecking,
-    recheckCountDown: state.setup.nogsRecheckCountDown,
-  }));
+  const { setRecheckTimerLength, setShouldRecheck, isChecking } = useAppStore(
+    (state) => ({
+      setRecheckTimerLength: state.setup.setNogsRecheckTimerLength,
+      setShouldRecheck: state.setup.setNogsShouldRecheck,
+      isChecking: state.setup.nogsIsChecking,
+      recheckCountDown: state.setup.nogsRecheckCountDown,
+    }),
+  );
 
   async function userTriggeredRecheck() {
     setRecheckTimerLength(RECHECK_INITIAL_TIME);
@@ -24,11 +21,7 @@ export default function NogsChecker() {
   // TO DO: Add place to mint nOGs here
   return (
     <>
-      <p>
-        Waiting to see if you have gotten nOG&apos;d... Checking again in{" "}
-        {recheckCountDown} seconds.
-      </p>
-      <p className="mb-1">
+      <p className="mb-2">
         To customize a Space and Homebase, you must hold a nOGs NFT. Mint a pair{" "}
         <a
           href="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
