@@ -12,7 +12,7 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
-import { FaPaintbrush } from "react-icons/fa6";
+import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 
@@ -209,6 +209,17 @@ const Navigation: React.FC<NavProps> = ({
                   Cast
                 </Button>
               </div>
+            )}
+            {!isLoggedIn && (
+              <Link
+                href="https://discord.gg/eYQeXU2WuH"
+                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full gap-2 text-lg font-medium"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                <FaDiscord className="text-[#5865f2] w-6 h-6" />
+                Join
+              </Link>
             )}
           </div>
         </div>
