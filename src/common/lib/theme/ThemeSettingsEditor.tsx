@@ -137,6 +137,7 @@ export function ThemeSettingsEditor({
             </TabsContent>
             <TabsContent value="style" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
+                <h4 className="text-sm font-bold">Space</h4>
                 <h4 className="text-sm">Background color</h4>
                 <ColorSelector
                   className="rounded-full overflow-hidden w-6 h-6 shrink-0"
@@ -148,7 +149,7 @@ export function ThemeSettingsEditor({
 
               {/* Fidget styles */}
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm font-bold">Fidget</h4>
+                <h4 className="text-sm font-bold">Fidgets</h4>
 
                 <div className="flex flex-col gap-1">
                   <div className="">

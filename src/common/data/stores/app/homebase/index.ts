@@ -9,6 +9,10 @@ import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../../api/backend";
 import { SpaceConfig } from "@/common/components/templates/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 interface HomeBaseStoreState {
   homebaseConfig?: SpaceConfig;
@@ -79,6 +83,7 @@ export const createHomeBaseStoreFunc = (
           set((draft) => {
             draft.homebase.remoteHomebaseConfig = localCopy;
           });
+          analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
         } catch (e) {
           console.error(e);
           throw e;

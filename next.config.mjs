@@ -7,16 +7,16 @@ const withBundleAnalyzer = bundlerAnalyzer({
 const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com;
-    style-src 'self' 'unsafe-inline' https://i.ytimg.com;
+    style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
     img-src 'self' blob: data: https: https://i.ytimg.com;
     font-src 'self' https:;
-    object-src 'none';
+    object-src 'self';
     base-uri 'self';
     form-action 'self';
     frame-ancestors 'self';
     frame-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://*;
     child-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://www.youtube.com https://*;
-    connect-src 'self' https://auth.privy.nounspace.com wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems;
+    connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://auth.privy.nounspace.com https://privy.nounspace.com/api/v1/analytics_events wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems;
     upgrade-insecure-requests;
 `;
 
@@ -54,23 +54,23 @@ const nextConfig = {
       },
     ];
   },
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: cspHeader.replace(/\n/g, ''),
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-        ],
-      },
-    ];
-  },
+  // async headers() {
+  //   return [
+  //     {
+  //       source: '/(.*)',
+  //       headers: [
+  //         {
+  //           key: 'Content-Security-Policy',
+  //           value: cspHeader.replace(/\n/g, ''),
+  //         },
+  //         {
+  //           key: 'X-Frame-Options',
+  //           value: 'DENY',
+  //         },
+  //       ],
+  //     },
+  //   ];
+  // },
 };
 
 export default withBundleAnalyzer(nextConfig);

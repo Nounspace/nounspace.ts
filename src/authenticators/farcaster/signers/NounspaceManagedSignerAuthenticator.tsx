@@ -23,6 +23,7 @@ import {
 } from "@/pages/api/signerRequests";
 import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
+import Link from "next/link";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -231,7 +232,9 @@ const initializer: AuthenticatorInitializer<
       ) : loading && data.signerUrl ? (
         <>
           <QRCode value={data.signerUrl} maxWidth={256} />
-          <p>{data.signerUrl}</p>
+          <Link href={data.signerUrl}>
+            <p>On mobile? Click here</p>
+          </Link>
         </>
       ) : (
         <Spinner />

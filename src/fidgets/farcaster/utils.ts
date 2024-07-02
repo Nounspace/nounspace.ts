@@ -13,7 +13,6 @@ import {
   signedKeyRequestValidatorABI,
   FarcasterNetwork,
   makeCastAdd,
-  CastId,
 } from "@farcaster/hub-web";
 import {
   LinkBody,
@@ -22,7 +21,7 @@ import {
   makeReactionAdd,
   makeReactionRemove,
   Message,
-  ReactionType,
+  ReactionBody,
 } from "@farcaster/core";
 import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
@@ -49,30 +48,10 @@ async function submitMessageToBackend(message: Message) {
   }
 }
 
-type PublishReactionParams = {
+type ReactionParams = {
   authorFid: number;
   signer: Signer;
-  reaction: {
-    type: ReactionType;
-    target:
-      | CastId
-      | {
-          url: string;
-        };
-  };
-};
-
-type RemoveReactionParams = {
-  authorFid: number;
-  signer: Signer;
-  reaction: {
-    type: ReactionType;
-    target:
-      | CastId
-      | {
-          url: string;
-        };
-  };
+  reaction: ReactionBody;
 };
 
 const getDataOptions = (fid: number) => ({
@@ -84,7 +63,7 @@ export const removeReaction = async ({
   authorFid,
   signer,
   reaction,
-}: RemoveReactionParams) => {
+}: ReactionParams) => {
   const msg = await makeReactionRemove(
     reaction,
     { fid: authorFid, network: FarcasterNetwork.MAINNET },
@@ -100,7 +79,7 @@ export const publishReaction = async ({
   authorFid,
   signer,
   reaction,
-}: PublishReactionParams) => {
+}: ReactionParams) => {
   const msg = await makeReactionAdd(
     reaction,
     { fid: authorFid, network: FarcasterNetwork.MAINNET },

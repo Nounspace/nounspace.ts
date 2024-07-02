@@ -19,6 +19,10 @@ import {
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -129,9 +133,16 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     setState(settings);
   }, [settings]);
 
+  useEffect(() => {
+    setState(settings);
+  }, [settings]);
+
   const _onSave = (e) => {
     e.preventDefault();
     onSave(state);
+    analytics.track(AnalyticsEvent.EDIT_FIDGET, {
+      fidgetType: properties.fidgetName,
+    });
   };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>): void => {
