@@ -2,26 +2,8 @@ import React, { Dispatch, SetStateAction } from "react";
 import { map } from "lodash";
 import { FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
-
-const PlusIcon = () => {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M5 12H19M12 19L12 5"
-        stroke="#1C64F2"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-};
+import { Button } from "@/common/components/atoms/button";
+import { FaPlus } from "react-icons/fa6";
 
 export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
@@ -41,12 +23,15 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-screen flex-col justify-center items-center bg-sky-100 p-8 overflow-auto">
+    <div className="w-full h-screen flex flex-col justify-start items-center gap-2 bg-sky-50 py-8 px-6 overflow-auto">
+      <h5 className="text-xs font-medium text-center -mx-3 mb-3">
+        Fidget Tray
+      </h5>
       {map(contents, (fidgetData: FidgetInstanceData) => {
         return (
-          <div key={fidgetData.id} className="flex justify-center items-center">
+          <div key={fidgetData.id} className="w-full">
             <div
-              className="z-20 droppable-element justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group"
+              className="z-20 droppable-element px-2 py-2 flex justify-center items-center border rounded-md hover:bg-sky-100 group cursor-pointer"
               draggable={true}
               // unselectable helps with IE support
               // eslint-disable-next-line react/no-unknown-property
@@ -73,13 +58,10 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           </div>
         );
       })}
-      <div className="flex justify-center items-center h-16 w-full">
-        <button
-          onClick={openFidgetPicker}
-          className="z-10 flex justify-center items-center mx-4 rounded-lg rounded-lg hover:bg-sky-200 group h-16 w-16 mx-auto"
-        >
-          <PlusIcon />
-        </button>
+      <div className="flex justify-center items-center w-full">
+        <Button onClick={openFidgetPicker} withIcon variant="primary">
+          <FaPlus />
+        </Button>
       </div>
     </div>
   );
