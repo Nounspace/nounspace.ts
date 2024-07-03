@@ -115,7 +115,6 @@ export const NounishGovernance: React.FC<
     setProposalId(proposalId);
     setSelectedProposal(proposal);
     setProposalVersions([]);
-    console.log("Selected Proposal:", proposal);
   };
 
   return (

@@ -33,7 +33,6 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
   hideGlobalSettings = false,
 }) => {
   const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
-  console.log({ selectedFont });
   const settings = FONT_FAMILY_OPTIONS.filter((setting) => {
     if (hideGlobalSettings) {
       return !setting.global;
