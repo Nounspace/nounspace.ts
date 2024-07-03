@@ -22,6 +22,13 @@ import {
   tabTriggerClasses,
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/common/components/atoms/tooltip";
+import { FaInfoCircle } from "react-icons/fa";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -192,7 +199,29 @@ export function ThemeSettingsEditor({
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Custom styles</h4>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1">
+                        <h4 className="text-sm">Custom styles</h4>
+                        <FaInfoCircle />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="flex flex-col gap-1">
+                        <div>
+                          Add HTML/CSS as a single file
+                          <br />
+                          to customize your background.
+                          <br />
+                          Pro tip: ask AI for help coding
+                          <br />
+                          the background of your dreams
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
                 <HTMLInput
                   value={backgroundHTML}
                   onChange={themePropSetter<string>("backgroundHTML")}
