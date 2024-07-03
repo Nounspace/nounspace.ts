@@ -3,9 +3,19 @@ import CSSInput from "@/common/ui/molecules/CSSInput";
 import HTMLInput from "@/common/ui/molecules/HTMLInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import type { ThemeSettings } from "@/common/lib/theme";
+import type { ThemeSettings, FontFamily, Color } from "@/common/lib/theme";
 
 export type FidgetSettings = Record<string, any>;
+export type FidgetSettingsStyle = {
+  background?: Color;
+  fontFamily?: FontFamily;
+  fontColor?: Color;
+  headingsFontFamily?: FontFamily;
+  headingsFontColor?: Color;
+  fidgetBorderWidth?: string;
+  fidgetBorderColor?: Color;
+  fidgetShadow?: string;
+};
 export type FidgetData = Record<string, any>;
 
 export type FidgetConfig<

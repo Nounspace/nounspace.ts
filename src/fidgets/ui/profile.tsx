@@ -9,6 +9,7 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useFarcasterSigner } from "../farcaster";
 import { followUser, unfollowUser } from "../farcaster/utils";
 import { Button } from "@/common/components/atoms/button";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -24,6 +25,7 @@ const profileProperties: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 3,

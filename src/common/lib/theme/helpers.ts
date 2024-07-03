@@ -23,7 +23,7 @@ export const SHADOW_STYLES = [
 ];
 
 export const tabListClasses =
-  "w-full p-0 justify-between bg-transparent rounded-none";
+  "w-full p-0 justify-start bg-transparent rounded-none";
 export const tabTriggerClasses =
   "data-[state=active]:text-blue-600 text-md data-[state=active]:shadow-none data-[state=active]:border-b data-[state=active]:rounded-none data-[state=active]:border-blue-600 data-[state=active]:border-solid px-3 py-2";
 export const tabContentClasses =

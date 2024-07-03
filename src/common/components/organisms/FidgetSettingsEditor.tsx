@@ -70,7 +70,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   return (
     <div
       className={mergeClasses(
-        "text-gray-700 md:flex-col md:items-center m-2",
+        "text-gray-700 md:flex-col md:items-center",
         hide && "hidden",
       )}
       id={id}
@@ -254,7 +254,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
           </>
         ) : (
           // X Button and Save Button (shows first)
-          <div className="flex pt-2 gap-2 flex items-center justify-center">
+          <div className="pt-2 gap-2 flex items-center justify-center">
             <Button
               type="button"
               onClick={() => setShowConfirmCancel(true)}
