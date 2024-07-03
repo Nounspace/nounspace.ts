@@ -10,11 +10,11 @@ export interface UserThemeContextValue {
 }
 
 export const useUserTheme = () => {
-  const { userTheme } = useAppStore((state) => ({
-    userTheme: state?.homebase?.homebaseConfig?.theme,
+  const { getCurrentSpace } = useAppStore((state) => ({
+    getCurrentSpace: state.currentSpace.getCurrentSpaceConfig,
   }));
 
-  return userTheme ?? defaultTheme;
+  return getCurrentSpace()?.theme ?? defaultTheme;
 };
 
 export const UserThemeProvider = ({ children }) => {
