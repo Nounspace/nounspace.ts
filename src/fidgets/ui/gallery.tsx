@@ -1,10 +1,16 @@
 import React, { CSSProperties } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
-};
+} & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
   fidgetName: "gallery",
@@ -18,6 +24,7 @@ const galleryConfig: FidgetProperties = {
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,

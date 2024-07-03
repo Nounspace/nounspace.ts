@@ -1,12 +1,18 @@
 import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type IFrameFidgetSettings = {
   url: string;
-};
+} & FidgetSettingsStyle;
 
 const DISALLOW_URL_PATTERNS = [
   /javascript:/i,
@@ -25,6 +31,7 @@ const frameConfig: FidgetProperties = {
       inputSelector: TextInput,
       group: "settings",
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,

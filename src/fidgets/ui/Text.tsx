@@ -3,29 +3,24 @@ import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import { FontFamily, Color } from "@/common/lib/theme";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type TextFidgetSettings = {
   title?: string;
   text: string;
-  fontFamily: FontFamily;
-  fontColor: Color;
-  headingsFontFamily: FontFamily;
-  headingsFontColor: Color;
-  background: Color;
-  fidgetBorderWidth: string;
-  fidgetBorderColor: Color;
-  fidgetShadow: string;
-};
+} & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
   fidgetName: "text",
@@ -73,34 +68,7 @@ export const textConfig: FidgetProperties = {
       inputSelector: ColorSelector,
       group: "style",
     },
-    {
-      fieldName: "background",
-      default: "var(--user-theme-fidget-background)",
-      required: false,
-      inputSelector: ColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderWidth",
-      default: "var(--user-theme-fidget-border-width)",
-      required: false,
-      inputSelector: BorderSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderColor",
-      default: "var(--user-theme-fidget-border-color)",
-      required: false,
-      inputSelector: ColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetShadow",
-      default: "var(--user-theme-fidget-shadow)",
-      required: false,
-      inputSelector: ShadowSelector,
-      group: "style",
-    },
+    ...defaultStyleFields,
     {
       fieldName: "css",
       default: "",
@@ -121,16 +89,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   settings,
 }) => {
   return (
-    <div
-      style={{
-        background: settings.background,
-        height: "100%",
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        // Not visible because of the outer div having overflow: hidden
-        boxShadow: settings.fidgetShadow,
-      }}
-    >
+    <div className="h-full">
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
           <CardTitle
