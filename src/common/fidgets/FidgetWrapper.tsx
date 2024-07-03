@@ -171,15 +171,16 @@ export function FidgetWrapper({
             : "size-full overflow-hidden"
         }
         style={{
-          boxShadow: "var(--user-theme-fidget-shadow)",
-          borderWidth: "var(--user-theme-fidget-border-width)",
-          borderColor: "var(--user-theme-fidget-border-color)",
+          boxShadow: settingsWithDefaults.fidgetShadow,
+          borderWidth: settingsWithDefaults.fidgetBorderWidth,
+          borderColor: settingsWithDefaults.fidgetBorderColor,
+          background: settingsWithDefaults.background,
         }}
       >
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="flex items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
