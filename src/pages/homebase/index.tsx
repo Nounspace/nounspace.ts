@@ -13,6 +13,7 @@ const Homebase: NextPageWithLayout = () => {
     resetConfig,
     getIsLoggedIn,
     getIsInitializing,
+    setCurrentSpaceId,
   } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
@@ -21,9 +22,12 @@ const Homebase: NextPageWithLayout = () => {
     resetConfig: state.homebase.resetHomebaseConfig,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
+    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
+
+  useEffect(() => setCurrentSpaceId("homebase"), []);
 
   useEffect(() => {
     isLoggedIn && loadConfig();
@@ -55,12 +59,7 @@ const Homebase: NextPageWithLayout = () => {
 
 Homebase.getLayout = function getLayout(page: React.ReactElement) {
   return (
-    <div
-      className="min-h-screen max-w-screen h-screen w-screen"
-      style={{ background: "var(--user-theme-background)" }}
-    >
-      {page}
-    </div>
+    <div className="min-h-screen max-w-screen h-screen w-screen">{page}</div>
   );
 };
 
