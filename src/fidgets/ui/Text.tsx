@@ -6,6 +6,10 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+
 import {
   CardHeader,
   CardContent,
@@ -13,6 +17,8 @@ import {
   CardDescription,
 } from "@/common/components/atoms/card";
 import { FontFamily, Color } from "@/common/lib/theme";
+import MDeditor from "@/common/components/molecules/MDeditor";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -42,7 +48,7 @@ export const textConfig: FidgetProperties = {
       fieldName: "text",
       default: "Jot down your ideas and grow them.",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: MDeditor,
       group: "settings",
     },
     {
@@ -129,6 +135,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
         borderColor: settings.fidgetBorderColor,
         // Not visible because of the outer div having overflow: hidden
         boxShadow: settings.fidgetShadow,
+        overflow: "auto",
+        scrollbarWidth: "none",
       }}
     >
       {settings?.title && (
@@ -153,7 +161,13 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
               color: settings.fontColor,
             }}
           >
-            {settings.text}
+            <ReactMarkdown
+              rehypePlugins={[rehypeRaw]}
+              remarkPlugins={[remarkGfm]}
+              components={MarkdownRenderers}
+            >
+              {settings.text}
+            </ReactMarkdown>
           </CardDescription>
         </CardContent>
       )}
