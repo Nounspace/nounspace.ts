@@ -26,29 +26,32 @@ export default function UserDefinedSpace({
     editableSpaces,
     loadSpace,
     remoteSpaces,
-    localSpaces,
     saveLocalCopy,
     commitSpaceToDb,
     registerSpace,
+    getCurrentSpaceConfig,
+    setCurrentSpaceId,
   } = useAppStore((state) => ({
     editableSpaces: state.space.editableSpaces,
     loadSpace: state.space.loadSpace,
-    localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     saveLocalCopy: state.space.saveLocalSpace,
     commitSpaceToDb: state.space.commitSpaceToDatabase,
     registerSpace: state.space.registerSpace,
+    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
+    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
   }));
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [loadSuccess, setLoadSuccesss] = useState(false);
 
   useEffect(() => {
+    setCurrentSpaceId(providedSpaceId);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
       loadSpace(providedSpaceId).then((res) => {
         setLoadSuccesss(res !== null);
-        setLoading(false);
         setSpaceId(providedSpaceId);
+        setLoading(false);
       });
     }
   }, [providedSpaceId]);
@@ -96,21 +99,11 @@ export default function UserDefinedSpace({
       if (loading) {
         return undefined;
       }
-      if (loadSuccess) {
+      const currentSpaceConfig = getCurrentSpaceConfig();
+      if (loadSuccess && currentSpaceConfig) {
         return {
-          ...localSpaces[spaceId],
+          ...currentSpaceConfig,
           isEditable,
-          fidgetInstanceDatums: mapValues(
-            localSpaces[spaceId].fidgetInstanceDatums,
-            (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-                data: {}, // TO DO: Inject fidget data here
-              },
-            }),
-          ),
         };
       }
     }
@@ -118,7 +111,7 @@ export default function UserDefinedSpace({
       ...INITIAL_PERSONAL_SPACE_CONFIG,
       isEditable,
     };
-  }, [spaceId, isEditable, localSpaces, loading, loadSuccess, fid]);
+  }, [spaceId, isEditable, loading, loadSuccess, fid]);
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {

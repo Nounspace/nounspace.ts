@@ -22,12 +22,14 @@ import {
   SpaceStore,
 } from "./space/spaceStore";
 import { usePrivy } from "@privy-io/react-auth";
+import { createCurrentSpaceStoreFunc, CurrentSpaceStore } from "./currentSpace";
 
 export type AppStore = {
   account: AccountStore;
   setup: SetupStore;
   homebase: HomeBaseStore;
   space: SpaceStore;
+  currentSpace: CurrentSpaceStore;
   logout: () => void;
   getIsAccountReady: () => boolean;
   getIsInitializing: () => boolean;
@@ -40,6 +42,7 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
   account: createAccountStoreFunc(set, get, state),
   homebase: createHomeBaseStoreFunc(set, get),
   space: createSpaceStoreFunc(set, get),
+  currentSpace: createCurrentSpaceStoreFunc(set, get),
   logout: () => {
     get().account.reset();
     get().homebase.clearHomebase();
