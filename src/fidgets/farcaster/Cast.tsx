@@ -1,14 +1,20 @@
 import React from "react";
-import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import EmbededCast from "./components/Embeds/EmbededCast";
 import { isUndefined } from "lodash";
 import TextInput from "@/common/components/molecules/TextInput";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 type CastFidgetSettings = {
   castHash?: string;
   casterFid?: number;
   castUrl?: string;
-};
+} & FidgetSettingsStyle;
 
 const castFidgetProperties: FidgetProperties = {
   fidgetName: "Pinned Cast",
@@ -29,6 +35,7 @@ const castFidgetProperties: FidgetProperties = {
       required: false,
       inputSelector: TextInput,
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 1,

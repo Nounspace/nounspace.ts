@@ -1,6 +1,12 @@
+import React, { useEffect, useMemo, useState } from "react";
 import { CardContent } from "@/common/components/atoms/card";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
@@ -9,12 +15,12 @@ import {
 } from "@/common/lib/utils/queries";
 import ProposalDetailView from "@/fidgets/community/nouns-dao/components/ProposalDetailView";
 import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import React, { useEffect, useMemo, useState } from "react";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
-};
+} & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
   fidgetName: "governance",
@@ -33,6 +39,7 @@ export const nounishGovernanceConfig: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,
