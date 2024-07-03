@@ -174,7 +174,6 @@ export const AuthenticatorManagerProvider: React.FC<
           // Allow client requests to not open modal
           // While Fidget requests will
           if (!modalOpen && !isLookup) {
-            console.log("Auth Manager Calling Open Modal", requestingFidgetId);
             setModalOpen(true);
           }
           return {
