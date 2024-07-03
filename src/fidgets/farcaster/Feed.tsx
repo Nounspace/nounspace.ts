@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import { isNil } from "lodash";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
@@ -10,7 +16,7 @@ import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useGetCasts } from "@/common/data/queries/farcaster";
-import { isNil } from "lodash";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 enum FilterType {
   Channel = "channel_id",
@@ -22,7 +28,7 @@ export type FeedFidgetSettings = {
   filterType: FilterType;
   users: string; // this should be a number array, but that requires special inputs to build later
   channel: string;
-};
+} & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
   { name: "Channel", value: FilterType.Channel },
@@ -82,6 +88,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.filterType !== FilterType.Channel,
       default: "",
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,
