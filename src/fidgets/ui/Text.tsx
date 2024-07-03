@@ -17,7 +17,6 @@ import {
   CardDescription,
 } from "@/common/components/atoms/card";
 import { FontFamily, Color } from "@/common/lib/theme";
-import MDeditor from "@/common/components/molecules/MDeditor";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
@@ -48,7 +47,7 @@ export const textConfig: FidgetProperties = {
       fieldName: "text",
       default: "Jot down your ideas and grow them.",
       required: true,
-      inputSelector: MDeditor,
+      inputSelector: CSSInput,
       group: "settings",
     },
     {
