@@ -187,6 +187,7 @@ export default function UserDefinedSpace({
       commitConfig={commitConfig}
       resetConfig={resetConfig}
       profile={profile}
+      loading={loading}
     />
   );
 }
