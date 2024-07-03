@@ -1,13 +1,19 @@
 import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type FrameFidgetSettings = {
   url: string;
-};
+} & FidgetSettingsStyle;
 
 const frameProperties: FidgetProperties = {
   fidgetName: "Frame",
@@ -17,6 +23,7 @@ const frameProperties: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,
