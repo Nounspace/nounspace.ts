@@ -92,12 +92,12 @@ export interface FidgetModule<P extends FidgetArgs> {
 }
 
 type LayoutFidgetSavableConfig<C extends LayoutFidgetConfig> = {
-  fidgetInstanceDatums: {
+  fidgetInstanceDatums?: {
     [key: string]: FidgetInstanceData;
   };
-  layoutConfig: C;
-  fidgetTrayContents: FidgetInstanceData[];
-  theme: UserTheme;
+  layoutConfig?: C;
+  fidgetTrayContents?: FidgetInstanceData[];
+  theme?: UserTheme;
 };
 
 interface LayoutFidgetProps<C extends LayoutFidgetConfig> {

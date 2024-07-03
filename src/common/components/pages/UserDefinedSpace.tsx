@@ -3,8 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { SpaceConfig } from "../templates/Space";
-import { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
+import { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import SpacePage from "./SpacePage";
 
@@ -122,14 +121,14 @@ export default function UserDefinedSpace({
   }, [isEditable, spaceId, currentUserFid]);
 
   const saveConfig = useCallback(
-    async (spaceConfig: SpaceConfig) => {
+    async (spaceConfig: SpaceConfigSaveDetails) => {
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
       }
       if (isNil(spaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
-      const saveableConfig: UpdatableSpaceConfig = {
+      const saveableConfig = {
         ...spaceConfig,
         fidgetInstanceDatums: mapValues(
           spaceConfig.fidgetInstanceDatums,

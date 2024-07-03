@@ -4,10 +4,13 @@ import axios from "axios";
 import { createClient } from "../../../database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
-import { debounce } from "lodash";
+import { debounce, isArray, mergeWith } from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../../api/backend";
-import { SpaceConfig } from "@/common/components/templates/Space";
+import {
+  SpaceConfig,
+  SpaceConfigSaveDetails,
+} from "@/common/components/templates/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
   analytics,
@@ -22,7 +25,7 @@ interface HomeBaseStoreState {
 interface HomeBaseStoreActions {
   loadHomebase: () => Promise<SpaceConfig>;
   commitHomebaseToDatabase: () => Promise<void>;
-  saveHomebaseConfig: (config: SpaceConfig) => Promise<void>;
+  saveHomebaseConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   resetHomebaseConfig: () => Promise<void>;
   clearHomebase: () => void;
 }
@@ -94,7 +97,13 @@ export const createHomeBaseStoreFunc = (
   },
   saveHomebaseConfig: async (config) => {
     set((draft) => {
-      draft.homebase.homebaseConfig = config;
+      draft.homebase.homebaseConfig = mergeWith(
+        get().homebase.homebaseConfig,
+        config,
+        (newItem) => {
+          if (isArray(newItem)) return newItem;
+        },
+      );
     });
   },
   resetHomebaseConfig: async () => {

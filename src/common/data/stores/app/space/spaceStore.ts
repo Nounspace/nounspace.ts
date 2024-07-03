@@ -1,4 +1,7 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import {
+  SpaceConfig,
+  SpaceConfigSaveDetails,
+} from "@/common/components/templates/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../../createStore";
@@ -8,7 +11,14 @@ import {
   RegisterNewSpaceResponse,
   SpaceRegistration,
 } from "@/pages/api/space/registry";
-import { debounce, fromPairs, isUndefined, map } from "lodash";
+import {
+  debounce,
+  fromPairs,
+  isArray,
+  isUndefined,
+  map,
+  mergeWith,
+} from "lodash";
 import {
   NameChangeRequest,
   UpdateSpaceResponse,
@@ -29,7 +39,7 @@ type SpaceId = string;
 // But a space that is saved in the DB doesn't store
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
-export type SaveableSpaceConfig = Omit<
+export type DatabaseWritableSpaceConfig = Omit<
   SpaceConfig,
   "fidgetInstanceDatums" | "isEditable"
 > & {
@@ -40,7 +50,22 @@ export type SaveableSpaceConfig = Omit<
   };
 };
 
-export type UpdatableSpaceConfig = SaveableSpaceConfig & {
+export type DatabaseWritableSpaceSaveConfig = Partial<
+  Omit<SpaceConfigSaveDetails, "fidgetInstanceDatums" | "isEditable">
+> & {
+  fidgetInstanceDatums: {
+    [key: string]: Omit<FidgetInstanceData, "config"> & {
+      config: Omit<FidgetConfig, "data">;
+    };
+  };
+};
+
+export type UpdatableDatabaseWritableSpaceSaveConfig =
+  DatabaseWritableSpaceSaveConfig & {
+    isPrivate?: boolean;
+  };
+
+export type UpdatableSpaceConfig = DatabaseWritableSpaceConfig & {
   isPrivate: boolean;
 };
 
@@ -65,7 +90,7 @@ interface SpaceActions {
   commitSpaceToDatabase: (spaceId: string) => Promise<void>;
   saveLocalSpace: (
     spaceId: string,
-    config: UpdatableSpaceConfig,
+    config: UpdatableDatabaseWritableSpaceSaveConfig,
   ) => Promise<void>;
   clear: () => void;
 }
@@ -101,7 +126,7 @@ export const createSpaceStoreFunc = (
       const fileData = JSON.parse(await data.text()) as SignedFile;
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
-      ) as SaveableSpaceConfig;
+      ) as DatabaseWritableSpaceConfig;
       const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
@@ -234,9 +259,15 @@ export const createSpaceStoreFunc = (
       }
     }, 1000)();
   },
-  saveLocalSpace: async (spaceId, config) => {
+  saveLocalSpace: async (spaceId, changedConfig) => {
     set((draft) => {
-      draft.space.localSpaces[spaceId] = config;
+      draft.space.localSpaces[spaceId] = mergeWith(
+        get().space.localSpaces[spaceId],
+        changedConfig,
+        (newItem) => {
+          if (isArray(newItem)) return newItem;
+        },
+      );
     });
   },
   clear: () => {
