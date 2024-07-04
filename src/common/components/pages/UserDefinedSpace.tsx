@@ -93,12 +93,13 @@ export default function UserDefinedSpace({
     [fid],
   );
 
+  const currentSpaceConfig = getCurrentSpaceConfig();
+
   const config: SpaceConfig | undefined = useMemo(() => {
     if (!isNil(spaceId)) {
       if (loading) {
         return undefined;
       }
-      const currentSpaceConfig = getCurrentSpaceConfig();
       if (loadSuccess && currentSpaceConfig) {
         return {
           ...currentSpaceConfig,
@@ -110,7 +111,7 @@ export default function UserDefinedSpace({
       ...INITIAL_PERSONAL_SPACE_CONFIG,
       isEditable,
     };
-  }, [spaceId, isEditable, loading, loadSuccess, fid]);
+  }, [spaceId, isEditable, loading, loadSuccess, fid, currentSpaceConfig]);
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
