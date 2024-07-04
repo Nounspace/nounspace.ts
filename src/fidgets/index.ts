@@ -10,6 +10,7 @@ import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
 import CreateCast from "./farcaster/CreateCast";
+import zoraEmbed from "./zora/zoraEmbed";
 
 export const CompleteFidgets = {
   //
@@ -28,6 +29,7 @@ export const CompleteFidgets = {
   iframe: IFrame,
   // Nouns
   governance: NounishGovernance,
+  zora: zoraEmbed,
 };
 
 export const LayoutFidgets = {
