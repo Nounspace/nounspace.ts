@@ -33,6 +33,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 
 type SpaceId = string;
 
@@ -84,7 +85,7 @@ interface SpaceState {
 }
 
 interface SpaceActions {
-  loadSpace: (spaceId: string) => Promise<CachedSpace | null>;
+  loadSpace: (spaceId: string, fid: number) => Promise<void>;
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
@@ -109,7 +110,7 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreDefaults,
-  loadSpace: async (spaceId) => {
+  loadSpace: async (spaceId, fid) => {
     // TO DO: skip if cached copy is recent enough
     try {
       const supabase = createClient();
@@ -141,10 +142,15 @@ export const createSpaceStoreFunc = (
         draft.space.remoteSpaces[spaceId] = cachedSpace;
         draft.space.localSpaces[spaceId] = cloneDeep(updatableSpaceConfig);
       }, "loadSpace");
-      return cachedSpace;
     } catch (e) {
+      const initialHomebase = {
+        ...createIntialPersonSpaceConfigForFid(fid),
+        isPrivate: false,
+      };
+      set((draft) => {
+        draft.space.localSpaces[spaceId] = cloneDeep(initialHomebase);
+      }, "loadSpace");
       console.debug(e);
-      return null;
     }
   },
   registerSpace: async (fid, name) => {

@@ -1,17 +1,9 @@
-import {
-  cloneDeep,
-  indexOf,
-  isNil,
-  keys,
-  mapValues,
-  mergeWith,
-  noop,
-} from "lodash";
+import { indexOf, isNil, mapValues, noop } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
+import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import SpacePage from "./SpacePage";
 
@@ -55,7 +47,7 @@ export default function UserDefinedSpace({
     setCurrentSpaceId(providedSpaceId);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
-      loadSpace(providedSpaceId).then((res) => {
+      loadSpace(providedSpaceId, fid).then(() => {
         setSpaceId(providedSpaceId);
         setLoading(false);
       });
@@ -100,30 +92,15 @@ export default function UserDefinedSpace({
     [fid],
   );
 
-  const currentSpaceConfig = getCurrentSpaceConfig();
+  const currentConfig = getCurrentSpaceConfig();
 
-  const loadSuccess = useMemo(
-    () => !isNil(spaceId && remoteSpaces[spaceId]),
-    [spaceId, remoteSpaces],
-  );
-
-  const config: SpaceConfig | undefined = useMemo(() => {
-    if (!isNil(spaceId)) {
-      if (loading) {
-        return undefined;
-      }
-      if (loadSuccess && currentSpaceConfig) {
-        return {
-          ...currentSpaceConfig,
-          isEditable,
-        };
-      }
-    }
-    return {
-      ...INITIAL_PERSONAL_SPACE_CONFIG,
+  const config = useMemo(
+    () => ({
+      ...(currentConfig ? currentConfig : INITIAL_PERSONAL_SPACE_CONFIG),
       isEditable,
-    };
-  }, [spaceId, isEditable, loading, loadSuccess, fid, currentSpaceConfig]);
+    }),
+    [currentConfig, isEditable],
+  );
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
@@ -155,25 +132,7 @@ export default function UserDefinedSpace({
         ),
         isPrivate: false,
       };
-      // If this is the first save, add the additional data to the savable config
-      if (!loadSuccess)
-        await saveLocalCopy(
-          spaceId,
-          mergeWith(
-            cloneDeep(INITIAL_PERSONAL_SPACE_CONFIG),
-            saveableConfig,
-            // For Fidget Instance Datums
-            // We should keep the Feed Fidget
-            // If fidgets have not been changed
-            (oldVal, newVal, key) =>
-              key === "fidgetInstanceDatums"
-                ? keys(newVal).length > 0
-                  ? newVal
-                  : oldVal
-                : undefined,
-          ),
-        );
-      else await saveLocalCopy(spaceId, saveableConfig);
+      await saveLocalCopy(spaceId, saveableConfig);
     },
     [currentUserFid, spaceId],
   );
