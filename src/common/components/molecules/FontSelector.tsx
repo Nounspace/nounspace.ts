@@ -54,7 +54,6 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
       </SelectTrigger>
       <SelectContent>
         {settings.map((font, i) => {
-          console.log({ font });
           return (
             <SelectItem
               style={font.config.style}

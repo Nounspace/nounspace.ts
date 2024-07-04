@@ -59,7 +59,6 @@ const BuilderProposalItem = ({
   const handleProposalClick = () => {
     setProposal(proposal.proposalId);
   };
-  console.log(proposal);
   return (
     <div
       onClick={handleProposalClick}
