@@ -71,7 +71,7 @@ export const privyStore = (set: StoreSet<AppStore>): PrivyStore => ({
   setPrivyUser: (user: PrivyUser) => {
     set((draft) => {
       draft.account.privyUser = user;
-    });
+    }, "setPrivyUser");
   },
 });
 

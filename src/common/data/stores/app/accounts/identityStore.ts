@@ -171,7 +171,7 @@ export const identityStore = (
   setCurrentIdentity: (publicKey: string) => {
     set((draft) => {
       draft.account.currentSpaceIdentityPublicKey = publicKey;
-    });
+    }, "setCurrentIdentity");
   },
   loadIdentitiesForWallet: async (wallet: Wallet) => {
     // Load Identity + Nonce + Wallet address info from DB
@@ -190,7 +190,7 @@ export const identityStore = (
       : [];
     set((draft) => {
       draft.account.walletIdentities[wallet.address] = walletIdentities;
-    });
+    }, "loadIdentitiesForWallet");
     return walletIdentities;
   },
   getIdentitiesForWallet: (wallet: Wallet) => {
@@ -255,7 +255,7 @@ export const identityStore = (
         preKeys: [],
         associatedFids: [],
       });
-    });
+    }, "decryptIdentityKeys");
   },
   createIdentityForWallet: async (
     signMessage: SignMessageFunctionSignature,
@@ -307,7 +307,7 @@ export const identityStore = (
         preKeys: [],
         associatedFids: [],
       });
-    });
+    }, "createIdentityForWallet");
     return identityKeys.publicKey;
   },
 });
