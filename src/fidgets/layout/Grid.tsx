@@ -204,8 +204,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
-    setCurrentlyDragging(false);
-
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
@@ -233,6 +231,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
       fidgetType: fidgetData.fidgetType,
     });
+    setCurrentlyDragging(false);
   }
 
   function removeFidgetFromTray(fidgetId: string) {
@@ -260,19 +259,25 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     delete newFidgetInstanceDatums[fidgetId];
 
     //Make new layout with item removed
-    const newLayoutConfig = {
-      layout: reject(layoutConfig.layout, (x) => x.i == fidgetId),
-    };
+    const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
 
     // Clear editor panel
     unselectFidget();
 
-    saveLayoutConditional(newLayoutConfig.layout);
+    saveLayout(newLayout);
     saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    if (!currentlyDragging && inEditMode) {
+    // We only use to move items on the grid
+    // We only update if the same items exist
+    // We aren't adding or removing an item
+    // And we are in edit mode
+    if (
+      !currentlyDragging &&
+      inEditMode &&
+      newLayout.length === layoutConfig.layout.length
+    ) {
       saveLayout(newLayout);
     }
   }
