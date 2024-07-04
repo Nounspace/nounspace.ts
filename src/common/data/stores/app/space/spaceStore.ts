@@ -12,6 +12,7 @@ import {
   SpaceRegistration,
 } from "@/pages/api/space/registry";
 import {
+  cloneDeep,
   debounce,
   fromPairs,
   isArray,
@@ -133,12 +134,12 @@ export const createSpaceStoreFunc = (
       };
       const cachedSpace: CachedSpace = {
         id: spaceId,
-        config: updatableSpaceConfig,
+        config: cloneDeep(updatableSpaceConfig),
         updatedAt: moment().toISOString(),
       };
       set((draft) => {
         draft.space.remoteSpaces[spaceId] = cachedSpace;
-        draft.space.localSpaces[spaceId] = updatableSpaceConfig;
+        draft.space.localSpaces[spaceId] = cloneDeep(updatableSpaceConfig);
       }, "loadSpace");
       return cachedSpace;
     } catch (e) {
@@ -193,7 +194,7 @@ export const createSpaceStoreFunc = (
       if (!isUndefined(data.value) && data.value.name) {
         set((draft) => {
           draft.space.editableSpaces[spaceId] = data.value!.name;
-        });
+        }, "renameSpace");
       }
     } catch (e) {
       console.error(e);
@@ -216,7 +217,7 @@ export const createSpaceStoreFunc = (
         );
         set((draft) => {
           draft.space.editableSpaces = editableSpaces;
-        });
+        }, "loadEditableSpaces");
         return editableSpaces;
       }
       return {};
@@ -227,7 +228,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceToDatabase: async (spaceId) => {
     debounce(async () => {
-      const localCopy = get().space.localSpaces[spaceId];
+      const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
       if (localCopy) {
         const file = localCopy.isPrivate
           ? await get().account.createEncryptedSignedFile(
@@ -255,20 +256,21 @@ export const createSpaceStoreFunc = (
             config: localCopy,
             updatedAt: moment().toISOString(),
           };
-        });
+        }, "commitSpaceToDatabase");
       }
     }, 1000)();
   },
   saveLocalSpace: async (spaceId, changedConfig) => {
+    const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
     set((draft) => {
       draft.space.localSpaces[spaceId] = mergeWith(
-        get().space.localSpaces[spaceId],
+        localCopy,
         changedConfig,
-        (newItem) => {
+        (_, newItem) => {
           if (isArray(newItem)) return newItem;
         },
       );
-    });
+    }, "saveLocalSpace");
   },
   clear: () => {
     set(
