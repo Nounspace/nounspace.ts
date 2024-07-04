@@ -97,9 +97,8 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
-const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({
-  settings: { feedType, users, channel, filterType },
-}) => {
+const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
+  const { feedType, users, channel, filterType } = settings;
   const { fid } = useFarcasterSigner("feed");
   const {
     data,
@@ -125,6 +124,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({
       fetchNextPage();
     }
   }, [inView]);
+
+  useEffect(() => {
+    setShowCastThreadView(false);
+  }, [settings]);
 
   const onSelectCast = (hash: string) => {
     setSelectedCastHash(hash);
