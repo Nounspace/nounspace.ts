@@ -15,6 +15,11 @@ import { ALCHEMY_API } from "@/constants/urls";
 import { AlchemyIsHolderOfContract } from "@/pages/api/signerRequests";
 import axios from "axios";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
+import usePrevious from "@/common/lib/hooks/usePrevious";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 type LoggedInLayoutProps = { children: React.ReactNode };
 
@@ -91,6 +96,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   const { signMessage, ready: walletsReady } = useSignMessage();
   const authenticatorManager = useAuthenticatorManager();
   const logout = useLogout();
+  const previousStep = usePrevious(currentStep);
 
   async function loadWallet() {
     if (walletsReady && ready && authenticated && user) {
@@ -105,6 +111,16 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
       logout();
     }
   }
+
+  useEffect(() => {
+    // need to check previous step, otherwise this gets called twice
+    if (
+      previousStep == SetupStep.NOT_SIGNED_IN &&
+      currentStep === SetupStep.SIGNED_IN
+    ) {
+      analytics.track(AnalyticsEvent.CONNECT_WALLET);
+    }
+  }, [previousStep, currentStep]);
 
   async function loadIdentity() {
     if (walletsReady && ready && authenticated && user) {
