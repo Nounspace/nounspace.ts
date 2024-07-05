@@ -229,6 +229,7 @@ const initializer: AuthenticatorInitializer<
 
   return (
     <div className="flex flex-col justify-center items-center align-center">
+      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
