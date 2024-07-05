@@ -236,8 +236,8 @@ const initializer: AuthenticatorInitializer<
       ) : loading && warpcastSignerUrl ? (
         <>
           <QRCode value={warpcastSignerUrl} maxWidth={256} />
-          <Link href={warpcastSignerUrl}>
-            <p>On mobile? Click here</p>
+          <Link href={warpcastSignerUrl} passHref>
+            <Button>On mobile? Click here</Button>
           </Link>
         </>
       ) : (
