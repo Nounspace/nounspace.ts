@@ -240,6 +240,9 @@ const initializer: AuthenticatorInitializer<
           <Link href={warpcastSignerUrl} passHref target="_blank">
             <Button>On mobile? Click here</Button>
           </Link>
+          <Button variant="link" size="sm" onClick={createSigner}>
+            Still having trouble? Reset the QR
+          </Button>
         </>
       ) : (
         <Spinner />
