@@ -465,7 +465,7 @@ export const CastRow = ({
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <button onClick={onSelect}>
+      <div onClick={onSelect}>
         <div className="p-3">
           <div className="flex items-top gap-x-2">
             <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
@@ -482,7 +482,7 @@ export const CastRow = ({
             />
           </div>
         </div>
-      </button>
+      </div>
     </div>
   );
 };

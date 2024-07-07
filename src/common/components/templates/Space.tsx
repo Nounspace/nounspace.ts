@@ -29,9 +29,15 @@ export type SpaceConfig = {
   theme: UserTheme;
 };
 
+export type SpaceConfigSaveDetails = Partial<
+  Omit<SpaceConfig, "layoutDetails">
+> & {
+  layoutDetails?: Partial<LayoutFidgetDetails<LayoutFidgetConfig<any>>>;
+};
+
 type SpaceArgs = {
   config: SpaceConfig;
-  saveConfig: (config: SpaceConfig) => Promise<void>;
+  saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
   profile?: ReactNode;
@@ -71,13 +77,13 @@ export default function Space({
     layoutConfig,
     fidgetInstanceDatums,
     fidgetTrayContents,
-  }: LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>) {
+  }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) {
     return saveConfig({
-      ...config,
-      layoutDetails: {
-        ...config.layoutDetails,
-        layoutConfig,
-      },
+      layoutDetails: layoutConfig
+        ? {
+            layoutConfig,
+          }
+        : undefined,
       theme,
       fidgetInstanceDatums,
       fidgetTrayContents,
