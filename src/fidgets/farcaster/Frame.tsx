@@ -19,9 +19,9 @@ const frameProperties: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 1,
+    minWidth: 2,
     maxWidth: 36,
   },
   icon: 0x23f9, // ⏹

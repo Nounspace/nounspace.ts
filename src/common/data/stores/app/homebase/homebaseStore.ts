@@ -4,10 +4,13 @@ import axios from "axios";
 import { createClient } from "../../../database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
-import { debounce } from "lodash";
+import { cloneDeep, debounce, isArray, mergeWith } from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../../api/backend";
-import { SpaceConfig } from "@/common/components/templates/Space";
+import {
+  SpaceConfig,
+  SpaceConfigSaveDetails,
+} from "@/common/components/templates/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
   analytics,
@@ -22,7 +25,7 @@ interface HomeBaseStoreState {
 interface HomeBaseStoreActions {
   loadHomebase: () => Promise<SpaceConfig>;
   commitHomebaseToDatabase: () => Promise<void>;
-  saveHomebaseConfig: (config: SpaceConfig) => Promise<void>;
+  saveHomebaseConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   resetHomebaseConfig: () => Promise<void>;
   clearHomebase: () => void;
 }
@@ -57,21 +60,23 @@ export const createHomeBaseStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
       set((draft) => {
-        draft.homebase.homebaseConfig = spaceConfig;
-        draft.homebase.remoteHomebaseConfig = spaceConfig;
-      });
+        draft.homebase.homebaseConfig = cloneDeep(spaceConfig);
+        draft.homebase.remoteHomebaseConfig = cloneDeep(spaceConfig);
+      }, "loadHomebase-found");
       return spaceConfig;
     } catch (e) {
       set((draft) => {
-        draft.homebase.homebaseConfig = INITIAL_HOMEBASE_CONFIG;
-        draft.homebase.remoteHomebaseConfig = INITIAL_HOMEBASE_CONFIG;
-      });
-      return INITIAL_HOMEBASE_CONFIG;
+        draft.homebase.homebaseConfig = cloneDeep(INITIAL_HOMEBASE_CONFIG);
+        draft.homebase.remoteHomebaseConfig = cloneDeep(
+          INITIAL_HOMEBASE_CONFIG,
+        );
+      }, "loadHomebase-default");
+      return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
   },
   commitHomebaseToDatabase: async () => {
     debounce(async () => {
-      const localCopy = get().homebase.homebaseConfig;
+      const localCopy = cloneDeep(get().homebase.homebaseConfig);
       if (localCopy) {
         const file = await get().account.createEncryptedSignedFile(
           stringify(localCopy),
@@ -83,7 +88,7 @@ export const createHomeBaseStoreFunc = (
           await axiosBackend.post(`/api/space/homebase/`, file);
           set((draft) => {
             draft.homebase.remoteHomebaseConfig = localCopy;
-          });
+          }, "commitHomebaseToDatabase");
           analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
         } catch (e) {
           console.error(e);
@@ -93,14 +98,23 @@ export const createHomeBaseStoreFunc = (
     }, 1000)();
   },
   saveHomebaseConfig: async (config) => {
-    set((draft) => {
-      draft.homebase.homebaseConfig = config;
+    const localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
+    mergeWith(localCopy, config, (_, newItem) => {
+      if (isArray(newItem)) return newItem;
     });
+    set(
+      (draft) => {
+        draft.homebase.homebaseConfig = localCopy;
+      },
+      "saveHomebaseConfig",
+      false,
+    );
   },
   resetHomebaseConfig: async () => {
+    const remote = cloneDeep(get().homebase.remoteHomebaseConfig);
     set((draft) => {
-      draft.homebase.homebaseConfig = draft.homebase.remoteHomebaseConfig;
-    });
+      draft.homebase.homebaseConfig = remote;
+    }, "resetHomebaseConfig");
   },
   clearHomebase: () => {
     set(
