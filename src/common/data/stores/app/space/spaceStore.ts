@@ -1,4 +1,7 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import {
+  SpaceConfig,
+  SpaceConfigSaveDetails,
+} from "@/common/components/templates/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../../createStore";
@@ -8,7 +11,15 @@ import {
   RegisterNewSpaceResponse,
   SpaceRegistration,
 } from "@/pages/api/space/registry";
-import { debounce, fromPairs, isUndefined, map } from "lodash";
+import {
+  cloneDeep,
+  debounce,
+  fromPairs,
+  isArray,
+  isUndefined,
+  map,
+  mergeWith,
+} from "lodash";
 import {
   NameChangeRequest,
   UpdateSpaceResponse,
@@ -22,6 +33,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 
 type SpaceId = string;
 
@@ -29,7 +41,7 @@ type SpaceId = string;
 // But a space that is saved in the DB doesn't store
 // Fidget data or editablity
 // So we rebuild the details, but without those fields
-export type SaveableSpaceConfig = Omit<
+export type DatabaseWritableSpaceConfig = Omit<
   SpaceConfig,
   "fidgetInstanceDatums" | "isEditable"
 > & {
@@ -40,7 +52,22 @@ export type SaveableSpaceConfig = Omit<
   };
 };
 
-export type UpdatableSpaceConfig = SaveableSpaceConfig & {
+export type DatabaseWritableSpaceSaveConfig = Partial<
+  Omit<SpaceConfigSaveDetails, "fidgetInstanceDatums" | "isEditable">
+> & {
+  fidgetInstanceDatums: {
+    [key: string]: Omit<FidgetInstanceData, "config"> & {
+      config: Omit<FidgetConfig, "data">;
+    };
+  };
+};
+
+export type UpdatableDatabaseWritableSpaceSaveConfig =
+  DatabaseWritableSpaceSaveConfig & {
+    isPrivate?: boolean;
+  };
+
+export type UpdatableSpaceConfig = DatabaseWritableSpaceConfig & {
   isPrivate: boolean;
 };
 
@@ -58,14 +85,14 @@ interface SpaceState {
 }
 
 interface SpaceActions {
-  loadSpace: (spaceId: string) => Promise<CachedSpace | null>;
+  loadSpace: (spaceId: string, fid: number) => Promise<void>;
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
   commitSpaceToDatabase: (spaceId: string) => Promise<void>;
   saveLocalSpace: (
     spaceId: string,
-    config: UpdatableSpaceConfig,
+    config: UpdatableDatabaseWritableSpaceSaveConfig,
   ) => Promise<void>;
   clear: () => void;
 }
@@ -83,7 +110,7 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreDefaults,
-  loadSpace: async (spaceId) => {
+  loadSpace: async (spaceId, fid) => {
     // TO DO: skip if cached copy is recent enough
     try {
       const supabase = createClient();
@@ -101,24 +128,29 @@ export const createSpaceStoreFunc = (
       const fileData = JSON.parse(await data.text()) as SignedFile;
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
-      ) as SaveableSpaceConfig;
+      ) as DatabaseWritableSpaceConfig;
       const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
       };
       const cachedSpace: CachedSpace = {
         id: spaceId,
-        config: updatableSpaceConfig,
+        config: cloneDeep(updatableSpaceConfig),
         updatedAt: moment().toISOString(),
       };
       set((draft) => {
         draft.space.remoteSpaces[spaceId] = cachedSpace;
-        draft.space.localSpaces[spaceId] = updatableSpaceConfig;
+        draft.space.localSpaces[spaceId] = cloneDeep(updatableSpaceConfig);
       }, "loadSpace");
-      return cachedSpace;
     } catch (e) {
+      const initialHomebase = {
+        ...createIntialPersonSpaceConfigForFid(fid),
+        isPrivate: false,
+      };
+      set((draft) => {
+        draft.space.localSpaces[spaceId] = cloneDeep(initialHomebase);
+      }, "loadSpace");
       console.debug(e);
-      return null;
     }
   },
   registerSpace: async (fid, name) => {
@@ -168,7 +200,7 @@ export const createSpaceStoreFunc = (
       if (!isUndefined(data.value) && data.value.name) {
         set((draft) => {
           draft.space.editableSpaces[spaceId] = data.value!.name;
-        });
+        }, "renameSpace");
       }
     } catch (e) {
       console.error(e);
@@ -191,7 +223,7 @@ export const createSpaceStoreFunc = (
         );
         set((draft) => {
           draft.space.editableSpaces = editableSpaces;
-        });
+        }, "loadEditableSpaces");
         return editableSpaces;
       }
       return {};
@@ -202,7 +234,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceToDatabase: async (spaceId) => {
     debounce(async () => {
-      const localCopy = get().space.localSpaces[spaceId];
+      const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
       if (localCopy) {
         const file = localCopy.isPrivate
           ? await get().account.createEncryptedSignedFile(
@@ -230,14 +262,21 @@ export const createSpaceStoreFunc = (
             config: localCopy,
             updatedAt: moment().toISOString(),
           };
-        });
+        }, "commitSpaceToDatabase");
       }
     }, 1000)();
   },
-  saveLocalSpace: async (spaceId, config) => {
+  saveLocalSpace: async (spaceId, changedConfig) => {
+    const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
     set((draft) => {
-      draft.space.localSpaces[spaceId] = config;
-    });
+      draft.space.localSpaces[spaceId] = mergeWith(
+        localCopy,
+        changedConfig,
+        (_, newItem) => {
+          if (isArray(newItem)) return newItem;
+        },
+      );
+    }, "saveLocalSpace");
   },
   clear: () => {
     set(

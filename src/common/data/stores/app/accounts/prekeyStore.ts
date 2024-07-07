@@ -173,7 +173,7 @@ export const prekeyStore = (
         ),
         ["timestamp"],
       );
-    });
+    }, "addPreKeysToIdentity");
   },
   loadPreKeys: async () => {
     const { data } = await axiosBackend.get<PreKeyResponse>(

@@ -15,7 +15,7 @@ import {
   HomeBaseStore,
   createHomeBaseStoreFunc,
   partializedHomebaseStore,
-} from "./homebase";
+} from "./homebase/homebaseStore";
 import {
   createSpaceStoreFunc,
   partializedSpaceStore,
