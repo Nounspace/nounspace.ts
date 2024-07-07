@@ -228,7 +228,8 @@ const initializer: AuthenticatorInitializer<
     : undefined;
 
   return (
-    <>
+    <div className="flex flex-col justify-center items-center align-center">
+      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
@@ -236,14 +237,17 @@ const initializer: AuthenticatorInitializer<
       ) : loading && warpcastSignerUrl ? (
         <>
           <QRCode value={warpcastSignerUrl} maxWidth={256} />
-          <Link href={warpcastSignerUrl}>
-            <p>On mobile? Click here</p>
+          <Link href={warpcastSignerUrl} passHref target="_blank">
+            <Button>On mobile? Click here</Button>
           </Link>
+          <Button variant="link" size="sm" onClick={createSigner}>
+            Still having trouble? Reset the QR
+          </Button>
         </>
       ) : (
         <Spinner />
       )}
-    </>
+    </div>
   );
 };
 initializer.displayName = "NounspaceDeveloperManagedSignerInitializer";
