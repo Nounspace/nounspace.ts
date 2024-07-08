@@ -90,8 +90,12 @@ const CastEmbeds = ({ cast }) => {
     >
       <ErrorBoundary>
         {map(cast.embeds, (embed) => {
-          if (isEmbedUrl(embed)) return renderEmbedForUrl(embed);
-          return renderEmbedForUrl({ castId: embed.cast_id });
+          if (isEmbedUrl(embed))
+            return renderEmbedForUrl({ ...embed, key: embed.url });
+          return renderEmbedForUrl({
+            castId: embed.cast_id,
+            key: embed.cast_id,
+          });
         })}
       </ErrorBoundary>
     </div>
