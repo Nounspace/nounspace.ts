@@ -9,6 +9,8 @@ import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { defaultStyleFields } from "../helpers";
+import { FidgetSettingsStyle } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,

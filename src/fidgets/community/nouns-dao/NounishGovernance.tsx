@@ -11,6 +11,8 @@ import {
   NOUNS_PROPOSAL_DETAIL_QUERY,
 } from "@/common/lib/utils/queries";
 import TextInput from "@/common/components/molecules/TextInput";
+import { FidgetSettingsStyle } from "@/common/fidgets";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
