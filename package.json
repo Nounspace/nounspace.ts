@@ -1,6 +1,6 @@
 {
   "name": "Nounspace",
-  "version": "0.1",
+  "version": "0.0.4",
   "license": "",
   "private": true,
   "scripts": {
@@ -160,7 +160,7 @@
     "@stylistic/eslint-plugin-js": "^2.1.0",
     "@stylistic/eslint-plugin-jsx": "^2.1.0",
     "@stylistic/eslint-plugin-ts": "^2.1.0",
-    "@types/node": "^18.7.15",
+    "@types/node": "^20.14.10",
     "@types/ramda": "^0.29.11",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
