@@ -76,8 +76,6 @@ type GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
-const ReactGridLayout = WidthProvider(RGL);
-
 const Gridlines: React.FC<GridDetails> = ({
   maxRows,
   cols,
@@ -115,6 +113,54 @@ const Gridlines: React.FC<GridDetails> = ({
 
 type GridLayoutProps = LayoutFidgetProps<GridLayoutConfig>;
 
+const Portal = ({ children, container, show }) => {
+  return show ? createPortal(children, container) : <></>;
+};
+
+const MemoizedPortal = React.memo(Portal);
+const MemoizedEditorPanel = React.memo(EditorPanel);
+
+const FlexibleGrid: typeof RGL = ({
+  hasProfile,
+  gridlines,
+  gridDetails,
+  ...otherProps
+}) => {
+  const ReactGridLayout = useMemo(() => WidthProvider(RGL), []);
+  const { height } = useWindowSize();
+
+  const { rowHeight, style } = useMemo(() => {
+    // 64 = 4rem = magic number here is the height of the tabs bar above the grid
+    // 160 = 10rem = magic number for the profile height
+    const magicBase = hasProfile ? 64 + 160 : 64;
+    const _rowHeight = height
+      ? (height -
+          magicBase -
+          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
+          gridDetails.containerPadding[0] * 2) /
+        gridDetails.maxRows
+      : gridDetails.rowHeight;
+
+    return {
+      rowHeight: _rowHeight,
+      style: { height: _rowHeight * gridDetails.maxRows + "px" },
+    };
+  }, [height, hasProfile, gridDetails]);
+
+  return (
+    <>
+      {gridlines && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+      <ReactGridLayout
+        {...gridDetails}
+        {...otherProps}
+        rowHeight={rowHeight}
+        className="grid-overlap"
+        style={style}
+      />
+    </>
+  );
+};
+
 const Grid: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
   fidgetTrayContents,
@@ -147,57 +193,53 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
 
-  const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
-    return await saveConfig({
-      fidgetTrayContents: newTrayData,
-    });
-  };
+  const saveTrayContents = useCallback(
+    async (newTrayData: typeof fidgetTrayContents) => {
+      return await saveConfig({
+        fidgetTrayContents: newTrayData,
+      });
+    },
+    [saveConfig],
+  );
 
-  const saveFidgetInstanceDatums = async (
-    datums: typeof fidgetInstanceDatums,
-  ) => {
-    return await saveConfig({
-      fidgetInstanceDatums: datums,
-    });
-  };
+  const saveFidgetInstanceDatums = useCallback(
+    async (datums: typeof fidgetInstanceDatums) => {
+      return await saveConfig({
+        fidgetInstanceDatums: datums,
+      });
+    },
+    [saveConfig],
+  );
 
-  const saveTheme = async (newTheme: typeof theme) => {
-    return await saveConfig({
-      theme: newTheme,
-    });
-  };
+  const saveTheme = useCallback(
+    async (newTheme: typeof theme) => {
+      return await saveConfig({
+        theme: newTheme,
+      });
+    },
+    [saveConfig],
+  );
 
-  const saveLayout = async (newLayout: PlacedGridItem[]) => {
-    return await saveConfig({
-      layoutConfig: {
-        layout: newLayout,
-      },
-    });
-  };
+  const saveLayout = useCallback(
+    async (newLayout: PlacedGridItem[]) => {
+      return await saveConfig({
+        layoutConfig: {
+          layout: newLayout,
+        },
+      });
+    },
+    [saveConfig],
+  );
 
-  function unselectFidget() {
+  const unselectFidget = useCallback(() => {
     setSelectedFidgetID("");
     setCurrentFidgetSettings(<></>);
-  }
+  }, []);
 
-  function openFidgetPicker() {
+  const openFidgetPicker = useCallback(() => {
     setIsPickingFidget(true);
     unselectFidget();
-  }
-
-  const { height } = useWindowSize();
-  const rowHeight = useMemo(() => {
-    // 64 = 4rem = magic number here is the height of the tabs bar above the grid
-    // 160 = 10rem = magic number for the profile height
-    const magicBase = hasProfile ? 64 + 160 : 64;
-    return height
-      ? (height -
-          magicBase -
-          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
-          gridDetails.containerPadding[0] * 2) /
-          gridDetails.maxRows
-      : gridDetails.rowHeight;
-  }, [height, hasProfile]);
+  }, [unselectFidget]);
 
   function handleDrop(
     _layout: PlacedGridItem[],
@@ -253,20 +295,29 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     removeFidget(fidgetId);
   }
 
-  function removeFidget(fidgetId: string) {
-    // New set of instances
-    const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
-    delete newFidgetInstanceDatums[fidgetId];
+  const removeFidget = useCallback(
+    (fidgetId: string) => {
+      // New set of instances
+      const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
+      delete newFidgetInstanceDatums[fidgetId];
 
-    //Make new layout with item removed
-    const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
+      //Make new layout with item removed
+      const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
 
-    // Clear editor panel
-    unselectFidget();
+      // Clear editor panel
+      unselectFidget();
 
-    saveLayout(newLayout);
-    saveFidgetInstanceDatums(newFidgetInstanceDatums);
-  }
+      saveLayout(newLayout);
+      saveFidgetInstanceDatums(newFidgetInstanceDatums);
+    },
+    [
+      saveLayout,
+      saveFidgetInstanceDatums,
+      unselectFidget,
+      fidgetInstanceDatums,
+      layoutConfig,
+    ],
+  );
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
     // We only use to move items on the grid
@@ -282,10 +333,25 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     }
   }
 
-  function editorPanelPortal(portalNode: HTMLDivElement | null) {
-    return inEditMode && portalNode ? (
-      createPortal(
-        <EditorPanel
+  console.log("Rendering Grid");
+
+  const saveFidgetConfig = useCallback(
+    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+      return await saveFidgetInstanceDatums({
+        ...fidgetInstanceDatums,
+        [id]: {
+          ...fidgetInstanceDatums[id],
+          config: newInstanceConfig,
+        },
+      });
+    },
+    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+  );
+
+  return (
+    <>
+      <MemoizedPortal container={element} show={inEditMode && element}>
+        <MemoizedEditorPanel
           setCurrentlyDragging={setCurrentlyDragging}
           saveExitEditMode={saveExitEditMode}
           cancelExitEditMode={cancelExitEditMode}
@@ -303,30 +369,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           isPickingFidget={isPickingFidget}
           setIsPickingFidget={setIsPickingFidget}
           openFidgetPicker={openFidgetPicker}
-        />,
-        portalNode,
-      )
-    ) : (
-      <></>
-    );
-  }
-
-  const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
-          config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
-  );
-
-  return (
-    <>
-      {editorPanelPortal(element)}
+        />
+      </MemoizedPortal>
 
       <div className="flex flex-col z-10">
         <div
@@ -348,22 +392,19 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         </div>
 
         <div className="flex-1 grid-container grow">
-          {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
-
-          <ReactGridLayout
-            {...gridDetails}
+          <FlexibleGrid
+            gridDetails={gridDetails}
+            hasProfile={hasProfile}
+            gridlines={inEditMode}
             isDraggable={inEditMode}
             isResizable={inEditMode}
             resizeHandles={resizeDirections}
             layout={layoutConfig.layout}
             items={layoutConfig.layout.length}
-            rowHeight={rowHeight}
             isDroppable={true}
             droppingItem={externalDraggedItem}
             onDrop={handleDrop}
             onLayoutChange={saveLayoutConditional}
-            className="grid-overlap"
-            style={{ height: rowHeight * gridDetails.maxRows + "px" }}
           >
             {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
               const fidgetDatum = fidgetInstanceDatums[gridItem.i];
@@ -392,7 +433,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 </div>
               );
             })}
-          </ReactGridLayout>
+          </FlexibleGrid>
         </div>
       </div>
     </>

@@ -17,13 +17,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <Wagmi>
           <Theme>
             <AppStoreProvider>
-              <UserThemeProvider>
-                <AuthenticatorProvider>
+              <AuthenticatorProvider>
+                <UserThemeProvider>
                   <LoggedInStateProvider>
                     <AnalyticsProvider>{children}</AnalyticsProvider>
                   </LoggedInStateProvider>
-                </AuthenticatorProvider>
-              </UserThemeProvider>
+                </UserThemeProvider>
+              </AuthenticatorProvider>
             </AppStoreProvider>
           </Theme>
         </Wagmi>

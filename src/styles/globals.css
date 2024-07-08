@@ -110,8 +110,8 @@
 }
 .react-grid-item {
   border-color: lightgray;
-  transition: all 200ms ease;
-  transition-property: left, top, width, height;
+  /* transition: all 200ms ease; */
+  /* transition-property: left, top, width, height; */
 }
 .react-grid-item img {
   pointer-events: none;

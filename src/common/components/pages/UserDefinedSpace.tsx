@@ -1,114 +1,48 @@
-import { indexOf, isNil, mapValues, noop } from "lodash";
+import { isNil, mapValues, noop } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import SpacePage from "./SpacePage";
-
-const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
+import { useSpaceConfig } from "@/common/lib/hooks/useCurrentSpaceConfig";
+import useCurrentUserFid from "@/common/lib/hooks/useCurrentUserFid";
+import useIsSpaceEditable from "@/common/lib/hooks/useIsSpaceEditable";
 
 export default function UserDefinedSpace({
-  spaceId: providedSpaceId,
+  spaceId: spaceId,
   fid,
 }: {
   spaceId: string | null;
   fid: number;
 }) {
-  const {
-    lastUpdatedAt: authManagerLastUpdatedAt,
-    getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
-    callMethod: authManagerCallMethod,
-  } = useAuthenticatorManager();
-  const {
-    editableSpaces,
-    loadSpace,
-    remoteSpaces,
-    saveLocalCopy,
-    commitSpaceToDb,
-    registerSpace,
-    getCurrentSpaceConfig,
-    setCurrentSpaceId,
-  } = useAppStore((state) => ({
-    editableSpaces: state.space.editableSpaces,
-    loadSpace: state.space.loadSpace,
-    remoteSpaces: state.space.remoteSpaces,
-    saveLocalCopy: state.space.saveLocalSpace,
-    commitSpaceToDb: state.space.commitSpaceToDatabase,
-    registerSpace: state.space.registerSpace,
-    currentSpaceId: state.currentSpace.currentSpaceId,
-    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
-    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
-  }));
-  const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  const { spaceConfig, loading } = useSpaceConfig(spaceId);
 
-  useEffect(() => {
-    setCurrentSpaceId(providedSpaceId);
-    if (!isNil(providedSpaceId)) {
-      setLoading(true);
-      loadSpace(providedSpaceId, fid).then(() => {
-        setSpaceId(providedSpaceId);
-        setLoading(false);
-      });
-    }
-  }, [providedSpaceId]);
+  const { remoteSpaces, saveLocalCopy, commitSpaceToDb, registerSpace } =
+    useAppStore((state) => ({
+      remoteSpaces: state.space.remoteSpaces,
+      saveLocalCopy: state.space.saveLocalSpace,
+      commitSpaceToDb: state.space.commitSpaceToDatabase,
+      registerSpace: state.space.registerSpace,
+    }));
+  const currentUserFid = useCurrentUserFid();
+  const isEditable = useIsSpaceEditable(spaceId, fid);
 
-  const [spaceId, setSpaceId] = useState(providedSpaceId);
+  const newSpaceConfigTemplate = useMemo(() => {
+    return createIntialPersonSpaceConfigForFid(fid);
+  }, [fid]);
 
-  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
-  useEffect(() => {
-    authManagerGetInitializedAuthenticators().then((authNames) => {
-      setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
-      );
-    });
-  }, [authManagerLastUpdatedAt]);
+  const config = spaceConfig ?? newSpaceConfigTemplate;
 
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
-  useEffect(() => {
-    if (!isSignedIntoFarcaster) return;
-    authManagerCallMethod({
-      requestingFidgetId: "root",
-      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
-      methodName: "getAccountFid",
-      isLookup: true,
-    }).then((authManagerResp) => {
-      if (authManagerResp.result === "success") {
-        setCurrentUserFid(authManagerResp.value as number);
-      }
-    });
-  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
-
-  const isEditable = useMemo(() => {
-    return (
-      (isNil(spaceId) && fid === currentUserFid) ||
-      (!isNil(spaceId) && spaceId in editableSpaces)
-    );
-  }, [editableSpaces, currentUserFid]);
-
-  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
-    () => createIntialPersonSpaceConfigForFid(fid),
-    [fid],
-  );
-
-  const currentConfig = getCurrentSpaceConfig();
-
-  const config = useMemo(
-    () => ({
-      ...(currentConfig ? currentConfig : INITIAL_PERSONAL_SPACE_CONFIG),
-      isEditable,
-    }),
-    [currentConfig, isEditable],
-  );
-
-  useEffect(() => {
-    if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "profile").then((newSpaceId) => {
-        setSpaceId(newSpaceId || null);
-      });
-    }
-  }, [isEditable, spaceId, currentUserFid]);
+  // Create/register a new space if user is authed, on their own profile,
+  // and their space hasn't been created yet
+  // useEffect(() => {
+  //   if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
+  //     registerSpace(currentUserFid, "profile").then((newSpaceId) => {
+  //       setSpaceId(newSpaceId || null);
+  //     });
+  //   }
+  // }, [isEditable, spaceId, currentUserFid]);
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
@@ -146,21 +80,30 @@ export default function UserDefinedSpace({
     if (isNil(spaceId)) return;
     if (isNil(remoteSpaces[spaceId])) {
       saveLocalCopy(spaceId, {
-        ...INITIAL_PERSONAL_SPACE_CONFIG,
+        ...newSpaceConfigTemplate,
         isPrivate: false,
       });
     } else {
       saveLocalCopy(spaceId, remoteSpaces[spaceId].config);
     }
-  }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces]);
+  }, [spaceId, newSpaceConfigTemplate, remoteSpaces]);
 
-  const profile = (
-    <Profile.fidget
-      settings={{ fid }}
-      saveData={async () => noop()}
-      data={{}}
-    />
+  const profile = useMemo(
+    () => (
+      <Profile.fidget
+        settings={{ fid }}
+        saveData={async () => noop()}
+        data={{}}
+      />
+    ),
+    [fid],
   );
+
+  console.log(config, spaceId, fid);
+
+  if (!config) {
+    return null;
+  }
 
   return (
     <SpacePage

@@ -50,6 +50,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   setIsPickingFidget,
   openFidgetPicker,
 }) => {
+  console.log("Rendering EditorPanel");
   function generateFidgetInstance(
     fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,

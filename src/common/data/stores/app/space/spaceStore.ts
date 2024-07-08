@@ -35,7 +35,7 @@ import {
 } from "@/common/providers/AnalyticsProvider";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 
-type SpaceId = string;
+export type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
 // But a space that is saved in the DB doesn't store
@@ -71,7 +71,7 @@ export type UpdatableSpaceConfig = DatabaseWritableSpaceConfig & {
   isPrivate: boolean;
 };
 
-interface CachedSpace {
+export interface CachedSpace {
   // Machine generated ID, immutable
   id: SpaceId;
   config: UpdatableSpaceConfig;
@@ -85,7 +85,7 @@ interface SpaceState {
 }
 
 interface SpaceActions {
-  loadSpace: (spaceId: string, fid: number) => Promise<void>;
+  loadSpace: (spaceId: string, fid?: number) => Promise<void>;
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
@@ -110,7 +110,7 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreDefaults,
-  loadSpace: async (spaceId, fid) => {
+  loadSpace: async (spaceId, fid?) => {
     // TO DO: skip if cached copy is recent enough
     try {
       const supabase = createClient();
@@ -143,13 +143,15 @@ export const createSpaceStoreFunc = (
         draft.space.localSpaces[spaceId] = cloneDeep(updatableSpaceConfig);
       }, "loadSpace");
     } catch (e) {
-      const initialHomebase = {
-        ...createIntialPersonSpaceConfigForFid(fid),
-        isPrivate: false,
-      };
-      set((draft) => {
-        draft.space.localSpaces[spaceId] = cloneDeep(initialHomebase);
-      }, "loadSpace");
+      if (fid) {
+        const initialHomebase = {
+          ...createIntialPersonSpaceConfigForFid(fid),
+          isPrivate: false,
+        };
+        set((draft) => {
+          draft.space.localSpaces[spaceId] = cloneDeep(initialHomebase);
+        }, "loadSpace");
+      }
       console.debug(e);
     }
   },

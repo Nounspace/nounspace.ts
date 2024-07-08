@@ -18,7 +18,7 @@ export type CurrentSpaceStore = CurrentSpaceStoreState &
   CurrentSpaceStoreActions;
 
 export const currentSpaceStoreDefaults: CurrentSpaceStoreState = {
-  currentSpaceId: HOMEBASE_ID,
+  currentSpaceId: null,
 };
 
 export const createCurrentSpaceStoreFunc = (

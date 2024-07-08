@@ -1,24 +1,10 @@
 import { useEffect } from "react";
-import defaultTheme from "@/common/lib/theme/defaultTheme";
-import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
-import { UserTheme } from "@/common/lib/theme";
-import { useAppStore } from "@/common/data/stores/app";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
-
-export interface UserThemeContextValue {
-  userTheme: UserTheme;
-}
-
-export const useUserTheme = () => {
-  const { getCurrentSpace } = useAppStore((state) => ({
-    getCurrentSpace: state.currentSpace.getCurrentSpaceConfig,
-  }));
-
-  return getCurrentSpace()?.theme ?? defaultTheme;
-};
+import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
+import useCurrentSpaceTheme from "@/common/lib/hooks/useCurrentSpaceTheme";
 
 export const UserThemeProvider = ({ children }) => {
-  const userTheme = useUserTheme();
+  const userTheme = useCurrentSpaceTheme();
 
   const {
     background,

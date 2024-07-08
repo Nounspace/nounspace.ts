@@ -88,6 +88,7 @@ export const textConfig: FidgetProperties = {
 export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   settings,
 }) => {
+  console.log("Rendering TextFidget");
   return (
     <div className="h-full">
       {settings?.title && (
