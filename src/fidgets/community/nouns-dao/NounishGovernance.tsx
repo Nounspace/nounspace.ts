@@ -15,7 +15,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
-};
+} & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
   fidgetName: "governance",
@@ -34,6 +34,7 @@ export const nounishGovernanceConfig: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,

@@ -9,7 +9,6 @@ import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
-
 import {
   CardHeader,
   CardContent,
@@ -22,15 +21,7 @@ import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 export type TextFidgetSettings = {
   title?: string;
   text: string;
-  fontFamily: FontFamily;
-  fontColor: Color;
-  headingsFontFamily: FontFamily;
-  headingsFontColor: Color;
-  background: Color;
-  fidgetBorderWidth: string;
-  fidgetBorderColor: Color;
-  fidgetShadow: string;
-};
+} & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
   fidgetName: "text",
@@ -78,34 +69,7 @@ export const textConfig: FidgetProperties = {
       inputSelector: ColorSelector,
       group: "style",
     },
-    {
-      fieldName: "background",
-      default: "var(--user-theme-fidget-background)",
-      required: false,
-      inputSelector: ColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderWidth",
-      default: "var(--user-theme-fidget-border-width)",
-      required: false,
-      inputSelector: BorderSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderColor",
-      default: "var(--user-theme-fidget-border-color)",
-      required: false,
-      inputSelector: ColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetShadow",
-      default: "var(--user-theme-fidget-shadow)",
-      required: false,
-      inputSelector: ShadowSelector,
-      group: "style",
-    },
+    ...defaultStyleFields,
     {
       fieldName: "css",
       default: "",

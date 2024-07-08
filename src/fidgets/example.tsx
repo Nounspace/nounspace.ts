@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
+import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type ExampleFidgetSettings = {
   text: string;
-};
+} & FidgetSettingsStyle;
 
 const exampleProperties: FidgetProperties = {
   fidgetName: "example",
@@ -17,6 +23,7 @@ const exampleProperties: FidgetProperties = {
       inputSelector: TextInput,
       group: "settings",
     },
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 1,
