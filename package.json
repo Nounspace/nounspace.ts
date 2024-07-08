@@ -36,7 +36,7 @@
     "@emotion/styled": "11",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
-    "@farcaster/hub-web": "^0.8.9",
+    "@farcaster/hub-web": "^0.8.12",
     "@frames.js/render": "^0.2.15",
     "@googleapis/youtube": "^18.0.0",
     "@gumlet/react-hls-player": "^1.0.1",
