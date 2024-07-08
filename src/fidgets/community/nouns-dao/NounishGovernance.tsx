@@ -1,20 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { CardContent } from "@/common/components/atoms/card";
-import TextInput from "@/common/components/molecules/TextInput";
-import {
-  FidgetArgs,
-  FidgetModule,
-  FidgetProperties,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
+import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
+import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
+import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
+import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
   NOUNS_PROPOSAL_DETAIL_QUERY,
 } from "@/common/lib/utils/queries";
-import ProposalDetailView from "@/fidgets/community/nouns-dao/components/ProposalDetailView";
-import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
+import TextInput from "@/common/components/molecules/TextInput";
+import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 
 export type NounishGovernanceSettings = {
@@ -87,9 +84,7 @@ export const NounishGovernance: React.FC<
     url: settings.subgraphUrl,
     query: NOUNS_PROPOSAL_DETAIL_QUERY,
     skip: !proposalId || isBuilderSubgraph,
-    variables: {
-      id: proposalId,
-    },
+    variables: { id: proposalId },
   });
 
   useEffect(() => {
@@ -115,29 +110,43 @@ export const NounishGovernance: React.FC<
   const handleGoBack = () => {
     setProposalId(null);
     setSelectedProposal(null);
+    setProposalVersions([]);
     setProposalLoading(false);
+  };
+
+  const handleSetProposal = (proposalId: string, proposal: any) => {
+    setProposalId(proposalId);
+    setSelectedProposal(proposal);
+    setProposalVersions([]);
   };
 
   return (
     <CardContent className="size-full overflow-scroll p-4">
-      {selectedProposal && !isBuilderSubgraph ? (
-        <ProposalDetailView
-          proposal={selectedProposal}
-          versions={proposalVersions}
-          currentBlock={currentBlock}
-          goBack={handleGoBack}
-          loading={proposalLoading}
-        />
+      {selectedProposal ? (
+        isBuilderSubgraph ? (
+          <BuilderProposalDetailView
+            proposal={selectedProposal}
+            goBack={handleGoBack}
+            currentBlock={currentBlock}
+            loading={proposalLoading}
+            versions={proposalVersions}
+          />
+        ) : (
+          <NounsProposalDetailView
+            proposal={selectedProposal}
+            versions={proposalVersions}
+            goBack={handleGoBack}
+            currentBlock={currentBlock}
+            loading={proposalLoading}
+          />
+        )
       ) : (
         <ProposalListView
           proposals={proposals}
           currentBlock={currentBlock}
-          setProposal={setProposalId}
+          setProposal={handleSetProposal}
           loading={listLoading}
           isBuilderSubgraph={isBuilderSubgraph}
-          selectedProposal={selectedProposal}
-          goBack={handleGoBack}
-          proposalLoading={proposalLoading}
         />
       )}
     </CardContent>

@@ -3,19 +3,22 @@ import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import {
-  FidgetArgs,
-  FidgetProperties,
-  FidgetModule,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { defaultStyleFields } from "../helpers";
+import { FidgetSettingsStyle } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { FontFamily, Color } from "@/common/lib/theme";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -37,7 +40,7 @@ export const textConfig: FidgetProperties = {
       fieldName: "text",
       default: "Jot down your ideas and grow them.",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: CSSInput,
       group: "settings",
     },
     {
@@ -89,7 +92,18 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   settings,
 }) => {
   return (
-    <div className="h-full">
+    <div
+      style={{
+        background: settings.background,
+        height: "100%",
+        borderWidth: settings.fidgetBorderWidth,
+        borderColor: settings.fidgetBorderColor,
+        // Not visible because of the outer div having overflow: hidden
+        boxShadow: settings.fidgetShadow,
+        overflow: "auto",
+        scrollbarWidth: "none",
+      }}
+    >
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
           <CardTitle
@@ -112,7 +126,13 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
               color: settings.fontColor,
             }}
           >
-            {settings.text}
+            <ReactMarkdown
+              rehypePlugins={[rehypeRaw]}
+              remarkPlugins={[remarkGfm]}
+              components={MarkdownRenderers}
+            >
+              {settings.text}
+            </ReactMarkdown>
           </CardDescription>
         </CardContent>
       )}

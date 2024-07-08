@@ -22,6 +22,13 @@ import {
   tabTriggerClasses,
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/common/components/atoms/tooltip";
+import { FaInfoCircle } from "react-icons/fa";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -37,6 +44,7 @@ export function ThemeSettingsEditor({
   cancelExitEditMode,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [displayToolTips, setDisplayToolTips] = useState(false);
 
   function themePropSetter<T extends string>(
     property: string,
@@ -75,11 +83,25 @@ export function ThemeSettingsEditor({
     cancelExitEditMode();
   }
 
+  function toggleToolTips() {
+    setDisplayToolTips(!displayToolTips);
+  }
+
   return (
     <>
       <div className="flex flex-col h-full gap-6">
         {/* Back */}
-        <div>Customize</div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1">
+                <div>Customize</div>
+                <FaInfoCircle onClick={toggleToolTips} color="grey" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>Little Help?</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* Content */}
         <div className="h-full overflow-auto flex flex-col gap-4">
@@ -138,7 +160,29 @@ export function ThemeSettingsEditor({
             <TabsContent value="style" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
                 <h4 className="text-sm font-bold">Space</h4>
-                <h4 className="text-sm">Background color</h4>
+                <div className="flex flex-row gap-1">
+                  <h4 className="text-sm">Background color</h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1">
+                          {displayToolTips && <FaInfoCircle color="grey" />}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            Set a solid background or gradient color.
+                            <br />
+                            You can also add custom backgrounds
+                            <br />
+                            with HTML/CSS on the Code tab.
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <ColorSelector
                   className="rounded-full overflow-hidden w-6 h-6 shrink-0"
                   innerClassName="rounded-full"
@@ -150,10 +194,28 @@ export function ThemeSettingsEditor({
               {/* Fidget styles */}
               <div className="flex flex-col gap-1">
                 <h4 className="text-sm font-bold">Fidgets</h4>
-
                 <div className="flex flex-col gap-1">
                   <div className="">
-                    <h5 className="text-xs">Background color</h5>
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Background color</h5>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1">
+                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="flex flex-col gap-1">
+                              <div>
+                                Set a background color or gradient that fidgets
+                                can inherit.
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <ColorSelector
                       className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
                       innerClassName="rounded-full"
@@ -162,7 +224,27 @@ export function ThemeSettingsEditor({
                     />
                   </div>
                   <div className="">
-                    <h5 className="text-xs">Border</h5>
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-xs">Border</h5>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1">
+                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="flex flex-col gap-1">
+                              <div>
+                                Set the default border width and color
+                                <br />
+                                for all Fidgets on your Space.
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <div className="flex items-center gap-1">
                       <ColorSelector
                         className="rounded-full overflow-hidden w-6 h-6 shrink-0"
@@ -179,7 +261,26 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                   <div className="">
-                    <h5 className="text-xs">Shadow</h5>
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-xs">Shadow</h5>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-1">
+                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="flex flex-col gap-1">
+                              <div>
+                                Set the default shadow for all Fidgets on your
+                                Space.
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <ShadowSelector
                       className="ring-0 focus:ring-0 border-0 shadow-none"
                       value={fidgetShadow as string}
@@ -192,7 +293,31 @@ export function ThemeSettingsEditor({
             </TabsContent>
             <TabsContent value="code" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Custom styles</h4>
+                <div className="flex flex-row gap-1">
+                  <h4 className="text-sm">Custom styles</h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1">
+                          {displayToolTips && <FaInfoCircle color="grey" />}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            Add HTML/CSS as a single file
+                            <br />
+                            to customize your background.
+                            <br />
+                            Pro tip: ask AI for help coding
+                            <br />
+                            the background of your dreams
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <HTMLInput
                   value={backgroundHTML}
                   onChange={themePropSetter<string>("backgroundHTML")}
@@ -202,9 +327,22 @@ export function ThemeSettingsEditor({
           </Tabs>
 
           <div className="my-2 bg-slate-100 h-px"></div>
-
           <div className="flex flex-col gap-1">
-            <h4 className="text-sm">Music</h4>
+            <div className="flex flex-row gap-1">
+              <h4 className="text-sm">Music</h4>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      {displayToolTips && <FaInfoCircle color="grey" />}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Paste the youtube link for any song, video, or playlist.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <TextInput
               value={musicURL}
               onChange={themePropSetter<string>("musicURL")}

@@ -1,9 +1,8 @@
+import React from "react";
 import { Badge } from "@/common/components/atoms/badge";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import moment from "moment";
-import React from "react";
 import { MdAccessTimeFilled } from "react-icons/md";
-
 const baseBadgeClassNames =
   "rounded-lg shadow-none font-semibold text-[11px] gap-1";
 
@@ -54,10 +53,10 @@ const BuilderProposalItem = ({
   setProposal,
 }: {
   proposal: any;
-  setProposal: (proposalId: string) => void;
+  setProposal: (proposalId: string, proposal: any) => void;
 }) => {
   const handleProposalClick = () => {
-    setProposal(proposal.proposalId);
+    setProposal(proposal.proposalId, proposal);
   };
   return (
     <div

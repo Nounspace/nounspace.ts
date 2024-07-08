@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
@@ -9,7 +10,9 @@ import { RiExternalLinkLine } from "react-icons/ri";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
-import React from "react";
+import { estimateBlockTime } from "./ProposalListRowItem";
+import ReactMarkdown from "react-markdown";
+
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
   return (
@@ -85,21 +88,35 @@ const AddressInfo = ({ label, address }) => {
 
 export const BuilderProposalDetailView = ({
   proposal,
+  versions,
   goBack,
+  currentBlock,
   loading,
 }: {
   proposal: ProposalData;
+  versions: any[];
   goBack: () => void;
+  currentBlock: any;
   loading: boolean;
 }) => {
   const proposer = proposal?.proposer?.id;
+  const sponsor = proposal?.signers?.length
+    ? proposal.signers[0].id
+    : undefined;
+  const version = versions?.length;
 
   const { data: proposerEnsName } = useEnsName({
     address: proposer,
     chainId: mainnet.id,
   });
 
+  const { data: sponsorEnsName } = useEnsName({
+    address: sponsor,
+    chainId: mainnet.id,
+  });
+
   const proposerEnsOrAddress = proposerEnsName ?? proposer;
+  const sponsorEnsOrAddress = sponsorEnsName ?? sponsor;
 
   if (loading) {
     return (
@@ -121,12 +138,22 @@ export const BuilderProposalDetailView = ({
   };
 
   const totalVotes = votes.for + votes.against + votes.abstain;
-  const formattedEndDate = proposal.expiresAt
-    ? moment.unix(Number(proposal.expiresAt)).format("MMM D, YYYY")
+
+  const lastUpdated = versions?.[0]?.createdAt
+    ? moment(Number(versions[0].createdAt) * 1000).fromNow()
     : "N/A";
-  const formattedEndTime = proposal.expiresAt
-    ? moment.unix(Number(proposal.expiresAt)).format("h:mm A")
-    : "N/A";
+  const lastUpdatedText =
+    version === 1 ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
+
+  const endDate = currentBlock
+    ? estimateBlockTime(
+        Number(proposal.endBlock),
+        currentBlock.number,
+        currentBlock.timestamp,
+      )
+    : new Date();
+  const formattedEndDate = moment(endDate).format("MMM D, YYYY");
+  const formattedEndTime = moment(endDate).format("h:mm A");
 
   return (
     <div className="flex flex-col size-full">
@@ -154,7 +181,10 @@ export const BuilderProposalDetailView = ({
         </a>
       </div>
       <div className="flex-auto overflow-hidden">
-        <div className="flex flex-col gap-4 h-full overflow-auto">
+        <div
+          className="flex flex-col gap-4 h-full overflow-auto"
+          style={{ scrollbarWidth: "none" }}
+        >
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
               <div className="flex items-center">
@@ -163,18 +193,35 @@ export const BuilderProposalDetailView = ({
                 </span>
                 <StatusBadge
                   status={proposal.status}
-                  className="px-[8px] rounded-[6px] text-[10px]/[1.25] font-medium"
+                  className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
               <p className="font-medium text-base/[1.25]">{proposal.title}</p>
-              {proposer && (
+              {(proposer || sponsor) && (
                 <div className="flex gap-4">
                   <AddressInfo
                     label="Proposed by"
                     address={proposerEnsOrAddress}
                   />
+                  <AddressInfo
+                    label="Sponsored by"
+                    address={sponsorEnsOrAddress}
+                  />
                 </div>
               )}
+            </div>
+            <div className="flex gap-2 items-center">
+              <StatusBadge
+                className={mergeClasses(
+                  "px-[8px] rounded-[6px] bg-gray-100",
+                  "hover:bg-gray-100 text-[10px]/[1.25] font-semibold",
+                )}
+              >
+                Version {version}
+              </StatusBadge>
+              <span className="text-[10px]/[1.25] text-gray-500">
+                {lastUpdatedText}
+              </span>
             </div>
           </div>
           <div className="flex flex-col gap-2">
@@ -218,6 +265,9 @@ export const BuilderProposalDetailView = ({
                 value={proposal.voteSnapshotBlock}
               />
             </div>
+            <ReactMarkdown className="prose">
+              {proposal.description}
+            </ReactMarkdown>
           </div>
         </div>
       </div>

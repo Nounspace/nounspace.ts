@@ -1,7 +1,7 @@
+import React from "react";
 import { Badge } from "@/common/components/atoms/badge";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import moment from "moment";
-import React from "react";
 import { MdAccessTimeFilled } from "react-icons/md";
 
 const baseBadgeClassNames =
@@ -67,7 +67,7 @@ const ProposalListRowItem = ({
   currentBlock,
 }: {
   proposal: any;
-  setProposal: (proposalId: string) => void;
+  setProposal: (proposalId: string, proposal: any) => void; // Update the type here
   currentBlock: any;
 }) => {
   const getDateBadgeText = () => {
@@ -98,7 +98,7 @@ const ProposalListRowItem = ({
 
   return (
     <div
-      onClick={() => setProposal(proposal.id)}
+      onClick={() => setProposal(proposal.id, proposal)} // Pass both proposalId and proposal
       className={mergeClasses(
         "flex overflow-hidden border border-gray-200 bg-gray-50 rounded-[8px]",
         "p-3 py-2.5 gap-3 cursor-pointer hover:bg-white items-center",
