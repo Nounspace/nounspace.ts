@@ -10,7 +10,7 @@ import {
   FarcasterRegistrationType,
   SignerStatus,
 } from ".";
-import { isEqual, isUndefined, startsWith } from "lodash";
+import { isEqual, isUndefined, replace, startsWith } from "lodash";
 import { ed25519 } from "@noble/curves/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
@@ -223,23 +223,31 @@ const initializer: AuthenticatorInitializer<
     };
   });
 
+  const warpcastSignerUrl = data.signerUrl
+    ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
+    : undefined;
+
   return (
-    <>
+    <div className="flex flex-col justify-center items-center align-center">
+      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
         <Button onClick={createSigner}>Link Warpcast Account</Button>
-      ) : loading && data.signerUrl ? (
+      ) : loading && warpcastSignerUrl ? (
         <>
-          <QRCode value={data.signerUrl} maxWidth={256} />
-          <Link href={data.signerUrl}>
-            <p>On mobile? Click here</p>
+          <QRCode value={warpcastSignerUrl} maxWidth={256} />
+          <Link href={warpcastSignerUrl} passHref target="_blank">
+            <Button>On mobile? Click here</Button>
           </Link>
+          <Button variant="link" size="sm" onClick={createSigner}>
+            Still having trouble? Reset the QR
+          </Button>
         </>
       ) : (
         <Spinner />
       )}
-    </>
+    </div>
   );
 };
 initializer.displayName = "NounspaceDeveloperManagedSignerInitializer";

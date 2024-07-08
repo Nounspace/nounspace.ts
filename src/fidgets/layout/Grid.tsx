@@ -12,7 +12,6 @@ import {
   FidgetInstanceData,
   FidgetConfig,
   FidgetSettings,
-  LayoutFidgetSavableConfig,
   LayoutFidgetProps,
   LayoutFidgetConfig,
 } from "@/common/fidgets";
@@ -20,7 +19,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { debounce, map, reject } from "lodash";
+import { map, reject } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import {
   analytics,
@@ -146,87 +145,35 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  // State to create a mutable local copy of the config
-  const [localFidgetInstanceDatums, setLocalFidgetInstanceDatums] =
-    useState(fidgetInstanceDatums);
-  useEffect(() => {
-    setLocalFidgetInstanceDatums(fidgetInstanceDatums);
-  }, [fidgetInstanceDatums]);
-  const [localFidgetTrayContents, setLocalFidgetTrayContents] =
-    useState(fidgetTrayContents);
-  useEffect(() => {
-    setLocalFidgetTrayContents(fidgetTrayContents);
-  }, [fidgetTrayContents]);
-  const [localLayout, setLocalLayout] = useState(layoutConfig.layout);
-  useEffect(() => {
-    setLocalLayout(layoutConfig.layout);
-  }, [layoutConfig.layout]);
-  const [localTheme, setLocalTheme] = useState(theme);
-  useEffect(() => {
-    setLocalTheme(theme);
-  }, [theme]);
-  const [hasLocalChanges, setHasLocalChanges] = useState(false);
-
   const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
 
-  const saveCurrentConfig = useCallback(
-    debounce(() => {
-      const newConfig: LayoutFidgetSavableConfig<GridLayoutConfig> = {
-        fidgetInstanceDatums: localFidgetInstanceDatums,
-        fidgetTrayContents: localFidgetTrayContents,
-        theme: localTheme,
-        layoutConfig: {
-          layout: localLayout,
-        },
-      };
-      return saveConfig(newConfig);
-    }, 10),
-    [
-      saveConfig,
-      localFidgetInstanceDatums,
-      localFidgetTrayContents,
-      localTheme,
-      localLayout,
-    ],
-  );
+  const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
+    return await saveConfig({
+      fidgetTrayContents: newTrayData,
+    });
+  };
 
-  const saveTrayContents = useCallback(
-    async (newTrayData: typeof fidgetTrayContents) => {
-      setLocalFidgetTrayContents(newTrayData);
-      setHasLocalChanges(true);
-    },
-    [],
-  );
+  const saveFidgetInstanceDatums = async (
+    datums: typeof fidgetInstanceDatums,
+  ) => {
+    return await saveConfig({
+      fidgetInstanceDatums: datums,
+    });
+  };
 
-  const saveFidgetInstanceDatums = useCallback(
-    async (datums: typeof fidgetInstanceDatums) => {
-      setLocalFidgetInstanceDatums(datums);
-      setHasLocalChanges(true);
-    },
-    [],
-  );
+  const saveTheme = async (newTheme: typeof theme) => {
+    return await saveConfig({
+      theme: newTheme,
+    });
+  };
 
-  const saveTheme = useCallback(async (newTheme: typeof theme) => {
-    setLocalTheme(newTheme);
-    setHasLocalChanges(true);
-  }, []);
-
-  const saveLayout = useCallback(async (newLayout: PlacedGridItem[]) => {
-    setLocalLayout(newLayout);
-    setHasLocalChanges(true);
-  }, []);
-
-  useEffect(() => {
-    if (hasLocalChanges) {
-      saveCurrentConfig();
-    }
-  }, [
-    localFidgetInstanceDatums,
-    localFidgetTrayContents,
-    localTheme,
-    localLayout,
-    hasLocalChanges,
-  ]);
+  const saveLayout = async (newLayout: PlacedGridItem[]) => {
+    return await saveConfig({
+      layoutConfig: {
+        layout: newLayout,
+      },
+    });
+  };
 
   function unselectFidget() {
     setSelectedFidgetID("");
@@ -257,8 +204,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
   ) {
-    setCurrentlyDragging(false);
-
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
@@ -281,11 +226,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       resizeHandles: resizeDirections,
     };
 
-    saveLayout([...localLayout, newItem]);
+    saveLayout([...layoutConfig.layout, newItem]);
     removeFidgetFromTray(fidgetData.id);
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
       fidgetType: fidgetData.fidgetType,
     });
+    setCurrentlyDragging(false);
   }
 
   function removeFidgetFromTray(fidgetId: string) {
@@ -309,30 +255,29 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   function removeFidget(fidgetId: string) {
     // New set of instances
-    const newFidgetInstanceDatums = { ...localFidgetInstanceDatums };
+    const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
     delete newFidgetInstanceDatums[fidgetId];
 
-    // Find fidget index
-    const itemLayoutIndex = layoutConfig.layout.findIndex(
-      (x) => x.i == fidgetId,
-    );
-
     //Make new layout with item removed
-    const newLayoutConfig: GridLayoutConfig = {
-      layout: localLayout
-        .slice(0, itemLayoutIndex)
-        .concat(localLayout.slice(itemLayoutIndex + 1)),
-    };
+    const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
 
     // Clear editor panel
     unselectFidget();
 
-    saveLayoutConditional(newLayoutConfig.layout);
+    saveLayout(newLayout);
     saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
-    if (!currentlyDragging && inEditMode) {
+    // We only use to move items on the grid
+    // We only update if the same items exist
+    // We aren't adding or removing an item
+    // And we are in edit mode
+    if (
+      !currentlyDragging &&
+      inEditMode &&
+      newLayout.length === layoutConfig.layout.length
+    ) {
       saveLayout(newLayout);
     }
   }
@@ -344,14 +289,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           setCurrentlyDragging={setCurrentlyDragging}
           saveExitEditMode={saveExitEditMode}
           cancelExitEditMode={cancelExitEditMode}
-          theme={localTheme}
+          theme={theme}
           saveTheme={saveTheme}
           unselect={unselectFidget}
           selectedFidgetID={selectedFidgetID}
           currentFidgetSettings={currentFidgetSettings}
           setExternalDraggedItem={setExternalDraggedItem}
-          fidgetTrayContents={localFidgetTrayContents}
-          fidgetInstanceDatums={localFidgetInstanceDatums}
+          fidgetTrayContents={fidgetTrayContents}
+          fidgetInstanceDatums={fidgetInstanceDatums}
           saveFidgetInstanceDatums={saveFidgetInstanceDatums}
           saveTrayContents={saveTrayContents}
           removeFidget={removeFidget}
@@ -369,14 +314,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const saveFidgetConfig = useCallback(
     (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
       return await saveFidgetInstanceDatums({
-        ...localFidgetInstanceDatums,
+        ...fidgetInstanceDatums,
         [id]: {
-          ...localFidgetInstanceDatums[id],
+          ...fidgetInstanceDatums[id],
           config: newInstanceConfig,
         },
       });
     },
-    [localFidgetInstanceDatums, saveFidgetInstanceDatums],
+    [fidgetInstanceDatums, saveFidgetInstanceDatums],
   );
 
   return (
@@ -410,8 +355,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             isDraggable={inEditMode}
             isResizable={inEditMode}
             resizeHandles={resizeDirections}
-            layout={localLayout}
-            items={localLayout.length}
+            layout={layoutConfig.layout}
+            items={layoutConfig.layout.length}
             rowHeight={rowHeight}
             isDroppable={true}
             droppingItem={externalDraggedItem}
@@ -420,8 +365,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             className="grid-overlap"
             style={{ height: rowHeight * gridDetails.maxRows + "px" }}
           >
-            {map(localLayout, (gridItem: PlacedGridItem) => {
-              const fidgetDatum = localFidgetInstanceDatums[gridItem.i];
+            {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
+              const fidgetDatum = fidgetInstanceDatums[gridItem.i];
               const fidgetModule = fidgetDatum
                 ? CompleteFidgets[fidgetDatum.fidgetType]
                 : null;

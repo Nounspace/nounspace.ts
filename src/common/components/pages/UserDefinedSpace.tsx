@@ -3,8 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { SpaceConfig } from "../templates/Space";
-import { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
+import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import SpacePage from "./SpacePage";
 
@@ -26,29 +25,31 @@ export default function UserDefinedSpace({
     editableSpaces,
     loadSpace,
     remoteSpaces,
-    localSpaces,
     saveLocalCopy,
     commitSpaceToDb,
     registerSpace,
+    getCurrentSpaceConfig,
+    setCurrentSpaceId,
   } = useAppStore((state) => ({
     editableSpaces: state.space.editableSpaces,
     loadSpace: state.space.loadSpace,
-    localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     saveLocalCopy: state.space.saveLocalSpace,
     commitSpaceToDb: state.space.commitSpaceToDatabase,
     registerSpace: state.space.registerSpace,
+    currentSpaceId: state.currentSpace.currentSpaceId,
+    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
+    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
   }));
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
-  const [loadSuccess, setLoadSuccesss] = useState(false);
 
   useEffect(() => {
+    setCurrentSpaceId(providedSpaceId);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
-      loadSpace(providedSpaceId).then((res) => {
-        setLoadSuccesss(res !== null);
-        setLoading(false);
+      loadSpace(providedSpaceId, fid).then(() => {
         setSpaceId(providedSpaceId);
+        setLoading(false);
       });
     }
   }, [providedSpaceId]);
@@ -91,52 +92,33 @@ export default function UserDefinedSpace({
     [fid],
   );
 
-  const config: SpaceConfig | undefined = useMemo(() => {
-    if (!isNil(spaceId)) {
-      if (loading) {
-        return undefined;
-      }
-      if (loadSuccess) {
-        return {
-          ...localSpaces[spaceId],
-          isEditable,
-          fidgetInstanceDatums: mapValues(
-            localSpaces[spaceId].fidgetInstanceDatums,
-            (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-                data: {}, // TO DO: Inject fidget data here
-              },
-            }),
-          ),
-        };
-      }
-    }
-    return {
-      ...INITIAL_PERSONAL_SPACE_CONFIG,
+  const currentConfig = getCurrentSpaceConfig();
+
+  const config = useMemo(
+    () => ({
+      ...(currentConfig ? currentConfig : INITIAL_PERSONAL_SPACE_CONFIG),
       isEditable,
-    };
-  }, [spaceId, isEditable, localSpaces, loading, loadSuccess, fid]);
+    }),
+    [currentConfig, isEditable],
+  );
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "profile").then((newSpaceId) =>
-        setSpaceId(newSpaceId || null),
-      );
+      registerSpace(currentUserFid, "profile").then((newSpaceId) => {
+        setSpaceId(newSpaceId || null);
+      });
     }
   }, [isEditable, spaceId, currentUserFid]);
 
   const saveConfig = useCallback(
-    async (spaceConfig: SpaceConfig) => {
+    async (spaceConfig: SpaceConfigSaveDetails) => {
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
       }
       if (isNil(spaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
-      const saveableConfig: UpdatableSpaceConfig = {
+      const saveableConfig = {
         ...spaceConfig,
         fidgetInstanceDatums: mapValues(
           spaceConfig.fidgetInstanceDatums,
@@ -187,6 +169,7 @@ export default function UserDefinedSpace({
       commitConfig={commitConfig}
       resetConfig={resetConfig}
       profile={profile}
+      loading={loading}
     />
   );
 }

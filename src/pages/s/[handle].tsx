@@ -23,7 +23,6 @@ export const getServerSideProps = (async ({
       ? null
       : params.handle;
   if (isNull(handle)) {
-    console.log(`Invalid handle in ${params}`);
     return {
       props: {
         spaceId: null,
@@ -37,8 +36,6 @@ export const getServerSideProps = (async ({
     const {
       result: { user },
     } = await neynar.lookupUserByUsername(handle);
-
-    console.log(`Found user with ${user.fid} for handle ${handle}`);
 
     const { data } = await supabaseClient
       .from("spaceRegistrations")
@@ -99,12 +96,7 @@ const UserPrimarySpace: NextPageWithLayout = ({
 
 UserPrimarySpace.getLayout = (page: React.ReactElement) => {
   return (
-    <div
-      className="min-h-screen max-w-screen h-screen w-screen"
-      style={{ background: "var(--user-theme-background)" }}
-    >
-      {page}
-    </div>
+    <div className="min-h-screen max-w-screen h-screen w-screen">{page}</div>
   );
 };
 

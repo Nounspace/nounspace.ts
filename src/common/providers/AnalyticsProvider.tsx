@@ -6,6 +6,7 @@ import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentS
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 
 export enum AnalyticsEvent {
+  CONNECT_WALLET = "Connect Wallet",
   SIGN_UP = "Sign Up",
   LINK_FID = "Link FID",
   SAVE_SPACE_THEME = "Save Space Theme",
@@ -16,6 +17,7 @@ export enum AnalyticsEvent {
 }
 
 type AnalyticsEventProperties = {
+  [AnalyticsEvent.CONNECT_WALLET]: { hasNogs: boolean };
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
   [AnalyticsEvent.LINK_FID]: { fid: number };
   [AnalyticsEvent.SAVE_SPACE_THEME]: Record<string, never>;
@@ -32,10 +34,25 @@ export const analytics = {
     eventName: T,
     properties?: AnalyticsEventProperties[T],
   ) => {
-    segment.track(eventName, properties);
+    try {
+      segment.track(eventName, properties);
+    } catch (e) {
+      console.error(e);
+    }
   },
-  identify: (id: string, properties: any) => {
-    segment.identify(id, properties);
+  identify: (id?: string, properties?: any) => {
+    try {
+      segment.identify(id, properties);
+    } catch (e) {
+      console.error(e);
+    }
+  },
+  page: () => {
+    try {
+      segment.page();
+    } catch (e) {
+      console.error(e);
+    }
   },
 };
 
@@ -62,10 +79,10 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
   }, [identityPublicKey, fid]);
 
   useEffect(() => {
-    segment.page();
+    analytics.page();
 
     const handleRouteChange = () => {
-      segment.page();
+      analytics.page();
     };
 
     router.events.on("routeChangeComplete", handleRouteChange);
