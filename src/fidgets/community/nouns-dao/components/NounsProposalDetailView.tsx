@@ -11,6 +11,8 @@ import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime } from "./ProposalListRowItem";
+import ReactMarkdown from "react-markdown";
+
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
   return (
@@ -84,7 +86,7 @@ const AddressInfo = ({ label, address }) => {
   );
 };
 
-export const ProposalDetailView = ({
+export const NounsProposalDetailView = ({
   proposal,
   versions,
   goBack,
@@ -136,14 +138,20 @@ export const ProposalDetailView = ({
   };
 
   const totalVotes = votes.for + votes.against + votes.abstain;
-  const lastUpdated = moment(Number(versions[0].createdAt) * 1000).fromNow();
+
+  const lastUpdated = versions?.[0]?.createdAt
+    ? moment(Number(versions[0].createdAt) * 1000).fromNow()
+    : "N/A";
   const lastUpdatedText =
-    version == 1 ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
-  const endDate = estimateBlockTime(
-    Number(proposal.endBlock),
-    currentBlock.number,
-    currentBlock.timestamp,
-  );
+    version === 1 ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
+
+  const endDate = currentBlock
+    ? estimateBlockTime(
+        Number(proposal.endBlock),
+        currentBlock.number,
+        currentBlock.timestamp,
+      )
+    : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
 
@@ -173,7 +181,10 @@ export const ProposalDetailView = ({
         </a>
       </div>
       <div className="flex-auto overflow-hidden">
-        <div className="flex flex-col gap-4 h-full overflow-auto">
+        <div
+          className="flex flex-col gap-4 h-full overflow-auto"
+          style={{ scrollbarWidth: "none" }}
+        >
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
               <div className="flex items-center">
@@ -254,6 +265,9 @@ export const ProposalDetailView = ({
                 value={proposal.voteSnapshotBlock}
               />
             </div>
+            <ReactMarkdown className="prose">
+              {proposal.description}
+            </ReactMarkdown>
           </div>
         </div>
       </div>
@@ -261,4 +275,4 @@ export const ProposalDetailView = ({
   );
 };
 
-export default ProposalDetailView;
+export default NounsProposalDetailView;

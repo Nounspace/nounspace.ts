@@ -14,6 +14,7 @@ import {
   Space_Grotesk,
   Ubuntu,
   Work_Sans,
+  Londrina_Solid,
 } from "next/font/google";
 
 import type { FontFamily } from "@/common/lib/theme";
@@ -120,6 +121,13 @@ export const work_sans = Work_Sans({
   display: "swap",
 });
 
+export const londrina_solid = Londrina_Solid({
+  subsets: ["latin"],
+  variable: "--font-londrina-solid",
+  display: "swap",
+  weight: ["100", "300", "400", "900"],
+});
+
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
     name: "Theme Font",
@@ -202,6 +210,10 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
     name: "Roboto Slab",
     config: roboto_slab,
+  },
+  {
+    name: "Londrina Solid",
+    config: londrina_solid,
   },
 ];
 
