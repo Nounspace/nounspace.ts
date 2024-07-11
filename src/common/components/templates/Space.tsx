@@ -27,6 +27,7 @@ export type SpaceConfig = {
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;
+  timestamp?: string;
 };
 
 export type SpaceConfigSaveDetails = Partial<
