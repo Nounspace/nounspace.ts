@@ -1,3 +1,5 @@
+// src/components/SnapShot.tsx
+
 import React, { useState } from "react";
 import { CardContent } from "@/common/components/atoms/card";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
@@ -11,6 +13,7 @@ export type snapShotSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
   "snapshot ens": string;
+  "snapshot space": string;
 } & FidgetSettingsStyle;
 
 export const snapshotConfig: FidgetProperties = {
@@ -23,6 +26,7 @@ export const snapshotConfig: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
+
     ...defaultStyleFields,
   ],
   size: {
@@ -78,6 +82,7 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             proposal={proposal}
             isExpanded={expandedProposalId === proposal.id}
             onToggleExpand={handleToggleExpand}
+            space={settings["snapshot ens"]}
           />
         ))}
       </div>

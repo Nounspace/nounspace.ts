@@ -1,3 +1,5 @@
+// src/hooks/useSnapshotProposals.ts
+
 import { useState, useEffect } from "react";
 
 interface FetchProposalsParams {
@@ -34,6 +36,7 @@ const proposalsQuery = (ens: string, skip: number, first: number) => `
                 id
                 name
             }
+            type
         }
     }
 `;
