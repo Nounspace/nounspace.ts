@@ -140,8 +140,8 @@ async function listModifiableSpaces(
   }
   const { data, error } = await supabaseClient
     .from("spaceRegistrations")
-    .select("*, fidRegistrations (fid)")
-    .eq("fidRegistrations.identityPublicKey", identity);
+    .select("*, fidRegistrations!inner (fid, identityPublicKey)")
+    .filter("fidRegistrations.identityPublicKey", "eq", identity);
   if (error) {
     res.status(500).json({
       result: "error",
