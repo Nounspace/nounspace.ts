@@ -30,9 +30,9 @@ export const snapshotConfig: FidgetProperties = {
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 2,
+    minHeight: 3,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 3,
     maxWidth: 36,
   },
 };

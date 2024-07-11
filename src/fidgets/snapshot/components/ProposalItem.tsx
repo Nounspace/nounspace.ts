@@ -1,11 +1,16 @@
-// src/components/ProposalItem.tsx
-
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
+import {
+  renderSingleChoiceVotingUI,
+  renderApprovalVotingUI,
+  renderRankedChoiceVotingUI,
+  renderWeightedVotingUI,
+} from "../utils/renderVotingUI";
+import { initialState, reducer, State, Action } from "../utils/stateManagement";
 
 interface ProposalItemProps {
   proposal: any;
@@ -30,12 +35,6 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
     extractImageUrl(proposal.body) || "/images/noggles.svg",
   );
 
-  const [rankedChoices, setRankedChoices] = useState<number[]>([]);
-  const [selectedChoices, setSelectedChoices] = useState<number[]>([]);
-  const [weightedChoices, setWeightedChoices] = useState<Map<number, number>>(
-    new Map(),
-  );
-
   const handleError = () => {
     setAvatarUrl("/images/noggles.svg"); // Fallback placeholder image
   };
@@ -58,178 +57,146 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
     );
   };
 
-  const handleRankedChoice = (choiceIndex: number) => {
-    setRankedChoices((prevChoices) => {
-      const newChoices = [...prevChoices];
-      if (newChoices.includes(choiceIndex)) {
-        return newChoices.filter((choice) => choice !== choiceIndex);
-      } else {
-        newChoices.push(choiceIndex);
-        return newChoices;
-      }
-    });
-  };
-
-  const handleApprovalChoice = (choiceIndex: number) => {
-    setSelectedChoices((prevChoices) => {
-      const newChoices = [...prevChoices];
-      if (newChoices.includes(choiceIndex)) {
-        return newChoices.filter((choice) => choice !== choiceIndex);
-      } else {
-        newChoices.push(choiceIndex);
-        return newChoices;
-      }
-    });
-  };
-
-  const handleWeightedChoice = (choiceIndex: number, weight: number) => {
-    setWeightedChoices((prevChoices) => {
-      const newChoices = new Map(prevChoices);
-      if (weight === 0) {
-        newChoices.delete(choiceIndex);
-      } else {
-        newChoices.set(choiceIndex, weight);
-      }
-      return newChoices;
-    });
-  };
-
-  const submitRankedChoiceVote = () => {
-    handleVote(rankedChoices, "Ranked choice vote");
-  };
-
-  const submitApprovalVote = () => {
-    handleVote(selectedChoices, "Approval vote");
-  };
-
-  const submitWeightedVote = () => {
-    const weightedVote = Object.fromEntries(weightedChoices.entries());
-    handleVote(weightedVote, "Weighted vote");
-  };
-
-  const renderSingleChoiceVotingUI = () => {
-    return proposal.choices.map((choice: string, index: number) => (
-      <button
-        key={index}
-        className="bg-blue-500 text-white py-2 px-4 rounded mr-2"
-        onClick={() => handleVote(index + 1, choice)}
-      >
-        Vote {choice}
-      </button>
-    ));
-  };
-
-  const renderApprovalVotingUI = () => {
-    return (
-      <div>
-        {proposal.choices.map((choice: string, index: number) => (
-          <div key={index} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              id={`choice-${index}`}
-              checked={selectedChoices.includes(index)}
-              onChange={() => handleApprovalChoice(index)}
-              className="mr-2"
-            />
-            <label htmlFor={`choice-${index}`} className="cursor-pointer">
-              {choice}
-            </label>
-          </div>
-        ))}
-        <button
-          className="bg-green-500 text-white py-2 px-4 rounded mt-2"
-          onClick={submitApprovalVote}
-        >
-          Submit Approval Vote
-        </button>
-      </div>
-    );
-  };
-
-  const renderQuadraticVotingUI = () => {
-    // Quadratic voting UI can be implemented similarly to weighted voting but with a different calculation
-    return renderWeightedVotingUI();
-  };
-
-  const renderRankedChoiceVotingUI = () => {
-    return (
-      <div>
-        {proposal.choices.map((choice: string, index: number) => (
-          <div key={index} className="flex items-center mb-2">
-            <input
-              type="checkbox"
-              id={`choice-${index}`}
-              checked={rankedChoices.includes(index)}
-              onChange={() => handleRankedChoice(index)}
-              className="mr-2"
-            />
-            <label htmlFor={`choice-${index}`} className="cursor-pointer">
-              {choice}
-            </label>
-          </div>
-        ))}
-        <button
-          className="bg-green-500 text-white py-2 px-4 rounded mt-2"
-          onClick={submitRankedChoiceVote}
-        >
-          Submit Ranked Vote
-        </button>
-      </div>
-    );
-  };
-
-  const renderWeightedVotingUI = () => {
-    return (
-      <div>
-        {proposal.choices.map((choice: string, index: number) => (
-          <div key={index} className="flex items-center mb-2">
-            <input
-              type="number"
-              id={`choice-${index}`}
-              value={weightedChoices.get(index) || 0}
-              onChange={(e) =>
-                handleWeightedChoice(index, Number(e.target.value))
-              }
-              className="mr-2"
-              min={0}
-              max={10}
-            />
-            <label htmlFor={`choice-${index}`} className="cursor-pointer">
-              {choice}
-            </label>
-          </div>
-        ))}
-        <button
-          className="bg-green-500 text-white py-2 px-4 rounded mt-2"
-          onClick={submitWeightedVote}
-        >
-          Submit Weighted Vote
-        </button>
-      </div>
-    );
-  };
+  const [state, dispatch] = useReducer<React.Reducer<State, Action>>(
+    reducer,
+    initialState,
+  );
 
   const renderVotingButtons = () => {
     switch (proposal.type) {
       case "single-choice":
-        return renderSingleChoiceVotingUI();
+        return renderSingleChoiceVotingUI(proposal, handleVote);
       case "approval":
-        return renderApprovalVotingUI();
+        return renderApprovalVotingUI(proposal, state, dispatch, handleVote);
       case "quadratic":
-        return renderQuadraticVotingUI();
+        return renderWeightedVotingUI(proposal, state, dispatch, handleVote);
       case "ranked-choice":
-        return renderRankedChoiceVotingUI();
+        return renderRankedChoiceVotingUI(
+          proposal,
+          state,
+          dispatch,
+          handleVote,
+        );
       case "weighted":
-        return renderWeightedVotingUI();
+        return renderWeightedVotingUI(proposal, state, dispatch, handleVote);
       case "basic":
-        return renderSingleChoiceVotingUI();
+        return renderSingleChoiceVotingUI(proposal, handleVote);
       default:
-        return renderSingleChoiceVotingUI();
+        return renderSingleChoiceVotingUI(proposal, handleVote);
     }
   };
 
+  const getStatus = () => {
+    const now = Date.now() / 1000;
+    if (now < proposal.start) return "Pending";
+    if (now > proposal.end) {
+      if (proposal.state === "closed") {
+        if (proposal.type === "ranked-choice" || proposal.type === "weighted") {
+          return "Closed";
+        }
+        const maxScore = Math.max(...proposal.scores);
+        const isPassed = proposal.scores[0] === maxScore;
+        return isPassed ? "Passed" : "Failed";
+      }
+      return proposal.state;
+    }
+    return "Active";
+  };
+
+  const status = getStatus();
+
+  const getStatusBadgeColor = () => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-500";
+      case "Active":
+        return "bg-green-500";
+      case "Passed":
+        return "bg-green-500";
+      case "Failed":
+        return "bg-red-500";
+      case "Closed":
+        return "bg-gray-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  // const renderScores = () => {
+  //   if (proposal.state !== "closed") return null;
+
+  //   return (
+  //     <div className="mt-4">
+  //       <h5 className="font-bold mb-2">Results:</h5>
+  //       {proposal.choices.map((choice: string, index: number) => (
+  //         <div key={index} className="flex items-center mb-1">
+  //           <div className="flex-grow">{choice}</div>
+  //           <div>{proposal.scores[index]} votes</div>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   );
+  // };
+
+  const renderVotingResults = () => {
+    if (
+      proposal.state !== "closed" ||
+      proposal.type === "ranked-choice" ||
+      proposal.type === "weighted"
+    ) {
+      return null;
+    }
+
+    const totalScores = proposal.scores.reduce((acc, score) => acc + score, 0);
+
+    return (
+      <div className="mt-4">
+        {proposal.choices.map((choice: string, index: number) => {
+          const score = proposal.scores[index];
+          const percentage = (score / totalScores) * 100;
+
+          return (
+            <div key={index} className="flex items-center mb-2">
+              <div className="flex-grow">
+                <div className="text-xs font-medium">{choice}</div>
+                <div className="h-2 w-full bg-gray-300 rounded">
+                  <div
+                    className="h-full bg-green-500 rounded"
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
+              <div className="ml-2 text-xs font-medium">
+                {score.toFixed(2)} GNAR
+              </div>
+            </div>
+          );
+        })}
+        <div className="mt-2">
+          {proposal.scores[0] > proposal.scores[1] ? (
+            <span className="text-green-500 font-bold">Passed</span>
+          ) : (
+            <span className="text-red-500 font-bold">Failed</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const [visibleSection, setVisibleSection] = useState<string>("preview");
+
+  const handleSectionChange = (section: string) => {
+    setVisibleSection(section);
+  };
+
   return (
-    <div className="flex flex-row p-4 border border-gray-200 rounded-lg mb-1">
+    <div className="flex flex-row p-4 border border-gray-200 rounded-lg mb-1 relative">
+      <span
+        className={`absolute top-2 right-2 text-white py-1 px-2 rounded text-xs ${getStatusBadgeColor()}`}
+        style={{ width: "60px", textAlign: "center" }}
+      >
+        {status}
+      </span>
       <img
         src={avatarUrl}
         alt="Avatar"
@@ -243,16 +210,43 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
         >
           {proposal.title}
         </h4>
+
         {isExpanded && (
           <>
-            <ReactMarkdown
-              rehypePlugins={[rehypeRaw]}
-              remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers}
-            >
-              {proposal.body}
-            </ReactMarkdown>
-            <div className="mt-4">{renderVotingButtons()}</div>
+            <div className="flex space-x-4 mt-2">
+              <button
+                className={`px-2 py-1 ${visibleSection === "preview" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                onClick={() => handleSectionChange("preview")}
+              >
+                Preview
+              </button>
+              <button
+                className={`px-2 py-1 ${visibleSection === "results" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                onClick={() => handleSectionChange("results")}
+              >
+                Results
+              </button>
+              <button
+                className={`px-2 py-1 ${visibleSection === "voting" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+                onClick={() => handleSectionChange("voting")}
+              >
+                Voting
+              </button>
+            </div>
+
+            {visibleSection === "preview" && (
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw]}
+                remarkPlugins={[remarkGfm]}
+                components={MarkdownRenderers}
+              >
+                {proposal.body}
+              </ReactMarkdown>
+            )}
+            {visibleSection === "results" && renderVotingResults()}
+            {visibleSection === "voting" && (
+              <div className="mt-4">{renderVotingButtons()}</div>
+            )}
           </>
         )}
       </div>
