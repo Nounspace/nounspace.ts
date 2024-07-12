@@ -90,7 +90,10 @@ export default function Space({
     });
   }
 
-  const LayoutFidget = LayoutFidgets[config.layoutDetails.layoutFidget];
+  const LayoutFidget =
+    config && config.layoutDetails && config.layoutDetails.layoutConfig
+      ? LayoutFidgets[config.layoutDetails.layoutFidget]
+      : LayoutFidgets["grid"];
 
   return (
     <>
