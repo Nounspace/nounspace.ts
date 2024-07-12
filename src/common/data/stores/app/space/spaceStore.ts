@@ -131,13 +131,17 @@ export const createSpaceStoreFunc = (
       ) as DatabaseWritableSpaceConfig;
       const currentLocalCopy = get().space.localSpaces[spaceId];
       if (
-        spaceConfig &&
-        spaceConfig.timestamp &&
-        currentLocalCopy &&
-        currentLocalCopy.timestamp &&
-        moment(currentLocalCopy.timestamp).isAfter(
-          moment(spaceConfig.timestamp),
-        )
+        (spaceConfig &&
+          spaceConfig.timestamp &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp &&
+          moment(currentLocalCopy.timestamp).isAfter(
+            moment(spaceConfig.timestamp),
+          )) ||
+        (spaceConfig &&
+          isUndefined(spaceConfig.timestamp) &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp)
       ) {
         console.debug(`local copy of space ${spaceId} config is more recent`);
         return;
