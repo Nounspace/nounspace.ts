@@ -62,6 +62,8 @@ export const Zora: React.FC<FidgetArgs<ZoraFidgetSettings>> = ({
     setZoraSource(transformedEmbed);
   }, [text]);
 
+  return null;
+
   return (
     <div
       style={{
