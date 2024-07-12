@@ -29,7 +29,7 @@ export const CompleteFidgets = {
   iframe: IFrame,
   // Nouns
   governance: NounishGovernance,
-  zora: zoraEmbed,
+  // zora: zoraEmbed,
 };
 
 export const LayoutFidgets = {
