@@ -11,10 +11,10 @@ export const renderSingleChoiceVotingUI = (
   return proposal.choices.map((choice: string, index: number) => (
     <button
       key={index}
-      className="bg-blue-500 text-white py-2 px-4 rounded mr-2"
+      className="bg-blue-500 w-full text-white py-1 px-2 rounded mr-2 m-1"
       onClick={() => handleVote(index + 1, choice)}
     >
-      Vote {choice}
+      {choice}
     </button>
   ));
 };
@@ -138,7 +138,7 @@ export const renderRankedChoiceVotingUI = (
         </div>
       ))}
       <button
-        className="bg-green-500 text-white py-2 px-4 rounded mt-2"
+        className="w-full bg-green-500 text-white py-2 px-4 rounded mt-2"
         onClick={() => handleVote(state.rankedChoices, "Ranked choice vote")}
       >
         Submit Ranked Vote

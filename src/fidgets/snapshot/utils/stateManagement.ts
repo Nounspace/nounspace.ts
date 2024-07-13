@@ -1,5 +1,3 @@
-// src/utils/stateManagement.ts
-
 export interface State {
   selectedChoices: number[];
   weightedChoices: Map<number, number>;
@@ -18,7 +16,7 @@ export type Action =
   | { type: "setRankedChoice"; index: number; rank: number };
 
 export const reducer = (state: State, action: Action): State => {
-  let selectedChoices, weightedChoices, rankedChoices; // Declare the variables outside the switch statement
+  let selectedChoices, weightedChoices, rankedChoices;
 
   switch (action.type) {
     case "toggleApprovalChoice":

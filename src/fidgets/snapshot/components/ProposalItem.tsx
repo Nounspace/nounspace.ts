@@ -32,7 +32,8 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
   };
 
   const [avatarUrl, setAvatarUrl] = useState<string>(
-    extractImageUrl(proposal.body) || "/images/noggles.svg",
+    extractImageUrl(proposal.body) ||
+      `https://cdn.stamp.fyi/space/${proposal.space.id.toString()}?s=96&cb=80b2fc0910dab4fa`,
   );
 
   const handleError = () => {
@@ -110,7 +111,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
       case "Pending":
         return "bg-yellow-500";
       case "Active":
-        return "bg-green-500";
+        return "bg-green-400";
       case "Passed":
         return "bg-green-500";
       case "Failed":
@@ -139,11 +140,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
   // };
 
   const renderVotingResults = () => {
-    if (
-      proposal.state !== "closed" ||
-      proposal.type === "ranked-choice" ||
-      proposal.type === "weighted"
-    ) {
+    if (proposal.state !== "closed") {
       return null;
     }
 
@@ -186,9 +183,10 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
   const [visibleSection, setVisibleSection] = useState<string>("preview");
 
   const handleSectionChange = (section: string) => {
+    onToggleExpand(proposal.id);
     setVisibleSection(section);
   };
-
+  console.log(proposal.space.id);
   return (
     <div className="flex flex-row p-4 border border-gray-200 rounded-lg mb-1 relative">
       <span
@@ -200,55 +198,47 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
       <img
         src={avatarUrl}
         alt="Avatar"
-        className="w-16 h-16 rounded-md mr-4"
+        className="w-16 h-16 rounded-md mr-4 object-cover"
         onError={handleError}
       />
       <div className="flex flex-col flex-grow">
-        <h4
-          className="font-bold cursor-pointer"
-          onClick={() => onToggleExpand(proposal.id)}
-        >
-          {proposal.title}
-        </h4>
+        <h4 className="font-bold cursor-pointer">{proposal.title}</h4>
 
-        {isExpanded && (
-          <>
-            <div className="flex space-x-4 mt-2">
-              <button
-                className={`px-2 py-1 ${visibleSection === "preview" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-                onClick={() => handleSectionChange("preview")}
-              >
-                Preview
-              </button>
-              <button
-                className={`px-2 py-1 ${visibleSection === "results" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-                onClick={() => handleSectionChange("results")}
-              >
-                Results
-              </button>
-              <button
-                className={`px-2 py-1 ${visibleSection === "voting" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-                onClick={() => handleSectionChange("voting")}
-              >
-                Voting
-              </button>
-            </div>
-
-            {visibleSection === "preview" && (
-              <ReactMarkdown
-                rehypePlugins={[rehypeRaw]}
-                remarkPlugins={[remarkGfm]}
-                components={MarkdownRenderers}
-              >
-                {proposal.body}
-              </ReactMarkdown>
-            )}
-            {visibleSection === "results" && renderVotingResults()}
-            {visibleSection === "voting" && (
-              <div className="mt-4">{renderVotingButtons()}</div>
-            )}
-          </>
-        )}
+        <>
+          <div className="flex space-x-4 mt-2">
+            <button
+              className={`px-2 py-1 ${visibleSection === "preview" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+              onClick={() => handleSectionChange("preview")}
+            >
+              Preview
+            </button>
+            <button
+              className={`px-2 py-1 ${visibleSection === "results" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+              onClick={() => handleSectionChange("results")}
+            >
+              Results
+            </button>
+            <button
+              className={`px-2 py-1 ${visibleSection === "voting" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+              onClick={() => handleSectionChange("voting")}
+            >
+              Voting
+            </button>
+          </div>
+          {isExpanded && visibleSection === "preview" && (
+            <ReactMarkdown
+              rehypePlugins={[rehypeRaw]}
+              remarkPlugins={[remarkGfm]}
+              components={MarkdownRenderers}
+            >
+              {proposal.body}
+            </ReactMarkdown>
+          )}
+          {visibleSection === "results" && renderVotingResults()}
+          {visibleSection === "voting" && (
+            <div className="mt-4">{renderVotingButtons()}</div>
+          )}
+        </>
       </div>
     </div>
   );

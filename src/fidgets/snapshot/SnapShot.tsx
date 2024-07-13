@@ -8,6 +8,7 @@ import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import ProposalItem from "./components/ProposalItem";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
+import { useSnapShotInfo } from "@/common/lib/hooks/useSnapshotInfo";
 
 export type snapShotSettings = {
   subgraphUrl: string;
@@ -50,6 +51,9 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
     ens: settings["snapshot ens"],
     skip,
     first,
+  });
+  const { snapShotInfo } = useSnapShotInfo({
+    ens: settings["snapshot ens"],
   });
 
   const handleToggleExpand = (proposalId: string) => {
