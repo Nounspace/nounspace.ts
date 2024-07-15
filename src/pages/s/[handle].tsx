@@ -94,10 +94,4 @@ const UserPrimarySpace: NextPageWithLayout = ({
   return <SpaceNotFound />;
 };
 
-UserPrimarySpace.getLayout = (page: React.ReactElement) => {
-  return (
-    <div className="min-h-screen max-w-screen h-screen w-screen">{page}</div>
-  );
-};
-
 export default UserPrimarySpace;
