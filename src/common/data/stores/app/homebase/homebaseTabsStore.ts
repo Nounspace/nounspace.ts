@@ -211,7 +211,7 @@ export const createHomeBaseTabStoreFunc = (
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
         "json",
-        true,
+        { useRootKey: true, fileName: tabname },
       );
       try {
         await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);

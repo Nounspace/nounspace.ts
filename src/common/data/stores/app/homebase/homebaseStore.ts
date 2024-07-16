@@ -87,7 +87,7 @@ export const createHomeBaseStoreFunc = (
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
         "json",
-        true,
+        { useRootKey: true },
       );
       try {
         await axiosBackend.post(`/api/space/homebase/`, file);

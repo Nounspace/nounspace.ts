@@ -243,7 +243,7 @@ export const createSpaceStoreFunc = (
                 isPrivate: undefined,
               }),
               "json",
-              true,
+              { useRootKey: true },
             )
           : await get().account.createSignedFile(
               stringify({ ...localCopy, isPrivate: undefined }),
