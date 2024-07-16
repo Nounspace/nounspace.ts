@@ -19,12 +19,15 @@ type ListHomebaseTabsResult = string[];
 
 export type ManageHomebaseTabsResponse =
   NounspaceResponse<ListHomebaseTabsResult>;
-export type ManageHomebaseTabsRequest = Signable & {
+
+export type UnsignedManageHomebaseTabsRequest = {
   publicKey: string;
   type: HomeBaseTabRequestType;
   tabName: string;
   newName?: string;
 };
+export type ManageHomebaseTabsRequest = Signable &
+  UnsignedManageHomebaseTabsRequest;
 
 function isUpdateHomebaseRequest(
   maybe: unknown,
