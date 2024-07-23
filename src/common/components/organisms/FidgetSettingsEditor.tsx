@@ -108,14 +108,13 @@ const FidgetSettingsGroup: React.FC<{
           id={`${fidgetId}-${i}-${field.fieldName}`}
           value={state[field.fieldName]}
           onChange={(val) => {
-            setState({
+            const data = {
               ...state,
               [field.fieldName]: val,
-            });
-            onSave({
-              ...state,
-              [field.fieldName]: val,
-            });
+            };
+
+            setState(data);
+            onSave(data);
           }}
           hide={field.disabledIf && field.disabledIf(state)}
         />
