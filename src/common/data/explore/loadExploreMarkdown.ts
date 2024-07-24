@@ -1,6 +1,6 @@
 import matter from "gray-matter";
 import supabaseClient from "../database/supabase/clients/server";
-import { isNull, map } from "lodash";
+import { endsWith, filter, isNull, map, startsWith } from "lodash";
 
 type MatterResultData = {
   title: string;
@@ -50,6 +50,9 @@ export async function getAllSlugs() {
     if (isNull(data)) {
       return [];
     }
-    return map(data, (d) => d.name.replace(/\.md$/, ""));
+    return map(
+      filter(data, (d) => endsWith(d.name, ".md") && !startsWith(d.name, ".")),
+      (d) => d.name.replace(/\.md$/, ""),
+    );
   }
 }
