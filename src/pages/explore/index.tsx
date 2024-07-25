@@ -50,9 +50,7 @@ export default function Explore({ posts }) {
               src="/images/rainforest.png"
               alt="Rainforest"
               fill
-              objectFit="cover"
-              objectPosition="center bottom"
-              className="col-span-1 row-span-1"
+              className="col-span-1 row-span-1 object-cover object-bottom"
             />
             <div className="col-span-1 row-span-1 z-10 text-center font-bold text-white grid place-content-center text-4xl">
               Explore Featured Spaces
@@ -77,20 +75,19 @@ export default function Explore({ posts }) {
                     />
                     {title}
                   </h2>
-                  <ul className="grid grid-cols-4 gap-4">
+                  <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {groupedPosts[title].map((post) => (
                       <li key={post.slug}>
                         <Link
-                          href={`/explore/${post.slug}`}
+                          href={`/s/${post.slug}`}
                           className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4]"
                         >
-                          <div className="h-48 w-full bg-gray-200 overflow-hidden relative">
+                          <div className="h-40 w-full bg-gray-200 overflow-hidden relative">
                             <Image
                               src={post.image}
                               alt={post.title}
                               fill
-                              objectFit="cover"
-                              objectPosition="center"
+                              className="object-cover object-center"
                             />
                           </div>
                           <div className="p-4">
