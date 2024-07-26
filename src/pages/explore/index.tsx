@@ -22,7 +22,8 @@ const categories = [
   { title: "Farcaster", image: "/images/explore-icons/farcaster.png" },
   { title: "Games", image: "/images/explore-icons/games.png" },
   { title: "Music", image: "/images/explore-icons/music.png" },
-  { title: "AI", image: "/images/explore-icons/nounish.png" },
+  { title: "AI", image: "/images/explore-icons/ai.png" },
+  { title: "Public Goods", image: "/images/explore-icons/public-goods.png" },
 ];
 
 export default function Explore({ posts }) {
