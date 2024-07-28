@@ -6,7 +6,7 @@ import {
   isSignedFile,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { findIndex, first, isObject, isUndefined } from "lodash";
+import { findIndex, first, isObject, isString, isUndefined, map } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
@@ -53,22 +53,24 @@ async function getFidForSpaceId(spaceId: string) {
   return data !== null ? first(data)?.fid : undefined;
 }
 
-async function identityCanModifySpace(identity: string, spaceId: string) {
+async function identitiesCanModifySpace(spaceId: string) {
   const { data } = await supabase
     .from("fidRegistrations")
     .select(
       `
     fid,
     identityPublicKey,
-    spaceRegistrations (
+    spaceRegistrations!inner (
       fid
     )`,
     )
     .eq("spaceRegistrations.spaceId", spaceId);
-  return (
-    data !== null &&
-    findIndex(data, (i) => i.identityPublicKey === identity) !== -1
-  );
+  return data === null ? [] : map(data, (d) => d.identityPublicKey);
+}
+
+async function identityCanModifySpace(identity: string, spaceId: string) {
+  const data = await identitiesCanModifySpace(spaceId);
+  return findIndex(data, (i) => i === identity) !== -1;
 }
 
 function updateSpaceRegistration(spaceId: string, request: NameChangeRequest) {
@@ -237,6 +239,16 @@ async function updateSpace(
   });
 }
 
+async function spacePublicKeys(req: NextApiRequest, res: NextApiResponse) {
+  const spaceId = req.query.spaceId;
+  if (isString(spaceId)) {
+    res.status(200).json(await identitiesCanModifySpace(spaceId));
+  } else {
+    res.status(400);
+  }
+}
+
 export default requestHandler({
   post: updateSpace,
+  get: spacePublicKeys,
 });
