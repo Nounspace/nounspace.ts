@@ -14,6 +14,7 @@ import { first } from "lodash";
 import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
+import { PiGlobeHemisphereEastBold } from "react-icons/pi";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -136,7 +137,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   }
                   openInNewTab
                 />
-                {/* <NavItem label="Explore" Icon={ExploreIcon} href="/explore"/> */}
+                <NavItem
+                  label="Explore"
+                  Icon={PiGlobeHemisphereEastBold}
+                  href="/explore"
+                />
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
@@ -192,7 +197,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <div className="flex flex-col flex-auto justify-between border-t px-4">
             <div className="mt-8 px-2">
               <Player
-                url={userTheme?.properties.musicURL || NOUNISH_LOWFI_URL}
+                url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL}
               />
             </div>
             {isLoggedIn && (
