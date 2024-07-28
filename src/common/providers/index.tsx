@@ -10,6 +10,7 @@ import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
 import LoggedInStateProvider from "./LoggedInStateProvider";
 import AnalyticsProvider from "./AnalyticsProvider";
 import VersionCheckProivder from "./VersionCheckProvider";
+import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +23,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                 <UserThemeProvider>
                   <AuthenticatorProvider>
                     <LoggedInStateProvider>
-                      <AnalyticsProvider>{children}</AnalyticsProvider>
+                      <SidebarContextProvider>
+                        <AnalyticsProvider>{children}</AnalyticsProvider>
+                      </SidebarContextProvider>
                     </LoggedInStateProvider>
                   </AuthenticatorProvider>
                 </UserThemeProvider>

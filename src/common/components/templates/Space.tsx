@@ -27,6 +27,7 @@ export type SpaceConfig = {
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;
+  timestamp?: string;
 };
 
 export type SpaceConfigSaveDetails = Partial<
@@ -91,7 +92,7 @@ export default function Space({
   }
 
   const LayoutFidget =
-    config && config.layoutDetails && config.layoutDetails.layoutConfig
+    config && config.layoutDetails && config.layoutDetails.layoutFidget
       ? LayoutFidgets[config.layoutDetails.layoutFidget]
       : LayoutFidgets["grid"];
 

@@ -129,6 +129,23 @@ export const createSpaceStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
+      const currentLocalCopy = get().space.localSpaces[spaceId];
+      if (
+        (spaceConfig &&
+          spaceConfig.timestamp &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp &&
+          moment(currentLocalCopy.timestamp).isAfter(
+            moment(spaceConfig.timestamp),
+          )) ||
+        (spaceConfig &&
+          isUndefined(spaceConfig.timestamp) &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp)
+      ) {
+        console.debug(`local copy of space ${spaceId} config is more recent`);
+        return;
+      }
       const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
@@ -266,14 +283,12 @@ export const createSpaceStoreFunc = (
   }, 1000),
   saveLocalSpace: async (spaceId, changedConfig) => {
     const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
+    mergeWith(localCopy, changedConfig, (_, newItem) => {
+      if (isArray(newItem)) return newItem;
+    });
+    localCopy.timestamp = moment().toISOString();
     set((draft) => {
-      draft.space.localSpaces[spaceId] = mergeWith(
-        localCopy,
-        changedConfig,
-        (_, newItem) => {
-          if (isArray(newItem)) return newItem;
-        },
-      );
+      draft.space.localSpaces[spaceId] = localCopy;
     }, "saveLocalSpace");
   },
   clear: () => {
