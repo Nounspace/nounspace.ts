@@ -1,5 +1,6 @@
 import React from "react";
 import Slider from "@mui/material/Slider";
+import { Button } from "@/common/components/atoms/button";
 
 export const renderSingleChoiceVotingUI = (
   proposal: any,
@@ -8,15 +9,20 @@ export const renderSingleChoiceVotingUI = (
     reason: string,
   ) => void,
 ) => {
-  return proposal.choices.map((choice: string, index: number) => (
-    <button
-      key={index}
-      className="bg-blue-500 w-full text-white py-1 px-2 rounded mr-2 m-1"
-      onClick={() => handleVote(index + 1, choice)}
-    >
-      {choice}
-    </button>
-  ));
+  return (
+    <div className="flex justify-center gap-4">
+      {proposal.choices.map((choice: string, index: number) => (
+        <Button
+          key={index}
+          variant="primary"
+          onClick={() => handleVote(index + 1, choice)}
+          className={`rounded-full ${choice === "For" ? "bg-green-500" : choice === "Against" ? "bg-red-500" : "bg-gray-500"}`}
+        >
+          {choice}
+        </Button>
+      ))}
+    </div>
+  );
 };
 
 export const renderApprovalVotingUI = (
@@ -64,32 +70,35 @@ export const renderWeightedVotingUI = (
   ) => void,
 ) => {
   return (
-    <div>
-      {proposal.choices.map((choice: string, index: number) => (
-        <div key={index} className="flex items-center mb-2">
-          <label htmlFor={`choice-${index}`} className="cursor-pointer mr-2">
-            {choice}
-          </label>
-          <Slider
-            id={`choice-${index}`}
-            value={state.weightedChoices.get(index) || 0}
-            onChange={(e, newValue) =>
-              dispatch({
-                type: "setWeightedChoice",
-                index,
-                weight: newValue as number,
-              })
-            }
-            className="flex-grow"
-            min={0}
-            max={10}
-            step={1}
-            valueLabelDisplay="auto"
-          />
-        </div>
-      ))}
-      <button
-        className="bg-green-500 text-white py-2 px-4 rounded mt-2"
+    <>
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+        {proposal.choices.map((choice: string, index: number) => (
+          <>
+            <label htmlFor={`choice-${index}`} className="cursor-pointer mr-2">
+              {choice}
+            </label>
+            <Slider
+              id={`choice-${index}`}
+              value={state.weightedChoices.get(index) || 0}
+              onChange={(e, newValue) =>
+                dispatch({
+                  type: "setWeightedChoice",
+                  index,
+                  weight: newValue as number,
+                })
+              }
+              min={0}
+              max={10}
+              step={1}
+              valueLabelDisplay="auto"
+              size="small"
+            />
+          </>
+        ))}
+      </div>
+      <Button
+        variant="primary"
+        className="rounded-full mt-4"
         onClick={() =>
           handleVote(
             Object.fromEntries(state.weightedChoices.entries()),
@@ -98,8 +107,8 @@ export const renderWeightedVotingUI = (
         }
       >
         Submit Weighted Vote
-      </button>
-    </div>
+      </Button>
+    </>
   );
 };
 

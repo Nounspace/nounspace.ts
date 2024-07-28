@@ -11,6 +11,8 @@ import {
   renderWeightedVotingUI,
 } from "../utils/renderVotingUI";
 import { initialState, reducer, State, Action } from "../utils/stateManagement";
+import { Button } from "@/common/components/atoms/button";
+import { FaAngleDown } from "react-icons/fa6";
 
 interface ProposalItemProps {
   proposal: any;
@@ -21,8 +23,8 @@ interface ProposalItemProps {
 
 const ProposalItem: React.FC<ProposalItemProps> = ({
   proposal,
-  isExpanded,
-  onToggleExpand,
+  // isExpanded,
+  // onToggleExpand,
   space,
 }) => {
   const extractImageUrl = (markdown: string): string | null => {
@@ -147,14 +149,14 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
     const totalScores = proposal.scores.reduce((acc, score) => acc + score, 0);
 
     return (
-      <div className="mt-4">
-        {proposal.choices.map((choice: string, index: number) => {
-          const score = proposal.scores[index];
-          const percentage = (score / totalScores) * 100;
+      <>
+        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+          {proposal.choices.map((choice: string, index: number) => {
+            const score = proposal.scores[index];
+            const percentage = (score / totalScores) * 100;
 
-          return (
-            <div key={index} className="flex items-center mb-2">
-              <div className="flex-grow">
+            return (
+              <>
                 <div className="text-xs font-medium">{choice}</div>
                 <div className="h-2 w-full bg-gray-300 rounded">
                   <div
@@ -162,85 +164,120 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
                     style={{ width: `${percentage}%` }}
                   />
                 </div>
-              </div>
-              <div className="ml-2 text-xs font-medium">
-                {score.toFixed(2)} GNAR
-              </div>
-            </div>
-          );
-        })}
-        <div className="mt-2">
-          {proposal.scores[0] > proposal.scores[1] ? (
-            <span className="text-green-500 font-bold">Passed</span>
-          ) : (
-            <span className="text-red-500 font-bold">Failed</span>
-          )}
+                <div className="text-xs font-medium">
+                  {score.toFixed(2)} GNAR
+                </div>
+              </>
+            );
+          })}
         </div>
-      </div>
+        <div className="mt-2 text-center">
+          <Badge
+            color={
+              proposal.scores[0] > proposal.scores[1]
+                ? "bg-green-500"
+                : "bg-red-500"
+            }
+            status={
+              proposal.scores[0] > proposal.scores[1] ? "Passed" : "Failed"
+            }
+          />
+        </div>
+      </>
     );
   };
 
-  const [visibleSection, setVisibleSection] = useState<string>("preview");
+  const [visibleSection, setVisibleSection] = useState<string | undefined>();
 
   const handleSectionChange = (section: string) => {
-    onToggleExpand(proposal.id);
-    setVisibleSection(section);
+    // onToggleExpand(proposal.id);
+    setVisibleSection((prevSection) =>
+      prevSection === section ? undefined : section,
+    );
   };
   console.log(proposal.space.id);
-  return (
-    <div className="flex flex-row p-4 border border-gray-200 rounded-lg mb-1 relative">
-      <span
-        className={`absolute top-2 right-2 text-white py-1 px-2 rounded text-xs ${getStatusBadgeColor()}`}
-        style={{ width: "60px", textAlign: "center" }}
-      >
-        {status}
-      </span>
-      <img
-        src={avatarUrl}
-        alt="Avatar"
-        className="w-16 h-16 rounded-md mr-4 object-cover"
-        onError={handleError}
-      />
-      <div className="flex flex-col flex-grow">
-        <h4 className="font-bold cursor-pointer">{proposal.title}</h4>
 
-        <>
-          <div className="flex space-x-4 mt-2">
-            <button
-              className={`px-2 py-1 ${visibleSection === "preview" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+  return (
+    <div className="p-4 border border-gray-200 bg-white rounded-lg">
+      <div className="grid grid-cols-[4rem_1fr] gap-4">
+        <img
+          src={avatarUrl}
+          alt="Avatar"
+          className="w-16 h-16 rounded-md mr-4 object-cover"
+          onError={handleError}
+        />
+        <div className="flex flex-col flex-grow">
+          <h4 className="font-bold grid grid-cols-[1fr_auto] gap-4 items-start">
+            {proposal.title}
+            <Badge color={getStatusBadgeColor()} status={status} />
+          </h4>
+          <div className="flex gap-2 mt-4">
+            <CardButton
+              label="Preview"
               onClick={() => handleSectionChange("preview")}
-            >
-              Preview
-            </button>
-            <button
-              className={`px-2 py-1 ${visibleSection === "results" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+              isActive={visibleSection === "preview"}
+            />
+            <CardButton
+              label="Results"
               onClick={() => handleSectionChange("results")}
-            >
-              Results
-            </button>
-            <button
-              className={`px-2 py-1 ${visibleSection === "voting" ? "bg-blue-500 text-white rounded-md border border-black" : "bg-gray-200 rounded-md border border-black"}`}
+              isActive={visibleSection === "results"}
+            />
+            <CardButton
+              label="Voting"
               onClick={() => handleSectionChange("voting")}
-            >
-              Voting
-            </button>
+              isActive={visibleSection === "voting"}
+            />
           </div>
-          {isExpanded && visibleSection === "preview" && (
-            <ReactMarkdown
-              rehypePlugins={[rehypeRaw]}
-              remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers}
-            >
-              {proposal.body}
-            </ReactMarkdown>
-          )}
-          {visibleSection === "results" && renderVotingResults()}
-          {visibleSection === "voting" && (
-            <div className="mt-4">{renderVotingButtons()}</div>
-          )}
-        </>
+        </div>
+      </div>
+      <div className={visibleSection !== undefined ? `border-t mt-4 pt-4` : ``}>
+        {visibleSection === "preview" && (
+          <ReactMarkdown
+            rehypePlugins={[rehypeRaw]}
+            remarkPlugins={[remarkGfm]}
+            components={MarkdownRenderers}
+          >
+            {proposal.body}
+          </ReactMarkdown>
+        )}
+        {visibleSection === "results" && renderVotingResults()}
+        {visibleSection === "voting" && renderVotingButtons()}
       </div>
     </div>
+  );
+};
+
+const Badge: React.FC<{ color: string; status: string }> = ({
+  color,
+  status,
+}) => {
+  return (
+    <div
+      className={`inline-block text-white py-1 px-3 rounded-full text-xs ${color}`}
+    >
+      {status}
+    </div>
+  );
+};
+
+const CardButton: React.FC<{
+  label: string;
+  onClick: () => void;
+  isActive: boolean;
+}> = ({ label, onClick, isActive }) => {
+  return (
+    <Button
+      variant="outline"
+      size="md"
+      onClick={onClick}
+      className={`rounded-full text-slate-600 ${isActive ? "bg-slate-100 text-slate-700 border-slate-300" : ""}`}
+      withIcon
+    >
+      {label}{" "}
+      <FaAngleDown
+        className={`fill-slate-400 transition-all ease-in ${isActive ? "rotate-180" : ""}`}
+      />
+    </Button>
   );
 };
 

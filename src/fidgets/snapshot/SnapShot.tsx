@@ -9,6 +9,8 @@ import { defaultStyleFields } from "@/fidgets/helpers";
 import ProposalItem from "./components/ProposalItem";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
 import { useSnapShotInfo } from "@/common/lib/hooks/useSnapshotInfo";
+import { Button } from "@/common/components/atoms/button";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 
 export type snapShotSettings = {
   subgraphUrl: string;
@@ -41,9 +43,9 @@ export const snapshotConfig: FidgetProperties = {
 export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
   settings,
 }) => {
-  const [expandedProposalId, setExpandedProposalId] = useState<string | null>(
-    null,
-  );
+  // const [expandedProposalId, setExpandedProposalId] = useState<string | null>(
+  //   null,
+  // );
   const [skip, setSkip] = useState<number>(0);
   const first = 5;
 
@@ -56,11 +58,11 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
     ens: settings["snapshot ens"],
   });
 
-  const handleToggleExpand = (proposalId: string) => {
-    setExpandedProposalId((prevId) =>
-      prevId === proposalId ? null : proposalId,
-    );
-  };
+  // const handleToggleExpand = (proposalId: string) => {
+  //   setExpandedProposalId((prevId) =>
+  //     prevId === proposalId ? null : proposalId,
+  //   );
+  // };
 
   const handlePrevious = () => {
     setSkip((prevSkip) => Math.max(prevSkip - first, 0));
@@ -76,35 +78,32 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
         {settings["snapshot ens"]} proposals
       </h1>
       {error && <p className="text-red-500">{error}</p>}
-      <div
-        className="flex-grow overflow-scroll"
-        style={{ scrollbarWidth: "none" }}
-      >
+      <div className="grid gap-2 overflow-auto">
         {proposals.map((proposal) => (
           <ProposalItem
             key={proposal.id}
             proposal={proposal}
-            isExpanded={expandedProposalId === proposal.id}
-            onToggleExpand={handleToggleExpand}
+            // isExpanded={expandedProposalId === proposal.id}
+            // onToggleExpand={handleToggleExpand}
             space={settings["snapshot ens"]}
           />
         ))}
       </div>
       <div className="flex justify-between mt-4">
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded"
+        <Button
+          variant="primary"
           onClick={handlePrevious}
           disabled={skip === 0}
         >
-          Previous
-        </button>
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded"
+          <FaAngleLeft /> Previous
+        </Button>
+        <Button
+          variant="primary"
           onClick={handleNext}
           disabled={proposals.length < first}
         >
-          Next
-        </button>
+          Next <FaAngleRight />
+        </Button>
       </div>
     </CardContent>
   );
