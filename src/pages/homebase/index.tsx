@@ -50,7 +50,8 @@ const Homebase: NextPageWithLayout = () => {
       : {
           config: homebaseConfig,
           saveConfig,
-          commitConfig,
+          // To get types to match since store.commitConfig is debounced
+          commitConfig: async () => await commitConfig(),
           resetConfig,
         };
 
