@@ -19,7 +19,7 @@ export interface AuthenticatorState {
 
 export interface AuthenticatorActions {
   loadAuthenitcators: () => Promise<void>;
-  commitAuthenticatorUpdatesToDatabase: () => Promise<void>;
+  commitAuthenticatorUpdatesToDatabase: () => Promise<void> | undefined;
   saveAuthenticatorConfig: (newConfig: AuthenticatorConfig) => Promise<void>;
   listInstalledAuthenticators: () => string[];
   resetAuthenticators: () => void;
@@ -87,38 +87,36 @@ export const authenticatorStore = (
       console.debug("Could not locate authenticator data");
     }
   },
-  commitAuthenticatorUpdatesToDatabase: async () => {
-    debounce(async () => {
-      if (
-        get().account.authenticatorConfig ===
-        get().account.authenticatorRemoteConfig
-      ) {
-        // Only update if changes have been made
-        return;
-      }
-      const configFile = await get().account.createEncryptedSignedFile(
-        stringify(get().account.authenticatorConfig),
-        "json",
-      );
-      const postData: AuthenticatorUpdateRequest = {
-        file: configFile,
-        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-      };
+  commitAuthenticatorUpdatesToDatabase: debounce(async () => {
+    if (
+      get().account.authenticatorConfig ===
+      get().account.authenticatorRemoteConfig
+    ) {
+      // Only update if changes have been made
+      return;
+    }
+    const configFile = await get().account.createEncryptedSignedFile(
+      stringify(get().account.authenticatorConfig),
+      "json",
+    );
+    const postData: AuthenticatorUpdateRequest = {
+      file: configFile,
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+    };
 
-      try {
-        await axiosBackend.post("/api/space/authenticators/", postData, {
-          headers: { "Content-Type": "application/json" },
-        });
-        set((draft) => {
-          draft.account.authenticatorRemoteConfig =
-            get().account.authenticatorConfig;
-        }, "commitAuthenticatorUpdatesToDatabase");
-      } catch (e) {
-        console.debug("failed to save authenticator data, trying again");
-        get().account.commitAuthenticatorUpdatesToDatabase();
-      }
-    }, 1000)();
-  },
+    try {
+      await axiosBackend.post("/api/space/authenticators/", postData, {
+        headers: { "Content-Type": "application/json" },
+      });
+      set((draft) => {
+        draft.account.authenticatorRemoteConfig =
+          get().account.authenticatorConfig;
+      }, "commitAuthenticatorUpdatesToDatabase");
+    } catch (e) {
+      console.debug("failed to save authenticator data, trying again");
+      get().account.commitAuthenticatorUpdatesToDatabase();
+    }
+  }, 1000),
   saveAuthenticatorConfig: async (newConfig) => {
     set((draft) => {
       draft.account.authenticatorConfig = newConfig;

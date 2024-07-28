@@ -1,12 +1,12 @@
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import axios from "axios";
-import { createClient } from "../../../database/supabase/clients/component";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
 import { cloneDeep, debounce, isArray, isUndefined, mergeWith } from "lodash";
 import stringify from "fast-json-stable-stringify";
-import axiosBackend from "../../../api/backend";
+import axiosBackend from "@/common/data/api/backend";
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
@@ -16,6 +16,10 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import {
+  HomeBaseTabStore,
+  createHomeBaseTabStoreFunc,
+} from "./homebaseTabsStore";
 import moment from "moment";
 
 interface HomeBaseStoreState {
@@ -25,13 +29,15 @@ interface HomeBaseStoreState {
 
 interface HomeBaseStoreActions {
   loadHomebase: () => Promise<SpaceConfig>;
-  commitHomebaseToDatabase: () => Promise<void>;
+  commitHomebaseToDatabase: () => Promise<void> | undefined;
   saveHomebaseConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   resetHomebaseConfig: () => Promise<void>;
   clearHomebase: () => void;
 }
 
-export type HomeBaseStore = HomeBaseStoreState & HomeBaseStoreActions;
+export type HomeBaseStore = HomeBaseStoreState &
+  HomeBaseStoreActions &
+  HomeBaseTabStore;
 
 export const homeBaseStoreDefaults: HomeBaseStoreState = {};
 
@@ -40,6 +46,7 @@ export const createHomeBaseStoreFunc = (
   get: StoreGet<AppStore>,
 ): HomeBaseStore => ({
   ...homeBaseStoreDefaults,
+  ...createHomeBaseTabStoreFunc(set, get),
   loadHomebase: async () => {
     const supabase = createClient();
     const {
@@ -92,29 +99,26 @@ export const createHomeBaseStoreFunc = (
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
   },
-  commitHomebaseToDatabase: async () => {
-    debounce(async () => {
-      const localCopy = cloneDeep(get().homebase.homebaseConfig);
-      if (localCopy) {
-        const file = await get().account.createEncryptedSignedFile(
-          stringify(localCopy),
-          "json",
-          true,
-        );
-        // TO DO: Error handling
-        try {
-          await axiosBackend.post(`/api/space/homebase/`, file);
-          set((draft) => {
-            draft.homebase.remoteHomebaseConfig = localCopy;
-          }, "commitHomebaseToDatabase");
-          analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
-        } catch (e) {
-          console.error(e);
-          throw e;
-        }
+  commitHomebaseToDatabase: debounce(async () => {
+    const localCopy = cloneDeep(get().homebase.homebaseConfig);
+    if (localCopy) {
+      const file = await get().account.createEncryptedSignedFile(
+        stringify(localCopy),
+        "json",
+        { useRootKey: true },
+      );
+      try {
+        await axiosBackend.post(`/api/space/homebase/`, file);
+        set((draft) => {
+          draft.homebase.remoteHomebaseConfig = localCopy;
+        }, "commitHomebaseToDatabase");
+        analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
+      } catch (e) {
+        console.error(e);
+        throw e;
       }
-    }, 1000)();
-  },
+    }
+  }, 1000),
   saveHomebaseConfig: async (config) => {
     const localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
     mergeWith(localCopy, config, (_, newItem) => {
