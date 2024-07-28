@@ -84,7 +84,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     <iframe
       src={sanitizedUrl}
       title="IFrame Fidget"
-      sandbox="allow-scripts allow-same-origin"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       className="size-full"
     />
   );
