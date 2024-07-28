@@ -57,10 +57,4 @@ const Homebase: NextPageWithLayout = () => {
   return <SpacePage {...args} />;
 };
 
-Homebase.getLayout = function getLayout(page: React.ReactElement) {
-  return (
-    <div className="min-h-screen max-w-screen h-screen w-screen">{page}</div>
-  );
-};
-
 export default Homebase;
