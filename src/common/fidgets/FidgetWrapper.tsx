@@ -88,7 +88,10 @@ export function FidgetWrapper({
 
   const [doubleCheck, setDoubleCheck] = useState(false);
 
-  const onSave = async (newSettings: FidgetSettings) => {
+  const onSave = async (
+    newSettings: FidgetSettings,
+    shouldUnselect?: boolean,
+  ) => {
     try {
       await saveConfig({
         ...bundle.config,
@@ -98,7 +101,9 @@ export function FidgetWrapper({
       toast.error("Failed to save fidget settings", { duration: 1000 });
     }
 
-    unselect();
+    if (shouldUnselect) {
+      unselect();
+    }
   };
 
   function unselect() {
