@@ -76,64 +76,38 @@ export default function Explore({ posts }) {
                     />
                     {title}
                   </h2>
-                  <ul className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {groupedPosts[title].map((post) => (
-                      <li key={post.slug}>
-                        <Link
-                          href={`/s/${post.slug}`}
-                          className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4]"
-                        >
-                          <div className="h-40 w-full bg-gray-200 overflow-hidden relative">
-                            <Image
-                              src={post.image}
-                              alt={post.title}
-                              fill
-                              className="object-cover object-center"
-                            />
-                          </div>
-                          <div className="p-4">
-                            <h2 className="text-xl font-bold">@{post.title}</h2>
-                            <p>{post.bio}</p>
-                          </div>
-                        </Link>
-                      </li>
+                  <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                    {groupedPosts[title].map((post, i) => (
+                      <ExploreCard key={`${post.slug}-${i}`} post={post} />
                     ))}
-                  </ul>
+                  </div>
                 </div>
               );
             })}
-            {/* {Object.entries(groupedPosts).map(([category, posts]) => (
-              <div key={category} className="flex flex-col gap-4">
-                <h2 className="text-2xl font-bold">{category}</h2>
-                <ul className="grid grid-cols-4 gap-4">
-                  {posts.map((post) => (
-                    <li key={post.slug}>
-                      <Link
-                        href={`/explore/${post.slug}`}
-                        className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4]"
-                      >
-                        <div className="h-48 w-full bg-gray-200 overflow-hidden relative">
-                          <Image
-                            src={post.image}
-                            alt={post.title}
-                            fill
-                            objectFit="cover"
-                            objectPosition="center"
-                          />
-                        </div>
-                        <div className="p-4">
-                          <h2 className="text-xl font-bold">@{post.title}</h2>
-                          <p>{post.bio}</p>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))} */}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const ExploreCard = ({ post }) => {
+  return (
+    <Link
+      href={`/s/${post.slug}`}
+      className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4] hover:shadow-md transition-all duration-100 ease-out hover:-translate-y-1"
+    >
+      <div className="h-36 w-full bg-gray-200 overflow-hidden relative">
+        <Image
+          src={post.image}
+          alt={post.title}
+          fill
+          className="object-cover object-center"
+        />
+      </div>
+      <div className="p-3">
+        <h2 className="text-lg font-bold">@{post.title}</h2>
+      </div>
+    </Link>
+  );
+};
