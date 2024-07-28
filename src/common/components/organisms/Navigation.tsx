@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -15,6 +16,7 @@ import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
+import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import {
   AnalyticsEvent,
   analytics,
@@ -33,14 +35,9 @@ type NavItemProps = {
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
-  theme?: UserTheme;
 };
 
-const Navigation: React.FC<NavProps> = ({
-  isEditable,
-  enterEditMode,
-  theme: userTheme,
-}) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
@@ -48,6 +45,7 @@ const Navigation: React.FC<NavProps> = ({
       getIsInitializing: state.getIsInitializing,
     }),
   );
+  const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
 
   function turnOnEditMode() {
@@ -79,12 +77,7 @@ const Navigation: React.FC<NavProps> = ({
     [user],
   );
 
-  const [currentUrl, setCurrentUrl] = useState("");
-
-  useEffect(() => {
-    // Get the current URL
-    setCurrentUrl(window.location.pathname);
-  }, []);
+  const router = useRouter();
 
   const NavItem: React.FC<NavItemProps> = ({
     label,
@@ -100,7 +93,7 @@ const Navigation: React.FC<NavProps> = ({
           href={disable ? "#" : href}
           className={mergeClasses(
             "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-            href === currentUrl ? "bg-gray-100" : "",
+            href === router.asPath ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
