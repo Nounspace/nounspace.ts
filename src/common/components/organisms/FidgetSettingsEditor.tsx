@@ -28,7 +28,7 @@ export type FidgetSettingsEditorProps = {
   fidgetId: string;
   readonly properties: FidgetProperties;
   settings: FidgetSettings;
-  onSave: (settings: FidgetSettings) => void;
+  onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
 };
@@ -97,7 +97,8 @@ const FidgetSettingsGroup: React.FC<{
   fields: FidgetFieldConfig[];
   state: FidgetSettings;
   setState: (state: FidgetSettings) => void;
-}> = ({ fields, state, setState, fidgetId }) => {
+  onSave: (state: FidgetSettings) => void;
+}> = ({ fields, state, setState, onSave, fidgetId }) => {
   return (
     <>
       {fields.map((field, i) => (
@@ -107,10 +108,13 @@ const FidgetSettingsGroup: React.FC<{
           id={`${fidgetId}-${i}-${field.fieldName}`}
           value={state[field.fieldName]}
           onChange={(val) => {
-            setState({
+            const data = {
               ...state,
               [field.fieldName]: val,
-            });
+            };
+
+            setState(data);
+            onSave(data);
           }}
           hide={field.disabledIf && field.disabledIf(state)}
         />
@@ -136,7 +140,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   const _onSave = (e) => {
     e.preventDefault();
-    onSave(state);
+    onSave(state, true);
     analytics.track(AnalyticsEvent.EDIT_FIDGET, {
       fidgetType: properties.fidgetName,
     });
@@ -194,6 +198,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                 fields={groupedFields.settings}
                 state={state}
                 setState={setState}
+                onSave={onSave}
               />
             </TabsContent>
             {groupedFields.style.length > 0 && (
@@ -203,6 +208,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                   fields={groupedFields.style}
                   state={state}
                   setState={setState}
+                  onSave={onSave}
                 />
               </TabsContent>
             )}
@@ -213,6 +219,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                   fields={groupedFields.code}
                   state={state}
                   setState={setState}
+                  onSave={onSave}
                 />
               </TabsContent>
             )}

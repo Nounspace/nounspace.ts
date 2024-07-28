@@ -879,10 +879,10 @@
     neverthrow "^6.0.0"
     viem "^1.12.2"
 
-"@farcaster/hub-web@^0.8.9":
-  version "0.8.11"
-  resolved "https://registry.yarnpkg.com/@farcaster/hub-web/-/hub-web-0.8.11.tgz#0886f3b3b27b3276755cb007fe7d9101e07c4354"
-  integrity sha512-QVfP+PQcOkVpn4L0PKd5WNaw6MKArwuylGgvBNrOE/ydQ/Bttc7NeRvYXY7k3VlN8C+o7jIdEwNrrbWBCHcjyg==
+"@farcaster/hub-web@^0.8.12":
+  version "0.8.12"
+  resolved "https://registry.yarnpkg.com/@farcaster/hub-web/-/hub-web-0.8.12.tgz#9578a442e1bab0c656d4868c94eaec0adc7aef3f"
+  integrity sha512-GXqujDKOS4/5/YHgibIvKSS73c/6ZB+coTuyTTfpseUMmX0bVAh4TA9zV2ZTzWAw8Sm7cVTWGnyVX6rSv83vgA==
   dependencies:
     "@farcaster/core" "^0.14.16"
     "@improbable-eng/grpc-web" "^0.15.0"
@@ -968,13 +968,13 @@
   dependencies:
     tslib "^2.4.0"
 
-"@frames.js/render@^0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.2.15.tgz#4bb218bf02113413f6997f9ada7c74642b203391"
-  integrity sha512-N0g6KquR+37OzHH9Zq6zOdymgztaiJmXPKVR7mqxQNTD8a3UATdLS9QDIwB6RbKBL4u1AoYkqQgDkz81pDz3bA==
+"@frames.js/render@^0.2.18":
+  version "0.2.18"
+  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.2.18.tgz#c4c87b4afd164704f8366a7a34e75d94d8a66833"
+  integrity sha512-GMG05HHigjGNXs2CS4cMfEbA1HbNpH7LQn116dDtkBdLVIjC0S/6kn6SyLhoQIHDIn0H61f9WWwaw62ynCMaOg==
   dependencies:
     "@farcaster/core" "^0.14.7"
-    frames.js "^0.17.1"
+    frames.js "^0.17.3"
 
 "@googleapis/youtube@^18.0.0":
   version "18.0.0"
@@ -8779,10 +8779,10 @@ frames.js@^0.15.1:
     protobufjs "^7.2.6"
     viem "^2.7.8"
 
-frames.js@^0.17.1:
-  version "0.17.1"
-  resolved "https://registry.yarnpkg.com/frames.js/-/frames.js-0.17.1.tgz#e5029eb0eb914e928cd0965d264c9550a5d56136"
-  integrity sha512-aCkxFSCx4jnaLyiIoAaPir3XUbxZRYcHonGt+VGzArOz6pnOjue3TM0v45YNIjrmJ+4Gw3Wplgx7em2xo8JuTw==
+frames.js@^0.17.3:
+  version "0.17.3"
+  resolved "https://registry.yarnpkg.com/frames.js/-/frames.js-0.17.3.tgz#e7bf1e9ab2e2dd35a9f9e2f32e65c47c16d34f53"
+  integrity sha512-sAI/fb9oTbBWeMcXFQCjKHPFcMzo5D7ZvIQBrJeSqgPgwGUcBBhwCadDR1lEhbJJ+QOJu7mjNQ3i/a1v9rKUIw==
   dependencies:
     "@vercel/og" "^0.6.2"
     cheerio "^1.0.0-rc.12"

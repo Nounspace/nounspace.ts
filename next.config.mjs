@@ -1,4 +1,5 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
+import packageInfo from './package.json' with { type: "json" };
 
 const withBundleAnalyzer = bundlerAnalyzer({
   enabled: process.env.ANALYZE === 'true',
@@ -27,6 +28,9 @@ const nextConfig = {
   transpilePackages: ['react-tweet', 'react-best-gradient-color-picker'], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
+  },
+  env: {
+    NEXT_PUBLIC_VERSION: packageInfo.version,
   },
   images: {
     remotePatterns: [

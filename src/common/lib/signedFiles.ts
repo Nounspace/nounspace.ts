@@ -10,6 +10,7 @@ export interface UnsignedFile {
   fileType: string;
   isEncrypted: boolean;
   timestamp: string;
+  fileName?: string;
 }
 
 export type SignedFile = UnsignedFile & {

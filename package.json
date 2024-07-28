@@ -1,6 +1,6 @@
 {
   "name": "Nounspace",
-  "version": "0.1",
+  "version": "0.0.6",
   "license": "",
   "private": true,
   "scripts": {
@@ -36,8 +36,8 @@
     "@emotion/styled": "^11.11.5",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
-    "@farcaster/hub-web": "^0.8.9",
-    "@frames.js/render": "^0.2.15",
+    "@farcaster/hub-web": "^0.8.12",
+    "@frames.js/render": "^0.2.18",
     "@googleapis/youtube": "^18.0.0",
     "@gumlet/react-hls-player": "^1.0.1",
     "@hatsprotocol/modules-sdk": "^0.15.2",

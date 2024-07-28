@@ -89,7 +89,7 @@ interface SpaceActions {
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
-  commitSpaceToDatabase: (spaceId: string) => Promise<void>;
+  commitSpaceToDatabase: (spaceId: string) => Promise<void> | undefined;
   saveLocalSpace: (
     spaceId: string,
     config: UpdatableDatabaseWritableSpaceSaveConfig,
@@ -129,6 +129,23 @@ export const createSpaceStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
+      const currentLocalCopy = get().space.localSpaces[spaceId];
+      if (
+        (spaceConfig &&
+          spaceConfig.timestamp &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp &&
+          moment(currentLocalCopy.timestamp).isAfter(
+            moment(spaceConfig.timestamp),
+          )) ||
+        (spaceConfig &&
+          isUndefined(spaceConfig.timestamp) &&
+          currentLocalCopy &&
+          currentLocalCopy.timestamp)
+      ) {
+        console.debug(`local copy of space ${spaceId} config is more recent`);
+        return;
+      }
       const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
@@ -232,50 +249,46 @@ export const createSpaceStoreFunc = (
       return {};
     }
   },
-  commitSpaceToDatabase: async (spaceId) => {
-    debounce(async () => {
-      const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
-      if (localCopy) {
-        const file = localCopy.isPrivate
-          ? await get().account.createEncryptedSignedFile(
-              stringify({
-                ...localCopy,
-                isPrivate: undefined,
-              }),
-              "json",
-              true,
-            )
-          : await get().account.createSignedFile(
-              stringify({ ...localCopy, isPrivate: undefined }),
-              "json",
-            );
-        // TO DO: Error handling
-        await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
-          spaceConfig: file,
-        });
+  commitSpaceToDatabase: debounce(async (spaceId) => {
+    const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
+    if (localCopy) {
+      const file = localCopy.isPrivate
+        ? await get().account.createEncryptedSignedFile(
+            stringify({
+              ...localCopy,
+              isPrivate: undefined,
+            }),
+            "json",
+            { useRootKey: true },
+          )
+        : await get().account.createSignedFile(
+            stringify({ ...localCopy, isPrivate: undefined }),
+            "json",
+          );
+      // TO DO: Error handling
+      await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
+        spaceConfig: file,
+      });
 
-        analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
+      analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
 
-        set((draft) => {
-          draft.space.remoteSpaces[spaceId] = {
-            id: spaceId,
-            config: localCopy,
-            updatedAt: moment().toISOString(),
-          };
-        }, "commitSpaceToDatabase");
-      }
-    }, 1000)();
-  },
+      set((draft) => {
+        draft.space.remoteSpaces[spaceId] = {
+          id: spaceId,
+          config: localCopy,
+          updatedAt: moment().toISOString(),
+        };
+      }, "commitSpaceToDatabase");
+    }
+  }, 1000),
   saveLocalSpace: async (spaceId, changedConfig) => {
     const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
+    mergeWith(localCopy, changedConfig, (_, newItem) => {
+      if (isArray(newItem)) return newItem;
+    });
+    localCopy.timestamp = moment().toISOString();
     set((draft) => {
-      draft.space.localSpaces[spaceId] = mergeWith(
-        localCopy,
-        changedConfig,
-        (_, newItem) => {
-          if (isArray(newItem)) return newItem;
-        },
-      );
+      draft.space.localSpaces[spaceId] = localCopy;
     }, "saveLocalSpace");
   },
   clear: () => {

@@ -57,7 +57,10 @@ interface PreKeyActions {
   createEncryptedSignedFile: (
     data: string,
     fileType: string,
-    useRootKey?: boolean,
+    options?: {
+      useRootKey?: boolean;
+      fileName?: string;
+    },
   ) => Promise<SignedFile>;
   decryptEncryptedSignedFile: (file: SignedFile) => Promise<string>;
   generatePreKey: () => Promise<PreSpaceKeys>;
@@ -88,7 +91,8 @@ export const prekeyStore = (
       currentIdentity.rootKeys.privateKey,
     );
   },
-  createEncryptedSignedFile: async (data, fileType, useRootKey = false) => {
+  createEncryptedSignedFile: async (data, fileType, options) => {
+    const useRootKey = options?.useRootKey || false;
     const key = useRootKey
       ? get().account.getCurrentIdentity()!.rootKeys
       : get().account.getCurrentPrekey() ||
@@ -102,6 +106,7 @@ export const prekeyStore = (
       publicKey: key.publicKey,
       isEncrypted: true,
       timestamp: moment().toISOString(),
+      fileName: options?.fileName,
     };
     return signSignable(file, key.privateKey);
   },
@@ -145,7 +150,7 @@ export const prekeyStore = (
     const keyFile = await get().account.createEncryptedSignedFile(
       stringify(prekey),
       "json",
-      true,
+      { useRootKey: true },
     );
     const postData: PreKeyRequest = {
       file: keyFile,
