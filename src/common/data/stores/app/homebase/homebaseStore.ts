@@ -4,7 +4,7 @@ import axios from "axios";
 import { createClient } from "../../../database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
-import { cloneDeep, debounce, isArray, mergeWith } from "lodash";
+import { cloneDeep, debounce, isArray, isUndefined, mergeWith } from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../../api/backend";
 import {
@@ -16,6 +16,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import moment from "moment";
 
 interface HomeBaseStoreState {
   homebaseConfig?: SpaceConfig;
@@ -59,6 +60,23 @@ export const createHomeBaseStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
+      const currentHomebase = get().homebase.homebaseConfig;
+      if (
+        (spaceConfig &&
+          spaceConfig.timestamp &&
+          currentHomebase &&
+          currentHomebase.timestamp &&
+          moment(spaceConfig.timestamp).isAfter(
+            moment(currentHomebase.timestamp),
+          )) ||
+        (spaceConfig &&
+          isUndefined(spaceConfig.timestamp) &&
+          currentHomebase &&
+          currentHomebase.timestamp)
+      ) {
+        console.debug("local homebase config is more recent");
+        return cloneDeep(currentHomebase);
+      }
       set((draft) => {
         draft.homebase.homebaseConfig = cloneDeep(spaceConfig);
         draft.homebase.remoteHomebaseConfig = cloneDeep(spaceConfig);
@@ -102,6 +120,7 @@ export const createHomeBaseStoreFunc = (
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
     });
+    localCopy.timestamp = moment().toISOString();
     set(
       (draft) => {
         draft.homebase.homebaseConfig = localCopy;
