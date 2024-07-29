@@ -19,10 +19,7 @@ const sidebarLayout = (page: React.ReactElement) => {
   return (
     <>
       <div className="min-h-screen max-w-screen h-screen w-screen">
-        <div
-          className="flex w-full h-full"
-          style={{ background: "var(--user-theme-background)" }}
-        >
+        <div className="flex w-full h-full">
           <div className="flex mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
