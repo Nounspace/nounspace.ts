@@ -37,11 +37,7 @@ export default function Explore({ posts }) {
       <div className="flex w-full h-full">
         {/* Sidebar */}
         <div className="flex mx-auto transition-all duration-100 ease-out z-10">
-          <Navigation
-            isEditable={false}
-            enterEditMode={() => {}}
-            theme={homebaseConfig?.theme}
-          />
+          <Navigation isEditable={false} enterEditMode={() => {}} />
         </div>
 
         {/* Main Content */}
