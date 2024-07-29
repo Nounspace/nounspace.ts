@@ -35,11 +35,6 @@ export default function Explore({ posts }) {
   return (
     <div className="min-h-screen max-w-screen h-screen w-screen">
       <div className="flex w-full h-full">
-        {/* Sidebar */}
-        <div className="flex mx-auto transition-all duration-100 ease-out z-10">
-          <Navigation isEditable={false} enterEditMode={() => {}} />
-        </div>
-
         {/* Main Content */}
         <div className="w-full transition-all duration-100 ease-out h-full p-5 grid grid-rows-[auto_1fr]">
           <div className="min-h-48 rounded-lg relative overflow-hidden grid grid-cols-1 grid-rows-1 place-content-center">
