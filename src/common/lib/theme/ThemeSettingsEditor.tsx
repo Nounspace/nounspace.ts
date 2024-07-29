@@ -44,7 +44,6 @@ export function ThemeSettingsEditor({
   cancelExitEditMode,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
-  const [displayToolTips, setDisplayToolTips] = useState(false);
 
   function themePropSetter<T extends string>(
     property: string,
@@ -83,26 +82,13 @@ export function ThemeSettingsEditor({
     cancelExitEditMode();
   }
 
-  function toggleToolTips() {
-    setDisplayToolTips(!displayToolTips);
-  }
-
   return (
     <>
       <div className="flex flex-col h-full gap-6">
         {/* Back */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                <div>Customize</div>
-                <FaInfoCircle onClick={toggleToolTips} color="grey" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>Little Help?</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
+        <div className="flex items-center gap-1">
+          <div>Customize</div>
+        </div>
         {/* Content */}
         <div className="h-full overflow-auto flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -123,7 +109,26 @@ export function ThemeSettingsEditor({
             </TabsList>
             <TabsContent value="fonts" className={tabContentClasses}>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Headings</h4>
+                <div className="flex flex-row gap-1">
+                  <h4 className="text-sm">Headings</h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 pl-1">
+                          <FaInfoCircle color="#D1D5DB" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            The primary, or header font that Fidgets can
+                            inherit.
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="flex items-center gap-1">
                   <ColorSelector
                     className="rounded-full overflow-hidden w-6 h-6 shrink-0"
@@ -140,7 +145,26 @@ export function ThemeSettingsEditor({
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <h4 className="text-sm">Body</h4>
+                <div className="flex flex-row gap-1">
+                  <h4 className="text-sm">Body</h4>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 pl-1">
+                          <FaInfoCircle color="#D1D5DB" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            The secondary, or body font that Fidgets can
+                            inherit.
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <div className="flex items-center gap-1">
                   <ColorSelector
                     className="rounded-full overflow-hidden w-6 h-6 shrink-0"
@@ -165,8 +189,8 @@ export function ThemeSettingsEditor({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1">
-                          {displayToolTips && <FaInfoCircle color="grey" />}
+                        <div className="flex items-center gap-1 pl-1">
+                          <FaInfoCircle color="#D1D5DB" />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -201,8 +225,8 @@ export function ThemeSettingsEditor({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="flex items-center gap-1">
-                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            <div className="flex items-center gap-1 pl-1">
+                              <FaInfoCircle color="#D1D5DB" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -229,8 +253,8 @@ export function ThemeSettingsEditor({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="flex items-center gap-1">
-                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            <div className="flex items-center gap-1 pl-1">
+                              <FaInfoCircle color="#D1D5DB" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -266,8 +290,8 @@ export function ThemeSettingsEditor({
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className="flex items-center gap-1">
-                              {displayToolTips && <FaInfoCircle color="grey" />}
+                            <div className="flex items-center gap-1 pl-1">
+                              <FaInfoCircle color="#D1D5DB" />
                             </div>
                           </TooltipTrigger>
                           <TooltipContent>
@@ -298,8 +322,8 @@ export function ThemeSettingsEditor({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1">
-                          {displayToolTips && <FaInfoCircle color="grey" />}
+                        <div className="flex items-center gap-1 pl-1">
+                          <FaInfoCircle color="#D1D5DB" />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -333,8 +357,8 @@ export function ThemeSettingsEditor({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1">
-                      {displayToolTips && <FaInfoCircle color="grey" />}
+                    <div className="flex items-center gap-1 pl-1">
+                      <FaInfoCircle color="#D1D5DB" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
