@@ -3,12 +3,14 @@ import React, { Suspense } from "react";
 
 export const metadata = {
   title: "Nounspace",
-  description: "Nounspace is a client for Farcaster",
+  description:
+    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on nounspace",
   openGraph: {
     siteName: "Nounspace",
     title: "Nounspace",
     type: "website",
-    description: "Nounspace is a client for Farcaster",
+    description:
+      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on nounspace",
     images: {
       url: `${WEBSITE_URL}/images/nounspace_og.png`,
       type: "image/png",
