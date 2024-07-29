@@ -24,6 +24,7 @@ const categories = [
   { title: "Music", image: "/images/explore-icons/music.png" },
   { title: "AI", image: "/images/explore-icons/ai.png" },
   { title: "Public Goods", image: "/images/explore-icons/public-goods.png" },
+  { title: "People", image: "/images/explore-icons/people.png" },
 ];
 
 export default function Explore({ posts }) {
