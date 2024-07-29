@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useRef,
-} from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
@@ -14,13 +8,11 @@ import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import Link from "next/link";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { CgLogIn, CgLogOut, CgProfile } from "react-icons/cg";
+import { CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
-import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
-import { PiGlobeHemisphereEastBold } from "react-icons/pi";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -34,11 +26,13 @@ type NavItemProps = {
   label: string;
   active?: boolean;
   Icon: React.FC;
-  href?: string;
+  href: string;
   disable?: boolean;
   openInNewTab?: boolean;
   onClick?: () => void;
 };
+
+type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
@@ -115,17 +109,16 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     );
   };
 
-  const NavButton: React.FC<NavItemProps> = ({
+  const NavButton: React.FC<NavButtonProps> = ({
     label,
     Icon,
-    href,
     onClick,
     disable = false,
-    openInNewTab = false,
   }) => {
     return (
       <li>
         <button
+          disabled={disable}
           className={mergeClasses(
             "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
           )}

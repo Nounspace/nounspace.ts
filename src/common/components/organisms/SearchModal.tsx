@@ -2,7 +2,6 @@ import React, {
   useState,
   useEffect,
   useCallback,
-  useRef,
   useImperativeHandle,
 } from "react";
 import { Dialog, DialogContent } from "@/common/components/atoms/dialog";
