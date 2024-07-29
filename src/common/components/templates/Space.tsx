@@ -102,15 +102,9 @@ export default function Space({
   };
 
   return (
-    <>
+    <div className="user-theme-background w-full h-full relative">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div
-        className={
-          editMode
-            ? "w-full transition-all duration-100 ease-out h-full"
-            : "w-full transition-all duration-100 ease-out h-full"
-        }
-      >
+      <div className="w-full transition-all duration-100 ease-out h-full">
         <div className="h-full flex flex-col">
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
@@ -129,6 +123,6 @@ export default function Space({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 }
