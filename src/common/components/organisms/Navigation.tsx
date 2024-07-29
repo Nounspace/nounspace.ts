@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
@@ -8,13 +8,11 @@ import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import Link from "next/link";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { CgLogIn, CgLogOut, CgProfile } from "react-icons/cg";
+import { CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
-import { IoMdRocket } from "react-icons/io";
 import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
-import { PiGlobeHemisphereEastBold } from "react-icons/pi";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -22,6 +20,7 @@ import {
   AnalyticsEvent,
   analytics,
 } from "@/common/providers/AnalyticsProvider";
+import SearchModal from "@/common/components/organisms/SearchModal";
 
 type NavItemProps = {
   label: string;
@@ -33,12 +32,15 @@ type NavItemProps = {
   onClick?: () => void;
 };
 
+type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
+
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+  const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
@@ -107,6 +109,33 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     );
   };
 
+  const NavButton: React.FC<NavButtonProps> = ({
+    label,
+    Icon,
+    onClick,
+    disable = false,
+  }) => {
+    return (
+      <li>
+        <button
+          disabled={disable}
+          className={mergeClasses(
+            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+          )}
+          onClick={onClick}
+        >
+          <Icon aria-hidden="true" />
+          <span className="ms-2">{label}</span>
+        </button>
+      </li>
+    );
+  };
+
+  const openSearchModal = useCallback(() => {
+    if (!searchRef?.current) return;
+    searchRef.current.focus();
+  }, [searchRef]);
+
   return (
     <aside
       id="logo-sidebar"
@@ -121,6 +150,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       >
         <CreateCast />
       </Modal>
+      <SearchModal ref={searchRef} />
       <div className="pt-12 pb-12 h-full md:block hidden">
         <div className="flex flex-col h-full w-[270px] ml-auto">
           <BrandHeader />
@@ -128,20 +158,21 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             <div className="flex-auto">
               <ul className="space-y-2">
                 <NavItem label="Homebase" Icon={HomeIcon} href="/homebase" />
+                <NavButton
+                  label="Search"
+                  Icon={SearchIcon}
+                  onClick={openSearchModal}
+                />
                 <NavItem
                   label="Fair Launch"
-                  Icon={IoMdRocket}
+                  Icon={RocketIcon}
                   href="https://space.nounspace.com/"
                   onClick={() =>
                     analytics.track(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
                 />
-                <NavItem
-                  label="Explore"
-                  Icon={PiGlobeHemisphereEastBold}
-                  href="/explore"
-                />
+                <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
@@ -149,47 +180,19 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     href={`/s/${username}`}
                   />
                 )}
-                {isLoggedIn ? (
-                  <button
-                    className={mergeClasses(
-                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                    )}
+                {isLoggedIn && (
+                  <NavButton
+                    label={"Logout"}
+                    Icon={LogoutIcon}
                     onClick={logout}
-                  >
-                    <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
-                    <span className="ms-2">Logout</span>
-                  </button>
-                ) : isInitializing ? (
-                  <>
-                    <button
-                      className={mergeClasses(
-                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                      )}
-                      onClick={logout}
-                    >
-                      <CgLogOut className="w-6 h-6 text-gray-800 dark:text-white" />
-                      <span className="ms-2">Logout</span>
-                    </button>
-                    <button
-                      className={mergeClasses(
-                        "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                      )}
-                      onClick={openModal}
-                    >
-                      <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
-                      <span className="ms-2">Complete Sign Up</span>
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    className={mergeClasses(
-                      "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-                    )}
+                  />
+                )}
+                {!isLoggedIn && (
+                  <NavButton
+                    label={isInitializing ? "Complete Signup" : "Login"}
+                    Icon={LoginIcon}
                     onClick={openModal}
-                  >
-                    <CgLogIn className="w-6 h-6 text-gray-800 dark:text-white" />
-                    <span className="ms-2">Login</span>
-                  </button>
+                  />
                 )}
               </ul>
             </div>
@@ -253,6 +256,110 @@ const HomeIcon = () => {
         strokeLinejoin="round"
         strokeWidth="2"
         d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"
+      />
+    </svg>
+  );
+};
+
+const SearchIcon = () => (
+  <svg
+    className="w-6 h-6 text-gray-800 dark:text-white"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeWidth="2"
+      d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+    />
+  </svg>
+);
+
+const RocketIcon = () => (
+  <svg
+    className="w-[24px] h-[24px] text-gray-800 dark:text-white"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="m10.051 8.102-3.778.322-1.994 1.994a.94.94 0 0 0 .533 1.6l2.698.316m8.39 1.617-.322 3.78-1.994 1.994a.94.94 0 0 1-1.595-.533l-.4-2.652m8.166-11.174a1.366 1.366 0 0 0-1.12-1.12c-1.616-.279-4.906-.623-6.38.853-1.671 1.672-5.211 8.015-6.31 10.023a.932.932 0 0 0 .162 1.111l.828.835.833.832a.932.932 0 0 0 1.111.163c2.008-1.102 8.35-4.642 10.021-6.312 1.475-1.478 1.133-4.77.855-6.385Zm-2.961 3.722a1.88 1.88 0 1 1-3.76 0 1.88 1.88 0 0 1 3.76 0Z"
+    />
+  </svg>
+);
+
+const ExploreIcon = () => {
+  return (
+    <svg
+      className="w-6 h-6 text-gray-800 dark:text-white"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeWidth="2"
+        d="M4.37 7.657c2.063.528 2.396 2.806 3.202 3.87 1.07 1.413 2.075 1.228 3.192 2.644 1.805 2.289 1.312 5.705 1.312 6.705M20 15h-1a4 4 0 0 0-4 4v1M8.587 3.992c0 .822.112 1.886 1.515 2.58 1.402.693 2.918.351 2.918 2.334 0 .276 0 2.008 1.972 2.008 2.026.031 2.026-1.678 2.026-2.008 0-.65.527-.9 1.177-.9H20M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+      />
+    </svg>
+  );
+};
+
+const LogoutIcon = () => {
+  return (
+    <svg
+      className="w-[24px] h-[24px] text-gray-800 dark:text-white scale-x-[-1] translate-x-[2px]"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
+      />
+    </svg>
+  );
+};
+
+const LoginIcon = () => {
+  return (
+    <svg
+      className="w-[24px] h-[24px] text-gray-800 dark:text-white"
+      aria-hidden="true"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+        d="M16 12H4m12 0-4 4m4-4-4-4m3-4h2a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3h-2"
       />
     </svg>
   );
