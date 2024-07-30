@@ -190,11 +190,11 @@ const CastAuthorAttribution = ({
         >
           {isEmbed && (
             <img
-              className="relative h-4 w-4 mr-1 flex-none bg-background rounded-full"
+              className="relative h-5 w-5 mr-0.5 flex-none bg-background rounded-full"
               src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
             />
           )}
-          {cast.author.display_name}
+          <span className="hover:underline">{cast.author.display_name}</span>
           <span>
             {cast.author.power_badge && (
               <Image
@@ -392,7 +392,7 @@ export const CastRow = ({
     return (
       <div
         key={`cast-${cast.hash}-${key}`}
-        className="mt-1.5 flex align-center text-sm text-foreground/40 hover:text-foreground hover:bg-background/50 py-1 px-1.5 rounded-md"
+        className="mt-1.5 flex align-center text-sm text-foreground/50 hover:text-foreground/60 hover:bg-background/90 py-1 px-1.5 rounded-md"
         onClick={async (event) => {
           event.stopPropagation();
           onClickReaction(key, isActive);
@@ -497,7 +497,10 @@ export const CastRow = ({
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div onClick={onSelect} className="hover:bg-foreground/5 cursor-pointer">
+      <div
+        onClick={onSelect}
+        className="hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out"
+      >
         <div className="p-3">
           <div className="flex items-top gap-x-2">
             <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
