@@ -83,7 +83,12 @@ export const CastThreadView = ({
                   )}
                 />
               )}
-              <CastRow cast={cast} showChannel isThreadView={idx > 0} />
+              <CastRow
+                cast={cast}
+                showChannel
+                isThreadView={idx > 0}
+                isDetailView={idx === 0}
+              />
             </div>
           </div>
         </div>

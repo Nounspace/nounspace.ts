@@ -30,6 +30,7 @@ import FarcasterLinkify from "./linkify";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import { useRouter } from "next/router";
 import { formatTimeAgo } from "@/common/lib/utils/date";
+import ExpandableText from "@/common/components/molecules/ExpandableText";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -65,6 +66,7 @@ interface CastRowProps {
   onSelect?: () => void;
   showChannel?: boolean;
   isThreadView?: boolean;
+  isDetailView?: boolean;
   isEmbed?: boolean;
   hideReactions?: boolean;
 }
@@ -141,6 +143,7 @@ const CastBody = ({
   renderRecastBadge,
   renderCastReactions,
   userFid,
+  isDetailView,
 }) => {
   return (
     <div className="flex flex-col grow">
@@ -157,7 +160,9 @@ const CastBody = ({
             className="leading-[1.3] text-left max-h-96 overflow-y-auto"
             style={castTextStyle}
           >
-            {cast.text}
+            <ExpandableText maxLines={isDetailView ? null : 8}>
+              {cast.text}
+            </ExpandableText>
           </p>
         </FarcasterLinkify>
       )}
@@ -229,6 +234,7 @@ export const CastRow = ({
   onSelect,
   isEmbed = false,
   isThreadView = false,
+  isDetailView = false,
   hideReactions = false,
 }: CastRowProps) => {
   const [didLike, setDidLike] = useState(false);
@@ -504,6 +510,7 @@ export const CastRow = ({
               hideReactions={hideReactions}
               renderRecastBadge={renderRecastBadge}
               renderCastReactions={renderCastReactions}
+              isDetailView={isDetailView}
               userFid={userFid}
             />
           </div>
