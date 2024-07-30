@@ -469,7 +469,7 @@ export const CastRow = ({
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div onClick={onSelect}>
+      <div onClick={onSelect} className="hover:bg-foreground/5 cursor-pointer">
         <div className="p-3">
           <div className="flex items-top gap-x-2">
             <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
