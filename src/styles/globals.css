@@ -33,6 +33,14 @@
     --user-theme-headings-font-color: initial;
   }
 
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+
   .dark {
     --background: 0deg, 0%, 9%;
     --foreground: 0 0% 98%;
