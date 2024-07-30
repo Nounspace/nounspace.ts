@@ -9,7 +9,6 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import { localize, timeDiff } from "@/common/lib/utils/date";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
 import { includes, isObject, isUndefined, map, get } from "lodash";
 import { ErrorBoundary } from "@sentry/react";
@@ -28,6 +27,7 @@ import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import Link from "next/link";
 import FarcasterLinkify from "./linkify";
+import { formatTimeAgo } from "@/common/lib/utils/date";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -145,14 +145,7 @@ const CastAuthorAttribution = ({
   showChannel,
   isEmbed,
 }) => {
-  const now = new Date();
-
-  const timeAgo =
-    "timestamp" in cast
-      ? timeDiff(now, new Date(cast.timestamp))
-      : [0, "seconds"];
-
-  const timeAgoStr = localize(Number(timeAgo[0]), timeAgo[1].toString());
+  const timeAgoStr = formatTimeAgo(cast.timestamp);
 
   return (
     <div className="flex flex-row justify-between gap-x-4 leading-6 tracking-tight leading-[1.3]">
