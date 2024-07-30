@@ -95,6 +95,11 @@ export default function Space({
       ? LayoutFidgets[config.layoutDetails.layoutFidget]
       : LayoutFidgets["grid"];
 
+  const layoutConfig = config?.layoutDetails?.layoutConfig ?? {
+    layout: [],
+    layoutFidget: "grid",
+  };
+
   return (
     <>
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
@@ -110,9 +115,7 @@ export default function Space({
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
           <LayoutFidget
-            layoutConfig={{
-              ...config.layoutDetails.layoutConfig,
-            }}
+            layoutConfig={{ ...layoutConfig }}
             fidgetInstanceDatums={config.fidgetInstanceDatums}
             theme={config.theme}
             fidgetTrayContents={config.fidgetTrayContents}
