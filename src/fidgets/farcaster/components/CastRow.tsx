@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { Properties } from "csstype";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import {
@@ -27,6 +27,8 @@ import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import Link from "next/link";
 import FarcasterLinkify from "./linkify";
+import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
+import { useRouter } from "next/router";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
@@ -67,14 +69,41 @@ interface CastRowProps {
   hideReactions?: boolean;
 }
 
-const CastLeftAvatar = ({ isEmbed, cast }) => {
+const PriorityLink = ({ children, href, ...props }) => {
+  const router = useRouter();
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      router.push(href);
+    },
+    [href],
+  );
+
   return (
-    !isEmbed && (
-      <img
-        className="relative h-10 w-10 flex-none bg-background rounded-full object-cover"
-        src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
-      />
-    )
+    <a {...props} href={href} onClick={handleClick}>
+      {children}
+    </a>
+  );
+};
+
+const CastLeftAvatar = ({ isEmbed, cast }) => {
+  if (isEmbed) return null;
+
+  return (
+    <PriorityLink
+      className="cursor-pointer"
+      href={`/s/${cast.author.username}`}
+    >
+      <Avatar className="h-10 w-10 flex-none bg-background hover:brightness-[90%] transition duration-300 ease-out">
+        <AvatarImage
+          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
+          alt={cast.author?.display_name}
+          className="object-cover"
+        />
+      </Avatar>
+    </PriorityLink>
   );
 };
 
