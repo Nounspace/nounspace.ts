@@ -1,3 +1,4 @@
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { FaTimes } from "react-icons/fa";
