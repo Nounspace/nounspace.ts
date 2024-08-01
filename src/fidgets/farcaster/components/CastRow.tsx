@@ -554,7 +554,7 @@ export const CastRow = ({
     <div
       className={classNames(
         "![&(:last-child)]:border-b-none relative",
-        !hasReplies || isFocused ? "border-b" : "",
+        !isEmbed && (!hasReplies || isFocused) ? "border-b" : "",
       )}
     >
       <Modal
