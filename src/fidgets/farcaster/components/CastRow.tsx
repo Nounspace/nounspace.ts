@@ -120,7 +120,7 @@ const CastEmbeds = ({ cast }) => {
 
   return (
     <div
-      className="mt-4 gap-y-4 border rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
+      className="mt-4 gap-y-4 border border-foreground/10 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
       onClick={(e) => {
         e.stopPropagation();
       }}
