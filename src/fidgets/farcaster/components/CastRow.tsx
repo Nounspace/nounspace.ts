@@ -91,10 +91,10 @@ const PriorityLink = ({ children, href, ...props }) => {
   );
 };
 
-const CastAuthorAvatar = ({ cast, className }) => {
+const CastAvatar = ({ cast, className }) => {
   return (
     <PriorityLink
-      className="cursor-pointer"
+      className="cursor-pointer h-fit"
       href={`/s/${cast.author.username}`}
     >
       <Avatar
@@ -120,8 +120,10 @@ const CastEmbeds = ({ cast }) => {
 
   return (
     <div
-      className="mt-4 space-y-4 border rounded-xl flex justify-center overflow-hidden max-h-72"
-      onClick={(e) => e.preventDefault()}
+      className="mt-4 gap-y-4 border rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
     >
       <ErrorBoundary>
         {map(cast.embeds, (embed) => {
@@ -150,10 +152,7 @@ const CastAttributionHeader = ({
   return (
     <div className="flex justify-start w-full gap-x-2">
       {avatar && (
-        <CastAuthorAvatar
-          cast={cast}
-          className={inline ? "size-5" : "size-10"}
-        />
+        <CastAvatar cast={cast} className={inline ? "size-5" : "size-10"} />
       )}
       <div
         className={classNames(
@@ -280,7 +279,7 @@ const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
   return (
     <div className="flex flex-0 justify-center top-0 bottom-0">
       {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
-      <CastAuthorAvatar cast={cast} className="size-10" />
+      <CastAvatar cast={cast} className="size-10" />
       {connectBottom && (
         <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
       )}
@@ -574,7 +573,13 @@ export const CastRow = ({
             connectBottom={hasReplies}
           />
         )}
-        <div className={isFocused ? "flex flex-col flex-1 gap-2" : "flex-1"}>
+        <div
+          className={
+            isFocused
+              ? "flex flex-col flex-1 overflow-hidden gap-2"
+              : "flex-1 overflow-hidden"
+          }
+        >
           <CastAttributionHeader
             cast={cast}
             avatar={isFocused || isEmbed}

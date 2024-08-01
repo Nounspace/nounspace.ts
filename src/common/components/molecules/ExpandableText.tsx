@@ -64,7 +64,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
   return (
     <>
-      <p
+      <span
         ref={textRef}
         style={{
           overflow: "hidden",
@@ -72,11 +72,14 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         }}
       >
         {children}
-      </p>
+      </span>
       {overflow && (
-        <p onClick={handleShowMore} className="hover:underline text-blue-500">
+        <span
+          onClick={handleShowMore}
+          className="hover:underline text-blue-500 block"
+        >
           {expandButtonText}
-        </p>
+        </span>
       )}
     </>
   );
