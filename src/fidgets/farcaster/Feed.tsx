@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import { isNil } from "lodash";
 import {
   FidgetArgs,
@@ -18,6 +18,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import { useGetCasts } from "@/common/data/queries/farcaster";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 enum FilterType {
   Channel = "channel_id",
@@ -192,10 +193,26 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     );
   };
 
+  const isThreadView = threadStack.last !== undefined;
+
+  // Note: feed is mounted in its own scroll container to maintain its scroll position when
+  // returning from a thread.
   return (
-    <div className="h-full overflow-y-scroll justify-center items-center">
-      {threadStack.last !== undefined ? renderThread() : renderFeed()}
-    </div>
+    <>
+      {isThreadView && (
+        <div className="h-full overflow-y-scroll justify-center items-center">
+          {renderThread()}
+        </div>
+      )}
+      <div
+        className={mergeClasses(
+          "h-full overflow-y-scroll justify-center items-center",
+          isThreadView ? "invisible" : "visible",
+        )}
+      >
+        {renderFeed()}
+      </div>
+    </>
   );
 };
 
