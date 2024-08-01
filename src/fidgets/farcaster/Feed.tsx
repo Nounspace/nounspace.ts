@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { isNil } from "lodash";
 import {
   FidgetArgs,
@@ -17,6 +17,7 @@ import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useGetCasts } from "@/common/data/queries/farcaster";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 
 enum FilterType {
   Channel = "channel_id",
@@ -122,8 +123,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     channel,
   });
 
-  const [showCastThreadView, setShowCastThreadView] = useState(false);
-  const [selectedCastHash, setSelectedCastHash] = useState("");
+  const threadStack = useLifoQueue<string>();
   const [ref, inView] = useInView();
 
   useEffect(() => {
@@ -133,24 +133,23 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   }, [inView]);
 
   useEffect(() => {
-    setShowCastThreadView(false);
+    threadStack.clear();
   }, [settings]);
 
-  const onSelectCast = (hash: string) => {
-    setSelectedCastHash(hash);
-    setShowCastThreadView(true);
-  };
+  const onSelectCast = useCallback((hash: string) => {
+    threadStack.push(hash);
+  }, []);
 
   const renderThread = () => (
     <CastThreadView
       cast={{
-        hash: selectedCastHash,
+        hash: threadStack.last || "",
         author: {
           fid: fid,
         },
       }}
-      onBack={() => setShowCastThreadView(false)}
-      setSelectedCastHash={setSelectedCastHash}
+      onBack={threadStack.pop}
+      onSelect={onSelectCast}
     />
   );
 
@@ -165,11 +164,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
               data.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
                   {page.casts.map((cast, index) => (
-                    <CastRow
-                      cast={cast}
-                      key={index}
-                      onSelect={() => onSelectCast(cast.hash)}
-                    />
+                    <CastRow cast={cast} key={index} onSelect={onSelectCast} />
                   ))}
                 </React.Fragment>
               ))
@@ -199,7 +194,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
   return (
     <div className="h-full overflow-y-scroll justify-center items-center">
-      {showCastThreadView ? renderThread() : renderFeed()}
+      {threadStack.last !== undefined ? renderThread() : renderFeed()}
     </div>
   );
 };

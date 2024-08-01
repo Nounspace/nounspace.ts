@@ -10,16 +10,14 @@ import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
 type CastThreadViewProps = {
   cast: { hash: string; author?: { fid: number } };
   onBack?: () => void;
-  isActive?: boolean;
-  setSelectedCastHash?: React.Dispatch<React.SetStateAction<string>>;
+  onSelect?: (hash: string) => void;
   viewerFid?: number;
 };
 
 export const CastThreadView = ({
   cast,
   onBack,
-  isActive,
-  setSelectedCastHash,
+  onSelect,
   viewerFid,
 }: CastThreadViewProps) => {
   const { data, isLoading } = useLoadFarcasterConversation(
@@ -70,6 +68,7 @@ export const CastThreadView = ({
               isFocused={false}
               isReply={idx !== 0}
               hasReplies={true}
+              onSelect={onSelect}
             />
           ))}
           <CastRow
@@ -79,6 +78,7 @@ export const CastThreadView = ({
             isFocused={true}
             isReply={parentCasts.length > 0}
             hasReplies={replyCasts.length > 0}
+            onSelect={onSelect}
           />
           {replyCasts.map((cast, idx) => (
             <CastRow
@@ -88,6 +88,7 @@ export const CastThreadView = ({
               isFocused={false}
               isReply={false}
               hasReplies={false}
+              onSelect={onSelect}
             />
           ))}
         </ul>

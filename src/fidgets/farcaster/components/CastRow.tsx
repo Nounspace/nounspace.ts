@@ -63,7 +63,7 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
-  onSelect?: () => void;
+  onSelect?: (hash: string) => void;
   isFocused?: boolean;
   isEmbed?: boolean;
   isReply?: boolean;
@@ -552,16 +552,20 @@ export const CastRow = ({
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
+      if (isFocused) {
+        return;
+      }
+
       const selection = window.getSelection();
       if (selection && selection.toString().length > 0) {
         // Text was selected, prevent click
         event.preventDefault();
         event.stopPropagation();
       } else {
-        onSelect && onSelect();
+        onSelect && onSelect(cast.hash);
       }
     },
-    [onSelect],
+    [cast.hash, isFocused],
   );
 
   return (
@@ -586,7 +590,10 @@ export const CastRow = ({
       </Modal>
       <div
         onClick={handleClick}
-        className="hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out py-3 px-4 flex gap-2"
+        className={classNames(
+          "transition duration-300 ease-out py-3 px-4 flex gap-2",
+          !isFocused && "hover:bg-foreground/5 cursor-pointer",
+        )}
       >
         {!isFocused && !isEmbed && (
           <CastLeftGutter
