@@ -550,6 +550,20 @@ export const CastRow = ({
       ? getChannelForParentUrl(cast.parent_url)
       : null;
 
+  const handleClick = useCallback(
+    (event: React.MouseEvent) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        // Text was selected, prevent click
+        event.preventDefault();
+        event.stopPropagation();
+      } else {
+        onSelect && onSelect();
+      }
+    },
+    [onSelect],
+  );
+
   return (
     <div
       className={classNames(
@@ -571,7 +585,7 @@ export const CastRow = ({
         </div>
       </Modal>
       <div
-        onClick={onSelect}
+        onClick={handleClick}
         className="hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out py-3 px-4 flex gap-2"
       >
         {!isFocused && !isEmbed && (
