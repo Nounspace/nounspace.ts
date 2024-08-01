@@ -118,23 +118,31 @@ const CastEmbeds = ({ cast }) => {
     return null;
   }
 
+  const embedUrls = cast.embeds.map((embed) => {
+    return isEmbedUrl(embed)
+      ? {
+          ...embed,
+          key: embed.url,
+        }
+      : {
+          castId: embed.cast_id,
+          key: embed.cast_id,
+        };
+  });
+
+  const hasEmbeddedCasts = embedUrls.some((eurl) => !!eurl.castId);
+
   return (
     <div
       className="mt-4 gap-y-4 border border-foreground/10 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
       onClick={(e) => {
-        e.stopPropagation();
+        if (!hasEmbeddedCasts) {
+          e.stopPropagation();
+        }
       }}
     >
       <ErrorBoundary>
-        {map(cast.embeds, (embed) => {
-          if (isEmbedUrl(embed)) {
-            return renderEmbedForUrl({ ...embed, key: embed.url });
-          }
-          return renderEmbedForUrl({
-            castId: embed.cast_id,
-            key: embed.cast_id,
-          });
-        })}
+        {map(embedUrls, (e) => renderEmbedForUrl(e))}
       </ErrorBoundary>
     </div>
   );
