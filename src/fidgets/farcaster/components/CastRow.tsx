@@ -113,38 +113,39 @@ const CastAvatar = ({ cast, className }) => {
   );
 };
 
-const CastEmbeds = ({ cast }) => {
+const CastEmbeds = ({ cast, onSelectCast }) => {
   if (!("embeds" in cast) || !cast.embeds.length) {
     return null;
   }
 
-  const embedUrls = cast.embeds.map((embed) => {
-    return isEmbedUrl(embed)
-      ? {
-          ...embed,
-          key: embed.url,
-        }
-      : {
-          castId: embed.cast_id,
-          key: embed.cast_id,
-        };
-  });
-
-  const hasEmbeddedCasts = embedUrls.some((eurl) => !!eurl.castId);
-
   return (
-    <div
-      className="mt-4 gap-y-4 border border-foreground/10 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
-      onClick={(e) => {
-        if (!hasEmbeddedCasts) {
-          e.stopPropagation();
-        }
-      }}
-    >
-      <ErrorBoundary>
-        {map(embedUrls, (e) => renderEmbedForUrl(e))}
-      </ErrorBoundary>
-    </div>
+    <ErrorBoundary>
+      {map(cast.embeds, (embed) => {
+        const embedData = isEmbedUrl(embed)
+          ? {
+              ...embed,
+              key: embed.url,
+            }
+          : {
+              castId: embed.cast_id,
+              key: embed.cast_id,
+            };
+
+        return (
+          <div
+            className="mt-4 gap-y-4 border border-foreground/10 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
+            onClick={(event) => {
+              event.stopPropagation();
+              if (embedData?.castId?.hash) {
+                onSelectCast(embedData.castId.hash);
+              }
+            }}
+          >
+            {renderEmbedForUrl(embedData)}
+          </div>
+        );
+      })}
+    </ErrorBoundary>
   );
 };
 
@@ -205,11 +206,11 @@ const CastAttributionSecondary = ({ cast }) => {
   }, [cast?.timestamp]);
 
   return (
-    <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-medium">
+    <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
       <span>@{cast.author.username}</span>
       {relativeDateString && (
         <>
-          <span className="font-bold"> · </span>
+          <span className="font-normal"> · </span>
           <span className="">{relativeDateString}</span>
         </>
       )}
@@ -228,6 +229,7 @@ const CastBody = ({
   renderCastReactions,
   userFid,
   isDetailView,
+  onSelectCast,
 }) => {
   return (
     <div className="flex flex-col grow">
@@ -245,7 +247,7 @@ const CastBody = ({
           </p>
         </FarcasterLinkify>
       )}
-      {!isEmbed && <CastEmbeds cast={cast} />}
+      {!isEmbed && <CastEmbeds cast={cast} onSelectCast={onSelectCast} />}
       {!hideReactions && renderCastReactions(cast as CastWithInteractions)}
     </div>
   );
@@ -605,7 +607,7 @@ export const CastRow = ({
         <div
           className={
             isFocused
-              ? "flex flex-col flex-1 overflow-hidden gap-2"
+              ? "flex flex-col flex-1 overflow-hidden gap-3"
               : "flex-1 overflow-hidden"
           }
         >
@@ -625,6 +627,7 @@ export const CastRow = ({
             renderCastReactions={renderCastReactions}
             isDetailView={isFocused}
             userFid={userFid}
+            onSelectCast={onSelect}
           />
         </div>
       </div>
