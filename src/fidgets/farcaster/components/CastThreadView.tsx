@@ -1,11 +1,12 @@
 import React from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { CastRow } from "./CastRow";
-import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { IoArrowBack } from "react-icons/io5";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Button } from "@/common/components/atoms/button";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
+import { CardHeader, CardTitle } from "@/common/components/atoms/card";
 
 type CastThreadViewProps = {
   cast: { hash: string; author?: { fid: number } };
@@ -32,33 +33,12 @@ export const CastThreadView = ({
   const replyCasts: CastWithInteractions[] =
     data?.conversation?.cast?.direct_replies || [];
 
-  const renderGoBackButton = () => (
-    <Button
-      variant="outline"
-      onClick={() => onBack && onBack()}
-      className="w-20 group m-2 flex items-center px-2 py-1 shadow-sm text-sm font-medium rounded-md text-foreground/80 bg-background focus:outline-none"
-    >
-      <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
-        <>
-          <ArrowLeftIcon
-            className="mr-1 h-4 w-4 text-foreground/70 group-hover:text-foreground/80"
-            aria-hidden="true"
-          />
-          Back
-        </>
-      </Tooltip.Provider>
-    </Button>
-  );
-
-  if (!focusedCast) {
-    return "Cast not found";
-  }
-
   return (
-    <div className="flex flex-col">
-      {!isLoading && onBack && renderGoBackButton()}
+    <div className="flex flex-col relative">
+      <StickyHeader onBack={onBack} />
       {isLoading && <Loading />}
-      {!isLoading && (
+      {!isLoading && !focusedCast && "Cast not found"}
+      {!isLoading && focusedCast && (
         <ul>
           {parentCasts.map((cast, idx) => (
             <CastRow
@@ -96,3 +76,27 @@ export const CastThreadView = ({
     </div>
   );
 };
+
+const StickyHeader = ({ onBack }: { onBack?: () => void }) => {
+  return onBack ? (
+    <CardHeader className="bg-background/85 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-10">
+      <Button
+        variant="ghost"
+        onClick={() => onBack && onBack()}
+        className="flex items-center focus:outline-none"
+      >
+        <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
+          <>
+            <IoArrowBack
+              className="size-5 group-hover:text-foreground/80 stroke-2"
+              aria-hidden="true"
+            />
+          </>
+        </Tooltip.Provider>
+      </Button>
+      <CardTitle className="!mt-0 text-xl">Conversation</CardTitle>
+    </CardHeader>
+  ) : null;
+};
+
+export default CastThreadView;
