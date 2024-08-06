@@ -59,17 +59,15 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
   }, [maxLines]);
 
   if (!maxLines) {
-    return <p>{children}</p>;
+    return <span>{children}</span>;
   }
 
   return (
     <>
       <span
         ref={textRef}
-        style={{
-          overflow: "hidden",
-          maxHeight: maxHeight,
-        }}
+        className="overflow-hidden block"
+        style={{ maxHeight }}
       >
         {children}
       </span>

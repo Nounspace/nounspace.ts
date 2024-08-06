@@ -133,7 +133,10 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
 
         return (
           <div
-            className="mt-4 gap-y-4 border border-foreground/10 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] bg-foreground/5"
+            className={classNames(
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              embedData.castId ? "max-w-[100%]" : "max-w-max",
+            )}
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
@@ -241,7 +244,7 @@ const CastBody = ({
             }
             style={castTextStyle}
           >
-            <ExpandableText maxLines={isDetailView ? null : 8}>
+            <ExpandableText maxLines={isDetailView ? null : 10}>
               {cast.text}
             </ExpandableText>
           </p>
@@ -249,30 +252,6 @@ const CastBody = ({
       )}
       {!isEmbed && <CastEmbeds cast={cast} onSelectCast={onSelectCast} />}
       {!hideReactions && renderCastReactions(cast as CastWithInteractions)}
-    </div>
-  );
-};
-
-const CastAuthorAttribution = ({
-  cast,
-  renderRecastBadge,
-  channel,
-  showChannel,
-  isEmbed,
-}) => {
-  return (
-    <div className="flex flex-row justify-between gap-x-4 leading-6 tracking-tight leading-[1.3]">
-      <div className="flex flex-row">
-        {showChannel && channel && (
-          <Button
-            variant="outline"
-            className="h-5 ml-2 inline-flex truncate items-top rounded-sm bg-blue-400/10  hover:bg-blue-400/20 px-1.5 py-0.5 text-xs font-medium text-blue-400 hover:text-blue-600 ring-1 ring-inset ring-blue-400/30 border-none"
-          >
-            {channel.name}
-          </Button>
-        )}
-        {renderRecastBadge()}
-      </div>
     </div>
   );
 };
@@ -462,7 +441,7 @@ export const CastRow = ({
     return (
       <div
         key={`cast-${cast.hash}-${key}`}
-        className="mt-1.5 flex align-center text-sm text-foreground/50 hover:text-foreground/60 hover:bg-background/90 py-1 px-1.5 rounded-md"
+        className="mt-1.5 flex align-center cursor-pointer text-sm text-foreground/50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
         onClick={async (event) => {
           event.stopPropagation();
           onClickReaction(key, isActive);
@@ -574,7 +553,9 @@ export const CastRow = ({
     <div
       className={classNames(
         "![&(:last-child)]:border-b-none relative",
-        !isEmbed && (!hasReplies || isFocused) ? "border-b" : "",
+        !isEmbed && (!hasReplies || isFocused)
+          ? "border-b border-b-foreground/10"
+          : "",
       )}
     >
       <Modal
@@ -593,7 +574,7 @@ export const CastRow = ({
       <div
         onClick={handleClick}
         className={classNames(
-          "transition duration-300 ease-out py-3 px-4 flex gap-2",
+          "transition duration-300 ease-out p-3 flex gap-2",
           !isFocused && "hover:bg-foreground/5 cursor-pointer",
         )}
       >
@@ -604,13 +585,7 @@ export const CastRow = ({
             connectBottom={hasReplies}
           />
         )}
-        <div
-          className={
-            isFocused
-              ? "flex flex-col flex-1 overflow-hidden gap-3"
-              : "flex-1 overflow-hidden"
-          }
-        >
+        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1"}>
           <CastAttributionHeader
             cast={cast}
             avatar={isFocused || isEmbed}

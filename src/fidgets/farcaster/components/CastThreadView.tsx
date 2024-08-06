@@ -79,11 +79,11 @@ export const CastThreadView = ({
 
 const StickyHeader = ({ onBack }: { onBack?: () => void }) => {
   return onBack ? (
-    <CardHeader className="bg-background/85 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-10">
+    <CardHeader className="bg-background/75 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-10">
       <Button
         variant="ghost"
         onClick={() => onBack && onBack()}
-        className="flex items-center focus:outline-none"
+        className="flex items-center focus:outline-none size-9 p-0 hover:bg-foreground/5 ml-1 rounded-full"
       >
         <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
           <>
