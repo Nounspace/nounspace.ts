@@ -17,9 +17,10 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@/common/components/atoms/avatar"; // Adjust import path as needed
-import ColorPicker from "react-best-gradient-color-picker";
-import { ColorRing } from "react-loader-spinner";
+} from "@/common/components/atoms/avatar";
+import SwitchButton, {
+  ViewMode,
+} from "@/common/components/molecules/ViewSelector";
 
 export type Link = {
   text: string;
@@ -27,13 +28,14 @@ export type Link = {
   avatar?: string;
 };
 
-export type TextFidgetSettings = {
+export type LinkFidgetSettings = {
   title?: string;
   links: Link[];
   itemBackground: string;
+  viewMode: ViewMode;
 } & FidgetSettingsStyle;
 
-export const textConfig: FidgetProperties = {
+export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
   icon: 0x26d3,
   fields: [
@@ -50,6 +52,13 @@ export const textConfig: FidgetProperties = {
       required: true,
       inputSelector: LinksInput,
       group: "settings",
+    },
+    {
+      fieldName: "viewMode",
+      default: "grid",
+      required: false,
+      inputSelector: SwitchButton,
+      group: "style",
     },
     {
       fieldName: "headingsFontFamily",
@@ -72,7 +81,6 @@ export const textConfig: FidgetProperties = {
       inputSelector: ColorSelector,
       group: "style",
     },
-
     ...defaultStyleFields,
     {
       fieldName: "css",
@@ -90,10 +98,11 @@ export const textConfig: FidgetProperties = {
   },
 };
 
-export const Links: React.FC<FidgetArgs<TextFidgetSettings>> = ({
+export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
   settings,
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
+  const isGridView = settings.viewMode === "grid";
 
   return (
     <div
@@ -123,49 +132,57 @@ export const Links: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           </center>
         </CardHeader>
       )}
-      {links.length > 0 &&
-        links.map((link, index) => (
-          <CardContent
-            style={{
-              background: settings.itemBackground,
-            }}
-            className="p-1 flex items-center justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg"
-            key={index}
-          >
-            {link.avatar ? (
-              <Avatar className="mr-4 flex-shrink-0">
-                <AvatarImage src={link.avatar} alt={link.text} />
-                <AvatarFallback>
-                  <span className="sr-only">{link.text}</span>
-                </AvatarFallback>
-              </Avatar>
-            ) : (
-              <Avatar className="mr-4 flex-shrink-0">
-                <AvatarImage src="/images/logo.png" alt={link.text} />
-                <AvatarFallback>
-                  <span className="sr-only">{link.text}</span>
-                </AvatarFallback>
-              </Avatar>
-            )}
 
-            <CardDescription
-              className="text-base font-normal text-black dark:text-white flex-grow"
+      <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"}>
+        {links.length > 0 &&
+          links.map((link, index) => (
+            <CardContent
               style={{
-                fontFamily: settings.fontFamily,
-                color: settings.fontColor,
+                background: settings.itemBackground,
               }}
+              className={
+                isGridView
+                  ? "p-4 flex flex-col items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg"
+                  : "p-1 flex items-center justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg"
+              }
+              key={index}
             >
-              <a href={link.url} target="_blank" rel="noopener noreferrer">
-                {link.text}
-              </a>
-            </CardDescription>
-          </CardContent>
-        ))}
+              {link.avatar ? (
+                <Avatar className={isGridView ? "mb-4" : "mr-4 flex-shrink-0"}>
+                  <AvatarImage src={link.avatar} alt={link.text} />
+                  <AvatarFallback>
+                    <span className="sr-only">{link.text}</span>
+                  </AvatarFallback>
+                </Avatar>
+              ) : (
+                <Avatar className={isGridView ? "mb-4" : "mr-4 flex-shrink-0"}>
+                  <AvatarImage src="/images/logo.png" alt={link.text} />
+                  <AvatarFallback>
+                    <span className="sr-only">{link.text}</span>
+                  </AvatarFallback>
+                </Avatar>
+              )}
+
+              <CardDescription
+                className="text-base font-normal text-black dark:text-white flex-grow"
+                style={{
+                  fontFamily: settings.fontFamily,
+                  color: settings.fontColor,
+                  textAlign: isGridView ? "center" : "left",
+                }}
+              >
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                  {link.text}
+                </a>
+              </CardDescription>
+            </CardContent>
+          ))}
+      </div>
     </div>
   );
 };
 
 export default {
   fidget: Links,
-  properties: textConfig,
-} as FidgetModule<FidgetArgs<TextFidgetSettings>>;
+  properties: linkConfig,
+} as FidgetModule<FidgetArgs<LinkFidgetSettings>>;
