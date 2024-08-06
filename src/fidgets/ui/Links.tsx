@@ -26,6 +26,7 @@ export type Link = {
   text: string;
   url: string;
   avatar?: string;
+  description?: string;
 };
 
 export type LinkFidgetSettings = {
@@ -33,6 +34,7 @@ export type LinkFidgetSettings = {
   links: Link[];
   itemBackground: string;
   viewMode: ViewMode;
+  description?: string;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -41,7 +43,7 @@ export const linkConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "title",
-      default: "My Links",
+      default: "Awesome Links",
       required: false,
       inputSelector: TextInput,
       group: "settings",
@@ -62,7 +64,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "headingsFontFamily",
-      default: "var(--user-theme-headings-font)",
+      default: "Londrina Solid",
       required: false,
       inputSelector: FontSelector,
       group: "style",
@@ -115,6 +117,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         boxShadow: settings.fidgetShadow,
         overflow: "auto",
         scrollbarWidth: "none",
+        padding: "1rem",
       }}
     >
       {settings?.title && (
@@ -139,16 +142,22 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
             <CardContent
               style={{
                 background: settings.itemBackground,
+                wordWrap: "break-word",
+                maxHeight: "200px",
+                height: "auto",
+                display: "flex",
+                flexDirection: isGridView ? "column" : "row",
+                alignItems: "flex-start",
               }}
               className={
                 isGridView
-                  ? "p-4 flex flex-col items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg"
-                  : "p-1 flex items-center justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-lg"
+                  ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md"
+                  : "p-2 flex items-center justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md pl-3"
               }
               key={index}
             >
               {link.avatar ? (
-                <Avatar className={isGridView ? "mb-4" : "mr-4 flex-shrink-0"}>
+                <Avatar className={isGridView ? "mb-2" : "mr-4 flex-shrink-0"}>
                   <AvatarImage src={link.avatar} alt={link.text} />
                   <AvatarFallback>
                     <span className="sr-only">{link.text}</span>
@@ -163,18 +172,39 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                 </Avatar>
               )}
 
-              <CardDescription
-                className="text-base font-normal text-black dark:text-white flex-grow"
-                style={{
-                  fontFamily: settings.fontFamily,
-                  color: settings.fontColor,
-                  textAlign: isGridView ? "center" : "left",
-                }}
-              >
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  {link.text}
+                  <CardDescription
+                    className="items-start text-base font-normal text-black dark:text-white flex-grow"
+                    style={{
+                      fontFamily: settings.fontFamily,
+                      color: settings.fontColor,
+                      textAlign: "left",
+                      wordWrap: "break-word",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {link.text && link.url ? (
+                      <p>{link.text}</p>
+                    ) : (
+                      <p>{link.url}</p>
+                    )}
+                  </CardDescription>
+                  {link.description && (
+                    <p
+                      className="text-sm font-normal text-gray-500 dark:text-gray-400"
+                      style={{
+                        wordWrap: "break-word",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {link.description}
+                    </p>
+                  )}
                 </a>
-              </CardDescription>
+              </div>
             </CardContent>
           ))}
       </div>
