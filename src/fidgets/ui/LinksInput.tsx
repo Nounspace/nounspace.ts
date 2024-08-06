@@ -1,15 +1,13 @@
 import React, { forwardRef, useCallback, useState, useEffect } from "react";
 import { Link } from "./Links";
-import { FaPlus, FaTrash, FaCheck, FaImage, FaLink } from "react-icons/fa";
+import { FaPlus, FaImage, FaLink } from "react-icons/fa";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
 import styled from "styled-components";
-import { Button } from "@/common/components/atoms/button";
 import { FaPencil } from "react-icons/fa6";
-import { Description } from "@radix-ui/react-dialog";
 import CSSInput from "@/common/components/molecules/CSSInput";
 
 export interface LinksInputProps {

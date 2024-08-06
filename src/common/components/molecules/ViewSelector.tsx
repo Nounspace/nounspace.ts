@@ -14,7 +14,6 @@ const SwitchButton: React.FC<SwitchButtonProps> = ({ value, onChange }) => {
     event.preventDefault();
     const newValue = value === "list" ? "grid" : "list";
     onChange(newValue);
-    console.log(newValue);
   };
 
   return (
