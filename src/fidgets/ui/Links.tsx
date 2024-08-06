@@ -117,7 +117,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         boxShadow: settings.fidgetShadow,
         overflow: "auto",
         scrollbarWidth: "none",
-        padding: "1rem",
+        padding: "0.5rem",
       }}
     >
       {settings?.title && (
@@ -128,6 +128,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
               style={{
                 fontFamily: settings.headingsFontFamily,
                 color: settings.fontColor,
+                paddingBottom: "0.5rem",
               }}
             >
               {settings.title}
@@ -147,24 +148,23 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                 height: "auto",
                 display: "flex",
                 flexDirection: isGridView ? "column" : "row",
-                alignItems: "flex-start",
               }}
               className={
                 isGridView
                   ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md"
-                  : "p-2 flex items-center justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md pl-3"
+                  : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md pl-3"
               }
               key={index}
             >
               {link.avatar ? (
-                <Avatar className={isGridView ? "mb-2" : "mr-4 flex-shrink-0"}>
+                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
                   <AvatarImage src={link.avatar} alt={link.text} />
                   <AvatarFallback>
                     <span className="sr-only">{link.text}</span>
                   </AvatarFallback>
                 </Avatar>
               ) : (
-                <Avatar className={isGridView ? "mb-4" : "mr-4 flex-shrink-0"}>
+                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
                   <AvatarImage src="/images/logo.png" alt={link.text} />
                   <AvatarFallback>
                     <span className="sr-only">{link.text}</span>
