@@ -15,6 +15,7 @@ import {
   Ubuntu,
   Work_Sans,
   Londrina_Solid,
+  Jura,
 } from "next/font/google";
 
 import type { FontFamily } from "@/common/lib/theme";
@@ -128,6 +129,13 @@ export const londrina_solid = Londrina_Solid({
   weight: ["100", "300", "400", "900"],
 });
 
+export const jura = Jura({
+  subsets: ["latin"],
+  variable: "--font-jura",
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
     name: "Theme Font",
@@ -214,6 +222,10 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   {
     name: "Londrina Solid",
     config: londrina_solid,
+  },
+  {
+    name: "Jura",
+    config: jura,
   },
 ];
 
