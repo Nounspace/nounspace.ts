@@ -26,6 +26,8 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
     });
   }, [html]);
 
+  console.log({ sanitizedHtml });
+
   return sanitizedHtml ? (
     <iframe
       title="Custom Background"

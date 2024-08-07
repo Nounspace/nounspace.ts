@@ -8,22 +8,40 @@ import {
   parallaxImage,
 } from "./animatedBackgroundsHtml";
 
+export const DEFAULT_THEME_WITH_VARIABLES = {
+  id: "default",
+  name: "Default",
+  properties: {
+    font: "var(--user-theme-font)",
+    fontColor: "var(--user-theme-font-color)",
+    headingsFont: "var(--user-theme-headings-font)",
+    headingsFontColor: "var(--user-theme-headings-font-color)",
+    background: "var(--user-theme-background)",
+    backgroundHTML: "",
+    musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+    fidgetBackground: "var(--user-theme-fidget-background)",
+    fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+    fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+    fidgetShadow: "var(--user-theme-fidget-shadow)",
+  },
+};
+
 export const THEMES = [
   {
     id: "default",
     name: "Default",
     properties: {
-      font: "var(--user-theme-font)",
-      fontColor: "var(--user-theme-font-color)",
-      headingsFont: "var(--user-theme-headings-font)",
-      headingsFontColor: "var(--user-theme-headings-font-color)",
-      background: "var(--user-theme-background)",
+      font: "Inter",
+      fontColor: "#000000",
+      headingsFont: "Inter",
+      headingsFontColor: "#000000",
+      background: "#ffffff",
       backgroundHTML: "",
       musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
-      fidgetBackground: "var(--user-theme-fidget-background)",
-      fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-      fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-      fidgetShadow: "var(--user-theme-fidget-shadow)",
+      fidgetBackground: "#ffffff",
+      fidgetBorderWidth: "1px",
+      fidgetBorderColor: "#eeeeee",
+      fidgetShadow: "none",
     },
   },
   {
