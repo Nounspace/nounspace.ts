@@ -31,7 +31,7 @@ import {
 import { FaInfoCircle, FaPencilAlt, FaCheck } from "react-icons/fa";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-import { THEMES } from "@/constants/themes";
+import { THEMES, DEFAULT_THEME_WITH_VARIABLES } from "@/constants/themes";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -102,29 +102,51 @@ export function ThemeSettingsEditor({
               <div className="font-semibold">Edit Theme</div>
             </div>
             <div className="h-full overflow-auto flex flex-col gap-4 -mx-2 px-2">
-              <div className="grid gap-2">
-                <h4 className="text-sm">Styles</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  {THEMES.map((theme, i) => (
-                    <ThemeCard
-                      key={`${theme.id}-${i}`}
-                      themeProps={theme.properties}
-                      onClick={() => handleApplyTheme(theme)}
-                      active={activeTheme === theme.id}
-                    />
-                  ))}
+              <div className="grid gap-4">
+                <ThemeCard
+                  themeProps={DEFAULT_THEME_WITH_VARIABLES.properties}
+                />
+                <div className="grid gap-2">
+                  <h4 className="text-sm">Styles</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {THEMES.map((theme, i) => (
+                      <ThemeCard
+                        key={`${theme.id}-${i}`}
+                        themeProps={theme.properties}
+                        onClick={() => handleApplyTheme(theme)}
+                        active={activeTheme === theme.id}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <Button
-                    onClick={() => setShowCustomizeTheme(true)}
-                    variant="secondary"
-                    withIcon
-                    width="full"
-                  >
-                    Customize
-                    <FaPencilAlt />
-                  </Button>
-                </div>
+                <Button
+                  onClick={() => setShowCustomizeTheme(true)}
+                  variant="secondary"
+                  withIcon
+                  width="full"
+                >
+                  Customize
+                  <FaPencilAlt />
+                </Button>
+              </div>
+              <div className="grid gap-4">
+                {THEMES.map((theme, i) => {
+                  if (!theme.properties.backgroundHTML) {
+                    return null;
+                  }
+                  return (
+                    <div className="grid gap-2" key={i}>
+                      <h4>{theme.name}</h4>
+                      <div className="relative w-full h-48">
+                        <CustomHTMLBackground
+                          html={theme.properties.backgroundHTML}
+                          noSanitize
+                          className="absolute pointer-events-none inset-0"
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </>
