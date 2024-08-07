@@ -16,17 +16,10 @@ import { FaAngleDown } from "react-icons/fa6";
 
 interface ProposalItemProps {
   proposal: any;
-  isExpanded: boolean;
-  onToggleExpand: (id: string) => void;
   space: string;
 }
 
-const ProposalItem: React.FC<ProposalItemProps> = ({
-  proposal,
-  // isExpanded,
-  // onToggleExpand,
-  space,
-}) => {
+const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
   const extractImageUrl = (markdown: string): string | null => {
     const imageRegex = /!\[.*?\]\((.*?)\)/;
     const match = imageRegex.exec(markdown);
@@ -111,79 +104,48 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
   const getStatusBadgeColor = () => {
     switch (status) {
       case "Pending":
-        return "bg-yellow-500";
+        return "bg-yellow-500 w-16";
       case "Active":
-        return "bg-green-400";
+        return "bg-blue-400 w-16";
       case "Passed":
-        return "bg-green-500";
+        return "bg-green-500 w-16";
       case "Failed":
-        return "bg-red-500";
+        return "bg-red-500 w-16";
       case "Closed":
-        return "bg-gray-500";
+        return "bg-gray-500 w-16";
       default:
-        return "bg-gray-500";
+        return "bg-gray-500 w-16";
     }
   };
 
-  // const renderScores = () => {
-  //   if (proposal.state !== "closed") return null;
-
-  //   return (
-  //     <div className="mt-4">
-  //       <h5 className="font-bold mb-2">Results:</h5>
-  //       {proposal.choices.map((choice: string, index: number) => (
-  //         <div key={index} className="flex items-center mb-1">
-  //           <div className="flex-grow">{choice}</div>
-  //           <div>{proposal.scores[index]} votes</div>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   );
-  // };
-
   const renderVotingResults = () => {
-    if (proposal.state !== "closed") {
-      return null;
-    }
-
-    const totalScores = proposal.scores.reduce((acc, score) => acc + score, 0);
+    const totalScores = proposal.scores.reduce(
+      (acc: number, score: number) => acc + score,
+      0,
+    );
 
     return (
-      <>
-        <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          {proposal.choices.map((choice: string, index: number) => {
-            const score = proposal.scores[index];
-            const percentage = (score / totalScores) * 100;
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+        {proposal.choices.map((choice: string, index: number) => {
+          const score = proposal.scores[index];
+          const percentage = (score / totalScores) * 100;
 
-            return (
-              <>
-                <div className="text-xs font-medium">{choice}</div>
-                <div className="h-2 w-full bg-gray-300 rounded">
-                  <div
-                    className="h-full bg-green-500 rounded"
-                    style={{ width: `${percentage}%` }}
-                  />
-                </div>
-                <div className="text-xs font-medium">
-                  {score.toFixed(2)} GNAR
-                </div>
-              </>
-            );
-          })}
-        </div>
-        <div className="mt-2 text-center">
-          <Badge
-            color={
-              proposal.scores[0] > proposal.scores[1]
-                ? "bg-green-500"
-                : "bg-red-500"
-            }
-            status={
-              proposal.scores[0] > proposal.scores[1] ? "Passed" : "Failed"
-            }
-          />
-        </div>
-      </>
+          return (
+            <React.Fragment key={index}>
+              <div className="text-xs font-medium">{choice}</div>
+              <div className="h-2 w-full bg-gray-300 rounded">
+                <div
+                  className="h-full bg-green-500 rounded"
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+              <div className="text-xs font-medium">
+                {score.toFixed(2)} Votes
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
     );
   };
 
@@ -195,7 +157,6 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
       prevSection === section ? undefined : section,
     );
   };
-  console.log(proposal.space.id);
 
   return (
     <div className="p-4 border border-gray-200 bg-white rounded-lg">
@@ -241,7 +202,14 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
           </ReactMarkdown>
         )}
         {visibleSection === "results" && renderVotingResults()}
-        {visibleSection === "voting" && renderVotingButtons()}
+        {visibleSection === "voting" &&
+          (status === "Active" ? (
+            renderVotingButtons()
+          ) : (
+            <div>
+              <center>Proposal is not active</center>
+            </div>
+          ))}
       </div>
     </div>
   );

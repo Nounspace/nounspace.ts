@@ -54,9 +54,9 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
     skip,
     first,
   });
-  const { snapShotInfo } = useSnapShotInfo({
-    ens: settings["snapshot ens"],
-  });
+  // const { snapShotInfo } = useSnapShotInfo({
+  //   ens: settings["snapshot ens"],
+  // });
 
   // const handleToggleExpand = (proposalId: string) => {
   //   setExpandedProposalId((prevId) =>
