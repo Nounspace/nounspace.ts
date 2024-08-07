@@ -10,13 +10,12 @@ export const renderSingleChoiceVotingUI = (
   ) => void,
 ) => {
   return (
-    <div className="flex justify-center gap-4">
+    <div className="flex-col justify-center gap-4">
       {proposal.choices.map((choice: string, index: number) => (
         <Button
           key={index}
-          variant="primary"
           onClick={() => handleVote(index + 1, choice)}
-          className={`rounded-full ${choice === "For" ? "bg-green-500" : choice === "Against" ? "bg-red-500" : "bg-gray-500"}`}
+          className={`w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1`}
         >
           {choice}
         </Button>
@@ -40,12 +39,14 @@ export const renderApprovalVotingUI = (
         <div key={index} className="flex items-center mb-2">
           <input
             type="checkbox"
-            id={`choice-${index}`}
-            checked={state.selectedChoices.includes(index)}
-            onChange={() => dispatch({ type: "toggleApprovalChoice", index })}
+            id={`choice-${index + 1}`}
+            checked={state.selectedChoices.includes(index + 1)}
+            onChange={() =>
+              dispatch({ type: "toggleApprovalChoice", index: index + 1 })
+            }
             className="mr-2"
           />
-          <label htmlFor={`choice-${index}`} className="cursor-pointer">
+          <label htmlFor={`choice-${index + 1}`} className="cursor-pointer">
             {choice}
           </label>
         </div>
@@ -73,17 +74,20 @@ export const renderWeightedVotingUI = (
     <>
       <div className="grid grid-cols-[auto_1fr] items-center gap-2">
         {proposal.choices.map((choice: string, index: number) => (
-          <>
-            <label htmlFor={`choice-${index}`} className="cursor-pointer mr-2">
+          <React.Fragment key={index}>
+            <label
+              htmlFor={`choice-${index + 1}`}
+              className="cursor-pointer mr-2"
+            >
               {choice}
             </label>
             <Slider
-              id={`choice-${index}`}
-              value={state.weightedChoices.get(index) || 0}
+              id={`choice-${index + 1}`}
+              value={state.weightedChoices.get(index + 1) || 0}
               onChange={(e, newValue) =>
                 dispatch({
                   type: "setWeightedChoice",
-                  index,
+                  index: index + 1,
                   weight: newValue as number,
                 })
               }
@@ -93,12 +97,12 @@ export const renderWeightedVotingUI = (
               valueLabelDisplay="auto"
               size="small"
             />
-          </>
+          </React.Fragment>
         ))}
       </div>
       <Button
         variant="primary"
-        className="rounded-full mt-4"
+        className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
         onClick={() =>
           handleVote(
             Object.fromEntries(state.weightedChoices.entries()),
@@ -125,16 +129,19 @@ export const renderRankedChoiceVotingUI = (
     <div>
       {proposal.choices.map((choice: string, index: number) => (
         <div key={index} className="flex items-center mb-2">
-          <label htmlFor={`choice-${index}`} className="cursor-pointer mr-2">
+          <label
+            htmlFor={`choice-${index + 1}`}
+            className="cursor-pointer mr-2"
+          >
             {choice}
           </label>
           <Slider
-            id={`choice-${index}`}
-            value={state.rankedChoices.get(index) || 0}
+            id={`choice-${index + 1}`}
+            value={state.rankedChoices.get(index + 1) || 0}
             onChange={(e, newValue) =>
               dispatch({
                 type: "setRankedChoice",
-                index,
+                index: index + 1,
                 rank: newValue as number,
               })
             }

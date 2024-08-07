@@ -40,7 +40,7 @@ export default function Explore({ posts }) {
           <Navigation
             isEditable={false}
             enterEditMode={() => {}}
-            theme={homebaseConfig?.theme}
+            // theme={homebaseConfig?.theme}
           />
         </div>
 
