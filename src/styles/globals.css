@@ -67,6 +67,14 @@
   html {
     -webkit-font-smoothing: antialiased;
   }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for Firefox */
+  * {
+    scrollbar-width: none;
+  }
 }
 
 /*  
