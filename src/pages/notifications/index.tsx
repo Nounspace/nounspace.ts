@@ -331,8 +331,9 @@ const NotificationRow = ({ notification }: { notification: Notification }) => {
 export default function NotificationsPage() {
   const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL);
   const [ref, inView] = useInView();
+  const fid = useCurrentFid();
   const { data, error, fetchNextPage, hasNextPage, isFetching } =
-    useNotifications(527313);
+    useNotifications(fid);
 
   console.log(`NOTIFICATIONS:`, data);
 
