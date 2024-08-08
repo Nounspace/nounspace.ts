@@ -102,7 +102,6 @@ const MentionNotificationRow = ({
 }: {
   notification: Notification;
 }) => {
-  const fid = useCurrentFid();
   const mentionedByUsers = useMemo(() => {
     return notification?.cast?.author ? [notification?.cast?.author] : [];
   }, [notification?.cast?.author?.username]);
@@ -154,7 +153,6 @@ const RecastNotificationRow = ({
 }: {
   notification: Notification;
 }) => {
-  const fid = useCurrentFid();
   const recastedByUsers = useMemo(() => {
     return (notification?.reactions || [])
       .filter((r) => r.object === "recasts")
@@ -404,7 +402,7 @@ export default function NotificationsPage() {
                 </div>
               )}
               {!isFetching && !hasNextPage && (
-                <p>You've reached the end of this list.</p>
+                <p>{`You've reached the end of this list.`}</p>
               )}
             </div>
           )}
