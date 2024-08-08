@@ -11,7 +11,7 @@ import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
-import InfoToast from "./InfoBanner";
+import InfoToast from "../organisms/InfoBanner";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
