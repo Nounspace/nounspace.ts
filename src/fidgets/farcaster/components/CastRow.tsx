@@ -17,7 +17,6 @@ import Image from "next/image";
 import {
   CastWithInteractions,
   EmbedUrl,
-  User,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
@@ -35,7 +34,7 @@ function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
 }
 
-const defaultCastTextStyle = {
+const castTextStyle = {
   whiteSpace: "pre-wrap",
   // based on https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
   /* These are technically the same, but use both */
@@ -69,14 +68,9 @@ interface CastRowProps {
   hasReplies?: boolean;
   showChannel?: boolean;
   hideReactions?: boolean;
-  className?: string;
-  castTextStyle?: any;
-  maxLines?: number;
-  hideEmbeds?: boolean;
-  replyingToUsername?: string;
 }
 
-export const PriorityLink = ({ children, href, ...props }) => {
+const PriorityLink = ({ children, href, ...props }) => {
   const router = useRouter();
 
   const handleClick = useCallback(
@@ -95,15 +89,12 @@ export const PriorityLink = ({ children, href, ...props }) => {
   );
 };
 
-export const CastAvatar = ({
-  user,
-  className,
-}: {
-  user: User;
-  className?: string;
-}) => {
+const CastAvatar = ({ cast, className }) => {
   return (
-    <PriorityLink className="cursor-pointer h-fit" href={`/s/${user.username}`}>
+    <PriorityLink
+      className="cursor-pointer h-fit"
+      href={`/s/${cast.author.username}`}
+    >
       <Avatar
         className={classNames(
           "size-10 flex-none bg-background hover:brightness-[90%] transition duration-300 ease-out",
@@ -111,8 +102,8 @@ export const CastAvatar = ({
         )}
       >
         <AvatarImage
-          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${user.pfp_url}`}
-          alt={user?.display_name}
+          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
+          alt={cast.author?.display_name}
           className="object-cover"
         />
       </Avatar>
@@ -163,22 +154,24 @@ const CastAttributionHeader = ({
   cast,
   inline,
   avatar,
+  isReply,
 }: {
   cast: CastWithInteractions;
   inline: boolean;
   avatar: boolean;
+  isReply: boolean;
 }) => {
   return (
     <div className="flex justify-start w-full gap-x-2">
+      {isReply && avatar && !inline && (
+        <ThreadConnector className="h-[8px] top-0 left-[31px]" />
+      )}
       {avatar && (
-        <CastAvatar
-          user={cast.author}
-          className={inline ? "size-5" : "size-10"}
-        />
+        <CastAvatar cast={cast} className={inline ? "size-5" : "size-10"} />
       )}
       <div
         className={classNames(
-          "flex gap-x-1",
+          "flex gap-x-1 truncate flex-wrap",
           inline ? "flex-row mb-0.5" : "flex-col",
         )}
       >
@@ -193,10 +186,10 @@ const CastAttributionPrimary = ({ cast }) => {
   if (!cast?.author?.display_name) return null;
 
   return (
-    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] truncate">
+    <div className="flex items-center justify-start font-bold text-foreground/80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
       <PriorityLink
         href={`/s/${cast.author.username}`}
-        className="cursor-pointer"
+        className="cursor-pointer truncate"
       >
         <span className="hover:underline">{cast.author.display_name}</span>
       </PriorityLink>
@@ -220,7 +213,7 @@ const CastAttributionSecondary = ({ cast }) => {
 
   return (
     <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
-      <span>@{cast.author.username}</span>
+      <span className="truncate">@{cast.author.username}</span>
       {relativeDateString && (
         <>
           <span className="font-normal"> · </span>
@@ -231,9 +224,77 @@ const CastAttributionSecondary = ({ cast }) => {
   );
 };
 
-const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
+const CastBody = ({
+  cast,
+  channel,
+  isEmbed,
+  showChannel,
+  castTextStyle,
+  hideReactions,
+  renderRecastBadge,
+  renderCastReactions,
+  userFid,
+  isDetailView,
+  onSelectCast,
+}) => {
+  return (
+    <div className="flex flex-col grow">
+      {cast.text && (
+        <FarcasterLinkify attributes={userFid}>
+          <p
+            className={
+              isDetailView ? "text-lg leading-[1.3]" : "text-base leading-[1.3]"
+            }
+            style={castTextStyle}
+          >
+            <ExpandableText maxLines={isDetailView ? null : 10}>
+              {cast.text}
+            </ExpandableText>
+          </p>
+        </FarcasterLinkify>
+      )}
+      {!isEmbed && <CastEmbeds cast={cast} onSelectCast={onSelectCast} />}
+      {!hideReactions && renderCastReactions(cast as CastWithInteractions)}
+    </div>
+  );
+};
+
+const ThreadConnector = ({ className }) => {
+  return (
+    <div
+      className={classNames(
+        "absolute w-[2px] bg-foreground/10 flex-1",
+        className,
+      )}
+    />
+  );
+};
+
+const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
+  return (
+    <div className="flex flex-0 justify-center top-0 bottom-0">
+      {connectTop && <ThreadConnector className="top-0 h-[8px]" />}
+      <CastAvatar cast={cast} className="size-10" />
+      {connectBottom && (
+        <ThreadConnector className="bottom-0 h-[calc(100%-56px)]" />
+      )}
+    </div>
+  );
+};
+
+export const CastRow = ({
+  cast,
+  onSelect,
+  isFocused,
+  isEmbed = false,
+  isReply = false,
+  hasReplies = false,
+  showChannel = false,
+  hideReactions = false,
+}: CastRowProps) => {
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
+
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
 
   const authorFid = cast.author.fid;
@@ -248,7 +309,23 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   type ReplyCastType = "reply" | "quote";
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
 
-  const getReactions = () => {
+  const onReply = () => {
+    setReplyCastDraft({
+      parentCastId: castId,
+    });
+    setReplyCastType("reply");
+    setShowModal(true);
+  };
+
+  const onQuote = () => {
+    setReplyCastDraft({
+      embeds: [{ castId }],
+    });
+    setReplyCastType("quote");
+    setShowModal(true);
+  };
+
+  const getCastReactionsObj = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
     const likesCount = cast.reactions?.likes_count;
@@ -266,6 +343,50 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         isActive: didLike || includes(likeFids, userFid),
       },
     };
+  };
+
+  const reactions = getCastReactionsObj();
+
+  const getChannelForParentUrl = (
+    _parentUrl: string | null,
+  ): { name: string } | null => null;
+
+  const getIconForCastReactionType = (
+    reactionType: CastReactionType,
+    isActive?: boolean,
+  ): JSX.Element | undefined => {
+    const className = classNames(
+      isActive ? "text-foreground/70" : "",
+      "mt-0.5 w-4 h-4 mr-1",
+    );
+
+    switch (reactionType) {
+      case CastReactionType.likes:
+        return isActive ? (
+          <HeartFilledIcon className={className} aria-hidden="true" />
+        ) : (
+          <HeartIcon className={className} aria-hidden="true" />
+        );
+      case CastReactionType.recasts:
+        return (
+          <ArrowPathRoundedSquareIcon
+            className={className}
+            aria-hidden="true"
+          />
+        );
+      case CastReactionType.quote:
+        return (
+          <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
+        );
+      case CastReactionType.replies:
+        return <ChatBubbleLeftIcon className={className} aria-hidden="true" />;
+      case CastReactionType.links:
+        return (
+          <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />
+        );
+      default:
+        return undefined;
+    }
   };
 
   const onClickReaction = async (key: CastReactionType, isActive: boolean) => {
@@ -338,45 +459,14 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     );
   };
 
-  const onReply = () => {
-    setReplyCastDraft({
-      parentCastId: castId,
-    });
-    setReplyCastType("reply");
-    setShowModal(true);
-  };
+  const renderCastReactions = (cast: CastWithInteractions) => {
+    const linksCount = cast?.embeds ? cast.embeds.length : 0;
+    const isOnchainLink =
+      linksCount > 0 && "url" in cast.embeds[0]
+        ? cast.embeds[0].url.startsWith("chain:")
+        : false;
 
-  const onQuote = () => {
-    setReplyCastDraft({
-      embeds: [{ castId }],
-    });
-    setReplyCastType("quote");
-    setShowModal(true);
-  };
-
-  const reactions = getReactions();
-
-  const linksCount = cast?.embeds ? cast.embeds.length : 0;
-  const isOnchainLink =
-    linksCount > 0 && "url" in cast.embeds[0]
-      ? cast.embeds[0].url.startsWith("chain:")
-      : false;
-
-  return (
-    <>
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        focusMode
-        showClose={false}
-      >
-        <div className="mb-4">
-          {replyCastType === "reply" ? <CastRow cast={cast} isEmbed /> : null}
-        </div>
-        <div className="flex">
-          <CreateCast initialDraft={replyCastDraft} />
-        </div>
-      </Modal>
+    return (
       <div className="-ml-1.5 flex space-x-3">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
           const isActive = get(reactionInfo, "isActive", false);
@@ -390,6 +480,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             reactionInfo.count,
             icon,
           );
+
           return reaction;
         })}
         {linksCount && !isOnchainLink ? (
@@ -423,123 +514,8 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           </div>
         )}
       </div>
-    </>
-  );
-};
-
-export const CastBody = ({
-  cast,
-  channel,
-  isEmbed,
-  showChannel,
-  castTextStyle,
-  hideReactions,
-  renderRecastBadge,
-  userFid,
-  isDetailView,
-  onSelectCast,
-  maxLines = 0,
-  hideEmbeds = false,
-}) => {
-  return (
-    <div className="flex flex-col grow">
-      {cast.text && (
-        <FarcasterLinkify attributes={userFid}>
-          <p
-            className={
-              isDetailView ? "text-lg leading-[1.3]" : "text-base leading-[1.3]"
-            }
-            style={castTextStyle}
-          >
-            <ExpandableText maxLines={maxLines || (isDetailView ? null : 10)}>
-              {cast.text}
-            </ExpandableText>
-          </p>
-        </FarcasterLinkify>
-      )}
-      {!isEmbed && !hideEmbeds && (
-        <CastEmbeds cast={cast} onSelectCast={onSelectCast} />
-      )}
-      {!hideReactions && <CastReactions cast={cast} />}
-    </div>
-  );
-};
-
-const ThreadConnector = ({ className }) => {
-  return (
-    <div
-      className={classNames("absolute w-[2px] bg-border flex-1", className)}
-    />
-  );
-};
-
-const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
-  return (
-    <div className="flex flex-0 justify-center top-0 bottom-0">
-      {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
-      <CastAvatar user={cast.author} className="size-10" />
-      {connectBottom && (
-        <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
-      )}
-    </div>
-  );
-};
-
-const getIconForCastReactionType = (
-  reactionType: CastReactionType,
-  isActive?: boolean,
-): JSX.Element | undefined => {
-  const className = classNames(
-    isActive ? "text-foreground/70" : "",
-    "mt-0.5 w-4 h-4 mr-1",
-  );
-
-  switch (reactionType) {
-    case CastReactionType.likes:
-      return isActive ? (
-        <HeartFilledIcon className={className} aria-hidden="true" />
-      ) : (
-        <HeartIcon className={className} aria-hidden="true" />
-      );
-    case CastReactionType.recasts:
-      return (
-        <ArrowPathRoundedSquareIcon className={className} aria-hidden="true" />
-      );
-    case CastReactionType.quote:
-      return (
-        <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
-      );
-    case CastReactionType.replies:
-      return <ChatBubbleLeftIcon className={className} aria-hidden="true" />;
-    case CastReactionType.links:
-      return (
-        <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />
-      );
-    default:
-      return undefined;
-  }
-};
-
-export const CastRow = ({
-  cast,
-  onSelect,
-  isFocused,
-  isEmbed = false,
-  isReply = false,
-  hasReplies = false,
-  showChannel = false,
-  hideReactions = false,
-  className = undefined,
-  castTextStyle = undefined,
-  maxLines = 0,
-  hideEmbeds = false,
-  replyingToUsername = undefined,
-}: CastRowProps) => {
-  const { fid: userFid } = useFarcasterSigner("render-cast");
-
-  const getChannelForParentUrl = (
-    _parentUrl: string | null,
-  ): { name: string } | null => null;
+    );
+  };
 
   const renderRecastBadge = () => {
     const shouldShowBadge =
@@ -582,17 +558,31 @@ export const CastRow = ({
   return (
     <div
       className={classNames(
-        "![&(:last-child)]:border-b-none relative p-3",
-        !isFocused && "hover:bg-foreground/5 cursor-pointer",
+        "![&(:last-child)]:border-b-none relative",
         !isEmbed && (!hasReplies || isFocused)
           ? "border-b border-b-foreground/10"
           : "",
-        className,
       )}
     >
+      <Modal
+        open={showModal}
+        setOpen={setShowModal}
+        focusMode
+        showClose={false}
+      >
+        <div className="mb-4">
+          {replyCastType === "reply" ? <CastRow cast={cast} isEmbed /> : null}
+        </div>
+        <div className="flex">
+          <CreateCast initialDraft={replyCastDraft} />
+        </div>
+      </Modal>
       <div
         onClick={handleClick}
-        className={classNames("transition duration-300 ease-out flex gap-2")}
+        className={classNames(
+          "transition duration-300 ease-out p-3 flex gap-2",
+          !isFocused && "hover:bg-foreground/5 cursor-pointer",
+        )}
       >
         {!isFocused && !isEmbed && (
           <CastLeftGutter
@@ -601,38 +591,31 @@ export const CastRow = ({
             connectBottom={hasReplies}
           />
         )}
-        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1"}>
+        <div
+          className={
+            isFocused
+              ? "flex flex-col flex-1 gap-3"
+              : "flex-1 overflow-x-hidden truncate"
+          }
+        >
           <CastAttributionHeader
             cast={cast}
             avatar={isFocused || isEmbed}
             inline={!isFocused}
+            isReply={isReply}
           />
-          {replyingToUsername && (
-            <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-medium">
-              Replying to{" "}
-              <PriorityLink href={`/s/${replyingToUsername}`}>
-                <span className="cursor-pointer text-blue-500 hover:text-blue-500/70 hover:underline">
-                  @{replyingToUsername}
-                </span>
-              </PriorityLink>
-            </p>
-          )}
           <CastBody
             cast={cast}
             channel={channel}
             isEmbed={isEmbed}
             showChannel={showChannel}
-            castTextStyle={{
-              ...defaultCastTextStyle,
-              ...(castTextStyle || {}),
-            }}
+            castTextStyle={castTextStyle}
             hideReactions={hideReactions}
             renderRecastBadge={renderRecastBadge}
+            renderCastReactions={renderCastReactions}
             isDetailView={isFocused}
             userFid={userFid}
             onSelectCast={onSelect}
-            maxLines={maxLines}
-            hideEmbeds={hideEmbeds}
           />
         </div>
       </div>

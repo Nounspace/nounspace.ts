@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import ExpandOnClick from "@/common/components/molecules/ExpandOnClick";
 
 const ReactHlsPlayer = dynamic(() => import("@gumlet/react-hls-player"), {
   ssr: false,
