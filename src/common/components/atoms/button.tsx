@@ -23,6 +23,7 @@ const buttonVariants = cva(
       size: {
         default: "h-10 px-4 rounded-md py-2 text-md",
         sm: "h-8 rounded-md px-3 text-xs",
+        md: "h-9 rounded-md px-5 text-sm",
         lg: "h-10 rounded-md px-8",
         icon: "h-10 w-10 rounded-md",
       },
@@ -53,7 +54,7 @@ export interface ButtonProps
     | "secondary"
     | "ghost"
     | "link";
-  size?: "default" | "sm" | "lg" | "icon";
+  size?: "default" | "sm" | "md" | "lg" | "icon";
   width?: "auto" | "full";
   withIcon?: boolean;
 }
