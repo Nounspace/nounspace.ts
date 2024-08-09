@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/common/components/atoms/select";
 
-const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
+export const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
   (acc, v) => ({ ...acc, [v.name]: v }),
   {},
 );
