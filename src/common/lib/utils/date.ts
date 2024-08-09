@@ -1,3 +1,5 @@
+import moment from "moment";
+
 /**
  * Calculate the difference between two dates.
  * @param {Date} date1 first date
@@ -31,4 +33,19 @@ export function localize(value: number, str: string): string {
   if (value != 1 && str.length > 1) str += "s";
 
   return `${value}${str}`;
+}
+
+export function formatTimeAgo(date: number | Date): string {
+  if (!date) return "";
+  const momentDate = moment(date);
+  const now = moment();
+  const diffDays = now.diff(momentDate, "days");
+  const diffHours = now.diff(momentDate, "hours");
+  const diffMinutes = now.diff(momentDate, "minutes");
+
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  if (now.year() === momentDate.year()) return momentDate.format("MMM D");
+  return momentDate.format("MMM D, YYYY");
 }

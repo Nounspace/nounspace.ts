@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Properties } from "csstype";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import {
@@ -9,7 +9,6 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import { localize, timeDiff } from "@/common/lib/utils/date";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
 import { includes, isObject, isUndefined, map, get } from "lodash";
 import { ErrorBoundary } from "@sentry/react";
@@ -28,6 +27,10 @@ import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import Link from "next/link";
 import FarcasterLinkify from "./linkify";
+import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
+import { useRouter } from "next/router";
+import { formatTimeAgo } from "@/common/lib/utils/date";
+import ExpandableText from "@/common/components/molecules/ExpandableText";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -60,44 +63,160 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
-  onSelect?: () => void;
-  showChannel?: boolean;
-  isThreadView?: boolean;
+  onSelect?: (hash: string) => void;
+  isFocused?: boolean;
   isEmbed?: boolean;
+  isReply?: boolean;
+  hasReplies?: boolean;
+  showChannel?: boolean;
   hideReactions?: boolean;
 }
 
-const CastLeftAvatar = ({ isEmbed, cast }) => {
+const PriorityLink = ({ children, href, ...props }) => {
+  const router = useRouter();
+
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      router.push(href);
+    },
+    [href],
+  );
+
   return (
-    !isEmbed && (
-      <img
-        className="relative h-10 w-10 flex-none bg-background rounded-full object-cover"
-        src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
-      />
-    )
+    <a {...props} href={href} onClick={handleClick}>
+      {children}
+    </a>
   );
 };
 
-const CastEmbeds = ({ cast }) => {
+const CastAvatar = ({ cast, className }) => {
+  return (
+    <PriorityLink
+      className="cursor-pointer h-fit"
+      href={`/s/${cast.author.username}`}
+    >
+      <Avatar
+        className={classNames(
+          "size-10 flex-none bg-background hover:brightness-[90%] transition duration-300 ease-out",
+          className,
+        )}
+      >
+        <AvatarImage
+          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
+          alt={cast.author?.display_name}
+          className="object-cover"
+        />
+      </Avatar>
+    </PriorityLink>
+  );
+};
+
+const CastEmbeds = ({ cast, onSelectCast }) => {
   if (!("embeds" in cast) || !cast.embeds.length) {
     return null;
   }
 
   return (
-    <div
-      className="mt-4 space-y-4 border rounded-xl flex justify-center overflow-hidden max-h-72"
-      onClick={(e) => e.preventDefault()}
-    >
-      <ErrorBoundary>
-        {map(cast.embeds, (embed) => {
-          if (isEmbedUrl(embed))
-            return renderEmbedForUrl({ ...embed, key: embed.url });
-          return renderEmbedForUrl({
-            castId: embed.cast_id,
-            key: embed.cast_id,
-          });
-        })}
-      </ErrorBoundary>
+    <ErrorBoundary>
+      {map(cast.embeds, (embed) => {
+        const embedData = isEmbedUrl(embed)
+          ? {
+              ...embed,
+              key: embed.url,
+            }
+          : {
+              castId: embed.cast_id,
+              key: embed.cast_id,
+            };
+
+        return (
+          <div
+            className={classNames(
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              embedData.castId ? "max-w-[100%]" : "max-w-max",
+            )}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (embedData?.castId?.hash) {
+                onSelectCast(embedData.castId.hash);
+              }
+            }}
+          >
+            {renderEmbedForUrl(embedData)}
+          </div>
+        );
+      })}
+    </ErrorBoundary>
+  );
+};
+
+const CastAttributionHeader = ({
+  cast,
+  inline,
+  avatar,
+}: {
+  cast: CastWithInteractions;
+  inline: boolean;
+  avatar: boolean;
+}) => {
+  return (
+    <div className="flex justify-start w-full gap-x-2">
+      {avatar && (
+        <CastAvatar cast={cast} className={inline ? "size-5" : "size-10"} />
+      )}
+      <div
+        className={classNames(
+          "flex gap-x-1",
+          inline ? "flex-row mb-0.5" : "flex-col",
+        )}
+      >
+        <CastAttributionPrimary cast={cast} />
+        <CastAttributionSecondary cast={cast} />
+      </div>
+    </div>
+  );
+};
+
+const CastAttributionPrimary = ({ cast }) => {
+  if (!cast?.author?.display_name) return null;
+
+  return (
+    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] truncate">
+      <PriorityLink
+        href={`/s/${cast.author.username}`}
+        className="cursor-pointer"
+      >
+        <span className="hover:underline">{cast.author.display_name}</span>
+      </PriorityLink>
+      {cast?.author?.power_badge && (
+        <Image
+          src="/images/ActiveBadge.webp"
+          className="size-4"
+          alt="power badge"
+          width={50}
+          height={30}
+        />
+      )}
+    </div>
+  );
+};
+
+const CastAttributionSecondary = ({ cast }) => {
+  const relativeDateString = useMemo(() => {
+    return cast?.timestamp ? formatTimeAgo(cast.timestamp) : "";
+  }, [cast?.timestamp]);
+
+  return (
+    <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
+      <span>@{cast.author.username}</span>
+      {relativeDateString && (
+        <>
+          <span className="font-normal"> · </span>
+          <span className="">{relativeDateString}</span>
+        </>
+      )}
     </div>
   );
 };
@@ -112,101 +231,59 @@ const CastBody = ({
   renderRecastBadge,
   renderCastReactions,
   userFid,
+  isDetailView,
+  onSelectCast,
 }) => {
   return (
     <div className="flex flex-col grow">
-      <CastAuthorAttribution
-        cast={cast}
-        renderRecastBadge={renderRecastBadge}
-        channel={channel}
-        showChannel={showChannel}
-        isEmbed={isEmbed}
-      />
       {cast.text && (
         <FarcasterLinkify attributes={userFid}>
           <p
-            className="leading-[1.3] text-left max-h-96 overflow-y-auto"
+            className={
+              isDetailView ? "text-lg leading-[1.3]" : "text-base leading-[1.3]"
+            }
             style={castTextStyle}
           >
-            {cast.text}
+            <ExpandableText maxLines={isDetailView ? null : 10}>
+              {cast.text}
+            </ExpandableText>
           </p>
         </FarcasterLinkify>
       )}
-      {!isEmbed && <CastEmbeds cast={cast} />}
+      {!isEmbed && <CastEmbeds cast={cast} onSelectCast={onSelectCast} />}
       {!hideReactions && renderCastReactions(cast as CastWithInteractions)}
     </div>
   );
 };
 
-const CastAuthorAttribution = ({
-  cast,
-  renderRecastBadge,
-  channel,
-  showChannel,
-  isEmbed,
-}) => {
-  const now = new Date();
-
-  const timeAgo =
-    "timestamp" in cast
-      ? timeDiff(now, new Date(cast.timestamp))
-      : [0, "seconds"];
-
-  const timeAgoStr = localize(Number(timeAgo[0]), timeAgo[1].toString());
-
+const ThreadConnector = ({ className }) => {
   return (
-    <div className="flex flex-row justify-between gap-x-4 leading-6 tracking-tight leading-[1.3]">
-      <div className="flex flex-row">
-        <Link
-          className="items-center flex font-bold text-foreground/80 truncate cursor-pointer gap-1"
-          href={`/s/${cast.author.username}`}
-        >
-          {isEmbed && (
-            <img
-              className="relative h-4 w-4 mr-1 flex-none bg-background rounded-full"
-              src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${cast.author.pfp_url}`}
-            />
-          )}
-          {cast.author.display_name}
-          <span>
-            {cast.author.power_badge && (
-              <Image
-                src="/images/ActiveBadge.webp"
-                className="mt-0.5 size-4"
-                alt="power badge"
-                width={50}
-                height={30}
-              />
-            )}
-          </span>
-          <span className="font-normal">@{cast.author.username}</span>
-          <span> · </span>
-          <div className="flex flex-row">
-            {"timestamp" in cast && cast.timestamp && (
-              <span className="font-normal">{timeAgoStr} </span>
-            )}
-          </div>
-        </Link>
-        {showChannel && channel && (
-          <Button
-            variant="outline"
-            className="h-5 ml-2 inline-flex truncate items-top rounded-sm bg-blue-400/10  hover:bg-blue-400/20 px-1.5 py-0.5 text-xs font-medium text-blue-400 hover:text-blue-600 ring-1 ring-inset ring-blue-400/30 border-none"
-          >
-            {channel.name}
-          </Button>
-        )}
-        {renderRecastBadge()}
-      </div>
+    <div
+      className={classNames("absolute w-[2px] bg-border flex-1", className)}
+    />
+  );
+};
+
+const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
+  return (
+    <div className="flex flex-0 justify-center top-0 bottom-0">
+      {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
+      <CastAvatar cast={cast} className="size-10" />
+      {connectBottom && (
+        <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
+      )}
     </div>
   );
 };
 
 export const CastRow = ({
   cast,
-  showChannel,
   onSelect,
+  isFocused,
   isEmbed = false,
-  isThreadView = false,
+  isReply = false,
+  hasReplies = false,
+  showChannel = false,
   hideReactions = false,
 }: CastRowProps) => {
   const [didLike, setDidLike] = useState(false);
@@ -364,7 +441,7 @@ export const CastRow = ({
     return (
       <div
         key={`cast-${cast.hash}-${key}`}
-        className="mt-1.5 flex align-center text-sm text-foreground/40 hover:text-foreground hover:bg-background/50 py-1 px-1.5 rounded-md"
+        className="mt-1.5 flex align-center cursor-pointer text-sm text-foreground/50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
         onClick={async (event) => {
           event.stopPropagation();
           onClickReaction(key, isActive);
@@ -454,8 +531,33 @@ export const CastRow = ({
       ? getChannelForParentUrl(cast.parent_url)
       : null;
 
+  const handleClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (isFocused) {
+        return;
+      }
+
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        // Text was selected, prevent click
+        event.preventDefault();
+        event.stopPropagation();
+      } else {
+        onSelect && onSelect(cast.hash);
+      }
+    },
+    [cast.hash, isFocused],
+  );
+
   return (
-    <div className="[&:not(:last-child)]:border-b">
+    <div
+      className={classNames(
+        "![&(:last-child)]:border-b-none relative",
+        !isEmbed && (!hasReplies || isFocused)
+          ? "border-b border-b-foreground/10"
+          : "",
+      )}
+    >
       <Modal
         open={showModal}
         setOpen={setShowModal}
@@ -469,22 +571,39 @@ export const CastRow = ({
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div onClick={onSelect}>
-        <div className="p-3">
-          <div className="flex items-top gap-x-2">
-            <CastLeftAvatar isEmbed={isEmbed} cast={cast} />
-            <CastBody
-              cast={cast}
-              channel={channel}
-              isEmbed={isEmbed}
-              showChannel={showChannel}
-              castTextStyle={castTextStyle}
-              hideReactions={hideReactions}
-              renderRecastBadge={renderRecastBadge}
-              renderCastReactions={renderCastReactions}
-              userFid={userFid}
-            />
-          </div>
+      <div
+        onClick={handleClick}
+        className={classNames(
+          "transition duration-300 ease-out p-3 flex gap-2",
+          !isFocused && "hover:bg-foreground/5 cursor-pointer",
+        )}
+      >
+        {!isFocused && !isEmbed && (
+          <CastLeftGutter
+            cast={cast}
+            connectTop={isReply}
+            connectBottom={hasReplies}
+          />
+        )}
+        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1"}>
+          <CastAttributionHeader
+            cast={cast}
+            avatar={isFocused || isEmbed}
+            inline={!isFocused}
+          />
+          <CastBody
+            cast={cast}
+            channel={channel}
+            isEmbed={isEmbed}
+            showChannel={showChannel}
+            castTextStyle={castTextStyle}
+            hideReactions={hideReactions}
+            renderRecastBadge={renderRecastBadge}
+            renderCastReactions={renderCastReactions}
+            isDetailView={isFocused}
+            userFid={userFid}
+            onSelectCast={onSelect}
+          />
         </div>
       </div>
     </div>
