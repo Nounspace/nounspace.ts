@@ -90,6 +90,7 @@
     "@types/express": "^4.17.21",
     "@types/lodash": "^4.17.6",
     "@uiw/react-md-editor": "^4.0.4",
+    "@vercel/speed-insights": "^1.0.12",
     "@webscopeio/react-textarea-autocomplete": "^4.9.2",
     "@xmtp/frames-validator": "^0.6.0",
     "@xmtp/proto": "^3.61.1",

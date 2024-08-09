@@ -6,6 +6,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -19,10 +20,7 @@ const sidebarLayout = (page: React.ReactElement) => {
   return (
     <>
       <div className="min-h-screen max-w-screen h-screen w-screen">
-        <div
-          className="flex w-full h-full"
-          style={{ background: "var(--user-theme-background)" }}
-        >
+        <div className="flex w-full h-full">
           <div className="flex mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
@@ -39,6 +37,7 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <>
+      <SpeedInsights />
       <Head>
         <title>Nounspace</title>
       </Head>

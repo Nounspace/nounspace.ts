@@ -4,7 +4,13 @@ import { FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
 import { Button } from "@/common/components/atoms/button";
 import { FaPlus } from "react-icons/fa6";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/common/components/atoms/tooltip";
+import { FaInfoCircle } from "react-icons/fa";
 export interface FidgetTrayProps {
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ i: string; w: number; h: number } | undefined>
@@ -23,7 +29,25 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   openFidgetPicker,
 }) => {
   return (
-    <div className="w-full h-screen flex flex-col justify-start items-center gap-2 bg-sky-50 py-8 px-6 overflow-auto">
+    <div className="w-full h-screen flex flex-col justify-start items-center gap-2 bg-sky-50 py-7 px-6 overflow-auto">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <center>
+              <FaInfoCircle color="#D1D5DB" />
+            </center>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <div className="flex flex-col gap-1">
+              <div>
+                Click the + to browse Fidgets.
+                <br />
+                Then, drag them to your Space
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
       <h5 className="text-xs font-medium text-center -mx-3 mb-3">
         Fidget Tray
       </h5>
