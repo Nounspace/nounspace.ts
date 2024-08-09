@@ -24,14 +24,19 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
 
-  const { loadTabNames, createTab, deleteTab, renameTab } = useAppStore(
-    (state) => ({
-      loadTabNames: state.homebase.loadTabNames,
-      createTab: state.homebase.createTab,
-      deleteTab: state.homebase.deleteTab,
-      renameTab: state.homebase.renameTab,
-    }),
-  );
+  const { loadTabNames, createTab, deleteTab, renameTab } = hasProfile
+    ? useAppStore((state) => ({
+        loadTabNames: state.homebase.loadTabNames,
+        createTab: state.homebase.createTab,
+        deleteTab: state.homebase.deleteTab,
+        renameTab: state.homebase.renameTab,
+      }))
+    : useAppStore((state) => ({
+        loadTabNames: state.homebase.loadTabNames,
+        createTab: state.homebase.createTab,
+        deleteTab: state.homebase.deleteTab,
+        renameTab: state.homebase.renameTab,
+      }));
 
   const currentTab = "profile";
   const [tabNames, setTabNames] = useState([""]);
@@ -79,7 +84,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
         <div className="flex flex-row">
           <button
             onClick={() => {
-              createTab("NEWTAB");
+              createTab(`Tab ${tabNames.length + 1}`);
             }}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
