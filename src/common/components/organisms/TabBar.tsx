@@ -1,6 +1,6 @@
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import { FaPlus } from "react-icons/fa6";
-import { map } from "lodash";
+import { first, map } from "lodash";
 import {
   Tabs,
   TabsList,
@@ -12,8 +12,23 @@ import {
   tabTriggerClasses,
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import Link from "next/link";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { useMemo } from "react";
 
-const TabBar = ({ inEditMode, openFidgetPicker, tabs, currentTab }) => {
+const TabBar = ({
+  hasProfile,
+  inEditMode,
+  openFidgetPicker,
+  tabs,
+  currentTab,
+}) => {
+  const { fid } = useFarcasterSigner("navigation");
+  const { data } = useLoadFarcasterUser(fid);
+  const user = useMemo(() => first(data?.users), [data]);
+  const username = useMemo(() => user?.username, [user]);
+
   return (
     <div className={"flex flex-row justify-center h-16"}>
       <Tabs
@@ -24,9 +39,17 @@ const TabBar = ({ inEditMode, openFidgetPicker, tabs, currentTab }) => {
           {map(tabs, (tabName: string) => {
             return (
               <div className="mx-4">
-                <TabsTrigger value={tabName} className={tabTriggerClasses}>
-                  {tabName}
-                </TabsTrigger>
+                <Link
+                  href={
+                    hasProfile
+                      ? `/s/${username}/${tabName}`
+                      : `/homebase/${tabName}`
+                  }
+                >
+                  <TabsTrigger value={tabName} className={tabTriggerClasses}>
+                    {tabName}
+                  </TabsTrigger>
+                </Link>
               </div>
             );
           })}

@@ -329,10 +329,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       {editorPanelPortal(element)}
 
       <TabBar
+        hasProfile={hasProfile}
         inEditMode={inEditMode}
         openFidgetPicker={openFidgetPicker}
-        tabs={["home", "home2", "homehomehome3"]}
-        currentTab={"home"}
+        tabs={["profile", "home", "longtabnameisverylong"]}
+        currentTab={"profile"}
       />
 
       <div className="flex flex-col z-10">
