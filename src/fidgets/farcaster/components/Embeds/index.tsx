@@ -5,7 +5,7 @@ import TweetEmbed from "./TweetEmbed";
 import NounsBuildEmbed from "./NounsBuildEmbed";
 import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
-import WarpcastImage from "./WarpcastImage";
+import ImageEmbed from "./ImageEmbed";
 import FrameEmbed from "./FrameEmbed";
 import { isImageUrl } from "@/common/lib/utils/urls";
 
@@ -28,7 +28,7 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed) => {
     url.includes("i.imgur.com") ||
     url.startsWith("https://imagedelivery.net")
   ) {
-    return <WarpcastImage url={url} key={key} />;
+    return <ImageEmbed url={url} key={key} />;
   } else if (url.startsWith('"chain:')) {
     return <OnchainEmbed url={url} key={key} />;
   } else if (url.startsWith("https://stream.warpcast.com")) {
