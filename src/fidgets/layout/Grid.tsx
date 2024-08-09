@@ -332,8 +332,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         hasProfile={hasProfile}
         inEditMode={inEditMode}
         openFidgetPicker={openFidgetPicker}
-        tabs={["profile", "home", "longtabnameisverylong"]}
-        currentTab={"profile"}
       />
 
       <div className="flex flex-col z-10">

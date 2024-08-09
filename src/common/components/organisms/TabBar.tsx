@@ -15,19 +15,25 @@ import {
 import Link from "next/link";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useAppStore } from "@/common/data/stores/app";
 
-const TabBar = ({
-  hasProfile,
-  inEditMode,
-  openFidgetPicker,
-  tabs,
-  currentTab,
-}) => {
+const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const { fid } = useFarcasterSigner("navigation");
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
+
+  const { tabNames, createTab, deleteTab, renameTab } = useAppStore(
+    (state) => ({
+      tabNames: state.homebase.loadTabNames,
+      createTab: state.homebase.createTab,
+      deleteTab: state.homebase.deleteTab,
+      renameTab: state.homebase.renameTab,
+    }),
+  );
+
+  const currentTab = "profile";
 
   return (
     <div className={"flex flex-row justify-center h-16"}>
@@ -36,7 +42,7 @@ const TabBar = ({
         className="flex flex-row grow h-16 items-center"
       >
         <TabsList className={tabListClasses}>
-          {map(tabs, (tabName: string) => {
+          {map(tabNames, (tabName: string) => {
             return (
               <div className="mx-4">
                 <Link
@@ -57,7 +63,19 @@ const TabBar = ({
       </Tabs>
 
       {inEditMode ? (
-        <div className="flex flex-row-reverse">
+        <div className="flex flex-row">
+          <button
+            onClick={() => {
+              createTab("TAB");
+            }}
+            className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+          >
+            <div className="ml-2">
+              <FaPlus />
+            </div>
+            <span className="ml-4 mr-2">Tab</span>
+          </button>
+
           <button
             onClick={openFidgetPicker}
             className="flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
@@ -66,16 +84,6 @@ const TabBar = ({
               <AddFidgetIcon />
             </div>
             <span className="ml-4 mr-2">Fidget</span>
-          </button>
-
-          <button
-            onClick={openFidgetPicker}
-            className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-          >
-            <div className="ml-2">
-              <FaPlus />
-            </div>
-            <span className="ml-4 mr-2">Tab</span>
           </button>
         </div>
       ) : null}
