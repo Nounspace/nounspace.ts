@@ -15,7 +15,13 @@ import {
   Ubuntu,
   Work_Sans,
   Londrina_Solid,
-  Jura,
+  Quicksand,
+  Anek_Latin,
+  Goldman,
+  Trispace,
+  Oswald,
+  Exo,
+  IBM_Plex_Mono,
 } from "next/font/google";
 
 import type { FontFamily } from "@/common/lib/theme";
@@ -129,11 +135,52 @@ export const londrina_solid = Londrina_Solid({
   weight: ["100", "300", "400", "900"],
 });
 
-export const jura = Jura({
+export const quicksand = Quicksand({
   subsets: ["latin"],
-  variable: "--font-jura",
+  variable: "--font-quicksand",
   display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "700"],
+});
+
+export const anek_latin = Anek_Latin({
+  subsets: ["latin"],
+  variable: "--font-anek-latin",
+  display: "swap",
+});
+
+export const goldman = Goldman({
+  subsets: ["latin"],
+  variable: "--font-goldman",
+  display: "swap",
+  weight: ["400", "700"],
+});
+
+export const trispace = Trispace({
+  subsets: ["latin"],
+  variable: "--font-trispace",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+export const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-oswald",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+export const exo = Exo({
+  subsets: ["latin"],
+  variable: "--font-exo",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
+});
+
+export const ibm_plex_mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  variable: "--font-ibm-plex-mono",
+  display: "swap",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const FONT_FAMILY_OPTIONS: FontConfig[] = [
@@ -224,8 +271,32 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
     config: londrina_solid,
   },
   {
-    name: "Jura",
-    config: jura,
+    name: "Quicksand",
+    config: quicksand,
+  },
+  {
+    name: "Anek Latin",
+    config: anek_latin,
+  },
+  {
+    name: "Goldman",
+    config: goldman,
+  },
+  {
+    name: "Trispace",
+    config: trispace,
+  },
+  {
+    name: "Oswald",
+    config: oswald,
+  },
+  {
+    name: "Exo",
+    config: exo,
+  },
+  {
+    name: "IBM Plex Mono",
+    config: ibm_plex_mono,
   },
 ];
 

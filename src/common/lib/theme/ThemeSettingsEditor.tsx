@@ -32,6 +32,7 @@ import { FaInfoCircle, FaPencilAlt, FaCheck } from "react-icons/fa";
 import { FaArrowLeftLong } from "react-icons/fa6";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { THEMES, DEFAULT_THEME_WITH_VARIABLES } from "@/constants/themes";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/components/molecules/FontSelector";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -103,9 +104,7 @@ export function ThemeSettingsEditor({
             </div>
             <div className="h-full overflow-auto flex flex-col gap-4 -mx-2 px-2">
               <div className="grid gap-4">
-                <ThemeCard
-                  themeProps={DEFAULT_THEME_WITH_VARIABLES.properties}
-                />
+                <ThemeCard themeProps={theme.properties} />
                 <div className="grid gap-2">
                   <h4 className="text-sm">Styles</h4>
                   <div className="grid grid-cols-2 gap-3">
@@ -128,25 +127,6 @@ export function ThemeSettingsEditor({
                   Customize
                   <FaPencilAlt />
                 </Button>
-              </div>
-              <div className="grid gap-4">
-                {THEMES.map((theme, i) => {
-                  if (!theme.properties.backgroundHTML) {
-                    return null;
-                  }
-                  return (
-                    <div className="grid gap-2" key={i}>
-                      <h4>{theme.name}</h4>
-                      <div className="relative w-full h-48">
-                        <CustomHTMLBackground
-                          html={theme.properties.backgroundHTML}
-                          noSanitize
-                          className="absolute pointer-events-none inset-0"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
               </div>
             </div>
           </>
@@ -527,9 +507,11 @@ const ThemeCard = ({
   onClick?: () => void;
   active?: boolean;
 }) => {
+  const activeRingBeforeElementClasses =
+    "before:content-[''] before:absolute before:inset-0 before:rounded-lg before:ring-2 before:ring-blue-500 before:z-10";
   return (
     <div
-      className={`bg-gray-50 hover:bg-gray-100 rounded-lg grid [grid-template-areas:'cell'] max-h-11 cursor-pointer relative ${active ? "ring-2 ring-blue-500" : ""}`}
+      className={`bg-gray-50 hover:bg-gray-100 rounded-lg grid [grid-template-areas:'cell'] h-11 cursor-pointer relative ${active ? activeRingBeforeElementClasses : ""}`}
       style={{
         backgroundColor: themeProps.background,
       }}
@@ -553,7 +535,9 @@ const ThemeCard = ({
         <div className="text-lg font-bold">
           <span
             style={{
-              fontFamily: themeProps.headingsFont,
+              fontFamily:
+                FONT_FAMILY_OPTIONS_BY_NAME[themeProps.headingsFont]?.config
+                  ?.style.fontFamily,
               color: themeProps.headingsFontColor,
             }}
           >
@@ -561,7 +545,9 @@ const ThemeCard = ({
           </span>
           <span
             style={{
-              fontFamily: themeProps.font,
+              fontFamily:
+                FONT_FAMILY_OPTIONS_BY_NAME[themeProps.font]?.config?.style
+                  .fontFamily,
               color: themeProps.fontColor,
             }}
           >
