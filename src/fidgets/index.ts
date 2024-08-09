@@ -11,6 +11,7 @@ import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
 import CreateCast from "./farcaster/CreateCast";
 import zoraEmbed from "./zora/zoraEmbed";
+import Links from "./ui/Links";
 
 export const CompleteFidgets = {
   //
@@ -30,6 +31,7 @@ export const CompleteFidgets = {
   // Nouns
   governance: NounishGovernance,
   // zora: zoraEmbed,
+  links: Links,
 };
 
 export const LayoutFidgets = {
