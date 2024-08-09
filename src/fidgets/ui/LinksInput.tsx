@@ -84,28 +84,24 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
         isActive: boolean;
       }[]
     >([]);
+    const defaultLinkState = {
+      isAvatarInputDisplayed: false,
+      confirmed: false,
+      isActive: false,
+    };
 
     useEffect(() => {
       if (value.length === 0) {
         const defaultLink = {
-          text: "My Awesome Link",
-          url: "https://nounspace.com",
-          avatar:
-            "https://nounspace.mypinata.cloud/ipfs/QmSkE84i5LoA6b6VZBZe4Ku4MTo5ueYhCc3Hh7EY8JM3pb",
-          description: "Best dApp ever",
+          text: "Nouns",
+          url: "https://nouns.wtf",
+          avatar: "/images/nouns.svg",
+          description: "Fund ideas",
         };
         onChange?.([defaultLink]);
-        setLinkStates([
-          { isAvatarInputDisplayed: false, confirmed: false, isActive: false },
-        ]);
+        setLinkStates([defaultLinkState]);
       } else if (linkStates.length !== value.length) {
-        setLinkStates(
-          value.map(() => ({
-            isAvatarInputDisplayed: false,
-            confirmed: false,
-            isActive: false,
-          })),
-        );
+        setLinkStates(value.map(() => defaultLinkState));
       }
     }, [value, onChange, linkStates.length]);
 
@@ -130,11 +126,10 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
       onChange?.([
         ...value,
         {
-          text: "My Awesome Link",
-          url: "https://nounspace.com",
-          avatar:
-            "https://nounspace.mypinata.cloud/ipfs/QmSkE84i5LoA6b6VZBZe4Ku4MTo5ueYhCc3Hh7EY8JM3pb",
-          description: "Best dApp ever",
+          text: "Nouns",
+          url: "https://nouns.wtf",
+          avatar: "/images/nouns.svg",
+          description: "Fund ideas",
         },
       ]);
       setLinkStates([
