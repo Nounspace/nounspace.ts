@@ -11,6 +11,7 @@ import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
+import InfoToast from "../organisms/InfoBanner";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -106,6 +107,9 @@ export default function Space({
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out h-full">
         <div className="h-full flex flex-col">
+          <div style={{ position: "fixed", zIndex: 9999 }}>
+            <InfoToast />
+          </div>
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
