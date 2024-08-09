@@ -24,9 +24,9 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
 
-  const { tabNames, createTab, deleteTab, renameTab } = useAppStore(
+  const { loadTabNames, createTab, deleteTab, renameTab } = useAppStore(
     (state) => ({
-      tabNames: state.homebase.loadTabNames,
+      loadTabNames: state.homebase.loadTabNames,
       createTab: state.homebase.createTab,
       deleteTab: state.homebase.deleteTab,
       renameTab: state.homebase.renameTab,
@@ -34,6 +34,19 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   );
 
   const currentTab = "profile";
+  const [tabNames, setTabNames] = useState([""]);
+
+  useEffect(() => {
+    async function getTabs() {
+      try {
+        const freshTabNames = await loadTabNames();
+        setTabNames(freshTabNames);
+      } catch (e) {
+        console.log("Hit an error: ", e);
+      }
+    }
+    getTabs();
+  }, []);
 
   return (
     <div className={"flex flex-row justify-center h-16"}>
@@ -66,7 +79,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
         <div className="flex flex-row">
           <button
             onClick={() => {
-              createTab("TAB");
+              createTab("NEWTAB");
             }}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
