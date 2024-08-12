@@ -13,6 +13,7 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
+import { PiGlobeHemisphereEastBold } from "react-icons/pi";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
