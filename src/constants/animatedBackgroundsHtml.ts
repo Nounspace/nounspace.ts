@@ -1,4 +1,75 @@
-export const tesseractPattern = `<style>body{background-color:white;background-image:linear-gradient(45deg,pink 25%,transparent 25%),linear-gradient(-45deg,pink 25%,transparent 25%),linear-gradient(45deg,transparent 75%,dodgerblue 75%),linear-gradient(-45deg,transparent 75%,dodgerblue 75%);background-size:25vmin 25vmin;background-position:12.5vmin 0,-12.5vmin 12.5vmin,12.5vmin -12.5vmin,-12.5vmin 0;animation:color 4000ms cubic-bezier(0.76,0,0.24,1) infinite,position 4000ms cubic-bezier(0.76,0,0.24,1) infinite}@keyframes color{0%,25%{background-color:white}26%,50%{background-color:pink}51%,75%{background-color:white}76%,100%{background-color:dodgerblue}}@keyframes position{0%{background-position:12.5vmin 0,-12.5vmin 12.5vmin,12.5vmin -12.5vmin,-12.5vmin 0}25%{background-position:12.5vmin 50vmin,-12.5vmin 62.5vmin,12.5vmin 37.5vmin,-12.5vmin 50vmin}50%{background-position:37.5vmin 100vmin,-37.5vmin 112.5vmin,25vmin 87.5vmin,-25vmin 100vmin}75%{background-position:37.5vmin 150vmin,-37.5vmin 162.5vmin,25vmin 137.5vmin,-25vmin 150vmin}100%{background-position:62.5vmin 200vmin,-62.5vmin 212.5vmin,62.5vmin 187.5vmin,-62.5vmin 200vmin}}@media (prefers-reduced-motion){body{animation:none}}</style>`;
+export const tesseractPattern = `
+<style>
+body {
+  background-color: white;
+  background-image: linear-gradient(45deg, pink 25%, transparent 25%),
+                    linear-gradient(-45deg, pink 25%, transparent 25%),
+                    linear-gradient(45deg, transparent 75%, dodgerblue 75%),
+                    linear-gradient(-45deg, transparent 75%, dodgerblue 75%);
+  background-size: 25vmin 25vmin;
+  background-position: 12.5vmin 0,
+                       -12.5vmin 12.5vmin,
+                       12.5vmin -12.5vmin,
+                       -12.5vmin 0;
+  animation: color 4000ms cubic-bezier(0.76, 0, 0.24, 1) infinite,
+             position 4000ms cubic-bezier(0.76, 0, 0.24, 1) infinite;
+}
+
+@keyframes color {
+  0%, 25% {
+    background-color: white;
+  }
+  26%, 50% {
+    background-color: pink;
+  }
+  51%, 75% {
+    background-color: white;
+  }
+  76%, 100% {
+    background-color: dodgerblue;
+  }
+}
+
+@keyframes position {
+  0% {
+    background-position: 12.5vmin 0,
+                         -12.5vmin 12.5vmin,
+                         12.5vmin -12.5vmin,
+                         -12.5vmin 0;
+  }
+  25% {
+    background-position: 12.5vmin 50vmin,
+                         -12.5vmin 62.5vmin,
+                         12.5vmin 37.5vmin,
+                         -12.5vmin 50vmin;
+  }
+  50% {
+    background-position: 37.5vmin 100vmin,
+                         -37.5vmin 112.5vmin,
+                         25vmin 87.5vmin,
+                         -25vmin 100vmin;
+  }
+  75% {
+    background-position: 37.5vmin 150vmin,
+                         -37.5vmin 162.5vmin,
+                         25vmin 137.5vmin,
+                         -25vmin 150vmin;
+  }
+  100% {
+    background-position: 62.5vmin 200vmin,
+                         -62.5vmin 212.5vmin,
+                         62.5vmin 187.5vmin,
+                         -62.5vmin 200vmin;
+  }
+}
+
+@media (prefers-reduced-motion) {
+  body {
+    animation: none;
+  }
+}
+</style>
+`;
 
 export const squareGrid = `<html lang="en"><head><style>html{--s:100px;--c1:#C3CCAF;--c2:#67434F;--_s:calc(2*var(--s)) calc(2*var(--s));--_g:var(--_s) conic-gradient(at 40% 40%,#0000 75%,var(--c1) 0);--_p:var(--_s) conic-gradient(at 20% 20%,#0000 75%,var(--c2) 0);background:calc(.9*var(--s)) calc(.9*var(--s))/var(--_p),calc(-.1*var(--s)) calc(-.1*var(--s))/var(--_p),calc(.7*var(--s)) calc(.7*var(--s))/var(--_g),calc(-.3*var(--s)) calc(-.3*var(--s))/var(--_g),conic-gradient(from 90deg at 20% 20%,var(--c2) 25%,var(--c1) 0) 0 0/var(--s) var(--s);animation:m 3s infinite}@keyframes m{0%{background-position:calc(.9*var(--s)) calc(.9*var(--s)),calc(-.1*var(--s)) calc(-.1*var(--s)),calc(.7*var(--s)) calc(.7*var(--s)),calc(-.3*var(--s)) calc(-.3*var(--s)),0 0}25%{background-position:calc(1.9*var(--s)) calc(.9*var(--s)),calc(-1.1*var(--s)) calc(-.1*var(--s)),calc(1.7*var(--s)) calc(.7*var(--s)),calc(-1.3*var(--s)) calc(-.3*var(--s)),0 0}50%{background-position:calc(1.9*var(--s)) calc(-.1*var(--s)),calc(-1.1*var(--s)) calc(.9*var(--s)),calc(1.7*var(--s)) calc(-.3*var(--s)),calc(-1.3*var(--s)) calc(.7*var(--s)),0 0}75%{background-position:calc(2.9*var(--s)) calc(-.1*var(--s)),calc(-2.1*var(--s)) calc(.9*var(--s)),calc(2.7*var(--s)) calc(-.3*var(--s)),calc(-2.3*var(--s)) calc(.7*var(--s)),0 0}100%{background-position:calc(2.9*var(--s)) calc(-1.1*var(--s)),calc(-2.1*var(--s)) calc(1.9*var(--s)),calc(2.7*var(--s)) calc(-1.3*var(--s)),calc(-2.3*var(--s)) calc(1.7*var(--s)),0 0}}</style></head></body></html>`;
 
