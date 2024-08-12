@@ -611,7 +611,213 @@ export const floatingShapes = `
 </html>
 `;
 
-export const imageParallax = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HTML/CSS Combined</title><style>*{margin:0;padding:0}body,html{width:100%;height:100%;overflow:hidden}body{background-color:#021027}.container{width:100%;height:100%;overflow:hidden;position:relative}.background{display:block;position:absolute;top:0;left:0;object-fit:cover;width:100%;height:100%;mask-image:radial-gradient(white 0,#fff 30%,transparent 80%,transparent)}.circle-container{position:absolute;transform:translateY(-10vh);animation-iteration-count:infinite;animation-timing-function:linear}.circle{width:100%;height:100%;border-radius:50%;mix-blend-mode:screen;background-image:radial-gradient(#99feff,#99feff 10%,hsla(180,100%,80%,0) 56%);animation:fade-frames .2s infinite,scale-frames 2s infinite}@keyframes fade-frames{0%{opacity:1}50%{opacity:.7}100%{opacity:1}}@keyframes scale-frames{0%{transform:scale3d(.4,.4,1)}50%{transform:scale3d(2.2,2.2,1)}100%{transform:scale3d(.4,.4,1)}}.message{position:absolute;right:20px;bottom:10px;color:#fff;font-family:"Josefin Slab",serif;line-height:27px;font-size:18px;text-align:right;pointer-events:none;animation:message-frames 1.5s ease 5s forwards;opacity:0}@keyframes message-frames{from{opacity:0}to{opacity:1}}.circle-container:nth-child(1){width:8px;height:8px;animation-name:move-frames-1;animation-duration:37s;animation-delay:4s}.circle-container:nth-child(1) .circle{animation-delay:4s}@keyframes move-frames-1{from{transform:translate3d(10vw,110vh,0)}to{transform:translate3d(90vw,-110vh,0)}}.circle-container:nth-child(2){width:6px;height:6px;animation-name:move-frames-2;animation-duration:36s;animation-delay:3s}.circle-container:nth-child(2) .circle{animation-delay:3s}@keyframes move-frames-2{from{transform:translate3d(20vw,120vh,0)}to{transform:translate3d(80vw,-120vh,0)}}.circle-container:nth-child(3){width:7px;height:7px;animation-name:move-frames-3;animation-duration:35s;animation-delay:2s}.circle-container:nth-child(3) .circle{animation-delay:2s}@keyframes move-frames-3{from{transform:translate3d(30vw,130vh,0)}to{transform:translate3d(70vw,-130vh,0)}}.circle-container:nth-child(4){width:5px;height:5px;animation-name:move-frames-4;animation-duration:34s;animation-delay:1s}.circle-container:nth-child(4) .circle{animation-delay:1s}@keyframes move-frames-4{from{transform:translate3d(40vw,140vh,0)}to{transform:translate3d(60vw,-140vh,0)}}.circle-container:nth-child(5){width:8px;height:8px;animation-name:move-frames-5;animation-duration:33s;animation-delay:.5s}.circle-container:nth-child(5) .circle{animation-delay:.5s}@keyframes move-frames-5{from{transform:translate3d(50vw,150vh,0)}to{transform:translate3d(50vw,-150vh,0)}}.circle-container:nth-child(6){width:7px;height:7px;animation-name:move-frames-6;animation-duration:32s;animation-delay:4s}.circle-container:nth-child(6) .circle{animation-delay:4s}@keyframes move-frames-6{from{transform:translate3d(60vw,160vh,0)}to{transform:translate3d(40vw,-160vh,0)}}.circle-container:nth-child(7){width:6px;height:6px;animation-name:move-frames-7;animation-duration:31s;animation-delay:3s}.circle-container:nth-child(7) .circle{animation-delay:3s}@keyframes move-frames-7{from{transform:translate3d(70vw,170vh,0)}to{transform:translate3d(30vw,-170vh,0)}}.circle-container:nth-child(8){width:5px;height:5px;animation-name:move-frames-8;animation-duration:30s;animation-delay:2s}.circle-container:nth-child(8) .circle{animation-delay:2s}@keyframes move-frames-8{from{transform:translate3d(80vw,180vh,0)}to{transform:translate3d(20vw,-180vh,0)}}.circle-container:nth-child(9){width:8px;height:8px;animation-name:move-frames-9;animation-duration:29s;animation-delay:1s}.circle-container:nth-child(9) .circle{animation-delay:1s}@keyframes move-frames-9{from{transform:translate3d(90vw,190vh,0)}to{transform:translate3d(10vw,-190vh,0)}}.circle-container:nth-child(10){width:7px;height:7px;animation-name:move-frames-10;animation-duration:28s;animation-delay:.5s}.circle-container:nth-child(10) .circle{animation-delay:.5s}@keyframes move-frames-10{from{transform:translate3d(100vw,200vh,0)}to{transform:translate3d(0,-200vh,0)}}.circle-container:nth-child(11){width:6px;height:6px;animation-name:move-frames-11;animation-duration:27s;animation-delay:4s}.circle-container:nth-child(11) .circle{animation-delay:4s}@keyframes move-frames-11{from{transform:translate3d(110vw,210vh,0)}to{transform:translate3d(-10vw,-210vh,0)}}.circle-container:nth-child(12){width:5px;height:5px;animation-name:move-frames-12;animation-duration:26s;animation-delay:3s}@keyframes move-frames-2{from{transform:translate3d(20vw,120vh,0)}to{transform:translate3d(80vw,-120vh,0)}}.circle-container:nth-child(13){width:8px;height:8px;animation-name:move-frames-100;animation-duration:28s;animation-delay:1s}.circle-container:nth-child(13) .circle{animation-delay:1s}@keyframes move-frames-100{from{transform:translate3d(100vw,100vh,0)}to{transform:translate3d(0,-100vh,0)}}</style></head><body><div class="container"><img src="https://github.com/Nounspace/nounspace.ts/blob/main/public/images/nounspace_og.png?raw=true" class="background"><p class="message">to infinity and beyond</p><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div></div></body></html>`;
+export const imageParallax = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML/CSS Combined</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: #021027;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+            mask-image: radial-gradient(
+                white 0%,
+                white 30%,
+                transparent 80%,
+                transparent
+            );
+        }
+
+        .circle-container {
+            position: absolute;
+            transform: translateY(-10vh);
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            mix-blend-mode: screen;
+            background-image: radial-gradient(
+                hsl(180, 100%, 80%),
+                hsl(180, 100%, 80%) 10%,
+                hsla(180, 100%, 80%, 0) 56%
+            );
+
+            animation: fade-frames 200ms infinite, scale-frames 2s infinite;
+        }
+
+        @keyframes fade-frames {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes scale-frames {
+            0% {
+                transform: scale3d(0.4, 0.4, 1);
+            }
+
+            50% {
+                transform: scale3d(2.2, 2.2, 1);
+            }
+
+            100% {
+                transform: scale3d(0.4, 0.4, 1);
+            }
+        }
+
+        .message {
+            position: absolute;
+            right: 20px;
+            bottom: 10px;
+            color: white;
+            font-family: "Josefin Slab", serif;
+            line-height: 27px;
+            font-size: 18px;
+            text-align: right;
+            pointer-events: none;
+            animation: message-frames 1.5s ease 5s forwards;
+            opacity: 0;
+        }
+
+        @keyframes message-frames {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Dynamic CSS for each circle */
+        .circle-container:nth-child(1) { width: 8px; height: 8px; animation-name: move-frames-1; animation-duration: 37000ms; animation-delay: 4000ms; }
+        .circle-container:nth-child(1) .circle { animation-delay: 4000ms; }
+        @keyframes move-frames-1 { from { transform: translate3d(10vw, 110vh, 0); } to { transform: translate3d(90vw, -110vh, 0); } }
+
+        .circle-container:nth-child(2) { width: 6px; height: 6px; animation-name: move-frames-2; animation-duration: 36000ms; animation-delay: 3000ms; }
+        .circle-container:nth-child(2) .circle { animation-delay: 3000ms; }
+        @keyframes move-frames-2 { from { transform: translate3d(20vw, 120vh, 0); } to { transform: translate3d(80vw, -120vh, 0); } }
+
+        .circle-container:nth-child(3) { width: 7px; height: 7px; animation-name: move-frames-3; animation-duration: 35000ms; animation-delay: 2000ms; }
+        .circle-container:nth-child(3) .circle { animation-delay: 2000ms; }
+        @keyframes move-frames-3 { from { transform: translate3d(30vw, 130vh, 0); } to { transform: translate3d(70vw, -130vh, 0); } }
+
+        .circle-container:nth-child(4) { width: 5px; height: 5px; animation-name: move-frames-4; animation-duration: 34000ms; animation-delay: 1000ms; }
+        .circle-container:nth-child(4) .circle { animation-delay: 1000ms; }
+        @keyframes move-frames-4 { from { transform: translate3d(40vw, 140vh, 0); } to { transform: translate3d(60vw, -140vh, 0); } }
+
+        .circle-container:nth-child(5) { width: 8px; height: 8px; animation-name: move-frames-5; animation-duration: 33000ms; animation-delay: 500ms; }
+        .circle-container:nth-child(5) .circle { animation-delay: 500ms; }
+        @keyframes move-frames-5 { from { transform: translate3d(50vw, 150vh, 0); } to { transform: translate3d(50vw, -150vh, 0); } }
+
+        .circle-container:nth-child(6) { width: 7px; height: 7px; animation-name: move-frames-6; animation-duration: 32000ms; animation-delay: 4000ms; }
+        .circle-container:nth-child(6) .circle { animation-delay: 4000ms; }
+        @keyframes move-frames-6 { from { transform: translate3d(60vw, 160vh, 0); } to { transform: translate3d(40vw, -160vh, 0); } }
+
+        .circle-container:nth-child(7) { width: 6px; height: 6px; animation-name: move-frames-7; animation-duration: 31000ms; animation-delay: 3000ms; }
+        .circle-container:nth-child(7) .circle { animation-delay: 3000ms; }
+        @keyframes move-frames-7 { from { transform: translate3d(70vw, 170vh, 0); } to { transform: translate3d(30vw, -170vh, 0); } }
+
+        .circle-container:nth-child(8) { width: 5px; height: 5px; animation-name: move-frames-8; animation-duration: 30000ms; animation-delay: 2000ms; }
+        .circle-container:nth-child(8) .circle { animation-delay: 2000ms; }
+        @keyframes move-frames-8 { from { transform: translate3d(80vw, 180vh, 0); } to { transform: translate3d(20vw, -180vh, 0); } }
+
+        .circle-container:nth-child(9) { width: 8px; height: 8px; animation-name: move-frames-9; animation-duration: 29000ms; animation-delay: 1000ms; }
+        .circle-container:nth-child(9) .circle { animation-delay: 1000ms; }
+        @keyframes move-frames-9 { from { transform: translate3d(90vw, 190vh, 0); } to { transform: translate3d(10vw, -190vh, 0); } }
+
+        .circle-container:nth-child(10) { width: 7px; height: 7px; animation-name: move-frames-10; animation-duration: 28000ms; animation-delay: 500ms; }
+        .circle-container:nth-child(10) .circle { animation-delay: 500ms; }
+        @keyframes move-frames-10 { from { transform: translate3d(100vw, 200vh, 0); } to { transform: translate3d(0vw, -200vh, 0); } }
+
+        .circle-container:nth-child(11) { width: 6px; height: 6px; animation-name: move-frames-11; animation-duration: 27000ms; animation-delay: 4000ms; }
+        .circle-container:nth-child(11) .circle { animation-delay: 4000ms; }
+        @keyframes move-frames-11 { from { transform: translate3d(110vw, 210vh, 0); } to { transform: translate3d(-10vw, -210vh, 0); } }
+
+        .circle-container:nth-child(12) { width: 5px; height: 5px; animation-name: move-frames-12; animation-duration: 26000ms; animation-delay: 3000ms; }
+        @keyframes move-frames-2 { from { transform: translate3d(20vw, 120vh, 0); } to { transform: translate3d(80vw, -120vh, 0); } }      
+        .circle-container:nth-child(13) { width: 8px; height: 8px; animation-name: move-frames-100; animation-duration: 28000ms; animation-delay: 1000ms; }
+        .circle-container:nth-child(13) .circle { animation-delay: 1000ms; }
+        @keyframes move-frames-100 { from { transform: translate3d(100vw, 100vh, 0); } to { transform: translate3d(0vw, -100vh, 0); } }
+    </style>
+</head>
+<!-- To change the background image, replace the img src below with your image address -->
+<!-- To change the text displayed, replace the message below -->
+<body>
+    <div class="container">
+        <img src="https://github.com/Nounspace/nounspace.ts/blob/main/public/images/rainforest.png?raw=true" class="background">
+        <p class="message">to infinity and beyond</p>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+        <div class="circle-container"><div class="circle"></div></div>
+    </div>
+</body>
+</html>
+`;
 
 export const retro = `<html><head><style>html,body{height:100%}body{background-image:linear-gradient(0deg, rgba(253,253,253,1) 0%, rgba(203,213,224,1) 100%);background-repeat:no-repeat;}</style></head><body></body></html>`;
 
