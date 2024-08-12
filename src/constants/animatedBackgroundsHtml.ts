@@ -445,7 +445,171 @@ body {
 </html>
 `;
 
-export const floatingShapes = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Animated Circles</title><link href="https://fonts.googleapis.com/css?family=Exo:400,700" rel="stylesheet"><style>*{margin:0;padding:0}body{font-family:Exo,sans-serif}.context{width:100%;position:absolute;top:50vh}.context h1{text-align:center;color:#fff;font-size:50px}.area{background:#4e54c8;background:-webkit-linear-gradient(to left,#8f94fb,#4e54c8);width:100%;height:100vh}.circles{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}.circles li{position:absolute;display:block;list-style:none;width:20px;height:20px;background:rgba(255,255,255,.2);animation:animate 25s linear infinite;bottom:-150px}.circles li:nth-child(1){left:25%;width:80px;height:80px;animation-delay:0s}.circles li:nth-child(2){left:10%;width:20px;height:20px;animation-delay:2s;animation-duration:12s}.circles li:nth-child(3){left:70%;width:20px;height:20px;animation-delay:4s}.circles li:nth-child(4){left:40%;width:60px;height:60px;animation-delay:0s;animation-duration:18s}.circles li:nth-child(5){left:65%;width:20px;height:20px;animation-delay:0s}.circles li:nth-child(6){left:75%;width:110px;height:110px;animation-delay:3s}.circles li:nth-child(7){left:35%;width:150px;height:150px;animation-delay:7s}.circles li:nth-child(8){left:50%;width:25px;height:25px;animation-delay:15s;animation-duration:45s}.circles li:nth-child(9){left:20%;width:15px;height:15px;animation-delay:2s;animation-duration:35s}.circles li:nth-child(10){left:85%;width:150px;height:150px;animation-delay:0s;animation-duration:11s}@keyframes animate{0%{transform:translateY(0) rotate(0);opacity:1;border-radius:0}100%{transform:translateY(-1000px) rotate(720deg);opacity:0;border-radius:50%}}</style></head><body><div class="area"><ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul></div></body></html>`;
+export const floatingShapes = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Circles</title>
+    <link href="https://fonts.googleapis.com/css?family=Exo:400,700" rel="stylesheet">
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        body {
+            font-family: 'Exo', sans-serif;
+        }
+
+        .context {
+            width: 100%;
+            position: absolute;
+            top: 50vh;
+        }
+
+        .context h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 50px;
+        }
+
+        .area {
+            background: #4e54c8;
+            background: -webkit-linear-gradient(to left, #8f94fb, #4e54c8);
+            width: 100%;
+            height: 100vh;
+        }
+
+        .circles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .circles li {
+            position: absolute;
+            display: block;
+            list-style: none;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            animation: animate 25s linear infinite;
+            bottom: -150px;
+        }
+
+        .circles li:nth-child(1) {
+            left: 25%;
+            width: 80px;
+            height: 80px;
+            animation-delay: 0s;
+        }
+
+        .circles li:nth-child(2) {
+            left: 10%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 2s;
+            animation-duration: 12s;
+        }
+
+        .circles li:nth-child(3) {
+            left: 70%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 4s;
+        }
+
+        .circles li:nth-child(4) {
+            left: 40%;
+            width: 60px;
+            height: 60px;
+            animation-delay: 0s;
+            animation-duration: 18s;
+        }
+
+        .circles li:nth-child(5) {
+            left: 65%;
+            width: 20px;
+            height: 20px;
+            animation-delay: 0s;
+        }
+
+        .circles li:nth-child(6) {
+            left: 75%;
+            width: 110px;
+            height: 110px;
+            animation-delay: 3s;
+        }
+
+        .circles li:nth-child(7) {
+            left: 35%;
+            width: 150px;
+            height: 150px;
+            animation-delay: 7s;
+        }
+
+        .circles li:nth-child(8) {
+            left: 50%;
+            width: 25px;
+            height: 25px;
+            animation-delay: 15s;
+            animation-duration: 45s;
+        }
+
+        .circles li:nth-child(9) {
+            left: 20%;
+            width: 15px;
+            height: 15px;
+            animation-delay: 2s;
+            animation-duration: 35s;
+        }
+
+        .circles li:nth-child(10) {
+            left: 85%;
+            width: 150px;
+            height: 150px;
+            animation-delay: 0s;
+            animation-duration: 11s;
+        }
+
+        @keyframes animate {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+                border-radius: 0;
+            }
+
+            100% {
+                transform: translateY(-1000px) rotate(720deg);
+                opacity: 0;
+                border-radius: 50%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="area">
+        <ul class="circles">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+</body>
+</html>
+`;
 
 export const imageParallax = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HTML/CSS Combined</title><style>*{margin:0;padding:0}body,html{width:100%;height:100%;overflow:hidden}body{background-color:#021027}.container{width:100%;height:100%;overflow:hidden;position:relative}.background{display:block;position:absolute;top:0;left:0;object-fit:cover;width:100%;height:100%;mask-image:radial-gradient(white 0,#fff 30%,transparent 80%,transparent)}.circle-container{position:absolute;transform:translateY(-10vh);animation-iteration-count:infinite;animation-timing-function:linear}.circle{width:100%;height:100%;border-radius:50%;mix-blend-mode:screen;background-image:radial-gradient(#99feff,#99feff 10%,hsla(180,100%,80%,0) 56%);animation:fade-frames .2s infinite,scale-frames 2s infinite}@keyframes fade-frames{0%{opacity:1}50%{opacity:.7}100%{opacity:1}}@keyframes scale-frames{0%{transform:scale3d(.4,.4,1)}50%{transform:scale3d(2.2,2.2,1)}100%{transform:scale3d(.4,.4,1)}}.message{position:absolute;right:20px;bottom:10px;color:#fff;font-family:"Josefin Slab",serif;line-height:27px;font-size:18px;text-align:right;pointer-events:none;animation:message-frames 1.5s ease 5s forwards;opacity:0}@keyframes message-frames{from{opacity:0}to{opacity:1}}.circle-container:nth-child(1){width:8px;height:8px;animation-name:move-frames-1;animation-duration:37s;animation-delay:4s}.circle-container:nth-child(1) .circle{animation-delay:4s}@keyframes move-frames-1{from{transform:translate3d(10vw,110vh,0)}to{transform:translate3d(90vw,-110vh,0)}}.circle-container:nth-child(2){width:6px;height:6px;animation-name:move-frames-2;animation-duration:36s;animation-delay:3s}.circle-container:nth-child(2) .circle{animation-delay:3s}@keyframes move-frames-2{from{transform:translate3d(20vw,120vh,0)}to{transform:translate3d(80vw,-120vh,0)}}.circle-container:nth-child(3){width:7px;height:7px;animation-name:move-frames-3;animation-duration:35s;animation-delay:2s}.circle-container:nth-child(3) .circle{animation-delay:2s}@keyframes move-frames-3{from{transform:translate3d(30vw,130vh,0)}to{transform:translate3d(70vw,-130vh,0)}}.circle-container:nth-child(4){width:5px;height:5px;animation-name:move-frames-4;animation-duration:34s;animation-delay:1s}.circle-container:nth-child(4) .circle{animation-delay:1s}@keyframes move-frames-4{from{transform:translate3d(40vw,140vh,0)}to{transform:translate3d(60vw,-140vh,0)}}.circle-container:nth-child(5){width:8px;height:8px;animation-name:move-frames-5;animation-duration:33s;animation-delay:.5s}.circle-container:nth-child(5) .circle{animation-delay:.5s}@keyframes move-frames-5{from{transform:translate3d(50vw,150vh,0)}to{transform:translate3d(50vw,-150vh,0)}}.circle-container:nth-child(6){width:7px;height:7px;animation-name:move-frames-6;animation-duration:32s;animation-delay:4s}.circle-container:nth-child(6) .circle{animation-delay:4s}@keyframes move-frames-6{from{transform:translate3d(60vw,160vh,0)}to{transform:translate3d(40vw,-160vh,0)}}.circle-container:nth-child(7){width:6px;height:6px;animation-name:move-frames-7;animation-duration:31s;animation-delay:3s}.circle-container:nth-child(7) .circle{animation-delay:3s}@keyframes move-frames-7{from{transform:translate3d(70vw,170vh,0)}to{transform:translate3d(30vw,-170vh,0)}}.circle-container:nth-child(8){width:5px;height:5px;animation-name:move-frames-8;animation-duration:30s;animation-delay:2s}.circle-container:nth-child(8) .circle{animation-delay:2s}@keyframes move-frames-8{from{transform:translate3d(80vw,180vh,0)}to{transform:translate3d(20vw,-180vh,0)}}.circle-container:nth-child(9){width:8px;height:8px;animation-name:move-frames-9;animation-duration:29s;animation-delay:1s}.circle-container:nth-child(9) .circle{animation-delay:1s}@keyframes move-frames-9{from{transform:translate3d(90vw,190vh,0)}to{transform:translate3d(10vw,-190vh,0)}}.circle-container:nth-child(10){width:7px;height:7px;animation-name:move-frames-10;animation-duration:28s;animation-delay:.5s}.circle-container:nth-child(10) .circle{animation-delay:.5s}@keyframes move-frames-10{from{transform:translate3d(100vw,200vh,0)}to{transform:translate3d(0,-200vh,0)}}.circle-container:nth-child(11){width:6px;height:6px;animation-name:move-frames-11;animation-duration:27s;animation-delay:4s}.circle-container:nth-child(11) .circle{animation-delay:4s}@keyframes move-frames-11{from{transform:translate3d(110vw,210vh,0)}to{transform:translate3d(-10vw,-210vh,0)}}.circle-container:nth-child(12){width:5px;height:5px;animation-name:move-frames-12;animation-duration:26s;animation-delay:3s}@keyframes move-frames-2{from{transform:translate3d(20vw,120vh,0)}to{transform:translate3d(80vw,-120vh,0)}}.circle-container:nth-child(13){width:8px;height:8px;animation-name:move-frames-100;animation-duration:28s;animation-delay:1s}.circle-container:nth-child(13) .circle{animation-delay:1s}@keyframes move-frames-100{from{transform:translate3d(100vw,100vh,0)}to{transform:translate3d(0,-100vh,0)}}</style></head><body><div class="container"><img src="https://github.com/Nounspace/nounspace.ts/blob/main/public/images/nounspace_og.png?raw=true" class="background"><p class="message">to infinity and beyond</p><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div><div class="circle-container"><div class="circle"></div></div></div></body></html>`;
 
