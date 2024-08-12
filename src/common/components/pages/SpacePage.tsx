@@ -10,6 +10,7 @@ type SpacePageArgs = {
   commitConfig?: () => Promise<void>;
   resetConfig?: () => Promise<void>;
   profile?: ReactNode;
+  feed?: ReactNode;
   loading?: boolean;
 };
 
@@ -20,6 +21,7 @@ export default function SpacePage({
   resetConfig,
   profile,
   loading,
+  feed,
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
@@ -39,6 +41,7 @@ export default function SpacePage({
           commitConfig={commitConfig}
           resetConfig={resetConfig}
           profile={profile}
+          feed={feed}
           setEditMode={setEditMode}
           editMode={editMode}
           setSidebarEditable={setSidebarEditable}
