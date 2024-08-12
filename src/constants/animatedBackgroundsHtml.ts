@@ -281,7 +281,169 @@ export const colorBlobs = `
 </html>
 `;
 
-export const shootingStar = `<!DOCTYPE html><html><head><style>@media screen and (max-width:750px){.star{animation:fall var(--fall-duration) var(--fall-delay) linear infinite}}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:radial-gradient(ellipse at bottom,#0d1d31 0,#0c0d13 100%);overflow:hidden}.stars{position:fixed;top:0;left:0;width:100%;height:120%;transform:rotate(-45deg)}.star{--star-color:var(--primary-color);--star-tail-length:6em;--star-tail-height:2px;--star-width:calc(var(--star-tail-length) / 6);--fall-duration:9s;--tail-fade-duration:var(--fall-duration);position:absolute;top:var(--top-offset);left:0;width:var(--star-tail-length);height:var(--star-tail-height);color:var(--star-color);background:linear-gradient(45deg,currentColor,transparent);border-radius:50%;filter:drop-shadow(0 0 6px currentColor);transform:translate3d(104em,0,0);animation:fall var(--fall-duration) var(--fall-delay) linear infinite,tail-fade var(--tail-fade-duration) var(--fall-delay) ease-out infinite}.star:nth-child(1){--star-tail-length:5.75em;--top-offset:66.26vh;--fall-duration:9.397s;--fall-delay:6.845s;--star-color:#FFF4C4}.star:nth-child(2){--star-tail-length:5.2em;--top-offset:22.11vh;--fall-duration:10.252s;--fall-delay:0.776s;--star-color:#FFD700}.star:nth-child(3){--star-tail-length:6.41em;--top-offset:60.77vh;--fall-duration:7.865s;--fall-delay:9.192s;--star-color:#FFF8DC}.star:nth-child(4){--star-tail-length:6.64em;--top-offset:26.11vh;--fall-duration:6.215s;--fall-delay:3.028s;--star-color:#FFE4B5}.star:nth-child(5){--star-tail-length:6.15em;--top-offset:34.09vh;--fall-duration:6.613s;--fall-delay:8.54s;--star-color:#FFDAB9}.star:nth-child(6){--star-tail-length:6.14em;--top-offset:59.3vh;--fall-duration:8.58s;--fall-delay:9.71s;--star-color:#FFEFD5}.star:nth-child(7){--star-tail-length:7.06em;--top-offset:60.39vh;--fall-duration:11.042s;--fall-delay:2.45s;--star-color:#FFEBCD}.star:nth-child(8){--star-tail-length:5.65em;--top-offset:74.01vh;--fall-duration:9.523s;--fall-delay:4.499s;--star-color:#FFE4E1}.star:nth-child(9){--star-tail-length:5.01em;--top-offset:25.24vh;--fall-duration:7.484s;--fall-delay:5.277s;--star-color:#FFDAB9}.star:nth-child(10){--star-tail-length:5.4em;--top-offset:46.03vh;--fall-duration:8.326s;--fall-delay:6.699s;--star-color:#FFF0F5}.star:nth-child(11){--star-tail-length:6.87em;--top-offset:85.73vh;--fall-duration:9.024s;--fall-delay:7.167s;--star-color:#FFE4C4}.star:nth-child(12){--star-tail-length:6.26em;--top-offset:57.21vh;--fall-duration:11.552s;--fall-delay:0.136s;--star-color:#FFFACD}.star:nth-child(13){--star-tail-length:6.33em;--top-offset:94.94vh;--fall-duration:9.768s;--fall-delay:7.759s;--star-color:#FAFAD2}.star:nth-child(14){--star-tail-length:5.73em;--top-offset:0.77vh;--fall-duration:9.42s;--fall-delay:0.412s;--star-color:#FFFFE0}.star:nth-child(15){--star-tail-length:5.62em;--top-offset:37.99vh;--fall-duration:9.219s;--fall-delay:9.572s;--star-color:#FFF5EE}.star:nth-child(16){--star-tail-length:5.16em;--top-offset:74.31vh;--fall-duration:11.444s;--fall-delay:8.965s;--star-color:#F0FFF0}.star:nth-child(17){--star-tail-length:7.38em;--top-offset:73.1vh;--fall-duration:10.709s;--fall-delay:2.344s;--star-color:#F5FFFA}.star:nth-child(18){--star-tail-length:6.26em;--top-offset:38.91vh;--fall-duration:11.112s;--fall-delay:3.949s;--star-color:#F0F8FF}.star:nth-child(19){--star-tail-length:5.92em;--top-offset:64.35vh;--fall-duration:10.953s;--fall-delay:2.431s;--star-color:#F8F8FF}.star:nth-child(20){--star-tail-length:5.02em;--top-offset:2.1vh;--fall-duration:6.289s;--fall-delay:1.946s;--star-color:#F0E68C}.star:nth-child(21){--star-tail-length:6.18em;--top-offset:80.41vh;--fall-duration:6.12s;--fall-delay:7.476s;--star-color:#FFFACD}.star:nth-child(22){--star-tail-length:7.11em;--top-offset:53.29vh;--fall-duration:8.831s;--fall-delay:0.469s;--star-color:#FFF8DC}.star:nth-child(23){--star-tail-length:5.67em;--top-offset:12.87vh;--fall-duration:9.442s;--fall-delay:9.955s;--star-color:#FFFFF0}.star:nth-child(24){--star-tail-length:6.94em;--top-offset:31.65vh;--fall-duration:10.738s;--fall-delay:3.663s;--star-color:#FFFAF0}.star:nth-child(25){--star-tail-length:5.99em;--top-offset:79.36vh;--fall-duration:11.366s;--fall-delay:5.84s;--star-color:#FAF0E6}.star:nth-child(26){--star-tail-length:5.82em;--top-offset:9.65vh;--fall-duration:7.405s;--fall-delay:8.235s;--star-color:#FFF0F5}.star:nth-child(27){--star-tail-length:5.56em;--top-offset:85.52vh;--fall-duration:8.121s;--fall-delay:9.337s;--star-color:#FFE4E1}.star:nth-child(28){--star-tail-length:6.95em;--top-offset:10.78vh;--fall-duration:11.924s;--fall-delay:6.187s;--star-color:#FFDAB9}.star:nth-child(29){--star-tail-length:7.25em;--top-offset:28.76vh;--fall-duration:10.255s;--fall-delay:5.851s;--star-color:#FFEFD5}.star:nth-child(30){--star-tail-length:5.94em;--top-offset:12.59vh;--fall-duration:8.123s;--fall-delay:0.559s;--star-color:#FFE4B5}.star:nth-child(31){--star-tail-length:5.77em;--top-offset:52.58vh;--fall-duration:6.647s;--fall-delay:8.408s;--star-color:#FFDAB9}.star:nth-child(32){--star-tail-length:6.31em;--top-offset:70.41vh;--fall-duration:9.456s;--fall-delay:0.365s;--star-color:#FFEFD5}.star:nth-child(33){--star-tail-length:5.33em;--top-offset:72.14vh;--fall-duration:10.853s;--fall-delay:3.079s;--star-color:#FFFACD}.star:nth-child(34){--star-tail-length:6.5em;--top-offset:94.58vh;--fall-duration:6.216s;--fall-delay:7.007s;--star-color:#FFFFF0}.star:nth-child(35){--star-tail-length:6.78em;--top-offset:90.12vh;--fall-duration:6.511s;--fall-delay:1.076s;--star-color:#FFF5EE}.star:nth-child(36){--star-tail-length:6.47em;--top-offset:24.74vh;--fall-duration:7.948s;--fall-delay:2.584s;--star-color:#FFF8DC}.star:nth-child(37){--star-tail-length:6.98em;--top-offset:93vh;--fall-duration:8.767s;--fall-delay:5.115s;--star-color:#FFFAF0}.star:nth-child(38){--star-tail-length:6.2em;--top-offset:50.52vh;--fall-duration:8.839s;--fall-delay:8.817s;--star-color:#F0FFF0}.star:nth-child(39){--star-tail-length:6.82em;--top-offset:40.96vh;--fall-duration:11.768s;--fall-delay:9.079s;--star-color:#F5FFFA}.star:nth-child(40){--star-tail-length:6.03em;--top-offset:54.2vh;--fall-duration:10.202s;--fall-delay:6.822s;--star-color:#F0F8FF}.star:nth-child(41){--star-tail-length:5.38em;--top-offset:26.08vh;--fall-duration:6.575s;--fall-delay:4.124s;--star-color:#F8F8FF}.star:nth-child(42){--star-tail-length:6.93em;--top-offset:17.53vh;--fall-duration:6.199s;--fall-delay:4.022s;--star-color:#FFFFF0}.star:nth-child(43){--star-tail-length:6.75em;--top-offset:88.33vh;--fall-duration:11.161s;--fall-delay:8.707s;--star-color:#FFF0F5}.star:nth-child(44){--star-tail-length:5.13em;--top-offset:76.61vh;--fall-duration:10.428s;--fall-delay:3.501s;--star-color:#FFE4E1}.star:nth-child(45){--star-tail-length:5.06em;--top-offset:0.99vh;--fall-duration:8.699s;--fall-delay:4.056s;--star-color:#FFDAB9}.star:nth-child(46){--star-tail-length:5.13em;--top-offset:94.35vh;--fall-duration:8.019s;--fall-delay:6.262s;--star-color:#FFEFD5}.star:nth-child(47){--star-tail-length:6.21em;--top-offset:22.35vh;--fall-duration:9.456s;--fall-delay:3.124s;--star-color:#FFE4B5}.star:nth-child(48){--star-tail-length:5.86em;--top-offset:37.32vh;--fall-duration:10.168s;--fall-delay:6.439s;--star-color:#F0E68C}.star:nth-child(49){--star-tail-length:6.25em;--top-offset:70.76vh;--fall-duration:10.88s;--fall-delay:6.028s;--star-color:#FFFFE0}.star:nth-child(50){--star-tail-length:5.38em;--top-offset:29.35vh;--fall-duration:6.618s;--fall-delay:1.419s;--star-color:#FFF5EE}.star::after,.star::before{position:absolute;content:'';top:0;left:calc(var(--star-width)/ -2);width:var(--star-width);height:100%;background:linear-gradient(45deg,transparent,currentColor,transparent);border-radius:inherit;animation:blink 2s linear infinite}.star::before{transform:rotate(45deg)}.star::after{transform:rotate(-45deg)}@keyframes fall{to{transform:translate3d(-30em,0,0)}}@keyframes tail-fade{0%,50%{width:var(--star-tail-length);opacity:1}70%,80%{width:0;opacity:.4}100%{width:0;opacity:0}}@keyframes blink{50%{opacity:.6}}</style></head><body><div class="stars"><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div><div class="star"></div></div></body></html>`;
+export const shootingStar = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+@media screen and (max-width:750px) {
+  .star {
+    animation: fall 9s 6.845s linear infinite
+  }
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at bottom, #0d1d31 0, #0c0d13 100%);
+  overflow: hidden;
+}
+
+.stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%;
+  transform: rotate(-45deg);
+}
+
+.star {
+  position: absolute;
+  top: 66.26vh;
+  left: 0;
+  width: 6em;
+  height: 2px;
+  color: #FFF4C4;
+  background: linear-gradient(45deg, currentColor, transparent);
+  border-radius: 50%;
+  filter: drop-shadow(0 0 6px currentColor);
+  transform: translate3d(104em, 0, 0);
+  animation: fall 9s 6.845s linear infinite, tail-fade 9s 6.845s ease-out infinite;
+}
+
+.star::after,
+.star::before {
+  position: absolute;
+  content: '';
+  top: 0;
+  left: calc(1em / -2);
+  width: 1em;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, currentColor, transparent);
+  border-radius: inherit;
+  animation: blink 2s linear infinite;
+}
+
+.star::before {
+  transform: rotate(45deg);
+}
+
+.star::after {
+  transform: rotate(-45deg);
+}
+
+@keyframes fall {
+  to {
+    transform: translate3d(-30em, 0, 0);
+  }
+}
+
+@keyframes tail-fade {
+  0%, 50% {
+    width: 6em;
+    opacity: 1;
+  }
+  70%, 80% {
+    width: 0;
+    opacity: .4;
+  }
+  100% {
+    width: 0;
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: .6;
+  }
+}
+
+.star:nth-child(1) { top: 66.26vh; animation-duration: 9.397s; animation-delay: 6.845s; color: #FFF4C4; }
+.star:nth-child(2) { top: 22.11vh; animation-duration: 10.252s; animation-delay: 0.776s; color: #FFD700; }
+.star:nth-child(3) { top: 60.77vh; animation-duration: 7.865s; animation-delay: 9.192s; color: #FFF8DC; }
+.star:nth-child(4) { top: 26.11vh; animation-duration: 6.215s; animation-delay: 3.028s; color: #FFE4B5; }
+.star:nth-child(5) { top: 34.09vh; animation-duration: 6.613s; animation-delay: 8.54s; color: #FFDAB9; }
+.star:nth-child(6) { top: 59.3vh; animation-duration: 8.58s; animation-delay: 9.71s; color: #FFEFD5; }
+.star:nth-child(7) { top: 60.39vh; animation-duration: 11.042s; animation-delay: 2.45s; color: #FFEBCD; }
+.star:nth-child(8) { top: 74.01vh; animation-duration: 9.523s; animation-delay: 4.499s; color: #FFE4E1; }
+.star:nth-child(9) { top: 25.24vh; animation-duration: 7.484s; animation-delay: 5.277s; color: #FFDAB9; }
+.star:nth-child(10) { top: 46.03vh; animation-duration: 8.326s; animation-delay: 6.699s; color: #FFF0F5; }
+.star:nth-child(11) { top: 85.73vh; animation-duration: 9.024s; animation-delay: 7.167s; color: #FFE4C4; }
+.star:nth-child(12) { top: 57.21vh; animation-duration: 11.552s; animation-delay: 0.136s; color: #FFFACD; }
+.star:nth-child(13) { top: 94.94vh; animation-duration: 9.768s; animation-delay: 7.759s; color: #FAFAD2; }
+.star:nth-child(14) { top: 0.77vh; animation-duration: 9.42s; animation-delay: 0.412s; color: #FFFFE0; }
+.star:nth-child(15) { top: 37.99vh; animation-duration: 9.219s; animation-delay: 9.572s; color: #FFF5EE; }
+.star:nth-child(16) { top: 74.31vh; animation-duration: 11.444s; animation-delay: 8.965s; color: #F0FFF0; }
+.star:nth-child(17) { top: 73.1vh; animation-duration: 10.709s; animation-delay: 2.344s; color: #F5FFFA; }
+.star:nth-child(18) { top: 38.91vh; animation-duration: 11.112s; animation-delay: 3.949s; color: #F0F8FF; }
+.star:nth-child(19) { top: 64.35vh; animation-duration: 10.953s; animation-delay: 2.431s; color: #F8F8FF; }
+.star:nth-child(20) { top: 2.1vh; animation-duration: 6.289s; animation-delay: 1.946s; color: #F0E68C; }
+.star:nth-child(21) { top: 80.41vh; animation-duration: 6.12s; animation-delay: 7.476s; color: #FFFACD; }
+.star:nth-child(22) { top: 53.29vh; animation-duration: 8.831s; animation-delay: 0.469s; color: #FFF8DC; }
+.star:nth-child(23) { top: 12.87vh; animation-duration: 9.442s; animation-delay: 9.955s; color: #FFFFF0; }
+.star:nth-child(24) { top: 31.65vh; animation-duration: 10.738s; animation-delay: 3.663s; color: #FFFAF0; }
+.star:nth-child(25) { top: 79.36vh; animation-duration: 11.366s; animation-delay: 5.84s; color: #FAF0E6; }
+.star:nth-child(26) { top: 9.65vh; animation-duration: 7.405s; animation-delay: 8.235s; color: #FFF0F5; }
+.star:nth-child(27) { top: 85.52vh; animation-duration: 8.121s; animation-delay: 9.337s; color: #FFE4E1; }
+.star:nth-child(28) { top: 10.78vh; animation-duration: 11.924s; animation-delay: 6.187s; color: #FFDAB9; }
+.star:nth-child(29) { top: 28.76vh; animation-duration: 10.255s; animation-delay: 5.851s; color: #FFEFD5; }
+.star:nth-child(30) { top: 12.59vh; animation-duration: 8.123s; animation-delay: 0.559s; color: #FFE4B5; }
+.star:nth-child(31) { top: 52.58vh; animation-duration: 6.647s; animation-delay: 8.408s; color: #FFDAB9; }
+.star:nth-child(32) { top: 70.41vh; animation-duration: 9.456s; animation-delay: 0.365s; color: #FFEFD5; }
+</style>
+</head>
+<body>
+<div class="stars">
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+  <div class="star"></div>
+</div>
+</body>
+</html>
+`;
 
 export const floatingShapes = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Animated Circles</title><link href="https://fonts.googleapis.com/css?family=Exo:400,700" rel="stylesheet"><style>*{margin:0;padding:0}body{font-family:Exo,sans-serif}.context{width:100%;position:absolute;top:50vh}.context h1{text-align:center;color:#fff;font-size:50px}.area{background:#4e54c8;background:-webkit-linear-gradient(to left,#8f94fb,#4e54c8);width:100%;height:100vh}.circles{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}.circles li{position:absolute;display:block;list-style:none;width:20px;height:20px;background:rgba(255,255,255,.2);animation:animate 25s linear infinite;bottom:-150px}.circles li:nth-child(1){left:25%;width:80px;height:80px;animation-delay:0s}.circles li:nth-child(2){left:10%;width:20px;height:20px;animation-delay:2s;animation-duration:12s}.circles li:nth-child(3){left:70%;width:20px;height:20px;animation-delay:4s}.circles li:nth-child(4){left:40%;width:60px;height:60px;animation-delay:0s;animation-duration:18s}.circles li:nth-child(5){left:65%;width:20px;height:20px;animation-delay:0s}.circles li:nth-child(6){left:75%;width:110px;height:110px;animation-delay:3s}.circles li:nth-child(7){left:35%;width:150px;height:150px;animation-delay:7s}.circles li:nth-child(8){left:50%;width:25px;height:25px;animation-delay:15s;animation-duration:45s}.circles li:nth-child(9){left:20%;width:15px;height:15px;animation-delay:2s;animation-duration:35s}.circles li:nth-child(10){left:85%;width:150px;height:150px;animation-delay:0s;animation-duration:11s}@keyframes animate{0%{transform:translateY(0) rotate(0);opacity:1;border-radius:0}100%{transform:translateY(-1000px) rotate(720deg);opacity:0;border-radius:50%}}</style></head><body><div class="area"><ul class="circles"><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li><li></li></ul></div></body></html>`;
 
