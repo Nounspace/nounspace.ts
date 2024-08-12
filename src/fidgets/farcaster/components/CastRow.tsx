@@ -264,7 +264,10 @@ const CastBody = ({
 const ThreadConnector = ({ className }) => {
   return (
     <div
-      className={classNames("absolute w-[2px] bg-border flex-1", className)}
+      className={classNames(
+        "absolute w-[2px] bg-foreground/10 flex-1",
+        className,
+      )}
     />
   );
 };
