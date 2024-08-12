@@ -1,5 +1,5 @@
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaX } from "react-icons/fa6";
 import { first, map } from "lodash";
 import {
   Tabs,
@@ -17,6 +17,8 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
+import EditableText from "../atoms/editable-text";
+import { Button } from "../atoms/button";
 
 const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const { fid } = useFarcasterSigner("navigation");
@@ -41,20 +43,24 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const currentTab = "profile";
   const [tabNames, setTabNames] = useState([""]);
 
-  useEffect(() => {
-    async function getTabs() {
-      try {
-        const freshTabNames = await loadTabNames();
-        setTabNames(freshTabNames);
-      } catch (e) {
-        console.log("Hit an error: ", e);
-      }
+  async function getTabs() {
+    try {
+      const freshTabNames = await loadTabNames();
+      setTabNames(freshTabNames);
+      return freshTabNames;
+    } catch (e) {
+      console.log("Hit an error: ", e);
     }
+  }
+
+  useEffect(() => {
     getTabs();
   }, []);
 
   return (
-    <div className={"flex flex-row justify-center h-16"}>
+    <div
+      className={"flex flex-row justify-center h-16  overflow-y-scroll w-full"}
+    >
       <Tabs
         defaultValue={currentTab}
         className="flex flex-row grow h-16 items-center"
@@ -67,11 +73,26 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
                   href={
                     hasProfile
                       ? `/s/${username}/${tabName}`
-                      : `/homebase/${tabName}`
+                      : `/homebase/tabs/${tabName}`
                   }
                 >
                   <TabsTrigger value={tabName} className={tabTriggerClasses}>
-                    {tabName}
+                    {inEditMode ? (
+                      <>
+                        <EditableText
+                          initialText={tabName}
+                          updateMethod={renameTab}
+                        />
+                        <Button
+                          className="ml-4 py-1 px-2 h-auto"
+                          onClick={() => deleteTab(tabName)}
+                        >
+                          <FaX className="w-2" />
+                        </Button>
+                      </>
+                    ) : (
+                      <span>{tabName}</span>
+                    )}
                   </TabsTrigger>
                 </Link>
               </div>
@@ -85,6 +106,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
           <button
             onClick={() => {
               createTab(`Tab ${tabNames.length + 1}`);
+              getTabs();
             }}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
