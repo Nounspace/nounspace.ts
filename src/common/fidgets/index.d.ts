@@ -124,6 +124,7 @@ interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
 
   hasProfile: boolean;
   tabNames: string[];
+  hasFeed: boolean;
 }
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;

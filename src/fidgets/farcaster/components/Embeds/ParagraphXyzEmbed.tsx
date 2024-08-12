@@ -40,7 +40,7 @@ const ParagraphXyzEmbed: React.FC<ParagraphXyzEmbedProps> = ({ url }) => {
   }
 
   const renderPost = () => (
-    <Card>
+    <Card className="border-none rounded-none">
       <CardHeader>
         <CardTitle>{data.post.title} on Paragraph</CardTitle>
         <CardDescription>
@@ -77,7 +77,7 @@ const ParagraphXyzEmbed: React.FC<ParagraphXyzEmbedProps> = ({ url }) => {
   );
 
   const renderPublication = () => (
-    <Card>
+    <Card className="border-none rounded-none">
       <CardHeader>
         <CardTitle>{data.publication.name} on Paragraph</CardTitle>
         <CardDescription>
