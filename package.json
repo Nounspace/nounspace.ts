@@ -100,7 +100,7 @@
     "cmdk": "^0.2.1",
     "command-score": "^0.1.2",
     "encoding": "^0.1.13",
-    "esbuild": "^0.21.5",
+    "esbuild": "^0.23.0",
     "fast-json-stable-stringify": "^2.1.0",
     "focus-trap-react": "^10.2.1",
     "frames.js": "^0.15.1",
