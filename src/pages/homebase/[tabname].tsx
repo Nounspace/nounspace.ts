@@ -3,29 +3,48 @@ import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
+import { useRouter } from "next/router";
+import { isNull, isString } from "lodash";
+import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 
 const Homebase: NextPageWithLayout = () => {
   const {
-    homebaseConfig,
-    saveConfig,
-    loadConfig,
-    commitConfig,
-    resetConfig,
+    tabConfigs,
+    loadTab,
+    saveTab,
+    commitTab,
+    resetTab,
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
   } = useAppStore((state) => ({
-    homebaseConfig: state.homebase.homebaseConfig,
-    saveConfig: state.homebase.saveHomebaseConfig,
-    loadConfig: state.homebase.loadHomebase,
-    commitConfig: state.homebase.commitHomebaseToDatabase,
-    resetConfig: state.homebase.resetHomebaseConfig,
+    tabConfigs: state.homebase.tabs,
+    loadTab: state.homebase.loadHomebaseTab,
+    saveTab: state.homebase.saveHomebaseTabConfig,
+    commitTab: state.homebase.commitHomebaseTabToDatabase,
+    resetTab: state.homebase.resetHomebaseTabConfig,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
   }));
+  const router = useRouter();
+  const queryTabName = router.query.tabname;
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
+
+  const tabname = isString(queryTabName) ? queryTabName : null;
+
+  if (isNull(tabname)) {
+    // Insert 404 page
+    return;
+  }
+
+  const loadConfig = () => loadTab(tabname);
+  const homebaseConfig = tabConfigs[tabname]?.config;
+  const saveConfig = (config: SpaceConfigSaveDetails) =>
+    saveTab(tabname, config);
+  const resetConfig = () => resetTab(tabname);
+  const commitConfig = () => commitTab(tabname);
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
 
@@ -54,8 +73,6 @@ const Homebase: NextPageWithLayout = () => {
           commitConfig: async () => await commitConfig(),
           resetConfig,
         };
-
-  // Add feed to the args
 
   return <SpacePage {...args} />;
 };
