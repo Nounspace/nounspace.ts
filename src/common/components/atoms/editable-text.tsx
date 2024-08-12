@@ -13,7 +13,7 @@ const EditableText = ({ initialText, updateMethod }) => {
 
   const onEditEnd = () => {
     setisEditing(false);
-    updateMethod(text);
+    updateMethod(initialText, text);
   };
 
   return isEditing ? (

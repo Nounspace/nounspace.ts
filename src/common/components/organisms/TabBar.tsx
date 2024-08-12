@@ -58,9 +58,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   }, []);
 
   return (
-    <div
-      className={"flex flex-row justify-center h-16  overflow-y-scroll w-full"}
-    >
+    <div className="flex flex-row justify-center h-16  overflow-y-scroll w-full">
       <Tabs
         defaultValue={currentTab}
         className="flex flex-row grow h-16 items-center"
