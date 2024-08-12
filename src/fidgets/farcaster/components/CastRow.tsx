@@ -156,13 +156,18 @@ const CastAttributionHeader = ({
   cast,
   inline,
   avatar,
+  isReply,
 }: {
   cast: CastWithInteractions;
   inline: boolean;
   avatar: boolean;
+  isReply: boolean;
 }) => {
   return (
     <div className="flex justify-start w-full gap-x-2">
+      {isReply && avatar && !inline && (
+        <ThreadConnector className="h-[8px] top-0 left-[31px]" />
+      )}
       {avatar && (
         <CastAvatar cast={cast} className={inline ? "size-5" : "size-10"} />
       )}
@@ -267,10 +272,10 @@ const ThreadConnector = ({ className }) => {
 const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
   return (
     <div className="flex flex-0 justify-center top-0 bottom-0">
-      {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
+      {connectTop && <ThreadConnector className="top-0 h-[8px]" />}
       <CastAvatar cast={cast} className="size-10" />
       {connectBottom && (
-        <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
+        <ThreadConnector className="bottom-0 h-[calc(100%-56px)]" />
       )}
     </div>
   );
@@ -590,6 +595,7 @@ export const CastRow = ({
             cast={cast}
             avatar={isFocused || isEmbed}
             inline={!isFocused}
+            isReply={isReply}
           />
           <CastBody
             cast={cast}
