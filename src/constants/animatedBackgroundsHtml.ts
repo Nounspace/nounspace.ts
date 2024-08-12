@@ -134,13 +134,75 @@ html {
   }
 }
 </style>
-d>
-<body>
-</body>
->
 `;
 
-export const gradientAndWave = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Waves Animation</title><style>body{margin:auto;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:auto;background:linear-gradient(315deg,rgba(101,0,94,1) 3%,rgba(60,132,206,1) 38%,rgba(48,238,226,1) 68%,rgba(255,25,25,1) 98%);animation:gradient 15s ease infinite;background-size:400% 400%;background-attachment:fixed}@keyframes gradient{0%{background-position:0 0}50%{background-position:100% 100%}100%{background-position:0 0}}.wave{background:rgb(255 255 255 / 25%);border-radius:1000% 1000% 0 0;position:fixed;width:200%;height:12em;animation:wave 10s -3s linear infinite;transform:translate3d(0,0,0);opacity:.8;bottom:0;left:0;z-index:-1}.wave:nth-of-type(2){bottom:-1.25em;animation:wave 18s linear reverse infinite;opacity:.8}.wave:nth-of-type(3){bottom:-2.5em;animation:wave 20s -1s reverse infinite;opacity:.9}@keyframes wave{2%{transform:translateX(1)}25%{transform:translateX(-25%)}50%{transform:translateX(-50%)}75%{transform:translateX(-25%)}100%{transform:translateX(1)}}</style></head><body><div><div class="wave"></div><div class="wave"></div><div class="wave"></div></div></body></html>`;
+export const gradientAndWave = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Waves Animation</title>
+    <style>
+        body {
+            margin: auto;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow: auto;
+            background: linear-gradient(315deg, rgba(101,0,94,1) 3%, rgba(60,132,206,1) 38%, rgba(48,238,226,1) 68%, rgba(255,25,25,1) 98%);
+            animation: gradient 15s ease infinite;
+            background-size: 400% 400%;
+            background-attachment: fixed;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0 0; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0 0; }
+        }
+
+        .wave {
+            background: rgb(255 255 255 / 25%);
+            border-radius: 1000% 1000% 0 0;
+            position: fixed;
+            width: 200%;
+            height: 12em;
+            animation: wave 10s -3s linear infinite;
+            transform: translate3d(0, 0, 0);
+            opacity: 0.8;
+            bottom: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .wave:nth-of-type(2) {
+            bottom: -1.25em;
+            animation: wave 18s linear reverse infinite;
+            opacity: 0.8;
+        }
+
+        .wave:nth-of-type(3) {
+            bottom: -2.5em;
+            animation: wave 20s -1s reverse infinite;
+            opacity: 0.9;
+        }
+
+        @keyframes wave {
+            2% { transform: translateX(1); }
+            25% { transform: translateX(-25%); }
+            50% { transform: translateX(-50%); }
+            75% { transform: translateX(-25%); }
+            100% { transform: translateX(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave">div>
+    </div>
+</body>
+</html>
+`;
 
 export const colorBlobs = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SVG Animation</title><style>body{background-color:#fee440;margin:0;padding:0}svg{position:fixed;top:0;left:0;width:100%;height:100vh}.links{position:fixed;bottom:20px;right:20px;font-size:18px;font-family:sans-serif}a{text-decoration:none;color:#000;margin-left:1em}a:hover{text-decoration:underline}a img.icon{display:inline-block;height:1em;margin:0 0 -.1em .3em}@keyframes rotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}.out-top{animation:rotate 20s linear infinite;transform-origin:13px 25px}.in-top{animation:rotate 10s linear infinite;transform-origin:13px 25px}.out-bottom{animation:rotate 25s linear infinite;transform-origin:84px 93px}.in-bottom{animation:rotate 15s linear infinite;transform-origin:84px 93px}</style></head><body><svg preserveAspectRatio="xMidYMid slice" viewBox="10 10 80 80"><path fill="#9b5de5" class="out-top" d="M37-5C25.1-14.7,5.7-19.1-9.2-10-28.5,1.8-32.7,31.1-19.8,49c15.5,21.5,52.6,22,67.2,2.3C59.4,35,53.7,8.5,37-5Z"/><path fill="#f15bb5" class="in-top" d="M20.6,4.1C11.6,1.5-1.9,2.5-8,11.2-16.3,23.1-8.2,45.6,7.4,50S42.1,38.9,41,24.5C40.2,14.1,29.4,6.6,20.6,4.1Z"/><path fill="#00bbf9" class="out-bottom" d="M105.9,48.6c-12.4-8.2-29.3-4.8-39.4.8-23.4,12.8-37.7,51.9-19.1,74.1s63.9,15.3,76-5.6c7.6-13.3,1.8-31.1-2.3-43.8C117.6,63.3,114.7,54.3,105.9,48.6Z"/><path fill="#00f5d4" class="in-bottom" d="M102,67.1c-9.6-6.1-22-3.1-29.5,2-15.4,10.7-19.6,37.5-7.6,47.8s35.9,3.9,44.5-12.5C115.5,92.6,113.9,74.6,102,67.1Z"/></svg></body></html>`;
 
