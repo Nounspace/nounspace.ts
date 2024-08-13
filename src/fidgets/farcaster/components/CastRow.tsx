@@ -126,7 +126,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
 
   return (
     <ErrorBoundary>
-      {map(cast.embeds, (embed) => {
+      {map(cast.embeds, (embed, i) => {
         const embedData = isEmbedUrl(embed)
           ? {
               ...embed,
@@ -139,6 +139,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
 
         return (
           <div
+            key={i}
             className={classNames(
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
               embedData.castId ? "max-w-[100%]" : "max-w-max",
