@@ -14,6 +14,7 @@ export enum AnalyticsEvent {
   ADD_FIDGET = "Add Fidget",
   EDIT_FIDGET = "Edit Fidget",
   CLICK_SPACE_FAIR_LAUNCH = "Click Space Fair Launch",
+  MUSIC_UPDATED = "Music Updated",
 }
 
 type AnalyticsEventProperties = {
@@ -25,17 +26,18 @@ type AnalyticsEventProperties = {
   [AnalyticsEvent.ADD_FIDGET]: { fidgetType: string };
   [AnalyticsEvent.EDIT_FIDGET]: { fidgetType: string };
   [AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH]: Record<string, never>;
+  [AnalyticsEvent.MUSIC_UPDATED]: { url: string };
 };
 
 const segment = new AnalyticsBrowser();
 
 export const analytics = {
-  track: <T extends AnalyticsEvent>(
+  track: <T extends keyof AnalyticsEventProperties>(
     eventName: T,
     properties?: AnalyticsEventProperties[T],
   ) => {
     try {
-      segment.track(eventName, properties);
+      segment.track(eventName, properties as Record<string, any>);
     } catch (e) {
       console.error(e);
     }
