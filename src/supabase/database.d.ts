@@ -67,6 +67,30 @@ export type Database = {
         };
         Relationships: [];
       };
+      lastSeenNotificationCursors: {
+        Row: {
+          created: string;
+          fid: number;
+          id: number;
+          identityPublicKey: string;
+          lastSeenTimestamp: string;
+        };
+        Insert: {
+          created?: string;
+          fid: number;
+          id?: number;
+          identityPublicKey: string;
+          lastSeenTimestamp: string;
+        };
+        Update: {
+          created?: string;
+          fid?: number;
+          id?: number;
+          identityPublicKey?: string;
+          lastSeenTimestamp?: string;
+        };
+        Relationships: [];
+      };
       spaceRegistrations: {
         Row: {
           fid: number;
