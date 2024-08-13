@@ -18,14 +18,12 @@ import {
   CastWithInteractions,
   EmbedUrl,
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { Button } from "@/common/components/atoms/button";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
-import Link from "next/link";
 import FarcasterLinkify from "./linkify";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import { useRouter } from "next/router";
