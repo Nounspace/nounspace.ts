@@ -129,7 +129,7 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
           text: "Nouns",
           url: "https://nouns.wtf",
           avatar: "/images/nouns.svg",
-          description: "Fund ideas",
+          description: "Funds ideas",
         },
       ]);
       setLinkStates([
