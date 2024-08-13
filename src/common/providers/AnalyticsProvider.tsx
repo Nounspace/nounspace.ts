@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
-
 export enum AnalyticsEvent {
   CONNECT_WALLET = "Connect Wallet",
   SIGN_UP = "Sign Up",
@@ -15,9 +14,14 @@ export enum AnalyticsEvent {
   EDIT_FIDGET = "Edit Fidget",
   CLICK_SPACE_FAIR_LAUNCH = "Click Space Fair Launch",
   MUSIC_UPDATED = "Music Updated",
+  CLICK_EXPLORE = "Explore Click",
+  CLICK_HOMEBASE = "Click Homebase",
+  CLICK_SEARCH = "Click Search",
+  CLICK_MY_SPACE = "Click My Space",
+  CLICK_CAST = "Click Cast",
 }
 
-type AnalyticsEventProperties = {
+export type AnalyticsEventProperties = {
   [AnalyticsEvent.CONNECT_WALLET]: { hasNogs: boolean };
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
   [AnalyticsEvent.LINK_FID]: { fid: number };
@@ -27,6 +31,11 @@ type AnalyticsEventProperties = {
   [AnalyticsEvent.EDIT_FIDGET]: { fidgetType: string };
   [AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH]: Record<string, never>;
   [AnalyticsEvent.MUSIC_UPDATED]: { url: string };
+  [AnalyticsEvent.CLICK_EXPLORE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_HOMEBASE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_SEARCH]: Record<string, never>;
+  [AnalyticsEvent.CLICK_MY_SPACE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_CAST]: Record<string, never>;
 };
 
 const segment = new AnalyticsBrowser();

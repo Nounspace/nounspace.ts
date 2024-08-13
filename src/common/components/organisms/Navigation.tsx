@@ -18,6 +18,7 @@ import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import {
   AnalyticsEvent,
+  AnalyticsEventProperties,
   analytics,
 } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
@@ -67,6 +68,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
+
+  const handleNavItemClick = (
+    event: AnalyticsEvent,
+    properties?: AnalyticsEventProperties[typeof event],
+  ) => {
+    analytics.track(event, properties);
+  };
+
   const CurrentUserImage = useCallback(
     () =>
       user && user.pfp_url ? (
@@ -157,27 +166,46 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem label="Homebase" Icon={HomeIcon} href="/homebase" />
+                <NavItem
+                  label="Homebase"
+                  Icon={HomeIcon}
+                  href="/homebase"
+                  onClick={() =>
+                    handleNavItemClick(AnalyticsEvent.CLICK_HOMEBASE)
+                  }
+                />
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
-                  onClick={openSearchModal}
+                  onClick={() =>
+                    handleNavItemClick(AnalyticsEvent.CLICK_SEARCH)
+                  }
                 />
                 <NavItem
                   label="Fair Launch"
                   Icon={RocketIcon}
                   href="https://space.nounspace.com/"
                   onClick={() =>
-                    analytics.track(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                    handleNavItemClick(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
                 />
-                <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
+                <NavItem
+                  label="Explore"
+                  Icon={ExploreIcon}
+                  href="/explore"
+                  onClick={() =>
+                    handleNavItemClick(AnalyticsEvent.CLICK_EXPLORE)
+                  }
+                />
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
+                    onClick={() =>
+                      handleNavItemClick(AnalyticsEvent.CLICK_MY_SPACE)
+                    }
                   />
                 )}
                 {isLoggedIn && (
