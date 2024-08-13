@@ -71,7 +71,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
                   href={
                     hasProfile
                       ? `/s/${username}/${tabName}`
-                      : `/homebase/tabs/${tabName}`
+                      : `/homebase/${tabName}`
                   }
                 >
                   <TabsTrigger value={tabName} className={tabTriggerClasses}>
