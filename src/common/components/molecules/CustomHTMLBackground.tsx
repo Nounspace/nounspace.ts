@@ -14,15 +14,14 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
   noSanitize = false,
 }) => {
   // todo: more robust sanitization
-  const sanitizedHtml = useMemo(() => {
-    if (noSanitize) {
-      return html;
-    }
-
+const sanitizedHtml = useMemo(() => {
     return DOMPurify.sanitize(html, {
       FORCE_BODY: true,
-      SAFE_FOR_TEMPLATES: true,
-      ALLOWED_TAGS: ["style"],
+      SAFE_FOR_TEMPLATES: false,
+      USE_PROFILES: {
+        html: true,
+        svg: true,
+      },
     });
   }, [html]);
 
