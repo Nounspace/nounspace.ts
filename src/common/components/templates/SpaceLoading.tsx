@@ -1,8 +1,10 @@
 import React, { ReactNode, useMemo } from "react";
 import { isUndefined } from "lodash";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import { useIsMounted } from "@/common/lib/hooks/useIsMounted";
 
 export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
+  const isMounted = useIsMounted();
   const maxRows = 12;
   const cols = 12;
   const margin = [16, 16];
@@ -20,7 +22,8 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
     [height],
   );
 
-  return (
+  // isMounted check fixes hydration mismatch
+  return !isMounted() ? null : (
     <>
       <div className="w-full transition-all duration-100 ease-out h-full">
         <div className={"h-full flex flex-col"}>
