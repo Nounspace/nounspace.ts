@@ -11,7 +11,6 @@ import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
 import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
-import zoraEmbed from "./zora/zoraEmbed";
 import snapShot from "./snapshot/SnapShot";
 
 export const CompleteFidgets = {
