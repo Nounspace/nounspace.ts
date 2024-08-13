@@ -105,7 +105,7 @@ export const authenticatorStore = (
     };
 
     try {
-      await axiosBackend.post("/api/space/authenticators/", postData, {
+      await axiosBackend.post("/api/space/authenticators", postData, {
         headers: { "Content-Type": "application/json" },
       });
       set((draft) => {

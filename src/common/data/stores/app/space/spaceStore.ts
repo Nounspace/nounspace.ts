@@ -185,7 +185,7 @@ export const createSpaceStoreFunc = (
     // TO DO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
-        "/api/space/registry/",
+        "/api/space/registry",
         registration,
       );
       const newSpaceId = data.value!.spaceId;
@@ -266,7 +266,7 @@ export const createSpaceStoreFunc = (
             "json",
           );
       // TO DO: Error handling
-      await axiosBackend.post(`/api/space/registry/${spaceId}/`, {
+      await axiosBackend.post(`/api/space/registry/${spaceId}`, {
         spaceConfig: file,
       });
 
