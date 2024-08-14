@@ -25,6 +25,8 @@ export enum AnalyticsEvent {
   REPLY = "Reply",
   RECAST = "Recast",
   LIKE = "Like",
+  PLAY = "Play",
+  PAUSE = "Pause",
 }
 
 export type AnalyticsEventProperties = {
@@ -47,6 +49,8 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.REPLY]: { username: string; castId: string };
   [AnalyticsEvent.RECAST]: { username: string; castId: string };
   [AnalyticsEvent.LIKE]: { username: string; castId: string };
+  [AnalyticsEvent.PLAY]: { url: string | string[] };
+  [AnalyticsEvent.PAUSE]: { url: string | string[] };
 };
 
 const segment = new AnalyticsBrowser();
