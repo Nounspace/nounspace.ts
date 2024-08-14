@@ -132,7 +132,14 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
     resolveCssVariable("--user-theme-secondary-color");
 
   return (
-    <div>
+    <div
+      // make it overflow auto
+      style={{
+        overflow: "auto",
+        width: "100%",
+        height: "100%",
+      }}
+    >
       <Widget
         background={background}
         fontFamily={fontFamily}
