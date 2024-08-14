@@ -22,7 +22,7 @@ import {
   analytics,
 } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
-
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 type NavItemProps = {
   label: string;
   active?: boolean;
@@ -68,13 +68,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
-
-  const handleNavItemClick = (
-    event: AnalyticsEvent,
-    properties?: AnalyticsEventProperties[typeof event],
-  ) => {
-    analytics.track(event, properties);
-  };
 
   const CurrentUserImage = useCallback(
     () =>
@@ -171,14 +164,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   Icon={HomeIcon}
                   href="/homebase"
                   onClick={() =>
-                    handleNavItemClick(AnalyticsEvent.CLICK_HOMEBASE)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
                 />
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
                   onClick={() =>
-                    handleNavItemClick(AnalyticsEvent.CLICK_SEARCH)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH)
                   }
                 />
                 <NavItem
@@ -186,7 +179,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   Icon={RocketIcon}
                   href="https://space.nounspace.com/"
                   onClick={() =>
-                    handleNavItemClick(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
                 />
@@ -195,7 +188,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   Icon={ExploreIcon}
                   href="/explore"
                   onClick={() =>
-                    handleNavItemClick(AnalyticsEvent.CLICK_EXPLORE)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
                   }
                 />
                 {isLoggedIn && (
@@ -204,7 +197,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
                     onClick={() =>
-                      handleNavItemClick(AnalyticsEvent.CLICK_MY_SPACE)
+                      trackAnalyticsEvent(AnalyticsEvent.CLICK_MY_SPACE)
                     }
                   />
                 )}

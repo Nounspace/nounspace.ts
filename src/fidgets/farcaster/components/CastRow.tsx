@@ -29,7 +29,8 @@ import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import { useRouter } from "next/router";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
-
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
 }
@@ -181,7 +182,7 @@ const CastAttributionPrimary = ({ cast }) => {
   if (!cast?.author?.display_name) return null;
 
   return (
-    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] truncate">
+    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] nvm">
       <PriorityLink
         href={`/s/${cast.author.username}`}
         className="cursor-pointer"
@@ -302,6 +303,10 @@ export const CastRow = ({
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
 
   const onReply = () => {
+    trackAnalyticsEvent(AnalyticsEvent.REPLY, {
+      username: cast.author.username,
+      castId: cast.hash,
+    });
     setReplyCastDraft({
       parentCastId: castId,
     });
@@ -310,6 +315,10 @@ export const CastRow = ({
   };
 
   const onQuote = () => {
+    trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+      username: cast.author.username,
+      castId: cast.hash,
+    });
     setReplyCastDraft({
       embeds: [{ castId }],
     });
@@ -387,8 +396,16 @@ export const CastRow = ({
     }
 
     if (key === CastReactionType.likes) {
+      trackAnalyticsEvent(AnalyticsEvent.LIKE, {
+        username: cast.author.username,
+        castId: cast.hash,
+      });
       setDidLike(!isActive);
     } else if (key === CastReactionType.recasts) {
+      trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+        username: cast.author.username,
+        castId: cast.hash,
+      });
       setDidRecast(!isActive);
     }
 

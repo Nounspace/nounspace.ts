@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
+
 export enum AnalyticsEvent {
   CONNECT_WALLET = "Connect Wallet",
   SIGN_UP = "Sign Up",
@@ -19,6 +20,11 @@ export enum AnalyticsEvent {
   CLICK_SEARCH = "Click Search",
   CLICK_MY_SPACE = "Click My Space",
   CLICK_CAST = "Click Cast",
+  CLICK_EXPLORE_CARD = "Click Explore Card",
+  CAST = "Cast",
+  REPLY = "Reply",
+  RECAST = "Recast",
+  LIKE = "Like",
 }
 
 export type AnalyticsEventProperties = {
@@ -36,6 +42,11 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.CLICK_SEARCH]: Record<string, never>;
   [AnalyticsEvent.CLICK_MY_SPACE]: Record<string, never>;
   [AnalyticsEvent.CLICK_CAST]: Record<string, never>;
+  [AnalyticsEvent.CLICK_EXPLORE_CARD]: { slug: string };
+  [AnalyticsEvent.CAST]: { username: string; castId: string };
+  [AnalyticsEvent.REPLY]: { username: string; castId: string };
+  [AnalyticsEvent.RECAST]: { username: string; castId: string };
+  [AnalyticsEvent.LIKE]: { username: string; castId: string };
 };
 
 const segment = new AnalyticsBrowser();
