@@ -134,10 +134,12 @@ html {
   }
 }
 </style>
+</head>
+<body></body>
+</html>
 `;
 
 export const gradientAndWave = `
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -217,7 +219,6 @@ export const gradientAndWave = `
 `;
 
 export const colorBlobs = `
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -290,11 +291,11 @@ export const colorBlobs = `
         <path fill="#00f5d4" class="in-bottom" d="M102,67.1c-9.6-6.1-22-3.1-29.5,2-15.4,10.7-19.6,37.5-7.6,47.8s35.9,3.9,44.5-12.5C115.5,92.6,113.9,74.6,102,67.1Z"/>
     </svg>
 >
+</body>
 </html>
 `;
 
 export const shootingStar = `
-<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -458,7 +459,6 @@ body {
 `;
 
 export const floatingShapes = `
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -624,7 +624,6 @@ export const floatingShapes = `
 `;
 
 export const imageParallax = `
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

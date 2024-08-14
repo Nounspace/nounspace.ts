@@ -10,23 +10,7 @@ import {
   nounish,
 } from "./animatedBackgroundsHtml";
 
-export const DEFAULT_THEME_WITH_VARIABLES = {
-  id: "default",
-  name: "Default",
-  properties: {
-    font: "var(--user-theme-font)",
-    fontColor: "var(--user-theme-font-color)",
-    headingsFont: "var(--user-theme-headings-font)",
-    headingsFontColor: "var(--user-theme-headings-font-color)",
-    background: "var(--user-theme-background)",
-    backgroundHTML: "",
-    musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
-    fidgetBackground: "var(--user-theme-fidget-background)",
-    fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-    fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-    fidgetShadow: "var(--user-theme-fidget-shadow)",
-  },
-};
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/components/molecules/FontSelector";
 
 export const THEMES = [
   {
@@ -201,3 +185,17 @@ export const THEMES = [
     },
   },
 ];
+
+export const THEMES_WITH_FONT_VARIABLES = THEMES.map((theme) => {
+  return {
+    ...theme,
+    properties: {
+      ...theme.properties,
+      font: FONT_FAMILY_OPTIONS_BY_NAME[theme.properties.font]?.config?.style
+        .fontFamily,
+      headingsFont:
+        FONT_FAMILY_OPTIONS_BY_NAME[theme.properties.headingsFont]?.config
+          ?.style.fontFamily,
+    },
+  };
+});
