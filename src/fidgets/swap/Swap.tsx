@@ -13,6 +13,7 @@ import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import { WidgetTheme } from "@lifi/widget";
 import { resolveCssVariable } from "./utils/cssUtils";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
+import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 
 export type LifiFidgetSettings = {
   text: string;
@@ -28,6 +29,7 @@ export type LifiFidgetSettings = {
   defaultBuyToken: string;
   fromChain: number;
   toChain: number;
+  swapScale: number;
 } & FidgetSettingsStyle;
 
 const lifiProperties: FidgetProperties = {
@@ -104,11 +106,18 @@ const lifiProperties: FidgetProperties = {
       inputSelector: SimpleColorSelector,
       group: "style",
     },
+    {
+      fieldName: "swapScale",
+      default: 1,
+      required: false,
+      inputSelector: WidthSlider,
+      group: "style",
+    },
   ],
   size: {
-    minHeight: 5,
+    minHeight: 3,
     maxHeight: 36,
-    minWidth: 3,
+    minWidth: 2,
     maxWidth: 36,
   },
 };
@@ -131,13 +140,20 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
     settings.secondaryColor ||
     resolveCssVariable("--user-theme-secondary-color");
 
+  function calculateHeight(value: number) {
+    const translation = (value - 1) * 20; // Adjust the factor as needed
+    console.log("calculateHeight", translation);
+    console.log("calculateHeight", `${translation}%`);
+    return `${translation}%`;
+  }
+
   return (
     <div
-      // make it overflow auto
       style={{
         overflow: "auto",
         width: "100%",
-        height: "100%",
+        marginTop: calculateHeight(settings.swapScale),
+        transform: `scale(${settings.swapScale})`,
       }}
     >
       <Widget
