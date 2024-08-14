@@ -41,7 +41,7 @@ const voteOnProposal = async (
       type: type,
       choice: choiceId,
       reason: reason,
-      app: "Skatehive App",
+      app: "nounspace",
     });
 
     if (receipt) {
