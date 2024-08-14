@@ -106,7 +106,7 @@ const lifiProperties: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 6,
+    minHeight: 5,
     maxHeight: 36,
     minWidth: 3,
     maxWidth: 36,
@@ -145,7 +145,6 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
         fromChain={settings.fromChain || 8453}
         toChain={settings.toChain | 8453}
       />
-      <p style={{ marginLeft: "20px" }}>{settings.message}</p>
     </div>
   );
 };
