@@ -16,13 +16,15 @@ const WidthSlider: React.FC<WidthSliderProps> = ({
   onChange,
 }) => {
   return (
-    <Slider
-      defaultValue={defaultValue}
-      step={step}
-      min={min}
-      max={max}
-      onChange={(_, value) => onChange(value as number)}
-    />
+    <div className="ml-3 mr-3">
+      <Slider
+        defaultValue={defaultValue}
+        step={step}
+        min={min}
+        max={max}
+        onChange={(_, value) => onChange(value as number)}
+      />
+    </div>
   );
 };
 

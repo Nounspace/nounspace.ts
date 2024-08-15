@@ -141,7 +141,7 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
     resolveCssVariable("--user-theme-secondary-color");
 
   function calculateHeight(value: number) {
-    const translation = (value - 1) * 20; // Adjust the factor as needed
+    const translation = (value - 1) * 30;
     console.log("calculateHeight", translation);
     console.log("calculateHeight", `${translation}%`);
     return `${translation}%`;
