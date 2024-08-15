@@ -230,7 +230,7 @@ export function FidgetWrapper({
             : "size-full overflow-hidden"
         }
         style={getFidgetCardStyles({
-          background: homebaseConfig?.theme?.properties.background,
+          background: homebaseConfig?.theme?.properties.fidgetBackground,
           borderColor: homebaseConfig?.theme?.properties.fidgetBorderColor,
           settings: settingsWithDefaults,
         })}
