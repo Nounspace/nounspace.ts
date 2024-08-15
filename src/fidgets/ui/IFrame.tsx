@@ -9,9 +9,12 @@ import {
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 
 export type IFrameFidgetSettings = {
   url: string;
+  size: number;
 } & FidgetSettingsStyle;
 
 const DISALLOW_URL_PATTERNS = [
@@ -32,6 +35,12 @@ const frameConfig: FidgetProperties = {
       group: "settings",
     },
     ...defaultStyleFields,
+    {
+      fieldName: "size",
+      required: false,
+      inputSelector: IFrameWidthSlider,
+      group: "style",
+    },
   ],
   size: {
     minHeight: 2,
@@ -56,7 +65,7 @@ const ErrorWrapper: React.FC<{
 };
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
-  settings: { url },
+  settings: { url, size = 1 },
 }) => {
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
@@ -78,15 +87,23 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     );
   }
 
-  // Note: allow-same-origin allows the embedded website to access *its own* resources
-  // as if it were coming from its own origin (not nounspace's origin).
+  const scaleValue = size;
+
   return (
-    <iframe
-      src={sanitizedUrl}
-      title="IFrame Fidget"
-      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-      className="size-full"
-    />
+    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+      <iframe
+        src={sanitizedUrl}
+        title="IFrame Fidget"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        style={{
+          transform: `scale(${scaleValue})`,
+          transformOrigin: "0 0",
+          width: `${100 / scaleValue}%`,
+          height: `${100 / scaleValue}%`,
+        }}
+        className="size-full"
+      />
+    </div>
   );
 };
 
