@@ -6,7 +6,15 @@ import {
   isSignedFile,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { findIndex, first, isObject, isString, isUndefined, map } from "lodash";
+import {
+  findIndex,
+  first,
+  isNull,
+  isObject,
+  isString,
+  isUndefined,
+  map,
+} from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
@@ -21,6 +29,13 @@ export type NameChangeRequest = {
   signature: string;
 };
 
+export type DeleteRequest = {
+  publicKey: string;
+  timestamp: string;
+  signature: string;
+  spaceId: string;
+};
+
 function isNameChangeRequest(maybe: unknown): maybe is NameChangeRequest {
   if (!isObject(maybe)) {
     return false;
@@ -33,9 +48,22 @@ function isNameChangeRequest(maybe: unknown): maybe is NameChangeRequest {
   );
 }
 
+function isDeleteRequest(maybe: unknown): maybe is DeleteRequest {
+  if (!isObject(maybe)) {
+    return false;
+  }
+  return (
+    typeof maybe["spaceId"] === "string" &&
+    typeof maybe["publicKey"] === "string" &&
+    typeof maybe["timestamp"] === "string" &&
+    typeof maybe["signature"] === "string"
+  );
+}
+
 export type UpdateSpaceRequest = {
   spaceConfig?: SignedFile;
   name?: NameChangeRequest;
+  delete?: DeleteRequest;
 };
 
 type UpdateSpaceResponseData = {
@@ -204,6 +232,60 @@ async function updateConfig(
   };
 }
 
+async function handleDelete(
+  spaceId: string,
+  deleteReq: Partial<DeleteRequest>,
+) {
+  if (!isDeleteRequest(deleteReq)) {
+    return {
+      result: "error",
+      error: {
+        message:
+          "Must provide newName, identityPublicKey, timestamp, and signature to update a Space Name",
+      },
+    };
+  }
+  if (!(await identityCanModifySpace(deleteReq.publicKey, spaceId))) {
+    return {
+      result: "error",
+      error: {
+        message: `Identity ${deleteReq.publicKey} cannot update space ${spaceId}`,
+      },
+    };
+  }
+  if (!validateSignable(deleteReq)) {
+    return {
+      result: "error",
+      error: {
+        message: "Invalid signature on request",
+      },
+    };
+  }
+  if (deleteReq.spaceId !== spaceId) {
+    return {
+      result: "error",
+      error: {
+        message: "Space ID in request does not match target space's ID",
+      },
+    };
+  }
+  const { error } = await supabase
+    .from("spaceRegistrations")
+    .delete()
+    .eq("spaceId", spaceId);
+  if (!isNull(error)) {
+    return {
+      result: "error",
+      error: {
+        message: error.message,
+      },
+    };
+  }
+  return {
+    result: "success",
+  };
+}
+
 // Handles updating the space
 // Verifies that the signature is valid
 // And the identity requesting is allowed to update
@@ -221,6 +303,10 @@ async function updateSpace(
   if (request.spaceConfig) {
     updateConfigResult = updateConfig(spaceId, request.spaceConfig);
   }
+  let deleteResult;
+  if (request.delete) {
+    deleteResult = handleDelete(spaceId, request.delete);
+  }
   const { data } = await loadSpaceRegistration(spaceId);
   let value;
   if (data !== null) {
@@ -234,6 +320,7 @@ async function updateSpace(
     error: {
       name: updateNameResult ? updateNameResult.error : undefined,
       spaceConfig: updateConfigResult ? updateConfigResult.error : undefined,
+      delete: deleteResult ? deleteResult.error : undefined,
     },
     value,
   });
