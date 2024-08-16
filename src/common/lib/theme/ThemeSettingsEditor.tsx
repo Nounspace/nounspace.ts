@@ -30,8 +30,9 @@ import {
 } from "@/common/components/atoms/tooltip";
 import { FaInfoCircle, FaPencilAlt } from "react-icons/fa";
 import { FaArrowLeftLong } from "react-icons/fa6";
-import { THEMES, THEMES_WITH_FONT_VARIABLES } from "@/constants/themes";
+import { THEMES } from "@/constants/themes";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -107,7 +108,7 @@ export function ThemeSettingsEditor({
                 <div className="grid gap-2">
                   <h4 className="text-sm">Styles</h4>
                   <div className="grid grid-cols-2 gap-3">
-                    {THEMES_WITH_FONT_VARIABLES.map((theme, i) => (
+                    {THEMES.map((theme, i) => (
                       <ThemeCard
                         key={`${theme.id}-${i}`}
                         themeProps={theme.properties}
@@ -189,7 +190,10 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={headingsFont}
+                        value={
+                          FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config
+                            ?.style.fontFamily
+                        }
                         onChange={themePropSetter<FontFamily>("headingsFont")}
                         hideGlobalSettings
                       />
@@ -209,7 +213,10 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={font}
+                        value={
+                          FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style
+                            .fontFamily
+                        }
                         onChange={themePropSetter<FontFamily>("font")}
                         hideGlobalSettings
                       />

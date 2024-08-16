@@ -32,13 +32,13 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
   className,
   hideGlobalSettings = false,
 }) => {
-  const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
   const settings = FONT_FAMILY_OPTIONS.filter((setting) => {
     if (hideGlobalSettings) {
       return !setting.global;
     }
     return true;
   });
+  const selectedFont: FontConfig = getSettingByValue(settings, value);
 
   return (
     <Select onValueChange={onChange} value={value}>

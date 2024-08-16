@@ -10,8 +10,6 @@ import {
   nounish,
 } from "./animatedBackgroundsHtml";
 
-import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/components/molecules/FontSelector";
-
 export const THEMES = [
   {
     id: "default",
@@ -185,17 +183,3 @@ export const THEMES = [
     },
   },
 ];
-
-export const THEMES_WITH_FONT_VARIABLES = THEMES.map((theme) => {
-  return {
-    ...theme,
-    properties: {
-      ...theme.properties,
-      font: FONT_FAMILY_OPTIONS_BY_NAME[theme.properties.font]?.config?.style
-        .fontFamily,
-      headingsFont:
-        FONT_FAMILY_OPTIONS_BY_NAME[theme.properties.headingsFont]?.config
-          ?.style.fontFamily,
-    },
-  };
-});

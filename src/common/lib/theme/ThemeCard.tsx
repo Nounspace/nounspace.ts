@@ -2,6 +2,7 @@ import React from "react";
 
 import { ThemeProperties } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/components/molecules/FontSelector";
 
 import { FaCheck } from "react-icons/fa";
 
@@ -16,6 +17,11 @@ export const ThemeCard = ({
 }) => {
   const activeRingBeforeElementClasses =
     "before:content-[''] before:absolute before:inset-0 before:rounded-lg before:ring-2 before:ring-blue-500 before:z-10";
+  const font =
+    FONT_FAMILY_OPTIONS_BY_NAME[themeProps.font]?.config?.style.fontFamily;
+  const headingsFont =
+    FONT_FAMILY_OPTIONS_BY_NAME[themeProps.headingsFont]?.config?.style
+      .fontFamily;
 
   return (
     <div
@@ -42,7 +48,7 @@ export const ThemeCard = ({
         <div className="text-lg font-bold">
           <span
             style={{
-              fontFamily: themeProps.headingsFont,
+              fontFamily: headingsFont,
               color: themeProps.headingsFontColor,
             }}
           >
@@ -50,7 +56,7 @@ export const ThemeCard = ({
           </span>
           <span
             style={{
-              fontFamily: themeProps.font,
+              fontFamily: font,
               color: themeProps.fontColor,
             }}
           >
