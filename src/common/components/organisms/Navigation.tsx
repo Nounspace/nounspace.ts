@@ -142,12 +142,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
     >
-      <Modal
-        open={showCastModal}
-        setOpen={setShowCastModal}
-        focusMode
-        showClose={false}
-      >
+      <Modal open={showCastModal} setOpen={setShowCastModal}>
         <CreateCast />
       </Modal>
       <SearchModal ref={searchRef} />
