@@ -23,14 +23,14 @@ const Modal = ({
   title,
   description,
   children,
-  focusMode,
+  focusMode = true,
   showClose = true,
   overlay = true,
 }: ModalProps) => (
-  <Dialog.Root open={open} onOpenChange={setOpen} modal={focusMode || true}>
+  <Dialog.Root open={open} modal={focusMode}>
     <Dialog.Portal>
       {overlay && open && (
-        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-50" />
+        <Dialog.Overlay className="fixed inset-0 z-50 backdrop-blur-md" />
       )}
       <Dialog.Content
         className={mergeClasses(
@@ -39,41 +39,28 @@ const Modal = ({
           "shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none",
           "z-50",
         )}
-        onMouseDown={(e) => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
+        onMouseDown={(e) => e.stopPropagation()}
       >
-        {
-          <Dialog.Title
-            className={
-              title
-                ? "text-card-foreground m-0 text-[17px] font-medium"
-                : "invisible"
-            }
-          >
+        {title && (
+          <Dialog.Title className="text-card-foreground m-0 text-[17px] font-medium">
             {title}
           </Dialog.Title>
-        }
-        {
-          <Dialog.Description
-            className={
-              description
-                ? "text-card-foreground/80 mt-[10px] mb-5 text-[15px] leading-normal"
-                : "invisible"
-            }
-          >
+        )}
+        {description && (
+          <Dialog.Description className="text-card-foreground/80 mt-[10px] mb-5 text-[15px] leading-normal">
             {description}
           </Dialog.Description>
-        }
+        )}
         {children}
-        {showClose ? (
-          <Dialog.Close asChild>
-            <button
-              className="text-card-foreground/80 bg-background/90 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
-              aria-label="Close"
-            >
-              <Cross2Icon />
-            </button>
-          </Dialog.Close>
-        ) : null}
+        <Dialog.Close asChild>
+          <button
+            className="bg-transparent text-card-foreground/80 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+            aria-label="Close"
+            onClick={() => setOpen(false)}
+          >
+            <Cross2Icon color="black" />
+          </button>
+        </Dialog.Close>
       </Dialog.Content>
     </Dialog.Portal>
   </Dialog.Root>

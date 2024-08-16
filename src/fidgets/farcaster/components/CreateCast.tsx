@@ -213,6 +213,7 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
       tabIndex={-1}
+      onClick={(e) => e.stopPropagation()}
     >
       <form onSubmit={handleSubmit} className="w-full">
         {isPublishing ? (
@@ -234,64 +235,69 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
           </div>
         )}
 
-        <div className="flex flex-row pt-2 gap-1">
-          {!isReply && (
-            <div className="text-foreground/80">
-              {isPublishing || isLoadingSigner ? (
-                channel.name
-              ) : (
-                <ChannelPicker
-                  getChannels={debouncedGetChannels}
-                  onSelect={setChannel}
-                  value={channel}
-                />
-              )}
-            </div>
-          )}
-          <Button
-            className="h-10"
-            type="button"
-            variant="outline"
-            disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
-          >
-            <PhotoIcon className="mr-1 w-5 h-5" />
-            Add
-          </Button>
-          <Popover
-            open={!!currentMod}
-            onOpenChange={(op: boolean) => {
-              if (!op) setCurrentMod(null);
-            }}
-          >
-            <PopoverTrigger></PopoverTrigger>
-            <PopoverContent className="w-[300px]">
-              <div className="space-y-4">
-                <h4 className="font-medium leading-none">{currentMod?.name}</h4>
-                <hr />
-                <CreationMod
-                  input={text}
-                  embeds={embeds}
-                  api={API_URL}
-                  variant="creation"
-                  manifest={currentMod!}
-                  renderers={renderers}
-                  onOpenFileAction={handleOpenFile}
-                  onExitAction={() => setCurrentMod(null)}
-                  onSetInputAction={handleSetInput(setText)}
-                  onAddEmbedAction={handleAddEmbed(addEmbed)}
-                />
+        <div className="flex flex-row pt-2 justify-between items-center">
+          <div className="flex flex-row gap-1 items-center">
+            {!isReply && (
+              <div
+                className="text-foreground/80"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {isPublishing || isLoadingSigner ? (
+                  channel.name
+                ) : (
+                  <ChannelPicker
+                    getChannels={debouncedGetChannels}
+                    onSelect={setChannel}
+                    value={channel}
+                  />
+                )}
               </div>
-            </PopoverContent>
-          </Popover>
-          <CastLengthUIIndicator getText={getText} />
-          <div className="grow"></div>
-        </div>
-        <div className="flex flex-row pt-2 justify-end">
+            )}
+            <Button
+              className="h-9"
+              type="button"
+              variant="outline"
+              disabled={isPublishing}
+              onClick={() => setCurrentMod(creationMods[0])}
+            >
+              <PhotoIcon className="mr-1 w-5 h-5" />
+              Add
+            </Button>
+            <Popover
+              open={!!currentMod}
+              onOpenChange={(op: boolean) => {
+                if (!op) setCurrentMod(null);
+              }}
+            >
+              <PopoverTrigger></PopoverTrigger>
+              <PopoverContent className="w-[300px]">
+                <div className="space-y-4">
+                  <h4 className="font-medium leading-none">
+                    {currentMod?.name}
+                  </h4>
+                  <hr />
+                  <CreationMod
+                    input={text}
+                    embeds={embeds}
+                    api={API_URL}
+                    variant="creation"
+                    manifest={currentMod!}
+                    renderers={renderers}
+                    onOpenFileAction={handleOpenFile}
+                    onExitAction={() => setCurrentMod(null)}
+                    onSetInputAction={handleSetInput(setText)}
+                    onAddEmbedAction={handleAddEmbed(addEmbed)}
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+            <CastLengthUIIndicator getText={getText} />
+          </div>
+
           <Button
             size="lg"
             type="submit"
-            className="line-clamp-1 min-w-40 max-w-xs truncate"
+            className="line-clamp-1 min-w-40 max-w-xs truncate h-9"
             disabled={isPublishing || isLoadingSigner}
           >
             {getButtonText()}
