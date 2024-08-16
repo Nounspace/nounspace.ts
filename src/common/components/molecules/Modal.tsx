@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import GenericToaster from "@/common/components/organisms/GenericToaster";
@@ -30,15 +30,17 @@ const Modal = ({
   toastState,
   setToastState, // Pass the state setter
 }: ModalProps) => {
-  // Reset toastState when modal is closed
-  const handleClose = () => {
+  const handleModalClose = () => {
     setOpen(false);
-    if (setToastState) setToastState(false); // Reset toastState on modal close
+  };
+
+  const handleToastClose = () => {
+    if (setToastState) setToastState(false);
   };
 
   return (
     <Transition appear show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={handleClose}>
+      <Dialog as="div" className="relative z-50" onClose={handleModalClose}>
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
             {overlay && (
@@ -94,7 +96,7 @@ const Modal = ({
                   <button
                     className="bg-transparent text-card-foreground/80 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
                     aria-label="Close"
-                    onClick={handleClose}
+                    onClick={handleModalClose}
                   >
                     <Cross2Icon color="black" />
                   </button>

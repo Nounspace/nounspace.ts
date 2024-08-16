@@ -17,8 +17,6 @@ const GenericToaster: React.FC<GenericToasterProps> = ({
 
   useEffect(() => {
     if (message) {
-      console.log("message", message);
-      console.log("isError", isError);
       setIsDisplayed(true);
     }
   }, [message]);
@@ -36,7 +34,7 @@ const GenericToaster: React.FC<GenericToasterProps> = ({
     <Toast.Provider>
       <Toast.Root
         open={isDisplayed}
-        onOpenChange={setIsDisplayed}
+        onOpenChange={(open) => setIsDisplayed(open)}
         duration={duration}
         className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg ${toastStyles}`}
       >

@@ -73,8 +73,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
 
   const handleCastComplete = (message?: string) => {
     if (message) {
-      setToastState(true);
       setToastMessage(message);
+      setToastState(true);
+
+      if (message.includes("successfully")) {
+        setShowCastModal(false);
+      } else setToastMessage(message), setShowCastModal(true);
     } else {
       setToastState(false);
       setToastMessage("");
