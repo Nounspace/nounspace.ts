@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
 import { useRouter } from "next/router";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
@@ -58,9 +64,28 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const openModal = () => setModalOpen(true);
 
   const [showCastModal, setShowCastModal] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastState, setToastState] = useState<boolean>(false);
+
   function openCastModal() {
     setShowCastModal(true);
   }
+
+  const handleCastComplete = (message?: string) => {
+    if (message) {
+      setToastState(true);
+      setToastMessage(message);
+    } else {
+      setToastState(false);
+      setToastMessage("");
+    }
+  };
+  useEffect(() => {
+    if (!showCastModal) {
+      setToastState(false);
+    }
+  }, [showCastModal]);
+
   const { fid } = useFarcasterSigner("navigation");
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
@@ -142,9 +167,16 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
     >
-      <Modal open={showCastModal} setOpen={setShowCastModal}>
-        <CreateCast />
+      <Modal
+        open={showCastModal}
+        setOpen={setShowCastModal}
+        toastMessage={String(toastMessage)}
+        toastState={toastState}
+        setToastState={setToastState}
+      >
+        <CreateCast onCastComplete={handleCastComplete} />
       </Modal>
+
       <SearchModal ref={searchRef} />
       <div className="pt-12 pb-12 h-full md:block hidden">
         <div className="flex flex-col h-full w-[270px] ml-auto">

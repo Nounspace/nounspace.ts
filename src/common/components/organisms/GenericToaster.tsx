@@ -5,16 +5,20 @@ import { FaTimes } from "react-icons/fa";
 type GenericToasterProps = {
   message: string;
   duration?: number;
+  isError?: boolean;
 };
 
 const GenericToaster: React.FC<GenericToasterProps> = ({
   message,
   duration = 5000,
+  isError = false,
 }) => {
   const [isDisplayed, setIsDisplayed] = useState(false);
 
   useEffect(() => {
     if (message) {
+      console.log("message", message);
+      console.log("isError", isError);
       setIsDisplayed(true);
     }
   }, [message]);
@@ -23,19 +27,24 @@ const GenericToaster: React.FC<GenericToasterProps> = ({
     setIsDisplayed(false);
   };
 
+  // Determine styles based on whether it's an error or not
+  const toastStyles = isError
+    ? "bg-red-100 border border-red-300 text-red-600"
+    : "bg-blue-100 border border-blue-300 text-blue-600";
+
   return (
     <Toast.Provider>
       <Toast.Root
         open={isDisplayed}
         onOpenChange={setIsDisplayed}
         duration={duration}
-        className="fixed bottom-4 right-4 p-4 bg-blue-100 border border-blue-300 rounded-md shadow-lg"
+        className={`fixed bottom-4 right-4 p-4 rounded-md shadow-lg ${toastStyles}`}
       >
         <div className="flex items-center justify-between">
-          <p className="text-blue-600">{message}</p>
+          <p>{message}</p>
           <Toast.Action altText="Close" asChild>
             <button onClick={closeToast} className="bg-transparent">
-              <FaTimes className="text-blue-600" />
+              <FaTimes className={isError ? "text-red-600" : "text-blue-600"} />
             </button>
           </Toast.Action>
         </div>

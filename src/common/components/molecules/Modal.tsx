@@ -1,8 +1,6 @@
-import React from "react";
+import React, { Fragment, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment } from "react";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import GenericToaster from "@/common/components/organisms/GenericToaster";
 
 export type ModalProps = {
@@ -16,6 +14,7 @@ export type ModalProps = {
   focusMode?: boolean;
   toastMessage?: string;
   toastState?: boolean;
+  setToastState?: (state: boolean) => void; // New prop to handle toast state reset
 };
 
 const Modal = ({
@@ -29,12 +28,41 @@ const Modal = ({
   overlay = true,
   toastMessage,
   toastState,
+  setToastState, // Pass the state setter
 }: ModalProps) => {
+  // Reset toastState when modal is closed
+  const handleClose = () => {
+    setOpen(false);
+    if (setToastState) setToastState(false); // Reset toastState on modal close
+  };
+
   return (
     <Transition appear show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-50" onClose={() => setOpen(false)}>
+      <Dialog as="div" className="relative z-50" onClose={handleClose}>
         <div className="fixed inset-0 overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4 text-center">
+            {overlay && (
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0"
+                enterTo="opacity-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100"
+                leaveTo="opacity-0"
+              >
+                <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm" />
+              </Transition.Child>
+            )}
+
+            {toastMessage && toastState && (
+              <GenericToaster
+                message={toastMessage}
+                duration={5000}
+                isError={toastMessage.startsWith("Failed")}
+              />
+            )}
+
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
@@ -45,13 +73,10 @@ const Modal = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className={mergeClasses(
-                  "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
-                  "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[6px] p-[25px]",
-                  "shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none",
-                  "z-50",
-                  "pointer-events-auto", // Allow pointer events to pass through to the dropdown
-                )}
+                className="data-[state=open]:animate-contentShow fixed bg-background top-[40%]
+                left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%]
+                rounded-[6px] p-[25px] shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,
+                hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none z-50 pointer-events-auto"
                 onClick={(e) => e.stopPropagation()}
               >
                 {title && (
@@ -64,18 +89,15 @@ const Modal = ({
                     {description}
                   </Dialog.Description>
                 )}
-                {children}
+                <div className="text-left">{children}</div>
                 {showClose && (
                   <button
                     className="bg-transparent text-card-foreground/80 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
                     aria-label="Close"
-                    onClick={() => setOpen(false)}
+                    onClick={handleClose}
                   >
                     <Cross2Icon color="black" />
                   </button>
-                )}
-                {toastMessage && toastState !== undefined && (
-                  <GenericToaster message={toastMessage} duration={5000} />
                 )}
               </Dialog.Panel>
             </Transition.Child>

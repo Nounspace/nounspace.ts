@@ -82,6 +82,7 @@ export type DraftType = {
 
 type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
+  onCastComplete?: (message?: string) => void;
 };
 
 export type ModProtocolCastAddBody = Exclude<
@@ -117,7 +118,10 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   }
 }
 
-const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
+const CreateCast: React.FC<CreateCastProps> = ({
+  initialDraft,
+  onCastComplete,
+}) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
@@ -134,8 +138,24 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
-    await publishPost(draft, fid, signer);
-    return true;
+
+    try {
+      const success = await publishPost(draft, fid, signer);
+
+      if (success) {
+        if (onCastComplete) onCastComplete("Cast created successfully!");
+      } else {
+        if (onCastComplete)
+          onCastComplete("Failed to create cast due to unknown error.");
+      }
+
+      return success;
+    } catch (error: any) {
+      console.error("Cast failed:", error);
+      if (onCastComplete)
+        onCastComplete(`Failed to create cast: ${error.message}`);
+      return false;
+    }
   };
 
   const isPublishing = draft?.status === DraftStatus.publishing;
