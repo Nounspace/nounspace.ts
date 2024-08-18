@@ -39,7 +39,7 @@ const galleryConfig: FidgetProperties = {
       required: false,
       inputSelector: ImageScaleSlider,
       default: 1,
-      group: "settings",
+      group: "style",
     },
     ...defaultStyleFields,
   ],
