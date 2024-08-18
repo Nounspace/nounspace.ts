@@ -1,7 +1,7 @@
 import React from "react";
 import { Slider } from "@mui/material";
 
-export type WidthSliderProps = {
+export type ImageScaleSliderProps = {
   min: number;
   max: number;
   step?: number;
@@ -9,7 +9,7 @@ export type WidthSliderProps = {
   onChange: (value: number) => void;
 };
 
-const ImageScaleSlider: React.FC<WidthSliderProps> = ({
+const ImageScaleSlider: React.FC<ImageScaleSliderProps> = ({
   min = 0.2,
   max = 3,
   step = 0.1,
