@@ -13,6 +13,7 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   }
 
   const { username, displayName, pfpUrl, bio } = userMetadata;
+  const queryString = new URLSearchParams(userMetadata).toString();
 
   const title = `${displayName} (@${username}) on Nounspace`;
   const spaceUrl = `https://nounspace.com/s/${username}`;
@@ -25,7 +26,10 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />
-
+      <meta
+        property="og:image"
+        content={`https://954c-187-108-213-88.ngrok-free.app/api/metadata/spaces?${queryString}`}
+      />
       {bio && (
         <>
           <meta name="description" content={bio} />
