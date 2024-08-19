@@ -1,3 +1,5 @@
+import React from "react";
+
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
 import neynar from "@/common/data/api/neynar";
