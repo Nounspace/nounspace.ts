@@ -15,7 +15,6 @@ import { ed25519 } from "@noble/curves/ed25519";
 import { bytesToHex, hexToBytes } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";
 import { AxiosResponse } from "axios";
-import { Button } from "@/common/components/atoms/button";
 import Spinner from "@/common/components/atoms/spinner";
 import {
   SignedKeyRequestResponse,
@@ -23,9 +22,9 @@ import {
 } from "@/pages/api/signerRequests";
 import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
-import Link from "next/link";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRedo } from "react-icons/fa";
+import { Button } from "@/common/components/atoms/button";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -204,26 +203,27 @@ const initializer: AuthenticatorInitializer<
 
   function startPolling() {
     setLoading(true);
-    pollInterval.current = setInterval(
-      self.updateSignerInfo,
-      BACKEND_POLL_FREQUENCY,
-    );
-    doneInterval.current = setInterval(() => {
+    pollInterval.current = setInterval(async () => {
+      await self.updateSignerInfo();
       if (data.status === "completed") {
+        clearInterval(pollInterval.current);
+        clearInterval(doneInterval.current);
         done();
       }
     }, BACKEND_POLL_FREQUENCY);
   }
 
   useEffect(() => {
-    if (isDataInitialized(data)) {
+    if (!isDataInitialized(data)) {
+      createSigner();
+    } else {
       startPolling();
     }
     return () => {
       clearInterval(pollInterval.current);
       clearInterval(doneInterval.current);
     };
-  });
+  }, []);
 
   const warpcastSignerUrl = data.signerUrl
     ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
@@ -241,13 +241,7 @@ const initializer: AuthenticatorInitializer<
           Connect Farcaster
         </h1>
       </div>
-      {isUndefined(data.status) ||
-      !isDataInitialized(data) ||
-      data.status === "revoked" ? (
-        <center>
-          <Button onClick={createSigner}>Link Warpcast Account</Button>
-        </center>
-      ) : loading && warpcastSignerUrl ? (
+      {loading && warpcastSignerUrl ? (
         <div className="">
           <div className="text-center mt-4">
             <div className="m-20 mt-5 mb-5 border border-gray-200 p-1 rounded-sm">
@@ -293,7 +287,9 @@ const initializer: AuthenticatorInitializer<
           </div>
         </div>
       ) : (
-        <Spinner />
+        <center>
+          <Spinner />
+        </center>
       )}
     </>
   );
