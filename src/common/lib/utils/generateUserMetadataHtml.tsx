@@ -13,8 +13,6 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   }
 
   const { username, displayName, pfpUrl, bio } = userMetadata;
-  const queryString = new URLSearchParams(userMetadata).toString();
-
   const title = `${displayName} (@${username}) on Nounspace`;
   const spaceUrl = `https://nounspace.com/s/${username}`;
 
@@ -28,7 +26,7 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:url" content={spaceUrl} />
       <meta
         property="og:image"
-        content={`https://nounspace-ts-git-fork-r4topunk-canary-nounspace.vercel.app/api/metadata/spaces?${queryString}`}
+        content={`https://nounspace-ts-git-fork-r4topunk-canary-nounspace.vercel.app/api/metadata/spaces?username=${username}&displayName=${displayName}&pfpUrl=${pfpUrl}&bio=${bio}`}
       />
       {bio && (
         <>
