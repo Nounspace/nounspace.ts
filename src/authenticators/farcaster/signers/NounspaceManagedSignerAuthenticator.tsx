@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   AuthenticatorInitializer,
   createAuthenticator,
@@ -194,36 +194,31 @@ const initializer: AuthenticatorInitializer<
   const self = makeAuthenticatorMethods(methods, { data, saveData }, true);
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
-  const doneInterval = useRef<NodeJS.Timeout | undefined>();
 
-  function createSigner() {
-    self.createNewSigner();
-    startPolling();
-  }
-
-  function startPolling() {
+  // Trigger signer creation or polling as soon as the component renders
+  if (!isDataInitialized(data)) {
+    (async () => {
+      await self.createNewSigner();
+      setLoading(true);
+      pollInterval.current = setInterval(async () => {
+        await self.updateSignerInfo();
+        if (data.status === "completed") {
+          clearInterval(pollInterval.current);
+          done();
+        }
+      }, BACKEND_POLL_FREQUENCY);
+    })();
+  } else {
+    // Start polling if the data is already initialized
     setLoading(true);
     pollInterval.current = setInterval(async () => {
       await self.updateSignerInfo();
       if (data.status === "completed") {
         clearInterval(pollInterval.current);
-        clearInterval(doneInterval.current);
         done();
       }
     }, BACKEND_POLL_FREQUENCY);
   }
-
-  useEffect(() => {
-    if (!isDataInitialized(data)) {
-      createSigner();
-    } else {
-      startPolling();
-    }
-    return () => {
-      clearInterval(pollInterval.current);
-      clearInterval(doneInterval.current);
-    };
-  }, []);
 
   const warpcastSignerUrl = data.signerUrl
     ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
@@ -279,7 +274,11 @@ const initializer: AuthenticatorInitializer<
               withIcon
               size="md"
               className="border-none text-gray-400 bg-white hover:bg-white hover:text-purple-500 mt-20"
-              onClick={createSigner}
+              onClick={() => {
+                clearInterval(pollInterval.current);
+                setLoading(false);
+                self.createNewSigner(); // Restart signer creation
+              }}
             >
               <FaRedo color="gray.400" />
               Still having trouble? Reset the QR
