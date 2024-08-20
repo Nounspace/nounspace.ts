@@ -25,6 +25,7 @@ import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
 import Link from "next/link";
 import { FaRegCopy } from "react-icons/fa6";
+import { FaRedo } from "react-icons/fa";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
