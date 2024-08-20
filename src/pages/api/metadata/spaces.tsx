@@ -1,6 +1,6 @@
+import React from "react";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
-
 export const config = {
   runtime: "edge",
 };
