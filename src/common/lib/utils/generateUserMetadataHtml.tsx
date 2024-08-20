@@ -28,7 +28,7 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:url" content={spaceUrl} />
       <meta
         property="og:image"
-        content={`https://nounspace.com/api/metadata/spaces?${queryString}`}
+        content={`https://nounspace-ts-git-fork-r4topunk-canary-nounspace.vercel.app/api/metadata/spaces?${queryString}`}
       />
       {bio && (
         <>
