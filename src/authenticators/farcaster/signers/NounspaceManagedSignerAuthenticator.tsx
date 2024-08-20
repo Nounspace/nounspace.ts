@@ -24,6 +24,8 @@ import {
 import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
 import Link from "next/link";
+import { FaRegCopy } from "react-icons/fa6";
+import { FaRedo } from "react-icons/fa";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -228,23 +230,70 @@ const initializer: AuthenticatorInitializer<
     : undefined;
 
   return (
-    <div className="flex flex-col justify-center items-center align-center">
-      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
+    <>
+      <div className="flex items-center justify-center space-x-4">
+        <img
+          src="/images/explore-icons/farcaster.png"
+          alt="Farcaster Icon"
+          className="w-12 h-12"
+        />
+        <h1 className="text-4xl font-extrabold text-black">
+          Connect Farcaster
+        </h1>
+      </div>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
         <Button onClick={createSigner}>Link Warpcast Account</Button>
       ) : loading && warpcastSignerUrl ? (
-        <>
-          <QRCode value={warpcastSignerUrl} maxWidth={256} />
-          <Button variant="link" size="sm" onClick={createSigner}>
-            Still having trouble? Reset the QR
-          </Button>
-        </>
+        <div className="">
+          <div className="text-center mt-4">
+            <div className="m-20 mt-5 mb-5 border border-gray-200 p-1 rounded-sm">
+              <QRCode
+                value={String(warpcastSignerUrl) || "https://x.com"}
+                size={256}
+                bgColor="#ffffff"
+                fgColor="#000000"
+                level="Q"
+                className="rounded-sm "
+              />
+            </div>
+            <p className="text-xl text-gray-500 m-5">
+              Scan the QR code with your phone camera <br /> or enter the link
+              on a mobile browser
+            </p>
+          </div>
+          <div className="flex flex-col text-center mt-4">
+            <center>
+              <Button
+                withIcon
+                variant="outline"
+                size="sm"
+                className="border-gray-500 text-black bg-gray-200 border-none hover:bg-gray-300 hover:text-black rounded-full"
+                style={{ width: "150px" }}
+                onClick={() => {
+                  navigator.clipboard.writeText(warpcastSignerUrl);
+                }}
+              >
+                <FaRegCopy size={18} color="grey.500" />
+                <p className="font-bold text-lg text-gray-500">Copy URL</p>
+              </Button>
+            </center>
+            <Button
+              withIcon
+              size="md"
+              className="border-none text-gray-400 bg-white hover:bg-white hover:text-purple-500 mt-20"
+              onClick={createSigner}
+            >
+              <FaRedo color="gray.400" />
+              Still having trouble? Reset the QR
+            </Button>
+          </div>
+        </div>
       ) : (
         <Spinner />
       )}
-    </div>
+    </>
   );
 };
 initializer.displayName = "NounspaceDeveloperManagedSignerInitializer";
