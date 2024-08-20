@@ -28,7 +28,7 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:url" content={spaceUrl} />
       <meta
         property="og:image"
-        content={`https://954c-187-108-213-88.ngrok-free.app/api/metadata/spaces?${queryString}`}
+        content={`https://nounspace.com/api/metadata/spaces?${queryString}`}
       />
       {bio && (
         <>
