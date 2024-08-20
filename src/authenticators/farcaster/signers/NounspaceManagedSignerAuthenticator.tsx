@@ -244,7 +244,9 @@ const initializer: AuthenticatorInitializer<
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
-        <Button onClick={createSigner}>Link Warpcast Account</Button>
+        <center>
+          <Button onClick={createSigner}>Link Warpcast Account</Button>
+        </center>
       ) : loading && warpcastSignerUrl ? (
         <div className="">
           <div className="text-center mt-4">

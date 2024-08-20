@@ -11,6 +11,9 @@ export type ModalProps = {
   children?: React.ReactNode;
   overlay?: boolean;
   showClose?: boolean;
+
+  // The modality of the dialog. When set to true, interaction with outside elements
+  // will be disabled and only dialog content will be visible to screen readers.
   focusMode?: boolean;
   toastMessage?: string;
   toastState?: boolean;
