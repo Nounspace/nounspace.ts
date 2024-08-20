@@ -25,7 +25,6 @@ import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
 import Link from "next/link";
 import { FaRegCopy } from "react-icons/fa6";
-import { FaRedo } from "react-icons/fa";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -224,7 +223,6 @@ const initializer: AuthenticatorInitializer<
       clearInterval(doneInterval.current);
     };
   });
-
   const warpcastSignerUrl = data.signerUrl
     ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
     : undefined;
