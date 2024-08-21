@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/common/components/atoms/select";
 
-const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
+export const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
   (acc, v) => ({ ...acc, [v.name]: v }),
   {},
 );
@@ -32,13 +32,13 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
   className,
   hideGlobalSettings = false,
 }) => {
-  const selectedFont: FontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
   const settings = FONT_FAMILY_OPTIONS.filter((setting) => {
     if (hideGlobalSettings) {
       return !setting.global;
     }
     return true;
   });
+  const selectedFont: FontConfig = getSettingByValue(settings, value);
 
   return (
     <Select onValueChange={onChange} value={value}>
