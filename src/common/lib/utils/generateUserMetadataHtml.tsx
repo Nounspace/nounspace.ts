@@ -13,9 +13,16 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   }
 
   const { username, displayName, pfpUrl, bio } = userMetadata;
-
   const title = `${displayName} (@${username}) on Nounspace`;
   const spaceUrl = `https://nounspace.com/s/${username}`;
+
+  const encodedDisplayName = encodeURIComponent(displayName || "");
+  const encodedPfpUrl = encodeURIComponent(pfpUrl || "");
+  const encodedBio = encodeURIComponent(bio || "");
+
+  const nounspaceUrl =
+    "https://nounspace-ts-git-fork-r4topunk-canary-nounspace.vercel.app";
+  const ogImageUrl = `${nounspaceUrl}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
 
   return (
     <>
@@ -25,7 +32,7 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />
-
+      <meta property="og:image" content={ogImageUrl} />
       {bio && (
         <>
           <meta name="description" content={bio} />
