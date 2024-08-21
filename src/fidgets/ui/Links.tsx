@@ -12,7 +12,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import LinksInput from "./LinksInput";
+import LinksInput from "@/common/components/molecules/LinksInput";
 import {
   Avatar,
   AvatarImage,
@@ -78,7 +78,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "itemBackground",
-      default: "linear-gradient(to right, #dbd81f, #ffffff)",
+      default: "",
       required: false,
       inputSelector: ColorSelector,
       group: "style",

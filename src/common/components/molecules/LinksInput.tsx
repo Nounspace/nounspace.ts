@@ -1,5 +1,4 @@
 import React, { forwardRef, useCallback, useState, useEffect } from "react";
-import { Link } from "./Links";
 import { FaPlus, FaImage, FaLink } from "react-icons/fa";
 import {
   Avatar,
@@ -9,7 +8,7 @@ import {
 import styled from "styled-components";
 import { FaPencil } from "react-icons/fa6";
 import CSSInput from "@/common/components/molecules/CSSInput";
-
+import { Link } from "@/fidgets/ui/Links";
 export interface LinksInputProps {
   value: Link[];
   onChange?: (value: Link[]) => void;
