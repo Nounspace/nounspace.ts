@@ -73,6 +73,7 @@ interface CastRowProps {
   castTextStyle?: any;
   maxLines?: number;
   hideEmbeds?: boolean;
+  replyingToUsername?: string;
 }
 
 export const PriorityLink = ({ children, href, ...props }) => {
@@ -537,6 +538,7 @@ export const CastRow = ({
   castTextStyle = undefined,
   maxLines = 0,
   hideEmbeds = false,
+  replyingToUsername = undefined,
 }: CastRowProps) => {
   const { fid: userFid } = useFarcasterSigner("render-cast");
 
@@ -617,6 +619,16 @@ export const CastRow = ({
             inline={!isFocused}
             isReply={isReply}
           />
+          {replyingToUsername && (
+            <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-medium">
+              Replying to{" "}
+              <PriorityLink href={`/s/${replyingToUsername}`}>
+                <span className="cursor-pointer text-blue-500 hover:text-blue-500/70 hover:underline">
+                  @{replyingToUsername}
+                </span>
+              </PriorityLink>
+            </p>
+          )}
           <CastBody
             cast={cast}
             channel={channel}

@@ -22,7 +22,30 @@ import {
 } from "@/fidgets/farcaster/components/CastRow";
 import Loading from "@/common/components/molecules/Loading";
 import { useInView } from "react-intersection-observer";
-import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
+import {
+  useNotificationsLastSeenCursor,
+  useMutateNotificationsLastSeenCursor,
+} from "@/common/lib/hooks/useNotificationsLastSeenCursor";
+import moment from "moment";
+import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { formatTimeAgo } from "@/common/lib/utils/date";
+
+const TAB_OPTIONS = {
+  ALL: "all",
+  MENTIONS: NotificationTypeEnum.Mention,
+  FOLLOWS: NotificationTypeEnum.Follows,
+  RECASTS: NotificationTypeEnum.Recasts,
+  REPLIES: NotificationTypeEnum.Reply,
+  LIKES: NotificationTypeEnum.Likes,
+};
+
+export type NotificationRowProps = React.FC<{
+  notification: Notification;
+  onSelect: (castHash: string) => void;
+  isUnseen?: boolean;
+}>;
 
 const ErrorPanel = ({ message }: { message: string }) => {
   return (
@@ -61,7 +84,7 @@ const NotificationHeader = ({
   notification,
   relatedUsers,
   descriptionSuffix,
-  maxAvatarsToDisplay = 5,
+  maxAvatarsToDisplay = 8,
 }: {
   notification: Notification;
   relatedUsers: User[];
@@ -73,68 +96,69 @@ const NotificationHeader = ({
     relatedUsers.length - maxAvatarsToDisplay,
   );
 
+  const relativeDateString = useMemo(() => {
+    return formatTimeAgo(
+      moment.utc(notification.most_recent_timestamp).toDate(),
+    );
+  }, [notification.most_recent_timestamp]);
+
   return (
-    <div>
+    <div className="flex gap-2 flex-wrap">
       {relatedUsers.length > 0 ? (
-        <div className="flex gap-x-1 flex-wrap mb-1">
+        <div className="flex gap-x-1 pl-[20px]">
           {relatedUsers
             .slice(0, maxAvatarsToDisplay)
             .map((user: User, i: number) => (
-              <CastAvatar user={user} key={i} className="size-8" />
+              <CastAvatar
+                user={user}
+                key={i}
+                className="ml-[-20px] outline outline-2 outline-white"
+              />
             ))}
-          {numAvatarsNotShown > 0 ? (
-            <div className="rounded-full size-8 tracking-tighter text-gray-500 flex items-center justify-center bg-gray-200 text-xs font-bold">
+          {numAvatarsNotShown < 0 ? (
+            <div className="ml-[-20px] outline outline-2 outline-white rounded-full size-10 tracking-tighter text-gray-500 flex items-center justify-center bg-gray-200 text-xs font-bold">
               +{numAvatarsNotShown}
             </div>
           ) : null}
         </div>
       ) : null}
-      <p>
-        <FormattedUsersText users={relatedUsers} />
-        {` ${descriptionSuffix}`}
-      </p>
+      <div>
+        <p className="text-base leading-[1.3]">
+          <FormattedUsersText users={relatedUsers} />
+          {` ${descriptionSuffix}`}
+        </p>
+        {relativeDateString && (
+          <p className="tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
+            {relativeDateString}
+          </p>
+        )}
+      </div>
     </div>
   );
 };
 
-const MentionNotificationRow = ({
+const MentionNotificationRow: NotificationRowProps = ({
   notification,
-}: {
-  notification: Notification;
+  onSelect,
 }) => {
-  const mentionedByUsers = useMemo(() => {
-    return notification?.cast?.author ? [notification?.cast?.author] : [];
-  }, [notification?.cast?.author?.username]);
-
-  // TODO
-  const navigateToCastDetail = useCallback((castHash: string) => {
-    console.log("@TODO: navigateToCastDetail");
-  }, []);
-
   return (
-    <div className="flex flex-col gap-2">
-      <p>
-        <FormattedUsersText users={mentionedByUsers} /> mentioned you
-      </p>
-      <CastRow
-        cast={notification.cast!}
-        key={notification.cast!.hash}
-        showChannel={false}
-        isFocused={false}
-        isReply={false}
-        hasReplies={false}
-        onSelect={navigateToCastDetail}
-        hideReactions={false}
-        className="border-b-0 px-0 pb-0 pt-1 hover:bg-transparent"
-      />
-    </div>
+    <CastRow
+      cast={notification.cast!}
+      key={notification.cast!.hash}
+      showChannel={false}
+      isFocused={false}
+      isReply={false}
+      hasReplies={false}
+      onSelect={onSelect}
+      hideReactions={false}
+      className="border-b-0 px-0 py-0 hover:bg-transparent"
+    />
   );
 };
 
-const FollowNotificationRow = ({
+const FollowNotificationRow: NotificationRowProps = ({
   notification,
-}: {
-  notification: Notification;
+  onSelect,
 }) => {
   const newFollowers: User[] =
     notification.follows?.map((follow) => follow.user) ?? [];
@@ -148,21 +172,15 @@ const FollowNotificationRow = ({
   );
 };
 
-const RecastNotificationRow = ({
+const RecastNotificationRow: NotificationRowProps = ({
   notification,
-}: {
-  notification: Notification;
+  onSelect,
 }) => {
   const recastedByUsers = useMemo(() => {
     return (notification?.reactions || [])
       .filter((r) => r.object === "recasts")
       .map((r) => r.user);
   }, [notification?.reactions]);
-
-  // TODO
-  const navigateToCastDetail = useCallback((castHash: string) => {
-    console.log("@TODO: navigateToCastDetail");
-  }, []);
 
   return (
     <div className="flex flex-col gap-2">
@@ -175,11 +193,11 @@ const RecastNotificationRow = ({
         cast={notification.cast!}
         key={notification.cast!.hash}
         showChannel={false}
-        isFocused={true}
-        isEmbed={false}
+        isFocused={false}
+        isEmbed={true}
         isReply={false}
         hasReplies={false}
-        onSelect={navigateToCastDetail}
+        onSelect={onSelect}
         hideReactions={false}
         className="border-b-0 px-0 pb-0 hover:bg-transparent"
         castTextStyle={{
@@ -190,76 +208,39 @@ const RecastNotificationRow = ({
   );
 };
 
-const ReplyNotificationRow = ({
+const ReplyNotificationRow: NotificationRowProps = ({
   notification,
-}: {
-  notification: Notification;
+  onSelect,
 }) => {
   const fid = useCurrentFid();
-  const repliedByUsers = useMemo(() => {
-    return notification?.cast?.author ? [notification?.cast?.author] : [];
-  }, [notification?.cast?.author?.username]);
-
-  const { data: conversatioData } = useLoadFarcasterConversation(
-    notification.cast!.hash,
-    fid ?? -1,
-  );
-
-  const parentCasts =
-    conversatioData?.conversation?.chronological_parent_casts ?? [];
-  const parentCast =
-    parentCasts.length > 0 ? parentCasts[parentCasts.length - 1] : null;
-
   const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0;
-
-  // TODO
-  const navigateToCastDetail = useCallback((castHash: string) => {
-    console.log("@TODO: navigateToCastDetail");
-  }, []);
+  const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1);
+  const replyingToUsername = replyingTo?.users?.length
+    ? replyingTo.users[0].username
+    : undefined;
 
   return (
-    <div className="flex flex-col gap-2">
-      <p>
-        <FormattedUsersText users={repliedByUsers} />
-        {` replied to your cast`}
-      </p>
-      {parentCast && (
-        <CastRow
-          cast={parentCast}
-          key={parentCast.hash}
-          showChannel={false}
-          isFocused={false}
-          isReply={parentCasts.length > 1}
-          hasReplies={true}
-          onSelect={navigateToCastDetail}
-          hideReactions={false}
-          className="border-b-0 px-0 hover:bg-transparent"
-          maxLines={1}
-          hideEmbeds={false}
-        />
-      )}
-      <CastRow
-        cast={notification.cast!}
-        key={notification.cast!.hash}
-        showChannel={false}
-        isFocused={true}
-        isReply={true}
-        hasReplies={replyHasReplies}
-        onSelect={navigateToCastDetail}
-        hideReactions={false}
-        className="border-b-0 p-0"
-        castTextStyle={{
-          fontSize: "16px",
-        }}
-      />
-    </div>
+    <CastRow
+      cast={notification.cast!}
+      key={notification.cast!.hash}
+      showChannel={false}
+      isFocused={false}
+      isReply={true}
+      hasReplies={replyHasReplies}
+      onSelect={onSelect}
+      hideReactions={false}
+      replyingToUsername={replyingToUsername}
+      className="border-b-0 p-0 hover:bg-transparent"
+      castTextStyle={{
+        fontSize: "16px",
+      }}
+    />
   );
 };
 
-const LikeNotificationRow = ({
+const LikeNotificationRow: NotificationRowProps = ({
   notification,
-}: {
-  notification: Notification;
+  onSelect,
 }) => {
   const fid = useCurrentFid();
   const likedByUsers = useMemo(() => {
@@ -267,11 +248,6 @@ const LikeNotificationRow = ({
       .filter((r) => r.object === "likes")
       .map((r) => r.user);
   }, [notification?.reactions]);
-
-  // TODO
-  const navigateToCastDetail = useCallback((castHash: string) => {
-    console.log("@TODO: navigateToCastDetail");
-  }, []);
 
   return (
     <div className="flex flex-col gap-2">
@@ -287,12 +263,11 @@ const LikeNotificationRow = ({
         showChannel={false}
         hideEmbeds={false}
         castTextStyle={{}}
-        hideReactions={true}
+        hideReactions={false}
         renderRecastBadge={false}
         userFid={fid}
         isDetailView={false}
-        onSelectCast={navigateToCastDetail}
-        maxLines={1}
+        onSelectCast={onSelect}
       />
     </div>
   );
@@ -306,37 +281,78 @@ const NOTIFICATION_COMPONENT_BY_TYPE = {
   [NotificationTypeEnum.Likes]: LikeNotificationRow,
 };
 
-const TAB_OPTIONS = {
-  ALL: "all",
-  MENTIONS: NotificationTypeEnum.Mention,
-  FOLLOWS: NotificationTypeEnum.Follows,
-  RECASTS: NotificationTypeEnum.Recasts,
-  REPLIES: NotificationTypeEnum.Reply,
-  LIKES: NotificationTypeEnum.Likes,
-};
-
-const NotificationRow = ({ notification }: { notification: Notification }) => {
+const NotificationRow: NotificationRowProps = ({
+  notification,
+  onSelect,
+  isUnseen = false,
+}) => {
+  const unseenToSeen = useCallback((prev, curr) => prev && curr === false, []);
+  const isUnseenWithDelay = useDelayedValueChange(
+    isUnseen,
+    20000,
+    unseenToSeen,
+  );
   const NotificationType =
     NOTIFICATION_COMPONENT_BY_TYPE[notification.type] || null;
 
   return NotificationType ? (
-    <div className="px-4 py-3 border-b hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out">
-      <NotificationType notification={notification} />
+    <div
+      className={
+        isUnseenWithDelay
+          ? "bg-blue-50 transition-colors duration-1000"
+          : "bg-transparent transition-colors duration-1000"
+      }
+    >
+      <div className="px-4 py-4 border-b hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out">
+        <NotificationType notification={notification} onSelect={onSelect} />
+      </div>
     </div>
   ) : null;
 };
 
+const isNotificationUnseen = (
+  notification: Notification,
+  lastSeenNotificationDate?: moment.Moment | null,
+): boolean | undefined => {
+  if (lastSeenNotificationDate === undefined) {
+    return undefined;
+  } else if (lastSeenNotificationDate === null) {
+    return true;
+  } else {
+    const notificationDate = moment.utc(notification.most_recent_timestamp);
+    return notificationDate.isAfter(lastSeenNotificationDate);
+  }
+};
+
 export default function NotificationsPage() {
   const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL);
-  const [ref, inView] = useInView();
   const fid = useCurrentFid();
+  const identityPublicKey = useCurrentSpaceIdentityPublicKey();
   const { data, error, fetchNextPage, hasNextPage, isFetching } =
     useNotifications(fid);
+  const [ref, inView] = useInView({
+    skip: !hasNextPage || isFetching,
+    onChange: (_inView) => {
+      if (_inView) {
+        fetchNextPage();
+      }
+    },
+  });
 
-  console.log(`NOTIFICATIONS:`, data);
+  const { data: lastSeenNotificationTimestamp } =
+    useNotificationsLastSeenCursor(fid, identityPublicKey);
+
+  const { mutate: updateLastSeenCursor } = useMutateNotificationsLastSeenCursor(
+    fid,
+    identityPublicKey,
+  );
 
   const onTabChange = useCallback((value: string) => {
     setTab(value);
+  }, []);
+
+  const onSelectNotification = useCallback(() => {
+    console.log("@TODO: navigateToCastDetail"); // TODO
   }, []);
 
   const filterByType = useCallback(
@@ -348,20 +364,55 @@ export default function NotificationsPage() {
     [tab],
   );
 
-  useEffect(() => {
-    if (inView && !isFetching && hasNextPage) {
-      fetchNextPage();
+  const lastSeenNotificationDate = useMemo(() => {
+    return typeof lastSeenNotificationTimestamp === "string"
+      ? moment.parseZone(lastSeenNotificationTimestamp)
+      : null;
+  }, [lastSeenNotificationTimestamp]);
+
+  const mostRecentNotificationTimestamp: string | null = useMemo(() => {
+    if (data?.pages?.length && data.pages[0]?.notifications?.length > 0) {
+      return data.pages[0].notifications[0].most_recent_timestamp;
     }
-  }, [inView, isFetching, hasNextPage]);
+    return null;
+  }, [data]);
+
+  const shouldUpdateNotificationsCursor: boolean = useMemo(() => {
+    if (tab !== TAB_OPTIONS.ALL) return false;
+    if (!mostRecentNotificationTimestamp) return false;
+    if (!lastSeenNotificationDate) return true;
+
+    return moment
+      .utc(mostRecentNotificationTimestamp)
+      .isAfter(lastSeenNotificationDate);
+  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate]);
+
+  const updateNotificationsCursor = useCallback(() => {
+    if (shouldUpdateNotificationsCursor && mostRecentNotificationTimestamp) {
+      updateLastSeenCursor({
+        lastSeenTimestamp: mostRecentNotificationTimestamp,
+      });
+    }
+  }, [
+    updateLastSeenCursor,
+    mostRecentNotificationTimestamp,
+    shouldUpdateNotificationsCursor,
+  ]);
+
+  useEffect(() => {
+    if (shouldUpdateNotificationsCursor) {
+      updateNotificationsCursor();
+    }
+  }, [updateNotificationsCursor, shouldUpdateNotificationsCursor]);
 
   return (
     <div className="w-full max-h-screen overflow-auto">
       <Tabs
         value={tab}
         onValueChange={onTabChange}
-        className="max-w-screen-sm mx-auto border-x min-h-full"
+        className="max-w-2xl mx-auto min-h-full"
       >
-        <div className="p-4 border-b">
+        <div className="py-4 lg:px-0 px-4 border-b">
           <h1 className="text-xl font-bold mb-6">Notifications</h1>
           <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value={TAB_OPTIONS.ALL}>All</TabsTrigger>
@@ -378,9 +429,16 @@ export default function NotificationsPage() {
               <React.Fragment key={pageIndex}>
                 {filterByType(page?.notifications ?? []).map(
                   (notification, pageItemIndex) => {
+                    const isUnseen = isNotificationUnseen(
+                      notification,
+                      lastSeenNotificationDate,
+                    );
+
                     return (
                       <NotificationRow
                         notification={notification}
+                        onSelect={onSelectNotification}
+                        isUnseen={isUnseen}
                         key={`${pageIndex}-${pageItemIndex}`}
                       />
                     );
@@ -395,14 +453,19 @@ export default function NotificationsPage() {
             </div>
           )}
           {!error && (
-            <div ref={ref} className="h-[200px]">
+            <div
+              ref={ref}
+              className="h-[200px] flex items-center justify-center"
+            >
               {isFetching && (
                 <div className="h-full w-full bg-foreground/5 flex flex-col justify-center items-center">
                   <Loading />
                 </div>
               )}
               {!isFetching && !hasNextPage && (
-                <p>{`You've reached the end of this list.`}</p>
+                <p className="text-primary/40 font-medium">
+                  There are no more notifications to display
+                </p>
               )}
             </div>
           )}
