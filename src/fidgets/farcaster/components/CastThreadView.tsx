@@ -7,6 +7,7 @@ import { Button } from "@/common/components/atoms/button";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
 import { CardHeader, CardTitle } from "@/common/components/atoms/card";
+import ScrollToIndex from "@/common/components/molecules/ScrollToIndex";
 
 type CastThreadViewProps = {
   cast: { hash: string; author?: { fid: number } };
@@ -33,45 +34,47 @@ export const CastThreadView = ({
   const replyCasts: CastWithInteractions[] =
     data?.conversation?.cast?.direct_replies || [];
 
+  const allCasts: any[] = [
+    ...parentCasts.map((cast, idx) => ({
+      cast: cast,
+      key: cast.hash,
+      showChannel: true,
+      isFocused: false,
+      isReply: idx !== 0,
+      hasReplies: true,
+      onSelect: onSelect,
+    })),
+    focusedCast && {
+      cast: focusedCast,
+      key: focusedCast.hash,
+      showChannel: true,
+      isFocused: true,
+      isReply: parentCasts.length > 0,
+      hasReplies: replyCasts.length > 0,
+      onSelect: onSelect,
+    },
+    ...replyCasts.map((cast, idx) => ({
+      cast: cast,
+      key: cast.hash,
+      showChannel: true,
+      isFocused: false,
+      isReply: false,
+      hasReplies: false,
+      onSelect: onSelect,
+    })),
+  ].filter((c) => c);
+
   return (
-    <div className="flex flex-col relative">
+    <div className="flex flex-col relative h-full">
       <StickyHeader onBack={onBack} />
       {isLoading && <Loading />}
       {!isLoading && !focusedCast && "Cast not found"}
       {!isLoading && focusedCast && (
-        <ul>
-          {parentCasts.map((cast, idx) => (
-            <CastRow
-              cast={cast}
-              key={cast.hash}
-              showChannel={true}
-              isFocused={false}
-              isReply={idx !== 0}
-              hasReplies={true}
-              onSelect={onSelect}
-            />
+        <ScrollToIndex scrollToIndex={parentCasts.length} extraHeight={500}>
+          {allCasts.map((castProps) => (
+            <CastRow {...castProps} key={castProps.key} />
           ))}
-          <CastRow
-            cast={focusedCast}
-            key={focusedCast.hash}
-            showChannel={true}
-            isFocused={true}
-            isReply={parentCasts.length > 0}
-            hasReplies={replyCasts.length > 0}
-            onSelect={onSelect}
-          />
-          {replyCasts.map((cast, idx) => (
-            <CastRow
-              cast={cast}
-              key={cast.hash}
-              showChannel={true}
-              isFocused={false}
-              isReply={false}
-              hasReplies={false}
-              onSelect={onSelect}
-            />
-          ))}
-        </ul>
+        </ScrollToIndex>
       )}
     </div>
   );

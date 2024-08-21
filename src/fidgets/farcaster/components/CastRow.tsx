@@ -155,19 +155,24 @@ const CastAttributionHeader = ({
   cast,
   inline,
   avatar,
+  isReply,
 }: {
   cast: CastWithInteractions;
   inline: boolean;
   avatar: boolean;
+  isReply: boolean;
 }) => {
   return (
     <div className="flex justify-start w-full gap-x-2">
+      {isReply && avatar && !inline && (
+        <ThreadConnector className="h-[8px] top-0 left-[31px]" />
+      )}
       {avatar && (
         <CastAvatar cast={cast} className={inline ? "size-5" : "size-10"} />
       )}
       <div
         className={classNames(
-          "flex gap-x-1",
+          "flex gap-x-1 truncate flex-wrap",
           inline ? "flex-row mb-0.5" : "flex-col",
         )}
       >
@@ -182,10 +187,10 @@ const CastAttributionPrimary = ({ cast }) => {
   if (!cast?.author?.display_name) return null;
 
   return (
-    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] nvm">
+    <div className="flex items-center justify-start font-bold text-foreground/80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
       <PriorityLink
         href={`/s/${cast.author.username}`}
-        className="cursor-pointer"
+        className="cursor-pointer truncate"
       >
         <span className="hover:underline">{cast.author.display_name}</span>
       </PriorityLink>
@@ -209,7 +214,7 @@ const CastAttributionSecondary = ({ cast }) => {
 
   return (
     <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
-      <span>@{cast.author.username}</span>
+      <span className="truncate">@{cast.author.username}</span>
       {relativeDateString && (
         <>
           <span className="font-normal"> · </span>
@@ -258,7 +263,10 @@ const CastBody = ({
 const ThreadConnector = ({ className }) => {
   return (
     <div
-      className={classNames("absolute w-[2px] bg-border flex-1", className)}
+      className={classNames(
+        "absolute w-[2px] bg-foreground/10 flex-1",
+        className,
+      )}
     />
   );
 };
@@ -266,10 +274,10 @@ const ThreadConnector = ({ className }) => {
 const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
   return (
     <div className="flex flex-0 justify-center top-0 bottom-0">
-      {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
+      {connectTop && <ThreadConnector className="top-0 h-[8px]" />}
       <CastAvatar cast={cast} className="size-10" />
       {connectBottom && (
-        <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
+        <ThreadConnector className="bottom-0 h-[calc(100%-56px)]" />
       )}
     </div>
   );
@@ -600,11 +608,18 @@ export const CastRow = ({
             connectBottom={hasReplies}
           />
         )}
-        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1"}>
+        <div
+          className={
+            isFocused
+              ? "flex flex-col flex-1 gap-3"
+              : "flex-1 overflow-x-hidden truncate"
+          }
+        >
           <CastAttributionHeader
             cast={cast}
             avatar={isFocused || isEmbed}
             inline={!isFocused}
+            isReply={isReply}
           />
           <CastBody
             cast={cast}
