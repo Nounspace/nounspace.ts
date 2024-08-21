@@ -19,7 +19,10 @@ const ExpandOnClick: React.FC<ExpandOnClickProps> = ({ children }) => {
 
   return (
     <>
-      <div onClick={handleOpen} className="cursor-pointer size-full">
+      <div
+        onClick={handleOpen}
+        className="cursor-pointer size-full max-h-[inherit]"
+      >
         {children}
       </div>
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

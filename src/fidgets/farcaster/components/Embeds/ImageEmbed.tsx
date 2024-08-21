@@ -27,7 +27,7 @@ const ImageEmbed = ({ url }: { url: string }) => {
     <ExpandOnClick>
       <img
         className={mergeClasses(
-          "object-cover size-full",
+          "object-contain size-full max-h-[inherit]",
           isLoading && "hidden",
         )}
         src={url}
