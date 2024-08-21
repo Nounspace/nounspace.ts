@@ -21,6 +21,8 @@ import {
   analytics,
 } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
+import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
+import { Badge } from "@/common/components/atoms/badge";
 
 type NavItemProps = {
   label: string;
@@ -29,6 +31,7 @@ type NavItemProps = {
   href: string;
   disable?: boolean;
   openInNewTab?: boolean;
+  badgeText?: string | null;
   onClick?: () => void;
 };
 
@@ -37,6 +40,17 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+};
+
+const NavIconBadge = ({ children }) => {
+  return (
+    <Badge
+      variant="primary"
+      className="justify-center text-[11px]/[12px] min-w-[18px] min-h-[18px] font-medium shadow-md px-[3px] rounded-full absolute left-[19px] top-[4px]"
+    >
+      {children}
+    </Badge>
+  );
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
@@ -50,6 +64,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   );
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
+  const notificationBadgeText = useNotificationBadgeText();
 
   function turnOnEditMode() {
     enterEditMode();
@@ -89,21 +104,23 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     onClick,
     disable = false,
     openInNewTab = false,
+    badgeText = null,
   }) => {
     return (
       <li>
         <Link
           href={disable ? "#" : href}
           className={mergeClasses(
-            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+            "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
             href === router.asPath ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
+          {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
-          <span className="ms-2">{label}</span>
+          <span className="ms-3">{label}</span>
         </Link>
       </li>
     );
@@ -114,18 +131,20 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     Icon,
     onClick,
     disable = false,
+    badgeText = null,
   }) => {
     return (
       <li>
         <button
           disabled={disable}
           className={mergeClasses(
-            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+            "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
           )}
           onClick={onClick}
         >
+          {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
-          <span className="ms-2">{label}</span>
+          <span className="ms-3">{label}</span>
         </button>
       </li>
     );
@@ -168,6 +187,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   label="Notifications"
                   Icon={NotificationsIcon}
                   href="/notifications"
+                  badgeText={notificationBadgeText}
                 />
                 <NavItem
                   label="Fair Launch"
