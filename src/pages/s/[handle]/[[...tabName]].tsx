@@ -1,15 +1,7 @@
 import React from "react";
-
-import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
-import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { useAppStore } from "@/common/data/stores/app";
-import {
-  generateUserMetadataHtml,
-  type UserMetadata,
-} from "@/common/lib/utils/generateUserMetadataHtml";
-import { NextPageWithLayout } from "@/pages/_app";
 import { first, isArray, isNil, isNull, isUndefined } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
