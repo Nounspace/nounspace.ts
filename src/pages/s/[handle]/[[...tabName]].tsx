@@ -1,18 +1,19 @@
 import React from "react";
+
+import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
+import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { useAppStore } from "@/common/data/stores/app";
-import { first, isArray, isNil, isNull, isUndefined } from "lodash";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import Head from "next/head";
-import { useEffect } from "react";
-import { NextPageWithLayout } from "@/pages/_app";
-import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
-import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 import {
   generateUserMetadataHtml,
   type UserMetadata,
 } from "@/common/lib/utils/generateUserMetadataHtml";
+import { NextPageWithLayout } from "@/pages/_app";
+import { first, isArray, isNil, isNull, isUndefined } from "lodash";
+import { GetServerSideProps, GetServerSidePropsContext } from "next";
+import Head from "next/head";
+import { useEffect } from "react";
 
 type SpacePageProps = {
   spaceId: string | null;
@@ -63,6 +64,13 @@ export const getServerSideProps = (async ({
       result: { user },
     } = await neynar.lookupUserByUsername(handle);
 
+    const userMetadata = {
+      username: user.username,
+      displayName: user.displayName,
+      pfpUrl: user.pfp.url,
+      bio: user.profile.bio.text,
+    };
+
     const { data } = await supabaseClient
       .from("spaceRegistrations")
       .select("spaceId")
@@ -78,12 +86,7 @@ export const getServerSideProps = (async ({
             fid: user.fid,
             handle,
             tabName: tabName,
-            userMetadata: {
-              username: user.username,
-              displayName: user.displayName,
-              pfpUrl: user.pfp.url,
-              bio: user.profile.bio.text,
-            },
+            userMetadata,
           },
         };
       }
@@ -95,6 +98,7 @@ export const getServerSideProps = (async ({
         fid: user.fid,
         handle,
         tabName: tabName,
+        userMetadata,
       },
     };
   } catch (e) {
