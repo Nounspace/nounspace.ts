@@ -9,7 +9,7 @@ export const useDelayedValueChange = (
   const [delayedValue, setDelayedValue] = useState(value);
 
   useEffect(() => {
-    if (shouldDelay(prev, value)) {
+    if (prev != value && shouldDelay(prev, value)) {
       const timer = window.setTimeout(() => {
         setDelayedValue(value);
       }, delayMs);
