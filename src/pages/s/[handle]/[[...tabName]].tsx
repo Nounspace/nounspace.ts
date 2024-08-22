@@ -18,7 +18,7 @@ type SpacePageProps = {
   spaceId: string | null;
   fid: number | null;
   handle: string | string[] | undefined;
-  tabName: string | string[] | undefined;
+  tabName?: string | string[] | undefined;
   userMetadata?: UserMetadata;
 };
 
