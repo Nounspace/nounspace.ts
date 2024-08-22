@@ -108,7 +108,7 @@ export const createHomeBaseStoreFunc = (
         { useRootKey: true },
       );
       try {
-        await axiosBackend.post(`/api/space/homebase/`, file);
+        await axiosBackend.post(`/api/space/homebase`, file);
         set((draft) => {
           draft.homebase.remoteHomebaseConfig = localCopy;
         }, "commitHomebaseToDatabase");
