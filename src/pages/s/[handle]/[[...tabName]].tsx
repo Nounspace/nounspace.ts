@@ -62,20 +62,20 @@ export const getServerSideProps = (async ({
     const {
       result: { user },
     } = await neynar.lookupUserByUsername(handle);
-
+    console.log(user);
     const userMetadata = {
       username: user.username,
       displayName: user.displayName,
       pfpUrl: user.pfp.url,
       bio: user.profile.bio.text,
     };
-
+    console.log(userMetadata);
     const { data } = await supabaseClient
       .from("spaceRegistrations")
       .select("spaceId")
       .eq("fid", user.fid)
       .eq("spaceName", tabName);
-
+    console.log(data);
     if (data) {
       const spaceRegistration = first(data);
       if (!isUndefined(spaceRegistration)) {
