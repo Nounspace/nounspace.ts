@@ -54,7 +54,7 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (hasProfile: boolean) => ({
+const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   items: 0,
   isDraggable: false,
   isResizable: false,
@@ -64,7 +64,7 @@ const makeGridDetails = (hasProfile: boolean) => ({
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
-  cols: 12,
+  cols: hasFeed ? 6 : 12,
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
@@ -126,6 +126,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   cancelExitEditMode,
   portalRef,
   hasProfile,
+  hasFeed,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
@@ -145,7 +146,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
+  const gridDetails = useMemo(
+    () => makeGridDetails(hasProfile, hasFeed),
+    [hasProfile, hasFeed],
+  );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
     return await saveConfig({

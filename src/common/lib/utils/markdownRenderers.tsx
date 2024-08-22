@@ -109,18 +109,16 @@ export const MarkdownRenderers = {
   ol: ({ ordered, children, ...props }: RendererProps) => {
     const listType = ordered ? "1" : "decimal";
     return (
-      <ol {...props} style={{ listStyleType: listType, paddingLeft: "10%" }}>
+      <ol {...props} style={{ listStyleType: listType, paddingLeft: "30px" }}>
         {children}
       </ol>
     );
   },
   ul: ({ ordered, children, ...props }: RendererProps) => {
-    const listType = ordered ? "1" : "decimal";
     return (
       <ul
         {...props}
-        data-ordered={listType}
-        style={{ padding: "5%", paddingLeft: "10%", color: "white" }}
+        style={{ padding: "5px", paddingLeft: "30px", color: "black" }}
       >
         {children}
       </ul>

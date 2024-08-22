@@ -2,8 +2,6 @@ import React from "react";
 import { groupBy } from "lodash";
 import Link from "next/link";
 import Image from "next/image";
-import Navigation from "@/common/components/organisms/Navigation";
-import { useAppStore } from "@/common/data/stores/app";
 import { getAllMarkdownFiles } from "@/common/data/explore/loadExploreMarkdown";
 
 export async function getStaticProps() {
@@ -28,9 +26,9 @@ const categories = [
 ];
 
 export default function Explore({ posts }) {
-  const { homebaseConfig } = useAppStore((state) => ({
-    homebaseConfig: state.homebase.homebaseConfig,
-  }));
+  // const { homebaseConfig } = useAppStore((state) => ({
+  //   homebaseConfig: state.homebase.homebaseConfig,
+  // }));
   const groupedPosts = groupBy(posts, (post) => post.category);
 
   return (

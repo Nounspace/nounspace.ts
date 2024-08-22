@@ -123,6 +123,7 @@ interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
   portalRef: React.RefObject<HTMLDivElement>;
 
   hasProfile: boolean;
+  hasFeed: boolean;
 }
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;
