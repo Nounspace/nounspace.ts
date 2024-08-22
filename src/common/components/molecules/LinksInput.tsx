@@ -127,7 +127,7 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
         {
           //placeholder values
           text: "New Link",
-          url: "https://nouns.wtf",
+          url: "https://",
           avatar: "/images/chainEmoji.png",
           description: "Description",
         },
