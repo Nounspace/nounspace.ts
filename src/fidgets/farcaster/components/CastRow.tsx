@@ -32,6 +32,7 @@ import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
+import { FaReply } from "react-icons/fa6";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -264,15 +265,15 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
     return {
-      [CastReactionType.replies]: { count: repliesCount },
-      [CastReactionType.recasts]: {
-        count: recastsCount + Number(didRecast),
-        isActive: didRecast || includes(recastFids, userFid),
-      },
       [CastReactionType.likes]: {
         count: likesCount + Number(didLike),
         isActive: didLike || includes(likeFids, userFid),
       },
+      [CastReactionType.recasts]: {
+        count: recastsCount + Number(didRecast),
+        isActive: didRecast || includes(recastFids, userFid),
+      },
+      [CastReactionType.replies]: { count: repliesCount },
     };
   };
 
@@ -416,7 +417,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           );
           return reaction;
         })}
-        {linksCount && !isOnchainLink ? (
+
+        {/* Commented out this button to "Open cast in a new tab" until we add that functionality*/}
+
+        {/* {linksCount && !isOnchainLink ? (
           <a
             tabIndex={-1}
             href={"url" in cast.embeds[0] ? cast.embeds[0].url : "#"}
@@ -431,7 +435,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
               getIconForCastReactionType(CastReactionType.links),
             )}
           </a>
-        ) : null}
+        ) : null} */}
         {renderReaction(
           CastReactionType.quote,
           true,
@@ -534,7 +538,7 @@ const getIconForCastReactionType = (
         <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
       );
     case CastReactionType.replies:
-      return <ChatBubbleLeftIcon className={className} aria-hidden="true" />;
+      return <FaReply className={className} aria-hidden="true" />;
     case CastReactionType.links:
       return (
         <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />
