@@ -18,6 +18,7 @@ export enum AnalyticsEvent {
   CLICK_EXPLORE = "Explore Click",
   CLICK_HOMEBASE = "Click Homebase",
   CLICK_SEARCH = "Click Search",
+  CLICK_NOTIFICATIONS = "Click Notifications",
   CLICK_MY_SPACE = "Click My Space",
   CLICK_CAST = "Click Cast",
   CLICK_EXPLORE_CARD = "Click Explore Card",
@@ -42,6 +43,7 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.CLICK_EXPLORE]: Record<string, never>;
   [AnalyticsEvent.CLICK_HOMEBASE]: Record<string, never>;
   [AnalyticsEvent.CLICK_SEARCH]: Record<string, never>;
+  [AnalyticsEvent.CLICK_NOTIFICATIONS]: Record<string, never>;
   [AnalyticsEvent.CLICK_MY_SPACE]: Record<string, never>;
   [AnalyticsEvent.CLICK_CAST]: Record<string, never>;
   [AnalyticsEvent.CLICK_EXPLORE_CARD]: { slug: string };
