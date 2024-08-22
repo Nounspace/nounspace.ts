@@ -125,10 +125,11 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
       onChange?.([
         ...value,
         {
-          text: "Nouns",
+          //placeholder values
+          text: "New Link",
           url: "https://nouns.wtf",
-          avatar: "/images/nouns.svg",
-          description: "Funds ideas",
+          avatar: "/images/chainEmoji.png",
+          description: "Description",
         },
       ]);
       setLinkStates([
