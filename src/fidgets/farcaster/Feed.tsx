@@ -199,7 +199,11 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   // returning from a thread.
   return (
     <>
-      {isThreadView && renderThread()}
+      {isThreadView && (
+        <div className="h-full overflow-y-scroll justify-center items-center">
+          {renderThread()}
+        </div>
+      )}
       <div
         className={mergeClasses(
           "h-full overflow-y-scroll justify-center items-center",

@@ -8,7 +8,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { z, ZodSchema } from "zod";
 
 const QuerySchema = z.object({
-  fid: z.coerce.number().int(),
+  fid: z.coerce.number().int().default(544175),
   limit: z.coerce.number().int().positive().max(25).default(15),
   cursor: z.string().optional(),
 });

@@ -1,7 +1,7 @@
 import { AuthenticatorConfig } from "@/authenticators/AuthenticatorManager";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
-import { debounce, isNull, keys } from "lodash";
+import { debounce, isNull, keys, isEqual } from "lodash";
 import { createClient } from "../../../database/supabase/clients/component";
 import { authenticatorsPath } from "@/constants/supabase";
 import axios from "axios";
@@ -89,8 +89,10 @@ export const authenticatorStore = (
   },
   commitAuthenticatorUpdatesToDatabase: debounce(async () => {
     if (
-      get().account.authenticatorConfig ===
-      get().account.authenticatorRemoteConfig
+      isEqual(
+        get().account.authenticatorConfig,
+        get().account.authenticatorRemoteConfig,
+      )
     ) {
       // Only update if changes have been made
       return;
@@ -105,7 +107,7 @@ export const authenticatorStore = (
     };
 
     try {
-      await axiosBackend.post("/api/space/authenticators/", postData, {
+      await axiosBackend.post("/api/space/authenticators", postData, {
         headers: { "Content-Type": "application/json" },
       });
       set((draft) => {

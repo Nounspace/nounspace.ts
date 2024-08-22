@@ -36,7 +36,7 @@ export default function VersionCheckProivder({
 
   useEffect(() => {
     checkVersion();
-  });
+  }, []);
 
   return (
     <>
