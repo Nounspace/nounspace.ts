@@ -23,7 +23,6 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   const nounspaceUrl =
     "https://nounspace-ts-git-fork-r4topunk-canary-nounspace.vercel.app";
   const ogImageUrl = `${nounspaceUrl}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
-
   return (
     <>
       <title>{title}</title>
