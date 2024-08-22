@@ -35,7 +35,7 @@ const Modal = ({
       <Dialog.Content
         className={mergeClasses(
           "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
-          "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[6px] p-[25px]",
+          "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[30px] p-[25px]",
           "shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none",
           "z-50",
         )}
