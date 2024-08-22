@@ -63,6 +63,13 @@ export const getServerSideProps = (async ({
       result: { user },
     } = await neynar.lookupUserByUsername(handle);
 
+    const userMetadata = {
+      username: user.username,
+      displayName: user.displayName,
+      pfpUrl: user.pfp.url,
+      bio: user.profile.bio.text,
+    };
+
     const { data } = await supabaseClient
       .from("spaceRegistrations")
       .select("spaceId")
@@ -95,6 +102,7 @@ export const getServerSideProps = (async ({
         fid: user.fid,
         handle,
         tabName: tabName,
+        userMetadata,
       },
     };
   } catch (e) {

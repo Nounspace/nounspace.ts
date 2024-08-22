@@ -159,7 +159,7 @@ export const prekeyStore = (
     };
 
     // TO DO: Error handling
-    await axiosBackend.post("/api/space/prekeys/", postData, {
+    await axiosBackend.post("/api/space/prekeys", postData, {
       headers: { "Content-Type": "application/json" },
     });
 

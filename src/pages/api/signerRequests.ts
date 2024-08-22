@@ -190,14 +190,7 @@ async function handleGet(
       },
     );
 
-    const value: SignedKeyRequestResponse =
-      process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-        ? {
-            ...data.result.signedKeyRequest,
-            state: "completed",
-            userFid: 1,
-          }
-        : data.result.signedKeyRequest;
+    const value: SignedKeyRequestResponse = data.result.signedKeyRequest;
 
     return res.status(200).json({
       result: "success",
