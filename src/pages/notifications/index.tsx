@@ -273,7 +273,7 @@ const LikeNotificationRow: NotificationRowProps = ({
   );
 };
 
-const NOTIFICATION_COMPONENT_BY_TYPE = {
+const NOTIFICATION_ROW_TYPE = {
   [NotificationTypeEnum.Mention]: MentionNotificationRow,
   [NotificationTypeEnum.Follows]: FollowNotificationRow,
   [NotificationTypeEnum.Recasts]: RecastNotificationRow,
@@ -286,19 +286,12 @@ const NotificationRow: NotificationRowProps = ({
   onSelect,
   isUnseen = false,
 }) => {
-  const unseenToSeen = useCallback((prev, curr) => prev && curr === false, []);
-  const isUnseenWithDelay = useDelayedValueChange(
-    isUnseen,
-    20000,
-    unseenToSeen,
-  );
-  const NotificationType =
-    NOTIFICATION_COMPONENT_BY_TYPE[notification.type] || null;
+  const NotificationType = NOTIFICATION_ROW_TYPE[notification.type] || null;
 
   return NotificationType ? (
     <div
       className={
-        isUnseenWithDelay
+        isUnseen
           ? "bg-blue-50 transition-colors duration-1000"
           : "bg-transparent transition-colors duration-1000"
       }
@@ -314,14 +307,12 @@ const isNotificationUnseen = (
   notification: Notification,
   lastSeenNotificationDate?: moment.Moment | null,
 ): boolean | undefined => {
-  if (lastSeenNotificationDate === undefined) {
-    return undefined;
-  } else if (lastSeenNotificationDate === null) {
-    return true;
-  } else {
-    const notificationDate = moment.utc(notification.most_recent_timestamp);
-    return notificationDate.isAfter(lastSeenNotificationDate);
-  }
+  if (lastSeenNotificationDate === undefined) return undefined;
+  if (lastSeenNotificationDate === null) return true;
+
+  return moment
+    .utc(notification.most_recent_timestamp)
+    .isAfter(lastSeenNotificationDate);
 };
 
 export default function NotificationsPage() {
@@ -364,10 +355,12 @@ export default function NotificationsPage() {
     [tab],
   );
 
-  const lastSeenNotificationDate = useMemo(() => {
+  const lastSeenNotificationDate = useMemo<
+    moment.Moment | null | undefined
+  >(() => {
     return typeof lastSeenNotificationTimestamp === "string"
       ? moment.parseZone(lastSeenNotificationTimestamp)
-      : null;
+      : lastSeenNotificationTimestamp;
   }, [lastSeenNotificationTimestamp]);
 
   const mostRecentNotificationTimestamp: string | null = useMemo(() => {
@@ -405,6 +398,19 @@ export default function NotificationsPage() {
     }
   }, [updateNotificationsCursor, shouldUpdateNotificationsCursor]);
 
+  // On page load, the lastSeenCursor is updated, which immediately clears the badge count in the nav.
+  // To make it apparent which notifications are new, this delays the visual clearing of the unseen
+  // notifications to keep them highlighted for an extra n seconds after being marked seen in the db.
+  const delayedLastSeenNotificationDate = useDelayedValueChange(
+    lastSeenNotificationDate,
+    20000,
+    function shouldDelay(prev, curr) {
+      const wasJustCreated = moment.isMoment(curr) && prev === null;
+      const wasJustUpdated = moment.isMoment(curr) && moment.isMoment(prev);
+      return wasJustCreated || wasJustUpdated;
+    },
+  );
+
   return (
     <div className="w-full max-h-screen overflow-auto">
       <Tabs
@@ -431,7 +437,7 @@ export default function NotificationsPage() {
                   (notification, pageItemIndex) => {
                     const isUnseen = isNotificationUnseen(
                       notification,
-                      lastSeenNotificationDate,
+                      delayedLastSeenNotificationDate,
                     );
 
                     return (
