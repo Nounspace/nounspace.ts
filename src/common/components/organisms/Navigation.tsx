@@ -187,14 +187,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
                 />
-                <NavButton
-                  label="Search"
-                  Icon={SearchIcon}
-                  onClick={() => {
-                    openSearchModal();
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
-                  }}
-                />
                 <NavItem
                   label="Notifications"
                   Icon={NotificationsIcon}
@@ -203,6 +195,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)
                   }
                   badgeText={notificationBadgeText}
+                />
+                <NavButton
+                  label="Search"
+                  Icon={SearchIcon}
+                  onClick={() => {
+                    openSearchModal();
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
+                  }}
                 />
                 <NavItem
                   label="Fair Launch"

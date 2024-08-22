@@ -297,7 +297,9 @@ const NotificationRow: NotificationRowProps = ({
       }
     >
       <div className="px-4 py-4 border-b hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out">
-        <NotificationType notification={notification} onSelect={onSelect} />
+        <div className="max-w-2xl">
+          <NotificationType notification={notification} onSelect={onSelect} />
+        </div>
       </div>
     </div>
   ) : null;
@@ -413,14 +415,10 @@ export default function NotificationsPage() {
 
   return (
     <div className="w-full max-h-screen overflow-auto">
-      <Tabs
-        value={tab}
-        onValueChange={onTabChange}
-        className="max-w-2xl mx-auto min-h-full"
-      >
-        <div className="py-4 lg:px-0 px-4 border-b">
+      <Tabs value={tab} onValueChange={onTabChange} className="min-h-full">
+        <div className="py-4 px-4 border-b">
           <h1 className="text-xl font-bold mb-6">Notifications</h1>
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-6 max-w-2xl">
             <TabsTrigger value={TAB_OPTIONS.ALL}>All</TabsTrigger>
             <TabsTrigger value={TAB_OPTIONS.MENTIONS}>Mentions</TabsTrigger>
             <TabsTrigger value={TAB_OPTIONS.FOLLOWS}>Follows</TabsTrigger>
