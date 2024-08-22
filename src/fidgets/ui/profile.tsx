@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { CgProfile } from "react-icons/cg";
@@ -44,6 +44,11 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
     viewerFid > 0 ? viewerFid : undefined,
   );
 
+  const [actionStatus, setActionStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {
       return undefined;
@@ -53,10 +58,28 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
 
   const toggleFollowing = async () => {
     if (user && signer && viewerFid > 0) {
-      if (user?.viewer_context?.following) {
-        unfollowUser(fid, viewerFid, signer);
-      } else {
-        followUser(fid, viewerFid, signer);
+      setActionStatus("loading");
+
+      try {
+        let success;
+        if (user.viewer_context?.following) {
+          success = await unfollowUser(fid, viewerFid, signer);
+        } else {
+          success = await followUser(fid, viewerFid, signer);
+        }
+
+        if (success) {
+          setActionStatus("success");
+        } else {
+          setActionStatus("error");
+          setErrorMessage("Failed to update follow status.");
+        }
+      } catch (error) {
+        setActionStatus("error");
+        setErrorMessage("An error occurred while updating follow status.");
+      } finally {
+        // Optionally reset status after some delay
+        setTimeout(() => setActionStatus("idle"), 3000);
       }
     }
   };
@@ -103,14 +126,27 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           </div>
           <div className="ml-4 flex w-full h-full items-center">
             {user.viewer_context && fid !== viewerFid && (
-              <Button
-                onClick={toggleFollowing}
-                variant={
-                  user.viewer_context?.following ? "secondary" : "primary"
-                }
-              >
-                {user.viewer_context?.following ? "Unfollow" : "Follow"}
-              </Button>
+              <>
+                <Button
+                  onClick={toggleFollowing}
+                  variant={
+                    user.viewer_context?.following ? "secondary" : "primary"
+                  }
+                  disabled={actionStatus === "loading"}
+                >
+                  {actionStatus === "loading"
+                    ? "Processing..."
+                    : user.viewer_context?.following
+                      ? "Unfollow"
+                      : "Follow"}
+                </Button>
+                {actionStatus === "error" && (
+                  <p className="text-red-500 ml-4">{errorMessage}</p>
+                )}
+                {actionStatus === "success" && (
+                  <p className="text-green-500 ml-4">Success</p>
+                )}
+              </>
             )}
           </div>
         </div>
