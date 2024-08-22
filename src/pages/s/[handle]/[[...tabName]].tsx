@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
