@@ -30,7 +30,8 @@ import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import { useRouter } from "next/router";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
-
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
 }
@@ -248,7 +249,31 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   type ReplyCastType = "reply" | "quote";
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
 
-  const getReactions = () => {
+  const onReply = () => {
+    trackAnalyticsEvent(AnalyticsEvent.REPLY, {
+      username: cast.author.username,
+      castId: cast.hash,
+    });
+    setReplyCastDraft({
+      parentCastId: castId,
+    });
+    setReplyCastType("reply");
+    setShowModal(true);
+  };
+
+  const onQuote = () => {
+    trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+      username: cast.author.username,
+      castId: cast.hash,
+    });
+    setReplyCastDraft({
+      embeds: [{ castId }],
+    });
+    setReplyCastType("quote");
+    setShowModal(true);
+  };
+
+  const getCastReactionsObj = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
     const likesCount = cast.reactions?.likes_count;
@@ -274,8 +299,16 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     }
 
     if (key === CastReactionType.likes) {
+      trackAnalyticsEvent(AnalyticsEvent.LIKE, {
+        username: cast.author.username,
+        castId: cast.hash,
+      });
       setDidLike(!isActive);
     } else if (key === CastReactionType.recasts) {
+      trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+        username: cast.author.username,
+        castId: cast.hash,
+      });
       setDidRecast(!isActive);
     }
 

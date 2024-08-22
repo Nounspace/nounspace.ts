@@ -9,15 +9,15 @@ import {
   LiaCircleNotchSolid,
 } from "react-icons/lia";
 import { Button } from "@/common/components/atoms/button";
-
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 type ContentMetadata = {
   title?: string | null;
   channel?: string | null;
   thumbnail?: string | null;
 };
-
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 export type PlayerProps = {
-  url?: string | string[];
+  url: string | string[];
 };
 
 const getToggleIcon = ({ playing, started, ready }): [IconType, string] => {
@@ -69,10 +69,12 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
   }, [playing, started]);
 
   const onPlay = useCallback(() => {
+    trackAnalyticsEvent(AnalyticsEvent.PLAY, { url });
     setPlaying(true);
   }, []);
 
   const onPause = useCallback(() => {
+    trackAnalyticsEvent(AnalyticsEvent.PAUSE, { url });
     setPlaying(false);
   }, []);
 

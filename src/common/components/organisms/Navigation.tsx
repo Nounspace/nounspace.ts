@@ -18,9 +18,11 @@ import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import {
   AnalyticsEvent,
+  AnalyticsEventProperties,
   analytics,
 } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { Badge } from "@/common/components/atoms/badge";
 
@@ -82,6 +84,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
+
   const CurrentUserImage = useCallback(
     () =>
       user && user.pfp_url ? (
@@ -176,11 +179,20 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem label="Homebase" Icon={HomeIcon} href="/homebase" />
+                <NavItem
+                  label="Homebase"
+                  Icon={HomeIcon}
+                  href="/homebase"
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
+                  }
+                />
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
-                  onClick={openSearchModal}
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH)
+                  }
                 />
                 <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
                 <NavItem
@@ -194,15 +206,26 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   Icon={RocketIcon}
                   href="https://space.nounspace.com/"
                   onClick={() =>
-                    analytics.track(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
+                />
+                <NavItem
+                  label="Explore"
+                  Icon={ExploreIcon}
+                  href="/explore"
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
+                  }
                 />
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
+                    onClick={() =>
+                      trackAnalyticsEvent(AnalyticsEvent.CLICK_MY_SPACE)
+                    }
                   />
                 )}
                 {isLoggedIn && (

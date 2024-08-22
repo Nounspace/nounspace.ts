@@ -14,9 +14,22 @@ export enum AnalyticsEvent {
   ADD_FIDGET = "Add Fidget",
   EDIT_FIDGET = "Edit Fidget",
   CLICK_SPACE_FAIR_LAUNCH = "Click Space Fair Launch",
+  MUSIC_UPDATED = "Music Updated",
+  CLICK_EXPLORE = "Explore Click",
+  CLICK_HOMEBASE = "Click Homebase",
+  CLICK_SEARCH = "Click Search",
+  CLICK_MY_SPACE = "Click My Space",
+  CLICK_CAST = "Click Cast",
+  CLICK_EXPLORE_CARD = "Click Explore Card",
+  CAST = "Cast",
+  REPLY = "Reply",
+  RECAST = "Recast",
+  LIKE = "Like",
+  PLAY = "Play",
+  PAUSE = "Pause",
 }
 
-type AnalyticsEventProperties = {
+export type AnalyticsEventProperties = {
   [AnalyticsEvent.CONNECT_WALLET]: { hasNogs: boolean };
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
   [AnalyticsEvent.LINK_FID]: { fid: number };
@@ -25,17 +38,30 @@ type AnalyticsEventProperties = {
   [AnalyticsEvent.ADD_FIDGET]: { fidgetType: string };
   [AnalyticsEvent.EDIT_FIDGET]: { fidgetType: string };
   [AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH]: Record<string, never>;
+  [AnalyticsEvent.MUSIC_UPDATED]: { url: string };
+  [AnalyticsEvent.CLICK_EXPLORE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_HOMEBASE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_SEARCH]: Record<string, never>;
+  [AnalyticsEvent.CLICK_MY_SPACE]: Record<string, never>;
+  [AnalyticsEvent.CLICK_CAST]: Record<string, never>;
+  [AnalyticsEvent.CLICK_EXPLORE_CARD]: { slug: string };
+  [AnalyticsEvent.CAST]: { username: string; castId: string };
+  [AnalyticsEvent.REPLY]: { username: string; castId: string };
+  [AnalyticsEvent.RECAST]: { username: string; castId: string };
+  [AnalyticsEvent.LIKE]: { username: string; castId: string };
+  [AnalyticsEvent.PLAY]: { url: string | string[] };
+  [AnalyticsEvent.PAUSE]: { url: string | string[] };
 };
 
 const segment = new AnalyticsBrowser();
 
 export const analytics = {
-  track: <T extends AnalyticsEvent>(
+  track: <T extends keyof AnalyticsEventProperties>(
     eventName: T,
     properties?: AnalyticsEventProperties[T],
   ) => {
     try {
-      segment.track(eventName, properties);
+      segment.track(eventName, properties as Record<string, any>);
     } catch (e) {
       console.error(e);
     }
