@@ -4,7 +4,15 @@ import {
 } from "@/common/components/templates/Space";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
-import { cloneDeep, debounce, forEach, has, isArray, mergeWith } from "lodash";
+import {
+  clone,
+  cloneDeep,
+  debounce,
+  forEach,
+  has,
+  isArray,
+  mergeWith,
+} from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "@/common/data/api/backend";
 import {
@@ -12,7 +20,7 @@ import {
   UnsignedManageHomebaseTabsRequest,
 } from "@/pages/api/space/homebase/tabs";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import { homebasePath } from "@/constants/supabase";
+import { homebasePath, homebaseTabOrderPath } from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
@@ -24,10 +32,17 @@ interface HomeBaseTabStoreState {
       remoteConfig?: SpaceConfig;
     };
   };
+  tabOrdering: {
+    local: string[];
+    remote: string[];
+  };
 }
 
 interface HomeBaseTabStoreActions {
   loadTabNames: () => Promise<string[]>;
+  loadTabOrdering: () => Promise<string[]>;
+  updateTabOrdering: (newOrdering: string[]) => void;
+  commitTabOrderingToDatabase: () => Promise<void> | undefined;
   renameTab: (tabName: string, newName: string) => Promise<void>;
   deleteTab: (tabName: string) => Promise<void>;
   createTab: (tabName: string) => Promise<void>;
@@ -45,6 +60,10 @@ export type HomeBaseTabStore = HomeBaseTabStoreState & HomeBaseTabStoreActions;
 
 export const homeBaseStoreDefaults: HomeBaseTabStoreState = {
   tabs: {},
+  tabOrdering: {
+    local: [],
+    remote: [],
+  },
 };
 
 export const createHomeBaseTabStoreFunc = (
@@ -52,6 +71,63 @@ export const createHomeBaseTabStoreFunc = (
   get: StoreGet<AppStore>,
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
+  updateTabOrdering(newOrdering) {
+    set((draft) => {
+      draft.homebase.tabOrdering.local = newOrdering;
+    }, "updateTabOrdering");
+  },
+  async loadTabOrdering() {
+    const supabase = createClient();
+    const {
+      data: { publicUrl },
+    } = supabase.storage
+      .from("private")
+      .getPublicUrl(
+        `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}}`,
+      );
+    try {
+      const { data } = await axios.get<Blob>(publicUrl, {
+        responseType: "blob",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
+      const fileData = JSON.parse(await data.text()) as SignedFile;
+      const tabOrder = JSON.parse(
+        await get().account.decryptEncryptedSignedFile(fileData),
+      ) as string[];
+      set((draft) => {
+        draft.homebase.tabOrdering = {
+          local: clone(tabOrder),
+          remote: clone(tabOrder),
+        };
+      }, `loadHomebaseTabOrdering`);
+      return tabOrder;
+    } catch (e) {
+      return [];
+    }
+  },
+  commitTabOrderingToDatabase: debounce(async () => {
+    const localCopy = cloneDeep(get().homebase.tabOrdering.local);
+    if (localCopy) {
+      const file = await get().account.createEncryptedSignedFile(
+        stringify(localCopy),
+        "json",
+        { useRootKey: true },
+      );
+      try {
+        await axiosBackend.post(`/api/space/homebase/tabOrder/`, file);
+        set((draft) => {
+          draft.homebase.tabOrdering.remote = localCopy;
+        }, "commitHomebaseTabOrderToDatabase");
+      } catch (e) {
+        console.error(e);
+        throw e;
+      }
+    }
+  }, 1000),
   async loadTabNames() {
     try {
       const { data } = await axiosBackend.get<ManageHomebaseTabsResponse>(
