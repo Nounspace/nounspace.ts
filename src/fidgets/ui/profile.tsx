@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { CgProfile } from "react-icons/cg";
@@ -44,6 +44,11 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
     viewerFid > 0 ? viewerFid : undefined,
   );
 
+  const [actionStatus, setActionStatus] = useState<
+    "idle" | "loading" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {
       return undefined;
@@ -53,10 +58,38 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
 
   const toggleFollowing = async () => {
     if (user && signer && viewerFid > 0) {
-      if (user?.viewer_context?.following) {
-        unfollowUser(fid, viewerFid, signer);
-      } else {
-        followUser(fid, viewerFid, signer);
+      setActionStatus("loading");
+
+      // Optimistically update the user's following state
+      const wasFollowing = user.viewer_context?.following ?? false;
+      user.viewer_context = {
+        ...user.viewer_context,
+        following: !wasFollowing,
+        followed_by: user.viewer_context?.followed_by ?? false, // Default to false if undefined
+      };
+
+      try {
+        let success;
+        if (wasFollowing) {
+          success = await unfollowUser(fid, viewerFid, signer);
+        } else {
+          success = await followUser(fid, viewerFid, signer);
+        }
+
+        if (!success) {
+          throw new Error("Failed to update follow status.");
+        }
+      } catch (error) {
+        // Revert the optimistic update if the operation fails
+        user.viewer_context = {
+          ...user.viewer_context,
+          following: wasFollowing,
+        };
+        setActionStatus("error");
+        setErrorMessage("An error occurred while updating follow status.");
+      } finally {
+        // Reset status after some delay
+        setTimeout(() => setActionStatus("idle"), 3000);
       }
     }
   };
@@ -103,14 +136,24 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           </div>
           <div className="ml-4 flex w-full h-full items-center">
             {user.viewer_context && fid !== viewerFid && (
-              <Button
-                onClick={toggleFollowing}
-                variant={
-                  user.viewer_context?.following ? "secondary" : "primary"
-                }
-              >
-                {user.viewer_context?.following ? "Unfollow" : "Follow"}
-              </Button>
+              <>
+                <Button
+                  onClick={toggleFollowing}
+                  variant={
+                    user.viewer_context?.following ? "secondary" : "primary"
+                  }
+                  disabled={actionStatus === "loading"}
+                >
+                  {actionStatus === "loading"
+                    ? "Loading..."
+                    : user.viewer_context?.following
+                      ? "Unfollow"
+                      : "Follow"}
+                </Button>
+                {actionStatus === "error" && (
+                  <p className="text-red-500 ml-4">{errorMessage}</p>
+                )}
+              </>
             )}
           </div>
         </div>
