@@ -21,26 +21,22 @@ export default function UserDefinedSpace({
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
-  const {
-    editableSpaces,
-    loadSpace,
-    remoteSpaces,
-    saveLocalCopy,
-    commitSpaceToDb,
-    registerSpace,
-    getCurrentSpaceConfig,
-    setCurrentSpaceId,
-  } = useAppStore((state) => ({
-    editableSpaces: state.space.editableSpaces,
-    loadSpace: state.space.loadSpace,
-    remoteSpaces: state.space.remoteSpaces,
-    saveLocalCopy: state.space.saveLocalSpace,
-    commitSpaceToDb: state.space.commitSpaceToDatabase,
-    registerSpace: state.space.registerSpace,
-    currentSpaceId: state.currentSpace.currentSpaceId,
-    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
-    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
-  }));
+
+  const editableSpaces = useAppStore((state) => state.space.editableSpaces);
+  const loadSpace = useAppStore((state) => state.space.loadSpace);
+  const remoteSpaces = useAppStore((state) => state.space.remoteSpaces);
+  const saveLocalCopy = useAppStore((state) => state.space.saveLocalSpace);
+  const commitSpaceToDb = useAppStore(
+    (state) => state.space.commitSpaceToDatabase,
+  );
+  const registerSpace = useAppStore((state) => state.space.registerSpace);
+  const getCurrentSpaceConfig = useAppStore(
+    (state) => state.currentSpace.getCurrentSpaceConfig,
+  );
+  const setCurrentSpaceId = useAppStore(
+    (state) => state.currentSpace.setCurrentSpaceId,
+  );
+
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
 
   useEffect(() => {

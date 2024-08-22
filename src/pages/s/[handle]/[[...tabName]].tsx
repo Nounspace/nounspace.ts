@@ -124,9 +124,9 @@ const UserPrimarySpace: NextPageWithLayout = ({
   tabName,
   userMetadata,
 }: SpacePageProps) => {
-  const { loadEditableSpaces } = useAppStore((state) => ({
-    loadEditableSpaces: state.space.loadEditableSpaces,
-  }));
+  const loadEditableSpaces = useAppStore(
+    (state) => state.space.loadEditableSpaces,
+  );
 
   useEffect(() => {
     loadEditableSpaces();
