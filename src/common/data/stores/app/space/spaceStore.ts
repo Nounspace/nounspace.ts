@@ -176,7 +176,6 @@ export const createSpaceStoreFunc = (
       spaceName: name,
       timestamp: moment().toISOString(),
       fid,
-      isDefault: true,
     };
     const registration = signSignable(
       unsignedRegistration,
