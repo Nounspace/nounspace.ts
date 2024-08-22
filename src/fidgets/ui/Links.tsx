@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
@@ -141,7 +141,12 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
-
+  useEffect(() => {
+    console.log("Links fidget settings:", settings.links);
+  }, [settings.links]);
+  useEffect(() => {
+    console.log("Links fidget settings:", settings.links);
+  }, [settings.links]);
   return (
     <div
       style={{
