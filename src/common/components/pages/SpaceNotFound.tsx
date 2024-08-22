@@ -1,6 +1,4 @@
 import React from "react";
-import Navigation from "../organisms/Navigation";
-import { noop } from "lodash";
 import Image from "next/image";
 
 export default function SpaceNotFound({ src = "/images/UserNotFound.png" }) {

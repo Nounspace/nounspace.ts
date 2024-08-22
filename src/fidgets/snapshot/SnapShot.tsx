@@ -8,7 +8,6 @@ import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import ProposalItem from "./components/ProposalItem";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
-import { useSnapShotInfo } from "@/common/lib/hooks/useSnapshotInfo";
 import { Button } from "@/common/components/atoms/button";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 

@@ -3,16 +3,23 @@ import DOMPurify from "isomorphic-dompurify";
 
 type CustomHTMLBackgroundProps = {
   html: string;
+  className?: string;
 };
 
 const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
   html,
+  className = "fixed size-full pointer-events-none",
 }) => {
   // todo: more robust sanitization
   const sanitizedHtml = useMemo(() => {
     return DOMPurify.sanitize(html, {
       FORCE_BODY: true,
-      SAFE_FOR_TEMPLATES: true,
+      SAFE_FOR_TEMPLATES: false,
+      USE_PROFILES: {
+        html: true,
+        svg: true,
+      },
+      ALLOWED_TAGS: ["style"],
     });
   }, [html]);
 
@@ -20,7 +27,7 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
     <iframe
       title="Custom Background"
       srcDoc={sanitizedHtml}
-      className="fixed size-full pointer-events-none"
+      className={className}
       sandbox="" // disallows scripts
     />
   ) : null;

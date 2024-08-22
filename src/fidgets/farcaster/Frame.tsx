@@ -10,6 +10,9 @@ import FrameEmbed from "./components/Embeds/FrameEmbed";
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
 export type FrameFidgetSettings = {
   url: string;
@@ -23,7 +26,34 @@ const frameProperties: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
-    ...defaultStyleFields,
+    {
+      fieldName: "background",
+      default: "transparent",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetBorderWidth",
+      default: "transparent",
+      required: false,
+      inputSelector: BorderSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetBorderColor",
+      default: "transparent",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetShadow",
+      default: "none",
+      required: false,
+      inputSelector: ShadowSelector,
+      group: "style",
+    },
   ],
   size: {
     minHeight: 2,
@@ -46,7 +76,7 @@ const ErrorWrapper: React.FC<{
   icon?: React.ReactNode;
 }> = ({ message, icon }) => {
   return (
-    <div className="flex flex-col gap-1 size-full items-center justify-center text-center p-4 absolute top-0 right-0 bottom-0 left-0">
+    <div className="flex flex-col gap-1 size-full items-center justify-center text-center p-4 absolute top-0 right-0 bottom-0 left-0 bg-white border border-gray-200 rounded-lg">
       {icon && <div className="text-[20px]">{icon}</div>}
       <p className="text-gray-400 font-semibold text-sm leading-tight max-w-[60ch]">
         {message}
@@ -78,7 +108,11 @@ const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
     );
   }
 
-  return <FrameEmbed url={url} />;
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full overflow-auto">
+      <FrameEmbed url={url} />
+    </div>
+  );
 };
 
 const exp = {

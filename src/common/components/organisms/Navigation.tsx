@@ -13,15 +13,18 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
 import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
-import { PiGlobeHemisphereEastBold } from "react-icons/pi";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import {
   AnalyticsEvent,
+  AnalyticsEventProperties,
   analytics,
 } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
+import { Badge } from "@/common/components/atoms/badge";
 
 type NavItemProps = {
   label: string;
@@ -30,6 +33,7 @@ type NavItemProps = {
   href: string;
   disable?: boolean;
   openInNewTab?: boolean;
+  badgeText?: string | null;
   onClick?: () => void;
 };
 
@@ -38,6 +42,17 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+};
+
+const NavIconBadge = ({ children }) => {
+  return (
+    <Badge
+      variant="primary"
+      className="justify-center text-[11px]/[12px] min-w-[18px] min-h-[18px] font-medium shadow-md px-[3px] rounded-full absolute left-[19px] top-[4px]"
+    >
+      {children}
+    </Badge>
+  );
 };
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
@@ -51,6 +66,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   );
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
+  const notificationBadgeText = useNotificationBadgeText();
 
   function turnOnEditMode() {
     enterEditMode();
@@ -68,6 +84,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
+
   const CurrentUserImage = useCallback(
     () =>
       user && user.pfp_url ? (
@@ -90,21 +107,23 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     onClick,
     disable = false,
     openInNewTab = false,
+    badgeText = null,
   }) => {
     return (
       <li>
         <Link
           href={disable ? "#" : href}
           className={mergeClasses(
-            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+            "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
             href === router.asPath ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
+          {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
-          <span className="ms-2">{label}</span>
+          <span className="ms-3">{label}</span>
         </Link>
       </li>
     );
@@ -115,18 +134,20 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     Icon,
     onClick,
     disable = false,
+    badgeText = null,
   }) => {
     return (
       <li>
         <button
           disabled={disable}
           className={mergeClasses(
-            "flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
+            "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
           )}
           onClick={onClick}
         >
+          {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
-          <span className="ms-2">{label}</span>
+          <span className="ms-3">{label}</span>
         </button>
       </li>
     );
@@ -158,27 +179,53 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
             <div className="flex-auto">
               <ul className="space-y-2">
-                <NavItem label="Homebase" Icon={HomeIcon} href="/homebase" />
+                <NavItem
+                  label="Homebase"
+                  Icon={HomeIcon}
+                  href="/homebase"
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
+                  }
+                />
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
-                  onClick={openSearchModal}
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH)
+                  }
+                />
+                <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
+                <NavItem
+                  label="Notifications"
+                  Icon={NotificationsIcon}
+                  href="/notifications"
+                  badgeText={notificationBadgeText}
                 />
                 <NavItem
                   label="Fair Launch"
                   Icon={RocketIcon}
                   href="https://space.nounspace.com/"
                   onClick={() =>
-                    analytics.track(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
                 />
-                <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
+                <NavItem
+                  label="Explore"
+                  Icon={ExploreIcon}
+                  href="/explore"
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
+                  }
+                />
                 {isLoggedIn && (
                   <NavItem
                     label={"My Space"}
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
+                    onClick={() =>
+                      trackAnalyticsEvent(AnalyticsEvent.CLICK_MY_SPACE)
+                    }
                   />
                 )}
                 {isLoggedIn && (
@@ -277,6 +324,26 @@ const SearchIcon = () => (
       strokeLinecap="round"
       strokeWidth="2"
       d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+    />
+  </svg>
+);
+
+const NotificationsIcon = () => (
+  <svg
+    className="w-6 h-6 text-gray-800 dark:text-white"
+    aria-hidden="true"
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M12 5.365V3m0 2.365a5.338 5.338 0 0 1 5.133 5.368v1.8c0 2.386 1.867 2.982 1.867 4.175 0 .593 0 1.292-.538 1.292H5.538C5 18 5 17.301 5 16.708c0-1.193 1.867-1.789 1.867-4.175v-1.8A5.338 5.338 0 0 1 12 5.365ZM8.733 18c.094.852.306 1.54.944 2.112a3.48 3.48 0 0 0 4.646 0c.638-.572 1.236-1.26 1.33-2.112h-6.92Z"
     />
   </svg>
 );

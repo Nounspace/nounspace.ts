@@ -2,9 +2,12 @@ import React from "react";
 import { groupBy } from "lodash";
 import Link from "next/link";
 import Image from "next/image";
-import Navigation from "@/common/components/organisms/Navigation";
-import { useAppStore } from "@/common/data/stores/app";
 import { getAllMarkdownFiles } from "@/common/data/explore/loadExploreMarkdown";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider"; // Import analytics
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 
 export async function getStaticProps() {
   const posts = await getAllMarkdownFiles();
@@ -28,9 +31,9 @@ const categories = [
 ];
 
 export default function Explore({ posts }) {
-  const { homebaseConfig } = useAppStore((state) => ({
-    homebaseConfig: state.homebase.homebaseConfig,
-  }));
+  // const { homebaseConfig } = useAppStore((state) => ({
+  //   homebaseConfig: state.homebase.homebaseConfig,
+  // }));
   const groupedPosts = groupBy(posts, (post) => post.category);
 
   return (
@@ -86,6 +89,11 @@ export default function Explore({ posts }) {
 const ExploreCard = ({ post }) => {
   return (
     <Link
+      onClick={() => {
+        trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE_CARD, {
+          slug: post.slug,
+        });
+      }}
       href={`/s/${post.slug}`}
       className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4] hover:shadow-md transition-all duration-100 ease-out hover:-translate-y-1"
     >
