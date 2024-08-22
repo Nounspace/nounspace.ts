@@ -10,6 +10,10 @@ import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import TextInput from "@/common/components/molecules/TextInput";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
@@ -52,8 +56,8 @@ export function ThemeSettingsEditor({
 
   function themePropSetter<T extends string>(
     property: string,
-  ): (value: T) => void {
-    return (value: T): void => {
+  ): (value: string) => void {
+    return (value: string): void => {
       saveTheme({
         ...theme,
         properties: {
@@ -61,6 +65,9 @@ export function ThemeSettingsEditor({
           [property]: value,
         },
       });
+      if (property === "musicURL") {
+        analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
+      }
     };
   }
 
