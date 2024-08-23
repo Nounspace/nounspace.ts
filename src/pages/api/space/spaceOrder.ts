@@ -1,28 +1,35 @@
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
-import { validateSignable } from "@/common/lib/signedFiles";
+import { validateSignable, Signable } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import {
   first,
+  fromPairs,
   includes,
   isArray,
+  isNil,
   isNull,
   isObject,
   isUndefined,
   map,
 } from "lodash";
+import moment from "moment";
 
-export type SpaceOrder = string[];
+export type SpaceOrder = {
+  spaceId: string;
+  name: string;
+}[];
 export type UpdateSpaceOrderResponse = NounspaceResponse<SpaceOrder>;
-export type UpdateSpaceOrderRequest = {
+export type UnsignedUpdateSpaceOrderRequest = {
   identityPublicKey: string;
-  signature: string;
   timestamp: string;
-  ordering: SpaceOrder;
+  ordering: string[];
   fid: number;
 };
+export type UpdateSpaceOrderRequest = UnsignedUpdateSpaceOrderRequest &
+  Signable;
 
 function isUpdateSpaceOrderRequest(
   maybe: unknown,
@@ -51,11 +58,11 @@ async function getSpaceOrder(
     });
     return;
   }
-  const { data, error } = await supabase
+  const { data: orders, error } = await supabase
     .from("spaceOrderings")
     .select("ordering")
     .eq("fid", fid);
-  if (isNull(data)) {
+  if (isNull(orders)) {
     res.status(500).json({
       result: "error",
       error: {
@@ -64,9 +71,47 @@ async function getSpaceOrder(
     });
     return;
   }
+  const order = first(orders);
+  if (isUndefined(order)) {
+    res.status(200).json({
+      result: "success",
+      value: [],
+    });
+    return;
+  }
+  const { data: spacesForOrdering, error: spacesForOrderingError } =
+    await supabase
+      .from("spaceRegistrations")
+      .select("spaceId, spaceName")
+      .eq("fid", fid)
+      .in("spaceId", order.ordering);
+  if (spacesForOrderingError) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: spacesForOrderingError.message,
+      },
+    });
+    return;
+  }
+  if (isNull(spacesForOrdering)) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: "Query returned no data",
+      },
+    });
+    return;
+  }
+  const namesForIds = fromPairs(
+    map(spacesForOrdering, (s) => [s.spaceId, s.spaceName]),
+  );
   res.status(200).json({
     result: "success",
-    value: first(data)?.ordering || [],
+    value: map(order.ordering, (spaceId) => ({
+      spaceId,
+      name: namesForIds[spaceId],
+    })),
   });
 }
 
@@ -130,7 +175,76 @@ async function updateSpaceOrder(
     });
     return;
   }
-  // TO DO: check that all of the items in the order array are valid
+  const { data: currentRecords, error: currentRecordLookupError } =
+    await supabase
+      .from("spaceOrderings")
+      .select("timestamp")
+      .eq("fid", updateOrderReq.fid);
+  if (currentRecordLookupError) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: currentRecordLookupError.message,
+      },
+    });
+    return;
+  }
+  if (isNull(fidsForPublicKey)) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: "Query returned no data",
+      },
+    });
+    return;
+  }
+  const currentRecord = first(currentRecords);
+  if (
+    !isNil(currentRecord) &&
+    moment(currentRecord.timestamp).isAfter(moment(updateOrderReq.timestamp))
+  ) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message: "Timestamp for request is older than current record",
+      },
+    });
+    return;
+  }
+  const { data: spacesForOrdering, error: spacesForOrderingError } =
+    await supabase
+      .from("spaceRegistrations")
+      .select("spaceId, spaceName")
+      .eq("fid", updateOrderReq.fid)
+      .in("spaceId", updateOrderReq.ordering);
+  if (spacesForOrderingError) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: spacesForOrderingError.message,
+      },
+    });
+    return;
+  }
+  if (isNull(spacesForOrdering)) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: "Query returned no data",
+      },
+    });
+    return;
+  }
+  if (spacesForOrdering.length !== updateOrderReq.ordering.length) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message:
+          "Space Ids provided are not all associated with the fid provided",
+      },
+    });
+    return;
+  }
   const { error } = await supabase
     .from("spaceOrderings")
     .upsert(updateOrderReq, { onConflict: "fid" })
@@ -144,9 +258,15 @@ async function updateSpaceOrder(
     });
     return;
   }
+  const namesForIds = fromPairs(
+    map(spacesForOrdering, (s) => [s.spaceId, s.spaceName]),
+  );
   res.status(200).json({
     result: "success",
-    value: updateOrderReq.ordering,
+    value: map(updateOrderReq.ordering, (spaceId) => ({
+      spaceId,
+      name: namesForIds[spaceId],
+    })),
   });
 }
 

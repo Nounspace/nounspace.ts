@@ -34,6 +34,10 @@ import {
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+import {
+  UnsignedUpdateSpaceOrderRequest,
+  UpdateSpaceOrderResponse,
+} from "@/pages/api/space/spaceOrder";
 
 type SpaceId = string;
 
@@ -82,9 +86,24 @@ interface SpaceState {
   remoteSpaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
   localSpaces: Record<string, UpdatableSpaceConfig>;
+  spaceLookups: Record<
+    number,
+    {
+      local: SpaceLookupInfo[];
+      remote: SpaceLookupInfo[];
+    }
+  >;
+}
+
+interface SpaceLookupInfo {
+  spaceId: string;
+  name: string;
 }
 
 interface SpaceActions {
+  loadSpaceOrderForFid: (fid: number) => Promise<SpaceLookupInfo[]>;
+  updateLocalSpaceOrdering: (fid: number, newOrder: SpaceLookupInfo[]) => void;
+  commitSpaceOrderToDatabase: (fid: number) => Promise<void> | undefined;
   loadSpace: (spaceId: string, fid: number) => Promise<void>;
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   renameSpace: (spaceId: string, name: string) => Promise<void>;
@@ -103,6 +122,7 @@ export const spaceStoreDefaults: SpaceState = {
   remoteSpaces: {},
   editableSpaces: {},
   localSpaces: {},
+  spaceLookups: {},
 };
 
 export const createSpaceStoreFunc = (
@@ -110,6 +130,54 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreDefaults,
+  async loadSpaceOrderForFid(fid) {
+    try {
+      const { data } = await axiosBackend.get<UpdateSpaceOrderResponse>(
+        `/api/space/spaceOrdering`,
+        { params: { fid } },
+      );
+      if (data && data.result === "success") {
+        set((draft) => {
+          draft.space.spaceLookups[fid].local = cloneDeep(data.value!);
+          draft.space.spaceLookups[fid].remote = cloneDeep(data.value!);
+        }, "commitSpaceOrderToDatabase");
+      }
+      return data.value!;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  },
+  updateLocalSpaceOrdering(fid, newOrder) {
+    set((draft) => {
+      draft.space.spaceLookups[fid].local = newOrder;
+    }, "updateLocalSpaceOrdering");
+  },
+  commitSpaceOrderToDatabase: debounce(async (fid) => {
+    const unsignedRequest: UnsignedUpdateSpaceOrderRequest = {
+      timestamp: moment().toISOString(),
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+      ordering: map(get().space.spaceLookups[fid].local, (i) => i.spaceId),
+      fid,
+    };
+    const signedRequest = signSignable(
+      unsignedRequest,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+    try {
+      const { data } = await axiosBackend.post<UpdateSpaceOrderResponse>(
+        `/api/space/spaceOrdering`,
+        signedRequest,
+      );
+      if (data && data.result === "success") {
+        set((draft) => {
+          draft.space.spaceLookups[fid].remote = data.value!;
+        }, "commitSpaceOrderToDatabase");
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, 1000),
   loadSpace: async (spaceId, fid) => {
     // TO DO: skip if cached copy is recent enough
     try {
@@ -307,4 +375,5 @@ export const partializedSpaceStore = (state: AppStore): SpaceState => ({
   remoteSpaces: state.space.remoteSpaces,
   editableSpaces: state.space.editableSpaces,
   localSpaces: state.space.localSpaces,
+  spaceLookups: state.space.spaceLookups,
 });
