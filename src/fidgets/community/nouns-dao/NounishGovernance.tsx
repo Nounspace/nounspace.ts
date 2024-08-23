@@ -10,13 +10,15 @@ import {
   NOUNS_PROPOSALS_QUERY,
   NOUNS_PROPOSAL_DETAIL_QUERY,
 } from "@/common/lib/utils/queries";
-import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import TextInput from "@/common/components/molecules/TextInput";
+import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
+  selectedDao: { name: string; contract: string };
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
@@ -24,15 +26,20 @@ export const nounishGovernanceConfig: FidgetProperties = {
   icon: 0x1f3db,
   fields: [
     {
+      fieldName: "selectedDao",
+      default: { name: "Select a DAO", contract: "", graphUrl: "" },
+      required: false,
+      inputSelector: DaoSelector,
+    },
+    {
       fieldName: "subgraphUrl",
-      default:
-        "https://api.goldsky.com/api/public/project_cldf2o9pqagp43svvbk5u3kmo/subgraphs/nouns/prod/gn",
+      default: "",
       required: true,
       inputSelector: TextInput,
     },
     {
       fieldName: "daoContractAddress",
-      default: "Only for Builder Daos",
+      default: "",
       required: true,
       inputSelector: TextInput,
     },
@@ -45,7 +52,6 @@ export const nounishGovernanceConfig: FidgetProperties = {
     maxWidth: 36,
   },
 };
-
 export const NounishGovernance: React.FC<
   FidgetArgs<NounishGovernanceSettings>
 > = ({ settings }) => {
@@ -54,20 +60,36 @@ export const NounishGovernance: React.FC<
   const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
   const [proposalVersions, setProposalVersions] = useState<any[]>([]);
   const [proposalLoading, setProposalLoading] = useState<boolean>(false);
+  const [selectedDao, setSelectedDao] = useState<{
+    name: string;
+    contract: string;
+    graphUrl: string;
+  }>(settings.selectedDao);
 
+  // Watch for changes in settings.selectedDao and update state accordingly
+  useEffect(() => {
+    setSelectedDao(settings.selectedDao);
+  }, [settings.selectedDao]);
+
+  console.log(selectedDao); // This should now log the correct selected DAO whenever it changes
+
+  // Determine if the selected DAO is a builder DAO by checking its graphUrl
   const isBuilderSubgraph = useMemo(
-    () => settings.subgraphUrl.includes("nouns-builder-base-mainnet"),
-    [settings.subgraphUrl],
+    () => selectedDao?.graphUrl.includes("nouns-builder-base-mainnet") || false,
+    [selectedDao?.graphUrl],
   );
 
-  const daoContractAddress = settings.daoContractAddress;
+  // Use the selected DAO's contract address or the input field value
+  const daoContractAddress =
+    selectedDao?.contract || settings.daoContractAddress;
+  const graphUrl = selectedDao?.graphUrl || settings.subgraphUrl;
 
   const {
     data: proposalsData,
     loading: listLoading,
     error: listError,
   } = useGraphqlQuery({
-    url: settings.subgraphUrl,
+    url: graphUrl,
     query: isBuilderSubgraph
       ? NOUNSBUILD_PROPOSALS_QUERY
       : NOUNS_PROPOSALS_QUERY,
@@ -81,7 +103,7 @@ export const NounishGovernance: React.FC<
     loading: detailLoading,
     error: detailError,
   } = useGraphqlQuery({
-    url: settings.subgraphUrl,
+    url: graphUrl,
     query: NOUNS_PROPOSAL_DETAIL_QUERY,
     skip: !proposalId || isBuilderSubgraph,
     variables: { id: proposalId },
