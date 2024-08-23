@@ -35,6 +35,8 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
             key={fidgetModule.properties.fidgetName}
             className="z-20 droppable-element flex justify-center items-center transition-transform duration-300"
             draggable={true}
+            // unselectable helps with IE support
+            // eslint-disable-next-line react/no-unknown-property
             unselectable="on"
             onDragStart={(e) => {
               setCurrentlyDragging(true);
