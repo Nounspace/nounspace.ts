@@ -53,7 +53,7 @@ export const FilterTypeSelector: React.FC<{
 };
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
-  fidgetName: "feed",
+  fidgetName: "Feed",
   fields: [
     {
       fieldName: "feedType",

@@ -19,7 +19,7 @@ export type snapShotSettings = {
 } & FidgetSettingsStyle;
 
 export const snapshotConfig: FidgetProperties = {
-  fidgetName: "snapShot",
+  fidgetName: "SnapShot",
   icon: 0x26a1,
   fields: [
     {
