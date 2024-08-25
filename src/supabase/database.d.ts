@@ -91,11 +91,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      spaceOrderings: {
+        Row: {
+          fid: number;
+          id: number;
+          identityPublicKey: string;
+          ordering: string[];
+          signature: string;
+          timestamp: string;
+        };
+        Insert: {
+          fid: number;
+          id?: number;
+          identityPublicKey: string;
+          ordering: string[];
+          signature: string;
+          timestamp: string;
+        };
+        Update: {
+          fid?: number;
+          id?: number;
+          identityPublicKey?: string;
+          ordering?: string[];
+          signature?: string;
+          timestamp?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_spaceOrderings_fid_fkey";
+            columns: ["fid"];
+            isOneToOne: false;
+            referencedRelation: "fidRegistrations";
+            referencedColumns: ["fid"];
+          },
+        ];
+      };
       spaceRegistrations: {
         Row: {
           fid: number;
           identityPublicKey: string;
-          isDefault: boolean;
           signature: string;
           spaceId: string;
           spaceName: string;
@@ -104,7 +138,6 @@ export type Database = {
         Insert: {
           fid: number;
           identityPublicKey: string;
-          isDefault: boolean;
           signature: string;
           spaceId?: string;
           spaceName: string;
@@ -113,7 +146,6 @@ export type Database = {
         Update: {
           fid?: number;
           identityPublicKey?: string;
-          isDefault?: boolean;
           signature?: string;
           spaceId?: string;
           spaceName?: string;
@@ -449,6 +481,10 @@ export type Database = {
           metadata: Json;
           updated_at: string;
         }[];
+      };
+      operation: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
       };
       search: {
         Args: {
