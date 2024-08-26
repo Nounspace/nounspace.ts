@@ -4,7 +4,7 @@ import { first, map } from "lodash";
 import Link from "next/link";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import EditableText from "../atoms/editable-text";
 import { Button } from "../atoms/button";
@@ -12,7 +12,17 @@ import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
 
-const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
+interface TabBarProps {
+  hasProfile: boolean;
+  inEditMode: boolean;
+  openFidgetPicker: () => void;
+}
+
+const TabBar = memo(function TabBar({
+  hasProfile,
+  inEditMode,
+  openFidgetPicker,
+}: TabBarProps) {
   const { fid } = useFarcasterSigner("navigation");
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
@@ -41,31 +51,72 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
         renameTab: state.homebase.renameTab,
       }));
 
-  const [tabNames, setTabNames] = useState([""]);
-  const [loadingTabs, setLoadingTabs] = useState(true);
-  const [selectedTab, selectTab] = useState(tabNames[0]);
+  const [tabNames, setTabNames] = useState<string[]>([]);
+  const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("");
 
-  function setSelectedTab(tabName: string) {
-    selectTab(tabName);
-    var href = hasProfile
-      ? `/s/${username}/${tabName}`
-      : tabName == "Feed"
-        ? `/homebase`
-        : `/homebase/${tabName}`;
-    router.push(href);
+  function setCurrentlySelectedTab() {
+    const parts = router.asPath.split("/");
+    const pathEnd = decodeURI(parts[parts.length - 1]);
+
+    console.log(pathEnd);
+
+    if (pathEnd === "homebase") {
+      setSelectedTab("Feed");
+    } else {
+      setSelectedTab(pathEnd);
+    }
   }
 
-  async function getTabs() {
+  function selectTab(tabName: string) {
+    if (tabName != selectedTab) {
+      var href = hasProfile
+        ? `/s/${username}/${tabName}`
+        : tabName == "Feed"
+          ? `/homebase`
+          : `/homebase/${tabName}`;
+      router.push(href);
+      setSelectedTab(tabName);
+    }
+  }
+
+  async function getTabNames() {
     try {
-      setLoadingTabs(false);
       const freshTabNames = await loadTabOrdering();
+
+      setHasFetchedTabs(true);
       setTabNames(freshTabNames);
+      setCurrentlySelectedTab();
     } catch (e) {
       console.log("Hit an error: ", e);
     }
   }
 
-  function setTabs(tabs: string[]) {
+  const tabComponents = useMemo(
+    () =>
+      map(tabNames, (tabName: string) => {
+        return (
+          <Tab
+            key={tabName}
+            tabName={tabName}
+            inEditMode={inEditMode}
+            isSelected={selectedTab === tabName}
+            onClick={() => selectTab(tabName)}
+            removeable={true}
+            draggable={inEditMode}
+            renameable={true}
+            onRemove={() => {
+              deleteTab(tabName);
+              getTabNames();
+            }}
+            renameTab={renameTab}
+          />
+        );
+      }),
+    [tabNames],
+  );
+
+  function updateTabs(tabs: string[]) {
     setTabNames(tabs);
     updateTabOrdering(tabs);
   }
@@ -84,8 +135,10 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   }
 
   useEffect(() => {
-    if (loadingTabs) {
-      getTabs();
+    if (tabNames.length == 0) {
+      if (!hasFetchedTabs) {
+        getTabNames();
+      }
     }
   });
 
@@ -94,42 +147,25 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
       <Reorder.Group
         as="ol"
         axis="x"
-        onReorder={setTabs}
+        onReorder={updateTabs}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabNames}
       >
-        <AnimatePresence initial={false}>
+        <AnimatePresence initial={false} mode="wait">
+          {/* Homebase Feed Tab */}
           {!hasProfile && (
             <Tab
-              key="feed"
+              key="Feed"
               tabName={"Feed"}
               inEditMode={inEditMode}
               isSelected={selectedTab === "Feed"}
-              onClick={() => setSelectedTab("Feed")}
+              onClick={() => selectTab("Feed")}
               removeable={false}
               draggable={false}
               renameable={false}
             />
           )}
-          {map(tabNames, (tabName: string) => {
-            return (
-              <Tab
-                key={tabName}
-                tabName={tabName}
-                inEditMode={inEditMode}
-                isSelected={selectedTab === tabName}
-                onClick={() => setSelectedTab(tabName)}
-                removeable={true}
-                draggable={true}
-                renameable={true}
-                onRemove={() => {
-                  deleteTab(tabName);
-                  getTabs();
-                }}
-                renameTab={renameTab}
-              />
-            );
-          })}
+          {tabComponents.map((tabComponent) => tabComponent)}
         </AnimatePresence>
       </Reorder.Group>
 
@@ -140,7 +176,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
               const newTabName = generateTabName();
               createTab(newTabName);
               setTabNames(tabNames.concat(newTabName));
-              setSelectedTab(newTabName);
+              selectTab(newTabName);
             }}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
@@ -163,6 +199,6 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
       ) : null}
     </div>
   );
-};
+});
 
 export default TabBar;
