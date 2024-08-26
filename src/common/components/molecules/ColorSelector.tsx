@@ -43,7 +43,7 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
         >
           <div
             className={mergeClasses("flex-1 rounded-[6px]", innerClassName)}
-            style={{ backgroundColor: value }}
+            style={{ background: value }}
           />
         </Button>
       </PopoverTrigger>
