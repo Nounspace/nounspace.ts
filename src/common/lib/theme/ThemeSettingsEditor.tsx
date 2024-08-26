@@ -103,25 +103,32 @@ export function ThemeSettingsEditor({
     <>
       <div className="flex flex-col h-full gap-6">
         {/* Theme Editor Title */}
-        <div className="flex items-center gap-1">
+        <div className="flex-col items-center">
           <div className="font-semibold">Edit Theme</div>
+          <p className="text-gray-400 text-sm">
+            Select a template or{" "}
+            <a
+              href="https://nounspace.notion.site/Step-by-step-instructions-f760579615b44efb84dcc30647a87e61?pvs=4"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="underline cursor-pointer"
+            >
+              learn how to customize
+            </a>
+          </p>
         </div>
-
         <div className="h-full overflow-auto flex flex-col gap-4 -mx-2 px-2">
           <div className="grid gap-4">
-            {/* Theme Card Example */}
-            <ThemeCard themeProps={theme.properties} />
-
-            {/* Templates Dropdown */}
             <label>
               <input
                 className="peer/showLabel absolute scale-0"
                 type="checkbox"
               />
-              <span className="block max-h-14 max-w-xs overflow-hidden rounded-lg px-4 py-0 shadow-md transition-all duration-300 peer-checked/showLabel:max-h-full">
-                <h4 className="flex h-14 cursor-pointer items-center font-bold">
-                  Templates
-                </h4>
+              {/* Templates Dropdown */}
+              <span className="block max-h-14 max-w-xs overflow-hidden rounded-lg   transition-all duration-300 peer-checked/showLabel:max-h-full">
+                {/* Theme Card Example */}
+                <ThemeCard themeProps={theme.properties} />
+
                 <div className="grid grid-cols-2 gap-3 pb-3 pt-3">
                   {THEMES.map((theme, i) => (
                     <ThemeCard
@@ -139,11 +146,11 @@ export function ThemeSettingsEditor({
             <div className="grid gap-2">
               <Tabs defaultValue="fonts">
                 <TabsList className={tabListClasses}>
-                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
-                    Fonts
-                  </TabsTrigger>
                   <TabsTrigger value="style" className={tabTriggerClasses}>
                     Style
+                  </TabsTrigger>
+                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
+                    Fonts
                   </TabsTrigger>
                   <TabsTrigger value="code" className={tabTriggerClasses}>
                     Code
