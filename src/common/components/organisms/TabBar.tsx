@@ -75,7 +75,7 @@ const TabBar = memo(function TabBar({
         : tabName == "Feed"
           ? `/homebase`
           : `/homebase/${tabName}`;
-      router.push(href);
+      // router.push(href);
       setSelectedTab(tabName);
     }
   }
@@ -151,8 +151,8 @@ const TabBar = memo(function TabBar({
                 removeable={true}
                 draggable={inEditMode}
                 renameable={true}
-                onRemove={() => {
-                  deleteTab(tabName);
+                onRemove={async () => {
+                  await deleteTab(tabName);
                   getTabNames();
                 }}
                 renameTab={renameTab}

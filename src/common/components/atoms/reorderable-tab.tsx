@@ -39,7 +39,7 @@ export const Tab = ({
       }}
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       whileDrag={{ backgroundColor: "#e3e3e3" }}
-      className={isSelected ? "selected" : "group"}
+      className={isSelected ? "selected relative" : "group"}
       onPointerDown={onClick}
       dragListener={draggable}
     >
@@ -81,7 +81,7 @@ export const Tab = ({
 
         {/* Selection Underline */}
         <span
-          className={`absolute bottom-0 inset-x-0 origin-center h-0.5 bg-blue-600 transition-scale duration-300 z-20 ${isSelected ? "scale-50" : "scale-0"} group-hover:scale-25`}
+          className={`absolute left-50 bottom-0 inset-x-0 origin-center h-0.5 bg-blue-600 transition-scale duration-300 z-20 ${isSelected ? "scale-50" : "scale-0"} group-hover:scale-25`}
         />
       </div>
     </Reorder.Item>
