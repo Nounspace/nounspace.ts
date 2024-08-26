@@ -6,6 +6,11 @@ import {
 } from "@/common/components/atoms/card";
 import BuilderProposalItem from "./BuilderProposalItem";
 import ProposalListRowItem from "./ProposalListRowItem";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/common/components/atoms/avatar";
 
 const ProposalListView = ({
   proposals,
@@ -13,24 +18,51 @@ const ProposalListView = ({
   currentBlock,
   loading,
   isBuilderSubgraph,
+  title,
+  daoIcon,
 }: {
   proposals: any[];
-  setProposal: (proposalId: string, proposal: any) => void; // Update the type here
+  setProposal: (proposalId: string, proposal: any) => void;
   currentBlock: any;
   loading: boolean;
   isBuilderSubgraph: boolean;
+  title: string;
+  daoIcon: string;
 }) => {
   if (loading) {
-    return <div>Fetching data...</div>;
+    return (
+      <center className="align-middle">
+        <div className="m-5">
+          <img
+            src="/images/tom_alerts.png"
+            alt="Loading..."
+            style={{
+              animation: "spin 2s linear infinite",
+              width: "64px",
+              marginTop: "50px",
+            }}
+          />
+        </div>
+        <p> Tom is thinking...</p>
+      </center>
+    );
   }
 
   return (
     <>
       <CardHeader className="px-0 pt-2 pb-4">
-        <CardDescription className="font-semibold text-sm/[1.0]">
-          {isBuilderSubgraph ? "Builder DAO" : "Nouns DAO"}
-        </CardDescription>
-        <CardTitle className="text-xl">Proposals</CardTitle>
+        <div className="flex items-center">
+          <Avatar>
+            <AvatarImage src={daoIcon} alt={title} />
+            <AvatarFallback>
+              <AvatarImage
+                src={"public/nouns_yellow_logo.jpg"}
+                alt="DAO Icon"
+              />
+            </AvatarFallback>
+          </Avatar>
+          <CardTitle className="text-xl ml-3">{title}</CardTitle>
+        </div>
       </CardHeader>
       <div className="grid gap-2">
         {proposals.map((proposal, i) =>
