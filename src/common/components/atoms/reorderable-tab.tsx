@@ -11,17 +11,21 @@ interface Props {
   onClick: () => void;
   removeable: boolean;
   draggable: boolean;
+  renameable: boolean;
   onRemove?: () => void;
+  renameTab?: (tabName: string, newName: string) => Promise<void>;
 }
 
 export const Tab = ({
   tabName,
   inEditMode,
+  isSelected,
   onClick,
   removeable,
   draggable,
+  renameable,
   onRemove,
-  isSelected,
+  renameTab,
 }: Props) => {
   return (
     <Reorder.Item
@@ -44,9 +48,9 @@ export const Tab = ({
         {/* Text */}
 
         <motion.span layout="position">
-          {inEditMode ? (
+          {inEditMode && renameable ? (
             <>
-              <EditableText initialText={tabName} updateMethod={() => {}} />
+              <EditableText initialText={tabName} updateMethod={renameTab} />
             </>
           ) : (
             tabName

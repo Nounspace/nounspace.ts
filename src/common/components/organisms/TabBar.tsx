@@ -57,13 +57,17 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
 
   async function getTabs() {
     try {
-      setLoadingTabs(true);
+      setLoadingTabs(false);
       const freshTabNames = await loadTabOrdering();
       setTabNames(freshTabNames);
-      setLoadingTabs(false);
     } catch (e) {
       console.log("Hit an error: ", e);
     }
+  }
+
+  function setTabs(tabs: string[]) {
+    setTabNames(tabs);
+    updateTabOrdering(tabs);
   }
 
   function generateTabName() {
@@ -77,11 +81,6 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
     }
 
     return newName;
-  }
-
-  function setTabs(tabs: string[]) {
-    setTabNames(tabs);
-    updateTabOrdering(tabs);
   }
 
   useEffect(() => {
@@ -109,6 +108,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
               onClick={() => setSelectedTab("Feed")}
               removeable={false}
               draggable={false}
+              renameable={false}
             />
           )}
           {map(tabNames, (tabName: string) => {
@@ -121,10 +121,12 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
                 onClick={() => setSelectedTab(tabName)}
                 removeable={true}
                 draggable={true}
+                renameable={true}
                 onRemove={() => {
                   deleteTab(tabName);
                   getTabs();
                 }}
+                renameTab={renameTab}
               />
             );
           })}
