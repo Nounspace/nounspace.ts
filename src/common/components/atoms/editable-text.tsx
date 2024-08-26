@@ -19,7 +19,7 @@ const EditableText = ({ initialText, updateMethod }) => {
   return isEditing ? (
     <input
       value={text}
-      className="bg-transparent border-2 border-black border-solid"
+      className="bg-transparent border-none"
       onKeyDown={(event) => {
         if (isEnterOrEscapeKeyEvent(event)) {
           event.preventDefault();

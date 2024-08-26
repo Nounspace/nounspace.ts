@@ -83,7 +83,7 @@ export const createHomeBaseTabStoreFunc = (
     } = supabase.storage
       .from("private")
       .getPublicUrl(
-        `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}}`,
+        `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}`,
       );
     try {
       const { data } = await axios.get<Blob>(publicUrl, {
