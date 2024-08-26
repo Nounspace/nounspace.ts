@@ -12,7 +12,6 @@ export type SpaceRegistration = {
   fid: number;
   signature: string;
   timestamp: string;
-  isDefault: boolean;
 };
 
 type SpaceInfo = SpaceRegistration & {
@@ -26,8 +25,7 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
   return (
     typeof maybe["spaceName"] === "string" &&
     typeof maybe["fid"] === "number" &&
-    typeof maybe["timestamp"] === "string" &&
-    typeof maybe["isDefault"] === "boolean"
+    typeof maybe["timestamp"] === "string"
   );
 }
 

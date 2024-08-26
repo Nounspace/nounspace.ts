@@ -187,19 +187,24 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
                 />
+                {isLoggedIn && (
+                  <NavItem
+                    label="Notifications"
+                    Icon={NotificationsIcon}
+                    href="/notifications"
+                    onClick={() =>
+                      trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)
+                    }
+                    badgeText={notificationBadgeText}
+                  />
+                )}
                 <NavButton
                   label="Search"
                   Icon={SearchIcon}
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH)
-                  }
-                />
-                <NavItem label="Explore" Icon={ExploreIcon} href="/explore" />
-                <NavItem
-                  label="Notifications"
-                  Icon={NotificationsIcon}
-                  href="/notifications"
-                  badgeText={notificationBadgeText}
+                  onClick={() => {
+                    openSearchModal();
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
+                  }}
                 />
                 <NavItem
                   label="Fair Launch"
@@ -209,14 +214,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
                   openInNewTab
-                />
-                <NavItem
-                  label="Explore"
-                  Icon={ExploreIcon}
-                  href="/explore"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
-                  }
                 />
                 {isLoggedIn && (
                   <NavItem

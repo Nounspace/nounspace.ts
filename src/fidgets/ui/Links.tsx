@@ -12,7 +12,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import LinksInput from "./LinksInput";
+import LinksInput from "@/common/components/molecules/LinksInput";
 import {
   Avatar,
   AvatarImage,
@@ -21,6 +21,8 @@ import {
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
 export type Link = {
   text: string;
@@ -43,14 +45,21 @@ export const linkConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "title",
-      default: "Awesome Links",
+      default: "My Links",
       required: false,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "links",
-      default: [],
+      default: [
+        {
+          text: "Nouns",
+          url: "https://nouns.wtf",
+          avatar: "/images/nouns.svg",
+          description: "Funds ideas",
+        },
+      ],
       required: true,
       inputSelector: LinksInput,
       group: "settings",
@@ -71,19 +80,46 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "fontColor",
-      default: "var(--user-theme-font-color)",
+      default: "black",
       required: false,
       inputSelector: ColorSelector,
       group: "style",
     },
     {
       fieldName: "itemBackground",
-      default: "linear-gradient(to right, #dbd81f, #ffffff)",
+      default: "#e0eeff",
       required: false,
       inputSelector: ColorSelector,
       group: "style",
     },
-    ...defaultStyleFields,
+    {
+      fieldName: "background",
+      default: "var(--user-theme-fidget-background)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetBorderWidth",
+      default: "var(--user-theme-fidget-border-width)",
+      required: false,
+      inputSelector: BorderSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fidgetShadow",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: ShadowSelector,
+      group: "style",
+    },
     {
       fieldName: "css",
       default: "",
@@ -160,14 +196,22 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
             >
               {link.avatar ? (
                 <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage src={link.avatar} alt={link.text} />
+                  <AvatarImage
+                    style={{ padding: "5px" }}
+                    src={link.avatar}
+                    alt={link.text}
+                  />
                   <AvatarFallback>
                     <span className="sr-only">{link.text}</span>
                   </AvatarFallback>
                 </Avatar>
               ) : (
                 <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage src="/images/logo.png" alt={link.text} />
+                  <AvatarImage
+                    src="/images/chainEmoji.png"
+                    style={{ padding: "5px" }}
+                    alt={link.text}
+                  />
                   <AvatarFallback>
                     <span className="sr-only">{link.text}</span>
                   </AvatarFallback>

@@ -32,6 +32,7 @@ import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
+import { FaReply } from "react-icons/fa6";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -75,6 +76,7 @@ interface CastRowProps {
   castTextStyle?: any;
   maxLines?: number;
   hideEmbeds?: boolean;
+  replyingToUsername?: string;
 }
 
 export const PriorityLink = ({ children, href, ...props }) => {
@@ -165,13 +167,18 @@ const CastAttributionHeader = ({
   cast,
   inline,
   avatar,
+  isReply,
 }: {
   cast: CastWithInteractions;
   inline: boolean;
   avatar: boolean;
+  isReply: boolean;
 }) => {
   return (
     <div className="flex justify-start w-full gap-x-2">
+      {isReply && avatar && !inline && (
+        <ThreadConnector className="h-[8px] top-0 left-[31px]" />
+      )}
       {avatar && (
         <CastAvatar
           user={cast.author}
@@ -180,7 +187,7 @@ const CastAttributionHeader = ({
       )}
       <div
         className={classNames(
-          "flex gap-x-1",
+          "flex gap-x-1 truncate flex-wrap",
           inline ? "flex-row mb-0.5" : "flex-col",
         )}
       >
@@ -195,10 +202,10 @@ const CastAttributionPrimary = ({ cast }) => {
   if (!cast?.author?.display_name) return null;
 
   return (
-    <div className="flex items-center justify-start font-bold text-foreground/80 truncate cursor-pointer gap-1 tracking-tight leading-[1.3] truncate">
+    <div className="flex items-center justify-start font-bold text-foreground/80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
       <PriorityLink
         href={`/s/${cast.author.username}`}
-        className="cursor-pointer"
+        className="cursor-pointer truncate"
       >
         <span className="hover:underline">{cast.author.display_name}</span>
       </PriorityLink>
@@ -222,7 +229,7 @@ const CastAttributionSecondary = ({ cast }) => {
 
   return (
     <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
-      <span>@{cast.author.username}</span>
+      <span className="truncate">@{cast.author.username}</span>
       {relativeDateString && (
         <>
           <span className="font-normal"> · </span>
@@ -258,15 +265,15 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
     return {
-      [CastReactionType.replies]: { count: repliesCount },
-      [CastReactionType.recasts]: {
-        count: recastsCount + Number(didRecast),
-        isActive: didRecast || includes(recastFids, userFid),
-      },
       [CastReactionType.likes]: {
         count: likesCount + Number(didLike),
         isActive: didLike || includes(likeFids, userFid),
       },
+      [CastReactionType.recasts]: {
+        count: recastsCount + Number(didRecast),
+        isActive: didRecast || includes(recastFids, userFid),
+      },
+      [CastReactionType.replies]: { count: repliesCount },
     };
   };
 
@@ -410,7 +417,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           );
           return reaction;
         })}
-        {linksCount && !isOnchainLink ? (
+
+        {/* Commented out this button to "Open cast in a new tab" until we add that functionality*/}
+
+        {/* {linksCount && !isOnchainLink ? (
           <a
             tabIndex={-1}
             href={"url" in cast.embeds[0] ? cast.embeds[0].url : "#"}
@@ -425,7 +435,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
               getIconForCastReactionType(CastReactionType.links),
             )}
           </a>
-        ) : null}
+        ) : null} */}
         {renderReaction(
           CastReactionType.quote,
           true,
@@ -528,7 +538,7 @@ const getIconForCastReactionType = (
         <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
       );
     case CastReactionType.replies:
-      return <ChatBubbleLeftIcon className={className} aria-hidden="true" />;
+      return <FaReply className={className} aria-hidden="true" />;
     case CastReactionType.links:
       return (
         <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />
@@ -551,6 +561,7 @@ export const CastRow = ({
   castTextStyle = undefined,
   maxLines = 0,
   hideEmbeds = false,
+  replyingToUsername = undefined,
 }: CastRowProps) => {
   const { fid: userFid } = useFarcasterSigner("render-cast");
 
@@ -618,12 +629,29 @@ export const CastRow = ({
             connectBottom={hasReplies}
           />
         )}
-        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1"}>
+        <div
+          className={
+            isFocused
+              ? "flex flex-col flex-1 gap-3"
+              : "flex-1 overflow-x-hidden truncate"
+          }
+        >
           <CastAttributionHeader
             cast={cast}
             avatar={isFocused || isEmbed}
             inline={!isFocused}
+            isReply={isReply}
           />
+          {replyingToUsername && (
+            <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-medium">
+              Replying to{" "}
+              <PriorityLink href={`/s/${replyingToUsername}`}>
+                <span className="cursor-pointer text-blue-500 hover:text-blue-500/70 hover:underline">
+                  @{replyingToUsername}
+                </span>
+              </PriorityLink>
+            </p>
+          )}
           <CastBody
             cast={cast}
             channel={channel}
