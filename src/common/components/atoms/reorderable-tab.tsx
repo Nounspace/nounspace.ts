@@ -31,10 +31,9 @@ export const Tab = ({
     <Reorder.Item
       value={tabName}
       id={tabName}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0 }}
       animate={{
         opacity: 1,
-        backgroundColor: isSelected ? "#f3f3f3" : "#fff",
         y: 0,
         transition: { duration: 0.15 },
       }}

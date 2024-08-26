@@ -92,30 +92,6 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  const tabComponents = useMemo(
-    () =>
-      map(tabNames, (tabName: string) => {
-        return (
-          <Tab
-            key={tabName}
-            tabName={tabName}
-            inEditMode={inEditMode}
-            isSelected={selectedTab === tabName}
-            onClick={() => selectTab(tabName)}
-            removeable={true}
-            draggable={inEditMode}
-            renameable={true}
-            onRemove={() => {
-              deleteTab(tabName);
-              getTabNames();
-            }}
-            renameTab={renameTab}
-          />
-        );
-      }),
-    [tabNames],
-  );
-
   function updateTabs(tabs: string[]) {
     setTabNames(tabs);
     updateTabOrdering(tabs);
@@ -151,8 +127,7 @@ const TabBar = memo(function TabBar({
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabNames}
       >
-        <AnimatePresence initial={false} mode="wait">
-          {/* Homebase Feed Tab */}
+        <AnimatePresence initial={false}>
           {!hasProfile && (
             <Tab
               key="Feed"
@@ -165,7 +140,25 @@ const TabBar = memo(function TabBar({
               renameable={false}
             />
           )}
-          {tabComponents.map((tabComponent) => tabComponent)}
+          {map(tabNames, (tabName: string) => {
+            return (
+              <Tab
+                key={tabName}
+                tabName={tabName}
+                inEditMode={inEditMode}
+                isSelected={selectedTab === tabName}
+                onClick={() => selectTab(tabName)}
+                removeable={true}
+                draggable={inEditMode}
+                renameable={true}
+                onRemove={() => {
+                  deleteTab(tabName);
+                  getTabNames();
+                }}
+                renameTab={renameTab}
+              />
+            );
+          })}
         </AnimatePresence>
       </Reorder.Group>
 
