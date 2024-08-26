@@ -22,18 +22,15 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   const encodedBio = encodeURIComponent(bio || "");
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
-  console.log({ ogImageUrl });
 
   return (
     <>
-      <img src={ogImageUrl} />
       <title>{title}</title>
       <meta property="og:title" content={title} />
       <meta name="twitter:title" content={title} />
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />
-      <meta property="og:image" content={ogImageUrl} />
       {bio && (
         <>
           <meta name="description" content={bio} />
@@ -43,9 +40,9 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       )}
       {pfpUrl && (
         <>
-          <meta property="og:image" content={pfpUrl} />
           <meta name="twitter:card" content={pfpUrl} />
-          <meta name="twitter:image" content={pfpUrl} />
+          <meta property="og:image" content={ogImageUrl} />
+          <meta name="twitter:image" content={ogImageUrl} />
         </>
       )}
     </>
