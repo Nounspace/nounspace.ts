@@ -1,4 +1,4 @@
-import React, { forwardRef, useCallback, useState, useEffect } from "react";
+import React, { forwardRef, useCallback, useState } from "react";
 import { FaPlus, FaImage, FaLink } from "react-icons/fa";
 import {
   Avatar,
@@ -9,6 +9,7 @@ import styled from "styled-components";
 import { FaPencil } from "react-icons/fa6";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import { Link } from "@/fidgets/ui/Links";
+
 export interface LinksInputProps {
   value: Link[];
   onChange?: (value: Link[]) => void;
@@ -76,67 +77,29 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
   (props, ref) => {
     const { value = [], onChange } = props;
 
-    const [linkStates, setLinkStates] = useState<
-      {
-        isAvatarInputDisplayed: boolean;
-        confirmed: boolean;
-        isActive: boolean;
-      }[]
-    >([]);
-    const defaultLinkState = {
-      isAvatarInputDisplayed: false,
-      confirmed: false,
-      isActive: false,
-    };
-
-    useEffect(() => {
-      if (value.length === 0) {
-        const defaultLink = {
-          text: "Nouns",
-          url: "https://nouns.wtf",
-          avatar: "/images/nouns.svg",
-          description: "Funds ideas",
-        };
-        onChange?.([defaultLink]);
-        setLinkStates([defaultLinkState]);
-      } else if (linkStates.length !== value.length) {
-        setLinkStates(value.map(() => defaultLinkState));
-      }
-    }, [value, onChange, linkStates.length]);
+    const [visibleFields, setVisibleFields] = useState(
+      value.map(() => false), // controls the visibility of additional inputs
+    );
 
     const handleLinkChange = useCallback(
       (index: number, newLink: Link) => {
         const updatedLinks = [...value];
         updatedLinks[index] = newLink;
         onChange?.(updatedLinks);
-
-        const updatedLinkStates = [...linkStates];
-        if (newLink.url !== "") {
-          updatedLinkStates[index].isAvatarInputDisplayed = true;
-        } else {
-          updatedLinkStates[index].isAvatarInputDisplayed = false;
-        }
-        setLinkStates(updatedLinkStates);
       },
-      [value, onChange, linkStates],
+      [value, onChange],
     );
 
     const addNewLink = () => {
-      onChange?.([
-        ...value,
-        {
-          //placeholder values
-          text: "New Link",
-          url: "https://",
-          avatar: "/images/chainEmoji.png",
-          description: "Description",
-        },
-      ]);
-      setLinkStates([
-        ...linkStates,
-        { isAvatarInputDisplayed: false, confirmed: false, isActive: false },
-      ]);
-      collapseAllLinkInputs();
+      const newLink = {
+        text: "New Link",
+        url: "https://",
+        avatar: "/images/chainEmoji.png",
+        description: "Description",
+      };
+
+      onChange?.([...value, newLink]);
+      setVisibleFields([...visibleFields, true]); // Automatically expand new link
     };
 
     const removeLink = (index: number) => {
@@ -144,35 +107,15 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
       updatedLinks.splice(index, 1);
       onChange?.(updatedLinks);
 
-      const updatedLinkStates = [...linkStates];
-      updatedLinkStates.splice(index, 1);
-      setLinkStates(updatedLinkStates);
+      const updatedVisibleFields = [...visibleFields];
+      updatedVisibleFields.splice(index, 1);
+      setVisibleFields(updatedVisibleFields);
     };
 
-    const collapseAllLinkInputs = () => {
-      const updatedLinkStates = linkStates.map((state) => ({
-        ...state,
-        isAvatarInputDisplayed: false,
-        isActive: false,
-      }));
-      setLinkStates(updatedLinkStates);
-    };
-
-    const handleFocus = (index: number) => {
-      const updatedLinkStates = linkStates.map((state, i) => ({
-        ...state,
-        isAvatarInputDisplayed: i === index,
-        isActive: i === index,
-      }));
-      setLinkStates(updatedLinkStates);
-    };
-
-    const handleBlur = (index: number) => {
-      const updatedLinkStates = linkStates.map((state, i) => ({
-        ...state,
-        isActive: i === index ? false : state.isActive,
-      }));
-      setLinkStates(updatedLinkStates);
+    const showAdditionalFields = (index: number) => {
+      const updatedVisibleFields = [...visibleFields];
+      updatedVisibleFields[index] = true;
+      setVisibleFields(updatedVisibleFields);
     };
 
     return (
@@ -181,19 +124,17 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
           <LinkContainer key={index}>
             <Title>{link.text || `Link ${index + 1}`}</Title>
             <SubTitle>URL {index + 1}</SubTitle>
-            <TextFieldRoot isActive={linkStates[index]?.isActive}>
+            <TextFieldRoot isActive={visibleFields[index]}>
               <TextFieldSlot>
                 <FaLink color="lightgray" size={14} />
               </TextFieldSlot>
               <TextFieldInput
                 placeholder="Link URL"
                 value={link.url}
-                onChange={(e: any) =>
-                  handleLinkChange(index, { ...link, url: e.target.value })
-                }
-                onFocus={() => handleFocus(index)}
-                onBlur={() => handleBlur(index)}
-                isActive={linkStates[index]?.isActive}
+                onChange={(e: any) => {
+                  handleLinkChange(index, { ...link, url: e.target.value });
+                  showAdditionalFields(index); // Show fields when URL is updated
+                }}
               />
               <TextFieldSlot>
                 <p
@@ -204,15 +145,14 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
                   }}
                   onClick={() => removeLink(index)}
                 >
-                  {" "}
-                  x{" "}
+                  x
                 </p>
               </TextFieldSlot>
             </TextFieldRoot>
-            {linkStates[index] && linkStates[index].isAvatarInputDisplayed && (
+            {visibleFields[index] && (
               <>
                 <SubTitle>Title</SubTitle>
-                <TextFieldRoot isActive={linkStates[index]?.isActive}>
+                <TextFieldRoot isActive={true}>
                   <TextFieldSlot>
                     <FaPencil color="lightgray" size={14} />
                   </TextFieldSlot>
@@ -222,12 +162,11 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
                     onChange={(e: any) =>
                       handleLinkChange(index, { ...link, text: e.target.value })
                     }
-                    onFocus={() => handleFocus(index)}
-                    onBlur={() => handleBlur(index)}
+                    onFocus={() => showAdditionalFields(index)}
                   />
                 </TextFieldRoot>
                 <SubTitle>Avatar</SubTitle>
-                <TextFieldRoot isActive={linkStates[index]?.isActive}>
+                <TextFieldRoot isActive={true}>
                   <TextFieldSlot>
                     {link.avatar ? (
                       <Avatar style={{ width: "24px", height: "24px" }}>
@@ -249,13 +188,13 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
                         avatar: e.target.value,
                       })
                     }
-                    onFocus={() => handleFocus(index)}
-                    onBlur={() => handleBlur(index)}
+                    onFocus={() => showAdditionalFields(index)}
                   />
                 </TextFieldRoot>
                 <SubTitle>Description</SubTitle>
                 <CSSInput
                   value={link.description || ""}
+                  onFocus={() => showAdditionalFields(index)}
                   onChange={(description) =>
                     handleLinkChange(index, { ...link, description })
                   }
