@@ -13,7 +13,7 @@ export type GalleryFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
-  fidgetName: "gallery",
+  fidgetName: "Gallery",
   icon: 0x1f5bc,
   fields: [
     {

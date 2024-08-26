@@ -16,7 +16,7 @@ export type ProfileFidgetSettings = {
 };
 
 const profileProperties: FidgetProperties = {
-  fidgetName: "profile",
+  fidgetName: "Profile",
   icon: 0x1f464, // This is the hex code for an emoji
   fields: [
     {
