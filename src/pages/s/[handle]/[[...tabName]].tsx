@@ -137,7 +137,7 @@ const UserPrimarySpace: NextPageWithLayout = ({
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>
-          <UserDefinedSpace fid={fid} spaceId={spaceId} />
+          {/* <UserDefinedSpace fid={fid} spaceId={spaceId} /> */}
         </>
       );
   }

@@ -22,9 +22,11 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
   const encodedBio = encodeURIComponent(bio || "");
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
+  console.log({ ogImageUrl });
 
   return (
     <>
+      <img src={ogImageUrl} />
       <title>{title}</title>
       <meta property="og:title" content={title} />
       <meta name="twitter:title" content={title} />
