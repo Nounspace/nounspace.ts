@@ -22,8 +22,8 @@ export const CompleteFidgets = {
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
   frame: Frame,
-  cast: Cast,
   feed: Feed,
+  cast: Cast,
   createCast: CreateCast,
   // Basic UI elements
   gallery: Gallery,
