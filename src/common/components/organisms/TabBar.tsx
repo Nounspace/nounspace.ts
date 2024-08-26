@@ -138,6 +138,7 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
               const newTabName = generateTabName();
               createTab(newTabName);
               setTabNames(tabNames.concat(newTabName));
+              setSelectedTab(newTabName);
             }}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
