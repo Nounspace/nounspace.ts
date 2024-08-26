@@ -1,5 +1,3 @@
-import { Icon } from "@radix-ui/react-select";
-
 export const BUILDER_DAO =
   "https://api.goldsky.com/api/public/project_clkk1ucdyf6ak38svcatie9tf/subgraphs/nouns-builder-base-mainnet/stable/gn";
 export const NOUNS_DAO =

@@ -12,7 +12,6 @@ import {
 } from "@/common/lib/utils/queries";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
-import TextInput from "@/common/components/molecules/TextInput";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
 

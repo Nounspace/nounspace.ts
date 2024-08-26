@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/common/components/atoms/card";
+import { CardHeader, CardTitle } from "@/common/components/atoms/card";
 import BuilderProposalItem from "./BuilderProposalItem";
 import ProposalListRowItem from "./ProposalListRowItem";
 import {
@@ -11,6 +7,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
+import { FidgetSpinner } from "react-loader-spinner";
 
 const ProposalListView = ({
   proposals,
@@ -33,17 +30,8 @@ const ProposalListView = ({
     return (
       <center className="align-middle">
         <div className="m-5">
-          <img
-            src="/images/tom_alerts.png"
-            alt="Loading..."
-            style={{
-              animation: "spin 2s linear infinite",
-              width: "64px",
-              marginTop: "50px",
-            }}
-          />
+          <FidgetSpinner />
         </div>
-        <p> Tom is thinking...</p>
       </center>
     );
   }
