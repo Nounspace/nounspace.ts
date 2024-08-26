@@ -10,12 +10,14 @@ import EditableText from "../atoms/editable-text";
 import { Button } from "../atoms/button";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
+import { useRouter } from "next/router";
 
 const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
   const { fid } = useFarcasterSigner("navigation");
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
+  const router = useRouter();
 
   const {
     loadTabOrdering,
@@ -41,7 +43,17 @@ const TabBar = ({ hasProfile, inEditMode, openFidgetPicker }) => {
 
   const [tabNames, setTabNames] = useState([""]);
   const [loadingTabs, setLoadingTabs] = useState(true);
-  const [selectedTab, setSelectedTab] = useState(tabNames[0]);
+  const [selectedTab, selectTab] = useState(tabNames[0]);
+
+  function setSelectedTab(tabName: string) {
+    selectTab(tabName);
+    var href = hasProfile
+      ? `/s/${username}/${tabName}`
+      : tabName == "Feed"
+        ? `/homebase`
+        : `/homebase/${tabName}`;
+    router.push(href);
+  }
 
   async function getTabs() {
     try {
