@@ -1,3 +1,4 @@
+import React from "react";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import { FaPlus } from "react-icons/fa6";
 import { first, map } from "lodash";
@@ -8,7 +9,6 @@ import { useAppStore } from "@/common/data/stores/app";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
-import React from "react";
 
 interface TabBarProps {
   hasProfile: boolean;
@@ -68,7 +68,7 @@ const TabBar = memo(function TabBar({
 
   function selectTab(tabName: string) {
     if (tabName != selectedTab) {
-      var href = hasProfile
+      const href = hasProfile
         ? `/s/${username}/${tabName}`
         : tabName == "Feed"
           ? `/homebase`
@@ -97,8 +97,8 @@ const TabBar = memo(function TabBar({
 
   function generateTabName() {
     const base = `Tab ${tabNames.length + 1}`;
-    var newName = base;
-    var iter = 1;
+    let newName = base;
+    let iter = 1;
 
     while (tabNames.includes(newName)) {
       newName = base + ` (${iter})`;
@@ -126,7 +126,7 @@ const TabBar = memo(function TabBar({
     }
 
     tabNames.forEach((tabName: string) => {
-      var href = hasProfile
+      const href = hasProfile
         ? `/s/${username}/${tabName}`
         : tabName == "Feed"
           ? `/homebase`
