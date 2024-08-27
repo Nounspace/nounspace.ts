@@ -100,7 +100,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
       </div>
       <section
         id="Fidgets"
-        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4"
+        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1"
       >
         {generateFidgetCards()}
       </section>
