@@ -9,6 +9,7 @@ import { useAppStore } from "@/common/data/stores/app";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
+import { stat } from "fs";
 
 interface TabBarProps {
   hasProfile: boolean;
@@ -30,11 +31,15 @@ const TabBar = memo(function TabBar({
   const {
     loadTabOrdering,
     updateTabOrdering,
+    commitHomebaseTabToDatabase,
+    commitHomebaseToDatabase,
     createTab,
     deleteTab,
     renameTab,
   } = hasProfile
     ? useAppStore((state) => ({
+        commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
+        commitHomebaseTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
         loadTabOrdering: state.homebase.loadTabNames,
         updateTabOrdering: state.homebase.updateTabOrdering,
         createTab: state.homebase.createTab,
@@ -42,6 +47,8 @@ const TabBar = memo(function TabBar({
         renameTab: state.homebase.renameTab,
       }))
     : useAppStore((state) => ({
+        commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
+        commitHomebaseTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
         loadTabOrdering: state.homebase.loadTabNames,
         updateTabOrdering: state.homebase.updateTabOrdering,
         createTab: state.homebase.createTab,
@@ -68,6 +75,11 @@ const TabBar = memo(function TabBar({
 
   function selectTab(tabName: string) {
     if (tabName != selectedTab) {
+      if (selectedTab != "Feed") {
+        commitHomebaseTabToDatabase(selectedTab);
+      } else {
+        commitHomebaseToDatabase();
+      }
       const href = hasProfile
         ? `/s/${username}/${tabName}`
         : tabName == "Feed"
@@ -91,8 +103,8 @@ const TabBar = memo(function TabBar({
   }
 
   function updateTabs(tabs: string[]) {
-    setTabNames(tabs);
     updateTabOrdering(tabs);
+    setTabNames(tabs);
   }
 
   function generateTabName() {
