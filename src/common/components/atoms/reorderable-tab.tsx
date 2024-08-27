@@ -13,7 +13,7 @@ interface Props {
   draggable: boolean;
   renameable: boolean;
   onRemove?: () => void;
-  renameTab?: (tabName: string, newName: string) => Promise<void>;
+  renameTab?: (tabName: string, newName: string) => void;
 }
 
 export const Tab = ({

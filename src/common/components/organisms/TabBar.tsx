@@ -117,6 +117,15 @@ const TabBar = memo(function TabBar({
     }
   }
 
+  function renameAndSwitch(tabName: string, newName: string) {
+    renameTab(tabName, newName);
+    var index = tabNames.indexOf(tabName);
+    updateTabs(
+      tabNames.map((currTab) => (currTab == tabName ? newName : currTab)),
+    );
+    selectTab(newName);
+  }
+
   useEffect(() => {
     if (tabNames.length == 0) {
       if (!hasFetchedTabs) {
@@ -175,7 +184,7 @@ const TabBar = memo(function TabBar({
                   updateTabOrdering(tabNames);
                   deleteTab(tabName);
                 }}
-                renameTab={renameTab}
+                renameTab={renameAndSwitch}
               />
             );
           })}
