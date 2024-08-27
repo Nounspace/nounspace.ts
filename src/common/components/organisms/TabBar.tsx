@@ -73,13 +73,18 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  function selectTab(tabName: string) {
-    if (tabName != selectedTab) {
-      if (selectedTab != "Feed") {
-        commitHomebaseTabToDatabase(selectedTab);
+  function commitTab(tabName: string) {
+    if (inEditMode) {
+      if (tabName != "Feed") {
+        commitHomebaseTabToDatabase(tabName);
       } else {
         commitHomebaseToDatabase();
       }
+    }
+  }
+
+  function selectTab(tabName: string) {
+    if (tabName != selectedTab) {
       const href = hasProfile
         ? `/s/${username}/${tabName}`
         : tabName == "Feed"
@@ -88,6 +93,11 @@ const TabBar = memo(function TabBar({
       router.push(href);
       setSelectedTab(tabName);
     }
+  }
+
+  function switchTab(tabName: string) {
+    commitTab(selectedTab);
+    selectTab(tabName);
   }
 
   async function getTabNames() {
@@ -103,8 +113,8 @@ const TabBar = memo(function TabBar({
   }
 
   function updateTabs(tabs: string[]) {
-    updateTabOrdering(tabs);
     setTabNames(tabs);
+    updateTabOrdering(tabs);
   }
 
   function generateTabName() {
@@ -173,7 +183,7 @@ const TabBar = memo(function TabBar({
               tabName={"Feed"}
               inEditMode={inEditMode}
               isSelected={selectedTab === "Feed"}
-              onClick={() => selectTab("Feed")}
+              onClick={() => switchTab("Feed")}
               removeable={false}
               draggable={false}
               renameable={false}
@@ -186,13 +196,13 @@ const TabBar = memo(function TabBar({
                 tabName={tabName}
                 inEditMode={inEditMode}
                 isSelected={selectedTab === tabName}
-                onClick={() => selectTab(tabName)}
+                onClick={() => switchTab(tabName)}
                 removeable={true}
                 draggable={inEditMode}
                 renameable={true}
                 onRemove={async () => {
                   selectTab(nextClosestTab(tabName));
-                  setTabNames(tabNames.splice(tabNames.indexOf(tabName), 1));
+                  setTabNames(tabNames.filter((n) => n != tabName));
                   updateTabOrdering(tabNames);
                   deleteTab(tabName);
                 }}
