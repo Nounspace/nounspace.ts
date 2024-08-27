@@ -75,7 +75,7 @@ const TabBar = memo(function TabBar({
         : tabName == "Feed"
           ? `/homebase`
           : `/homebase/${tabName}`;
-      // router.push(href);
+      router.push(href);
       setSelectedTab(tabName);
     }
   }
@@ -126,7 +126,7 @@ const TabBar = memo(function TabBar({
         setCurrentlySelectedTab();
       }
     }
-  });
+  }, []);
 
   return (
     <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full">

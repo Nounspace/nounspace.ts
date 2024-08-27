@@ -9,7 +9,7 @@ import {
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
-import { homebasePath } from "@/constants/supabase";
+import { homebasePath, homebaseTabsPath } from "@/constants/supabase";
 import { findIndex, isArray, isUndefined } from "lodash";
 import { listTabsForIdentity } from ".";
 
@@ -73,7 +73,7 @@ async function updateHomebaseTab(
   const { error } = await supabase.storage
     .from("private")
     .upload(
-      `${homebasePath(file.publicKey)}Tabs/${tabName}`,
+      `${homebaseTabsPath(file.publicKey, tabName)}`,
       new Blob([stringify(file)], { type: "application/json" }),
       {
         upsert: true,

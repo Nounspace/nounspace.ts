@@ -20,7 +20,11 @@ import {
   UnsignedManageHomebaseTabsRequest,
 } from "@/pages/api/space/homebase/tabs";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import { homebasePath, homebaseTabOrderPath } from "@/constants/supabase";
+import {
+  homebasePath,
+  homebaseTabOrderPath,
+  homebaseTabsPath,
+} from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
@@ -165,14 +169,19 @@ export const createHomeBaseTabStoreFunc = (
       type: "create",
       tabName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+    const file = await get().account.createEncryptedSignedFile(
+      stringify(INITIAL_HOMEBASE_CONFIG),
+      "json",
+      { useRootKey: true },
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq, file },
       );
       if (data.result === "success") {
         set((draft) => {
@@ -186,6 +195,7 @@ export const createHomeBaseTabStoreFunc = (
       console.debug("failed to create homebase tab", e);
     }
   },
+
   async deleteTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
@@ -194,14 +204,14 @@ export const createHomeBaseTabStoreFunc = (
       type: "delete",
       tabName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq },
       );
       if (data.result === "success") {
         set((draft) => {
@@ -221,14 +231,14 @@ export const createHomeBaseTabStoreFunc = (
       tabName,
       newName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq },
       );
       if (data.result === "success") {
         const currentTabData = get().homebase.tabs[tabName];
@@ -249,7 +259,7 @@ export const createHomeBaseTabStoreFunc = (
     } = supabase.storage
       .from("private")
       .getPublicUrl(
-        `${homebasePath(get().account.currentSpaceIdentityPublicKey!)}/tabs/${tabName}`,
+        `${homebaseTabsPath(get().account.currentSpaceIdentityPublicKey!, tabName)}`,
       );
     try {
       const { data } = await axios.get<Blob>(publicUrl, {
