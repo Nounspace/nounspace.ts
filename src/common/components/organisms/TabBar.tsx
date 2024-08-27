@@ -82,11 +82,11 @@ const TabBar = memo(function TabBar({
 
   async function getTabNames() {
     try {
+      setHasFetchedTabs(false);
       const freshTabNames = await loadTabOrdering();
-
       setHasFetchedTabs(true);
+
       setTabNames(freshTabNames);
-      setCurrentlySelectedTab();
     } catch (e) {
       console.log("Hit an error: ", e);
     }
@@ -110,10 +110,20 @@ const TabBar = memo(function TabBar({
     return newName;
   }
 
+  function nextClosestTab(tabName: string) {
+    const index = tabNames.indexOf(tabName) - 1;
+    if (index >= 0) {
+      return tabNames[index];
+    } else {
+      return "Feed";
+    }
+  }
+
   useEffect(() => {
     if (tabNames.length == 0) {
       if (!hasFetchedTabs) {
         getTabNames();
+        setCurrentlySelectedTab();
       }
     }
   });
@@ -152,6 +162,7 @@ const TabBar = memo(function TabBar({
                 draggable={inEditMode}
                 renameable={true}
                 onRemove={async () => {
+                  selectTab(nextClosestTab(tabName));
                   await deleteTab(tabName);
                   getTabNames();
                 }}
