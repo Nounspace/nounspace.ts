@@ -61,14 +61,14 @@ async function updateHomebaseTab(
   }
   const tabs = await listTabsForIdentity(file.publicKey);
 
-  if (findIndex(tabs, tabName) === -1) {
-    res.status(500).json({
-      result: "error",
-      error: {
-        message: "Tab does not exist",
-      },
-    });
-  }
+  // if (findIndex(tabs, tabName) === -1) {
+  //   res.status(500).json({
+  //     result: "error",
+  //     error: {
+  //       message: "Tab does not exist",
+  //     },
+  //   });
+  // }
 
   const { error } = await supabase.storage
     .from("private")

@@ -311,7 +311,9 @@ export const createHomeBaseTabStoreFunc = (
     }
   }, 1000),
   async saveHomebaseTabConfig(tabName, config) {
-    const localCopy = cloneDeep(get().homebase.tabs[tabName]) as SpaceConfig;
+    const localCopy = cloneDeep(
+      get().homebase.tabs[tabName].config,
+    ) as SpaceConfig;
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
     });
