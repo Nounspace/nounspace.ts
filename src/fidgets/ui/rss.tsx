@@ -6,15 +6,12 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
 import { defaultStyleFields } from "../helpers";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import {
   CardHeader,
   CardContent,
   CardTitle,
-  CardDescription,
 } from "@/common/components/atoms/card";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
@@ -25,18 +22,11 @@ export type TextFidgetSettings = {
 
 export const textConfig: FidgetProperties = {
   fidgetName: "Rss",
-  icon: 0x1f4c4,
+  icon: 0x1f6f0,
   fields: [
     {
-      fieldName: "title",
-      default: "RSS Fidget",
-      required: false,
-      inputSelector: TextInput,
-      group: "settings",
-    },
-    {
       fieldName: "rssUrl",
-      default: "https://www.reddit.com/.rss",
+      default: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
       required: true,
       inputSelector: TextInput,
       group: "settings",
@@ -69,7 +59,22 @@ export const textConfig: FidgetProperties = {
       inputSelector: ColorSelector,
       group: "style",
     },
+
     ...defaultStyleFields,
+    {
+      fieldName: "itemBackground",
+      default: "var(--user-theme-fidget-background)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "itemBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
     {
       fieldName: "css",
       default: "",
@@ -95,10 +100,8 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
     const fetchRssFeed = async () => {
       try {
         const parser = new RSSParser();
-        console.log("Fetching RSS feed from:", settings.rssUrl);
         const feed = await parser.parseURL(settings.rssUrl);
 
-        console.log("Fetched RSS feed data:", feed);
         if (feed.items && feed.items.length > 0) {
           setRssItems(feed.items);
           setRssFeed(feed);
@@ -127,17 +130,27 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
         scrollbarWidth: "none",
       }}
     >
-      {settings?.title && (
-        <CardHeader className="p-4 pb-2">
-          <CardTitle
-            className="text-2xl font-bold"
-            style={{
-              fontFamily: settings.headingsFontFamily,
-              color: settings.headingsFontColor,
-            }}
-          >
-            {settings.title}
-          </CardTitle>
+      {rssFeed?.title && (
+        <CardHeader className="p-2 ml-5">
+          <div className="flex-col items-center">
+            {rssFeed?.image && (
+              <img
+                src={rssFeed.image.url}
+                alt={rssFeed.title}
+                className="mt-4 h-auto rounded w-10"
+              />
+            )}
+
+            <CardTitle
+              className="text-2xl font-bold mt-4 ml-1"
+              style={{
+                fontFamily: settings.headingsFontFamily,
+                color: settings.headingsFontColor,
+              }}
+            >
+              {rssFeed.title || settings.title}
+            </CardTitle>
+          </div>
         </CardHeader>
       )}
       <CardContent className="p-4 pt-2">
@@ -147,18 +160,16 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
           rssItems.map((item, index) => (
             <div
               key={index}
-              className="mb-6 p-4 rounded-lg shadow-md"
-              style={{ backgroundColor: settings.background }}
+              className="mb-6 p-4 rounded-lg border"
+              style={{
+                borderWidth: settings.fidgetBorderWidth,
+                borderColor: settings.itemBorderColor,
+                backgroundColor: settings.itemBackground,
+                boxShadow: settings.fidgetShadow,
+              }}
             >
               <div className="flex-row items-center ">
                 <div className="flex flex-col justify-between">
-                  {rssFeed?.image && (
-                    <img
-                      src={rssFeed.image.url}
-                      alt={rssFeed.title}
-                      className="mt-4 h-auto rounded w-10"
-                    />
-                  )}
                   <h3
                     className="text-xl font-semibold mb-2"
                     style={{
@@ -179,15 +190,8 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
                   )}
                 </div>
               </div>
-              {item.categories && (
-                <p
-                  className="text-sm font-medium text-gray-600 mb-2"
-                  style={{ fontFamily: settings.fontFamily }}
-                >
-                  Categories: {item.categories.join(", ")}
-                </p>
-              )}
-              {item.content && (
+
+              {item.contentSnippet && (
                 <div
                   className="mb-4"
                   style={{
@@ -195,12 +199,8 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
                     color: settings.fontColor,
                   }}
                 >
-                  <ReactMarkdown
-                    rehypePlugins={[rehypeRaw]}
-                    remarkPlugins={[remarkGfm]}
-                    components={MarkdownRenderers}
-                  >
-                    {item.contentSnippet || item.content}
+                  <ReactMarkdown components={MarkdownRenderers}>
+                    {item.contentSnippet}
                   </ReactMarkdown>
                 </div>
               )}
