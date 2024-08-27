@@ -277,7 +277,7 @@ export const createHomeBaseTabStoreFunc = (
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
         draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
-      }, `loadHomebase${tabName}-found`);
+      }, `loadHomebaseTab:${tabName}-found`);
       return spaceConfig;
     } catch (e) {
       set((draft) => {
@@ -319,7 +319,7 @@ export const createHomeBaseTabStoreFunc = (
       (draft) => {
         draft.homebase.tabs[tabName].config = localCopy;
       },
-      `saveHomebaseTab${tabName}`,
+      `saveHomebaseTab:${tabName}`,
       false,
     );
   },

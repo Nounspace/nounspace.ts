@@ -11,6 +11,7 @@ const Homebase: NextPageWithLayout = () => {
   const {
     tabConfigs,
     loadTab,
+    loadTabNames,
     saveTab,
     commitTab,
     resetTab,
@@ -19,6 +20,7 @@ const Homebase: NextPageWithLayout = () => {
     setCurrentSpaceId,
   } = useAppStore((state) => ({
     tabConfigs: state.homebase.tabs,
+    loadTabNames: state.homebase.loadTabNames,
     loadTab: state.homebase.loadHomebaseTab,
     saveTab: state.homebase.saveHomebaseTabConfig,
     commitTab: state.homebase.commitHomebaseTabToDatabase,
@@ -32,22 +34,26 @@ const Homebase: NextPageWithLayout = () => {
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
 
-  const tabname = isString(queryTabName) ? queryTabName : "";
+  const tabName = isString(queryTabName) ? queryTabName : "";
 
-  const loadConfig = () => loadTab(tabname);
-  const homebaseConfig = tabConfigs[tabname]?.config;
+  useEffect(() => {
+    loadTabNames();
+  }, [router.pathname]);
+
+  const loadConfig = () => loadTab(tabName);
+  const homebaseConfig = tabConfigs[tabName]?.config;
   const saveConfig = (config: SpaceConfigSaveDetails) =>
-    saveTab(tabname, config);
-  const resetConfig = () => resetTab(tabname);
-  const commitConfig = () => commitTab(tabname);
+    saveTab(tabName, config);
+  const resetConfig = () => resetTab(tabName);
+  const commitConfig = () => commitTab(tabName);
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
 
   useEffect(() => {
     isLoggedIn && loadConfig();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, tabName]);
 
-  if (isNull(tabname)) {
+  if (isNull(tabName)) {
     // Insert 404 page
     return;
   }
