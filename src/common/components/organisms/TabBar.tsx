@@ -137,7 +137,7 @@ const TabBar = memo(function TabBar({
   }, []);
 
   return (
-    <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full">
+    <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
       <Reorder.Group
         as="ol"
         axis="x"
