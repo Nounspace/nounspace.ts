@@ -13,6 +13,7 @@ import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
 import Swap from "./swap/Swap";
+import rss from "./ui/rss";
 
 export const CompleteFidgets = {
   //
@@ -35,6 +36,7 @@ export const CompleteFidgets = {
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
   Swap: Swap,
+  Rss: rss,
 };
 
 export const LayoutFidgets = {
