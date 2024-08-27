@@ -1,16 +1,14 @@
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
-import { FaPlus, FaX } from "react-icons/fa6";
+import { FaPlus } from "react-icons/fa6";
 import { first, map } from "lodash";
-import Link from "next/link";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { memo, useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
-import EditableText from "../atoms/editable-text";
-import { Button } from "../atoms/button";
-import { motion, Reorder, AnimatePresence } from "framer-motion";
+import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
+import React from "react";
 
 interface TabBarProps {
   hasProfile: boolean;
