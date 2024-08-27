@@ -126,6 +126,16 @@ const TabBar = memo(function TabBar({
         setCurrentlySelectedTab();
       }
     }
+
+    tabNames.forEach((tabName: string) => {
+      var href = hasProfile
+        ? `/s/${username}/${tabName}`
+        : tabName == "Feed"
+          ? `/homebase`
+          : `/homebase/${tabName}`;
+
+      router.prefetch(href);
+    });
   }, []);
 
   return (
@@ -163,8 +173,9 @@ const TabBar = memo(function TabBar({
                 renameable={true}
                 onRemove={async () => {
                   selectTab(nextClosestTab(tabName));
-                  await deleteTab(tabName);
-                  getTabNames();
+                  setTabNames(tabNames.splice(tabNames.indexOf(tabName), 1));
+                  updateTabOrdering(tabNames);
+                  deleteTab(tabName);
                 }}
                 renameTab={renameTab}
               />
