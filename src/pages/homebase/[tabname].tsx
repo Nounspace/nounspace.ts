@@ -32,12 +32,7 @@ const Homebase: NextPageWithLayout = () => {
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
 
-  const tabname = isString(queryTabName) ? queryTabName : null;
-
-  if (isNull(tabname)) {
-    // Insert 404 page
-    return;
-  }
+  const tabname = isString(queryTabName) ? queryTabName : "";
 
   const loadConfig = () => loadTab(tabname);
   const homebaseConfig = tabConfigs[tabname]?.config;
@@ -51,6 +46,11 @@ const Homebase: NextPageWithLayout = () => {
   useEffect(() => {
     isLoggedIn && loadConfig();
   }, [isLoggedIn]);
+
+  if (isNull(tabname)) {
+    // Insert 404 page
+    return;
+  }
 
   const args = isInitializing
     ? {

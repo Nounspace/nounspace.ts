@@ -37,7 +37,7 @@ function isUpdateHomebaseRequest(
     isSignable(maybe) &&
     typeof maybe["publicKey"] === "string" &&
     typeof maybe["type"] === "string" &&
-    maybe.type in homeBaseTabRequestTypes &&
+    homeBaseTabRequestTypes.includes(maybe.type as HomeBaseTabRequestType) &&
     typeof maybe["tabName"] === "string"
   );
 }
