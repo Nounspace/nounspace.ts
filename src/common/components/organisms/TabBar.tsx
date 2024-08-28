@@ -42,37 +42,28 @@ const TabBar = memo(function TabBar({
     commitSpaceToDatabase,
     commitHomebaseToDatabase,
     createTab,
+    createSpace,
     deleteTab,
+    deleteSpace,
     renameTab,
-  } = hasProfile
-    ? useAppStore((state) => ({
-        commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
-        commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
-        commitSpaceToDatabase: state.space.commitSpaceToDatabase,
-        loadTabOrdering: state.homebase.loadTabNames,
-        loadSpaceOrdering: state.space.loadSpaceOrderForFid,
-        updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
-        updateTabOrdering: state.homebase.updateTabOrdering,
-        commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
-        commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
-        createTab: state.space.registerSpace,
-        deleteTab: state.space.clear,
-        renameTab: state.space.renameSpace,
-      }))
-    : useAppStore((state) => ({
-        commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
-        commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
-        commitSpaceToDatabase: state.space.commitSpaceToDatabase,
-        loadTabOrdering: state.homebase.loadTabNames,
-        loadSpaceOrdering: state.space.loadSpaceOrderForFid,
-        updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
-        updateTabOrdering: state.homebase.updateTabOrdering,
-        commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
-        commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
-        createTab: state.homebase.createTab,
-        deleteTab: state.homebase.deleteTab,
-        renameTab: state.homebase.renameTab,
-      }));
+    renameSpace,
+  } = useAppStore((state) => ({
+    commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
+    commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
+    commitSpaceToDatabase: state.space.commitSpaceToDatabase,
+    loadTabOrdering: state.homebase.loadTabOrdering,
+    loadSpaceOrdering: state.space.loadSpaceOrderForFid,
+    updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
+    updateTabOrdering: state.homebase.updateTabOrdering,
+    commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
+    commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
+    createTab: state.homebase.createTab,
+    createSpace: state.space.registerSpace,
+    deleteTab: state.homebase.deleteTab,
+    deleteSpace: state.space.clear,
+    renameTab: state.homebase.renameTab,
+    renameSpace: state.space.renameSpace,
+  }));
 
   const [tabNames, setTabNames] = useState<string[]>([]);
   const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
@@ -157,7 +148,9 @@ const TabBar = memo(function TabBar({
 
   async function updateTabs(tabs: string[]) {
     setTabNames(tabs);
+
     if (hasProfile) {
+      // Generate new spaceLookupInfo array
       const spaceLookups = await loadSpaceOrdering(profileFID);
       let newSpaceOrdering = [] as SpaceLookupInfo[];
       tabs.forEach((tab) => {
@@ -167,9 +160,12 @@ const TabBar = memo(function TabBar({
         newSpaceOrdering.concat(currSpaceLookup);
       });
 
-      updateSpaceOrdering(profileFID, newSpaceOrdering);
+      // Save locally then commit
+      await updateSpaceOrdering(profileFID, newSpaceOrdering);
+      commitSpaceOrdering(profileFID);
     } else {
-      updateTabOrdering(tabs);
+      await updateTabOrdering(tabs);
+      commitTabOrdering();
     }
   }
 
@@ -195,13 +191,45 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  function renameAndSwitch(tabName: string, newName: string) {
-    renameTab(tabName, newName);
-    var index = tabNames.indexOf(tabName);
+  async function renameAndSwitch(tabName: string, newName: string) {
+    if (hasProfile) {
+      const spaceLookups = await loadSpaceOrdering(profileFID);
+      const currSpaceLookup = spaceLookups.find((obj) => {
+        return obj.name === tabName;
+      });
+      renameSpace(currSpaceLookup!.spaceId, newName);
+    } else {
+      renameTab(tabName, newName);
+    }
+
     updateTabs(
       tabNames.map((currTab) => (currTab == tabName ? newName : currTab)),
     );
     selectTab(newName);
+  }
+
+  function handleDeleteTab(tabName: string) {
+    selectTab(nextClosestTab(tabName));
+    updateTabs(tabNames.filter((n) => n != tabName));
+
+    if (hasProfile) {
+      //
+    } else {
+      deleteTab(tabName);
+    }
+  }
+
+  async function handleCreateTab() {
+    if (inEditMode) {
+      const newTabName = generateTabName();
+      if (hasProfile) {
+        createSpace(profileFID, newTabName);
+      } else {
+        createTab(newTabName);
+      }
+      await updateTabs(tabNames.concat(newTabName));
+      selectTab(newTabName);
+    }
   }
 
   useEffect(() => {
@@ -256,12 +284,7 @@ const TabBar = memo(function TabBar({
                 removeable={true}
                 draggable={inEditMode}
                 renameable={true}
-                onRemove={async () => {
-                  selectTab(nextClosestTab(tabName));
-                  setTabNames(tabNames.filter((n) => n != tabName));
-                  updateTabOrdering(tabNames);
-                  deleteTab(tabName);
-                }}
+                onRemove={() => handleDeleteTab(tabName)}
                 renameTab={renameAndSwitch}
               />
             );
@@ -272,12 +295,7 @@ const TabBar = memo(function TabBar({
       {inEditMode ? (
         <div className="flex flex-row">
           <button
-            onClick={() => {
-              const newTabName = generateTabName();
-              createTab(newTabName);
-              setTabNames(tabNames.concat(newTabName));
-              selectTab(newTabName);
-            }}
+            onClick={handleCreateTab}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
             <div className="ml-2">
