@@ -9,7 +9,10 @@ import { useAppStore } from "@/common/data/stores/app";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
+import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import { stat } from "fs";
+import { getFidForAddress, getUsernameForFid } from "@/fidgets/farcaster/utils";
+import neynar from "@/common/data/api/neynar";
 
 interface TabBarProps {
   hasProfile: boolean;
@@ -30,8 +33,13 @@ const TabBar = memo(function TabBar({
 
   const {
     loadTabOrdering,
+    loadSpaceOrdering,
     updateTabOrdering,
-    commitHomebaseTabToDatabase,
+    updateSpaceOrdering,
+    commitTabOrdering,
+    commitSpaceOrdering,
+    commitTabToDatabase,
+    commitSpaceToDatabase,
     commitHomebaseToDatabase,
     createTab,
     deleteTab,
@@ -39,18 +47,28 @@ const TabBar = memo(function TabBar({
   } = hasProfile
     ? useAppStore((state) => ({
         commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
-        commitHomebaseTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
+        commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
+        commitSpaceToDatabase: state.space.commitSpaceToDatabase,
         loadTabOrdering: state.homebase.loadTabNames,
+        loadSpaceOrdering: state.space.loadSpaceOrderForFid,
+        updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
         updateTabOrdering: state.homebase.updateTabOrdering,
-        createTab: state.homebase.createTab,
-        deleteTab: state.homebase.deleteTab,
-        renameTab: state.homebase.renameTab,
+        commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
+        commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
+        createTab: state.space.registerSpace,
+        deleteTab: state.space.clear,
+        renameTab: state.space.renameSpace,
       }))
     : useAppStore((state) => ({
         commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
-        commitHomebaseTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
+        commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
+        commitSpaceToDatabase: state.space.commitSpaceToDatabase,
         loadTabOrdering: state.homebase.loadTabNames,
+        loadSpaceOrdering: state.space.loadSpaceOrderForFid,
+        updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
         updateTabOrdering: state.homebase.updateTabOrdering,
+        commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
+        commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
         createTab: state.homebase.createTab,
         deleteTab: state.homebase.deleteTab,
         renameTab: state.homebase.renameTab,
@@ -59,12 +77,11 @@ const TabBar = memo(function TabBar({
   const [tabNames, setTabNames] = useState<string[]>([]);
   const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("");
+  const [profileFID, setProfileFID] = useState(1);
+  const urlPieces = router.asPath.split("/");
 
   function setCurrentlySelectedTab() {
-    const parts = router.asPath.split("/");
-    const pathEnd = decodeURI(parts[parts.length - 1]);
-
-    console.log(pathEnd);
+    const pathEnd = decodeURI(urlPieces[urlPieces.length - 1]);
 
     if (pathEnd === "homebase") {
       setSelectedTab("Feed");
@@ -75,10 +92,14 @@ const TabBar = memo(function TabBar({
 
   function commitTab(tabName: string) {
     if (inEditMode) {
-      if (tabName != "Feed") {
-        commitHomebaseTabToDatabase(tabName);
+      if (hasProfile) {
+        commitSpaceToDatabase(tabName);
       } else {
-        commitHomebaseToDatabase();
+        if (tabName != "Feed") {
+          commitTabToDatabase(tabName);
+        } else {
+          commitHomebaseToDatabase();
+        }
       }
     }
   }
@@ -100,21 +121,56 @@ const TabBar = memo(function TabBar({
     selectTab(tabName);
   }
 
-  async function getTabNames() {
-    try {
-      setHasFetchedTabs(false);
-      const freshTabNames = await loadTabOrdering();
-      setHasFetchedTabs(true);
+  async function getProfileFID() {
+    const username = decodeURI(urlPieces[urlPieces.length - 2]);
 
-      setTabNames(freshTabNames);
+    try {
+      const {
+        result: { user },
+      } = await neynar.lookupUserByUsername(username);
+      setProfileFID(user.fid);
     } catch (e) {
       console.log("Hit an error: ", e);
     }
   }
 
-  function updateTabs(tabs: string[]) {
+  async function getTabNames() {
+    try {
+      setHasFetchedTabs(false);
+      if (hasProfile) {
+        await getProfileFID();
+        const freshSpaceOrdering = await loadSpaceOrdering(profileFID);
+        setTabNames(
+          freshSpaceOrdering.map((space: SpaceLookupInfo) => {
+            space.name;
+          }) as unknown as string[],
+        );
+      } else {
+        const freshTabNames = await loadTabOrdering();
+        setTabNames(freshTabNames);
+      }
+      setHasFetchedTabs(true);
+    } catch (e) {
+      console.log("Hit an error: ", e);
+    }
+  }
+
+  async function updateTabs(tabs: string[]) {
     setTabNames(tabs);
-    updateTabOrdering(tabs);
+    if (hasProfile) {
+      const spaceLookups = await loadSpaceOrdering(profileFID);
+      let newSpaceOrdering = [] as SpaceLookupInfo[];
+      tabs.forEach((tab) => {
+        const currSpaceLookup = spaceLookups.filter((obj) => {
+          return obj.name === tab;
+        });
+        newSpaceOrdering.concat(currSpaceLookup);
+      });
+
+      updateSpaceOrdering(profileFID, newSpaceOrdering);
+    } else {
+      updateTabOrdering(tabs);
+    }
   }
 
   function generateTabName() {

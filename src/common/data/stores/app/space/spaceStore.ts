@@ -95,7 +95,7 @@ interface SpaceState {
   >;
 }
 
-interface SpaceLookupInfo {
+export interface SpaceLookupInfo {
   spaceId: string;
   name: string;
 }
