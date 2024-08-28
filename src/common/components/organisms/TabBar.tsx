@@ -32,6 +32,7 @@ const TabBar = memo(function TabBar({
   const router = useRouter();
 
   const {
+    loadTabNames,
     loadTabOrdering,
     loadSpaceOrdering,
     updateTabOrdering,
@@ -51,10 +52,11 @@ const TabBar = memo(function TabBar({
     commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
     commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
     commitSpaceToDatabase: state.space.commitSpaceToDatabase,
+    loadTabNames: state.homebase.loadTabOrdering,
     loadTabOrdering: state.homebase.loadTabOrdering,
     loadSpaceOrdering: state.space.loadSpaceOrderForFid,
-    updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
     updateTabOrdering: state.homebase.updateTabOrdering,
+    updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
     commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
     commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
     createTab: state.homebase.createTab,
@@ -68,7 +70,7 @@ const TabBar = memo(function TabBar({
   const [tabNames, setTabNames] = useState<string[]>([]);
   const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("");
-  const [profileFID, setProfileFID] = useState(1);
+  const [profileFID, setProfileFID] = useState(0);
   const urlPieces = router.asPath.split("/");
 
   function setCurrentlySelectedTab() {
@@ -78,20 +80,6 @@ const TabBar = memo(function TabBar({
       setSelectedTab("Feed");
     } else {
       setSelectedTab(pathEnd);
-    }
-  }
-
-  function commitTab(tabName: string) {
-    if (inEditMode) {
-      if (hasProfile) {
-        commitSpaceToDatabase(tabName);
-      } else {
-        if (tabName != "Feed") {
-          commitTabToDatabase(tabName);
-        } else {
-          commitHomebaseToDatabase();
-        }
-      }
     }
   }
 
@@ -129,16 +117,28 @@ const TabBar = memo(function TabBar({
     try {
       setHasFetchedTabs(false);
       if (hasProfile) {
-        await getProfileFID();
-        const freshSpaceOrdering = await loadSpaceOrdering(profileFID);
+        // Make sure we have an FID for the profile
+        if (profileFID === 0) {
+          await getProfileFID();
+        }
+
+        // Load the space ordering
+        const freshSpaceOrdering = await loadSpaceOrdering(profileFID!);
+
+        // Convert it to strings
         setTabNames(
           freshSpaceOrdering.map((space: SpaceLookupInfo) => {
             space.name;
           }) as unknown as string[],
         );
       } else {
-        const freshTabNames = await loadTabOrdering();
+        let freshTabNames = await loadTabOrdering();
+
+        // Compare to actual files
+        const namesList = await loadTabNames();
+        freshTabNames = freshTabNames.filter((x) => namesList.includes(x));
         setTabNames(freshTabNames);
+        handleUpdateTabOrdering(namesList);
       }
       setHasFetchedTabs(true);
     } catch (e) {
@@ -146,9 +146,44 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  async function updateTabs(tabs: string[]) {
-    setTabNames(tabs);
+  // Initial variables load
+  useEffect(() => {
+    if (hasProfile) {
+      getProfileFID();
+    }
 
+    if (!hasFetchedTabs) {
+      getTabNames();
+      setCurrentlySelectedTab();
+
+      // Prefetch all the tabs
+      tabNames.forEach((tabName: string) => {
+        const href = hasProfile
+          ? `/s/${username}/${tabName}`
+          : tabName == "Feed"
+            ? `/homebase`
+            : `/homebase/${tabName}`;
+
+        router.prefetch(href);
+      });
+    }
+  }, []);
+
+  function commitTab(tabName: string) {
+    if (inEditMode) {
+      if (hasProfile) {
+        commitSpaceToDatabase(tabName);
+      } else {
+        if (tabName != "Feed") {
+          commitTabToDatabase(tabName);
+        } else {
+          commitHomebaseToDatabase();
+        }
+      }
+    }
+  }
+
+  async function handleUpdateTabOrdering(tabs: string[]) {
     if (hasProfile) {
       // Generate new spaceLookupInfo array
       const spaceLookups = await loadSpaceOrdering(profileFID);
@@ -166,6 +201,7 @@ const TabBar = memo(function TabBar({
     } else {
       await updateTabOrdering(tabs);
       commitTabOrdering();
+      setTabNames(tabs);
     }
   }
 
@@ -191,26 +227,34 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  async function renameAndSwitch(tabName: string, newName: string) {
+  async function renameAndReload(tabName: string, newTabName: string) {
+    await commitTab(tabName);
+
     if (hasProfile) {
       const spaceLookups = await loadSpaceOrdering(profileFID);
       const currSpaceLookup = spaceLookups.find((obj) => {
         return obj.name === tabName;
       });
-      renameSpace(currSpaceLookup!.spaceId, newName);
+      renameSpace(currSpaceLookup!.spaceId, newTabName);
     } else {
-      renameTab(tabName, newName);
+      renameTab(tabName, newTabName);
     }
 
-    updateTabs(
-      tabNames.map((currTab) => (currTab == tabName ? newName : currTab)),
+    const newTabNames = tabNames.map((currTab) =>
+      currTab == tabName ? newTabName : currTab,
     );
-    selectTab(newName);
+
+    await handleUpdateTabOrdering(newTabNames);
+    setTabNames(newTabNames);
+    selectTab(newTabName);
   }
 
   function handleDeleteTab(tabName: string) {
     selectTab(nextClosestTab(tabName));
-    updateTabs(tabNames.filter((n) => n != tabName));
+
+    const newTabNames = tabNames.filter((n) => n != tabName);
+    setTabNames(newTabNames);
+    handleUpdateTabOrdering(newTabNames);
 
     if (hasProfile) {
       //
@@ -222,41 +266,27 @@ const TabBar = memo(function TabBar({
   async function handleCreateTab() {
     if (inEditMode) {
       const newTabName = generateTabName();
+
       if (hasProfile) {
         createSpace(profileFID, newTabName);
       } else {
         createTab(newTabName);
       }
-      await updateTabs(tabNames.concat(newTabName));
-      selectTab(newTabName);
+
+      const newTabNames = tabNames.concat(newTabName);
+
+      commitTab(newTabName);
+      await handleUpdateTabOrdering(newTabNames);
+      switchTab(newTabName);
     }
   }
-
-  useEffect(() => {
-    if (tabNames.length == 0) {
-      if (!hasFetchedTabs) {
-        getTabNames();
-        setCurrentlySelectedTab();
-      }
-    }
-
-    tabNames.forEach((tabName: string) => {
-      const href = hasProfile
-        ? `/s/${username}/${tabName}`
-        : tabName == "Feed"
-          ? `/homebase`
-          : `/homebase/${tabName}`;
-
-      router.prefetch(href);
-    });
-  }, []);
 
   return (
     <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
       <Reorder.Group
         as="ol"
         axis="x"
-        onReorder={updateTabs}
+        onReorder={handleUpdateTabOrdering}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabNames}
       >
@@ -285,7 +315,7 @@ const TabBar = memo(function TabBar({
                 draggable={inEditMode}
                 renameable={true}
                 onRemove={() => handleDeleteTab(tabName)}
-                renameTab={renameAndSwitch}
+                renameTab={renameAndReload}
               />
             );
           })}

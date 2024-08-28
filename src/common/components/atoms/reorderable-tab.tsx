@@ -39,12 +39,12 @@ export const Tab = ({
       }}
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       whileDrag={{ backgroundColor: "#e3e3e3" }}
-      className={isSelected ? "selected relative" : "group"}
+      className={isSelected ? "selected relative" : "relative"}
       onPointerDown={onClick}
       dragListener={draggable}
     >
       <div
-        className={`static flex p-2 items-center transition-colors duration-300 
+        className={`static flex p-2 items-center transition-colors duration-300 group 
           ${
             isSelected
               ? "text-blue-600 font-bold"
@@ -63,8 +63,8 @@ export const Tab = ({
         </motion.span>
 
         {/* Close Icon */}
-        {removeable && onRemove && inEditMode && isSelected && (
-          <motion.div layout>
+        {removeable && onRemove && inEditMode && (
+          <motion.div layout className={"hidden group-hover:block"}>
             <motion.button
               onPointerDown={(event) => {
                 event.stopPropagation();
