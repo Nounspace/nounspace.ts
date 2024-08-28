@@ -73,8 +73,11 @@ const TabBar = memo(function TabBar({
   const [profileFID, setProfileFID] = useState(0);
   const urlPieces = router.asPath.split("/");
 
-  function setCurrentlySelectedTab() {
+  function updateCurrentSelection() {
     const pathEnd = decodeURI(urlPieces[urlPieces.length - 1]);
+
+    if (hasProfile) {
+    }
 
     if (pathEnd === "homebase") {
       setSelectedTab("Feed");
@@ -83,7 +86,12 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  function selectTab(tabName: string) {
+  function switchTab(tabName: string) {
+    // Prevent work from being lost
+    if (inEditMode) {
+      commitTab(selectedTab);
+    }
+
     if (tabName != selectedTab) {
       const href = hasProfile
         ? `/s/${username}/${tabName}`
@@ -93,11 +101,6 @@ const TabBar = memo(function TabBar({
       router.push(href);
       setSelectedTab(tabName);
     }
-  }
-
-  function switchTab(tabName: string) {
-    commitTab(selectedTab);
-    selectTab(tabName);
   }
 
   async function getProfileFID() {
@@ -132,13 +135,14 @@ const TabBar = memo(function TabBar({
           }) as unknown as string[],
         );
       } else {
-        let freshTabNames = await loadTabOrdering();
-
-        // Compare to actual files
+        // Check actual files
         const namesList = await loadTabNames();
-        freshTabNames = freshTabNames.filter((x) => namesList.includes(x));
-        setTabNames(freshTabNames);
-        handleUpdateTabOrdering(namesList);
+
+        if (namesList.length !== 0) {
+          let freshTabNames = await loadTabOrdering();
+          freshTabNames = freshTabNames.filter((x) => namesList.includes(x));
+          setTabNames(freshTabNames);
+        }
       }
       setHasFetchedTabs(true);
     } catch (e) {
@@ -154,7 +158,7 @@ const TabBar = memo(function TabBar({
 
     if (!hasFetchedTabs) {
       getTabNames();
-      setCurrentlySelectedTab();
+      updateCurrentSelection();
 
       // Prefetch all the tabs
       tabNames.forEach((tabName: string) => {
@@ -169,10 +173,16 @@ const TabBar = memo(function TabBar({
     }
   }, []);
 
-  function commitTab(tabName: string) {
+  async function commitTab(tabName: string) {
     if (inEditMode) {
       if (hasProfile) {
-        commitSpaceToDatabase(tabName);
+        // Load the space ordering
+        const freshSpaceOrdering = await loadSpaceOrdering(profileFID);
+        // Find the associated spaceId
+        const currentSpaceID = freshSpaceOrdering.find(
+          (x) => x.name === tabName,
+        );
+        commitSpaceToDatabase(currentSpaceID!.spaceId);
       } else {
         if (tabName != "Feed") {
           commitTabToDatabase(tabName);
@@ -183,25 +193,26 @@ const TabBar = memo(function TabBar({
     }
   }
 
-  async function handleUpdateTabOrdering(tabs: string[]) {
-    if (hasProfile) {
-      // Generate new spaceLookupInfo array
-      const spaceLookups = await loadSpaceOrdering(profileFID);
-      let newSpaceOrdering = [] as SpaceLookupInfo[];
-      tabs.forEach((tab) => {
-        const currSpaceLookup = spaceLookups.filter((obj) => {
-          return obj.name === tab;
+  async function pushNewTabOrdering(newTabOrder: string[]) {
+    if (inEditMode) {
+      if (hasProfile) {
+        // Generate new spaceLookupInfo array
+        const spaceLookups = await loadSpaceOrdering(profileFID);
+        let newSpaceOrdering = [] as SpaceLookupInfo[];
+        newTabOrder.forEach((tab) => {
+          const currSpaceLookup = spaceLookups.filter((obj) => {
+            return obj.name === tab;
+          });
+          newSpaceOrdering.concat(currSpaceLookup);
         });
-        newSpaceOrdering.concat(currSpaceLookup);
-      });
 
-      // Save locally then commit
-      await updateSpaceOrdering(profileFID, newSpaceOrdering);
-      commitSpaceOrdering(profileFID);
-    } else {
-      await updateTabOrdering(tabs);
-      commitTabOrdering();
-      setTabNames(tabs);
+        // Save locally then commit
+        await updateSpaceOrdering(profileFID, newSpaceOrdering);
+        commitSpaceOrdering(profileFID);
+      } else {
+        await updateTabOrdering(newTabOrder);
+        commitTabOrdering();
+      }
     }
   }
 
@@ -228,38 +239,42 @@ const TabBar = memo(function TabBar({
   }
 
   async function renameAndReload(tabName: string, newTabName: string) {
-    await commitTab(tabName);
+    if (inEditMode) {
+      await commitTab(tabName);
 
-    if (hasProfile) {
-      const spaceLookups = await loadSpaceOrdering(profileFID);
-      const currSpaceLookup = spaceLookups.find((obj) => {
-        return obj.name === tabName;
-      });
-      renameSpace(currSpaceLookup!.spaceId, newTabName);
-    } else {
-      renameTab(tabName, newTabName);
+      if (hasProfile) {
+        const spaceLookups = await loadSpaceOrdering(profileFID);
+        const currSpaceLookup = spaceLookups.find((obj) => {
+          return obj.name === tabName;
+        });
+        await renameSpace(currSpaceLookup!.spaceId, newTabName);
+      } else {
+        await renameTab(tabName, newTabName);
+      }
+
+      const newTabNames = tabNames.map((currTab) =>
+        currTab == tabName ? newTabName : currTab,
+      );
+
+      setTabNames(newTabNames);
+      switchTab(newTabName);
+      pushNewTabOrdering(newTabNames);
     }
-
-    const newTabNames = tabNames.map((currTab) =>
-      currTab == tabName ? newTabName : currTab,
-    );
-
-    await handleUpdateTabOrdering(newTabNames);
-    setTabNames(newTabNames);
-    selectTab(newTabName);
   }
 
   function handleDeleteTab(tabName: string) {
-    selectTab(nextClosestTab(tabName));
+    if (inEditMode) {
+      switchTab(nextClosestTab(tabName));
 
-    const newTabNames = tabNames.filter((n) => n != tabName);
-    setTabNames(newTabNames);
-    handleUpdateTabOrdering(newTabNames);
+      const newTabNames = tabNames.filter((n) => n != tabName);
+      setTabNames(newTabNames);
+      pushNewTabOrdering(newTabNames);
 
-    if (hasProfile) {
-      //
-    } else {
-      deleteTab(tabName);
+      if (hasProfile) {
+        //
+      } else {
+        deleteTab(tabName);
+      }
     }
   }
 
@@ -276,9 +291,14 @@ const TabBar = memo(function TabBar({
       const newTabNames = tabNames.concat(newTabName);
 
       commitTab(newTabName);
-      await handleUpdateTabOrdering(newTabNames);
+      await pushNewTabOrdering(newTabNames);
       switchTab(newTabName);
     }
+  }
+
+  function handleTabReordering(newTabOrder: string[]) {
+    setTabNames(newTabOrder);
+    pushNewTabOrdering(newTabOrder);
   }
 
   return (
@@ -286,7 +306,7 @@ const TabBar = memo(function TabBar({
       <Reorder.Group
         as="ol"
         axis="x"
-        onReorder={handleUpdateTabOrdering}
+        onReorder={handleTabReordering}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabNames}
       >

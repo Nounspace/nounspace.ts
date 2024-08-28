@@ -64,7 +64,7 @@ export const Tab = ({
 
         {/* Close Icon */}
         {removeable && onRemove && inEditMode && (
-          <motion.div layout className={"hidden group-hover:block"}>
+          <motion.div layout>
             <motion.button
               onPointerDown={(event) => {
                 event.stopPropagation();
