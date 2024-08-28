@@ -25,6 +25,7 @@ import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
 import { FaRegCopy } from "react-icons/fa6";
 import { FaRedo } from "react-icons/fa";
+import TextInput from "@/common/components/molecules/TextInput";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -195,6 +196,7 @@ const initializer: AuthenticatorInitializer<
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
   const doneInterval = useRef<NodeJS.Timeout | undefined>();
+  const [devFid, setDevFid] = useState("");
 
   function createSigner() {
     self.createNewSigner();
@@ -224,6 +226,14 @@ const initializer: AuthenticatorInitializer<
     };
   });
 
+  function devSignin() {
+    saveData({
+      ...data,
+      state: "completed",
+      userFid: devFid,
+    });
+  }
+
   const warpcastSignerUrl = data.signerUrl
     ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
     : undefined;
@@ -238,6 +248,16 @@ const initializer: AuthenticatorInitializer<
       ) : loading && warpcastSignerUrl ? (
         <>
           <div className="text-center mt-4">
+            {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? (
+              <>
+                <TextInput value={devFid} onChange={setDevFid}></TextInput>
+                <Button withIcon variant="outline" onClick={devSignin}>
+                  <p className="font-bold text-lg text-gray-500">
+                    Skip Check and add use FID
+                  </p>
+                </Button>
+              </>
+            ) : null}
             <div className="m-20 mt-5 mb-5 border border-gray-200 p-1 rounded-sm">
               <QRCode
                 value={String(warpcastSignerUrl) || "https://x.com"}
@@ -245,7 +265,7 @@ const initializer: AuthenticatorInitializer<
                 bgColor="#ffffff"
                 fgColor="#000000"
                 level="Q"
-                className="rounded-sm "
+                className="rounded-sm"
               />
             </div>
             <p className="text-xl text-gray-500 m-5">
