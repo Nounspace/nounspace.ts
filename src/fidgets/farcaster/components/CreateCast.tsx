@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -34,20 +34,21 @@ import { PhotoIcon } from "@heroicons/react/20/solid";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
-import { submitCast } from "../utils";
+import { getChannelForUser, submitCast } from "../utils";
 import { bytesToHex } from "@noble/ciphers/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
+
 const debouncedGetMentions = debounce(getMentions, 200, {
   leading: true,
   trailing: false,
 });
-const getChannels = getFarcasterChannels(API_URL);
-const debouncedGetChannels = debounce(getChannels, 200, {
-  leading: true,
-  trailing: false,
-});
+// const getChannels = getFarcasterChannels(API_URL);
+// const debouncedGetChannels = debounce(getChannels, 200, {
+//   leading: true,
+//   trailing: false,
+// });
 
 const getUrlMetadata = fetchUrlMetadata(API_URL);
 const getMentionFids = getMentionFidsByUsernames(API_URL);
@@ -131,6 +132,22 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
 
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
+  console.log({ fid });
+
+  // Função debounced que retorna uma Promise
+  const debouncedGetChannels = useCallback(
+    debounce(
+      async (query: string) => {
+        // const channels = await getChannelForUser(fid);
+        const channels = await getChannelForUser(196328);
+        return channels;
+      },
+      200,
+      { leading: true, trailing: false },
+    ),
+    [fid], // Dependências da função
+  );
+
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
@@ -193,6 +210,8 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
     if (!editor) return; // no updates before editor is initialized
     if (isPublishing) return;
     if (draft?.parentUrl === channel?.parent_url) return;
+
+    console.log({ channel });
 
     const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
     setDraft({

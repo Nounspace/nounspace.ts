@@ -28,6 +28,7 @@ import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 import { ModProtocolCastAddBody } from "./components/CreateCast";
+import { type Channel } from "@mod-protocol/farcaster";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
@@ -404,3 +405,18 @@ export const getSignatureForUsernameProof = async (
   });
   return signature;
 };
+
+export async function getChannelForUser(
+  fid: number,
+  limit: number = 20,
+): Promise<Channel[]> {
+  try {
+    const channelsResponse = await axiosBackend.get(
+      `/api/farcaster/neynar/active-channels/?limit=${limit}&fid=${fid}`,
+    );
+    console.log({ channelsResponse });
+    return channelsResponse.data as Channel[];
+  } catch (e) {
+    return [] as Channel[];
+  }
+}
