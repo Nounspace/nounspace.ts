@@ -16,9 +16,15 @@ import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useGetCasts } from "@/common/data/queries/farcaster";
-import { defaultStyleFields } from "@/fidgets/helpers";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import {
+  Platform,
+  PlatformSelector,
+} from "@/common/components/molecules/PlatformSelector";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -30,6 +36,9 @@ export type FeedFidgetSettings = {
   filterType: FilterType;
   users?: string; // this should be a number array, but that requires special inputs to build later
   channel?: string;
+  selectPlatform: Platform;
+  Xhandle: string;
+  style: string;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
@@ -52,32 +61,76 @@ export const FilterTypeSelector: React.FC<{
   );
 };
 
+function XStyleSelector({
+  onChange,
+  value,
+  className,
+}: {
+  onChange: (value: string) => void;
+  value: string;
+  className?: string;
+}) {
+  const styles = [
+    { name: "Light", value: "light" },
+    { name: "Dark", value: "dark" },
+  ];
+
+  return (
+    <SettingsSelector
+      onChange={onChange}
+      value={value}
+      settings={styles}
+      className={className}
+    />
+  );
+}
+
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
-  fidgetName: "feed",
+  fidgetName: "Feed",
   fields: [
+    {
+      fieldName: "selectPlatform",
+      displayName: "Select App",
+      inputSelector: PlatformSelector,
+      required: false,
+      default: { name: "farcaster", Icon: "/images/farcaster.jpeg" },
+    },
     {
       fieldName: "feedType",
       displayName: "Feed Type",
       inputSelector: FeedTypeSelector,
       required: false,
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
       default: FeedType.Following,
+    },
+    {
+      fieldName: "Xhandle",
+      displayName: "Username",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) => settings.selectPlatform.name === "Farcaster",
+      default: "thenounspace",
     },
     {
       fieldName: "filterType",
       displayName: "Filter Type",
       inputSelector: FilterTypeSelector,
       required: false,
-      disabledIf: (settings) => settings.feedType !== FeedType.Filter,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.selectPlatform.name === "The other app",
       default: FilterType.Users,
     },
     {
       fieldName: "users",
-      displayName: "Users",
+      displayName: "FID",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
-        settings.filterType !== FilterType.Users,
+        settings.filterType !== FilterType.Users ||
+        settings.selectPlatform.name === "The other app",
       default: "",
     },
     {
@@ -90,7 +143,52 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.filterType !== FilterType.Channel,
       default: "",
     },
-    ...defaultStyleFields,
+    {
+      fieldName: "style",
+      displayName: "Feed Style",
+      inputSelector: XStyleSelector,
+      required: false,
+      group: "style",
+      disabledIf: (settings) =>
+        settings.selectPlatform.name !== "The other app",
+      default: "light",
+    },
+    {
+      fieldName: "background",
+      default: "var(--user-theme-fidget-background)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings.selectPlatform.name === "The other app",
+    },
+    {
+      fieldName: "fidgetBorderWidth",
+      default: "var(--user-theme-fidget-border-width)",
+      required: false,
+      inputSelector: BorderSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings.selectPlatform.name === "The other app",
+    },
+    {
+      fieldName: "fidgetBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings.selectPlatform.name === "The other app",
+    },
+    {
+      fieldName: "fidgetShadow",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: ShadowSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings.selectPlatform.name === "The other app",
+    },
   ],
   size: {
     minHeight: 2,
@@ -107,6 +205,7 @@ export const FEED_TYPES = [
 ];
 
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
+  const { selectPlatform, Xhandle, style } = settings;
   const { feedType, users, channel, filterType } = settings;
   const { fid } = useFarcasterSigner("feed");
   const {
@@ -153,6 +252,28 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       onSelect={onSelectCast}
     />
   );
+
+  const renderXFeed = () => {
+    const theme = style || "light";
+    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=false&hideHeader=false&hideScrollBar=true&lang=en&origin=https%3A%2F%2Fpublish.twitter.com%2F%23&theme=${theme}&widgetsVersion=2615f7e52b7e0%3A1702314776716`;
+
+    return (
+      <iframe
+        src={url}
+        style={{ border: "none", width: "100%", height: "100%" }}
+        title="Twitter Feed"
+        scrolling="no"
+        frameBorder="0"
+      />
+    );
+  };
+
+  const renderFeedContent = () => {
+    if (selectPlatform.name === "The other app") {
+      return renderXFeed();
+    }
+    return renderFeed();
+  };
 
   const renderFeed = () => {
     return (
@@ -210,7 +331,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           isThreadView ? "invisible" : "visible",
         )}
       >
-        {renderFeed()}
+        {renderFeedContent()}
       </div>
     </>
   );

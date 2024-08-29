@@ -33,7 +33,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
         return (
           <div
             key={fidgetModule.properties.fidgetName}
-            className="z-20 droppable-element h-full"
+            className="z-20 droppable-element flex justify-center items-center transition-transform duration-300"
             draggable={true}
             // unselectable helps with IE support
             // eslint-disable-next-line react/no-unknown-property
@@ -53,23 +53,32 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
           >
             <button
               key={fidgetId}
-              className="size-full"
+              className="w-32 h-32 flex flex-col items-center justify-center p-2"
               onClick={() => addFidgetToTray(fidgetId, fidgetModule)}
+              style={{ transform: "scale(1)", transition: "transform 0.3s" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "scale(1.05)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "scale(1)";
+              }}
             >
-              <Card className="size-full bg-[#F3F4F6]">
-                <CardContent className="overflow-hidden">
-                  <div className="bg-white m-2 rounded-lg h-20">
+              <Card className="w-full h-full bg-[#F3F4F6] flex flex-col items-center justify-center p-2">
+                <CardContent className="overflow-hidden flex flex-col items-center justify-center p-2">
+                  <div className="flex items-center justify-center w-16 h-16 mb-2">
+                    {" "}
+                    {/* Icon Container */}
                     <span
-                      className={
-                        "size-full flex items-center justify-center text-5xl"
-                      }
+                      className="text-2xl leading-none" // Consistent icon size
                       role="img"
                       aria-label={fidgetModule.properties.fidgetName}
                     >
                       {String.fromCodePoint(fidgetModule.properties.icon)}
                     </span>
                   </div>
-                  <span className="text-md text-black block capitalize">
+                  <span className="text-sm text-black text-center leading-none">
+                    {" "}
+                    {/* Text Container */}
                     {fidgetModule.properties.fidgetName}
                   </span>
                 </CardContent>
@@ -83,21 +92,15 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
 
   return (
     <div className="h-full overflow-y-auto">
-      <div className="flex pb-4 m-2">
-        <button
-          onClick={() => {
-            setIsPickingFidget(false);
-          }}
-          className="my-auto"
-        >
+      <div className="flex pb-4 m-2 items-center">
+        <button onClick={() => setIsPickingFidget(false)} className="my-auto">
           <BackArrowIcon />
         </button>
         <h1 className="capitalize text-lg pl-4">Add Fidget</h1>
       </div>
-
       <section
         id="Fidgets"
-        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1 gap-4"
+        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1"
       >
         {generateFidgetCards()}
       </section>

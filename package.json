@@ -1,6 +1,6 @@
 {
   "name": "Nounspace",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "",
   "private": true,
   "scripts": {
@@ -45,7 +45,7 @@
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.4",
     "@internationalized/date": "^3.5.4",
-    "@lifi/widget": "^3.3.0",
+    "@lifi/widget": "^3.4.4",
     "@mod-protocol/core": "^0.2.1",
     "@mod-protocol/mod-registry": "^0.2.2",
     "@mod-protocol/react": "^0.2.0",

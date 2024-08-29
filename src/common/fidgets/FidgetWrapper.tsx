@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useAppStore } from "@/common/data/stores/app";
 import { Card, CardContent } from "@/common/components/atoms/card";
 import { toast } from "sonner";
 import {
@@ -24,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../components/atoms/tooltip";
+import { getFidgetCardStyles } from "@/common/lib/theme/helpers";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
@@ -64,6 +66,11 @@ export function FidgetWrapper({
   removeFidget,
   minimizeFidget,
 }: FidgetWrapperProps) {
+  const { homebaseConfig } = useAppStore((state) => ({
+    homebaseConfig: state.homebase.homebaseConfig,
+  }));
+
+  console.log(homebaseConfig);
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
@@ -222,12 +229,11 @@ export function FidgetWrapper({
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
             : "size-full overflow-hidden"
         }
-        style={{
-          boxShadow: settingsWithDefaults.fidgetShadow,
-          borderWidth: settingsWithDefaults.fidgetBorderWidth,
-          borderColor: settingsWithDefaults.fidgetBorderColor,
-          background: settingsWithDefaults.background,
-        }}
+        style={getFidgetCardStyles({
+          background: homebaseConfig?.theme?.properties.fidgetBackground,
+          borderColor: homebaseConfig?.theme?.properties.fidgetBorderColor,
+          settings: settingsWithDefaults,
+        })}
       >
         {bundle.config.editable && (
           <button

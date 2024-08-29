@@ -265,9 +265,9 @@ export const BuilderProposalDetailView = ({
                 value={proposal.voteSnapshotBlock}
               />
             </div>
-            <ReactMarkdown className="prose">
-              {proposal.description}
-            </ReactMarkdown>
+            <div className="flex flex-col gap-2 p-5">
+              <ReactMarkdown>{proposal.description}</ReactMarkdown>
+            </div>
           </div>
         </div>
       </div>

@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
-import { ThemeSettings } from "@/common/lib/theme";
-import { Color, FontFamily } from "@/common/lib/theme";
+import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
-import TextInput from "@/common/components/molecules/TextInput";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
 import {
   analytics,
@@ -32,8 +30,7 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/common/components/atoms/tooltip";
-import { FaInfoCircle, FaPencilAlt } from "react-icons/fa";
-import { FaArrowLeftLong } from "react-icons/fa6";
+import { FaInfoCircle } from "react-icons/fa";
 import { THEMES } from "@/constants/themes";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
@@ -52,7 +49,39 @@ export function ThemeSettingsEditor({
   cancelExitEditMode,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(
+    theme.properties.musicURL,
+  );
   const [activeTheme, setActiveTheme] = useState(theme.id);
+
+  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+    const query = event.target.value;
+    setSearchQuery(query);
+
+    if (query.length > 2) {
+      searchYouTube(query);
+    }
+  }
+
+  async function searchYouTube(query: string) {
+    try {
+      const response = await fetch(
+        `/api/youtube-search?query=${encodeURIComponent(query)}`,
+      );
+      const data = await response.json();
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error("Error fetching YouTube search results:", error);
+    }
+  }
+
+  function handleVideoSelect(videoId: string) {
+    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+    setSelectedVideo(videoUrl);
+    themePropSetter("musicURL")(videoUrl);
+  }
 
   function themePropSetter<T extends string>(
     property: string,
@@ -98,30 +127,36 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
-
   return (
     <>
       <div className="flex flex-col h-full gap-6">
         {/* Theme Editor Title */}
-        <div className="flex items-center gap-1">
+        <div className="flex-col items-center">
           <div className="font-semibold">Edit Theme</div>
+          <p className="text-gray-400 text-sm">
+            Select a template or{" "}
+            <a
+              href="https://nounspace.notion.site/Quick-start-Customization-f5aae8f1bef24309a13ca561d7b80fa7?pvs=4"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="underline cursor-pointer"
+            >
+              learn how to customize
+            </a>
+          </p>
         </div>
-
         <div className="h-full overflow-auto flex flex-col gap-4 -mx-2 px-2">
           <div className="grid gap-4">
-            {/* Theme Card Example */}
-            <ThemeCard themeProps={theme.properties} />
-
-            {/* Templates Dropdown */}
             <label>
               <input
                 className="peer/showLabel absolute scale-0"
                 type="checkbox"
               />
-              <span className="block max-h-14 max-w-xs overflow-hidden rounded-lg px-4 py-0 shadow-md transition-all duration-300 peer-checked/showLabel:max-h-full">
-                <h4 className="flex h-14 cursor-pointer items-center font-bold">
-                  Templates
-                </h4>
+              {/* Templates Dropdown */}
+              <span className="block max-h-12 max-w-xs overflow-hidden rounded-lg transition-all duration-300 peer-checked/showLabel:max-h-full p-1">
+                {/* Theme Card Example */}
+                <ThemeCard themeProps={theme.properties} />
+
                 <div className="grid grid-cols-2 gap-3 pb-3 pt-3">
                   {THEMES.map((theme, i) => (
                     <ThemeCard
@@ -139,11 +174,11 @@ export function ThemeSettingsEditor({
             <div className="grid gap-2">
               <Tabs defaultValue="fonts">
                 <TabsList className={tabListClasses}>
-                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
-                    Fonts
-                  </TabsTrigger>
                   <TabsTrigger value="style" className={tabTriggerClasses}>
                     Style
+                  </TabsTrigger>
+                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
+                    Fonts
                   </TabsTrigger>
                   <TabsTrigger value="code" className={tabTriggerClasses}>
                     Code
@@ -289,12 +324,49 @@ export function ThemeSettingsEditor({
             <div className="grid gap-2">
               <div className="flex flex-row gap-1">
                 <h4 className="text-sm mt-4">Music</h4>
-                <ThemeSettingsTooltip text="Paste the youtube link for any song, video, or playlist." />
+                <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
               </div>
-              <TextInput
-                value={musicURL}
-                onChange={themePropSetter<string>("musicURL")}
+              <input
+                type="text"
+                placeholder="Search or paste YouTube link"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="input-classname rounded-sm p-1 border border-gray-300"
               />
+              <ul className="mt-2">
+                {searchResults.map((result: any) => (
+                  <li
+                    key={result.id.videoId}
+                    onClick={() => {
+                      handleVideoSelect(result.id.videoId);
+                      setSearchResults([]);
+                    }}
+                    className="cursor-pointer hover:bg-gray-200 p-2 rounded text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <img
+                        className="rounded-sm h-8"
+                        src={result.snippet.thumbnails.default.url}
+                        alt={result.snippet.title}
+                      />
+                      <span>{result.snippet.title}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              {selectedVideo && (
+                <div className="mt-4">
+                  <h5> Selected Song:</h5>
+                  <iframe
+                    width="100%"
+                    height="150"
+                    className="rounded-lg"
+                    src={`https://www.youtube.com/embed/${new URL(selectedVideo).searchParams.get("v")}`}
+                    frameBorder="0"
+                    allowFullScreen
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>

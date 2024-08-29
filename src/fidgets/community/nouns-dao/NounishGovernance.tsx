@@ -10,32 +10,48 @@ import {
   NOUNS_PROPOSALS_QUERY,
   NOUNS_PROPOSAL_DETAIL_QUERY,
 } from "@/common/lib/utils/queries";
-import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import { DaoSelector } from "@/common/components/molecules/DaoSelector";
+import { NOUNS_DAO } from "@/constants/basedDaos";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
+  selectedDao: {
+    name: string;
+    contract: string;
+    graphUrl: string;
+    icon: string;
+  };
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
-  fidgetName: "governance",
+  fidgetName: "Proposals",
   icon: 0x1f3db,
   fields: [
     {
-      fieldName: "subgraphUrl",
-      default:
-        "https://api.goldsky.com/api/public/project_cldf2o9pqagp43svvbk5u3kmo/subgraphs/nouns/prod/gn",
-      required: true,
-      inputSelector: TextInput,
+      fieldName: "selectedDao",
+      default: {
+        name: "Nouns DAO",
+        contract: "", // nouns dao does not have a contract address
+        graphUrl: NOUNS_DAO,
+      }, // Updated default value
+      required: false,
+      inputSelector: DaoSelector,
     },
-    {
-      fieldName: "daoContractAddress",
-      default: "Only for Builder Daos",
-      required: true,
-      inputSelector: TextInput,
-    },
+    // {
+    //   fieldName: "customSubgraphUrl",
+    //   default: "",
+    //   required: true,
+    //   inputSelector: TextInput,
+    // },
+    // {
+    //   fieldName: "customDaoContractAddress",
+    //   default: "",
+    //   required: true,
+    //   inputSelector: TextInput,
+    // },
     ...defaultStyleFields,
   ],
   size: {
@@ -54,20 +70,32 @@ export const NounishGovernance: React.FC<
   const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
   const [proposalVersions, setProposalVersions] = useState<any[]>([]);
   const [proposalLoading, setProposalLoading] = useState<boolean>(false);
+  const [selectedDao, setSelectedDao] = useState<{
+    name: string;
+    contract: string;
+    graphUrl: string;
+    icon: string;
+  }>(settings.selectedDao);
+
+  useEffect(() => {
+    setSelectedDao(settings.selectedDao);
+  }, [settings.selectedDao]);
 
   const isBuilderSubgraph = useMemo(
-    () => settings.subgraphUrl.includes("nouns-builder-base-mainnet"),
-    [settings.subgraphUrl],
+    () => selectedDao?.graphUrl.includes("nouns-builder-base-mainnet") || false,
+    [selectedDao?.graphUrl],
   );
 
-  const daoContractAddress = settings.daoContractAddress;
+  const daoContractAddress =
+    selectedDao?.contract || settings.daoContractAddress;
+  const graphUrl = selectedDao?.graphUrl || settings.subgraphUrl;
 
   const {
     data: proposalsData,
     loading: listLoading,
     error: listError,
   } = useGraphqlQuery({
-    url: settings.subgraphUrl,
+    url: graphUrl,
     query: isBuilderSubgraph
       ? NOUNSBUILD_PROPOSALS_QUERY
       : NOUNS_PROPOSALS_QUERY,
@@ -81,7 +109,7 @@ export const NounishGovernance: React.FC<
     loading: detailLoading,
     error: detailError,
   } = useGraphqlQuery({
-    url: settings.subgraphUrl,
+    url: graphUrl,
     query: NOUNS_PROPOSAL_DETAIL_QUERY,
     skip: !proposalId || isBuilderSubgraph,
     variables: { id: proposalId },
@@ -147,6 +175,8 @@ export const NounishGovernance: React.FC<
           setProposal={handleSetProposal}
           loading={listLoading}
           isBuilderSubgraph={isBuilderSubgraph}
+          title={isBuilderSubgraph ? selectedDao.name : "Nouns DAO"}
+          daoIcon={selectedDao.icon || "images/nounspace_logo.png"}
         />
       )}
     </CardContent>

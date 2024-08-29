@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -110,11 +110,13 @@ export default function Space({
   return (
     <div className="user-theme-background w-full h-full relative">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      { isNil(profile) &&
       <TabBar
         hasProfile={!isNil(profile)}
         inEditMode={editMode}
         profileFid={fid ? fid : 0}
       />
+       }
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col">
           <div style={{ position: "fixed", zIndex: 9999 }}>
