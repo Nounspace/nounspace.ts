@@ -10,7 +10,6 @@ import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
 import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
-import neynar from "@/common/data/api/neynar";
 import NogsGateButton from "./NogsGateButton";
 
 interface TabBarProps {
@@ -38,15 +37,12 @@ const TabBar = memo(function TabBar({
     loadSpaceOrdering,
     updateTabOrdering,
     updateSpaceOrdering,
-    commitTabOrdering,
-    commitSpaceOrdering,
     commitTabToDatabase,
     commitSpaceToDatabase,
     commitHomebaseToDatabase,
     createTab,
     createSpace,
     deleteTab,
-    deleteSpace,
     renameTab,
     renameSpace,
   } = useAppStore((state) => ({
@@ -58,12 +54,9 @@ const TabBar = memo(function TabBar({
     loadSpaceOrdering: state.space.loadSpaceOrderForFid,
     updateTabOrdering: state.homebase.updateTabOrdering,
     updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
-    commitTabOrdering: state.homebase.commitTabOrderingToDatabase,
-    commitSpaceOrdering: state.space.commitSpaceOrderToDatabase,
     createTab: state.homebase.createTab,
     createSpace: state.space.registerSpace,
     deleteTab: state.homebase.deleteTab,
-    deleteSpace: state.space.clear,
     renameTab: state.homebase.renameTab,
     renameSpace: state.space.renameSpace,
   }));
@@ -203,8 +196,7 @@ const TabBar = memo(function TabBar({
     setSpaceTabs(newSpaceOrdering.map((x) => x.name));
 
     // Update
-    updateSpaceOrdering(profileFid, newSpaceOrdering);
-    commitSpaceOrdering(profileFid);
+    updateSpaceOrdering(profileFid, newSpaceOrdering, true);
   }
 
   async function pushNewTabOrdering(newTabOrder: string[]) {
@@ -230,11 +222,9 @@ const TabBar = memo(function TabBar({
         }
 
         // Save locally then commit
-        updateSpaceOrdering(profileFid, newSpaceOrdering);
-        commitSpaceOrdering(profileFid);
+        updateSpaceOrdering(profileFid, newSpaceOrdering, true);
       } else {
-        updateTabOrdering(newTabOrder);
-        commitTabOrdering();
+        updateTabOrdering(newTabOrder, true);
       }
     }
   }

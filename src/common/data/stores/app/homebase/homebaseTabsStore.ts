@@ -20,11 +20,7 @@ import {
   UnsignedManageHomebaseTabsRequest,
 } from "@/pages/api/space/homebase/tabs";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import {
-  homebasePath,
-  homebaseTabOrderPath,
-  homebaseTabsPath,
-} from "@/constants/supabase";
+import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
@@ -45,7 +41,7 @@ interface HomeBaseTabStoreState {
 interface HomeBaseTabStoreActions {
   loadTabNames: () => Promise<string[]>;
   loadTabOrdering: () => Promise<string[]>;
-  updateTabOrdering: (newOrdering: string[]) => void;
+  updateTabOrdering: (newOrdering: string[], commit?: boolean) => void;
   commitTabOrderingToDatabase: () => Promise<void> | undefined;
   renameTab: (tabName: string, newName: string) => Promise<void>;
   deleteTab: (tabName: string) => Promise<void>;
@@ -75,10 +71,13 @@ export const createHomeBaseTabStoreFunc = (
   get: StoreGet<AppStore>,
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
-  updateTabOrdering(newOrdering) {
+  updateTabOrdering(newOrdering, commit = false) {
     set((draft) => {
       draft.homebase.tabOrdering.local = newOrdering;
     }, "updateTabOrdering");
+    if (commit) {
+      get().homebase.commitTabOrderingToDatabase();
+    }
   },
   async loadTabOrdering() {
     const supabase = createClient();
