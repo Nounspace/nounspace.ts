@@ -406,13 +406,28 @@ export const getSignatureForUsernameProof = async (
   return signature;
 };
 
-export async function getChannelForUser(
+export async function fetchChannelsForUser(
   fid: number,
   limit: number = 20,
 ): Promise<Channel[]> {
   try {
     const channelsResponse = await axiosBackend.get(
       `/api/farcaster/neynar/active-channels/?limit=${limit}&fid=${fid}`,
+    );
+    console.log({ channelsResponse });
+    return channelsResponse.data.channels as Channel[];
+  } catch (e) {
+    return [] as Channel[];
+  }
+}
+
+export async function fetchChannelsByName(
+  query: string,
+  limit: number = 20,
+): Promise<Channel[]> {
+  try {
+    const channelsResponse = await axiosBackend.get(
+      `/api/farcaster/neynar/search-channels?limit=${limit}&q=${query}`,
     );
     console.log({ channelsResponse });
     return channelsResponse.data.channels as Channel[];

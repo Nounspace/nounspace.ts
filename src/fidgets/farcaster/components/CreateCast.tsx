@@ -34,7 +34,11 @@ import { PhotoIcon } from "@heroicons/react/20/solid";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
-import { getChannelForUser, submitCast } from "../utils";
+import {
+  fetchChannelsByName,
+  fetchChannelsForUser,
+  submitCast,
+} from "../utils";
 import { bytesToHex } from "@noble/ciphers/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -138,9 +142,11 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
   const debouncedGetChannels = useCallback(
     debounce(
       async (query: string) => {
-        // const channels = await getChannelForUser(fid);
-        const channels = await getChannelForUser(196328);
-        return channels;
+        if (query && query !== "") {
+          return await fetchChannelsByName(query);
+        } else {
+          return await fetchChannelsForUser(196328);
+        }
       },
       200,
       { leading: true, trailing: false },
