@@ -117,7 +117,7 @@ export default function Space({
           profileFid={fid ? fid : 0}
         />
       )}
-      <div className="w-full transition-all duration-100 ease-out h-full">
+      <div className="w-full transition-all duration-100 ease-out h-[calc(100vh-64px)]">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
