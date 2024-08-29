@@ -87,6 +87,21 @@
   }
 } */
 
+.tabs li button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: #fff;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  stroke: #000;
+  margin-left: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .grabbable {
   cursor: move; /* fallback if grab cursor is unsupported */
   cursor: grab;

@@ -8,9 +8,10 @@ import {
 } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
-import { homebasePath } from "@/constants/supabase";
+import { homebaseTabsPath, homebasePath } from "@/constants/supabase";
 import { isArray, isNil, isUndefined, map } from "lodash";
 import { StorageError } from "@supabase/storage-js";
+import stringify from "fast-json-stable-stringify";
 
 const homeBaseTabRequestTypes = ["create", "rename", "delete"] as const;
 export type HomeBaseTabRequestType = (typeof homeBaseTabRequestTypes)[number];
@@ -36,7 +37,7 @@ function isUpdateHomebaseRequest(
     isSignable(maybe) &&
     typeof maybe["publicKey"] === "string" &&
     typeof maybe["type"] === "string" &&
-    maybe.type in homeBaseTabRequestTypes &&
+    homeBaseTabRequestTypes.includes(maybe.type as HomeBaseTabRequestType) &&
     typeof maybe["tabName"] === "string"
   );
 }
@@ -45,8 +46,8 @@ async function manageHomebaseTabs(
   req: NextApiRequest,
   res: NextApiResponse<ManageHomebaseTabsResponse>,
 ) {
-  const updateReq: ManageHomebaseTabsRequest = req.body;
-  if (!isUpdateHomebaseRequest) {
+  const updateReq: ManageHomebaseTabsRequest = req.body.request;
+  if (!isUpdateHomebaseRequest(updateReq)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -80,23 +81,21 @@ async function manageHomebaseTabs(
     const { error } = await supabase.storage
       .from("private")
       .upload(
-        `${homebasePath(updateReq.publicKey)}Tabs/${updateReq.tabName}`,
-        new Blob(),
+        `${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`,
+        new Blob([stringify(req.body.file)], { type: "application/json" }),
       );
     errorResult = error;
   } else if (updateReq.type === "delete") {
     const { error } = await supabase.storage
       .from("private")
-      .remove([
-        `${homebasePath(updateReq.publicKey)}Tabs/${updateReq.tabName}`,
-      ]);
+      .remove([`${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`]);
     errorResult = error;
   } else {
     const { error } = await supabase.storage
       .from("private")
       .move(
-        `${homebasePath(updateReq.publicKey)}Tabs/${updateReq.tabName}`,
-        `${homebasePath(updateReq.publicKey)}Tabs/${updateReq.newName!}`,
+        `${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`,
+        `${homebaseTabsPath(updateReq.publicKey, updateReq.newName!)}`,
       );
     errorResult = error;
   }
@@ -121,7 +120,7 @@ export async function listTabsForIdentity(
 ): Promise<string[]> {
   const { data: listResults, error: listErrors } = await supabase.storage
     .from("private")
-    .list(`${homebasePath(identityPublicKey)}Tabs/`);
+    .list(`${homebaseTabsPath(identityPublicKey, "")}`);
   if (listErrors) {
     return [];
   }

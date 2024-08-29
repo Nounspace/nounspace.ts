@@ -7,38 +7,12 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   layoutID,
   layoutDetails: {
     layoutConfig: {
-      layout: [
-        {
-          w: 5,
-          h: 8,
-          x: 0,
-          y: 0,
-          i: "feed:profile",
-          minW: 4,
-          maxW: 36,
-          minH: 6,
-          maxH: 36,
-          moved: false,
-          static: false,
-        },
-      ],
+      layout: [],
     },
     layoutFidget: "grid",
   },
   theme: DEFAULT_THEME,
-  fidgetInstanceDatums: {
-    "feed:profile": {
-      config: {
-        editable: false,
-        settings: {
-          feedType: FeedType.Following,
-        },
-        data: {},
-      },
-      fidgetType: "feed",
-      id: "feed:profile",
-    },
-  },
+  fidgetInstanceDatums: {},
   isEditable: true,
   fidgetTrayContents: [],
 };

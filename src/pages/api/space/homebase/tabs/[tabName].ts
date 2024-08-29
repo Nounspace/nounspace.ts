@@ -9,7 +9,7 @@ import {
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
-import { homebasePath } from "@/constants/supabase";
+import { homebasePath, homebaseTabsPath } from "@/constants/supabase";
 import { findIndex, isArray, isUndefined } from "lodash";
 import { listTabsForIdentity } from ".";
 
@@ -61,19 +61,19 @@ async function updateHomebaseTab(
   }
   const tabs = await listTabsForIdentity(file.publicKey);
 
-  if (findIndex(tabs, tabName) === -1) {
-    res.status(500).json({
-      result: "error",
-      error: {
-        message: "Tab does not exist",
-      },
-    });
-  }
+  // if (findIndex(tabs, tabName) === -1) {
+  //   res.status(500).json({
+  //     result: "error",
+  //     error: {
+  //       message: "Tab does not exist",
+  //     },
+  //   });
+  // }
 
   const { error } = await supabase.storage
     .from("private")
     .upload(
-      `${homebasePath(file.publicKey)}Tabs/${tabName}`,
+      `${homebaseTabsPath(file.publicKey, tabName)}`,
       new Blob([stringify(file)], { type: "application/json" }),
       {
         upsert: true,
