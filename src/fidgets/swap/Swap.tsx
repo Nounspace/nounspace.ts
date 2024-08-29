@@ -33,7 +33,7 @@ export type LifiFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const lifiProperties: FidgetProperties = {
-  fidgetName: "swap",
+  fidgetName: "Swap",
   icon: 0x1f501,
   fields: [
     {

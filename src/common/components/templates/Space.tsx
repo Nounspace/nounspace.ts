@@ -108,25 +108,27 @@ export default function Space({
   };
 
   return (
-    <div className="user-theme-background w-full h-full relative">
+    <div className="user-theme-background w-full h-full relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      { isNil(profile) &&
-      <TabBar
-        hasProfile={!isNil(profile)}
-        inEditMode={editMode}
-        profileFid={fid ? fid : 0}
-      />
-       }
-      <div className="w-full transition-all duration-100 ease-out">
-        <div className="flex flex-col">
+      {isNil(profile) && (
+        <TabBar
+          hasProfile={!isNil(profile)}
+          inEditMode={editMode}
+          profileFid={fid ? fid : 0}
+        />
+      )}
+      <div className="w-full transition-all duration-100 ease-out h-full">
+        <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
-          <div className="flex">
-            {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
+          <div className="flex h-full">
+            {!isUndefined(feed) ? (
+              <div className="w-6/12 grow">{feed}</div>
+            ) : null}
             <div className={isUndefined(feed) ? "grow" : "grow"}>
               <LayoutFidget
                 layoutConfig={{ ...layoutConfig }}
