@@ -15,14 +15,12 @@ import NogsGateButton from "./NogsGateButton";
 interface TabBarProps {
   hasProfile: boolean;
   inEditMode: boolean;
-  openFidgetPicker: () => void;
   profileFid: number;
 }
 
 const TabBar = memo(function TabBar({
   hasProfile,
   inEditMode,
-  openFidgetPicker,
   profileFid,
 }: TabBarProps) {
   const { fid: userFid } = useFarcasterSigner("navigation");
@@ -354,7 +352,7 @@ const TabBar = memo(function TabBar({
       </Reorder.Group>
 
       {inEditMode ? (
-        <div className="flex flex-row">
+        <div className="flex flex-row pr-32">
           <NogsGateButton
             onClick={handleCreateTab}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
@@ -364,16 +362,6 @@ const TabBar = memo(function TabBar({
             </div>
             <span className="ml-4 mr-2">Tab</span>
           </NogsGateButton>
-
-          <button
-            onClick={openFidgetPicker}
-            className="flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-          >
-            <div className="ml-2">
-              <AddFidgetIcon />
-            </div>
-            <span className="ml-4 mr-2">Fidget</span>
-          </button>
         </div>
       ) : null}
     </div>

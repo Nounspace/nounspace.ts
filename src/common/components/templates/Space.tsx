@@ -12,6 +12,7 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "../organisms/InfoBanner";
+import TabBar from "../organisms/TabBar";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -109,8 +110,13 @@ export default function Space({
   return (
     <div className="user-theme-background w-full h-full relative">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full transition-all duration-100 ease-out h-full">
-        <div className="h-full flex flex-col">
+      <TabBar
+        hasProfile={!isNil(profile)}
+        inEditMode={editMode}
+        profileFid={fid ? fid : 0}
+      />
+      <div className="w-full transition-all duration-100 ease-out">
+        <div className="flex flex-col">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
           </div>
@@ -119,7 +125,7 @@ export default function Space({
           ) : null}
           <div className="flex">
             {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
-            <div className={isUndefined(feed) ? "" : "w-6/12"}>
+            <div className={isUndefined(feed) ? "grow" : "grow"}>
               <LayoutFidget
                 layoutConfig={{ ...layoutConfig }}
                 fidgetInstanceDatums={config.fidgetInstanceDatums}
@@ -132,7 +138,6 @@ export default function Space({
                 saveConfig={saveLocalConfig}
                 hasProfile={!isNil(profile)}
                 hasFeed={!isNil(feed)}
-                fid={fid}
               />
             </div>
           </div>

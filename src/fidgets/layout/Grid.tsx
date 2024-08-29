@@ -25,6 +25,7 @@ import {
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
 import TabBar from "@/common/components/organisms/TabBar";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -333,25 +334,18 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      <TabBar
-        hasProfile={hasProfile}
-        inEditMode={inEditMode}
-        openFidgetPicker={openFidgetPicker}
-        profileFid={fid}
-      />
-
-      {/* { !hasProfile ?
-         <TabBar
-         hasProfile={hasProfile}
-         inEditMode={inEditMode}
-         openFidgetPicker={openFidgetPicker}
-         profileFid={fid}
-        />
-        :
-        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white"/>
-      } */}
-
       <div className="flex flex-col z-10">
+        {inEditMode && (
+          <button
+            onClick={openFidgetPicker}
+            className="flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
+          >
+            <div className="ml-2">
+              <AddFidgetIcon />
+            </div>
+            <span className="ml-4 mr-2">Fidget</span>
+          </button>
+        )}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
