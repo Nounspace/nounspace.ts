@@ -74,9 +74,7 @@ const TabBar = memo(function TabBar({
     localSpaceStore: state.space.spaceLookups,
   }));
 
-  const userLocalSpaceStore = hasProfile
-    ? localSpaceStore[profileFid].local
-    : ([] as SpaceLookupInfo[]);
+  const [spaceTabs, setSpaceTabs] = useState([] as string[]);
   const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("");
   const urlPieces = router.asPath.split("/");
@@ -107,9 +105,10 @@ const TabBar = memo(function TabBar({
     // Prevent work from being lost
     if (inEditMode) {
       if (hasProfile) {
-        if (userLocalSpaceStore.some((x) => x.name === tabName)) {
+        if (localSpaceStore[profileFid].local.some((x) => x.name === tabName)) {
           commitSpaceToDatabase(
-            userLocalSpaceStore.find((x) => x.name === tabName)!.spaceId,
+            localSpaceStore[profileFid].local.find((x) => x.name === tabName)!
+              .spaceId,
           );
         }
       } else if (
@@ -130,6 +129,7 @@ const TabBar = memo(function TabBar({
       if (hasProfile) {
         // Load the space ordering
         await loadSpaceOrdering(profileFid);
+        //localSpaceStore[profileFid].local = localSpaceStore[profileFid].local
       } else {
         // Check actual files
         const namesList = await loadTabNames();
@@ -154,43 +154,23 @@ const TabBar = memo(function TabBar({
   // Initial variables load
   useEffect(() => {
     if (!hasFetchedTabs) {
+      console.log("fid: " + profileFid);
       getTabNames();
       updateCurrentSelection();
-
-      if (hasProfile) {
-        const tabNames = userLocalSpaceStore.map(function (space) {
-          return space.name;
-        });
-
-        tabNames.forEach((tabName: string) => {
-          const href = hasProfile
-            ? `/s/${username}/${tabName}`
-            : tabName == "Feed"
-              ? `/homebase`
-              : `/homebase/${tabName}`;
-
-          router.prefetch(href);
-        });
-      } else {
-        // Prefetch all the tabs
-        localTabStore.forEach((tabName: string) => {
-          const href = hasProfile
-            ? `/s/${username}/${tabName}`
-            : tabName == "Feed"
-              ? `/homebase`
-              : `/homebase/${tabName}`;
-
-          router.prefetch(href);
-        });
-      }
     }
   }, []);
+
+  useEffect(() => {
+    if (localSpaceStore[profileFid] != undefined) {
+      setSpaceTabs(localSpaceStore[profileFid].local.map((x) => x.name));
+    }
+  }, [localSpaceStore]);
 
   async function commitTab(tabName: string) {
     if (inEditMode) {
       if (hasProfile) {
         // Find the associated spaceId
-        const currentSpaceID = userLocalSpaceStore.find(
+        const currentSpaceID = localSpaceStore[profileFid].local.find(
           (x) => x.name === tabName,
         );
         commitSpaceToDatabase(currentSpaceID!.spaceId);
@@ -211,9 +191,11 @@ const TabBar = memo(function TabBar({
         loadSpaceOrdering(profileFid);
         const newSpaceOrdering = [] as SpaceLookupInfo[];
         newTabOrder.forEach((tab) => {
-          const currSpaceLookup = userLocalSpaceStore.filter((obj) => {
-            return obj.name === tab;
-          });
+          const currSpaceLookup = localSpaceStore[profileFid].local.filter(
+            (obj) => {
+              return obj.name === tab;
+            },
+          );
           newSpaceOrdering.concat(currSpaceLookup);
         });
 
@@ -229,14 +211,14 @@ const TabBar = memo(function TabBar({
 
   function generateTabName() {
     const endIndex = hasProfile
-      ? userLocalSpaceStore.length + 1
+      ? localSpaceStore[profileFid].local.length + 1
       : localTabStore.length + 1;
     const base = `Tab ${endIndex}`;
     let newName = base;
     let iter = 1;
 
     const tabNames = hasProfile
-      ? userLocalSpaceStore.map(function (space) {
+      ? localSpaceStore[profileFid].local.map(function (space) {
           return space.name;
         })
       : localTabStore;
@@ -316,7 +298,7 @@ const TabBar = memo(function TabBar({
         axis="x"
         onReorder={pushNewTabOrdering}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
-        values={localTabStore}
+        values={hasProfile ? spaceTabs : localTabStore}
       >
         <AnimatePresence initial={false}>
           {!hasProfile && (
