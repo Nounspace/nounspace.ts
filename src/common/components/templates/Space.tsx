@@ -130,9 +130,7 @@ export default function Space({
             saveConfig={saveLocalConfig}
             hasProfile={!isNil(profile)}
             hasFeed={!isNil(feed)}
-            fid={() => {
-              isNil(profile) ? 1 : fid;
-            }}
+            fid={fid}
           />
         </div>
       </div>

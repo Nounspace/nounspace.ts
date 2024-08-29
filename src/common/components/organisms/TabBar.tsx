@@ -184,20 +184,42 @@ const TabBar = memo(function TabBar({
     }
   }
 
+  function addNewSpaceLookup(info: SpaceLookupInfo) {
+    const newSpaceOrdering = [] as SpaceLookupInfo[];
+
+    // Copy existing array
+    if (localSpaceStore[profileFid] != undefined) {
+      localSpaceStore[profileFid].local.forEach((val) =>
+        newSpaceOrdering.push(Object.assign({}, val)),
+      );
+    }
+
+    // Add our new space lookup to it
+    newSpaceOrdering.push(info);
+
+    // Update
+    updateSpaceOrdering(profileFid, newSpaceOrdering);
+    commitSpaceOrdering(profileFid);
+  }
+
   async function pushNewTabOrdering(newTabOrder: string[]) {
     if (inEditMode) {
       if (hasProfile) {
-        // Generate new spaceLookupInfo array
+        // Generate new SpaceLookup
         loadSpaceOrdering(profileFid);
         const newSpaceOrdering = [] as SpaceLookupInfo[];
-        newTabOrder.forEach((tab) => {
-          const currSpaceLookup = localSpaceStore[profileFid].local.filter(
-            (obj) => {
-              return obj.name === tab;
-            },
-          );
-          newSpaceOrdering.concat(currSpaceLookup);
-        });
+
+        if (localSpaceStore[profileFid] != undefined) {
+          newTabOrder.forEach((tabName) => {
+            const currSpaceLookup = {
+              name: tabName,
+              spaceId: localSpaceStore[profileFid].local.find(
+                (x) => x.name === tabName,
+              )!.spaceId,
+            };
+            newSpaceOrdering.push(currSpaceLookup);
+          });
+        }
 
         // Save locally then commit
         updateSpaceOrdering(profileFid, newSpaceOrdering);
@@ -211,17 +233,13 @@ const TabBar = memo(function TabBar({
 
   function generateTabName() {
     const endIndex = hasProfile
-      ? localSpaceStore[profileFid].local.length + 1
+      ? spaceTabs.length + 1
       : localTabStore.length + 1;
     const base = `Tab ${endIndex}`;
     let newName = base;
     let iter = 1;
 
-    const tabNames = hasProfile
-      ? localSpaceStore[profileFid].local.map(function (space) {
-          return space.name;
-        })
-      : localTabStore;
+    const tabNames = hasProfile ? spaceTabs : localTabStore;
 
     while (tabNames.includes(newName)) {
       newName = base + ` (${iter})`;
@@ -280,14 +298,18 @@ const TabBar = memo(function TabBar({
       const newTabName = generateTabName();
 
       if (hasProfile) {
-        createSpace(profileFid, newTabName);
+        const spaceId = await createSpace(profileFid, newTabName);
+
+        if (spaceId != undefined) {
+          addNewSpaceLookup({ spaceId: spaceId, name: newTabName });
+          switchTab(newTabName);
+        }
       } else {
         createTab(newTabName);
         const newTabNames = localTabStore.concat(newTabName);
         pushNewTabOrdering(newTabNames);
+        switchTab(newTabName);
       }
-
-      switchTab(newTabName);
     }
   }
 

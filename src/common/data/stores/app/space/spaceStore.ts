@@ -149,6 +149,14 @@ export const createSpaceStoreFunc = (
     }
   },
   updateLocalSpaceOrdering(fid, newOrder) {
+    if (get().space.spaceLookups[fid] == undefined) {
+      set((draft) => {
+        draft.space.spaceLookups[fid] = {
+          local: [],
+          remote: [],
+        };
+      }, "updateLocalSpaceOrdering");
+    }
     set((draft) => {
       draft.space.spaceLookups[fid].local = newOrder;
     }, "updateLocalSpaceOrdering");

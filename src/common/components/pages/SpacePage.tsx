@@ -48,6 +48,7 @@ export default function SpacePage({
           editMode={editMode}
           setSidebarEditable={setSidebarEditable}
           portalRef={portalRef}
+          fid={fid}
         />
       )}
     </>
