@@ -11,6 +11,7 @@ import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
 import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import neynar from "@/common/data/api/neynar";
+import NogsGateButton from "./NogsGateButton";
 
 interface TabBarProps {
   hasProfile: boolean;
@@ -356,7 +357,7 @@ const TabBar = memo(function TabBar({
 
       {inEditMode ? (
         <div className="flex flex-row">
-          <button
+          <NogsGateButton
             onClick={handleCreateTab}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
@@ -364,7 +365,7 @@ const TabBar = memo(function TabBar({
               <FaPlus />
             </div>
             <span className="ml-4 mr-2">Tab</span>
-          </button>
+          </NogsGateButton>
 
           <button
             onClick={openFidgetPicker}
