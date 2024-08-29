@@ -12,7 +12,7 @@ type SpacePageArgs = {
   profile?: ReactNode;
   feed?: ReactNode;
   loading?: boolean;
-  fid: number;
+  fid?: number;
 };
 
 export default function SpacePage({
