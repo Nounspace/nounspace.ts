@@ -108,7 +108,7 @@ export function ThemeSettingsEditor({
           <p className="text-gray-400 text-sm">
             Select a template or{" "}
             <a
-              href="https://nounspace.notion.site/Step-by-step-instructions-f760579615b44efb84dcc30647a87e61?pvs=4"
+              href="https://nounspace.notion.site/Quick-start-Customization-f5aae8f1bef24309a13ca561d7b80fa7?pvs=4"
               target="_blank"
               rel="noreferrer noopener"
               className="underline cursor-pointer"
