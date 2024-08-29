@@ -20,7 +20,7 @@ import { defaultStyleFields } from "@/fidgets/helpers";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
-enum FilterType {
+export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
 }
@@ -28,8 +28,8 @@ enum FilterType {
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users: string; // this should be a number array, but that requires special inputs to build later
-  channel: string;
+  users?: string; // this should be a number array, but that requires special inputs to build later
+  channel?: string;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
