@@ -95,14 +95,18 @@ interface SpaceState {
   >;
 }
 
-interface SpaceLookupInfo {
+export interface SpaceLookupInfo {
   spaceId: string;
   name: string;
 }
 
 interface SpaceActions {
   loadSpaceOrderForFid: (fid: number) => Promise<SpaceLookupInfo[]>;
-  updateLocalSpaceOrdering: (fid: number, newOrder: SpaceLookupInfo[]) => void;
+  updateLocalSpaceOrdering: (
+    fid: number,
+    newOrder: SpaceLookupInfo[],
+    commit?: boolean,
+  ) => void;
   commitSpaceOrderToDatabase: (fid: number) => Promise<void> | undefined;
   loadSpace: (spaceId: string, fid: number) => Promise<void>;
   registerSpace: (fid: number, name: string) => Promise<string | undefined>;
@@ -133,25 +137,52 @@ export const createSpaceStoreFunc = (
   async loadSpaceOrderForFid(fid) {
     try {
       const { data } = await axiosBackend.get<UpdateSpaceOrderResponse>(
-        `/api/space/spaceOrdering`,
+        `/api/space/spaceOrder`,
         { params: { fid } },
       );
       if (data && data.result === "success") {
         set((draft) => {
-          draft.space.spaceLookups[fid].local = cloneDeep(data.value!);
-          draft.space.spaceLookups[fid].remote = cloneDeep(data.value!);
+          draft.space.spaceLookups[fid] = {
+            local: cloneDeep(data.value || []),
+            remote: cloneDeep(data.value || []),
+          };
+        }, "commitSpaceOrderToDatabase");
+        return data.value || [];
+      } else {
+        set((draft) => {
+          draft.space.spaceLookups[fid] = {
+            local: [],
+            remote: [],
+          };
         }, "commitSpaceOrderToDatabase");
       }
-      return data.value!;
+      return [];
     } catch (e) {
       console.error(e);
+      set((draft) => {
+        draft.space.spaceLookups[fid] = {
+          local: [],
+          remote: [],
+        };
+      }, "commitSpaceOrderToDatabase");
       return [];
     }
   },
-  updateLocalSpaceOrdering(fid, newOrder) {
+  updateLocalSpaceOrdering(fid, newOrder, commit = false) {
+    if (isUndefined(get().space.spaceLookups[fid])) {
+      set((draft) => {
+        draft.space.spaceLookups[fid] = {
+          local: [],
+          remote: [],
+        };
+      }, "initializeLocalSpaceOrdering");
+    }
     set((draft) => {
       draft.space.spaceLookups[fid].local = newOrder;
     }, "updateLocalSpaceOrdering");
+    if (commit) {
+      get().space.commitSpaceOrderToDatabase(fid);
+    }
   },
   commitSpaceOrderToDatabase: debounce(async (fid) => {
     const unsignedRequest: UnsignedUpdateSpaceOrderRequest = {
@@ -166,7 +197,7 @@ export const createSpaceStoreFunc = (
     );
     try {
       const { data } = await axiosBackend.post<UpdateSpaceOrderResponse>(
-        `/api/space/spaceOrdering`,
+        `/api/space/spaceOrder`,
         signedRequest,
       );
       if (data && data.result === "success") {

@@ -3,7 +3,6 @@ import { useLogin, usePrivy } from "@privy-io/react-auth";
 import React, { useEffect, useState } from "react";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import LoadingScreen from "../organisms/LoadingScreen";
-import NogsChecker from "../organisms/NogsChecker";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
@@ -76,8 +75,6 @@ const LoginModal = ({
         </>
       ) : null;
     }
-
-    if (currentStep === SetupStep.WALLET_CONNECTED) return <NogsChecker />;
 
     if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED)
       return CurrentInitializerComponent ? (
