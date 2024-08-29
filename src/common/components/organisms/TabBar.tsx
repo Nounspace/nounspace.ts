@@ -218,10 +218,10 @@ const TabBar = memo(function TabBar({
         });
 
         // Save locally then commit
-        await updateSpaceOrdering(profileFid, newSpaceOrdering);
+        updateSpaceOrdering(profileFid, newSpaceOrdering);
         commitSpaceOrdering(profileFid);
       } else {
-        await updateTabOrdering(newTabOrder);
+        updateTabOrdering(newTabOrder);
         commitTabOrdering();
       }
     }
@@ -267,6 +267,10 @@ const TabBar = memo(function TabBar({
         });
         await renameSpace(currSpaceLookup!.spaceId, newTabName);
       } else {
+        const newTabOrdering = localTabStore.map((currTab) =>
+          currTab == tabName ? newTabName : currTab,
+        );
+        await pushNewTabOrdering(newTabOrdering);
         await renameTab(tabName, newTabName);
       }
 
@@ -310,7 +314,7 @@ const TabBar = memo(function TabBar({
       <Reorder.Group
         as="ol"
         axis="x"
-        onReorder={updateTabOrdering}
+        onReorder={pushNewTabOrdering}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={localTabStore}
       >
