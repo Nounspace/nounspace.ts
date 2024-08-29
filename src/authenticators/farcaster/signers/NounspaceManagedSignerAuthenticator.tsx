@@ -229,7 +229,7 @@ const initializer: AuthenticatorInitializer<
   function devSignin() {
     saveData({
       ...data,
-      state: "completed",
+      status: "completed",
       userFid: devFid,
     });
   }
