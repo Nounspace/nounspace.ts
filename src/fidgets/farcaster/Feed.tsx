@@ -93,7 +93,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayName: "Select App",
       inputSelector: PlatformSelector,
       required: false,
-      default: { name: "farcaster", Icon: "/images/farcaster.jpeg" },
+      default: { name: "farcaster", icon: "/images/farcaster.jpeg" },
     },
     {
       fieldName: "feedType",
@@ -101,7 +101,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       inputSelector: FeedTypeSelector,
       required: false,
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform.name === "The other app",
       default: FeedType.Following,
     },
     {
@@ -205,7 +205,11 @@ export const FEED_TYPES = [
 ];
 
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
-  const { selectPlatform, Xhandle, style } = settings;
+  const {
+    selectPlatform = { name: "farcaster", icon: "/images/farcaster.jpeg" },
+    Xhandle,
+    style,
+  } = settings;
   const { feedType, users, channel, filterType } = settings;
   const { fid } = useFarcasterSigner("feed");
   const {

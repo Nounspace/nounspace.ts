@@ -5,6 +5,7 @@ import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomeb
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { FeedType } from "@neynar/nodejs-sdk";
+import { Platform } from "@/common/components/molecules/PlatformSelector";
 import { noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 
