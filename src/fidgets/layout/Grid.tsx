@@ -340,6 +340,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         profileFid={fid}
       />
 
+      {/* { !hasProfile ?
+         <TabBar
+         hasProfile={hasProfile}
+         inEditMode={inEditMode}
+         openFidgetPicker={openFidgetPicker}
+         profileFid={fid}
+        />
+        :
+        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white"/>
+      } */}
+
       <div className="flex flex-col z-10">
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
