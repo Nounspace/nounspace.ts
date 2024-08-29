@@ -230,7 +230,7 @@ const initializer: AuthenticatorInitializer<
     saveData({
       ...data,
       status: "completed",
-      userFid: devFid,
+      accountFid: Number(devFid),
     });
   }
 
