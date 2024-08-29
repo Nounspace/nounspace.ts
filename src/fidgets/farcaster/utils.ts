@@ -415,7 +415,7 @@ export async function getChannelForUser(
       `/api/farcaster/neynar/active-channels/?limit=${limit}&fid=${fid}`,
     );
     console.log({ channelsResponse });
-    return channelsResponse.data as Channel[];
+    return channelsResponse.data.channels as Channel[];
   } catch (e) {
     return [] as Channel[];
   }

@@ -5,11 +5,6 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function loadUserChannels(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { fid } = req.query;
-
-    console.log(req.query);
-    console.log(fid);
-
     const options: AxiosRequestConfig = {
       method: "GET",
       url: `https://api.neynar.com/v2/farcaster/channel/user`,
