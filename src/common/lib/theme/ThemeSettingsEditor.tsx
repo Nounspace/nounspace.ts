@@ -125,7 +125,7 @@ export function ThemeSettingsEditor({
                 type="checkbox"
               />
               {/* Templates Dropdown */}
-              <span className="block max-h-14 max-w-xs overflow-hidden rounded-lg   transition-all duration-300 peer-checked/showLabel:max-h-full">
+              <span className="block max-h-12 max-w-xs overflow-hidden rounded-lg transition-all duration-300 peer-checked/showLabel:max-h-full p-1">
                 {/* Theme Card Example */}
                 <ThemeCard themeProps={theme.properties} />
 
