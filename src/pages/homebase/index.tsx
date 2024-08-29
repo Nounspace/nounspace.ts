@@ -68,6 +68,9 @@ const Homebase: NextPageWithLayout = () => {
           feedType: FeedType.Filter,
           users: String(currentFid),
           filterType: FilterType.Users,
+          selectPlatform: { name: "farcaster", icon: "/images/farcaster.jpeg" },
+          Xhandle: "",
+          style: "",
         }}
         saveData={async () => noop()}
         data={{}}
