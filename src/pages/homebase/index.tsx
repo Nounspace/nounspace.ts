@@ -60,18 +60,19 @@ const Homebase: NextPageWithLayout = () => {
           resetConfig,
         };
 
-  // Add feed to the args
-  args.feed = (
-    <FeedModule.fidget
-      settings={{
-        feedType: FeedType.Filter,
-        users: String(currentFid ?? ""),
-        filterType: FilterType.Users,
-      }}
-      saveData={async () => noop()}
-      data={{}}
-    />
-  );
+  if (currentFid) {
+    args.feed = (
+      <FeedModule.fidget
+        settings={{
+          feedType: FeedType.Filter,
+          users: String(currentFid),
+          filterType: FilterType.Users,
+        }}
+        saveData={async () => noop()}
+        data={{}}
+      />
+    );
+  }
 
   return <SpacePage {...args} />;
 };

@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useMemo } from "react";
+import React, { ReactNode, useEffect } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -117,21 +117,25 @@ export default function Space({
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
-          {/* add feed here and have it take up half of the space */}
-          <LayoutFidget
-            layoutConfig={{ ...layoutConfig }}
-            fidgetInstanceDatums={config.fidgetInstanceDatums}
-            theme={config.theme}
-            fidgetTrayContents={config.fidgetTrayContents}
-            inEditMode={editMode}
-            saveExitEditMode={saveExitEditMode}
-            cancelExitEditMode={cancelExitEditMode}
-            portalRef={portalRef}
-            saveConfig={saveLocalConfig}
-            hasProfile={!isNil(profile)}
-            hasFeed={!isNil(feed)}
-            fid={fid}
-          />
+          <div className="flex">
+            {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
+            <div className={isUndefined(feed) ? "" : "w-6/12"}>
+              <LayoutFidget
+                layoutConfig={{ ...layoutConfig }}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                theme={config.theme}
+                fidgetTrayContents={config.fidgetTrayContents}
+                inEditMode={editMode}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                portalRef={portalRef}
+                saveConfig={saveLocalConfig}
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+                fid={fid}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>
