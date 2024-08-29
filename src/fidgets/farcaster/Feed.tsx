@@ -26,7 +26,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
-enum FilterType {
+export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
 }
@@ -34,8 +34,8 @@ enum FilterType {
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users: string; // this should be a number array, but that requires special inputs to build later
-  channel: string;
+  users?: string; // this should be a number array, but that requires special inputs to build later
+  channel?: string;
   selectPlatform: Platform;
   Xhandle: string;
   style: string;

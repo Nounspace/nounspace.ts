@@ -2,7 +2,11 @@ import React, { useEffect } from "react";
 import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
-import SpacePage from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
+import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
+import { FeedType } from "@neynar/nodejs-sdk";
+import { noop } from "lodash";
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 
 const Homebase: NextPageWithLayout = () => {
   const {
@@ -26,6 +30,7 @@ const Homebase: NextPageWithLayout = () => {
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
+  const currentFid = useCurrentFid();
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
 
@@ -33,7 +38,7 @@ const Homebase: NextPageWithLayout = () => {
     isLoggedIn && loadConfig();
   }, [isLoggedIn]);
 
-  const args = isInitializing
+  const args: SpacePageArgs = isInitializing
     ? {
         config: homebaseConfig ?? undefined,
         saveConfig: undefined,
@@ -55,7 +60,19 @@ const Homebase: NextPageWithLayout = () => {
           resetConfig,
         };
 
-  // Add feed to the args
+  if (currentFid) {
+    args.feed = (
+      <FeedModule.fidget
+        settings={{
+          feedType: FeedType.Filter,
+          users: String(currentFid),
+          filterType: FilterType.Users,
+        }}
+        saveData={async () => noop()}
+        data={{}}
+      />
+    );
+  }
 
   return <SpacePage {...args} />;
 };
