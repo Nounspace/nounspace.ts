@@ -126,10 +126,8 @@ export default function Space({
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
           <div className="flex h-full">
-            {!isUndefined(feed) ? (
-              <div className="w-6/12 grow">{feed}</div>
-            ) : null}
-            <div className={isUndefined(feed) ? "grow" : "grow"}>
+            {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
+            <div className={"grow"}>
               <LayoutFidget
                 layoutConfig={{ ...layoutConfig }}
                 fidgetInstanceDatums={config.fidgetInstanceDatums}
