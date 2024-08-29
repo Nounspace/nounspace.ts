@@ -1,7 +1,7 @@
 import { useAppStore } from "@/common/data/stores/app";
 import { RECHECK_INITIAL_TIME } from "@/common/data/stores/app/setup";
 import React from "react";
-import { Button } from "../atoms/button";
+import { Button } from "@/common/components/atoms/button";
 
 export default function NogsChecker() {
   const { setRecheckTimerLength, setShouldRecheck, isChecking } = useAppStore(
@@ -18,11 +18,10 @@ export default function NogsChecker() {
     setShouldRecheck(true);
   }
 
-  // TO DO: Add place to mint nOGs here
   return (
     <>
       <p className="mb-2">
-        To customize a Space and Homebase, you must hold a nOGs NFT. Mint a pair{" "}
+        Tabs are only for nOG NFT holders. Mint a pair{" "}
         <a
           href="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
           rel="noopener noreferrer"
