@@ -16,15 +16,17 @@ interface TabBarProps {
   hasProfile: boolean;
   inEditMode: boolean;
   openFidgetPicker: () => void;
+  profileFid: number;
 }
 
 const TabBar = memo(function TabBar({
   hasProfile,
   inEditMode,
   openFidgetPicker,
+  profileFid,
 }: TabBarProps) {
-  const { fid } = useFarcasterSigner("navigation");
-  const { data } = useLoadFarcasterUser(fid);
+  const { fid: userFid } = useFarcasterSigner("navigation");
+  const { data } = useLoadFarcasterUser(userFid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
   const router = useRouter();
@@ -68,9 +70,15 @@ const TabBar = memo(function TabBar({
   const { localTabStore } = useAppStore((state) => ({
     localTabStore: state.homebase.tabOrdering.local,
   }));
+  const { localSpaceStore } = useAppStore((state) => ({
+    localSpaceStore: state.space.spaceLookups,
+  }));
+
+  const userLocalSpaceStore = hasProfile
+    ? localSpaceStore[profileFid].local
+    : ([] as SpaceLookupInfo[]);
   const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
   const [selectedTab, setSelectedTab] = useState("");
-  const [profileFID, setProfileFID] = useState(0);
   const urlPieces = router.asPath.split("/");
 
   function updateCurrentSelection() {
@@ -97,48 +105,31 @@ const TabBar = memo(function TabBar({
 
   function switchTab(tabName: string) {
     // Prevent work from being lost
-    if (
-      inEditMode &&
-      (localTabStore.includes(selectedTab) || selectedTab === "Feed")
-    ) {
-      commitTab(selectedTab);
+    if (inEditMode) {
+      if (hasProfile) {
+        if (userLocalSpaceStore.some((x) => x.name === tabName)) {
+          commitSpaceToDatabase(
+            userLocalSpaceStore.find((x) => x.name === tabName)!.spaceId,
+          );
+        }
+      } else if (
+        localTabStore.includes(selectedTab) ||
+        selectedTab === "Feed"
+      ) {
+        commitTab(selectedTab);
+      }
     }
 
     selectNewTab(tabName);
   }
 
-  async function getProfileFID() {
-    const username = decodeURI(urlPieces[urlPieces.length - 2]);
-
-    try {
-      const {
-        result: { user },
-      } = await neynar.lookupUserByUsername(username);
-      setProfileFID(user.fid);
-      return user.fid;
-    } catch (e) {
-      console.log("Hit an error: ", e);
-    }
-  }
-
   async function getTabNames() {
     try {
       setHasFetchedTabs(false);
+
       if (hasProfile) {
-        // Make sure we have an FID for the profile
-        if (profileFID === 0) {
-          await getProfileFID();
-        }
-
         // Load the space ordering
-        const freshSpaceOrdering = await loadSpaceOrdering(profileFID!);
-
-        // Convert it to strings
-        setTabNames(
-          freshSpaceOrdering.map((space: SpaceLookupInfo) => {
-            space.name;
-          }) as unknown as string[],
-        );
+        await loadSpaceOrdering(profileFid);
       } else {
         // Check actual files
         const namesList = await loadTabNames();
@@ -146,7 +137,7 @@ const TabBar = memo(function TabBar({
         if (namesList.length !== 0) {
           let remoteTabNames = await loadTabOrdering();
 
-          // Cross reference
+          // Cross reference and update
           remoteTabNames = remoteTabNames.filter((x) => namesList.includes(x));
           const remainder = namesList.filter(
             (x) => !remoteTabNames.includes(x),
@@ -162,34 +153,44 @@ const TabBar = memo(function TabBar({
 
   // Initial variables load
   useEffect(() => {
-    if (hasProfile) {
-      getProfileFID();
-    }
-
     if (!hasFetchedTabs) {
       getTabNames();
       updateCurrentSelection();
 
-      // Prefetch all the tabs
-      localTabStore.forEach((tabName: string) => {
-        const href = hasProfile
-          ? `/s/${username}/${tabName}`
-          : tabName == "Feed"
-            ? `/homebase`
-            : `/homebase/${tabName}`;
+      if (hasProfile) {
+        const tabNames = userLocalSpaceStore.map(function (space) {
+          return space.name;
+        });
 
-        router.prefetch(href);
-      });
+        tabNames.forEach((tabName: string) => {
+          const href = hasProfile
+            ? `/s/${username}/${tabName}`
+            : tabName == "Feed"
+              ? `/homebase`
+              : `/homebase/${tabName}`;
+
+          router.prefetch(href);
+        });
+      } else {
+        // Prefetch all the tabs
+        localTabStore.forEach((tabName: string) => {
+          const href = hasProfile
+            ? `/s/${username}/${tabName}`
+            : tabName == "Feed"
+              ? `/homebase`
+              : `/homebase/${tabName}`;
+
+          router.prefetch(href);
+        });
+      }
     }
   }, []);
 
   async function commitTab(tabName: string) {
     if (inEditMode) {
       if (hasProfile) {
-        // Load the space ordering
-        const freshSpaceOrdering = await loadSpaceOrdering(profileFID);
         // Find the associated spaceId
-        const currentSpaceID = freshSpaceOrdering.find(
+        const currentSpaceID = userLocalSpaceStore.find(
           (x) => x.name === tabName,
         );
         commitSpaceToDatabase(currentSpaceID!.spaceId);
@@ -207,18 +208,18 @@ const TabBar = memo(function TabBar({
     if (inEditMode) {
       if (hasProfile) {
         // Generate new spaceLookupInfo array
-        const spaceLookups = await loadSpaceOrdering(profileFID);
+        loadSpaceOrdering(profileFid);
         const newSpaceOrdering = [] as SpaceLookupInfo[];
         newTabOrder.forEach((tab) => {
-          const currSpaceLookup = spaceLookups.filter((obj) => {
+          const currSpaceLookup = userLocalSpaceStore.filter((obj) => {
             return obj.name === tab;
           });
           newSpaceOrdering.concat(currSpaceLookup);
         });
 
         // Save locally then commit
-        await updateSpaceOrdering(profileFID, newSpaceOrdering);
-        commitSpaceOrdering(profileFID);
+        await updateSpaceOrdering(profileFid, newSpaceOrdering);
+        commitSpaceOrdering(profileFid);
       } else {
         await updateTabOrdering(newTabOrder);
         commitTabOrdering();
@@ -227,11 +228,20 @@ const TabBar = memo(function TabBar({
   }
 
   function generateTabName() {
-    const base = `Tab ${localTabStore.length + 1}`;
+    const endIndex = hasProfile
+      ? userLocalSpaceStore.length + 1
+      : localTabStore.length + 1;
+    const base = `Tab ${endIndex}`;
     let newName = base;
     let iter = 1;
 
-    while (localTabStore.includes(newName)) {
+    const tabNames = hasProfile
+      ? userLocalSpaceStore.map(function (space) {
+          return space.name;
+        })
+      : localTabStore;
+
+    while (tabNames.includes(newName)) {
       newName = base + ` (${iter})`;
       iter += 1;
     }
@@ -250,10 +260,8 @@ const TabBar = memo(function TabBar({
 
   async function renameAndReload(tabName: string, newTabName: string) {
     if (inEditMode) {
-      await commitTab(tabName);
-
       if (hasProfile) {
-        const spaceLookups = await loadSpaceOrdering(profileFID);
+        const spaceLookups = await loadSpaceOrdering(profileFid);
         const currSpaceLookup = spaceLookups.find((obj) => {
           return obj.name === tabName;
         });
@@ -262,12 +270,7 @@ const TabBar = memo(function TabBar({
         await renameTab(tabName, newTabName);
       }
 
-      const newTabNames = localTabStore.map((currTab) =>
-        currTab == tabName ? newTabName : currTab,
-      );
-
-      pushNewTabOrdering(newTabNames);
-      switchTab(newTabName);
+      selectNewTab(newTabName);
     }
   }
 
@@ -291,13 +294,13 @@ const TabBar = memo(function TabBar({
       const newTabName = generateTabName();
 
       if (hasProfile) {
-        createSpace(profileFID, newTabName);
+        createSpace(profileFid, newTabName);
       } else {
         createTab(newTabName);
+        const newTabNames = localTabStore.concat(newTabName);
+        pushNewTabOrdering(newTabNames);
       }
 
-      const newTabNames = localTabStore.concat(newTabName);
-      pushNewTabOrdering(newTabNames);
       switchTab(newTabName);
     }
   }

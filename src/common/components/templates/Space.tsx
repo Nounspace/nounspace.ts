@@ -43,6 +43,7 @@ type SpaceArgs = {
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
   profile?: ReactNode;
+  fid?: number;
   feed?: ReactNode;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
@@ -56,6 +57,7 @@ export default function Space({
   commitConfig,
   resetConfig,
   profile,
+  fid,
   feed,
   setEditMode,
   editMode,
@@ -128,6 +130,9 @@ export default function Space({
             saveConfig={saveLocalConfig}
             hasProfile={!isNil(profile)}
             hasFeed={!isNil(feed)}
+            fid={() => {
+              isNil(profile) ? 1 : fid;
+            }}
           />
         </div>
       </div>

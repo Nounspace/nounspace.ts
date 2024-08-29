@@ -127,6 +127,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   portalRef,
   hasProfile,
   hasFeed,
+  fid,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
@@ -336,6 +337,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         hasProfile={hasProfile}
         inEditMode={inEditMode}
         openFidgetPicker={openFidgetPicker}
+        profileFid={fid}
       />
 
       <div className="flex flex-col z-10">
