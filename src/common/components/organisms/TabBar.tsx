@@ -76,9 +76,6 @@ const TabBar = memo(function TabBar({
   function updateCurrentSelection() {
     const pathEnd = decodeURI(urlPieces[urlPieces.length - 1]);
 
-    if (hasProfile) {
-    }
-
     if (pathEnd === "homebase") {
       setSelectedTab("Feed");
     } else {
@@ -198,7 +195,7 @@ const TabBar = memo(function TabBar({
       if (hasProfile) {
         // Generate new spaceLookupInfo array
         const spaceLookups = await loadSpaceOrdering(profileFID);
-        let newSpaceOrdering = [] as SpaceLookupInfo[];
+        const newSpaceOrdering = [] as SpaceLookupInfo[];
         newTabOrder.forEach((tab) => {
           const currSpaceLookup = spaceLookups.filter((obj) => {
             return obj.name === tab;
