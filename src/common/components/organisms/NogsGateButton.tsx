@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { Button, ButtonProps } from "../atoms/button";
 import NogsChecker from "./NogsChecker";
 import Modal from "../molecules/Modal";
+import { isUndefined } from "lodash";
 
 const NogsGateButton = (props: ButtonProps) => {
   const { user } = usePrivy();
@@ -75,8 +76,10 @@ const NogsGateButton = (props: ButtonProps) => {
     setNogsRecheckCountDown(0);
     setNogsShouldRecheck(false);
     if (user && user.wallet) {
-      if (await isHoldingNogs(user.wallet.address)) setHasNogs(true);
-      else {
+      if (await isHoldingNogs(user.wallet.address)) {
+        setHasNogs(true);
+        setModalOpen(false);
+      } else {
         setNogsRecheckTimerLength(
           nogsRecheckTimerLength * RECHECK_BACKOFF_FACTOR,
         );
@@ -110,7 +113,13 @@ const NogsGateButton = (props: ButtonProps) => {
       </Modal>
       <Button
         {...props}
-        onClick={() => (hasNogs ? props.onClick : setModalOpen(true))}
+        onClick={(e) =>
+          hasNogs
+            ? isUndefined(props.onClick)
+              ? undefined
+              : props.onClick(e)
+            : setModalOpen(true)
+        }
       ></Button>
     </>
   );
