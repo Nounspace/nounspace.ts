@@ -7,7 +7,6 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
-import TextInput from "@/common/components/molecules/TextInput";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
 import {
   analytics,
@@ -128,7 +127,6 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
-
   return (
     <>
       <div className="flex flex-col h-full gap-6">
@@ -326,7 +324,7 @@ export function ThemeSettingsEditor({
                 placeholder="Search or paste YouTube link"
                 value={searchQuery}
                 onChange={handleSearchChange}
-                className="input-classname"
+                className="input-classname rounded-sm p-1 border border-gray-300"
               />
               <ul className="mt-2">
                 {searchResults.map((result: any) => (
@@ -336,15 +334,22 @@ export function ThemeSettingsEditor({
                       handleVideoSelect(result.id.videoId);
                       setSearchResults([]);
                     }}
-                    className="cursor-pointer hover:bg-gray-200 p-2 rounded"
+                    className="cursor-pointer hover:bg-gray-200 p-2 rounded text-xs"
                   >
-                    {result.snippet.title}
+                    <div className="flex items-center gap-2">
+                      <img
+                        className="rounded-sm h-8"
+                        src={result.snippet.thumbnails.default.url}
+                        alt={result.snippet.title}
+                      />
+                      <span>{result.snippet.title}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
               {selectedVideo && (
                 <div className="mt-4">
-                  <h5>Selected Song:</h5>
+                  <h5> Selected Song:</h5>
                   <iframe
                     width="100%"
                     height="150"
