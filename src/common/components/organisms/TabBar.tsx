@@ -166,22 +166,20 @@ const TabBar = memo(function TabBar({
       getProfileFID();
     }
 
-    if (localTabStore.length == 0) {
-      if (!hasFetchedTabs) {
-        getTabNames();
-        updateCurrentSelection();
+    if (!hasFetchedTabs) {
+      getTabNames();
+      updateCurrentSelection();
 
-        // Prefetch all the tabs
-        localTabStore.forEach((tabName: string) => {
-          const href = hasProfile
-            ? `/s/${username}/${tabName}`
-            : tabName == "Feed"
-              ? `/homebase`
-              : `/homebase/${tabName}`;
+      // Prefetch all the tabs
+      localTabStore.forEach((tabName: string) => {
+        const href = hasProfile
+          ? `/s/${username}/${tabName}`
+          : tabName == "Feed"
+            ? `/homebase`
+            : `/homebase/${tabName}`;
 
-          router.prefetch(href);
-        });
-      }
+        router.prefetch(href);
+      });
     }
   }, []);
 
