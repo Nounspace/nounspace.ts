@@ -37,19 +37,6 @@ export default function NogsChecker() {
       <Button disabled={isChecking} onClick={userTriggeredRecheck}>
         {isChecking ? "Checking if you have nOGs" : "Check my nOGs!"}
       </Button>
-
-      <iframe
-        src="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
-        title="IFrame Fidget"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(100)`,
-          transformOrigin: "0 0",
-          width: `${200}%`,
-          height: `${200}%`,
-        }}
-        className="size-full"
-      />
     </>
   );
 }
