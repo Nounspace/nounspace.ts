@@ -135,6 +135,7 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
                   handleLinkChange(index, { ...link, url: e.target.value });
                   showAdditionalFields(index);
                 }}
+                onFocus={() => showAdditionalFields(index)}
               />
               <TextFieldSlot>
                 <p
