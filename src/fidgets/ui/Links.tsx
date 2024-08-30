@@ -4,7 +4,6 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { defaultStyleFields } from "../helpers";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import {
   CardHeader,
