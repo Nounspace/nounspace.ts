@@ -36,6 +36,8 @@ export type LinkFidgetSettings = {
   itemBackground: string;
   viewMode: ViewMode;
   description?: string;
+  DescriptionColor: string;
+  HeaderColor: string;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -55,7 +57,7 @@ export const linkConfig: FidgetProperties = {
         {
           text: "Nouns",
           url: "https://nouns.wtf",
-          avatar: "/images/nouns.svg",
+          avatar: "https://nouns.wtf/static/media/noggles.7644bfd0.svg",
           description: "Funds ideas",
         },
       ],
@@ -78,7 +80,14 @@ export const linkConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "fontColor",
+      fieldName: "HeaderColor",
+      default: "black",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "DescriptionColor",
       default: "black",
       required: false,
       inputSelector: ColorSelector,
@@ -153,6 +162,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         overflow: "auto",
         scrollbarWidth: "none",
         padding: "0.5rem",
+        borderRadius: "1rem",
       }}
     >
       {settings?.title && (
@@ -161,7 +171,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
             className="text-2xl font-bold"
             style={{
               fontFamily: settings.headingsFontFamily,
-              color: settings.fontColor,
+              color: settings.HeaderColor,
             }}
           >
             {settings.title}
@@ -223,12 +233,12 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                     className="items-start text-base font-normal text-black dark:text-white flex-grow"
                     style={{
                       fontFamily: settings.fontFamily,
-                      color: settings.fontColor,
+                      color: settings.HeaderColor,
                       textAlign: "left",
                       wordWrap: "break-word",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxHeight: "3rem", // Adjust this value to limit the height of the text
+                      maxHeight: "3rem",
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
@@ -242,11 +252,12 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                   </CardDescription>
                   {link.description && (
                     <p
-                      className="text-sm font-normal text-gray-500 dark:text-gray-400"
+                      className="text-sm font-normal"
                       style={{
                         wordWrap: "break-word",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        color: settings.DescriptionColor,
                       }}
                     >
                       {link.description}
