@@ -66,7 +66,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "viewMode",
-      default: "grid",
+      default: "list",
       required: false,
       inputSelector: SwitchButton,
       group: "style",
@@ -129,9 +129,9 @@ export const linkConfig: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 4,
+    minWidth: 2,
     maxWidth: 36,
   },
 };
@@ -141,12 +141,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
-  useEffect(() => {
-    console.log("Links fidget settings:", settings.links);
-  }, [settings.links]);
-  useEffect(() => {
-    console.log("Links fidget settings:", settings.links);
-  }, [settings.links]);
+
   return (
     <div
       style={{
