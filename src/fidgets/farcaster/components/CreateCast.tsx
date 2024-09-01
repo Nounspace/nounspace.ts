@@ -48,12 +48,6 @@ const debouncedGetMentions = debounce(getMentions, 200, {
   leading: true,
   trailing: false,
 });
-// const getChannels = getFarcasterChannels(API_URL);
-// const debouncedGetChannels = debounce(getChannels, 200, {
-//   leading: true,
-//   trailing: false,
-// });
-
 const getUrlMetadata = fetchUrlMetadata(API_URL);
 const getMentionFids = getMentionFidsByUsernames(API_URL);
 
@@ -136,7 +130,6 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
 
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
-  // Função debounced que retorna uma Promise
   const debouncedGetChannels = useCallback(
     debounce(
       async (query: string) => {
@@ -149,7 +142,7 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
       200,
       { leading: true, trailing: false },
     ),
-    [fid], // Dependências da função
+    [fid],
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
@@ -214,8 +207,6 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
     if (!editor) return; // no updates before editor is initialized
     if (isPublishing) return;
     if (draft?.parentUrl === channel?.parent_url) return;
-
-    console.log({ channel });
 
     const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
     setDraft({
