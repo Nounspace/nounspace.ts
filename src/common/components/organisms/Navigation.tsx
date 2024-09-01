@@ -167,7 +167,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       <Modal
         open={showCastModal}
         setOpen={setShowCastModal}
-        focusMode
+        focusMode={false}
         showClose={false}
       >
         <CreateCast />

@@ -136,8 +136,6 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
 
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
-  console.log({ fid });
-
   // Função debounced que retorna uma Promise
   const debouncedGetChannels = useCallback(
     debounce(
@@ -145,7 +143,7 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
         if (query && query !== "") {
           return await fetchChannelsByName(query);
         } else {
-          return await fetchChannelsForUser(196328);
+          return await fetchChannelsForUser(fid);
         }
       },
       200,
