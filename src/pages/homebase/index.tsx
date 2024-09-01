@@ -65,8 +65,8 @@ const Homebase: NextPageWithLayout = () => {
     args.feed = (
       <FeedModule.fidget
         settings={{
-          feedType: FeedType.Filter,
-          users: String(currentFid),
+          feedType: FeedType.Following,
+          users: "",
           filterType: FilterType.Users,
           selectPlatform: { name: "farcaster", icon: "/images/farcaster.jpeg" },
           Xhandle: "",

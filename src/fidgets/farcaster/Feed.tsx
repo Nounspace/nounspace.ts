@@ -109,7 +109,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayName: "Username",
       inputSelector: TextInput,
       required: false,
-      disabledIf: (settings) => settings.selectPlatform.name === "Farcaster",
+      disabledIf: (settings) => settings.selectPlatform.name === "farcaster",
       default: "thenounspace",
     },
     {
