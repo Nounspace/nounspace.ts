@@ -68,7 +68,7 @@ const Homebase: NextPageWithLayout = () => {
           feedType: FeedType.Following,
           users: "",
           filterType: FilterType.Users,
-          selectPlatform: { name: "farcaster", icon: "/images/farcaster.jpeg" },
+          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
           Xhandle: "",
           style: "",
         }}
