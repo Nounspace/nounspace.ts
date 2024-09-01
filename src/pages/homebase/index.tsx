@@ -57,8 +57,7 @@ const Homebase: NextPageWithLayout = () => {
 
   // Add feed to the args
 
-  // return <SpacePage {...args} />;
-  return <div></div>;
+  return <SpacePage {...args} />;
 };
 
 export default Homebase;
