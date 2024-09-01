@@ -414,7 +414,6 @@ export async function fetchChannelsForUser(
     const channelsResponse = await axiosBackend.get(
       `/api/farcaster/neynar/active-channels/?limit=${limit}&fid=${fid}`,
     );
-    console.log({ channelsResponse });
     return channelsResponse.data.channels as Channel[];
   } catch (e) {
     return [] as Channel[];
@@ -429,7 +428,6 @@ export async function fetchChannelsByName(
     const channelsResponse = await axiosBackend.get(
       `/api/farcaster/neynar/search-channels?limit=${limit}&q=${query}`,
     );
-    console.log({ channelsResponse });
     return channelsResponse.data.channels as Channel[];
   } catch (e) {
     return [] as Channel[];
