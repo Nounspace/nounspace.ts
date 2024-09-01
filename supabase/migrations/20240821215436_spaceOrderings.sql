@@ -10,8 +10,6 @@ create table "public"."spaceOrderings" (
 
 alter table "public"."spaceOrderings" enable row level security;
 
-alter table "public"."spaceRegistrations" drop column "isDefault";
-
 CREATE INDEX "fidRegistrations_fid_idx" ON public."fidRegistrations" USING btree (fid);
 
 CREATE UNIQUE INDEX "spaceOrderings_pkey" ON public."spaceOrderings" USING btree (id);
