@@ -93,7 +93,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayName: "Select App",
       inputSelector: PlatformSelector,
       required: false,
-      default: { name: "farcaster", icon: "/images/farcaster.jpeg" },
+      default: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     },
     {
       fieldName: "feedType",
@@ -206,7 +206,7 @@ export const FEED_TYPES = [
 
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   const {
-    selectPlatform = { name: "farcaster", icon: "/images/farcaster.jpeg" },
+    selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
     style,
   } = settings;
