@@ -94,12 +94,12 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
       const newLink = {
         text: "New Link",
         url: "https://",
-        avatar: "/images/chainEmoji.png",
+        avatar: "https://www.nounspace.com/images/chainEmoji.png",
         description: "Description",
       };
 
       onChange?.([...value, newLink]);
-      setVisibleFields([...visibleFields, true]); // Automatically expand new link
+      setVisibleFields([...visibleFields, true]);
     };
 
     const removeLink = (index: number) => {
@@ -133,8 +133,9 @@ const LinksInput = forwardRef<HTMLInputElement, LinksInputProps>(
                 value={link.url}
                 onChange={(e: any) => {
                   handleLinkChange(index, { ...link, url: e.target.value });
-                  showAdditionalFields(index); // Show fields when URL is updated
+                  showAdditionalFields(index);
                 }}
+                onFocus={() => showAdditionalFields(index)}
               />
               <TextFieldSlot>
                 <p
