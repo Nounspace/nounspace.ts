@@ -76,7 +76,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
 
   const [showCastModal, setShowCastModal] = useState(false);
   function openCastModal() {
-    setTimeout(() => (document.body.style.pointerEvents = ""), 0);
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
