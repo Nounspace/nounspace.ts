@@ -34,7 +34,7 @@ export const CompleteFidgets = {
   links: Links,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
-  Swap: Swap,
+  // Swap: Swap,
 };
 
 export const LayoutFidgets = {
