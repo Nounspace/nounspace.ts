@@ -170,7 +170,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         focusMode={false}
         showClose={false}
       >
-        <CreateCast />
+        <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
       <div className="pt-12 pb-12 h-full md:block hidden">

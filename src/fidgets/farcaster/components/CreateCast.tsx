@@ -81,6 +81,7 @@ export type DraftType = {
 
 type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
+  afterSubmit?: () => void;
 };
 
 export type ModProtocolCastAddBody = Exclude<
@@ -116,7 +117,10 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   }
 }
 
-const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
+const CreateCast: React.FC<CreateCastProps> = ({
+  initialDraft,
+  afterSubmit = () => {},
+}) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
@@ -149,6 +153,7 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
     await publishPost(draft, fid, signer);
+    afterSubmit();
     return true;
   };
 
