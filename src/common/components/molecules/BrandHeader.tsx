@@ -37,7 +37,7 @@ const BrandHeader = () => {
             <div className="flex flex-col gap-1">
               <a
                 className={`text-black text-base ${Londrina.className}`}
-                href="https://nounspace.com/s/wtfisnouns"
+                href="https://nouns.twf"
                 target="_blank"
                 rel="noopener noreferrer"
               >
