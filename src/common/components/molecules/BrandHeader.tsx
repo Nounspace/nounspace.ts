@@ -18,7 +18,7 @@ const BrandHeader = () => {
       <TooltipProvider>
         <Tooltip>
           <Link
-            href="/homebase"
+            href="https://nounspace.com/s/wtfisnouns"
             className="flex items-center ps-2.5"
             rel="noopener noreferrer"
           >
@@ -37,7 +37,7 @@ const BrandHeader = () => {
             <div className="flex flex-col gap-1">
               <a
                 className={`text-black text-base ${Londrina.className}`}
-                href="https://nouns.wtf"
+                href="https://nounspace.com/s/wtfisnouns"
                 target="_blank"
                 rel="noopener noreferrer"
               >
