@@ -182,53 +182,62 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
       <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"}>
         {links.length > 0 &&
           links.map((link, index) => (
-            <CardContent
-              style={{
-                background: settings.itemBackground,
-                wordWrap: "break-word",
-                maxHeight: "200px",
-                height: "auto",
-                display: "flex",
-                flexDirection: isGridView ? "column" : "row",
-                padding: isGridView ? "1rem" : "0.5rem",
-                margin: isGridView ? "0.25rem" : "0.5rem",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                transition: "transform 0.3s",
-              }}
-              className={
-                isGridView
-                  ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-                  : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-              }
+            <a
               key={index}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {link.avatar ? (
-                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage
-                    style={{ padding: "5px" }}
-                    src={link.avatar}
-                    alt={link.text}
-                  />
-                  <AvatarFallback>
-                    <span className="sr-only">{link.text}</span>
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage
-                    src="/images/chainEmoji.png"
-                    style={{ padding: "5px" }}
-                    alt={link.text}
-                  />
-                  <AvatarFallback>
-                    <span className="sr-only">{link.text}</span>
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              <CardContent
+                style={{
+                  background: settings.itemBackground,
+                  wordWrap: "break-word",
+                  maxHeight: "200px",
+                  height: "auto",
+                  display: "flex",
+                  flexDirection: isGridView ? "column" : "row",
+                  padding: isGridView ? "1rem" : "0.5rem",
+                  margin: isGridView ? "0.25rem" : "0.5rem",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  transition: "transform 0.3s",
+                }}
+                className={
+                  isGridView
+                    ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                    : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                }
+                key={index}
+              >
+                {link.avatar ? (
+                  <Avatar
+                    className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}
+                  >
+                    <AvatarImage
+                      style={{ padding: "5px" }}
+                      src={link.avatar}
+                      alt={link.text}
+                    />
+                    <AvatarFallback>
+                      <span className="sr-only">{link.text}</span>
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Avatar
+                    className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}
+                  >
+                    <AvatarImage
+                      src="/images/chainEmoji.png"
+                      style={{ padding: "5px" }}
+                      alt={link.text}
+                    />
+                    <AvatarFallback>
+                      <span className="sr-only">{link.text}</span>
+                    </AvatarFallback>
+                  </Avatar>
+                )}
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <CardDescription
                     className="items-start text-base font-normal text-black dark:text-white flex-grow"
                     style={{
@@ -263,9 +272,9 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                       {link.description}
                     </p>
                   )}
-                </a>
-              </div>
-            </CardContent>
+                </div>
+              </CardContent>
+            </a>
           ))}
       </div>
     </div>
