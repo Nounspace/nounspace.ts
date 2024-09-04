@@ -1,15 +1,17 @@
-import React, { ReactNode, useMemo } from "react";
+import React, { ReactNode, useState, useEffect } from "react";
 import { isUndefined } from "lodash";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
 export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
+  const [rowHeight, setRowHeight] = useState(70);
+  const { height } = useWindowSize();
   const maxRows = 12;
   const cols = 12;
   const margin = [16, 16];
   const containerPadding = [16, 16];
-  const { height } = useWindowSize();
-  const rowHeight = useMemo(
-    () =>
+
+  useEffect(() => {
+    setRowHeight(
       height
         ? Math.round(
             // The 64 magic number here is the height of the tabs bar above the grid
@@ -17,8 +19,9 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
               maxRows,
           )
         : 70,
-    [height],
-  );
+    ),
+      [height];
+  });
 
   return (
     <>
