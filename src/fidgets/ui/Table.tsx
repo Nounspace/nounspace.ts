@@ -16,10 +16,12 @@ import {
 } from "@/common/components/atoms/card";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 
 export type TableFidgetSettings = {
   title?: string;
   table: string;
+  tableBorderColor: string;
 } & FidgetSettingsStyle;
 
 export const tableConfig: FidgetProperties = {
@@ -80,20 +82,6 @@ export const tableConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "tableBackground",
-      default: "var(--user-theme-fidget-background)",
-      required: false,
-      inputSelector: ColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "tableBorderWidth",
-      default: "1",
-      required: false,
-      inputSelector: BorderSelector,
-      group: "style",
-    },
-    {
       fieldName: "tableBorderColor",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
@@ -121,6 +109,7 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
   settings,
 }) => {
   const [tableData, setTableData] = useState([]);
+  const [copiedIndex, setCopiedIndex] = useState(null);
 
   const parseCSV = (data) => {
     Papa.parse(data, {
@@ -138,6 +127,12 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
 
   const headers = tableData.length > 0 ? Object.keys(tableData[0]) : [];
 
+  const handleCopy = (content, index) => {
+    navigator.clipboard.writeText(content);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 3000);
+  };
+
   return (
     <div
       style={{
@@ -146,8 +141,13 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
         boxShadow: settings.fidgetShadow,
-        overflow: "scroll",
+        overflow: "auto",
         scrollbarWidth: "none",
+        color: settings.fontColor,
+        fontFamily: settings.fontFamily,
+        display: "flex",
+        flexDirection: "column",
+        textOverflow: "ellipsis",
       }}
     >
       {settings?.title && (
@@ -164,48 +164,81 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
         </CardHeader>
       )}
       {settings?.table && (
-        <CardContent className="p-4 pt-2">
-          <table
-            style={{
-              border: "1px solid black",
-              width: "100%",
-            }}
-          >
-            <thead>
-              <tr>
+        <table
+          style={{
+            border: "1px solid",
+            width: "100%",
+            height: "auto",
+            flexGrow: 1,
+            borderColor: settings.tableBorderColor,
+          }}
+          className="overflow-hidden"
+        >
+          <thead>
+            <tr>
+              {headers.map((header, index) => (
+                <th
+                  style={{
+                    borderStyle: "solid",
+                    borderWidth: "1px",
+                    borderColor: settings.tableBorderColor,
+                  }}
+                  className="p-2"
+                  key={index}
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, rowIndex) => (
+              <tr key={rowIndex} style={{ maxWidth: "100%" }}>
                 {headers.map((header, index) => (
-                  <th
+                  <td
                     style={{
-                      borderStyle: "solid",
-                      borderWidth: "1px",
-                      borderColor: "black",
+                      border: "1px solid",
+                      textAlign: "center",
+                      borderColor: settings.tableBorderColor,
+                      maxWidth: "100%",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      position: "relative",
                     }}
+                    className="p-2 group"
                     key={index}
                   >
-                    {header}
-                  </th>
+                    <span>{row[header]}</span>
+                    <button
+                      className="absolute right-2 group-hover:block hidden"
+                      onClick={() => handleCopy(row[header], rowIndex)}
+                      style={{
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        transition: "transform 0.3s ease",
+                      }}
+                    >
+                      {copiedIndex === rowIndex ? (
+                        <CheckIcon
+                          style={{
+                            transition: "color 1s ease",
+                          }}
+                        />
+                      ) : (
+                        <CopyIcon
+                          style={{
+                            transition: "color 0.3s ease",
+                          }}
+                        />
+                      )}
+                    </button>
+                  </td>
                 ))}
               </tr>
-            </thead>
-            <tbody>
-              {tableData.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {headers.map((header, index) => (
-                    <td
-                      style={{
-                        border: "1px solid black",
-                        textAlign: "center",
-                      }}
-                      key={index}
-                    >
-                      {row[header]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </CardContent>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
   );
