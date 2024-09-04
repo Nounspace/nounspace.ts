@@ -119,6 +119,7 @@
     "neverthrow": "^6.2.2",
     "next": "14.1",
     "next-themes": "^0.3.0",
+    "papaparse": "^5.4.1",
     "pino-pretty": "^11.2.0",
     "prop-types": "^15.8.1",
     "radix-colors-for-tailwind": "^2.0.0",

@@ -1,14 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
 import { defaultStyleFields } from "../helpers";
 import { FidgetSettingsStyle } from "@/common/fidgets";
+import Papa from "papaparse";
 import {
   CardHeader,
   CardContent,
@@ -16,6 +15,7 @@ import {
   CardDescription,
 } from "@/common/components/atoms/card";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 
 export type TableFidgetSettings = {
   title?: string;
@@ -35,7 +35,18 @@ export const tableConfig: FidgetProperties = {
     },
     {
       fieldName: "table",
-      default: "Jot down your ideas and grow them.",
+      default: `"Game Number", "Game Length"
+1, 30
+2, 29
+3, 31
+4, 16
+5, 24
+6, 29
+7, 28
+8, 117
+9, 42
+10, 23
+`,
       required: true,
       inputSelector: CSSInput,
       group: "settings",
@@ -68,6 +79,27 @@ export const tableConfig: FidgetProperties = {
       inputSelector: ColorSelector,
       group: "style",
     },
+    {
+      fieldName: "tableBackground",
+      default: "var(--user-theme-fidget-background)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "tableBorderWidth",
+      default: "1",
+      required: false,
+      inputSelector: BorderSelector,
+      group: "style",
+    },
+    {
+      fieldName: "tableBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
     ...defaultStyleFields,
     {
       fieldName: "css",
@@ -88,6 +120,24 @@ export const tableConfig: FidgetProperties = {
 export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
   settings,
 }) => {
+  const [tableData, setTableData] = useState([]);
+
+  const parseCSV = (data) => {
+    Papa.parse(data, {
+      header: true,
+      skipEmptyLines: true,
+      complete: function (results) {
+        setTableData(results.data);
+      },
+    });
+  };
+
+  useEffect(() => {
+    parseCSV(settings.table);
+  }, [settings.table]);
+
+  const headers = tableData.length > 0 ? Object.keys(tableData[0]) : [];
+
   return (
     <div
       style={{
@@ -95,9 +145,8 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
         height: "100%",
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
-        // Not visible because of the outer div having overflow: hidden
         boxShadow: settings.fidgetShadow,
-        overflow: "auto",
+        overflow: "scroll",
         scrollbarWidth: "none",
       }}
     >
@@ -116,21 +165,46 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
       )}
       {settings?.table && (
         <CardContent className="p-4 pt-2">
-          <CardDescription
-            className="table-base font-normal table-black dark:table-white"
+          <table
             style={{
-              fontFamily: settings.fontFamily,
-              color: settings.fontColor,
+              border: "1px solid black",
+              width: "100%",
             }}
           >
-            <ReactMarkdown
-              rehypePlugins={[rehypeRaw]}
-              remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers}
-            >
-              {settings.table}
-            </ReactMarkdown>
-          </CardDescription>
+            <thead>
+              <tr>
+                {headers.map((header, index) => (
+                  <th
+                    style={{
+                      borderStyle: "solid",
+                      borderWidth: "1px",
+                      borderColor: "black",
+                    }}
+                    key={index}
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {tableData.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {headers.map((header, index) => (
+                    <td
+                      style={{
+                        border: "1px solid black",
+                        textAlign: "center",
+                      }}
+                      key={index}
+                    >
+                      {row[header]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </CardContent>
       )}
     </div>
