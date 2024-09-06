@@ -9,7 +9,6 @@ import {
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
-import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 
 export type IFrameFidgetSettings = {
@@ -50,6 +49,16 @@ const frameConfig: FidgetProperties = {
   },
 };
 
+const transformUrl = (url: string) => {
+  if (url && url.match(/youtube\.com\/watch\?v=/)) {
+    return url.replace("watch?v=", "embed/");
+  }
+  if (url && url.match(/vimeo\.com\/\d+/)) {
+    return url.replace("vimeo.com", "player.vimeo.com/video");
+  }
+  return url;
+};
+
 const ErrorWrapper: React.FC<{
   message: React.ReactNode;
   icon?: React.ReactNode;
@@ -69,7 +78,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 }) => {
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
-
+  const transformedUrl = transformUrl(sanitizedUrl || "");
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
   }
@@ -78,7 +87,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
 
-  if (!sanitizedUrl) {
+  if (!transformedUrl) {
     return (
       <ErrorWrapper
         icon="🔒"
@@ -92,7 +101,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
-        src={sanitizedUrl}
+        src={transformedUrl}
         title="IFrame Fidget"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{
