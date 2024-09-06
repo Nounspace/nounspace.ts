@@ -35,7 +35,7 @@ const createIntialPersonSpaceConfigForFid = (
           settings: {
             feedType: FeedType.Filter,
             users: fid,
-            FilterType: FilterType.Fids,
+            filterType: FilterType.Fids,
           },
           data: {},
         },

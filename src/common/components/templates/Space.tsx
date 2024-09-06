@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, useMemo } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -12,6 +12,7 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "../organisms/InfoBanner";
+import TabBar from "../organisms/TabBar";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -43,6 +44,7 @@ type SpaceArgs = {
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
   profile?: ReactNode;
+  fid?: number;
   feed?: ReactNode;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
@@ -56,6 +58,7 @@ export default function Space({
   commitConfig,
   resetConfig,
   profile,
+  fid,
   feed,
   setEditMode,
   editMode,
@@ -105,30 +108,41 @@ export default function Space({
   };
 
   return (
-    <div className="user-theme-background w-full h-full relative">
+    <div className="user-theme-background w-full h-full relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full transition-all duration-100 ease-out h-full">
-        <div className="h-full flex flex-col">
+      {isNil(profile) && (
+        <TabBar
+          hasProfile={!isNil(profile)}
+          inEditMode={editMode}
+          profileFid={fid ? fid : 0}
+        />
+      )}
+      <div className="w-full transition-all duration-100 ease-out h-[calc(100vh-64px)]">
+        <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
-          {/* add feed here and have it take up half of the space */}
-          <LayoutFidget
-            layoutConfig={{ ...layoutConfig }}
-            fidgetInstanceDatums={config.fidgetInstanceDatums}
-            theme={config.theme}
-            fidgetTrayContents={config.fidgetTrayContents}
-            inEditMode={editMode}
-            saveExitEditMode={saveExitEditMode}
-            cancelExitEditMode={cancelExitEditMode}
-            portalRef={portalRef}
-            saveConfig={saveLocalConfig}
-            hasProfile={!isNil(profile)}
-            hasFeed={!isNil(feed)}
-          />
+          <div className="flex h-full">
+            {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
+            <div className={"grow"}>
+              <LayoutFidget
+                layoutConfig={{ ...layoutConfig }}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                theme={config.theme}
+                fidgetTrayContents={config.fidgetTrayContents}
+                inEditMode={editMode}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                portalRef={portalRef}
+                saveConfig={saveLocalConfig}
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

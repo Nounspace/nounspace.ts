@@ -4,7 +4,7 @@ import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
-type SpacePageArgs = {
+export type SpacePageArgs = {
   config?: SpaceConfig;
   saveConfig?: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig?: () => Promise<void>;
@@ -12,6 +12,7 @@ type SpacePageArgs = {
   profile?: ReactNode;
   feed?: ReactNode;
   loading?: boolean;
+  fid?: number;
 };
 
 export default function SpacePage({
@@ -22,6 +23,7 @@ export default function SpacePage({
   profile,
   loading,
   feed,
+  fid,
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
@@ -46,6 +48,7 @@ export default function SpacePage({
           editMode={editMode}
           setSidebarEditable={setSidebarEditable}
           portalRef={portalRef}
+          fid={fid}
         />
       )}
     </>
