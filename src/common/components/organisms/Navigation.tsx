@@ -163,10 +163,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       <Modal
         open={showCastModal}
         setOpen={setShowCastModal}
-        focusMode
+        focusMode={false}
         showClose={false}
       >
-        <CreateCast />
+        <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
       <div className="pt-12 pb-12 h-full md:block hidden">
