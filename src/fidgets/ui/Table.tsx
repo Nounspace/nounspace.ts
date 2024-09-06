@@ -14,17 +14,20 @@ import {
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
 import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import {
+  CSVSelector,
+  CSVSelectorOption,
+} from "@/common/components/molecules/CsvSelector";
 
 export type TableFidgetSettings = {
   title?: string;
   table: string;
   tableBorderColor: string;
+  selectInput: CSVSelectorOption;
 } & FidgetSettingsStyle;
 
-export const tableConfig: FidgetProperties = {
+export const tableConfig: FidgetProperties<TableFidgetSettings> = {
   fidgetName: "Table",
   icon: 0x1f4c4,
   fields: [
@@ -33,6 +36,14 @@ export const tableConfig: FidgetProperties = {
       default: "Table Fidget",
       required: false,
       inputSelector: TextInput,
+      group: "settings",
+    },
+    {
+      fieldName: "selectInput",
+      displayName: "Select Input",
+      inputSelector: CSVSelector,
+      required: false,
+      default: { name: "Text" },
       group: "settings",
     },
     {
@@ -52,6 +63,15 @@ export const tableConfig: FidgetProperties = {
       required: true,
       inputSelector: CSSInput,
       group: "settings",
+      disabledIf: (settings) => settings?.selectInput?.name === "External URL",
+    },
+    {
+      fieldName: "URL",
+      default: ``,
+      required: true,
+      inputSelector: TextInput,
+      group: "settings",
+      disabledIf: (settings) => settings?.selectInput?.name === "Text",
     },
     {
       fieldName: "fontFamily",
