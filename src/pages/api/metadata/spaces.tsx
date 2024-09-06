@@ -53,8 +53,8 @@ const ProfileCard = ({ userMetadata }: { userMetadata: UserMetadata }) => {
     >
       <img
         src={userMetadata.pfpUrl}
-        width={"120px"}
-        height={"120px"}
+        width={"180px"}
+        height={"180px"}
         style={{ borderRadius: "300px" }}
       />
       <p

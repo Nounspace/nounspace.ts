@@ -31,7 +31,6 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />
-      <meta property="og:image" content={ogImageUrl} />
       {bio && (
         <>
           <meta name="description" content={bio} />
@@ -41,9 +40,9 @@ export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
       )}
       {pfpUrl && (
         <>
-          <meta property="og:image" content={pfpUrl} />
           <meta name="twitter:card" content={pfpUrl} />
-          <meta name="twitter:image" content={pfpUrl} />
+          <meta property="og:image" content={ogImageUrl} />
+          <meta name="twitter:image" content={ogImageUrl} />
         </>
       )}
     </>
