@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from "react";
-import TextInput from "@/common/components/molecules/TextInput";
+import { CardHeader, CardTitle } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import ReactMarkdown from "react-markdown";
-import { defaultStyleFields } from "../helpers";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import Papa from "papaparse";
-import {
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/common/components/atoms/card";
-import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 import {
   CSVSelector,
   CSVSelectorOption,
 } from "@/common/components/molecules/CsvSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  FidgetSettingsStyle,
+} from "@/common/fidgets";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import Papa from "papaparse";
+import React, { useEffect, useState } from "react";
+import { defaultStyleFields } from "../helpers";
 
 export type TableFidgetSettings = {
   title?: string;
