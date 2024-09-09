@@ -34,3 +34,16 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
     group: "style",
   },
 ];
+
+export const transformUrl = (url: string) => {
+  if (url && url.match(/youtube\.com\/watch\?v=/)) {
+    return url.replace("watch?v=", "embed/");
+  }
+  if (url && url.match(/vimeo\.com\/\d+/)) {
+    return url.replace("vimeo.com", "player.vimeo.com/video");
+  }
+  if (url && url.match(/odysee\.com\/@/)) {
+    return url.replace("odysee.com", "odysee.com/$/embed");
+  }
+  return url;
+};
