@@ -4,7 +4,6 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { defaultStyleFields } from "../helpers";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import {
   CardHeader,
@@ -37,6 +36,8 @@ export type LinkFidgetSettings = {
   itemBackground: string;
   viewMode: ViewMode;
   description?: string;
+  DescriptionColor: string;
+  HeaderColor: string;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -56,7 +57,7 @@ export const linkConfig: FidgetProperties = {
         {
           text: "Nouns",
           url: "https://nouns.wtf",
-          avatar: "/images/nouns.svg",
+          avatar: "https://nouns.wtf/static/media/noggles.7644bfd0.svg",
           description: "Funds ideas",
         },
       ],
@@ -66,7 +67,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "viewMode",
-      default: "grid",
+      default: "list",
       required: false,
       inputSelector: SwitchButton,
       group: "style",
@@ -79,7 +80,14 @@ export const linkConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "fontColor",
+      fieldName: "HeaderColor",
+      default: "black",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "DescriptionColor",
       default: "black",
       required: false,
       inputSelector: ColorSelector,
@@ -129,9 +137,9 @@ export const linkConfig: FidgetProperties = {
     },
   ],
   size: {
-    minHeight: 1,
+    minHeight: 2,
     maxHeight: 36,
-    minWidth: 4,
+    minWidth: 2,
     maxWidth: 36,
   },
 };
@@ -141,12 +149,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
-  useEffect(() => {
-    console.log("Links fidget settings:", settings.links);
-  }, [settings.links]);
-  useEffect(() => {
-    console.log("Links fidget settings:", settings.links);
-  }, [settings.links]);
+
   return (
     <div
       style={{
@@ -159,6 +162,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         overflow: "auto",
         scrollbarWidth: "none",
         padding: "0.5rem",
+        borderRadius: "1rem",
       }}
     >
       {settings?.title && (
@@ -167,7 +171,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
             className="text-2xl font-bold"
             style={{
               fontFamily: settings.headingsFontFamily,
-              color: settings.fontColor,
+              color: settings.HeaderColor,
             }}
           >
             {settings.title}
@@ -178,63 +182,72 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
       <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"}>
         {links.length > 0 &&
           links.map((link, index) => (
-            <CardContent
-              style={{
-                background: settings.itemBackground,
-                wordWrap: "break-word",
-                maxHeight: "200px",
-                height: "auto",
-                display: "flex",
-                flexDirection: isGridView ? "column" : "row",
-                padding: isGridView ? "1rem" : "0.5rem",
-                margin: isGridView ? "0.25rem" : "0.5rem",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                transition: "transform 0.3s",
-              }}
-              className={
-                isGridView
-                  ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-                  : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-              }
+            <a
               key={index}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              {link.avatar ? (
-                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage
-                    style={{ padding: "5px" }}
-                    src={link.avatar}
-                    alt={link.text}
-                  />
-                  <AvatarFallback>
-                    <span className="sr-only">{link.text}</span>
-                  </AvatarFallback>
-                </Avatar>
-              ) : (
-                <Avatar className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}>
-                  <AvatarImage
-                    src="/images/chainEmoji.png"
-                    style={{ padding: "5px" }}
-                    alt={link.text}
-                  />
-                  <AvatarFallback>
-                    <span className="sr-only">{link.text}</span>
-                  </AvatarFallback>
-                </Avatar>
-              )}
+              <CardContent
+                style={{
+                  background: settings.itemBackground,
+                  wordWrap: "break-word",
+                  maxHeight: "200px",
+                  height: "auto",
+                  display: "flex",
+                  flexDirection: isGridView ? "column" : "row",
+                  padding: isGridView ? "1rem" : "0.5rem",
+                  margin: isGridView ? "0.25rem" : "0.5rem",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  transition: "transform 0.3s",
+                }}
+                className={
+                  isGridView
+                    ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                    : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                }
+                key={index}
+              >
+                {link.avatar ? (
+                  <Avatar
+                    className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}
+                  >
+                    <AvatarImage
+                      style={{ padding: "5px" }}
+                      src={link.avatar}
+                      alt={link.text}
+                    />
+                    <AvatarFallback>
+                      <span className="sr-only">{link.text}</span>
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Avatar
+                    className={isGridView ? "mb-2" : "mr-2 flex-shrink-0"}
+                  >
+                    <AvatarImage
+                      src="/images/chainEmoji.png"
+                      style={{ padding: "5px" }}
+                      alt={link.text}
+                    />
+                    <AvatarFallback>
+                      <span className="sr-only">{link.text}</span>
+                    </AvatarFallback>
+                  </Avatar>
+                )}
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <CardDescription
                     className="items-start text-base font-normal text-black dark:text-white flex-grow"
                     style={{
                       fontFamily: settings.fontFamily,
-                      color: settings.fontColor,
+                      color: settings.HeaderColor,
                       textAlign: "left",
                       wordWrap: "break-word",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      maxHeight: "3rem", // Adjust this value to limit the height of the text
+                      maxHeight: "3rem",
                       display: "-webkit-box",
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: "vertical",
@@ -248,19 +261,20 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                   </CardDescription>
                   {link.description && (
                     <p
-                      className="text-sm font-normal text-gray-500 dark:text-gray-400"
+                      className="text-sm font-normal"
                       style={{
                         wordWrap: "break-word",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
+                        color: settings.DescriptionColor,
                       }}
                     >
                       {link.description}
                     </p>
                   )}
-                </a>
-              </div>
-            </CardContent>
+                </div>
+              </CardContent>
+            </a>
           ))}
       </div>
     </div>

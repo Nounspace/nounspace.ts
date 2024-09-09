@@ -16,11 +16,7 @@ import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
-import {
-  AnalyticsEvent,
-  AnalyticsEventProperties,
-  analytics,
-} from "@/common/providers/AnalyticsProvider";
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
@@ -167,10 +163,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       <Modal
         open={showCastModal}
         setOpen={setShowCastModal}
-        focusMode
+        focusMode={false}
         showClose={false}
       >
-        <CreateCast />
+        <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
       <div className="pt-12 pb-12 h-full md:block hidden">
@@ -205,6 +201,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     openSearchModal();
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SEARCH);
                   }}
+                />
+                <NavItem
+                  label="Explore"
+                  Icon={ExploreIcon}
+                  href="/explore"
+                  onClick={() =>
+                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
+                  }
                 />
                 <NavItem
                   label="Fair Launch"

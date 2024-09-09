@@ -14,6 +14,7 @@ import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
 import Swap from "./swap/Swap";
 import rss from "./ui/rss";
+import VideoFidget from "./ui/Video";
 
 export const CompleteFidgets = {
   //
@@ -35,8 +36,9 @@ export const CompleteFidgets = {
   links: Links,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
-  Swap: Swap,
+  // Swap: Swap,
   Rss: rss,
+  Video: VideoFidget,
 };
 
 export const LayoutFidgets = {

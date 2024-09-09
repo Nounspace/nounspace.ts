@@ -20,7 +20,7 @@ import {
   UnsignedManageHomebaseTabsRequest,
 } from "@/pages/api/space/homebase/tabs";
 import { createClient } from "@/common/data/database/supabase/clients/component";
-import { homebasePath, homebaseTabOrderPath } from "@/constants/supabase";
+import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
 import axios from "axios";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
@@ -41,7 +41,7 @@ interface HomeBaseTabStoreState {
 interface HomeBaseTabStoreActions {
   loadTabNames: () => Promise<string[]>;
   loadTabOrdering: () => Promise<string[]>;
-  updateTabOrdering: (newOrdering: string[]) => void;
+  updateTabOrdering: (newOrdering: string[], commit?: boolean) => void;
   commitTabOrderingToDatabase: () => Promise<void> | undefined;
   renameTab: (tabName: string, newName: string) => Promise<void>;
   deleteTab: (tabName: string) => Promise<void>;
@@ -71,10 +71,13 @@ export const createHomeBaseTabStoreFunc = (
   get: StoreGet<AppStore>,
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
-  updateTabOrdering(newOrdering) {
+  updateTabOrdering(newOrdering, commit = false) {
     set((draft) => {
       draft.homebase.tabOrdering.local = newOrdering;
     }, "updateTabOrdering");
+    if (commit) {
+      get().homebase.commitTabOrderingToDatabase();
+    }
   },
   async loadTabOrdering() {
     const supabase = createClient();
@@ -83,7 +86,7 @@ export const createHomeBaseTabStoreFunc = (
     } = supabase.storage
       .from("private")
       .getPublicUrl(
-        `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}}`,
+        `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}`,
       );
     try {
       const { data } = await axios.get<Blob>(publicUrl, {
@@ -165,14 +168,19 @@ export const createHomeBaseTabStoreFunc = (
       type: "create",
       tabName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+    const file = await get().account.createEncryptedSignedFile(
+      stringify(INITIAL_HOMEBASE_CONFIG),
+      "json",
+      { useRootKey: true },
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq, file },
       );
       if (data.result === "success") {
         set((draft) => {
@@ -186,6 +194,7 @@ export const createHomeBaseTabStoreFunc = (
       console.debug("failed to create homebase tab", e);
     }
   },
+
   async deleteTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
@@ -194,14 +203,14 @@ export const createHomeBaseTabStoreFunc = (
       type: "delete",
       tabName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq },
       );
       if (data.result === "success") {
         set((draft) => {
@@ -221,14 +230,14 @@ export const createHomeBaseTabStoreFunc = (
       tabName,
       newName,
     };
-    const sigendReq = await signSignable(
+    const signedReq = await signSignable(
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
       const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
-        sigendReq,
+        { request: signedReq },
       );
       if (data.result === "success") {
         const currentTabData = get().homebase.tabs[tabName];
@@ -249,7 +258,7 @@ export const createHomeBaseTabStoreFunc = (
     } = supabase.storage
       .from("private")
       .getPublicUrl(
-        `${homebasePath(get().account.currentSpaceIdentityPublicKey!)}/tabs/${tabName}`,
+        `${homebaseTabsPath(get().account.currentSpaceIdentityPublicKey!, tabName)}`,
       );
     try {
       const { data } = await axios.get<Blob>(publicUrl, {
@@ -267,7 +276,7 @@ export const createHomeBaseTabStoreFunc = (
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
         draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
-      }, `loadHomebase${tabName}-found`);
+      }, `loadHomebaseTab:${tabName}-found`);
       return spaceConfig;
     } catch (e) {
       set((draft) => {
@@ -301,7 +310,9 @@ export const createHomeBaseTabStoreFunc = (
     }
   }, 1000),
   async saveHomebaseTabConfig(tabName, config) {
-    const localCopy = cloneDeep(get().homebase.tabs[tabName]) as SpaceConfig;
+    const localCopy = cloneDeep(
+      get().homebase.tabs[tabName].config,
+    ) as SpaceConfig;
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
     });
@@ -309,7 +320,7 @@ export const createHomeBaseTabStoreFunc = (
       (draft) => {
         draft.homebase.tabs[tabName].config = localCopy;
       },
-      `saveHomebaseTab${tabName}`,
+      `saveHomebaseTab:${tabName}`,
       false,
     );
   },

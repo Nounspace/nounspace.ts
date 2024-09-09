@@ -71,8 +71,8 @@ export const useGetCasts = ({
   feedType: FeedType;
   fid: number;
   filterType: FilterType;
-  fids: string;
-  channel: string;
+  fids?: string;
+  channel?: string;
 }) => {
   return useInfiniteQuery({
     queryKey: ["channelCasts", feedType, fid, filterType, fids, channel],

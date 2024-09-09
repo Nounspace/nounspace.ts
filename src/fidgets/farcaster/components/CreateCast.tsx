@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -34,21 +34,20 @@ import { PhotoIcon } from "@heroicons/react/20/solid";
 import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
-import { submitCast } from "../utils";
+import {
+  fetchChannelsByName,
+  fetchChannelsForUser,
+  submitCast,
+} from "../utils";
 import { bytesToHex } from "@noble/ciphers/utils";
 
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
+
 const debouncedGetMentions = debounce(getMentions, 200, {
   leading: true,
   trailing: false,
 });
-const getChannels = getFarcasterChannels(API_URL);
-const debouncedGetChannels = debounce(getChannels, 200, {
-  leading: true,
-  trailing: false,
-});
-
 const getUrlMetadata = fetchUrlMetadata(API_URL);
 const getMentionFids = getMentionFidsByUsernames(API_URL);
 
@@ -82,6 +81,7 @@ export type DraftType = {
 
 type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
+  afterSubmit?: () => void;
 };
 
 export type ModProtocolCastAddBody = Exclude<
@@ -117,7 +117,10 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   }
 }
 
-const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
+const CreateCast: React.FC<CreateCastProps> = ({
+  initialDraft,
+  afterSubmit = () => {},
+}) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
@@ -131,10 +134,26 @@ const CreateCast: React.FC<CreateCastProps> = ({ initialDraft }) => {
 
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
+  const debouncedGetChannels = useCallback(
+    debounce(
+      async (query: string) => {
+        if (query && query !== "") {
+          return await fetchChannelsByName(query);
+        } else {
+          return await fetchChannelsForUser(fid);
+        }
+      },
+      200,
+      { leading: true, trailing: false },
+    ),
+    [fid],
+  );
+
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
     await publishPost(draft, fid, signer);
+    afterSubmit();
     return true;
   };
 

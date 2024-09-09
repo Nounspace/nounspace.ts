@@ -20,11 +20,12 @@ import { createPortal } from "react-dom";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import { map, reject } from "lodash";
-import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import TabBar from "@/common/components/organisms/TabBar";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -96,7 +97,7 @@ const Gridlines: React.FC<GridDetails> = ({
         gridGap: `${margin[0]}px`,
         rowGap: `${margin[1]}px`,
         padding: `${containerPadding[0]}px`,
-        background: "rgba(200, 227, 248, 0.3)",
+        background: "rgba(200, 227, 248, 0.011)",
       }}
     >
       {[...Array(cols * maxRows)].map((_, i) => (
@@ -105,7 +106,7 @@ const Gridlines: React.FC<GridDetails> = ({
           key={i}
           style={{
             backgroundColor: "rgba(200, 227, 248, 0.5)",
-            outline: "1px dashed rgba(200, 227, 248, 0.8)",
+            outline: "2px dashed rgba(200, 227, 248, 0.3)",
           }}
         />
       ))}
@@ -127,6 +128,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   portalRef,
   hasProfile,
   hasFeed,
+  fid,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
@@ -333,24 +335,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       {editorPanelPortal(element)}
 
       <div className="flex flex-col z-10">
-        <div
-          className={
-            inEditMode
-              ? "bg-[#c8e3f84d] flex-row justify-center h-16"
-              : "flex-row justify-center h-16"
-          }
-        >
-          {inEditMode ? (
-            <button
-              onClick={openFidgetPicker}
-              className="flex float-right rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
+        {inEditMode && (
+          <button
+            onClick={openFidgetPicker}
+            className="flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
+          >
+            <div className="ml-2">
               <AddFidgetIcon />
-              <span className="ml-2">Fidget</span>
-            </button>
-          ) : null}
-        </div>
-
+            </div>
+            <span className="ml-4 mr-2">Fidget</span>
+          </button>
+        )}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 

@@ -1,6 +1,6 @@
 {
   "name": "Nounspace",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "",
   "private": true,
   "scripts": {
@@ -32,8 +32,8 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
-    "@emotion/react": "11",
-    "@emotion/styled": "11",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
     "@farcaster/hub-web": "^0.8.12",
@@ -45,7 +45,7 @@
     "@heroicons/react": "^2.0.18",
     "@hookform/resolvers": "^3.3.4",
     "@internationalized/date": "^3.5.4",
-    "@lifi/widget": "^3.3.0",
+    "@lifi/widget": "^3.4.4",
     "@mod-protocol/core": "^0.2.1",
     "@mod-protocol/mod-registry": "^0.2.2",
     "@mod-protocol/react": "^0.2.0",
@@ -104,6 +104,7 @@
     "esbuild": "^0.21.5",
     "fast-json-stable-stringify": "^2.1.0",
     "focus-trap-react": "^10.2.1",
+    "framer-motion": "^11.3.30",
     "frames.js": "^0.15.1",
     "google-protobuf": "^3.21.2",
     "gray-matter": "^4.0.3",
