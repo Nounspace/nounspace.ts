@@ -196,7 +196,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
           <ReactMarkdown
             rehypePlugins={[rehypeRaw]}
             remarkPlugins={[remarkGfm]}
-            components={MarkdownRenderers}
+            components={MarkdownRenderers()}
           >
             {proposal.body}
           </ReactMarkdown>
