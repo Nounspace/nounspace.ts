@@ -34,6 +34,9 @@ import { FaInfoCircle } from "react-icons/fa";
 import { THEMES } from "@/constants/themes";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
+import { GiOpenBook } from "react-icons/gi";
+import { FaBook } from "react-icons/fa";
+import { MdMenuBook } from "react-icons/md";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -153,9 +156,16 @@ export function ThemeSettingsEditor({
                 type="checkbox"
               />
               {/* Templates Dropdown */}
-              <span className="block max-h-12 max-w-xs overflow-hidden rounded-lg transition-all duration-300 peer-checked/showLabel:max-h-full p-1">
-                {/* Theme Card Example */}
-                <ThemeCard themeProps={theme.properties} />
+              <span className="block max-h-14 max-w-xs overflow-hidden rounded-lg transition-all duration-300 peer-checked/showLabel:max-h-full p-1">
+                <div className="flex flex-row w-full">
+                  <div className="flex basis-3/4 grow">
+                    {/* Theme Card Example */}
+                    <ThemeCard themeProps={theme.properties} />
+                  </div>
+                  <div className="flex basis-1/4 items-center justify-center">
+                    <MdMenuBook className="w-6 h-6" />
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-3 pb-3 pt-3">
                   {THEMES.map((theme, i) => (

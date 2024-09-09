@@ -25,7 +25,7 @@ export const ThemeCard = ({
 
   return (
     <div
-      className={`bg-gray-50 hover:bg-gray-100 rounded-lg grid [grid-template-areas:'cell'] h-11 cursor-pointer relative ${active ? activeRingBeforeElementClasses : ""}`}
+      className={`shadow-md w-full bg-gray-50 hover:bg-gray-100 rounded-lg grid [grid-template-areas:'cell'] h-11 cursor-pointer relative ${active ? activeRingBeforeElementClasses : ""}`}
       style={{
         backgroundColor: themeProps.background,
       }}
