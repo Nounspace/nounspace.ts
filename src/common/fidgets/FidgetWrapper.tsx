@@ -70,7 +70,6 @@ export function FidgetWrapper({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
 
-  console.log(homebaseConfig);
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
