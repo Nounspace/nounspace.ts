@@ -352,7 +352,7 @@ const TabBar = memo(function TabBar({
       </Reorder.Group>
 
       {inEditMode ? (
-        <div className="flex flex-row pr-32">
+        <div className="flex flex-row pr-32 z-infinity">
           <NogsGateButton
             onClick={handleCreateTab}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
