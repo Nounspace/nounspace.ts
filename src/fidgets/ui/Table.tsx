@@ -27,6 +27,7 @@ export type TableFidgetSettings = {
   table: string;
   tableBorderColor: string;
   selectInput: CSVSelectorOption;
+  URL: string;
 } & FidgetSettingsStyle;
 
 export const tableConfig: FidgetProperties<TableFidgetSettings> = {
@@ -132,6 +133,8 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
 }) => {
   const [tableData, setTableData] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const headers = tableData.length > 0 ? Object.keys(tableData[0]) : [];
+  const usingTextCsv = settings.selectInput.name == "Text";
 
   const parseCSV = (data) => {
     Papa.parse(data, {
@@ -143,17 +146,34 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
     });
   };
 
-  useEffect(() => {
-    parseCSV(settings.table);
-  }, [settings.table]);
-
-  const headers = tableData.length > 0 ? Object.keys(tableData[0]) : [];
-
   const handleCopy = (content, index) => {
     navigator.clipboard.writeText(content);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 3000);
   };
+
+  const fetchUrl = async (url: string) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Erro: ${res.status}`);
+      }
+
+      const text = await res.text();
+      console.log(text);
+      parseCSV(text);
+    } catch (err) {
+      console.error("Error loading data for table fidget:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (usingTextCsv) {
+      parseCSV(settings.table);
+    } else {
+      fetchUrl(settings.URL);
+    }
+  }, [usingTextCsv]);
 
   return (
     <div
