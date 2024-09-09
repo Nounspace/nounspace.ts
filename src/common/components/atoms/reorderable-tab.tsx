@@ -2,7 +2,6 @@ import * as React from "react";
 import { motion, Reorder } from "framer-motion";
 import { CloseIcon } from "./icons/CloseIcon";
 import EditableText from "./editable-text";
-import { FaX } from "react-icons/fa6";
 
 interface Props {
   tabName: string;

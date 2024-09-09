@@ -8,7 +8,7 @@ import {
 } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
-import { homebaseTabsPath, homebasePath } from "@/constants/supabase";
+import { homebaseTabsPath } from "@/constants/supabase";
 import { isArray, isNil, isUndefined, map } from "lodash";
 import { StorageError } from "@supabase/storage-js";
 import stringify from "fast-json-stable-stringify";

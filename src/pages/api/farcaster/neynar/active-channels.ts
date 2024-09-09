@@ -1,6 +1,5 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
-import Error from "next/error";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function loadUserChannels(req: NextApiRequest, res: NextApiResponse) {

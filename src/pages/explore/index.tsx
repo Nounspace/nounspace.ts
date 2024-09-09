@@ -3,10 +3,7 @@ import { groupBy } from "lodash";
 import Link from "next/link";
 import Image from "next/image";
 import { getAllMarkdownFiles } from "@/common/data/explore/loadExploreMarkdown";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider"; // Import analytics
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider"; // Import analytics
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 
 export async function getStaticProps() {
