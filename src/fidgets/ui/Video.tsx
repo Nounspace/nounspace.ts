@@ -11,7 +11,8 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import { transformUrl } from "@/fidgets/helpers";
-export type IFrameFidgetSettings = {
+
+export type VideoFidgetSettings = {
   url: string;
   size: number;
 } & FidgetSettingsStyle;
@@ -24,12 +25,13 @@ const DISALLOW_URL_PATTERNS = [
 ];
 
 const frameConfig: FidgetProperties = {
-  fidgetName: "Iframe",
-  icon: 0x1f310, // 🌐
+  fidgetName: "Video",
+  icon: 0x1f4fa, // 📺
   fields: [
     {
       fieldName: "url",
       required: true,
+      default: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
       inputSelector: TextInput,
       group: "settings",
     },
@@ -63,14 +65,20 @@ const ErrorWrapper: React.FC<{
   );
 };
 
-const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
+const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
+
   if (!url) {
-    return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
+    return (
+      <ErrorWrapper
+        icon="➕"
+        message="Provide a YouTube/Vimeo URL to display here."
+      />
+    );
   }
 
   if (!isValid) {
@@ -94,6 +102,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         src={transformedUrl}
         title="IFrame Fidget"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        allowFullScreen
         style={{
           transform: `scale(${scaleValue})`,
           transformOrigin: "0 0",
@@ -107,6 +116,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 };
 
 export default {
-  fidget: IFrame,
+  fidget: VideoFidget,
   properties: frameConfig,
-} as FidgetModule<FidgetArgs<IFrameFidgetSettings>>;
+} as FidgetModule<FidgetArgs<VideoFidgetSettings>>;
