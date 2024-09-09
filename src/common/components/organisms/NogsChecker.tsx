@@ -21,7 +21,7 @@ export default function NogsChecker() {
   return (
     <>
       <p className="mb-2">
-        Tabs are only for early supporters holding a nounspace OG NFT (nOGs){" "}
+        For now Tabs are only for early supporters holding a nounspace OG NFT (nOGs){" "}
         <br />
         Mint a pair{" "}
         <a
