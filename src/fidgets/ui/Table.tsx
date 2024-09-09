@@ -17,6 +17,10 @@ import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 import Papa from "papaparse";
 import React, { useEffect, useState } from "react";
 import { defaultStyleFields } from "../helpers";
+import {
+  formatEthereumAddress,
+  isEthereumAddress,
+} from "@/common/lib/utils/ethereum";
 
 export type TableFidgetSettings = {
   title?: string;
@@ -227,7 +231,11 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
                     className="p-2 group"
                     key={index}
                   >
-                    <span>{row[header]}</span>
+                    <span>
+                      {isEthereumAddress(row[header])
+                        ? formatEthereumAddress(row[header])
+                        : row[header]}
+                    </span>
                     <button
                       className="absolute right-2 group-hover:block hidden"
                       onClick={() => handleCopy(row[header], rowIndex)}
