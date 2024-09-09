@@ -15,6 +15,9 @@ export type FidgetSettingsStyle = {
   fidgetBorderWidth?: string;
   fidgetBorderColor?: Color;
   fidgetShadow?: string;
+  itemBorderWidth?: string;
+  itemBorderColor?: Color;
+  itemBackground?: Color;
 };
 export type FidgetData = Record<string, any>;
 
