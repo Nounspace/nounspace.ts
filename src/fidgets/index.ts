@@ -12,7 +12,7 @@ import Feed from "./farcaster/Feed";
 import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
-import Swap from "./swap/Swap";
+// import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 

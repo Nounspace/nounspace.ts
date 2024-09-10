@@ -9,9 +9,8 @@ import {
 import { NextApiRequest, NextApiResponse } from "next/types";
 import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
-import { homebasePath, homebaseTabsPath } from "@/constants/supabase";
-import { findIndex, isArray, isUndefined } from "lodash";
-import { listTabsForIdentity } from ".";
+import { homebaseTabsPath } from "@/constants/supabase";
+import { isArray, isUndefined } from "lodash";
 
 export type UpdateHomebaseResponse = NounspaceResponse<boolean>;
 export type UpdateHomebaseRequest = SignedFile;
@@ -59,7 +58,7 @@ async function updateHomebaseTab(
     });
     return;
   }
-  const tabs = await listTabsForIdentity(file.publicKey);
+  // const tabs = await listTabsForIdentity(file.publicKey);
 
   // if (findIndex(tabs, tabName) === -1) {
   //   res.status(500).json({

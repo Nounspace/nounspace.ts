@@ -10,7 +10,7 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-  getFarcasterChannels,
+  // getFarcasterChannels,
   formatPlaintextToHubCastMessage,
   getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
