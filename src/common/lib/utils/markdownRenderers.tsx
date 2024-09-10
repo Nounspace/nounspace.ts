@@ -14,7 +14,7 @@ type RendererProps = MarkdownProps & {
   href?: any;
 };
 
-export const MarkdownRenderers = {
+export const MarkdownRenderers = (linkColor?: string) => ({
   img: ({ alt, src, title, ...props }: RendererProps) => (
     <span
       style={{
@@ -45,15 +45,24 @@ export const MarkdownRenderers = {
       {children}
     </div>
   ),
-  a: ({ href, children, ...props }: RendererProps) => (
-    <a
-      style={{ color: "blue", textWrap: "wrap", wordBreak: "break-all" }}
-      href={href}
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  a: ({ href, children, ...props }: RendererProps) => {
+    const isPrettyLink = href !== children;
+
+    const style: React.CSSProperties = isPrettyLink
+      ? { color: linkColor, wordBreak: "keep-all", overflowWrap: "normal" }
+      : {
+          color: linkColor,
+          wordBreak: "break-all",
+          overflowWrap: "break-word",
+        };
+
+    return (
+      <a href={href} style={style} {...props}>
+        {children}
+      </a>
+    );
+  },
+
   h1: ({ children, ...props }: RendererProps) => (
     <h1
       {...props}
@@ -248,4 +257,4 @@ export const MarkdownRenderers = {
       {children}
     </code>
   ),
-};
+});
