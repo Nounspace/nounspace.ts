@@ -113,13 +113,6 @@ export const tableConfig: FidgetProperties<TableFidgetSettings> = {
       group: "style",
     },
     ...defaultStyleFields,
-    {
-      fieldName: "css",
-      default: "",
-      required: false,
-      inputSelector: CSSInput,
-      group: "code",
-    },
   ],
   size: {
     minHeight: 2,
