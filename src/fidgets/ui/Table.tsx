@@ -1,5 +1,4 @@
 import { CardHeader, CardTitle } from "@/common/components/atoms/card";
-import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import {
   CSVSelector,
@@ -126,21 +125,21 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
   settings,
 }) => {
   const [tableData, setTableData] = useState([]);
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const headers = tableData.length > 0 ? Object.keys(tableData[0]) : [];
-  const usingTextCsv = settings.selectInput.name == "Text";
+  const usingTextCsv = settings.selectInput.name === "Text";
 
-  const parseCSV = (data) => {
+  const parseCSV = (data: string) => {
     Papa.parse(data, {
       header: true,
       skipEmptyLines: true,
-      complete: function (results) {
+      complete: (results) => {
         setTableData(results.data);
       },
     });
   };
 
-  const handleCopy = (content, index) => {
+  const handleCopy = (content: string, index: number) => {
     navigator.clipboard.writeText(content);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 3000);
@@ -154,7 +153,6 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
       }
 
       const text = await res.text();
-      console.log(text);
       parseCSV(text);
     } catch (err) {
       console.error("Error loading data for table fidget:", err);
@@ -171,25 +169,20 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
 
   return (
     <div
+      className="flex flex-col h-full overflow-auto scrollbar-none"
       style={{
         background: settings.background,
-        height: "100%",
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
         boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
         color: settings.fontColor,
         fontFamily: settings.fontFamily,
-        display: "flex",
-        flexDirection: "column",
-        textOverflow: "ellipsis",
       }}
     >
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
           <CardTitle
-            className="table-2xl font-bold"
+            className="text-2xl font-bold"
             style={{
               fontFamily: settings.headingsFontFamily,
               color: settings.headingsFontColor,
@@ -201,26 +194,20 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
       )}
       {settings?.table && (
         <table
+          className="w-full h-auto flex-grow border border-solid"
           style={{
-            border: "1px solid",
-            width: "100%",
-            height: "auto",
-            flexGrow: 1,
             borderColor: settings.tableBorderColor,
           }}
-          className="overflow-hidden"
         >
           <thead>
             <tr>
               {headers.map((header, index) => (
                 <th
+                  key={index}
+                  className="border border-solid p-2"
                   style={{
-                    borderStyle: "solid",
-                    borderWidth: "1px",
                     borderColor: settings.tableBorderColor,
                   }}
-                  className="p-2"
-                  key={index}
                 >
                   {header}
                 </th>
@@ -229,21 +216,14 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
           </thead>
           <tbody>
             {tableData.map((row, rowIndex) => (
-              <tr key={rowIndex} style={{ maxWidth: "100%" }}>
+              <tr key={rowIndex} className="max-w-full">
                 {headers.map((header, index) => (
                   <td
-                    style={{
-                      border: "1px solid",
-                      textAlign: "center",
-                      borderColor: settings.tableBorderColor,
-                      maxWidth: "100%",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      position: "relative",
-                    }}
-                    className="p-2 group"
                     key={index}
+                    className="border border-solid text-center p-2 relative overflow-hidden text-ellipsis whitespace-nowrap group"
+                    style={{
+                      borderColor: settings.tableBorderColor,
+                    }}
                   >
                     <span>
                       {isEthereumAddress(row[header])
@@ -251,11 +231,9 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
                         : row[header]}
                     </span>
                     <button
-                      className="absolute right-2 group-hover:block hidden"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 transition-transform group-hover:block hidden"
                       onClick={() => handleCopy(row[header], rowIndex)}
                       style={{
-                        top: "50%",
-                        transform: "translateY(-50%)",
                         transition: "transform 0.3s ease",
                       }}
                     >
