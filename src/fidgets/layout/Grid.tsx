@@ -24,7 +24,6 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import TabBar from "@/common/components/organisms/TabBar";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
