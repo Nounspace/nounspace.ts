@@ -109,7 +109,6 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       {isNil(profile) && (
         <TabBar
           hasProfile={!isNil(profile)}
@@ -117,6 +116,7 @@ export default function Space({
           profileFid={fid ? fid : 0}
         />
       )}
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out h-[calc(100vh-64px)]">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
