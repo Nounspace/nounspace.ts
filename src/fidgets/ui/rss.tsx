@@ -199,7 +199,7 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
                     color: settings.fontColor,
                   }}
                 >
-                  <ReactMarkdown components={MarkdownRenderers}>
+                  <ReactMarkdown components={MarkdownRenderers()}>
                     {item.contentSnippet}
                   </ReactMarkdown>
                 </div>

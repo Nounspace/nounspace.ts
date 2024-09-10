@@ -20,6 +20,7 @@ import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 export type TextFidgetSettings = {
   title?: string;
   text: string;
+  urlColor: string;
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
@@ -52,6 +53,13 @@ export const textConfig: FidgetProperties = {
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "urlColor",
+      required: false,
+      inputSelector: ColorSelector,
+      default: "blue",
       group: "style",
     },
     {
@@ -126,7 +134,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
             <ReactMarkdown
               rehypePlugins={[rehypeRaw]}
               remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers}
+              components={MarkdownRenderers(settings.urlColor)}
             >
               {settings.text}
             </ReactMarkdown>
