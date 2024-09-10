@@ -9,7 +9,6 @@ import {
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { defaultStyleFields } from "@/fidgets/helpers";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
