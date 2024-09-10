@@ -1,5 +1,4 @@
 import React from "react";
-import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import { FaPlus } from "react-icons/fa6";
 import { first, map } from "lodash";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";

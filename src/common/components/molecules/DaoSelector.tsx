@@ -1,13 +1,10 @@
 import React from "react";
 import {
   Select,
-  SelectGroup,
   SelectValue,
   SelectTrigger,
   SelectContent,
-  SelectLabel,
   SelectItem,
-  SelectSeparator,
 } from "@/common/components/atoms/select";
 
 import { DAO_OPTIONS } from "@/constants/basedDaos";

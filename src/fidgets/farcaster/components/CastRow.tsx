@@ -4,7 +4,6 @@ import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import {
   ArrowPathRoundedSquareIcon,
   ArrowTopRightOnSquareIcon,
-  ChatBubbleLeftIcon,
   HeartIcon,
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
@@ -381,11 +380,12 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   const reactions = getReactions();
 
-  const linksCount = cast?.embeds ? cast.embeds.length : 0;
-  const isOnchainLink =
-    linksCount > 0 && "url" in cast.embeds[0]
-      ? cast.embeds[0].url.startsWith("chain:")
-      : false;
+  // const linksCount = cast?.embeds ? cast.embeds.length : 0;
+
+  // const isOnchainLink =
+  //   linksCount > 0 && "url" in cast.embeds[0]
+  //     ? cast.embeds[0].url.startsWith("chain:")
+  //     : false;
 
   return (
     <>
