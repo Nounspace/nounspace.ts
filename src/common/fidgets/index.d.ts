@@ -4,7 +4,8 @@ import HTMLInput from "@/common/ui/molecules/HTMLInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings, FontFamily, Color } from "@/common/lib/theme";
-
+import SwitchButton from "../components/molecules/ViewSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
   background?: Color;
@@ -41,7 +42,9 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
     | typeof ColorSelector
     | typeof FontSelector
     | typeof CSSInput
-    | typeof HTMLInput;
+    | typeof HTMLInput
+    | typeof ImageScaleSlider
+    | typeof SwitchButton; // change the name of ViewSelector.tsx file in next link fidget PR
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;
