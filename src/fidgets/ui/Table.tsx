@@ -21,6 +21,7 @@ import {
   formatEthereumAddress,
   isEthereumAddress,
 } from "@/common/lib/utils/ethereum";
+import CSVInput from "@/common/components/molecules/CSVInput";
 
 export type TableFidgetSettings = {
   title?: string;
@@ -64,7 +65,7 @@ export const tableConfig: FidgetProperties<TableFidgetSettings> = {
 10, 23
 `,
       required: true,
-      inputSelector: CSSInput,
+      inputSelector: CSVInput,
       group: "settings",
       disabledIf: (settings) => settings?.selectInput?.name === "External URL",
     },
@@ -173,7 +174,7 @@ export const Table: React.FC<FidgetArgs<TableFidgetSettings>> = ({
     } else {
       fetchUrl(settings.URL);
     }
-  }, [usingTextCsv]);
+  }, [settings.selectInput, settings.table, settings.URL]);
 
   return (
     <div
