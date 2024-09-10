@@ -7,13 +7,16 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
+  RedirectionURL: string;
+  Scale: number;
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
-  fidgetName: "Gallery",
+  fidgetName: "gallery",
   icon: 0x1f5bc,
   fields: [
     {
@@ -23,6 +26,20 @@ const galleryConfig: FidgetProperties = {
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
+    },
+    {
+      fieldName: "RedirectionURL",
+      required: false,
+      inputSelector: TextInput,
+      default: "",
+      group: "settings",
+    },
+    {
+      fieldName: "Scale",
+      required: false,
+      inputSelector: ImageScaleSlider,
+      default: 1,
+      group: "style",
     },
     ...defaultStyleFields,
   ],
@@ -34,18 +51,42 @@ const galleryConfig: FidgetProperties = {
   },
 };
 
-const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({
-  settings: { imageUrl },
-}) => {
-  const imageUrlStyle = {
-    "--image-url": `url(${imageUrl})`,
+const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
+  const contentStyle = {
+    backgroundImage: `url(${settings.imageUrl})`,
+    transform: `scale(${settings.Scale})`,
+    transition: "transform 0.3s ease",
   } as CSSProperties;
 
-  return (
-    <div className="rounded-md flex-1 items-center justify-center overflow-hidden relative size-full bg-cover">
+  const wrapperStyle = {
+    overflow: "hidden",
+  } as CSSProperties;
+
+  return settings.RedirectionURL ? (
+    <a
+      href={settings.RedirectionURL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="absolute inset-0"
+    >
       <div
-        className="bg-[image:var(--image-url)] bg-cover size-full overflow-hidden"
-        style={imageUrlStyle}
+        className="rounded-md flex-1 items-center justify-center relative size-full"
+        style={wrapperStyle}
+      >
+        <div
+          className="bg-cover bg-center w-full h-full"
+          style={contentStyle}
+        ></div>
+      </div>
+    </a>
+  ) : (
+    <div
+      className="rounded-md flex-1 items-center justify-center relative size-full"
+      style={wrapperStyle}
+    >
+      <div
+        className="bg-cover bg-center w-full h-full"
+        style={contentStyle}
       ></div>
     </div>
   );
