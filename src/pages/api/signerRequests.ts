@@ -102,7 +102,7 @@ async function handlePost(
   });
 
   // We are sponsoring everything for now, set to false and uncomment below to token Gate
-  let shouldSponsor = true;
+  const shouldSponsor = true; // let shouldSponsor = false;
   // if (!isUndefined(requestingWallet)) {
   //   try {
   //     const { data } = await axios.get<AlchemyIsHolderOfContract>(
