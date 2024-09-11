@@ -15,12 +15,14 @@ import supabase from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
 import { identitiesCanModifySpace } from "../../[spaceId]";
 
-export type DeleteSpaceTabRequest = {
+export type UnsignedDeleteSpaceTabRequest = {
   publicKey: string;
   timestamp: string;
   spaceId: string;
   tabName: string;
-} & Signable;
+};
+
+export type DeleteSpaceTabRequest = UnsignedDeleteSpaceTabRequest & Signable;
 
 function isDeleteSpaceTabRequest(
   maybe: unknown,
@@ -85,7 +87,7 @@ async function updateSpace(
   }
   if (req.fileName !== tabName) {
     const { error } = await supabase.storage
-      .from("public")
+      .from("spaces")
       .move(`${spaceId}/tabs/${tabName}`, `${spaceId}/tabs/${req.fileName}`);
     if (error) {
       res.status(500).json({
@@ -98,7 +100,7 @@ async function updateSpace(
     }
   }
   const { error } = await supabase.storage
-    .from("public")
+    .from("spaces")
     .update(
       `${spaceId}/tabs/${req.fileName}`,
       new Blob([stringify(req)], { type: "application/json" }),
@@ -169,7 +171,7 @@ async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
   const { error } = await supabase.storage
-    .from("public")
+    .from("spaces")
     .remove([`${deleteReq.spaceId}/tabs/${deleteReq.tabName}`]);
   if (!isNull(error)) {
     res.status(500).json({

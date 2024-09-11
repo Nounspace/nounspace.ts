@@ -14,12 +14,14 @@ import stringify from "fast-json-stable-stringify";
 
 type TabInfo = string[];
 
-export type UpdateTabOrderRequest = {
+export type UnsignedUpdateTabOrderRequest = {
   spaceId: string;
   timestamp: string;
   tabOrder: TabInfo;
   publicKey: string;
-} & Signable;
+};
+
+export type UpdateTabOrderRequest = UnsignedUpdateTabOrderRequest & Signable;
 
 function isUpdateTabOrderRequest(
   thing: unknown,
@@ -85,7 +87,7 @@ async function updateSpaceTabOrder(
     return;
   }
   const { error } = await supabase.storage
-    .from("public")
+    .from("spaces")
     .upload(
       `${updateOrderRequest.spaceId}/tabOrder`,
       new Blob([stringify(updateOrderRequest)], { type: "application/json" }),
