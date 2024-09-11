@@ -140,7 +140,7 @@ interface SpaceActions {
 
 export type SpaceStore = SpaceState & SpaceActions;
 
-export const spaceStoreDefaults: SpaceState = {
+export const spaceStoreprofiles: SpaceState = {
   remoteSpaces: {},
   editableSpaces: {},
   localSpaces: {},
@@ -150,7 +150,7 @@ export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
-  ...spaceStoreDefaults,
+  ...spaceStoreprofiles,
   commitSpaceTabToDatabase: debounce(async (spaceId, tabName) => {
     const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
     if (localCopy) {
@@ -333,7 +333,7 @@ export const createSpaceStoreFunc = (
     } catch (e) {
       console.debug(e);
       const initialSpace = {
-        ...(tabName === "default" && fid
+        ...(tabName === "profile" && fid
           ? createIntialPersonSpaceConfigForFid(fid)
           : INITIAL_SPACE_CONFIG_EMPTY),
         isPrivate: false,
@@ -341,14 +341,14 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.localSpaces[spaceId] = {
           tabs: {
-            default: cloneDeep(initialSpace),
+            profile: cloneDeep(initialSpace),
           },
-          order: ["default"],
+          order: ["profile"],
           updatedAt: moment().toISOString(),
           changedNames: {},
           id: spaceId,
         };
-      }, "loadSpaceTabDefault");
+      }, "loadSpaceTabProfile");
     }
   },
   loadSpaceTabOrder: async (spaceId) => {
@@ -386,12 +386,12 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.localSpaces[spaceId] = {
           tabs: {},
-          order: ["default"],
+          order: ["profile"],
           updatedAt: moment().toISOString(),
           changedNames: {},
           id: spaceId,
         };
-      }, "loadSpaceInfoDefault");
+      }, "loadSpaceInfoProfile");
     }
   },
   registerSpace: async (fid, name) => {
