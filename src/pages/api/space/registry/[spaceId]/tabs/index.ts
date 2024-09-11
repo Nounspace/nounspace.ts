@@ -18,12 +18,14 @@ import { isNull } from "lodash";
 
 export type RegisterNewSpaceTabResponse = NounspaceResponse<string>;
 
-type SpaceTabRegistration = {
+export type UnsignedSpaceTabRegistration = {
   identityPublicKey: string;
   timestamp: string;
   spaceId: string;
   tabName: string;
-} & Signable;
+};
+
+export type SpaceTabRegistration = UnsignedSpaceTabRegistration & Signable;
 
 function isSpaceTabRegistration(thing: unknown): thing is SpaceTabRegistration {
   return (
@@ -99,7 +101,7 @@ async function registerNewSpaceTab(
     signature: "not applicable, machine generated file",
   };
   const { error } = await supabase.storage
-    .from("public")
+    .from("spaces")
     .upload(
       `${registration.spaceId}/tabs/${registration.tabName}`,
       new Blob([stringify(uploadedFile)], { type: "application/json" }),
