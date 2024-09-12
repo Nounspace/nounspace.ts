@@ -14,7 +14,7 @@ import {
   type UserMetadata,
 } from "@/common/lib/utils/generateUserMetadataHtml";
 
-type SpacePageProps = {
+export type SpacePageProps = {
   spaceId: string | null;
   fid: number | null;
   handle: string | string[] | undefined;
@@ -30,10 +30,6 @@ export const getServerSideProps = (async ({
       ? null
       : params.handle;
 
-  const tabNameParam = isUndefined(params)
-    ? undefined
-    : (params.tabName as string[]);
-
   if (isNull(handle)) {
     return {
       props: {
@@ -44,19 +40,6 @@ export const getServerSideProps = (async ({
       },
     };
   }
-
-  if (isArray(tabNameParam) && tabNameParam.length > 1) {
-    return {
-      props: {
-        spaceId: null,
-        fid: null,
-        handle: isUndefined(params) ? params : params.handle,
-        tabName: tabNameParam,
-      },
-    };
-  }
-
-  const tabName = isUndefined(tabNameParam) ? "profile" : tabNameParam[0];
 
   try {
     const {
@@ -72,25 +55,20 @@ export const getServerSideProps = (async ({
 
     const { data } = await supabaseClient
       .from("spaceRegistrations")
-      .select("spaceId")
-      .eq("fid", user.fid)
-      .eq("spaceName", tabName);
+      .select("spaceId, spaceName")
+      .eq("fid", user.fid);
 
     if (data) {
       const spaceRegistration = first(data);
       if (!isUndefined(spaceRegistration)) {
+        const tabName = spaceRegistration.spaceName;
         return {
           props: {
             spaceId: spaceRegistration.spaceId,
             fid: user.fid,
             handle,
             tabName: tabName,
-            userMetadata: {
-              username: user.username,
-              displayName: user.displayName,
-              pfpUrl: user.pfp.url,
-              bio: user.profile.bio.text,
-            },
+            userMetadata,
           },
         };
       }
@@ -101,7 +79,7 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: user.fid,
         handle,
-        tabName: tabName,
+        tabName: undefined,
         userMetadata,
       },
     };
@@ -112,13 +90,13 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: null,
         handle,
-        tabName: tabName,
+        tabName: undefined,
       },
     };
   }
 }) satisfies GetServerSideProps<SpacePageProps>;
 
-const UserPrimarySpace: NextPageWithLayout = ({
+export const UserPrimarySpace: NextPageWithLayout = ({
   spaceId,
   fid,
   tabName,
