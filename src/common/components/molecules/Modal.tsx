@@ -35,7 +35,7 @@ const Modal = ({
       <Dialog.Content
         className={mergeClasses(
           "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
-          "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[30px] p-[25px]",
+          "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[10px] p-[25px]",
           "shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none",
           "z-50",
         )}
@@ -67,7 +67,7 @@ const Modal = ({
         {showClose ? (
           <Dialog.Close asChild>
             <button
-              className="text-card-foreground/80 bg-background/90 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
+              className=" text-gray-400 text-card-foreground/80 bg-background/90 focus:shadow-background/90 absolute top-[10px] right-[10px] inline-flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-full focus:shadow-[0_0_0_2px] focus:outline-none"
               aria-label="Close"
             >
               <Cross2Icon />
