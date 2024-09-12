@@ -240,11 +240,36 @@ const initializer: AuthenticatorInitializer<
 
   return (
     <div className="flex flex-col justify-center items-center align-center">
-      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
+      <h1 className="text-4xl font-extrabold justify-start">
+        Connect Farcaster
+      </h1>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
-        <Button onClick={createSigner}>Link Warpcast Account</Button>
+        <>
+          <p className="text-lg text-gray-500 mt-4">
+            Use of Nounspace requires a Farcaster account. Click the button
+            below to connect your Farcaster account via Warpcast.
+          </p>
+          <Button
+            style={{
+              backgroundColor: "#7a5fbb",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginTop: "2em",
+            }}
+            className="px-10"
+            onClick={createSigner}
+          >
+            <span>Sign in with</span>
+            <img
+              src="/images/farcaster_nude.png"
+              alt="Icon"
+              style={{ width: "22px", height: "22px" }}
+            />
+          </Button>
+        </>
       ) : loading && warpcastSignerUrl ? (
         <>
           <div className="text-center mt-4">
