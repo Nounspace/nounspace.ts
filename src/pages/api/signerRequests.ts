@@ -101,24 +101,24 @@ async function handlePost(
     },
   });
 
-  // TO DO: Change who get's sponsorship as we leave Alpha and move forward
-  let shouldSponsor = false;
-  if (!isUndefined(requestingWallet)) {
-    try {
-      const { data } = await axios.get<AlchemyIsHolderOfContract>(
-        `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
-        {
-          params: {
-            wallet: requestingWallet,
-            contractAddress: NOGS_CONTRACT_ADDR,
-          },
-        },
-      );
-      shouldSponsor = data.isHolderOfContract;
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  // We are sponsoring everything for now, set to false and uncomment below to token Gate
+  const shouldSponsor = true; // let shouldSponsor = false;
+  // if (!isUndefined(requestingWallet)) {
+  //   try {
+  //     const { data } = await axios.get<AlchemyIsHolderOfContract>(
+  //       `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+  //       {
+  //         params: {
+  //           wallet: requestingWallet,
+  //           contractAddress: NOGS_CONTRACT_ADDR,
+  //         },
+  //       },
+  //     );
+  //     shouldSponsor = data.isHolderOfContract
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }
 
   let sponsorship: SignedKeyRequestSponsorship | undefined = undefined;
   if (shouldSponsor) {
