@@ -213,7 +213,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                 <NavItem
                   label="Fair Launch"
                   Icon={RocketIcon}
-                  href="https://space.nounspace.com/"
+                  href="/s/spacetoken"
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
