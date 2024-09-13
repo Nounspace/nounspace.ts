@@ -106,13 +106,20 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   if (!unsignedCastBody) return false;
 
   try {
-    return await submitCast(
+    const result = await submitCast(
       { ...unsignedCastBody, type: CastType.CAST },
       fid,
       signer,
     );
+    if (result) {
+      alert("Cast submitted successfully!");
+    } else {
+      alert("Failed to submit cast.");
+    }
+    return result;
   } catch (e) {
     console.error(e);
+    alert("An error occurred while submitting the cast.");
     return false;
   }
 }
