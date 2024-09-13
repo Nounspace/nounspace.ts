@@ -92,6 +92,7 @@ export type ModProtocolCastAddBody = Exclude<
 };
 
 async function publishPost(draft: DraftType, fid: number, signer: Signer) {
+  console.log("publishPost", draft, fid, signer);
   const unsignedCastBody = await formatPlaintextToHubCastMessage({
     text: draft.text,
     embeds: draft.embeds || [],
@@ -114,11 +115,12 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     if (result) {
       alert("Cast submitted successfully!");
     } else {
+      console.error("Cast submission failed. API result:", result);
       alert("Failed to submit cast.");
     }
     return result;
   } catch (e) {
-    console.error(e);
+    console.error("Error while submitting cast:", e);
     alert("An error occurred while submitting the cast.");
     return false;
   }
@@ -138,7 +140,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
-
+  console.log(draft?.parentCastId);
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
   const debouncedGetChannels = useCallback(
