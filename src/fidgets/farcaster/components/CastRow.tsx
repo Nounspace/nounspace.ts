@@ -359,8 +359,27 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       username: cast.author.username,
       castId: cast.hash,
     });
+
+    // Convert the cast hash to a Uint8Array (20-byte hash)
+    const parentCastHash = hexToBytes(cast.hash);
+    if (parentCastHash.length !== 20) {
+      console.error(
+        "Hash must be 20 bytes, received length:",
+        parentCastHash.length,
+      );
+      return; // Prevent further execution if the hash is invalid
+    }
+
+    // Log the hash to ensure it is correctly converted and is 20 bytes long
+    console.log(
+      "parentCastHash:",
+      parentCastHash,
+      "Length:",
+      parentCastHash.length,
+    );
+
     setReplyCastDraft({
-      parentCastId: castId,
+      parentCastId: { fid: cast.author.fid, hash: parentCastHash }, // Ensure hash is a Uint8Array
     });
     setReplyCastType("reply");
     setShowModal(true);
