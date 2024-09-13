@@ -93,14 +93,16 @@ export type ModProtocolCastAddBody = Exclude<
 
 async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   console.log("publishPost", draft, fid, signer);
+
+  // Ensure the parentCastId.hash is converted to hex properly before submission
   const unsignedCastBody = await formatPlaintextToHubCastMessage({
     text: draft.text,
     embeds: draft.embeds || [],
     parentUrl: draft.parentUrl,
     parentCastFid: draft.parentCastId?.fid || undefined,
-    parentCastHash: !isUndefined(draft.parentCastId?.hash)
+    parentCastHash: draft.parentCastId?.hash
       ? bytesToHex(draft.parentCastId.hash)
-      : undefined,
+      : undefined, // Convert Uint8Array to hex
     getMentionFidsByUsernames: getMentionFids,
   });
 
@@ -112,7 +114,7 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
       fid,
       signer,
     );
-    console.log("API submission response:", result); // Log full response
+    console.log("API submission response:", result);
 
     if (result) {
       alert("Cast submitted successfully!");
@@ -122,7 +124,7 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     }
     return result;
   } catch (e) {
-    console.error("Error during cast submission:", e); // Log error details
+    console.error("Error during cast submission:", e);
     alert("An error occurred while submitting the cast.");
     return false;
   }
