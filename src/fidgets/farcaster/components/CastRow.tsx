@@ -360,34 +360,34 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       castId: cast.hash,
     });
 
-    // Remove the "0x" prefix from the hash before converting to Uint8Array
+    // Clean the hash by removing the "0x" prefix if present
     const cleanedHash = cast.hash.startsWith("0x")
       ? cast.hash.slice(2)
       : cast.hash;
-    const parentCastHash = hexToBytes(cleanedHash);
 
+    // Convert the hash to Uint8Array and log the result
+    const parentCastHash = hexToBytes(cleanedHash);
+    console.log("parentCastHash (Uint8Array):", parentCastHash);
+
+    // Ensure the hash is exactly 20 bytes long
     if (parentCastHash.length !== 20) {
       console.error(
-        "Hash must be 20 bytes, received length:",
+        "Hash must be 20 bytes, but received length:",
         parentCastHash.length,
       );
-      return; // Prevent further execution if the hash is invalid
+      return; // Prevent submission if hash is invalid
     }
 
-    // Log the hash to ensure it is correctly converted and is 20 bytes long
-    console.log(
-      "parentCastHash:",
-      parentCastHash,
-      "Length:",
-      parentCastHash.length,
-    );
-
     setReplyCastDraft({
-      parentCastId: { fid: cast.author.fid, hash: parentCastHash }, // Ensure hash is a Uint8Array
+      parentCastId: { fid: cast.author.fid, hash: parentCastHash },
     });
     setReplyCastType("reply");
     setShowModal(true);
   };
+
+  const knownValidHash = "f8a74bcd12e9a84a7d23b5d8f5d0b2ff3f9a81be"; // 40 characters (20 bytes)
+  const parentCastHash = hexToBytes(knownValidHash);
+  console.log(parentCastHash.length); // Should be 20
 
   const onQuote = () => {
     trackAnalyticsEvent(AnalyticsEvent.RECAST, {
