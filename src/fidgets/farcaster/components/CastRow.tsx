@@ -360,8 +360,12 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       castId: cast.hash,
     });
 
-    // Convert the cast hash to a Uint8Array (20-byte hash)
-    const parentCastHash = hexToBytes(cast.hash);
+    // Remove the "0x" prefix from the hash before converting to Uint8Array
+    const cleanedHash = cast.hash.startsWith("0x")
+      ? cast.hash.slice(2)
+      : cast.hash;
+    const parentCastHash = hexToBytes(cleanedHash);
+
     if (parentCastHash.length !== 20) {
       console.error(
         "Hash must be 20 bytes, received length:",
