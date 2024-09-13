@@ -140,23 +140,29 @@ export const submitCast = async (
   try {
     console.log("Submitting cast with fid:", fid, "and signer:", signer);
 
-    // Attempt to create the cast message
+    // Log the data we're passing to makeCastAdd
+    console.log("Unsigned Cast Body:", unsignedCastBody);
+
     const castAddMessageResp = await makeCastAdd(
       unsignedCastBody,
-      { fid, network: FarcasterNetwork.MAINNET },
+      { fid, network: FarcasterNetwork.MAINNET }, // Ensure the network and fid are correct
       signer,
     );
 
     // Check if cast creation was successful
     if (!castAddMessageResp.isOk()) {
-      console.error("makeCastAdd failed with error:", castAddMessageResp.error);
+      console.error("makeCastAdd failed with error:", castAddMessageResp.error); // Log the error returned
       return false;
     }
+
+    // Log the CastAddMessage to confirm it was created successfully
+    console.log("CastAddMessage created:", castAddMessageResp.value);
 
     // Submit the created message to the backend
     const backendResponse = await submitMessageToBackend(
       castAddMessageResp.value,
     );
+
     if (!backendResponse) {
       console.error(
         "submitMessageToBackend failed, response:",
