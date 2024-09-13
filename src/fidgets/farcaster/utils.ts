@@ -149,7 +149,7 @@ export const submitCast = async (
 
     // Check if cast creation was successful
     if (!castAddMessageResp.isOk()) {
-      console.error("makeCastAdd failed:", castAddMessageResp.error);
+      console.error("makeCastAdd failed with error:", castAddMessageResp.error);
       return false;
     }
 
