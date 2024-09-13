@@ -112,15 +112,17 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
       fid,
       signer,
     );
+    console.log("API submission response:", result); // Log full response
+
     if (result) {
       alert("Cast submitted successfully!");
     } else {
-      console.error("Cast submission failed. API result:", result);
+      console.error("Cast submission failed. API response:", result);
       alert("Failed to submit cast.");
     }
     return result;
   } catch (e) {
-    console.error("Error while submitting cast:", e);
+    console.error("Error during cast submission:", e); // Log error details
     alert("An error occurred while submitting the cast.");
     return false;
   }
