@@ -40,7 +40,7 @@ import {
   submitCast,
 } from "../utils";
 import { bytesToHex } from "@noble/ciphers/utils";
-
+import { bytesToHexString } from "@farcaster/core";
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
 
@@ -94,17 +94,38 @@ export type ModProtocolCastAddBody = Exclude<
 async function publishPost(draft: DraftType, fid: number, signer: Signer) {
   console.log("publishPost", draft, fid, signer);
 
-  // Ensure the parentCastId.hash is converted to hex properly before submission
-  const unsignedCastBody = await formatPlaintextToHubCastMessage({
+  // Ensure the parentCastId.hash is converted to Uint8Array properly before submission
+  if (draft.parentCastId) {
+    const { fid, hash } = draft.parentCastId;
+    console.log("Parent Cast ID:", { fid, hash });
+
+    // Log the hash length
+    console.log("Parent Cast Hash Length (before submission):", hash.length);
+
+    // Check if the hash is valid
+    if (hash.length !== 20) {
+      console.error("Hash must be 20 bytes, but received length:", hash.length);
+      return false; // prevent submission if the hash is invalid
+    }
+  }
+
+  const unsignedCastBody: ModProtocolCastAddBody = {
+    type: CastType.CAST,
     text: draft.text,
     embeds: draft.embeds || [],
-    parentUrl: draft.parentUrl,
-    parentCastFid: draft.parentCastId?.fid || undefined,
-    parentCastHash: draft.parentCastId?.hash
-      ? bytesToHex(draft.parentCastId.hash)
-      : undefined, // Convert Uint8Array to hex
-    getMentionFidsByUsernames: getMentionFids,
-  });
+    parentUrl: draft.parentUrl || undefined,
+    parentCastId: draft.parentCastId
+      ? {
+          fid: draft.parentCastId.fid,
+          hash: draft.parentCastId.hash,
+        }
+      : undefined,
+    mentions: [],
+    embedsDeprecated: [],
+    mentionsPositions: [],
+  };
+
+  console.log("Unsigned Cast Body:", unsignedCastBody); // Check the structure of the cast
 
   if (!unsignedCastBody) return false;
 

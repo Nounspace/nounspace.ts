@@ -20,7 +20,7 @@ import {
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { ReactionType } from "@farcaster/core";
+import { bytesToHexString, ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
@@ -365,17 +365,22 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       ? cast.hash.slice(2)
       : cast.hash;
 
-    // Convert the hash to Uint8Array and log the result
+    // Convert the hex string to Uint8Array
     const parentCastHash = hexToBytes(cleanedHash);
-    console.log("parentCastHash (Uint8Array):", parentCastHash);
 
-    // Ensure the hash is exactly 20 bytes long
+    // Log the length of the parentCastHash
+    console.log("Parent Cast Hash Length:", parentCastHash.length); // This should log 20 if it's correct
+
+    // Log the parentCastHash in its current format
+    console.log("Parent Cast Hash (Uint8Array):", parentCastHash);
+
+    // Check for invalid length and prevent submission if necessary
     if (parentCastHash.length !== 20) {
       console.error(
         "Hash must be 20 bytes, but received length:",
         parentCastHash.length,
       );
-      return; // Prevent submission if hash is invalid
+      return; // prevent further execution if invalid
     }
 
     setReplyCastDraft({
