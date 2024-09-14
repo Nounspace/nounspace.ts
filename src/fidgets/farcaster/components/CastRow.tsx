@@ -368,19 +368,13 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     // Convert the hex string to Uint8Array
     const parentCastHash = hexToBytes(cleanedHash);
 
-    // Log the length of the parentCastHash
-    console.log("Parent Cast Hash Length:", parentCastHash.length); // This should log 20 if it's correct
-
-    // Log the parentCastHash in its current format
-    console.log("Parent Cast Hash (Uint8Array):", parentCastHash);
-
     // Check for invalid length and prevent submission if necessary
     if (parentCastHash.length !== 20) {
       console.error(
         "Hash must be 20 bytes, but received length:",
         parentCastHash.length,
       );
-      return; // prevent further execution if invalid
+      return;
     }
 
     setReplyCastDraft({
@@ -389,10 +383,6 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     setReplyCastType("reply");
     setShowModal(true);
   };
-
-  const knownValidHash = "f8a74bcd12e9a84a7d23b5d8f5d0b2ff3f9a81be"; // 40 characters (20 bytes)
-  const parentCastHash = hexToBytes(knownValidHash);
-  console.log(parentCastHash.length); // Should be 20
 
   const onQuote = () => {
     trackAnalyticsEvent(AnalyticsEvent.RECAST, {

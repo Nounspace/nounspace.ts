@@ -92,20 +92,14 @@ export type ModProtocolCastAddBody = Exclude<
 };
 
 async function publishPost(draft: DraftType, fid: number, signer: Signer) {
-  console.log("publishPost", draft, fid, signer);
-
   // Ensure the parentCastId.hash is converted to Uint8Array properly before submission
   if (draft.parentCastId) {
     const { fid, hash } = draft.parentCastId;
-    console.log("Parent Cast ID:", { fid, hash });
-
-    // Log the hash length
-    console.log("Parent Cast Hash Length (before submission):", hash.length);
 
     // Check if the hash is valid
     if (hash.length !== 20) {
       console.error("Hash must be 20 bytes, but received length:", hash.length);
-      return false; // prevent submission if the hash is invalid
+      return false;
     }
   }
 
@@ -125,8 +119,6 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     mentionsPositions: [],
   };
 
-  console.log("Unsigned Cast Body:", unsignedCastBody); // Check the structure of the cast
-
   if (!unsignedCastBody) return false;
 
   try {
@@ -135,7 +127,6 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
       fid,
       signer,
     );
-    console.log("API submission response:", result);
 
     if (result) {
       alert("Cast submitted successfully!");
@@ -165,7 +156,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
-  console.log(draft?.parentCastId);
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
 
   const debouncedGetChannels = useCallback(
