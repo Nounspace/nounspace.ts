@@ -10,7 +10,6 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-  // getFarcasterChannels,
   formatPlaintextToHubCastMessage,
   getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
@@ -91,15 +90,15 @@ export type ModProtocolCastAddBody = Exclude<
   type: CastType;
 };
 
-async function publishPost(draft: DraftType, fid: number, signer: Signer) {
-  // Ensure the parentCastId.hash is converted to Uint8Array properly before submission
+async function publishPost(
+  draft: DraftType,
+  fid: number,
+  signer: Signer,
+): Promise<{ success: boolean; message?: string }> {
   if (draft.parentCastId) {
     const { fid, hash } = draft.parentCastId;
-
-    // Check if the hash is valid
     if (hash.length !== 20) {
-      console.error("Hash must be 20 bytes, but received length:", hash.length);
-      return false;
+      return { success: false, message: "Invalid parent cast ID hash length." };
     }
   }
 
@@ -119,7 +118,8 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     mentionsPositions: [],
   };
 
-  if (!unsignedCastBody) return false;
+  if (!unsignedCastBody)
+    return { success: false, message: "Invalid cast data." };
 
   try {
     const result = await submitCast(
@@ -129,16 +129,15 @@ async function publishPost(draft: DraftType, fid: number, signer: Signer) {
     );
 
     if (result) {
-      alert("Cast submitted successfully!");
+      return { success: true };
     } else {
-      console.error("Cast submission failed. API response:", result);
-      alert("Failed to submit cast.");
+      return { success: false, message: "Failed to submit cast." };
     }
-    return result;
   } catch (e) {
-    console.error("Error during cast submission:", e);
-    alert("An error occurred while submitting the cast.");
-    return false;
+    return {
+      success: false,
+      message: "An error occurred while submitting the cast.",
+    };
   }
 }
 
@@ -153,6 +152,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     status: DraftStatus.writing,
     ...initialDraft,
   });
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
@@ -176,12 +178,29 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
-    await publishPost(draft, fid, signer);
-    afterSubmit();
-    return true;
+
+    setDraft((prev) => ({ ...prev, status: DraftStatus.publishing }));
+
+    const result = await publishPost(draft, fid, signer);
+
+    if (result.success) {
+      setSubmitStatus("success");
+      setDraft((prev) => ({ ...prev, status: DraftStatus.published }));
+      setTimeout(() => {
+        afterSubmit();
+      }, 3000);
+    } else {
+      setSubmitStatus("error");
+      setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
+    }
+
+    return result.success;
   };
 
   const isPublishing = draft?.status === DraftStatus.publishing;
+  const isPublished = draft?.status === DraftStatus.published;
+  const submissionError = submitStatus === "error";
+
   const {
     editor,
     getText,
@@ -249,6 +268,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
     if (isPublishing) return "Publishing...";
+    if (submissionError) return "Retry";
+    if (isPublished) return "Published!";
     return "Cast";
   };
 
@@ -277,11 +298,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
+        {submitStatus === "error" && (
+          <div className="mt-2 p-2 bg-red-100 text-red-800 rounded">
+            An error occurred while submitting the cast.
+          </div>
+        )}
+
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
             <div className="text-foreground/80">
               {isPublishing || isLoadingSigner ? (
-                channel.name
+                channel?.name
               ) : (
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
