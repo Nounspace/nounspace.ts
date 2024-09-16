@@ -25,7 +25,7 @@ export const CompleteFidgets = {
   // Farcaster
   frame: Frame,
   feed: Feed,
-  cast: Cast,
+  // cast: Cast,
   createCast: CreateCast,
   // Basic UI elements
   gallery: Gallery,
