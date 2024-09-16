@@ -9,7 +9,7 @@ import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
-import CreateCast from "./farcaster/CreateCast";
+// import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
 // import Swap from "./swap/Swap";
@@ -26,7 +26,7 @@ export const CompleteFidgets = {
   frame: Frame,
   feed: Feed,
   cast: Cast,
-  createCast: CreateCast,
+  // createCast: CreateCast,
   // Basic UI elements
   gallery: Gallery,
   text: TextFidget,
