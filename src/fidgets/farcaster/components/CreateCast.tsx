@@ -319,7 +319,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             </div>
           )}
           <Button
-            className="h-10"
+            className="h-9"
             type="button"
             variant="outline"
             disabled={isPublishing}
@@ -356,16 +356,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </Popover>
           <CastLengthUIIndicator getText={getText} />
           <div className="grow"></div>
-        </div>
-        <div className="flex flex-row pt-2 justify-end">
-          <Button
-            size="lg"
-            type="submit"
-            className="line-clamp-1 min-w-40 max-w-xs truncate"
-            disabled={isPublishing || isLoadingSigner}
-          >
-            {getButtonText()}
-          </Button>
+          <div className="flex flex-row pt-0 justify-end">
+            <Button
+              size="lg"
+              type="submit"
+              className="line-clamp-1 min-w-40 max-w-xs truncate"
+              disabled={isPublishing || isLoadingSigner}
+            >
+              {getButtonText()}
+            </Button>
+          </div>
         </div>
       </form>
       {hasEmbeds && (
