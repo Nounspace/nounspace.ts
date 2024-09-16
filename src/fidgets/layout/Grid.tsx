@@ -337,9 +337,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         {inEditMode && (
           <button
             onClick={openFidgetPicker}
-            className="flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
+            className="z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
           >
-            <div className="ml-2">
+            <div className="ml-2 ">
               <AddFidgetIcon />
             </div>
             <span className="ml-4 mr-2">Fidget</span>
