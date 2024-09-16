@@ -21,7 +21,7 @@ export type TextFidgetSettings = {
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
-  fidgetName: "Rss",
+  fidgetName: "RSS Feed",
   icon: 0x1f6f0,
   fields: [
     {
