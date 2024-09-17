@@ -226,6 +226,8 @@ export default function UserDefinedSpace({
       renameTab={(oldName, newName) =>
         spaceId && saveLocalSpaceTab(spaceId, oldName, config, newName)
       }
+      commitTab={(tabName) => spaceId && commitSpaceTab(spaceId, tabName)}
+      commitTabOrder={() => spaceId && commitSpaceTabOrder(spaceId)}
     />
   );
 

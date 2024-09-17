@@ -8,6 +8,7 @@ import { isNull, isString, noop } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import tabOrder from "../api/space/homebase/tabOrder";
 
 const Homebase: NextPageWithLayout = () => {
   const {
@@ -46,6 +47,7 @@ const Homebase: NextPageWithLayout = () => {
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
   }));
+
   const router = useRouter();
   const queryTabName = router.query.tabname;
   const isLoggedIn = getIsLoggedIn();
@@ -59,7 +61,9 @@ const Homebase: NextPageWithLayout = () => {
 
   const loadConfig = async () => {
     await loadTabNames();
-    await loadHomebaseTabOrder();
+    if (tabOrdering.local.length === 0) {
+      await loadHomebaseTabOrder();
+    }
     await loadTab(tabName);
   };
   const homebaseConfig = tabConfigs[tabName]?.config;
