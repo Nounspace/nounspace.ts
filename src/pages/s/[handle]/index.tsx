@@ -17,8 +17,8 @@ import {
 export type SpacePageProps = {
   spaceId: string | null;
   fid: number | null;
-  handle: string | string[] | undefined;
-  tabName: string | string[] | undefined;
+  handle: string | string[] | null | undefined;
+  tabName: string | string[] | null | undefined;
   userMetadata?: UserMetadata;
 };
 
@@ -35,11 +35,13 @@ export const getServerSideProps = (async ({
       props: {
         spaceId: null,
         fid: null,
-        handle: isUndefined(params) ? params : params.handle,
-        tabName: isUndefined(params) ? params : params.tabName,
+        handle: handle,
+        tabName: isUndefined(params) ? null : params.tabName,
       },
     };
   }
+
+  console.log(handle, params);
 
   try {
     const {
@@ -79,7 +81,7 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: user.fid,
         handle,
-        tabName: undefined,
+        tabName: null,
         userMetadata,
       },
     };
@@ -90,7 +92,7 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: null,
         handle,
-        tabName: undefined,
+        tabName: null,
       },
     };
   }
@@ -102,6 +104,7 @@ export const UserPrimarySpace: NextPageWithLayout = ({
   tabName,
   userMetadata,
 }: SpacePageProps) => {
+  console.log(spaceId, fid, tabName, userMetadata);
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
@@ -111,7 +114,11 @@ export const UserPrimarySpace: NextPageWithLayout = ({
   }, []);
 
   if (!isNil(fid)) {
-    if ((isNil(spaceId) && tabName === "profile") || !isNil(spaceId))
+    if (
+      (isNil(spaceId) && tabName === "profile") ||
+      tabName === null ||
+      !isNil(spaceId)
+    )
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>
