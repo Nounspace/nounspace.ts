@@ -128,7 +128,7 @@ const NotificationHeader = ({
           {` ${descriptionSuffix}`}
         </p>
         {relativeDateString && (
-          <p className="tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
+          <p className="tracking-tight text-sm leading-[1.3] truncate gap-1 opacity-60 font-normal">
             {relativeDateString}
           </p>
         )}
