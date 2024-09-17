@@ -29,11 +29,13 @@ const Homebase: NextPageWithLayout = () => {
     createHomebaseTab,
     deleteHomebaseTab,
     renameHomebaseTab,
+    commitHomebaseTab,
   } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
     loadConfig: state.homebase.loadHomebase,
     commitConfig: state.homebase.commitHomebaseToDatabase,
+    commitHomebaseTab: state.homebase.commitHomebaseTabToDatabase,
     resetConfig: state.homebase.resetHomebaseConfig,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
@@ -101,6 +103,9 @@ const Homebase: NextPageWithLayout = () => {
           // To get types to match since store.commitConfig is debounced
           commitConfig: async () => {
             await commitConfig();
+            for (const tabName of tabOrdering.local) {
+              await commitHomebaseTab(tabName);
+            }
           },
           resetConfig,
           tabBar: tabBar,
