@@ -19,7 +19,7 @@ import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "@mod-protocol/react-ui-shadcn/dist/components/mention-list";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
-import { ChannelPicker } from "@mod-protocol/react-ui-shadcn/dist/components/channel-picker";
+import { ChannelPicker } from "./channelPicker";
 import {
   Popover,
   PopoverContent,
