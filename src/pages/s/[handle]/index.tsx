@@ -41,8 +41,6 @@ export const getServerSideProps = (async ({
     };
   }
 
-  console.log(handle, params);
-
   try {
     const {
       result: { user },
@@ -104,7 +102,6 @@ export const UserPrimarySpace: NextPageWithLayout = ({
   tabName,
   userMetadata,
 }: SpacePageProps) => {
-  console.log(spaceId, fid, tabName, userMetadata);
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
