@@ -91,7 +91,7 @@ const StickyHeader = ({ onBack }: { onBack?: () => void }) => {
         <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
           <>
             <IoArrowBack
-              className="size-5 group-hover:text-foreground/80 stroke-2"
+              className="size-5 group-hover:opacity-80 stroke-2"
               aria-hidden="true"
             />
           </>

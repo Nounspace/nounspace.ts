@@ -72,7 +72,7 @@ const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = ({
             >
               <div className="flex items-center py-1 px-1">
                 <MagnifyingGlassIcon className="mr-2 h-7 w-7 shrink-0 opacity-50" />
-                <div className="leading-[1.3] tracking-tight font-bold text-foreground/80">{`Search for "${query}"`}</div>
+                <div className="leading-[1.3] tracking-tight font-bold opacity-80">{`Search for "${query}"`}</div>
               </div>
             </CommandItem>
           )}
@@ -89,12 +89,8 @@ const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = ({
                     <AvatarImage src={user.pfp_url} alt={user.display_name} />
                   </Avatar>
                   <div className="leading-[1.3]">
-                    <p className="font-bold text-foreground/80">
-                      {user.display_name}
-                    </p>
-                    <p className="font-normal text-foreground/80">
-                      @{user.username}
-                    </p>
+                    <p className="font-bold opacity-80">{user.display_name}</p>
+                    <p className="font-normal opacity-80">@{user.username}</p>
                   </div>
                 </CommandItem>
               ))}
