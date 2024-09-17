@@ -41,15 +41,17 @@ function TabBar({
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
-    let newName = base;
-    let iter = 1;
+    return generateUniqueTabName(base);
+  }
 
-    while (tabList.includes(newName)) {
-      newName = base + ` (${iter})`;
+  function generateUniqueTabName(tabName: string) {
+    let iter = 1;
+    let uniqueName = tabName;
+    while (tabList.includes(uniqueName)) {
+      uniqueName = tabName + ` (${iter})`;
       iter += 1;
     }
-
-    return newName;
+    return uniqueName;
   }
 
   async function handleCreateTab(tabName: string) {
@@ -65,13 +67,15 @@ function TabBar({
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
-    await renameTab(tabName, newName);
+    let uniqueName = generateUniqueTabName(newName);
+
+    await renameTab(tabName, uniqueName);
     await updateTabOrder(
-      tabList.map((name) => (name === tabName ? newName : name)),
+      tabList.map((name) => (name === tabName ? uniqueName : name)),
     );
-    await commitTab(newName);
+    await commitTab(uniqueName);
     await commitTabOrder();
-    switchTabTo(newName);
+    switchTabTo(uniqueName);
   }
 
   function nextClosestTab(tabName: string) {
