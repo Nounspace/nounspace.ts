@@ -46,23 +46,23 @@ export const Tab = ({
         className={`static flex p-2 items-center transition-colors duration-300 group 
           ${
             isSelected
-              ? "text-blue-600 font-bold"
-              : "text-gray-500 hover:text-blue-600"
+              ? "text-blue-600 font-bold cursor-grab"
+              : "text-gray-500 hover:text-blue-600 cursor-pointer"
           }`}
       >
         {/* Text */}
         <motion.span layout="position">
-          {inEditMode && renameable ? (
-            <>
+          {inEditMode && renameable && isSelected ? (
+            <div className="cursor-text">
               <EditableText initialText={tabName} updateMethod={renameTab} />
-            </>
+            </div>
           ) : (
             tabName
           )}
         </motion.span>
 
         {/* Close Icon */}
-        {removeable && onRemove && inEditMode && (
+        {removeable && onRemove && inEditMode && isSelected && (
           <motion.div layout>
             <motion.button
               onPointerDown={(event) => {
