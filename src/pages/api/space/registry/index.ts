@@ -59,7 +59,7 @@ async function registerNewSpace(
       result: "error",
       error: {
         message:
-          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, isDefault and signature",
+          "Registration of a new space requires spaceName, fid, timestamp, identityPublicKey, and signature",
       },
     });
     return;

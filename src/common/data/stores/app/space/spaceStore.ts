@@ -405,7 +405,7 @@ export const createSpaceStoreFunc = (
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
-    // TO DO: Error handling
+    // TODO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",

@@ -204,9 +204,7 @@ export default function UserDefinedSpace({
   const username = useMemo(() => user?.username, [user]);
 
   function switchTabTo(tabName: string) {
-    if (tabName !== "Feed") {
-      router.push(`/s/${username}/${tabName}`);
-    }
+    router.push(`/s/${username}/${tabName}`);
   }
 
   const { editMode } = useSidebarContext();
@@ -215,7 +213,7 @@ export default function UserDefinedSpace({
     <TabBar
       inHomebase={false}
       currentTab={providedTabName}
-      tabList={spaceId ? localSpaces[spaceId]?.order : []}
+      tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
       switchTabTo={switchTabTo}
       updateTabOrder={(newOrder) =>
         spaceId && updateSpaceTabOrder(spaceId, newOrder)

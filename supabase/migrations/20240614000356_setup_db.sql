@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS "public"."spaceRegistrations" (
     "spaceName" character varying NOT NULL,
     "signature" character varying NOT NULL,
     "identityPublicKey" character varying NOT NULL,
-    "isDefault" boolean NOT NULL,
     "timestamp" timestamp with time zone NOT NULL
 );
 
