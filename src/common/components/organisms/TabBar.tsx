@@ -17,10 +17,12 @@ interface TabBarProps {
   currentTab: string;
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
+  commitTabOrder: () => void;
   switchTabTo: (tabName: string) => void;
   deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => void;
   renameTab: (tabName: string, newName: string) => void;
+  commitTab: (tabName: string) => void;
 }
 
 function TabBar({
@@ -30,9 +32,11 @@ function TabBar({
   tabList,
   switchTabTo,
   updateTabOrder,
+  commitTabOrder,
   deleteTab,
   createTab,
   renameTab,
+  commitTab,
 }: TabBarProps) {
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -50,7 +54,7 @@ function TabBar({
 
   async function handleCreateTab(tabName: string) {
     await createTab(tabName);
-    updateTabOrder([...tabList, tabName]);
+    await updateTabOrder([...tabList, tabName]);
     switchTabTo(tabName);
   }
 
@@ -61,8 +65,12 @@ function TabBar({
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
-    updateTabOrder(tabList.map((name) => (name === tabName ? newName : name)));
     await renameTab(tabName, newName);
+    await updateTabOrder(
+      tabList.map((name) => (name === tabName ? newName : name)),
+    );
+    await commitTab(newName);
+    await commitTabOrder();
     switchTabTo(newName);
   }
 

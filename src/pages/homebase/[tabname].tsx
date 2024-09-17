@@ -19,7 +19,7 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
-
+    loadTabNames,
     tabOrdering,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
@@ -38,6 +38,7 @@ const Homebase: NextPageWithLayout = () => {
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
 
     tabOrdering: state.homebase.tabOrdering,
+    loadTabNames: state.homebase.loadTabNames,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
     updateHomebaseTabOrder: state.homebase.updateTabOrdering,
     commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
@@ -53,38 +54,38 @@ const Homebase: NextPageWithLayout = () => {
   const tabName = isString(queryTabName) ? queryTabName : "";
 
   useEffect(() => {
-    loadHomebaseTabOrder();
-  }, [router.pathname]);
+    loadConfig();
+  }, [router.pathname, isLoggedIn, tabName]);
 
-  const loadConfig = () => {
-    loadTab(tabName);
-    loadHomebaseTabOrder();
+  const loadConfig = async () => {
+    await loadTabNames();
+    await loadHomebaseTabOrder();
+    await loadTab(tabName);
   };
   const homebaseConfig = tabConfigs[tabName]?.config;
   const saveConfig = (config: SpaceConfigSaveDetails) =>
     saveTab(tabName, config);
   const resetConfig = () => resetTab(tabName);
-  const commitConfig = () => {
+  const commitConfig = async () => {
     commitTab(tabName);
     commitHomebaseTabOrder();
+    for (const tabName of tabOrdering.local) {
+      await commitTab(tabName);
+    }
   };
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
-
-  useEffect(() => {
-    isLoggedIn && loadConfig();
-  }, [isLoggedIn, tabName]);
 
   if (isNull(tabName)) {
     // TODO: Insert 404 page
     return;
   }
 
-  function switchTabTo(tabName: string) {
-    if (tabName === "Feed") {
+  async function switchTabTo(newTabName) {
+    if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
-      router.push(`/homebase/${tabName}`);
+      router.push(`/homebase/${newTabName}`);
     }
   }
 
@@ -101,6 +102,8 @@ const Homebase: NextPageWithLayout = () => {
       deleteTab={deleteHomebaseTab}
       createTab={createHomebaseTab}
       renameTab={renameHomebaseTab}
+      commitTabOrder={commitHomebaseTabOrder}
+      commitTab={commitTab}
     />
   );
 

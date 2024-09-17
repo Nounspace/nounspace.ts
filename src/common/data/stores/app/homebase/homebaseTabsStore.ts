@@ -194,7 +194,6 @@ export const createHomeBaseTabStoreFunc = (
       console.debug("failed to create homebase tab", e);
     }
   },
-
   async deleteTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
@@ -252,6 +251,7 @@ export const createHomeBaseTabStoreFunc = (
   },
   async loadHomebaseTab(tabName) {
     if (!has(get().homebase.tabs, tabName)) return;
+
     const supabase = createClient();
     const {
       data: { publicUrl },
