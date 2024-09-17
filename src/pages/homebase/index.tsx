@@ -30,6 +30,7 @@ const Homebase: NextPageWithLayout = () => {
     deleteHomebaseTab,
     renameHomebaseTab,
     commitHomebaseTab,
+    commitHomebaseTabOrder,
   } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
@@ -44,6 +45,7 @@ const Homebase: NextPageWithLayout = () => {
     tabOrdering: state.homebase.tabOrdering,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
     updateHomebaseTabOrder: state.homebase.updateTabOrdering,
+    commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
     createHomebaseTab: state.homebase.createTab,
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
@@ -55,8 +57,12 @@ const Homebase: NextPageWithLayout = () => {
   useEffect(() => setCurrentSpaceId("homebase"), []);
 
   useEffect(() => {
-    isLoggedIn && loadConfig();
-    isLoggedIn && loadHomebaseTabOrder();
+    if (isLoggedIn) {
+      loadConfig();
+      if (tabOrdering.local.length === 0) {
+        loadHomebaseTabOrder();
+      }
+    }
   }, [isLoggedIn]);
 
   function switchTabTo(tabName: string) {
@@ -78,6 +84,8 @@ const Homebase: NextPageWithLayout = () => {
       deleteTab={deleteHomebaseTab}
       createTab={createHomebaseTab}
       renameTab={renameHomebaseTab}
+      commitTab={commitHomebaseTab}
+      commitTabOrder={commitHomebaseTabOrder}
     />
   );
 
