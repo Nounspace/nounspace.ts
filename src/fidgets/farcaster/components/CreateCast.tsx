@@ -38,8 +38,8 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import { bytesToHex } from "@noble/ciphers/utils";
-import { bytesToHexString } from "@farcaster/core";
+// import { bytesToHex } from "@noble/ciphers/utils";
+// import { bytesToHexString } from "@farcaster/core";
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
 
@@ -48,7 +48,7 @@ const debouncedGetMentions = debounce(getMentions, 200, {
   trailing: false,
 });
 const getUrlMetadata = fetchUrlMetadata(API_URL);
-const getMentionFids = getMentionFidsByUsernames(API_URL);
+// const getMentionFids = getMentionFidsByUsernames(API_URL);
 
 const onError = (err) => {
   console.error(err);
@@ -252,17 +252,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const channel = getChannel();
 
   useEffect(() => {
-    if (!editor) return; // no updates before editor is initialized
+    if (!editor) return; // No updates before editor is initialized
     if (isPublishing) return;
-    if (draft?.parentUrl === channel?.parent_url) return;
 
     const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
-    setDraft({
-      ...draft,
+
+    setDraft((prevDraft) => ({
+      ...prevDraft,
       text,
       embeds: newEmbeds,
-      parentUrl: channel?.parent_url || undefined,
-    });
+      parentUrl: channel?.parent_url || undefined, // Ensure channel's parent_url is set in the draft
+    }));
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
 
   const getButtonText = () => {
@@ -312,14 +312,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
               ) : (
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
-                  onSelect={setChannel}
+                  onSelect={(selectedChannel) => {
+                    setChannel(selectedChannel); // Set the selected channel
+                  }}
                   value={channel}
                 />
               )}
             </div>
           )}
           <Button
-            className="h-9"
+            className="h-10"
             type="button"
             variant="outline"
             disabled={isPublishing}
