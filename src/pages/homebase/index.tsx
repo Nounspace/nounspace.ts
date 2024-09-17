@@ -7,8 +7,12 @@ import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { FeedType } from "@neynar/nodejs-sdk";
 import { noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
+import TabBar from "@/common/components/organisms/TabBar";
+import { useRouter } from "next/router";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 const Homebase: NextPageWithLayout = () => {
+  const router = useRouter();
   const {
     homebaseConfig,
     saveConfig,
@@ -18,6 +22,13 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
+
+    tabOrdering,
+    loadHomebaseTabOrder,
+    updateHomebaseTabOrder,
+    createHomebaseTab,
+    deleteHomebaseTab,
+    renameHomebaseTab,
   } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
@@ -27,6 +38,13 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+
+    tabOrdering: state.homebase.tabOrdering,
+    loadHomebaseTabOrder: state.homebase.loadTabOrdering,
+    updateHomebaseTabOrder: state.homebase.updateTabOrdering,
+    createHomebaseTab: state.homebase.createTab,
+    deleteHomebaseTab: state.homebase.deleteTab,
+    renameHomebaseTab: state.homebase.renameTab,
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
@@ -36,7 +54,30 @@ const Homebase: NextPageWithLayout = () => {
 
   useEffect(() => {
     isLoggedIn && loadConfig();
+    isLoggedIn && loadHomebaseTabOrder();
   }, [isLoggedIn]);
+
+  function switchTabTo(tabName: string) {
+    if (tabName !== "Feed") {
+      router.push(`/homebase/${tabName}`);
+    }
+  }
+
+  const { editMode } = useSidebarContext();
+
+  const tabBar = (
+    <TabBar
+      inHomebase={true}
+      currentTab={"Feed"}
+      tabList={tabOrdering.local}
+      switchTabTo={switchTabTo}
+      updateTabOrder={updateHomebaseTabOrder}
+      inEditMode={editMode}
+      deleteTab={deleteHomebaseTab}
+      createTab={createHomebaseTab}
+      renameTab={renameHomebaseTab}
+    />
+  );
 
   const args: SpacePageArgs = isInitializing
     ? {
@@ -44,6 +85,7 @@ const Homebase: NextPageWithLayout = () => {
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
+        tabBar: tabBar,
       }
     : !isLoggedIn
       ? {
@@ -51,13 +93,17 @@ const Homebase: NextPageWithLayout = () => {
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
+          tabBar: tabBar,
         }
       : {
           config: homebaseConfig,
           saveConfig,
           // To get types to match since store.commitConfig is debounced
-          commitConfig: async () => await commitConfig(),
+          commitConfig: async () => {
+            await commitConfig();
+          },
           resetConfig,
+          tabBar: tabBar,
         };
 
   if (currentFid) {

@@ -12,275 +12,35 @@ import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 
 interface TabBarProps {
-  hasProfile: boolean;
+  inHomebase: boolean;
   inEditMode: boolean;
-  profileFid: number;
+  currentTab: string;
+  tabList: string[];
+  updateTabOrder: (newOrder: string[]) => void;
+  switchTabTo: (tabName: string) => void;
+  deleteTab: (tabName: string) => void;
+  createTab: (tabName: string) => void;
+  renameTab: (tabName: string, newName: string) => void;
 }
 
-const TabBar = memo(function TabBar({
-  hasProfile,
+function TabBar({
+  inHomebase,
   inEditMode,
-  profileFid,
+  currentTab,
+  tabList,
+  switchTabTo,
+  updateTabOrder,
+  deleteTab,
+  createTab,
+  renameTab,
 }: TabBarProps) {
-  const { fid: userFid } = useFarcasterSigner("navigation");
-  const { data } = useLoadFarcasterUser(userFid);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
-  const router = useRouter();
-
-  const {
-    loadTabNames,
-    loadTabOrdering,
-    loadSpaceOrdering,
-    updateTabOrdering,
-    updateSpaceOrdering,
-    commitTabToDatabase,
-    commitSpaceToDatabase,
-    commitHomebaseToDatabase,
-    createTab,
-    createSpace,
-    deleteTab,
-    renameTab,
-    renameSpace,
-  } = useAppStore((state) => ({
-    commitHomebaseToDatabase: state.homebase.commitHomebaseToDatabase,
-    commitTabToDatabase: state.homebase.commitHomebaseTabToDatabase,
-    commitSpaceToDatabase: state.space.commitSpaceToDatabase,
-    loadTabNames: state.homebase.loadTabNames,
-    loadTabOrdering: state.homebase.loadTabOrdering,
-    loadSpaceOrdering: state.space.loadSpaceOrderForFid,
-    updateTabOrdering: state.homebase.updateTabOrdering,
-    updateSpaceOrdering: state.space.updateLocalSpaceOrdering,
-    createTab: state.homebase.createTab,
-    createSpace: state.space.registerSpace,
-    deleteTab: state.homebase.deleteTab,
-    renameTab: state.homebase.renameTab,
-    renameSpace: state.space.renameSpace,
-  }));
-
-  const { localTabStore } = useAppStore((state) => ({
-    localTabStore: state.homebase.tabOrdering.local,
-  }));
-  const { localSpaceStore } = useAppStore((state) => ({
-    localSpaceStore: state.space.spaceLookups,
-  }));
-
-  const [spaceTabs, setSpaceTabs] = useState([] as string[]);
-  const [hasFetchedTabs, setHasFetchedTabs] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("");
-  const urlPieces = router.asPath.split("/");
-
-  function updateCurrentSelection() {
-    const pathEnd = decodeURI(urlPieces[urlPieces.length - 1]);
-
-    if (pathEnd === "homebase") {
-      setSelectedTab("Feed");
-    } else {
-      setSelectedTab(pathEnd);
-    }
-  }
-
-  function selectNewTab(tabName: string) {
-    if (tabName != selectedTab) {
-      const href = hasProfile
-        ? `/s/${username}/${tabName}`
-        : tabName == "Feed"
-          ? `/homebase`
-          : `/homebase/${tabName}`;
-      router.push(href);
-      setSelectedTab(tabName);
-    }
-  }
-
-  function switchTab(tabName: string) {
-    // Prevent work from being lost
-    if (inEditMode) {
-      if (hasProfile) {
-        if (localSpaceStore[profileFid].local.some((x) => x.name === tabName)) {
-          commitSpaceToDatabase(
-            localSpaceStore[profileFid].local.find((x) => x.name === tabName)!
-              .spaceId,
-          );
-        }
-      } else if (
-        localTabStore.includes(selectedTab) ||
-        selectedTab === "Feed"
-      ) {
-        commitTab(selectedTab);
-      }
-    }
-
-    selectNewTab(tabName);
-  }
-
-  async function getTabNames() {
-    try {
-      setHasFetchedTabs(false);
-
-      if (hasProfile) {
-        // Load the space ordering
-        await loadSpaceOrdering(profileFid);
-        if (localSpaceStore[profileFid] != undefined) {
-          setSpaceTabs(localSpaceStore[profileFid].local.map((x) => x.name));
-        }
-      } else {
-        // Check actual files
-        const namesList = await loadTabNames();
-
-        if (namesList.length !== 0) {
-          let remoteTabNames = await loadTabOrdering();
-
-          // Cross reference and update
-          remoteTabNames = remoteTabNames.filter((x) => namesList.includes(x));
-          const remainder = namesList.filter(
-            (x) => !remoteTabNames.includes(x),
-          );
-          updateTabOrdering(remoteTabNames.concat(remainder));
-        }
-      }
-      setHasFetchedTabs(true);
-    } catch (e) {
-      console.log("Hit an error: ", e);
-    }
-  }
-
-  // Initial variables load
-  useEffect(() => {
-    if (!hasFetchedTabs) {
-      console.log("fid: " + profileFid);
-      getTabNames();
-      updateCurrentSelection();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (localSpaceStore[profileFid] != undefined) {
-      setSpaceTabs(localSpaceStore[profileFid].local.map((x) => x.name));
-    }
-  }, [localSpaceStore[profileFid]]);
-
-  async function commitTab(tabName: string) {
-    if (inEditMode) {
-      if (hasProfile) {
-        // Find the associated spaceId
-        const currentSpaceID = localSpaceStore[profileFid].local.find(
-          (x) => x.name === tabName,
-        );
-        commitSpaceToDatabase(currentSpaceID!.spaceId);
-      } else {
-        if (tabName == "Feed") {
-          commitHomebaseToDatabase();
-        } else {
-          commitTabToDatabase(tabName);
-        }
-      }
-    }
-  }
-
-  function addNewSpaceLookup(info: SpaceLookupInfo) {
-    const newSpaceOrdering = [] as SpaceLookupInfo[];
-    // Copy existing array
-    if (localSpaceStore[profileFid] != undefined) {
-      localSpaceStore[profileFid].local.forEach((val) =>
-        newSpaceOrdering.push(Object.assign({}, val)),
-      );
-    }
-
-    // Add our new space lookup to it
-    newSpaceOrdering.push(info);
-
-    // Update localState
-    setSpaceTabs(newSpaceOrdering.map((x) => x.name));
-
-    // Update
-    updateSpaceOrdering(profileFid, newSpaceOrdering, true);
-  }
-
-  async function pushNewTabOrdering(newTabOrder: string[]) {
-    if (inEditMode) {
-      if (hasProfile) {
-        // Local update
-        setSpaceTabs(newTabOrder);
-
-        // Generate new SpaceLookup
-        loadSpaceOrdering(profileFid);
-        const newSpaceOrdering = [] as SpaceLookupInfo[];
-
-        if (localSpaceStore[profileFid] != undefined) {
-          newTabOrder.forEach((tabName) => {
-            const currSpaceLookup = {
-              name: tabName,
-              spaceId: localSpaceStore[profileFid].local.find(
-                (x) => x.name === tabName,
-              )!.spaceId,
-            };
-            newSpaceOrdering.push(currSpaceLookup);
-          });
-        }
-
-        // Save locally then commit
-        updateSpaceOrdering(profileFid, newSpaceOrdering, true);
-      } else {
-        updateTabOrdering(newTabOrder, true);
-      }
-    }
-  }
-
-  function nextClosestTab(tabName: string) {
-    const index = localTabStore.indexOf(tabName) - 1;
-    if (index >= 0) {
-      return localTabStore[index];
-    } else {
-      return "Feed";
-    }
-  }
-
-  async function renameAndReload(tabName: string, newTabName: string) {
-    if (inEditMode) {
-      if (hasProfile) {
-        const spaceLookups = await loadSpaceOrdering(profileFid);
-        const currSpaceLookup = spaceLookups.find((obj) => {
-          return obj.name === tabName;
-        });
-        await renameSpace(currSpaceLookup!.spaceId, newTabName);
-      } else {
-        const newTabOrdering = localTabStore.map((currTab) =>
-          currTab == tabName ? newTabName : currTab,
-        );
-        await pushNewTabOrdering(newTabOrdering);
-        await renameTab(tabName, newTabName);
-      }
-
-      selectNewTab(newTabName);
-    }
-  }
-
-  function handleDeleteTab(tabName: string) {
-    if (inEditMode) {
-      selectNewTab(nextClosestTab(tabName));
-
-      const newTabNames = localTabStore.filter((n) => n != tabName);
-      pushNewTabOrdering(newTabNames);
-
-      if (hasProfile) {
-        //TODO
-      } else {
-        deleteTab(tabName);
-      }
-    }
-  }
-
-  function generateTabName() {
-    const endIndex = hasProfile
-      ? spaceTabs.length + 1
-      : localTabStore.length + 1;
+  function generateNewTabName() {
+    const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
     let newName = base;
     let iter = 1;
 
-    const tabNames = hasProfile ? spaceTabs : localTabStore;
-
-    while (tabNames.includes(newName)) {
+    while (tabList.includes(newName)) {
       newName = base + ` (${iter})`;
       iter += 1;
     }
@@ -288,24 +48,32 @@ const TabBar = memo(function TabBar({
     return newName;
   }
 
-  async function handleCreateTab() {
-    if (inEditMode) {
-      const newTabName = generateTabName();
+  async function handleCreateTab(tabName: string) {
+    await createTab(tabName);
+    updateTabOrder([...tabList, tabName]);
+    switchTabTo(tabName);
+  }
 
-      if (hasProfile) {
-        const spaceId = await createSpace(profileFid, newTabName);
-        console.log(spaceId);
+  function handleDeleteTab(tabName: string) {
+    switchTabTo(nextClosestTab(tabName));
+    updateTabOrder(tabList.filter((name) => name !== tabName));
+    deleteTab(tabName);
+  }
 
-        if (spaceId != undefined) {
-          addNewSpaceLookup({ spaceId: spaceId, name: newTabName });
-          switchTab(newTabName);
-        }
-      } else {
-        createTab(newTabName);
-        const newTabNames = localTabStore.concat(newTabName);
-        pushNewTabOrdering(newTabNames);
-        switchTab(newTabName);
-      }
+  async function handleRenameTab(tabName: string, newName: string) {
+    updateTabOrder(tabList.map((name) => (name === tabName ? newName : name)));
+    await renameTab(tabName, newName);
+    switchTabTo(newName);
+  }
+
+  function nextClosestTab(tabName: string) {
+    const index = tabList.indexOf(tabName) - 1;
+    if (index >= 0) {
+      return tabList[index];
+    } else if (inHomebase) {
+      return "Feed";
+    } else {
+      return tabList[0];
     }
   }
 
@@ -314,46 +82,37 @@ const TabBar = memo(function TabBar({
       <Reorder.Group
         as="ol"
         axis="x"
-        onReorder={pushNewTabOrdering}
+        onReorder={updateTabOrder}
         className="flex flex-row gap-4 grow items-start m-4 tabs"
-        values={hasProfile ? spaceTabs : localTabStore}
+        values={tabList}
       >
         <AnimatePresence initial={false}>
-          {!hasProfile && (
-            <Tab
-              key="Feed"
-              tabName={"Feed"}
-              inEditMode={inEditMode}
-              isSelected={selectedTab === "Feed"}
-              onClick={() => switchTab("Feed")}
-              removeable={false}
-              draggable={false}
-              renameable={false}
-            />
+          {map(
+            inHomebase ? ["Feed", ...tabList] : tabList,
+            (tabName: string) => {
+              return (
+                <Tab
+                  key={tabName}
+                  tabName={tabName}
+                  inEditMode={inEditMode}
+                  isSelected={currentTab === tabName}
+                  onClick={() => switchTabTo(tabName)}
+                  removeable={tabName !== "Feed"}
+                  draggable={inEditMode}
+                  renameable={tabName !== "Feed"}
+                  onRemove={() => handleDeleteTab(tabName)}
+                  renameTab={handleRenameTab}
+                />
+              );
+            },
           )}
-          {map(localTabStore, (tabName: string) => {
-            return (
-              <Tab
-                key={tabName}
-                tabName={tabName}
-                inEditMode={inEditMode}
-                isSelected={selectedTab === tabName}
-                onClick={() => switchTab(tabName)}
-                removeable={true}
-                draggable={inEditMode}
-                renameable={true}
-                onRemove={() => handleDeleteTab(tabName)}
-                renameTab={renameAndReload}
-              />
-            );
-          })}
         </AnimatePresence>
       </Reorder.Group>
 
       {inEditMode ? (
-        <div className="flex flex-row pr-32 z-infinity">
+        <div className="flex flex-row z-infinity">
           <NogsGateButton
-            onClick={handleCreateTab}
+            onClick={() => handleCreateTab(generateNewTabName())}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
           >
             <div className="ml-2">
@@ -365,6 +124,6 @@ const TabBar = memo(function TabBar({
       ) : null}
     </div>
   );
-});
+}
 
 export default TabBar;
