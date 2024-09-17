@@ -223,7 +223,7 @@ const NounsBuildEmbed = ({ url }: { url: string }) => {
                 </span>
               </p>
               {stat.unit ? (
-                <span className="text-sm text-foreground/80">{stat.unit}</span>
+                <span className="text-sm opacity-80">{stat.unit}</span>
               ) : null}
             </div>
           ))}

@@ -241,7 +241,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <EditorContent
               editor={editor}
               autoFocus
-              className="w-full h-full min-h-[150px] text-foreground/80"
+              className="w-full h-full min-h-[150px] opacity-80 opacity-80"
             />
             <div className="z-50">
               <EmbedsEditor
@@ -255,7 +255,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
-            <div className="text-foreground/80">
+            <div className="opacity-80">
               {isPublishing || isLoadingSigner ? (
                 channel.name
               ) : (

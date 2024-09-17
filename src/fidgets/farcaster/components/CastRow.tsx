@@ -201,7 +201,7 @@ const CastAttributionPrimary = ({ cast }) => {
   if (!cast?.author?.display_name) return null;
 
   return (
-    <div className="flex items-center justify-start font-bold text-foreground/80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
+    <div className="flex items-center justify-start font-bold opacity-80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
       <PriorityLink
         href={`/s/${cast.author.username}`}
         className="cursor-pointer truncate"
@@ -227,7 +227,7 @@ const CastAttributionSecondary = ({ cast }) => {
   }, [cast?.timestamp]);
 
   return (
-    <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 text-foreground/60 font-normal">
+    <div className="flex items-center justify-start tracking-tight leading-[1.3] truncate gap-1 opacity-60 font-normal">
       <span className="truncate">@{cast.author.username}</span>
       {relativeDateString && (
         <>
@@ -342,7 +342,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     return (
       <div
         key={`cast-${cast.hash}-${key}`}
-        className="mt-1.5 flex align-center cursor-pointer text-sm text-foreground/50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
+        className="mt-1.5 flex align-center cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
         onClick={async (event) => {
           event.stopPropagation();
           onClickReaction(key, isActive);
@@ -445,7 +445,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         {cast.channel && cast.channel.name && (
           <div
             key={`cast-${cast.hash}-channel-name`}
-            className="mt-1.5 flex align-center text-sm text-foreground/40 py-1 px-1.5 rounded-md"
+            className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
           >
             /{cast.channel.name}
           </div>
@@ -643,7 +643,7 @@ export const CastRow = ({
             isReply={isReply}
           />
           {replyingToUsername && (
-            <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 text-foreground/60 font-medium">
+            <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 opacity-60 font-medium">
               Replying to{" "}
               <PriorityLink href={`/s/${replyingToUsername}`}>
                 <span className="cursor-pointer text-blue-500 hover:text-blue-500/70 hover:underline">
