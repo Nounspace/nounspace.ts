@@ -47,7 +47,7 @@ type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
 // But a space that is saved in the DB doesn't store
-// Fidget data or editablity
+// Fidget data or editability
 // So we rebuild the details, but without those fields
 export type DatabaseWritableSpaceConfig = Omit<
   SpaceConfig,
@@ -166,7 +166,7 @@ export const createSpaceStoreFunc = (
         );
         set((draft) => {
           draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
-        }, "commitHomebaseToDatabase");
+        }, "commitSpaceTabToDatabase");
       } catch (e) {
         console.error(e);
         throw e;

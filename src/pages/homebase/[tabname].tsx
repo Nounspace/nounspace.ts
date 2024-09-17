@@ -4,23 +4,31 @@ import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
 import { useRouter } from "next/router";
-import { isNull, isString } from "lodash";
+import { isNull, isString, noop } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
+import TabBar from "@/common/components/organisms/TabBar";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 const Homebase: NextPageWithLayout = () => {
   const {
     tabConfigs,
     loadTab,
-    loadTabNames,
     saveTab,
     commitTab,
     resetTab,
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
+
+    tabOrdering,
+    loadHomebaseTabOrder,
+    updateHomebaseTabOrder,
+    createHomebaseTab,
+    deleteHomebaseTab,
+    renameHomebaseTab,
+    commitHomebaseTabOrder,
   } = useAppStore((state) => ({
     tabConfigs: state.homebase.tabs,
-    loadTabNames: state.homebase.loadTabNames,
     loadTab: state.homebase.loadHomebaseTab,
     saveTab: state.homebase.saveHomebaseTabConfig,
     commitTab: state.homebase.commitHomebaseTabToDatabase,
@@ -28,6 +36,14 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+
+    tabOrdering: state.homebase.tabOrdering,
+    loadHomebaseTabOrder: state.homebase.loadTabOrdering,
+    updateHomebaseTabOrder: state.homebase.updateTabOrdering,
+    commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
+    createHomebaseTab: state.homebase.createTab,
+    deleteHomebaseTab: state.homebase.deleteTab,
+    renameHomebaseTab: state.homebase.renameTab,
   }));
   const router = useRouter();
   const queryTabName = router.query.tabname;
@@ -37,15 +53,21 @@ const Homebase: NextPageWithLayout = () => {
   const tabName = isString(queryTabName) ? queryTabName : "";
 
   useEffect(() => {
-    loadTabNames();
+    loadHomebaseTabOrder();
   }, [router.pathname]);
 
-  const loadConfig = () => loadTab(tabName);
+  const loadConfig = () => {
+    loadTab(tabName);
+    loadHomebaseTabOrder();
+  };
   const homebaseConfig = tabConfigs[tabName]?.config;
   const saveConfig = (config: SpaceConfigSaveDetails) =>
     saveTab(tabName, config);
   const resetConfig = () => resetTab(tabName);
-  const commitConfig = () => commitTab(tabName);
+  const commitConfig = () => {
+    commitTab(tabName);
+    commitHomebaseTabOrder();
+  };
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
 
@@ -54,9 +76,33 @@ const Homebase: NextPageWithLayout = () => {
   }, [isLoggedIn, tabName]);
 
   if (isNull(tabName)) {
-    // Insert 404 page
+    // TODO: Insert 404 page
     return;
   }
+
+  function switchTabTo(tabName: string) {
+    if (tabName === "Feed") {
+      router.push(`/homebase`);
+    } else {
+      router.push(`/homebase/${tabName}`);
+    }
+  }
+
+  const { editMode } = useSidebarContext();
+
+  const tabBar = (
+    <TabBar
+      inHomebase={true}
+      currentTab={tabName}
+      tabList={tabOrdering.local}
+      switchTabTo={switchTabTo}
+      updateTabOrder={updateHomebaseTabOrder}
+      inEditMode={editMode}
+      deleteTab={deleteHomebaseTab}
+      createTab={createHomebaseTab}
+      renameTab={renameHomebaseTab}
+    />
+  );
 
   const args = isInitializing
     ? {
@@ -64,6 +110,7 @@ const Homebase: NextPageWithLayout = () => {
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
+        tabBar: tabBar,
       }
     : !isLoggedIn
       ? {
@@ -71,6 +118,7 @@ const Homebase: NextPageWithLayout = () => {
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
+          tabBar: tabBar,
         }
       : {
           config: homebaseConfig,
@@ -78,6 +126,7 @@ const Homebase: NextPageWithLayout = () => {
           // To get types to match since store.commitConfig is debounced
           commitConfig: async () => await commitConfig(),
           resetConfig,
+          tabBar: tabBar,
         };
 
   return <SpacePage {...args} />;

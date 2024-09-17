@@ -16,9 +16,9 @@ import {
 
 type SpacePageProps = {
   spaceId: string | null;
+  tabName: string | string[] | undefined;
   fid: number | null;
   handle: string | string[] | undefined;
-  tabName: string | string[] | undefined;
   userMetadata?: UserMetadata;
 };
 
@@ -120,8 +120,8 @@ export const getServerSideProps = (async ({
 
 const UserPrimarySpace: NextPageWithLayout = ({
   spaceId,
-  fid,
   tabName,
+  fid,
   userMetadata,
 }: SpacePageProps) => {
   const { loadEditableSpaces } = useAppStore((state) => ({
@@ -132,12 +132,16 @@ const UserPrimarySpace: NextPageWithLayout = ({
     loadEditableSpaces();
   }, []);
 
-  if (!isNil(fid)) {
+  if (!isNil(fid) && !isNil(tabName)) {
     if ((isNil(spaceId) && tabName === "profile") || !isNil(spaceId))
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>
-          <UserDefinedSpace fid={fid} spaceId={spaceId} />
+          <UserDefinedSpace
+            fid={fid}
+            spaceId={spaceId}
+            tabName={isArray(tabName) ? tabName[0] : tabName}
+          />
         </>
       );
   }
