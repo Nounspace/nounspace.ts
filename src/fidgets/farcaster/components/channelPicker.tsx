@@ -31,18 +31,18 @@ export function ChannelPicker(props: Props) {
   const [channelResults, setChannelResults] = React.useState<Channel[]>(
     props.initialChannels ?? [],
   );
-  const [query, setQuery] = React.useState(""); // State for search query
+  const [query, setQuery] = React.useState("");
 
   React.useEffect(() => {
     async function fetchChannels() {
-      const channels = await getChannels(query); // Pass query to getChannels
+      const channels = await getChannels(query);
       setChannelResults(channels);
     }
 
     if (query !== "") {
-      fetchChannels(); // Fetch channels only if there's a search query
+      fetchChannels();
     } else {
-      setChannelResults(props.initialChannels ?? []); // Reset to initial channels if query is empty
+      setChannelResults(props.initialChannels ?? []);
     }
   }, [getChannels, query, props.initialChannels]);
 

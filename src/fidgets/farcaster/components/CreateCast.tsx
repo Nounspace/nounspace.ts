@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -38,6 +38,7 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
+import { FIDsApiAxiosParamCreator } from "@standard-crypto/farcaster-js-hub-rest";
 // import { bytesToHex } from "@noble/ciphers/utils";
 // import { bytesToHexString } from "@farcaster/core";
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -159,14 +160,26 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
+  const [initialChannels, setInitialChannels] = useState() as any;
+
+  useEffect(() => {
+    const fetchInitialChannels = async () => {
+      const initial_channels = await fetchChannelsForUser(fid);
+      setInitialChannels(initial_channels);
+    };
+    fetchInitialChannels();
+  }, [fid]);
 
   const debouncedGetChannels = useCallback(
     debounce(
       async (query: string) => {
-        if (query && query !== "") {
+        console.log("debouncedGetChannels", query);
+        console.log(fid);
+        if (query !== null) {
           return await fetchChannelsByName(query);
         } else {
-          return await fetchChannelsForUser(fid);
+          console.log("fetchChannelsForUser", fid);
+          return await fetchChannelsForUser(20721);
         }
       },
       200,
@@ -252,7 +265,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const channel = getChannel();
 
   useEffect(() => {
-    if (!editor) return; // No updates before editor is initialized
+    if (!editor) return; // no updates before editor is initialized
     if (isPublishing) return;
 
     const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
@@ -261,7 +274,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       ...prevDraft,
       text,
       embeds: newEmbeds,
-      parentUrl: channel?.parent_url || undefined, // Ensure channel's parent_url is set in the draft
+      parentUrl: channel?.parent_url || undefined,
     }));
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
 
@@ -313,9 +326,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
                   onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel); // Set the selected channel
+                    setChannel(selectedChannel);
                   }}
                   value={channel}
+                  initialChannels={initialChannels}
                 />
               )}
             </div>
