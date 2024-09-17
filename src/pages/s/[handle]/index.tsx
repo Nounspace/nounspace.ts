@@ -35,11 +35,13 @@ export const getServerSideProps = (async ({
       props: {
         spaceId: null,
         fid: null,
-        handle: isUndefined(params) ? params : params.handle,
-        tabName: isUndefined(params) ? params : params.tabName,
+        handle: handle,
+        tabName: isUndefined(params) ? null : params.tabName,
       },
     };
   }
+
+  console.log(handle, params);
 
   try {
     const {
@@ -79,7 +81,7 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: user.fid,
         handle,
-        tabName: undefined,
+        tabName: null,
         userMetadata,
       },
     };
@@ -90,7 +92,7 @@ export const getServerSideProps = (async ({
         spaceId: null,
         fid: null,
         handle,
-        tabName: undefined,
+        tabName: null,
       },
     };
   }
@@ -102,6 +104,7 @@ export const UserPrimarySpace: NextPageWithLayout = ({
   fid,
   userMetadata,
 }: SpacePageProps) => {
+  console.log(spaceId, fid, tabName, userMetadata);
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
@@ -110,8 +113,17 @@ export const UserPrimarySpace: NextPageWithLayout = ({
     loadEditableSpaces();
   }, []);
 
+<<<<<<< HEAD
   if (!isNil(fid) && !isNil(tabName)) {
     if ((isNil(spaceId) && tabName === "profile") || !isNil(spaceId))
+=======
+  if (!isNil(fid)) {
+    if (
+      (isNil(spaceId) && tabName === "profile") ||
+      tabName === null ||
+      !isNil(spaceId)
+    )
+>>>>>>> 2e04714 (fix: 404 on users unmade pages)
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>

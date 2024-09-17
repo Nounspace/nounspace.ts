@@ -12,8 +12,8 @@ export const getServerSideProps = (async ({
       props: {
         spaceId: null,
         fid: null,
-        handle: undefined,
-        tabName: undefined,
+        handle: null,
+        tabName: null,
       },
     };
   }
