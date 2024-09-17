@@ -25,6 +25,7 @@ import {
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -152,6 +153,27 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.selectPlatform.name !== "The other app",
       default: "light",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "var(--user-theme-font)",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "urlColor",
+      required: false,
+      inputSelector: ColorSelector,
+      default: "blue",
+      group: "style",
     },
     {
       fieldName: "background",
@@ -300,7 +322,14 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           </div>
         )}
         {!isError && (
-          <div ref={ref} className="h-3/6">
+          <div
+            ref={ref}
+            className="h-3/6"
+            style={{
+              fontFamily: settings.fontFamily,
+              color: settings.fontColor,
+            }}
+          >
             {isFetchingNextPage ? (
               <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
                 <Loading />
@@ -323,7 +352,13 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   // Note: feed is mounted in its own scroll container to maintain its scroll position when
   // returning from a thread.
   return (
-    <>
+    <div
+      className="h-full"
+      style={{
+        fontFamily: settings.fontFamily,
+        color: settings.fontColor,
+      }}
+    >
       {isThreadView && (
         <div className="h-full overflow-y-scroll justify-center items-center">
           {renderThread()}
@@ -337,7 +372,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       >
         {renderFeedContent()}
       </div>
-    </>
+    </div>
   );
 };
 

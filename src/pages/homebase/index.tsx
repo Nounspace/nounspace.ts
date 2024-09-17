@@ -70,6 +70,8 @@ const Homebase: NextPageWithLayout = () => {
           selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
           Xhandle: "",
           style: "",
+          fontFamily: "var(--user-theme-font)",
+          fontColor: "var(--user-theme-font-color)" as any, // Type assertion
         }}
         saveData={async () => noop()}
         data={{}}
