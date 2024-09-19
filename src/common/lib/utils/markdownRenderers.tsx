@@ -57,7 +57,13 @@ export const MarkdownRenderers = (linkColor?: string) => ({
         };
 
     return (
-      <a href={href} style={style} {...props}>
+      <a
+        href={href}
+        style={style}
+        {...props}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
         {children}
       </a>
     );
