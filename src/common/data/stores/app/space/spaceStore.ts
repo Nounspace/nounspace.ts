@@ -371,7 +371,7 @@ export const createSpaceStoreFunc = (
     } catch (e) {
       console.debug(e);
       const initialSpace = {
-        ...(tabName === "profile" && fid
+        ...(tabName === "Profile" && fid
           ? createIntialPersonSpaceConfigForFid(fid)
           : INITIAL_SPACE_CONFIG_EMPTY),
         isPrivate: false,
@@ -449,7 +449,7 @@ export const createSpaceStoreFunc = (
             id: spaceId,
           };
         }
-        draft.space.localSpaces[spaceId].order = ["profile"];
+        draft.space.localSpaces[spaceId].order = ["Profile"];
         draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpaceInfoProfile");
     }
@@ -475,7 +475,7 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
-      await get().space.createSpaceTab(newSpaceId, "profile");
+      await get().space.createSpaceTab(newSpaceId, "Profile");
       return newSpaceId;
     } catch (e) {
       null;

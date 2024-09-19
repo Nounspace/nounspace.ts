@@ -91,14 +91,14 @@ function TabBar({
 
   return (
     <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
-      <Reorder.Group
-        as="ol"
-        axis="x"
-        onReorder={updateTabOrder}
-        className="flex flex-row gap-4 grow items-start m-4 tabs"
-        values={tabList}
-      >
-        {tabList && (
+      {tabList && (
+        <Reorder.Group
+          as="ol"
+          axis="x"
+          onReorder={updateTabOrder}
+          className="flex flex-row gap-4 grow items-start m-4 tabs"
+          values={tabList}
+        >
           <AnimatePresence initial={false}>
             {map(
               inHomebase ? ["Feed", ...tabList] : tabList,
@@ -120,8 +120,8 @@ function TabBar({
               },
             )}
           </AnimatePresence>
-        )}
-      </Reorder.Group>
+        </Reorder.Group>
+      )}
 
       {inEditMode ? (
         <div className="flex flex-row z-infinity">
