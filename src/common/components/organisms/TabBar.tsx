@@ -67,7 +67,7 @@ function TabBar({
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
-    let uniqueName = generateUniqueTabName(newName);
+    const uniqueName = generateUniqueTabName(newName);
 
     await renameTab(tabName, uniqueName);
     await updateTabOrder(
