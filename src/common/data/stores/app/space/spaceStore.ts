@@ -246,8 +246,8 @@ export const createSpaceStoreFunc = (
           isPrivate: false,
         };
         draft.space.localSpaces[spaceId].order.push(tabName);
-        return get().space.commitSpaceOrderToDatabase(spaceId);
       }, "createSpaceTab");
+      return get().space.commitSpaceOrderToDatabase(spaceId);
     } catch (e) {
       console.error(e);
     }
@@ -324,6 +324,24 @@ export const createSpaceStoreFunc = (
         isPrivate: fileData.isEncrypted,
       };
       set((draft) => {
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            id: spaceId,
+          };
+        }
+
         draft.space.remoteSpaces[spaceId].tabs[tabName] = updatableSpaceConfig;
         draft.space.remoteSpaces[spaceId].updatedAt = moment().toISOString();
         draft.space.localSpaces[spaceId].tabs[tabName] =
@@ -339,15 +357,18 @@ export const createSpaceStoreFunc = (
         isPrivate: false,
       };
       set((draft) => {
-        draft.space.localSpaces[spaceId] = {
-          tabs: {
-            profile: cloneDeep(initialSpace),
-          },
-          order: ["profile"],
-          updatedAt: moment().toISOString(),
-          changedNames: {},
-          id: spaceId,
-        };
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        draft.space.localSpaces[spaceId].tabs[tabName] =
+          cloneDeep(initialSpace);
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpaceTabProfile");
     }
   },
