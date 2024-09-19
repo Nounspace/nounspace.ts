@@ -98,7 +98,7 @@ function TabBar({
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabList}
       >
-        {tabList.length > 0 && (
+        {tabList && (
           <AnimatePresence initial={false}>
             {map(
               inHomebase ? ["Feed", ...tabList] : tabList,
