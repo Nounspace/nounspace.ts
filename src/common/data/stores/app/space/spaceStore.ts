@@ -243,6 +243,16 @@ export const createSpaceStoreFunc = (
         signedRequest,
       );
       set((draft) => {
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+
         draft.space.localSpaces[spaceId].tabs[tabName] = {
           ...cloneDeep(INITIAL_SPACE_CONFIG_EMPTY),
           isPrivate: false,
