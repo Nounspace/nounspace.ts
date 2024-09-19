@@ -110,24 +110,19 @@ export const UserPrimarySpace: NextPageWithLayout = ({
     loadEditableSpaces();
   }, []);
 
-<<<<<<< HEAD
-  if (!isNil(fid) && !isNil(tabName)) {
-    if ((isNil(spaceId) && tabName === "profile") || !isNil(spaceId))
-=======
   if (!isNil(fid)) {
     if (
-      (isNil(spaceId) && tabName === "profile") ||
+      (isNil(spaceId) && tabName === "Profile") ||
       tabName === null ||
       !isNil(spaceId)
     )
->>>>>>> 2e04714 (fix: 404 on users unmade pages)
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>
           <UserDefinedSpace
             fid={fid}
             spaceId={spaceId}
-            tabName={isArray(tabName) ? tabName[0] : tabName}
+            tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
           />
         </>
       );

@@ -110,9 +110,9 @@ function TabBar({
                     inEditMode={inEditMode}
                     isSelected={currentTab === tabName}
                     onClick={() => switchTabTo(tabName)}
-                    removeable={tabName !== "Feed"}
+                    removeable={tabName !== "Feed" && tabName !== "Profile"}
                     draggable={inEditMode}
-                    renameable={tabName !== "Feed"}
+                    renameable={tabName !== "Feed" && tabName !== "Profile"}
                     onRemove={() => handleDeleteTab(tabName)}
                     renameTab={handleRenameTab}
                   />
