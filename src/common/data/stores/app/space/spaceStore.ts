@@ -286,6 +286,15 @@ export const createSpaceStoreFunc = (
         signedRequest,
       );
       set((draft) => {
+        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            id: spaceId,
+          };
+        }
+
         draft.space.remoteSpaces[spaceId].order = cloneDeep(
           get().space.localSpaces[spaceId].order,
         );
