@@ -456,6 +456,7 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
+      await get().space.createSpaceTab(newSpaceId, "profile");
       return newSpaceId;
     } catch (e) {
       null;
