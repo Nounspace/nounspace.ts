@@ -343,7 +343,6 @@ export const createSpaceStoreFunc = (
             id: spaceId,
           };
         }
-
         draft.space.remoteSpaces[spaceId].tabs[tabName] = updatableSpaceConfig;
         draft.space.remoteSpaces[spaceId].updatedAt = moment().toISOString();
         draft.space.localSpaces[spaceId].tabs[tabName] =
@@ -396,24 +395,43 @@ export const createSpaceStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as UpdateTabOrderRequest;
       set((draft) => {
-        draft.space.localSpaces[spaceId] = {
-          tabs: {},
-          order: tabOrderReq.tabOrder,
-          updatedAt: moment().toISOString(),
-          changedNames: {},
-          id: spaceId,
-        };
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            id: spaceId,
+          };
+        }
+
+        draft.space.localSpaces[spaceId].order = tabOrderReq.tabOrder;
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
+        draft.space.remoteSpaces[spaceId].order = tabOrderReq.tabOrder;
+        draft.space.remoteSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpaceInfo");
     } catch (e) {
       console.debug(e);
       set((draft) => {
-        draft.space.localSpaces[spaceId] = {
-          tabs: {},
-          order: ["profile"],
-          updatedAt: moment().toISOString(),
-          changedNames: {},
-          id: spaceId,
-        };
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        draft.space.localSpaces[spaceId].order = ["profile"];
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpaceInfoProfile");
     }
   },
