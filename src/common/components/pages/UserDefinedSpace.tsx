@@ -162,7 +162,7 @@ export default function UserDefinedSpace({
         isPrivate: false,
       };
       // Save the configuration locally
-      await saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
+      return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
     [currentUserFid, spaceId],
   );

@@ -334,7 +334,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       {editorPanelPortal(element)}
 
       <div className="flex flex-col z-10">
-        {inEditMode && (
+        {/* {inEditMode && (
           <button
             onClick={openFidgetPicker}
             className="z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
@@ -344,7 +344,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             </div>
             <span className="ml-4 mr-2">Fidget</span>
           </button>
-        )}
+        )} */}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 

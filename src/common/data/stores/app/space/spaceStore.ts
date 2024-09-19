@@ -225,6 +225,8 @@ export const createSpaceStoreFunc = (
     }
   }, 1000),
   createSpaceTab: debounce(async (spaceId, tabName) => {
+    console.log("createSpaceTab", spaceId, tabName);
+
     const unsignedRequest: UnsignedSpaceTabRegistration = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
