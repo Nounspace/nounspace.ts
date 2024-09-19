@@ -98,27 +98,29 @@ function TabBar({
         className="flex flex-row gap-4 grow items-start m-4 tabs"
         values={tabList}
       >
-        <AnimatePresence initial={false}>
-          {map(
-            inHomebase ? ["Feed", ...tabList] : tabList,
-            (tabName: string) => {
-              return (
-                <Tab
-                  key={tabName}
-                  tabName={tabName}
-                  inEditMode={inEditMode}
-                  isSelected={currentTab === tabName}
-                  onClick={() => switchTabTo(tabName)}
-                  removeable={tabName !== "Feed"}
-                  draggable={inEditMode}
-                  renameable={tabName !== "Feed"}
-                  onRemove={() => handleDeleteTab(tabName)}
-                  renameTab={handleRenameTab}
-                />
-              );
-            },
-          )}
-        </AnimatePresence>
+        {tabList.length > 0 && (
+          <AnimatePresence initial={false}>
+            {map(
+              inHomebase ? ["Feed", ...tabList] : tabList,
+              (tabName: string) => {
+                return (
+                  <Tab
+                    key={tabName}
+                    tabName={tabName}
+                    inEditMode={inEditMode}
+                    isSelected={currentTab === tabName}
+                    onClick={() => switchTabTo(tabName)}
+                    removeable={tabName !== "Feed"}
+                    draggable={inEditMode}
+                    renameable={tabName !== "Feed"}
+                    onRemove={() => handleDeleteTab(tabName)}
+                    renameTab={handleRenameTab}
+                  />
+                );
+              },
+            )}
+          </AnimatePresence>
+        )}
       </Reorder.Group>
 
       {inEditMode ? (
