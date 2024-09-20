@@ -206,6 +206,7 @@ export default function UserDefinedSpace({
   const username = useMemo(() => user?.username, [user]);
 
   function switchTabTo(tabName: string) {
+    spaceId && saveLocalSpaceTab(spaceId, providedTabName, config);
     router.push(`/s/${username}/${tabName}`);
   }
 

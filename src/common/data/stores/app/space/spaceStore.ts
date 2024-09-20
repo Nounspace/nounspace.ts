@@ -256,6 +256,7 @@ export const createSpaceStoreFunc = (
         };
         draft.space.localSpaces[spaceId].order.push(tabName);
       }, "createSpaceTab");
+
       return get().space.commitSpaceOrderToDatabase(spaceId);
     } catch (e) {
       console.error(e);
