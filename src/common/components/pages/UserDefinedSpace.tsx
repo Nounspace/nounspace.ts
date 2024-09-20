@@ -218,17 +218,17 @@ export default function UserDefinedSpace({
       currentTab={providedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
       switchTabTo={switchTabTo}
-      updateTabOrder={(newOrder) =>
+      updateTabOrder={async (newOrder) =>
         spaceId && updateSpaceTabOrder(spaceId, newOrder)
       }
       inEditMode={editMode}
-      deleteTab={(tabName) => spaceId && deleteSpaceTab(spaceId, tabName)}
-      createTab={(tabName) => spaceId && createSpaceTab(spaceId, tabName)}
-      renameTab={(oldName, newName) =>
+      deleteTab={async (tabName) => spaceId && deleteSpaceTab(spaceId, tabName)}
+      createTab={async (tabName) => spaceId && createSpaceTab(spaceId, tabName)}
+      renameTab={async (oldName, newName) =>
         spaceId && saveLocalSpaceTab(spaceId, oldName, config, newName)
       }
-      commitTab={(tabName) => spaceId && commitSpaceTab(spaceId, tabName)}
-      commitTabOrder={() => spaceId && commitSpaceTabOrder(spaceId)}
+      commitTab={async (tabName) => spaceId && commitSpaceTab(spaceId, tabName)}
+      commitTabOrder={async () => spaceId && commitSpaceTabOrder(spaceId)}
     />
   );
 
