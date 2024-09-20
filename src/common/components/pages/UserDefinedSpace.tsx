@@ -143,8 +143,6 @@ export default function UserDefinedSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      console.log(spaceConfig);
-      console.trace();
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
       }
