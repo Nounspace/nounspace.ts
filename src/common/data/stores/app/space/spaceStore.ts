@@ -157,10 +157,10 @@ export const createSpaceStoreFunc = (
       const oldTabName =
         get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
       if (localCopy) {
-        const file = await get().account.createEncryptedSignedFile(
+        const file = await get().account.createSignedFile(
           stringify(localCopy),
           "json",
-          { useRootKey: true, fileName: tabName },
+          { fileName: tabName },
         );
         try {
           await axiosBackend.post(
