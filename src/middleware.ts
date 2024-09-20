@@ -2,13 +2,19 @@ import { NextResponse } from "next/server";
 import { NextRequest, userAgent } from "next/server";
 import MOBILE_REDIRECT_URL from "@/constants/mobileRedirectUrl";
 
-// Mobile redirect
 export async function middleware(request: NextRequest) {
   const { device } = userAgent(request);
+  const url = request.nextUrl;
 
   if (device.type === "mobile") {
-    return NextResponse.redirect(new URL(MOBILE_REDIRECT_URL));
+    if (url.pathname === "/s/spacetoken") {
+      return NextResponse.redirect(new URL("https://space.nounspace.com"));
+    }
+
+    return NextResponse.redirect(new URL(`${MOBILE_REDIRECT_URL}`));
   }
+
+  return NextResponse.next();
 }
 
 export const config = {
