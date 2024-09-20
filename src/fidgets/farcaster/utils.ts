@@ -137,15 +137,37 @@ export const submitCast = async (
   fid: number,
   signer: Signer,
 ) => {
-  const castAddMessageResp = await makeCastAdd(
-    unsignedCastBody,
-    { fid, network: FarcasterNetwork.MAINNET },
-    signer,
-  );
-  if (castAddMessageResp.isOk()) {
-    return await submitMessageToBackend(castAddMessageResp.value);
+  try {
+    const castAddMessageResp = await makeCastAdd(
+      unsignedCastBody,
+      { fid, network: FarcasterNetwork.MAINNET }, // Ensure the network and fid are correct
+      signer,
+    );
+
+    // Check if cast creation was successful
+    if (!castAddMessageResp.isOk()) {
+      console.error("makeCastAdd failed with error:", castAddMessageResp.error); // Log the error returned
+      return false;
+    }
+
+    // Submit the created message to the backend
+    const backendResponse = await submitMessageToBackend(
+      castAddMessageResp.value,
+    );
+
+    if (!backendResponse) {
+      console.error(
+        "submitMessageToBackend failed, response:",
+        backendResponse,
+      );
+      return false;
+    }
+
+    return backendResponse;
+  } catch (error) {
+    console.error("Error in submitCast:", error);
+    return false;
   }
-  return false;
 };
 
 export const getDeadline = (): bigint => {
