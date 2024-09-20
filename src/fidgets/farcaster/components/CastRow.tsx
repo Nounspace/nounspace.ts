@@ -20,7 +20,7 @@ import {
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { ReactionType } from "@farcaster/core";
+import { bytesToHexString, ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
@@ -359,8 +359,26 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       username: cast.author.username,
       castId: cast.hash,
     });
+
+    // Clean the hash by removing the "0x" prefix if present
+    const cleanedHash = cast.hash.startsWith("0x")
+      ? cast.hash.slice(2)
+      : cast.hash;
+
+    // Convert the hex string to Uint8Array
+    const parentCastHash = hexToBytes(cleanedHash);
+
+    // Check for invalid length and prevent submission if necessary
+    if (parentCastHash.length !== 20) {
+      console.error(
+        "Hash must be 20 bytes, but received length:",
+        parentCastHash.length,
+      );
+      return;
+    }
+
     setReplyCastDraft({
-      parentCastId: castId,
+      parentCastId: { fid: cast.author.fid, hash: parentCastHash },
     });
     setReplyCastType("reply");
     setShowModal(true);
