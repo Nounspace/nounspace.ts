@@ -149,28 +149,37 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
-  commitSpaceTabToDatabase: debounce(async (spaceId, tabName) => {
-    const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-    if (localCopy) {
-      const file = await get().account.createEncryptedSignedFile(
-        stringify(localCopy),
-        "json",
-        { useRootKey: true, fileName: tabName },
+  commitSpaceTabToDatabase: debounce(
+    async (spaceId: string, tabName: string) => {
+      const localCopy = cloneDeep(
+        get().space.localSpaces[spaceId].tabs[tabName],
       );
-      try {
-        await axiosBackend.post(
-          `/api/space/registry/${spaceId}/tabs/${tabName}`,
-          file,
+      const oldTabName =
+        get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
+      if (localCopy) {
+        const file = await get().account.createEncryptedSignedFile(
+          stringify(localCopy),
+          "json",
+          { useRootKey: true, fileName: tabName },
         );
-        set((draft) => {
-          draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
-        }, "commitSpaceTabToDatabase");
-      } catch (e) {
-        console.error(e);
-        throw e;
+        try {
+          await axiosBackend.post(
+            `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
+            file,
+          );
+          set((draft) => {
+            draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
+            delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
+            delete draft.space.localSpaces[spaceId].changedNames[tabName];
+          }, "commitSpaceTabToDatabase");
+        } catch (e) {
+          console.error(e);
+          throw e;
+        }
       }
-    }
-  }, 1000),
+    },
+    1000,
+  ),
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
     const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
     mergeWith(localCopy, config, (_, newItem) => {
