@@ -128,7 +128,6 @@ interface SpaceActions {
   createSpaceTab: (
     spaceId: string,
     tabName: string,
-    initialConfig?: Omit<SpaceConfig, "isEditable">,
   ) => Promise<void> | undefined;
   updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
   commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
@@ -222,46 +221,46 @@ export const createSpaceStoreFunc = (
       console.error(e);
     }
   }, 1000),
-  createSpaceTab: debounce(
-    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY) => {
-      const unsignedRequest: UnsignedSpaceTabRegistration = {
-        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        timestamp: moment().toISOString(),
-        spaceId,
-        tabName,
-      };
-      const signedRequest = signSignable(
-        unsignedRequest,
-        get().account.getCurrentIdentity()!.rootKeys.privateKey,
-      );
-      try {
-        await axiosBackend.post<RegisterNewSpaceTabResponse>(
-          `/api/space/registry/${spaceId}/tabs`,
-          signedRequest,
-        );
-        set((draft) => {
-          if (isUndefined(draft.space.localSpaces[spaceId])) {
-            draft.space.localSpaces[spaceId] = {
-              tabs: {},
-              order: [],
-              updatedAt: moment().toISOString(),
-              changedNames: {},
-              id: spaceId,
-            };
-          }
+  createSpaceTab: debounce(async (spaceId, tabName) => {
+    console.log("createSpaceTab", spaceId, tabName);
 
-          draft.space.localSpaces[spaceId].tabs[tabName] = {
-            ...cloneDeep(initialConfig),
-            isPrivate: false,
+    const unsignedRequest: UnsignedSpaceTabRegistration = {
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+      timestamp: moment().toISOString(),
+      spaceId,
+      tabName,
+    };
+    const signedRequest = signSignable(
+      unsignedRequest,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+    try {
+      await axiosBackend.post<RegisterNewSpaceTabResponse>(
+        `/api/space/registry/${spaceId}/tabs`,
+        signedRequest,
+      );
+      set((draft) => {
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
           };
-        }, "createSpaceTab");
-        return get().space.commitSpaceOrderToDatabase(spaceId);
-      } catch (e) {
-        console.error(e);
-      }
-    },
-    1000,
-  ),
+        }
+
+        draft.space.localSpaces[spaceId].tabs[tabName] = {
+          ...cloneDeep(INITIAL_SPACE_CONFIG_EMPTY),
+          isPrivate: false,
+        };
+        draft.space.localSpaces[spaceId].order.push(tabName);
+      }, "createSpaceTab");
+      return get().space.commitSpaceOrderToDatabase(spaceId);
+    } catch (e) {
+      console.error(e);
+    }
+  }, 1000),
   updateLocalSpaceOrder: async (spaceId, newOrder) => {
     set((draft) => {
       draft.space.localSpaces[spaceId].order = newOrder;
@@ -473,11 +472,7 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Profile",
-        createIntialPersonSpaceConfigForFid(fid),
-      );
+      await get().space.createSpaceTab(newSpaceId, "Profile");
       return newSpaceId;
     } catch (e) {
       null;

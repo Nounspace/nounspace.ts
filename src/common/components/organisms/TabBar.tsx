@@ -56,7 +56,6 @@ function TabBar({
 
   async function handleCreateTab(tabName: string) {
     await createTab(tabName);
-    await updateTabOrder([...tabList, tabName]);
     switchTabTo(tabName);
   }
 
