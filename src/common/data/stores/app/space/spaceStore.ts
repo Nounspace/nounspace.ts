@@ -30,10 +30,7 @@ import axios from "axios";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
 } from "@/constants/initialPersonSpace";
-import {
-  DeleteSpaceTabRequest,
-  UnsignedDeleteSpaceTabRequest,
-} from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
+import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
 import {
   RegisterNewSpaceTabResponse,
   UnsignedSpaceTabRegistration,

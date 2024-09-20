@@ -9,7 +9,13 @@ interface CurrentSpaceStoreState {
 
 interface CurrentSpaceStoreActions {
   setCurrentSpaceId: SetterFunction<string | null>;
-  getCurrentSpaceConfig: () => Omit<SpaceConfig, "isEditable"> | undefined;
+  getCurrentSpaceConfig: () =>
+    | {
+        tabs: {
+          [tabName: string]: Omit<SpaceConfig, "isEditable">;
+        };
+      }
+    | undefined;
 }
 
 const HOMEBASE_ID = "homebase";
@@ -33,14 +39,16 @@ export const createCurrentSpaceStoreFunc = (
   },
   getCurrentSpaceConfig: () => {
     const currentSpaceId = get().currentSpace.currentSpaceId;
-    if (currentSpaceId === HOMEBASE_ID) return get().homebase.homebaseConfig;
+    if (currentSpaceId === HOMEBASE_ID) return undefined;
     if (isNil(currentSpaceId)) return undefined;
     const currentSpaceUpdatableConfig = get().space.localSpaces[currentSpaceId];
-    return currentSpaceUpdatableConfig
-      ? {
-          ...currentSpaceUpdatableConfig,
+    if (currentSpaceUpdatableConfig) {
+      const tabsWithDatumsImproved = mapValues(
+        currentSpaceUpdatableConfig.tabs,
+        (tabInfo) => ({
+          ...tabInfo,
           fidgetInstanceDatums: mapValues(
-            currentSpaceUpdatableConfig.fidgetInstanceDatums,
+            tabInfo.fidgetInstanceDatums,
             (datum) => ({
               ...datum,
               config: {
@@ -50,7 +58,13 @@ export const createCurrentSpaceStoreFunc = (
               },
             }),
           ),
-        }
-      : undefined;
+        }),
+      );
+      return {
+        ...currentSpaceUpdatableConfig,
+        tabs: tabsWithDatumsImproved,
+      };
+    }
+    return undefined;
   },
 });

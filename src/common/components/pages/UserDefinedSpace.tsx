@@ -37,7 +37,6 @@ export default function UserDefinedSpace({
     registerSpace,
     getCurrentSpaceConfig,
     setCurrentSpaceId,
-
     loadSpaceTabOrder,
     updateSpaceTabOrder,
     commitSpaceTabOrder,
@@ -79,6 +78,10 @@ export default function UserDefinedSpace({
     }
   }, [providedSpaceId, providedTabName]);
 
+  useEffect(() => {
+    providedSpaceId ? loadSpaceTabOrder(providedSpaceId) : null;
+  }, [providedSpaceId]);
+
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
@@ -118,13 +121,12 @@ export default function UserDefinedSpace({
 
   const currentConfig = getCurrentSpaceConfig();
 
-  const config = useMemo(
-    () => ({
-      ...(currentConfig ? currentConfig : INITIAL_PERSONAL_SPACE_CONFIG),
-      isEditable,
-    }),
-    [currentConfig, isEditable],
-  );
+  const config = {
+    ...(currentConfig?.tabs[providedTabName]
+      ? currentConfig.tabs[providedTabName]
+      : INITIAL_PERSONAL_SPACE_CONFIG),
+    isEditable,
+  };
 
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
@@ -141,6 +143,8 @@ export default function UserDefinedSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
+      console.log(spaceConfig);
+      console.trace();
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
       }
