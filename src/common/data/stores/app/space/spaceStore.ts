@@ -406,9 +406,8 @@ export const createSpaceStoreFunc = (
           Expires: "0",
         },
       });
-      const fileData = JSON.parse(await data.text()) as SignedFile;
       const tabOrderReq = JSON.parse(
-        await get().account.decryptEncryptedSignedFile(fileData),
+        await data.text(),
       ) as UpdateTabOrderRequest;
       set((draft) => {
         if (isUndefined(draft.space.localSpaces[spaceId])) {
