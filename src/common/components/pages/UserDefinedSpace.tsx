@@ -139,7 +139,7 @@ export default function UserDefinedSpace({
         }
       });
     }
-  }, [isEditable, spaceId, currentUserFid, providedTabName]);
+  }, [isEditable, spaceId, currentUserFid]);
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
@@ -166,13 +166,13 @@ export default function UserDefinedSpace({
       // Save the configuration locally
       return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
-    [currentUserFid, spaceId],
+    [currentUserFid, spaceId, providedTabName],
   );
 
   const commitConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
     commitSpaceTab(spaceId, providedTabName);
-  }, [spaceId]);
+  }, [spaceId, providedTabName]);
 
   // Resets the configuration of a space tab.
   // If no remote configuration exists, it sets the tab to the initial personal space config.

@@ -91,6 +91,7 @@ async function updateSpaceTabOrder(
     .upload(
       `${updateOrderRequest.spaceId}/tabOrder`,
       new Blob([stringify(updateOrderRequest)], { type: "application/json" }),
+      { upsert: true },
     );
   if (!isNull(error)) {
     console.error(error);
