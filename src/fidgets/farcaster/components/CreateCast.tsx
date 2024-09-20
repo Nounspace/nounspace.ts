@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -10,7 +10,6 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-  // getFarcasterChannels,
   formatPlaintextToHubCastMessage,
   getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
@@ -20,7 +19,7 @@ import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "@mod-protocol/react-ui-shadcn/dist/components/mention-list";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
-import { ChannelPicker } from "@mod-protocol/react-ui-shadcn/dist/components/channel-picker";
+import { ChannelPicker } from "./channelPicker";
 import {
   Popover,
   PopoverContent,
@@ -39,8 +38,9 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import { bytesToHex } from "@noble/ciphers/utils";
-
+import { FIDsApiAxiosParamCreator } from "@standard-crypto/farcaster-js-hub-rest";
+// import { bytesToHex } from "@noble/ciphers/utils";
+// import { bytesToHexString } from "@farcaster/core";
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
 
@@ -49,7 +49,7 @@ const debouncedGetMentions = debounce(getMentions, 200, {
   trailing: false,
 });
 const getUrlMetadata = fetchUrlMetadata(API_URL);
-const getMentionFids = getMentionFidsByUsernames(API_URL);
+// const getMentionFids = getMentionFidsByUsernames(API_URL);
 
 const onError = (err) => {
   console.error(err);
@@ -91,29 +91,54 @@ export type ModProtocolCastAddBody = Exclude<
   type: CastType;
 };
 
-async function publishPost(draft: DraftType, fid: number, signer: Signer) {
-  const unsignedCastBody = await formatPlaintextToHubCastMessage({
+async function publishPost(
+  draft: DraftType,
+  fid: number,
+  signer: Signer,
+): Promise<{ success: boolean; message?: string }> {
+  if (draft.parentCastId) {
+    const { fid, hash } = draft.parentCastId;
+    if (hash.length !== 20) {
+      return { success: false, message: "Invalid parent cast ID hash length." };
+    }
+  }
+
+  const unsignedCastBody: ModProtocolCastAddBody = {
+    type: CastType.CAST,
     text: draft.text,
     embeds: draft.embeds || [],
-    parentUrl: draft.parentUrl,
-    parentCastFid: draft.parentCastId?.fid || undefined,
-    parentCastHash: !isUndefined(draft.parentCastId?.hash)
-      ? bytesToHex(draft.parentCastId.hash)
+    parentUrl: draft.parentUrl || undefined,
+    parentCastId: draft.parentCastId
+      ? {
+          fid: draft.parentCastId.fid,
+          hash: draft.parentCastId.hash,
+        }
       : undefined,
-    getMentionFidsByUsernames: getMentionFids,
-  });
+    mentions: [],
+    embedsDeprecated: [],
+    mentionsPositions: [],
+  };
 
-  if (!unsignedCastBody) return false;
+  if (!unsignedCastBody)
+    return { success: false, message: "Invalid cast data." };
 
   try {
-    return await submitCast(
+    const result = await submitCast(
       { ...unsignedCastBody, type: CastType.CAST },
       fid,
       signer,
     );
+
+    if (result) {
+      return { success: true };
+    } else {
+      return { success: false, message: "Failed to submit cast." };
+    }
   } catch (e) {
-    console.error(e);
-    return false;
+    return {
+      success: false,
+      message: "An error occurred while submitting the cast.",
+    };
   }
 }
 
@@ -128,19 +153,33 @@ const CreateCast: React.FC<CreateCastProps> = ({
     status: DraftStatus.writing,
     ...initialDraft,
   });
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
-
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
+  const [initialChannels, setInitialChannels] = useState() as any;
+
+  useEffect(() => {
+    const fetchInitialChannels = async () => {
+      const initial_channels = await fetchChannelsForUser(fid);
+      setInitialChannels(initial_channels);
+    };
+    fetchInitialChannels();
+  }, [fid]);
 
   const debouncedGetChannels = useCallback(
     debounce(
       async (query: string) => {
-        if (query && query !== "") {
+        console.log("debouncedGetChannels", query);
+        console.log(fid);
+        if (query !== null) {
           return await fetchChannelsByName(query);
         } else {
-          return await fetchChannelsForUser(fid);
+          console.log("fetchChannelsForUser", fid);
+          return await fetchChannelsForUser(20721);
         }
       },
       200,
@@ -152,12 +191,29 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
       return false;
-    await publishPost(draft, fid, signer);
-    afterSubmit();
-    return true;
+
+    setDraft((prev) => ({ ...prev, status: DraftStatus.publishing }));
+
+    const result = await publishPost(draft, fid, signer);
+
+    if (result.success) {
+      setSubmitStatus("success");
+      setDraft((prev) => ({ ...prev, status: DraftStatus.published }));
+      setTimeout(() => {
+        afterSubmit();
+      }, 3000);
+    } else {
+      setSubmitStatus("error");
+      setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
+    }
+
+    return result.success;
   };
 
   const isPublishing = draft?.status === DraftStatus.publishing;
+  const isPublished = draft?.status === DraftStatus.published;
+  const submissionError = submitStatus === "error";
+
   const {
     editor,
     getText,
@@ -211,20 +267,22 @@ const CreateCast: React.FC<CreateCastProps> = ({
   useEffect(() => {
     if (!editor) return; // no updates before editor is initialized
     if (isPublishing) return;
-    if (draft?.parentUrl === channel?.parent_url) return;
 
     const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
-    setDraft({
-      ...draft,
+
+    setDraft((prevDraft) => ({
+      ...prevDraft,
       text,
       embeds: newEmbeds,
       parentUrl: channel?.parent_url || undefined,
-    });
+    }));
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
 
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
     if (isPublishing) return "Publishing...";
+    if (submissionError) return "Retry";
+    if (isPublished) return "Published!";
     return "Cast";
   };
 
@@ -253,16 +311,25 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
+        {submitStatus === "error" && (
+          <div className="mt-2 p-2 bg-red-100 text-red-800 rounded">
+            An error occurred while submitting the cast.
+          </div>
+        )}
+
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
             <div className="opacity-80">
               {isPublishing || isLoadingSigner ? (
-                channel.name
+                channel?.name
               ) : (
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
-                  onSelect={setChannel}
+                  onSelect={(selectedChannel) => {
+                    setChannel(selectedChannel);
+                  }}
                   value={channel}
+                  initialChannels={initialChannels}
                 />
               )}
             </div>
@@ -305,16 +372,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </Popover>
           <CastLengthUIIndicator getText={getText} />
           <div className="grow"></div>
-        </div>
-        <div className="flex flex-row pt-2 justify-end">
-          <Button
-            size="lg"
-            type="submit"
-            className="line-clamp-1 min-w-40 max-w-xs truncate"
-            disabled={isPublishing || isLoadingSigner}
-          >
-            {getButtonText()}
-          </Button>
+          <div className="flex flex-row pt-0 justify-end">
+            <Button
+              size="lg"
+              type="submit"
+              className="line-clamp-1 min-w-40 max-w-xs truncate"
+              disabled={isPublishing || isLoadingSigner}
+            >
+              {getButtonText()}
+            </Button>
+          </div>
         </div>
       </form>
       {hasEmbeds && (
