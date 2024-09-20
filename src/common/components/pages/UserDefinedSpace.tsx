@@ -218,17 +218,27 @@ export default function UserDefinedSpace({
       currentTab={providedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
       switchTabTo={switchTabTo}
-      updateTabOrder={async (newOrder) =>
-        spaceId && updateSpaceTabOrder(spaceId, newOrder)
-      }
+      updateTabOrder={async (newOrder) => {
+        return spaceId ? updateSpaceTabOrder(spaceId, newOrder) : undefined;
+      }}
       inEditMode={editMode}
-      deleteTab={async (tabName) => spaceId && deleteSpaceTab(spaceId, tabName)}
-      createTab={async (tabName) => spaceId && createSpaceTab(spaceId, tabName)}
-      renameTab={async (oldName, newName) =>
-        spaceId && saveLocalSpaceTab(spaceId, oldName, config, newName)
-      }
-      commitTab={async (tabName) => spaceId && commitSpaceTab(spaceId, tabName)}
-      commitTabOrder={async () => spaceId && commitSpaceTabOrder(spaceId)}
+      deleteTab={async (tabName) => {
+        return spaceId ? deleteSpaceTab(spaceId, tabName) : undefined;
+      }}
+      createTab={async (tabName) => {
+        return spaceId ? createSpaceTab(spaceId, tabName) : undefined;
+      }}
+      renameTab={async (oldName, newName) => {
+        return spaceId
+          ? saveLocalSpaceTab(spaceId, oldName, config, newName)
+          : undefined;
+      }}
+      commitTab={async (tabName) => {
+        return spaceId ? commitSpaceTab(spaceId, tabName) : undefined;
+      }}
+      commitTabOrder={async () => {
+        return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
+      }}
     />
   );
 
