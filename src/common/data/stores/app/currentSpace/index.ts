@@ -1,7 +1,7 @@
 import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { SpaceConfig } from "@/common/components/templates/Space";
-import { isNil, mapValues } from "lodash";
+import { isNil, isUndefined, mapValues, pickBy } from "lodash";
 
 interface CurrentSpaceStoreState {
   currentSpaceId: string | null;
@@ -43,22 +43,26 @@ export const createCurrentSpaceStoreFunc = (
     if (isNil(currentSpaceId)) return undefined;
     const currentSpaceUpdatableConfig = get().space.localSpaces[currentSpaceId];
     if (currentSpaceUpdatableConfig) {
-      const tabsWithDatumsImproved = mapValues(
-        currentSpaceUpdatableConfig.tabs,
-        (tabInfo) => ({
-          ...tabInfo,
-          fidgetInstanceDatums: mapValues(
-            tabInfo.fidgetInstanceDatums,
-            (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-                data: {}, // TO DO: Inject fidget data here
-              },
-            }),
-          ),
-        }),
+      const tabsWithDatumsImproved = pickBy(
+        mapValues(currentSpaceUpdatableConfig.tabs, (tabInfo) =>
+          tabInfo
+            ? {
+                ...tabInfo,
+                fidgetInstanceDatums: mapValues(
+                  tabInfo.fidgetInstanceDatums,
+                  (datum) => ({
+                    ...datum,
+                    config: {
+                      settings: datum.config.settings,
+                      editable: datum.config.editable,
+                      data: {}, // TO DO: Inject fidget data here
+                    },
+                  }),
+                ),
+              }
+            : undefined,
+        ),
+        (i) => !isUndefined(i),
       );
       return {
         ...currentSpaceUpdatableConfig,
