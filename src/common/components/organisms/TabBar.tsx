@@ -123,7 +123,7 @@ function TabBar({
       )}
 
       {inEditMode ? (
-        <div className="flex flex-row z-infinity">
+        <div className="mr-36 flex flex-row z-infinity">
           <NogsGateButton
             onClick={() => handleCreateTab(generateNewTabName())}
             className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
