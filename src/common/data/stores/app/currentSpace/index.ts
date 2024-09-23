@@ -5,10 +5,13 @@ import { isNil, isUndefined, mapValues, pickBy } from "lodash";
 
 interface CurrentSpaceStoreState {
   currentSpaceId: string | null;
+  currentTabName: string | null;
 }
 
 interface CurrentSpaceStoreActions {
   setCurrentSpaceId: SetterFunction<string | null>;
+  setCurrentTabName: SetterFunction<string | null>;
+  getCurrentTabName: () => string | null; // Add this line
   getCurrentSpaceConfig: () =>
     | {
         tabs: {
@@ -25,6 +28,7 @@ export type CurrentSpaceStore = CurrentSpaceStoreState &
 
 export const currentSpaceStoreDefaults: CurrentSpaceStoreState = {
   currentSpaceId: HOMEBASE_ID,
+  currentTabName: "",
 };
 
 export const createCurrentSpaceStoreFunc = (
@@ -36,6 +40,14 @@ export const createCurrentSpaceStoreFunc = (
     set((draft) => {
       draft.currentSpace.currentSpaceId = id;
     }, "setCurrentSpaceId");
+  },
+  getCurrentTabName: () => {
+    return get().currentSpace.currentTabName;
+  },
+  setCurrentTabName(name) {
+    set((draft) => {
+      draft.currentSpace.currentTabName = name;
+    }, "setCurrentTabName");
   },
   getCurrentSpaceConfig: () => {
     const currentSpaceId = get().currentSpace.currentSpaceId;

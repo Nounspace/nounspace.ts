@@ -37,6 +37,7 @@ export default function UserDefinedSpace({
     registerSpace,
     getCurrentSpaceConfig,
     setCurrentSpaceId,
+    setCurrentTabName,
     loadSpaceTabOrder,
     updateSpaceTabOrder,
     commitSpaceTabOrder,
@@ -48,6 +49,7 @@ export default function UserDefinedSpace({
     remoteSpaces: state.space.remoteSpaces,
     currentSpaceId: state.currentSpace.currentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
 
     // TODO: update these two to work with tabs?
     registerSpace: state.space.registerSpace,
@@ -69,6 +71,7 @@ export default function UserDefinedSpace({
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     setCurrentSpaceId(providedSpaceId);
+    setCurrentTabName(providedTabName);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
       loadSpaceTab(providedSpaceId, providedTabName).then(() => {
