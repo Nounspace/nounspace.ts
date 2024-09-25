@@ -21,6 +21,7 @@ import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { Badge } from "@/common/components/atoms/badge";
+import { usePathname } from "next/navigation";
 
 type NavItemProps = {
   label: string;
@@ -63,6 +64,8 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
+  const pathname = usePathname(); // Get the current route
+  const isNotificationsPage = pathname === "/notifications"; // Check if on notifications page
 
   function turnOnEditMode() {
     enterEditMode();
@@ -254,17 +257,18 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
-                {isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
-                  </Button>
-                )}
+                {!isNotificationsPage &&
+                  isEditable && ( // Hide or disable based on route
+                    <Button
+                      onClick={turnOnEditMode}
+                      size="icon"
+                      variant="secondary"
+                    >
+                      <div className="flex items-center p-1">
+                        <FaPaintbrush />
+                      </div>
+                    </Button>
+                  )}
                 <Button onClick={openCastModal} variant="primary" width="auto">
                   Cast
                 </Button>
