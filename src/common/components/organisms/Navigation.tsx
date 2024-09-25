@@ -64,8 +64,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
-  const pathname = usePathname(); // Get the current route
-  const isNotificationsPage = pathname === "/notifications"; // Check if on notifications page
+  const pathname = usePathname();
+  const isNotificationsPage = pathname === "/notifications";
+  const isExplorerPage = pathname === "/explore";
 
   function turnOnEditMode() {
     enterEditMode();
@@ -257,18 +258,17 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
-                {!isNotificationsPage &&
-                  isEditable && ( // Hide or disable based on route
-                    <Button
-                      onClick={turnOnEditMode}
-                      size="icon"
-                      variant="secondary"
-                    >
-                      <div className="flex items-center p-1">
-                        <FaPaintbrush />
-                      </div>
-                    </Button>
-                  )}
+                {!isNotificationsPage && !isExplorerPage && isEditable && (
+                  <Button
+                    onClick={turnOnEditMode}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <div className="flex items-center p-1">
+                      <FaPaintbrush />
+                    </div>
+                  </Button>
+                )}
                 <Button onClick={openCastModal} variant="primary" width="auto">
                   Cast
                 </Button>
