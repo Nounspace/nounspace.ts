@@ -29,7 +29,7 @@ export type SpaceTabRegistration = UnsignedSpaceTabRegistration & Signable;
 
 function isSpaceTabRegistration(thing: unknown): thing is SpaceTabRegistration {
   return (
-    isSignable(thing) &&
+    isSignable(thing, "identityPublicKey") &&
     typeof thing["identityPublicKey"] === "string" &&
     typeof thing["timestamp"] === "string" &&
     typeof thing["tabName"] === "string" &&
