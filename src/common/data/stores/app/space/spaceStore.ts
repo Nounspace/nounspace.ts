@@ -253,7 +253,7 @@ export const createSpaceStoreFunc = (
             draft.space.localSpaces[spaceId] = {
               tabs: {},
               order: [],
-              updatedAt: moment().toISOString(),
+              updatedAt: moment(0).toISOString(),
               changedNames: {},
               id: spaceId,
             };
@@ -298,7 +298,7 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             id: spaceId,
           };
         }
@@ -357,7 +357,7 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             changedNames: {},
             id: spaceId,
           };
@@ -366,7 +366,7 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             id: spaceId,
           };
         }
@@ -389,7 +389,7 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             changedNames: {},
             id: spaceId,
           };
@@ -473,7 +473,7 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             changedNames: {},
             id: spaceId,
           };
