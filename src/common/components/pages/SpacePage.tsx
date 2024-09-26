@@ -3,6 +3,7 @@ import Space, { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
 import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import moment from "moment";
 
 export type SpacePageArgs = {
   config?: SpaceConfig;
@@ -35,9 +36,10 @@ export default function SpacePage({
       isUndefined(commitConfig) ||
       isUndefined(resetConfig) ||
       loading ? (
-        <SpaceLoading profile={profile} />
+        <SpaceLoading profile={profile} tabBar={tabBar} />
       ) : (
         <Space
+          key={moment().format("YYYY-MM-DD HH:mm:ss")}
           config={config}
           saveConfig={saveConfig}
           commitConfig={commitConfig}

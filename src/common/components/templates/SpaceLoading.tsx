@@ -2,7 +2,13 @@ import React, { ReactNode, useState, useEffect } from "react";
 import { isUndefined } from "lodash";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 
-export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
+export default function SpaceLoading({
+  profile,
+  tabBar,
+}: {
+  profile?: ReactNode;
+  tabBar?: ReactNode;
+}) {
   const [rowHeight, setRowHeight] = useState(70);
   const { height } = useWindowSize();
   const maxRows = 12;
@@ -27,9 +33,6 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
     <>
       <div className="user-theme-background w-full h-full relative flex-col">
         <div className="w-full transition-all duration-100 ease-out">
-          {!isUndefined(profile) ? (
-            <div className="z-50 bg-white h-40">{profile}</div>
-          ) : null}
           <div className="w-full transition-all duration-100 ease-out h-full">
             <div className={"h-full flex flex-col"}>
               <div className="flex-1 grid-container grow">
@@ -48,11 +51,13 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
                 >
                   {[...Array(cols * maxRows)].map((_, i) => (
                     <div
-                      className="rounded-lg"
+                      className="rounded-lg animate-pulse"
                       key={i}
                       style={{
                         backgroundColor: "rgba(200, 227, 248, 0.5)",
                         outline: "1px dashed rgba(200, 227, 248, 0.8)",
+                        animation: `pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite`,
+                        animationDelay: `${(i % cols) * 100}ms`,
                       }}
                     />
                   ))}
