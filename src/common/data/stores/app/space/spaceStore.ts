@@ -193,7 +193,11 @@ export const createSpaceStoreFunc = (
       } else {
         draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
       }
-      draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
+      const newTimestamp = moment().toISOString();
+      draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+      console.log(
+        `Updated local space ${spaceId} timestamp to ${newTimestamp}`,
+      );
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: debounce(async (spaceId, tabName) => {
@@ -253,7 +257,7 @@ export const createSpaceStoreFunc = (
             draft.space.localSpaces[spaceId] = {
               tabs: {},
               order: [],
-              updatedAt: moment(0).toISOString(),
+              updatedAt: moment().toISOString(),
               changedNames: {},
               id: spaceId,
             };
@@ -372,7 +376,7 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             changedNames: {},
             id: spaceId,
           };
@@ -382,7 +386,7 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment().toISOString(),
+            updatedAt: moment(0).toISOString(),
             id: spaceId,
           };
         }
@@ -449,6 +453,13 @@ export const createSpaceStoreFunc = (
         ? moment(localSpace.updatedAt)
         : moment(0);
 
+      console.log(
+        `Space ${spaceId} - Remote timestamp: ${remoteTimestamp.toISOString()}`,
+      );
+      console.log(
+        `Space ${spaceId} - Local timestamp: ${localTimestamp.toISOString()}`,
+      );
+
       if (remoteTimestamp.isAfter(localTimestamp)) {
         // Remote data is newer, update the store
         set((draft) => {
@@ -479,11 +490,12 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId].order = tabOrderReq.tabOrder;
           draft.space.remoteSpaces[spaceId].updatedAt =
             remoteTimestamp.toISOString();
+          console.log(`Updating local space ${spaceId} with remote data`);
         }, "loadSpaceInfo");
       } else {
         // Local data is newer or same age, keep local data
-        console.debug(
-          `Local copy of space ${spaceId} tab order is more recent`,
+        console.log(
+          `Local copy of space ${spaceId} tab order is more recent. Local: ${localTimestamp.toISOString()}, Remote: ${remoteTimestamp.toISOString()}`,
         );
       }
     } catch (e) {

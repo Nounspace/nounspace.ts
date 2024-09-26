@@ -74,16 +74,22 @@ export default function UserDefinedSpace({
     setCurrentTabName(providedTabName);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
-      loadSpaceTab(providedSpaceId, providedTabName).then(() => {
-        setSpaceId(providedSpaceId);
-        setLoading(false);
-      });
+      // First, load the space tab order
+      loadSpaceTabOrder(providedSpaceId)
+        .then(() => {
+          // After loading the tab order, load the specific tab
+          return loadSpaceTab(providedSpaceId, providedTabName);
+        })
+        .then(() => {
+          setSpaceId(providedSpaceId);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error loading space:", error);
+          setLoading(false);
+        });
     }
   }, [providedSpaceId, providedTabName]);
-
-  useEffect(() => {
-    providedSpaceId ? loadSpaceTabOrder(providedSpaceId) : null;
-  }, [providedSpaceId]);
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
