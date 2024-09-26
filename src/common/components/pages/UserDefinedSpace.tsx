@@ -139,6 +139,7 @@ export default function UserDefinedSpace({
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
+          setCurrentTabName("Profile");
         }
       });
     }

@@ -20,6 +20,7 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
+    setCurrentTabName,
     loadTabNames,
     tabOrdering,
     loadHomebaseTabOrder,
@@ -37,6 +38,7 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
 
     tabOrdering: state.homebase.tabOrdering,
     loadTabNames: state.homebase.loadTabNames,
@@ -79,6 +81,7 @@ const Homebase: NextPageWithLayout = () => {
   };
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
+  useEffect(() => setCurrentTabName(tabName), []);
 
   if (isNull(tabName)) {
     // TODO: Insert 404 page

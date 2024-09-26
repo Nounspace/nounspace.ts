@@ -22,7 +22,7 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
-
+    setCurrentTabName,
     tabOrdering,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
@@ -41,6 +41,7 @@ const Homebase: NextPageWithLayout = () => {
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
 
     tabOrdering: state.homebase.tabOrdering,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
@@ -55,7 +56,7 @@ const Homebase: NextPageWithLayout = () => {
   const currentFid = useCurrentFid();
 
   useEffect(() => setCurrentSpaceId("homebase"), []);
-
+  useEffect(() => setCurrentTabName("Feed"), []);
   useEffect(() => {
     if (isLoggedIn) {
       loadConfig();
