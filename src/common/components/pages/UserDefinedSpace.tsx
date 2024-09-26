@@ -104,7 +104,7 @@ export default function UserDefinedSpace({
 
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "profile").then((newSpaceId) => {
+      registerSpace(currentUserFid, "Profile").then((newSpaceId) => {
         setSpaceId(newSpaceId || null);
       });
     }
