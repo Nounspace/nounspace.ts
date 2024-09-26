@@ -9,19 +9,19 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
   const cols = 12;
   const margin = [16, 16];
   const containerPadding = [16, 16];
+  const magicBase = profile ? 64 + 160 : 64;
 
   useEffect(() => {
     setRowHeight(
       height
-        ? Math.round(
-            // The 64 magic number here is the height of the tabs bar above the grid
-            (height - 64 - margin[0] * maxRows - containerPadding[0] * 2) /
-              maxRows,
-          )
-        : 70,
-    ),
-      [height];
-  });
+        ? (height -
+            magicBase -
+            margin[0] * (maxRows - 1) -
+            containerPadding[0] * 2) /
+            maxRows
+        : rowHeight,
+    );
+  }, [height]);
 
   return (
     <>

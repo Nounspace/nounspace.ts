@@ -11,7 +11,7 @@ interface CurrentSpaceStoreState {
 interface CurrentSpaceStoreActions {
   setCurrentSpaceId: SetterFunction<string | null>;
   setCurrentTabName: SetterFunction<string | null>;
-  getCurrentTabName: () => string | null; // Add this line
+  getCurrentTabName: () => string | null;
   getCurrentSpaceConfig: () =>
     | {
         tabs: {
