@@ -32,7 +32,6 @@ export default function SpaceLoading({ profile }: { profile?: ReactNode }) {
           ) : null}
           <div className="w-full transition-all duration-100 ease-out h-full">
             <div className={"h-full flex flex-col"}>
-              {!isUndefined(profile) ? <div> {profile} </div> : null}
               <div className="flex-1 grid-container grow">
                 <div
                   className="relative grid-overlap w-full h-full opacity-50"
