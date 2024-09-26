@@ -35,7 +35,7 @@ export default function SpacePage({
       isUndefined(commitConfig) ||
       isUndefined(resetConfig) ||
       loading ? (
-        <SpaceLoading />
+        <SpaceLoading profile={profile} />
       ) : (
         <Space
           config={config}
