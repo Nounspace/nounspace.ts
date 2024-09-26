@@ -314,11 +314,14 @@ export const createSpaceStoreFunc = (
   loadSpaceTab: async (spaceId, tabName, fid) => {
     const supabase = createClient();
     try {
+      // Fetch the public URL for the space tab file
       const {
         data: { publicUrl },
       } = await supabase.storage
         .from("spaces")
         .getPublicUrl(`${spaceId}/tabs/${tabName}`);
+
+      // Download the file content, ensuring no caching
       const { data } = await axios.get<Blob>(publicUrl, {
         responseType: "blob",
         headers: {
@@ -327,11 +330,18 @@ export const createSpaceStoreFunc = (
           Expires: "0",
         },
       });
+
+      // Parse the file data and decrypt it
       const fileData = JSON.parse(await data.text()) as SignedFile;
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
+
+      // Get the current local copy of the space
       const currentLocalCopy = get().space.localSpaces[spaceId];
+
+      // Compare timestamps to determine if local copy is more recent
+      // If local copy is newer, we keep it and return early
       if (
         (spaceConfig &&
           spaceConfig.timestamp &&
@@ -348,28 +358,36 @@ export const createSpaceStoreFunc = (
         console.debug(`local copy of space ${spaceId} config is more recent`);
         return;
       }
+
+      // Prepare the space config for updating, including privacy status
       const updatableSpaceConfig = {
         ...spaceConfig,
         isPrivate: fileData.isEncrypted,
       };
+
+      // Update the store with the new space config
       set((draft) => {
+        // Initialize local space if it doesn't exist
         if (isUndefined(draft.space.localSpaces[spaceId])) {
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment(0).toISOString(),
+            updatedAt: moment().toISOString(),
             changedNames: {},
             id: spaceId,
           };
         }
+        // Initialize remote space if it doesn't exist
         if (isUndefined(draft.space.remoteSpaces[spaceId])) {
           draft.space.remoteSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment(0).toISOString(),
+            updatedAt: moment().toISOString(),
             id: spaceId,
           };
         }
+
+        // Update both remote and local spaces with the new config
         draft.space.remoteSpaces[spaceId].tabs[tabName] = updatableSpaceConfig;
         draft.space.remoteSpaces[spaceId].updatedAt = moment().toISOString();
         draft.space.localSpaces[spaceId].tabs[tabName] =
@@ -377,6 +395,7 @@ export const createSpaceStoreFunc = (
         draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpace");
     } catch (e) {
+      // Error handling: create a default space config if loading fails
       console.debug(e);
       const initialSpace = {
         ...(tabName === "Profile" && fid
@@ -385,18 +404,20 @@ export const createSpaceStoreFunc = (
         isPrivate: false,
       };
       set((draft) => {
+        // Initialize local space if it doesn't exist
         if (isUndefined(draft.space.localSpaces[spaceId])) {
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment(0).toISOString(),
+            updatedAt: moment(0).toISOString(), // Set to epoch time
             changedNames: {},
             id: spaceId,
           };
         }
+        // Set the default space config and update the timestamp to now
         draft.space.localSpaces[spaceId].tabs[tabName] =
           cloneDeep(initialSpace);
-        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString(); // Set to current time
       }, "loadSpaceTabProfile");
     }
   },
