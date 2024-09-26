@@ -472,12 +472,14 @@ export const createSpaceStoreFunc = (
         if (isUndefined(draft.space.localSpaces[spaceId])) {
           draft.space.localSpaces[spaceId] = {
             tabs: {},
-            order: ["Profile"],
+            order: [],
             updatedAt: moment().toISOString(),
             changedNames: {},
             id: spaceId,
           };
         }
+        draft.space.localSpaces[spaceId].order = ["Profile"];
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
       }, "loadSpaceInfoProfile");
     }
   },
