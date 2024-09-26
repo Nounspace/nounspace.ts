@@ -56,7 +56,7 @@ export const getServerSideProps = (async ({
     };
   }
 
-  const tabName = isUndefined(tabNameParam) ? "profile" : tabNameParam[0];
+  const tabName = isUndefined(tabNameParam) ? "Profile" : tabNameParam[0];
 
   try {
     const {
@@ -133,7 +133,7 @@ const UserPrimarySpace: NextPageWithLayout = ({
   }, []);
 
   if (!isNil(fid)) {
-    if ((isNil(spaceId) && tabName === "profile") || !isNil(spaceId))
+    if ((isNil(spaceId) && tabName === "Profile") || !isNil(spaceId))
       return (
         <>
           <Head>{generateUserMetadataHtml(userMetadata)}</Head>
