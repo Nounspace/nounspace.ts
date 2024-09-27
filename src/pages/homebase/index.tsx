@@ -72,10 +72,19 @@ const Homebase: NextPageWithLayout = () => {
     }
   }
 
+  function getSpacePageUrl(tabName: string) {
+    if (tabName === "Feed") {
+      return `/homebase`;
+    } else {
+      return `/homebase/${tabName}`;
+    }
+  }
+
   const { editMode } = useSidebarContext();
 
   const tabBar = (
     <TabBar
+      getSpacePageUrl={getSpacePageUrl}
       inHomebase={true}
       currentTab={"Feed"}
       tabList={tabOrdering.local}
@@ -108,7 +117,10 @@ const Homebase: NextPageWithLayout = () => {
         }
       : {
           config: homebaseConfig,
-          saveConfig,
+          saveConfig: async (config) => {
+            await saveConfig(config);
+            return commitConfig();
+          },
           // To get types to match since store.commitConfig is debounced
           commitConfig: async () => {
             await commitConfig();

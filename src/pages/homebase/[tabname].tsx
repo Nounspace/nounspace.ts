@@ -68,9 +68,11 @@ const Homebase: NextPageWithLayout = () => {
     }
     await loadTab(tabName);
   };
-  const homebaseConfig = tabConfigs[tabName]?.config;
-  const saveConfig = (config: SpaceConfigSaveDetails) =>
-    saveTab(tabName, config);
+  const homebaseTabConfig = tabConfigs[tabName]?.config;
+  const saveConfig = async (config: SpaceConfigSaveDetails) => {
+    await saveTab(tabName, config);
+    return commitTab(tabName);
+  };
   const resetConfig = () => resetTab(tabName);
   const commitConfig = async () => {
     commitTab(tabName);
@@ -87,8 +89,12 @@ const Homebase: NextPageWithLayout = () => {
     // TODO: Insert 404 page
     return;
   }
-
   async function switchTabTo(newTabName) {
+    if (homebaseTabConfig) {
+      await saveTab(tabName, homebaseTabConfig);
+      await commitTab(tabName);
+    }
+
     if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
@@ -96,10 +102,18 @@ const Homebase: NextPageWithLayout = () => {
     }
   }
 
+  function getSpacePageUrl(tabName: string) {
+    if (tabName === "Feed") {
+      return `/homebase`;
+    }
+    return `/homebase/${tabName}`;
+  }
+
   const { editMode } = useSidebarContext();
 
   const tabBar = (
     <TabBar
+      getSpacePageUrl={getSpacePageUrl}
       inHomebase={true}
       currentTab={tabName}
       tabList={tabOrdering.local}
@@ -116,7 +130,7 @@ const Homebase: NextPageWithLayout = () => {
 
   const args = isInitializing
     ? {
-        config: homebaseConfig ?? undefined,
+        config: homebaseTabConfig ?? undefined,
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
@@ -131,7 +145,7 @@ const Homebase: NextPageWithLayout = () => {
           tabBar: tabBar,
         }
       : {
-          config: homebaseConfig,
+          config: homebaseTabConfig,
           saveConfig,
           // To get types to match since store.commitConfig is debounced
           commitConfig: async () => await commitConfig(),

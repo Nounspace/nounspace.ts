@@ -39,7 +39,6 @@ export default function SpacePage({
         <SpaceLoading profile={profile} tabBar={tabBar} />
       ) : (
         <Space
-          key={moment().format("YYYY-MM-DD HH:mm:ss")}
           config={config}
           saveConfig={saveConfig}
           commitConfig={commitConfig}

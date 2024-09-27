@@ -10,6 +10,7 @@ import { Tab } from "../atoms/reorderable-tab";
 import { useRouter } from "next/router";
 import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
+import Link from "next/link";
 
 interface TabBarProps {
   inHomebase: boolean;
@@ -23,6 +24,7 @@ interface TabBarProps {
   createTab: (tabName: string) => void;
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
+  getSpacePageUrl: (tabName: string) => string;
 }
 
 function TabBar({
@@ -37,6 +39,7 @@ function TabBar({
   createTab,
   renameTab,
   commitTab,
+  getSpacePageUrl,
 }: TabBarProps) {
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -103,18 +106,20 @@ function TabBar({
               inHomebase ? ["Feed", ...tabList] : tabList,
               (tabName: string) => {
                 return (
-                  <Tab
-                    key={tabName}
-                    tabName={tabName}
-                    inEditMode={inEditMode}
-                    isSelected={currentTab === tabName}
-                    onClick={() => switchTabTo(tabName)}
-                    removeable={tabName !== "Feed" && tabName !== "Profile"}
-                    draggable={inEditMode}
-                    renameable={tabName !== "Feed" && tabName !== "Profile"}
-                    onRemove={() => handleDeleteTab(tabName)}
-                    renameTab={handleRenameTab}
-                  />
+                  <Link href={getSpacePageUrl(tabName)}>
+                    <Tab
+                      key={tabName}
+                      tabName={tabName}
+                      inEditMode={inEditMode}
+                      isSelected={currentTab === tabName}
+                      onClick={() => {}}
+                      removeable={tabName !== "Feed" && tabName !== "Profile"}
+                      draggable={inEditMode}
+                      renameable={tabName !== "Feed" && tabName !== "Profile"}
+                      onRemove={() => handleDeleteTab(tabName)}
+                      renameTab={handleRenameTab}
+                    />
+                  </Link>
                 );
               },
             )}

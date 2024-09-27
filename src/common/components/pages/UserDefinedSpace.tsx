@@ -1,4 +1,4 @@
-import { indexOf, isNil, mapValues, noop, first, isEqual } from "lodash";
+import { indexOf, isNil, mapValues, noop, first } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
@@ -232,6 +232,10 @@ export default function UserDefinedSpace({
     router.push(`/s/${username}/${tabName}`);
   }
 
+  function getSpacePageUrl(tabName: string) {
+    return `/s/${username}/${tabName}`;
+  }
+
   const { editMode } = useSidebarContext();
 
   const tabBar = (
@@ -261,11 +265,13 @@ export default function UserDefinedSpace({
       commitTabOrder={async () => {
         return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
       }}
+      getSpacePageUrl={getSpacePageUrl}
     />
   );
 
   return (
     <SpacePage
+      key={spaceId + providedTabName}
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
