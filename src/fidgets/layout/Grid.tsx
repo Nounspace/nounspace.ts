@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -329,6 +330,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     [fidgetInstanceDatums, saveFidgetInstanceDatums],
   );
 
+  const [itemsVisible, setItemsVisible] = useState(false);
+  const initialRenderRef = useRef(true);
+
+  useEffect(() => {
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      setTimeout(() => setItemsVisible(true), 100);
+    }
+  }, []);
+
   return (
     <>
       {editorPanelPortal(element)}
@@ -360,8 +371,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             droppingItem={externalDraggedItem}
             onDrop={handleDrop}
             onLayoutChange={saveLayoutConditional}
-            className="grid-overlap"
-            style={{ height: rowHeight * gridDetails.maxRows + "px" }}
+            className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
+            style={{
+              height: rowHeight * gridDetails.maxRows + "px",
+              // Add transition for opacity
+              transition: "opacity 0.2s ease-in",
+              opacity: itemsVisible ? 1 : 0,
+            }}
           >
             {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
               const fidgetDatum = fidgetInstanceDatums[gridItem.i];
@@ -371,7 +387,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               if (!fidgetModule) return null;
 
               return (
-                <div key={gridItem.i}>
+                <div key={gridItem.i} className="grid-item">
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}

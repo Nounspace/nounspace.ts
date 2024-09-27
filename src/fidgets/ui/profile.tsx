@@ -38,7 +38,7 @@ const profileProperties: FidgetProperties = {
 const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   settings: { fid },
 }) => {
-  const { fid: viewerFid, signer } = useFarcasterSigner("profile");
+  const { fid: viewerFid, signer } = useFarcasterSigner("Profile");
   const { data: userData } = useLoadFarcasterUser(
     fid,
     viewerFid > 0 ? viewerFid : undefined,

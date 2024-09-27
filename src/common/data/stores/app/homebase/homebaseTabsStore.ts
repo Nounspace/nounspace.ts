@@ -184,17 +184,25 @@ export const createHomeBaseTabStoreFunc = (
       );
       if (data.result === "success") {
         set((draft) => {
+          // Add the new tab to the tabs object
           draft.homebase.tabs[tabName] = {
             config: cloneDeep(INITIAL_HOMEBASE_CONFIG),
             remoteConfig: cloneDeep(INITIAL_HOMEBASE_CONFIG),
           };
+
+          // Add the new tab to the local tab order
+          if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+            draft.homebase.tabOrdering.local.push(tabName);
+          }
         }, "createHomebaseTab");
+
+        // Commit the new tab order to the database
+        return get().homebase.commitTabOrderingToDatabase();
       }
     } catch (e) {
       console.debug("failed to create homebase tab", e);
     }
   },
-
   async deleteTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
@@ -252,6 +260,7 @@ export const createHomeBaseTabStoreFunc = (
   },
   async loadHomebaseTab(tabName) {
     if (!has(get().homebase.tabs, tabName)) return;
+
     const supabase = createClient();
     const {
       data: { publicUrl },

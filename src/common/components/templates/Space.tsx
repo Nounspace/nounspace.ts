@@ -12,7 +12,6 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "../organisms/InfoBanner";
-import TabBar from "../organisms/TabBar";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -43,8 +42,8 @@ type SpaceArgs = {
   saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
+  tabBar: ReactNode;
   profile?: ReactNode;
-  fid?: number;
   feed?: ReactNode;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
@@ -57,8 +56,8 @@ export default function Space({
   saveConfig,
   commitConfig,
   resetConfig,
+  tabBar,
   profile,
-  fid,
   feed,
   setEditMode,
   editMode,
@@ -109,15 +108,8 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      {isNil(profile) && (
-        <TabBar
-          hasProfile={!isNil(profile)}
-          inEditMode={editMode}
-          profileFid={fid ? fid : 0}
-        />
-      )}
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full transition-all duration-100 ease-out h-[calc(100vh-64px)]">
+      <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
@@ -125,8 +117,11 @@ export default function Space({
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
+          {tabBar}
           <div className="flex h-full">
-            {!isUndefined(feed) ? <div className="w-6/12">{feed}</div> : null}
+            {!isUndefined(feed) ? (
+              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+            ) : null}
             <div className={"grow"}>
               <LayoutFidget
                 layoutConfig={{ ...layoutConfig }}
