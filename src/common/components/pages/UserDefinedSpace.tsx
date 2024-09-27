@@ -1,4 +1,4 @@
-import { indexOf, isNil, mapValues, noop, first } from "lodash";
+import { indexOf, isNil, mapValues, noop, first, isEqual } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
@@ -137,6 +137,18 @@ export default function UserDefinedSpace({
     isEditable,
   };
 
+  const memoizedConfig = useMemo(() => {
+    const { timestamp, ...restConfig } = config;
+    return restConfig;
+  }, [
+    config.fidgetInstanceDatums,
+    config.layoutID,
+    config.layoutDetails,
+    config.isEditable,
+    config.fidgetTrayContents,
+    config.theme,
+  ]);
+
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
@@ -254,7 +266,7 @@ export default function UserDefinedSpace({
 
   return (
     <SpacePage
-      config={config}
+      config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
