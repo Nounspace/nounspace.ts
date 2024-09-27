@@ -106,20 +106,19 @@ function TabBar({
               inHomebase ? ["Feed", ...tabList] : tabList,
               (tabName: string) => {
                 return (
-                  <Link href={getSpacePageUrl(tabName)}>
-                    <Tab
-                      key={tabName}
-                      tabName={tabName}
-                      inEditMode={inEditMode}
-                      isSelected={currentTab === tabName}
-                      onClick={() => {}}
-                      removeable={tabName !== "Feed" && tabName !== "Profile"}
-                      draggable={inEditMode}
-                      renameable={tabName !== "Feed" && tabName !== "Profile"}
-                      onRemove={() => handleDeleteTab(tabName)}
-                      renameTab={handleRenameTab}
-                    />
-                  </Link>
+                  <Tab
+                    key={tabName}
+                    getSpacePageUrl={getSpacePageUrl}
+                    tabName={tabName}
+                    inEditMode={inEditMode}
+                    isSelected={currentTab === tabName}
+                    onClick={() => {}}
+                    removeable={tabName !== "Feed" && tabName !== "Profile"}
+                    draggable={inEditMode}
+                    renameable={tabName !== "Feed" && tabName !== "Profile"}
+                    onRemove={() => handleDeleteTab(tabName)}
+                    renameTab={handleRenameTab}
+                  />
                 );
               },
             )}

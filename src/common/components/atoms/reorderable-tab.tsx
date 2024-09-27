@@ -2,6 +2,7 @@ import * as React from "react";
 import { motion, Reorder } from "framer-motion";
 import { CloseIcon } from "./icons/CloseIcon";
 import EditableText from "./editable-text";
+import Link from "next/link";
 
 interface Props {
   tabName: string;
@@ -13,9 +14,11 @@ interface Props {
   renameable: boolean;
   onRemove?: () => void;
   renameTab?: (tabName: string, newName: string) => void;
+  getSpacePageUrl: (tabName: string) => string;
 }
 
 export const Tab = ({
+  getSpacePageUrl,
   tabName,
   inEditMode,
   isSelected,
@@ -52,13 +55,15 @@ export const Tab = ({
       >
         {/* Text */}
         <motion.span layout="position">
-          {inEditMode && renameable && isSelected ? (
-            <div className="cursor-text">
-              <EditableText initialText={tabName} updateMethod={renameTab} />
-            </div>
-          ) : (
-            tabName
-          )}
+          <Link href={getSpacePageUrl(tabName)}>
+            {inEditMode && renameable && isSelected ? (
+              <div className="cursor-text">
+                <EditableText initialText={tabName} updateMethod={renameTab} />
+              </div>
+            ) : (
+              tabName
+            )}
+          </Link>
         </motion.span>
 
         {/* Close Icon */}
