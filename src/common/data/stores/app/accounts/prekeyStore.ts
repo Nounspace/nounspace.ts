@@ -53,7 +53,13 @@ export type PreSpaceKeys = SpaceKeys & {
 };
 
 interface PreKeyActions {
-  createSignedFile: (data: string, fileType: string) => Promise<SignedFile>;
+  createSignedFile: (
+    data: string,
+    fileType: string,
+    options?: {
+      fileName?: string;
+    },
+  ) => Promise<SignedFile>;
   createEncryptedSignedFile: (
     data: string,
     fileType: string,
@@ -75,7 +81,7 @@ export const prekeyStore = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): PreKeyStore => ({
-  createSignedFile: async (data, fileType) => {
+  createSignedFile: async (data, fileType, options) => {
     const currentIdentity = get().account.getCurrentIdentity();
     if (isUndefined(currentIdentity)) {
       throw new NoCurrentIdentity();
@@ -87,6 +93,7 @@ export const prekeyStore = (
         publicKey: currentIdentity.rootKeys.publicKey,
         isEncrypted: false,
         timestamp: moment().toISOString(),
+        fileName: options?.fileName,
       },
       currentIdentity.rootKeys.privateKey,
     );

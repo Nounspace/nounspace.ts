@@ -3,16 +3,17 @@ import Space, { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
 import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import moment from "moment";
 
 export type SpacePageArgs = {
   config?: SpaceConfig;
   saveConfig?: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig?: () => Promise<void>;
   resetConfig?: () => Promise<void>;
+  tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
   loading?: boolean;
-  fid?: number;
 };
 
 export default function SpacePage({
@@ -20,10 +21,10 @@ export default function SpacePage({
   saveConfig,
   commitConfig,
   resetConfig,
+  tabBar,
   profile,
   loading,
   feed,
-  fid,
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
@@ -35,20 +36,20 @@ export default function SpacePage({
       isUndefined(commitConfig) ||
       isUndefined(resetConfig) ||
       loading ? (
-        <SpaceLoading />
+        <SpaceLoading profile={profile} tabBar={tabBar} />
       ) : (
         <Space
           config={config}
           saveConfig={saveConfig}
           commitConfig={commitConfig}
           resetConfig={resetConfig}
+          tabBar={tabBar}
           profile={profile}
           feed={feed}
           setEditMode={setEditMode}
           editMode={editMode}
           setSidebarEditable={setSidebarEditable}
           portalRef={portalRef}
-          fid={fid}
         />
       )}
     </>

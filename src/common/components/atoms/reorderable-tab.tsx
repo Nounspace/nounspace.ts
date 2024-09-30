@@ -2,6 +2,7 @@ import * as React from "react";
 import { motion, Reorder } from "framer-motion";
 import { CloseIcon } from "./icons/CloseIcon";
 import EditableText from "./editable-text";
+import Link from "next/link";
 
 interface Props {
   tabName: string;
@@ -13,9 +14,11 @@ interface Props {
   renameable: boolean;
   onRemove?: () => void;
   renameTab?: (tabName: string, newName: string) => void;
+  getSpacePageUrl: (tabName: string) => string;
 }
 
 export const Tab = ({
+  getSpacePageUrl,
   tabName,
   inEditMode,
   isSelected,
@@ -46,23 +49,25 @@ export const Tab = ({
         className={`static flex p-2 items-center transition-colors duration-300 group 
           ${
             isSelected
-              ? "text-blue-600 font-bold"
-              : "text-gray-500 hover:text-blue-600"
+              ? "text-blue-600 font-bold cursor-grab"
+              : "text-gray-500 hover:text-blue-600 cursor-pointer"
           }`}
       >
         {/* Text */}
         <motion.span layout="position">
-          {inEditMode && renameable ? (
-            <>
-              <EditableText initialText={tabName} updateMethod={renameTab} />
-            </>
-          ) : (
-            tabName
-          )}
+          <Link href={getSpacePageUrl(tabName)}>
+            {inEditMode && renameable && isSelected ? (
+              <div className="cursor-text">
+                <EditableText initialText={tabName} updateMethod={renameTab} />
+              </div>
+            ) : (
+              tabName
+            )}
+          </Link>
         </motion.span>
 
         {/* Close Icon */}
-        {removeable && onRemove && inEditMode && (
+        {removeable && onRemove && inEditMode && isSelected && (
           <motion.div layout>
             <motion.button
               onPointerDown={(event) => {
