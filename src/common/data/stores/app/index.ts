@@ -46,6 +46,7 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
   logout: () => {
     get().account.reset();
     get().homebase.clearHomebase();
+    get().homebase.clearHomebaseTabOrder();
     get().space.clear();
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },

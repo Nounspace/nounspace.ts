@@ -33,6 +33,7 @@ interface HomeBaseStoreActions {
   saveHomebaseConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   resetHomebaseConfig: () => Promise<void>;
   clearHomebase: () => void;
+  clearHomebaseTabOrder: () => void;
 }
 
 export type HomeBaseStore = HomeBaseStoreState &
@@ -146,6 +147,15 @@ export const createHomeBaseStoreFunc = (
         draft.homebase.remoteHomebaseConfig = undefined;
       },
       "clearHomebase",
+      true,
+    );
+  },
+  clearHomebaseTabOrder: () => {
+    set(
+      (draft) => {
+        draft.homebase.tabOrdering.local = [];
+      },
+      "clearHomebaseTabOrder",
       true,
     );
   },

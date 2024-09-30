@@ -87,6 +87,16 @@
   }
 } */
 
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .tabs li button {
   width: 20px;
   height: 20px;
