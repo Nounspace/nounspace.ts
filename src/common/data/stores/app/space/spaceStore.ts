@@ -337,92 +337,88 @@ export const createSpaceStoreFunc = (
 
       // Parse the file data and decrypt it
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const spaceConfig = JSON.parse(
+      const remoteSpaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
 
-      // Get the current local copy of the space
-      const currentLocalCopy = get().space.localSpaces[spaceId];
-
-      // Compare timestamps to determine if local copy is more recent
-      // If local copy is newer, we keep it and return early
-      if (
-        (spaceConfig &&
-          spaceConfig.timestamp &&
-          currentLocalCopy &&
-          currentLocalCopy.updatedAt &&
-          moment(currentLocalCopy.updatedAt).isAfter(
-            moment(spaceConfig.timestamp),
-          )) ||
-        (spaceConfig &&
-          isUndefined(spaceConfig.timestamp) &&
-          currentLocalCopy &&
-          currentLocalCopy.updatedAt)
-      ) {
-        console.debug(`local copy of space ${spaceId} config is more recent`);
-        return;
-      }
-
-      // Prepare the space config for updating, including privacy status
-      const updatableSpaceConfig = {
-        ...spaceConfig,
+      // Prepare the remote space config for updating, including privacy status
+      const remoteUpdatableSpaceConfig = {
+        ...remoteSpaceConfig,
         isPrivate: fileData.isEncrypted,
       };
 
-      // Update the store with the new space config
       set((draft) => {
-        // Initialize local space if it doesn't exist
+        // Initialize local and remote spaces if they don't exist
         if (isUndefined(draft.space.localSpaces[spaceId])) {
           draft.space.localSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment(0).toISOString(),
+            updatedAt: moment().toISOString(),
             changedNames: {},
             id: spaceId,
           };
         }
-        // Initialize remote space if it doesn't exist
         if (isUndefined(draft.space.remoteSpaces[spaceId])) {
           draft.space.remoteSpaces[spaceId] = {
             tabs: {},
             order: [],
-            updatedAt: moment(0).toISOString(),
+            updatedAt: moment().toISOString(),
             id: spaceId,
           };
         }
 
-        // Update both remote and local spaces with the new config
-        draft.space.remoteSpaces[spaceId].tabs[tabName] = updatableSpaceConfig;
-        draft.space.remoteSpaces[spaceId].updatedAt = moment().toISOString();
-        draft.space.localSpaces[spaceId].tabs[tabName] =
-          cloneDeep(updatableSpaceConfig);
-        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
-      }, "loadSpace");
-    } catch (e) {
-      // Error handling: create a default space config if loading fails
-      console.debug(e);
-      const initialSpace = {
-        ...(tabName === "Profile" && fid
-          ? createIntialPersonSpaceConfigForFid(fid)
-          : INITIAL_SPACE_CONFIG_EMPTY),
-        isPrivate: false,
-      };
-      set((draft) => {
-        // Initialize local space if it doesn't exist
-        if (isUndefined(draft.space.localSpaces[spaceId])) {
-          draft.space.localSpaces[spaceId] = {
-            tabs: {},
-            order: [],
-            updatedAt: moment(0).toISOString(), // Set to epoch time
-            changedNames: {},
-            id: spaceId,
-          };
+        const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
+        const remoteTab = draft.space.remoteSpaces[spaceId].tabs[tabName];
+
+        // Compare timestamps if local tab exists
+        if (localTab) {
+          const localTimestamp = moment(localTab.timestamp);
+          const remoteTimestamp = moment(remoteUpdatableSpaceConfig.timestamp);
+
+          console.log(
+            `Local timestamp for ${spaceId}/${tabName}: ${localTimestamp.toISOString()}`,
+          );
+          console.log(
+            `Remote timestamp for ${spaceId}/${tabName}: ${remoteTimestamp.toISOString()}`,
+          );
+
+          if (remoteTimestamp.isAfter(localTimestamp)) {
+            // Remote is newer, update both local and remote
+            draft.space.remoteSpaces[spaceId].tabs[tabName] =
+              remoteUpdatableSpaceConfig;
+            draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
+              remoteUpdatableSpaceConfig,
+            );
+            console.log(`Updated ${spaceId}/${tabName} with newer remote data`);
+          } else {
+            // Local is newer or same age, keep local data
+            console.log(
+              `Kept local data for ${spaceId}/${tabName}, updated remote to match`,
+            );
+            draft.space.remoteSpaces[spaceId].tabs[tabName] =
+              cloneDeep(localTab);
+          }
+        } else {
+          // No local tab, create it with remote data
+          draft.space.remoteSpaces[spaceId].tabs[tabName] =
+            remoteUpdatableSpaceConfig;
+          draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
+            remoteUpdatableSpaceConfig,
+          );
+          console.log(
+            `Created local tab ${spaceId}/${tabName} with remote data`,
+          );
         }
-        // Set the default space config and update the timestamp to now
-        draft.space.localSpaces[spaceId].tabs[tabName] =
-          cloneDeep(initialSpace);
-        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString(); // Set to current time
-      }, "loadSpaceTabProfile");
+
+        // Update timestamps
+        const newTimestamp = moment().toISOString();
+        draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
+        draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+
+        console.log(`Loaded remote space tab ${spaceId}/${tabName}`);
+      }, "loadSpaceTab");
+    } catch (e) {
+      console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
     }
   },
   loadSpaceTabOrder: async (spaceId: string) => {
