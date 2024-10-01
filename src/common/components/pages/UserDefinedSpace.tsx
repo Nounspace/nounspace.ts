@@ -83,6 +83,8 @@ export default function UserDefinedSpace({
         .then(() => {
           setSpaceId(providedSpaceId);
           setLoading(false);
+          // Load remaining tabs after the initial one has finished
+          return loadRemainingTabs(providedSpaceId);
         })
         .catch((error) => {
           console.error("Error loading space:", error);
@@ -90,6 +92,19 @@ export default function UserDefinedSpace({
         });
     }
   }, [providedSpaceId, providedTabName]);
+
+  // Function to load remaining tabs
+  const loadRemainingTabs = useCallback(
+    async (spaceId: string) => {
+      const tabOrder = localSpaces[spaceId]?.order || [];
+      for (const tabName of tabOrder) {
+        if (tabName !== providedTabName) {
+          await loadSpaceTab(spaceId, tabName);
+        }
+      }
+    },
+    [localSpaces, providedTabName, loadSpaceTab],
+  );
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
