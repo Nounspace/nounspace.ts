@@ -77,8 +77,11 @@ export default function UserDefinedSpace({
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
-          // After loading the tab order, load the specific tab
-          return loadSpaceTab(providedSpaceId, providedTabName);
+          // After loading the tab order, load all available tabs
+          const tabOrder = localSpaces[providedSpaceId]?.order || [];
+          return Promise.all(
+            tabOrder.map((tabName) => loadSpaceTab(providedSpaceId, tabName)),
+          );
         })
         .then(() => {
           setSpaceId(providedSpaceId);
