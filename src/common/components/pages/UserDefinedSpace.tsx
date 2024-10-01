@@ -77,15 +77,14 @@ export default function UserDefinedSpace({
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
-          // After loading the tab order, load all available tabs
-          const tabOrder = localSpaces[providedSpaceId]?.order || [];
-          return Promise.all(
-            tabOrder.map((tabName) => loadSpaceTab(providedSpaceId, tabName)),
-          );
+          // After loading the tab order, load the specific tab
+          return loadSpaceTab(providedSpaceId, providedTabName);
         })
         .then(() => {
           setSpaceId(providedSpaceId);
           setLoading(false);
+          // Load remaining tabs after the initial one has finished
+          return loadRemainingTabs(providedSpaceId);
         })
         .catch((error) => {
           console.error("Error loading space:", error);
@@ -93,6 +92,19 @@ export default function UserDefinedSpace({
         });
     }
   }, [providedSpaceId, providedTabName]);
+
+  // Function to load remaining tabs
+  const loadRemainingTabs = useCallback(
+    async (spaceId: string) => {
+      const tabOrder = localSpaces[spaceId]?.order || [];
+      for (const tabName of tabOrder) {
+        if (tabName !== providedTabName) {
+          await loadSpaceTab(spaceId, tabName);
+        }
+      }
+    },
+    [localSpaces, providedTabName, loadSpaceTab],
+  );
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   useEffect(() => {
