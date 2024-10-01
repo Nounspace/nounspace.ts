@@ -21,9 +21,20 @@ const supabaseClient = createClient<SupabaseDataBaseType>(
 
 const spaceBucket = supabaseClient.storage.from("spaces");
 
-const { data: spaceFiles } = await spaceBucket.list("");
+let spaceFiles: FileObject[] = [];
+let { data } = await spaceBucket.list("", { limit: 100 });
+let offset = 100;
 
-console.log(spaceFiles);
+while (!_.isNull(data)) {
+  spaceFiles = _.concat(spaceFiles, data);
+  ({ data } = await spaceBucket.list("", { limit: 100, offset }));
+  if (!_.isNull(data) && data.length === 0) {
+    data = null;
+  }
+  offset += 100;
+}
+
+console.log(spaceFiles.length);
 
 function createTabOrderFileJson(spaceId: string) {
   return {
@@ -109,11 +120,16 @@ if (spaceFiles) {
   _.forEach(spaceFiles, fileData => {
     if (!isFolder(fileData) && !isHidden(fileData)) {
       console.log(`Moving ${fileData.name}`);
-      supabaseClient.storage.from("spaces").copy(fileData.name, `${fileData.name}/tabs/Profile`);
-      supabaseClient.storage.from("spaces").upload(`${fileData.name}/tabOrder`,
-        new Blob([stringify(createTabOrderFileJson(fileData.name))],
-        { type: "application/json" })
-      );
+      try {
+        supabaseClient.storage.from("spaces").copy(fileData.name, `${fileData.name}/tabs/Profile`);
+        supabaseClient.storage.from("spaces").upload(`${fileData.name}/tabOrder`,
+          new Blob([stringify(createTabOrderFileJson(fileData.name))],
+          { type: "application/json" })
+        );
+      } catch (e) {
+        console.log("error occurred");
+        console.error(e);
+      }
     }
   })
 }
