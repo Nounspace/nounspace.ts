@@ -44,9 +44,9 @@ const galleryConfig: FidgetProperties = {
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 2,
+    minHeight: 1,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 1,
     maxWidth: 36,
   },
 };
