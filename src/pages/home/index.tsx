@@ -1,33 +1,26 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NextPageWithLayout } from "../_app";
+import { useRouter } from "next/router";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
-import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
-import { FeedType } from "@neynar/nodejs-sdk";
-import { noop } from "lodash";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
-import TabBar from "@/common/components/organisms/TabBar";
-import { useRouter } from "next/router";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import TabBar from "@/common/components/organisms/TabBar";
+import { isString } from "lodash";
 import {
   TAB1_HOMEBASE_CONFIG,
   TAB2_HOMEBASE_CONFIG,
 } from "@/constants/tab1Homebaseconfig";
 
+// Enhanced logging to trace configuration logic
 const getTabConfig = (tabName: string) => {
+  console.log(`getTabConfig called with tabName: ${tabName}`);
   switch (tabName) {
     case "Step1":
-      console.log("TAB1_HOMEBASE_CONFIG", TAB1_HOMEBASE_CONFIG);
       return TAB1_HOMEBASE_CONFIG;
     case "Step2":
-      console.log("TAB2_HOMEBASE_CONFIG", TAB2_HOMEBASE_CONFIG);
       return TAB2_HOMEBASE_CONFIG;
     default:
-      console.log(
-        "USER_NOT_LOGGED_IN_HOMEBASE_CONFIG",
-        USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
-      );
       return USER_NOT_LOGGED_IN_HOMEBASE_CONFIG;
   }
 };
@@ -69,48 +62,44 @@ const Home: NextPageWithLayout = () => {
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
-  const currentFid = useCurrentFid();
-  const [tabOrdering, setTabOrdering] = React.useState({
+  const { editMode } = useSidebarContext();
+
+  // Local state to manage current tab name and ordering
+  const [tabOrdering, setTabOrdering] = useState({
     local: ["Step1", "Step2", "Step3"],
   });
-  const tabName = router.query.tabname as string; // Correctly extract `tabName` from the router
+  const [tabName, setTabName] = useState<string | undefined>(undefined);
+
+  // Monitor router changes and update tab name accordingly
+  useEffect(() => {
+    if (router.isReady && isString(router.query.tabname)) {
+      const queryTabName = router.query.tabname as string;
+      setTabName(queryTabName);
+      setCurrentTabName(queryTabName);
+    }
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && tabName) {
       loadConfig();
       if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
     }
-  }, [isLoggedIn]);
-  const homebaseConfig = getTabConfig(tabName);
+  }, [isLoggedIn, tabName]);
 
   function switchTabTo(newTabName: string) {
-    if (homebaseConfig) {
-      saveConfig(homebaseConfig); // Only pass `homebaseConfig` as a single argument
+    if (tabName) {
+      const configToSave = getTabConfig(tabName);
+      saveConfig(configToSave);
       commitHomebaseTab(newTabName);
-      console.log("Switched to tab", newTabName);
-      console.log("config", homebaseConfig);
     }
     router.push(`/home/${newTabName}`);
   }
 
-  function getSpacePageUrl(tabName: string) {
-    switch (tabName) {
-      case "Step1":
-        return `/home/step1`;
-      case "Step2":
-        return `/home/step2`;
-      default:
-        return `/home`;
-    }
-  }
-
-  const { editMode } = useSidebarContext();
-
   const tabBar = (
     <TabBar
-      getSpacePageUrl={getSpacePageUrl}
+      getSpacePageUrl={(tab) => `/home/${tab}`}
       inHomebase={true}
       currentTab={tabName ?? "Feed"}
       tabList={tabOrdering.local}
@@ -124,12 +113,10 @@ const Home: NextPageWithLayout = () => {
       commitTabOrder={commitHomebaseTabOrder}
     />
   );
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName(tabName), []);
 
   const args: SpacePageArgs = isInitializing
     ? {
-        config: getTabConfig(tabName) ?? undefined,
+        config: undefined,
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
@@ -137,40 +124,24 @@ const Home: NextPageWithLayout = () => {
       }
     : !isLoggedIn
       ? {
-          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+          config:
+            // test whic tab the user is in
+            getTabConfig(tabName || "Feed"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName),
+          config: getTabConfig(tabName || "Feed"),
           saveConfig,
           commitConfig: async () => await commitConfig(),
           resetConfig,
           tabBar: tabBar,
         };
 
-  if (currentFid) {
-    args.feed = (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any, // Type assertion
-        }}
-        saveData={async () => noop()}
-        data={{}}
-      />
-    );
-  }
-
-  return <SpacePage {...args} />;
+  // Use the unique key directly in the JSX to trigger re-render
+  return <SpacePage key={tabName ?? "default-tab"} {...args} />;
 };
 
 export default Home;

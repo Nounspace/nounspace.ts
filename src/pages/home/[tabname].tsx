@@ -1,44 +1,58 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { NextPageWithLayout } from "../_app";
+import { useRouter } from "next/router";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
-import SpacePage from "@/common/components/pages/SpacePage";
-import { useRouter } from "next/router";
-import { isNull, isString, noop } from "lodash";
-import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
-import TabBar from "@/common/components/organisms/TabBar";
+import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import tabOrder from "../api/space/homebase/tabOrder";
+import TabBar from "@/common/components/organisms/TabBar";
+import { isString } from "lodash";
+import {
+  TAB1_HOMEBASE_CONFIG,
+  TAB2_HOMEBASE_CONFIG,
+} from "@/constants/tab1Homebaseconfig";
+
+// Enhanced logging to trace configuration logic
+const getTabConfig = (tabName: string) => {
+  console.log(`getTabConfig called with tabName: ${tabName}`);
+  switch (tabName) {
+    case "Step1":
+      return TAB1_HOMEBASE_CONFIG;
+    case "Step2":
+      return TAB2_HOMEBASE_CONFIG;
+    default:
+      return USER_NOT_LOGGED_IN_HOMEBASE_CONFIG;
+  }
+};
 
 const Home: NextPageWithLayout = () => {
+  const router = useRouter();
   const {
-    tabConfigs,
-    loadTab,
-    saveTab,
-    commitTab,
-    resetTab,
+    saveConfig,
+    loadConfig,
+    commitConfig,
+    resetConfig,
     getIsLoggedIn,
     getIsInitializing,
     setCurrentSpaceId,
     setCurrentTabName,
-    loadTabNames,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
     createHomebaseTab,
     deleteHomebaseTab,
     renameHomebaseTab,
+    commitHomebaseTab,
     commitHomebaseTabOrder,
   } = useAppStore((state) => ({
-    tabConfigs: state.homebase.tabs,
-    loadTab: state.homebase.loadHomebaseTab,
-    saveTab: state.homebase.saveHomebaseTabConfig,
-    commitTab: state.homebase.commitHomebaseTabToDatabase,
-    resetTab: state.homebase.resetHomebaseTabConfig,
+    saveConfig: state.homebase.saveHomebaseConfig,
+    loadConfig: state.homebase.loadHomebase,
+    commitConfig: state.homebase.commitHomebaseToDatabase,
+    commitHomebaseTab: state.homebase.commitHomebaseTabToDatabase,
+    resetConfig: state.homebase.resetHomebaseConfig,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
-    loadTabNames: state.homebase.loadTabNames,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
     updateHomebaseTabOrder: state.homebase.updateTabOrdering,
     commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
@@ -46,76 +60,48 @@ const Home: NextPageWithLayout = () => {
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
   }));
-
-  const router = useRouter();
-  const queryTabName = router.query.tabname;
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
-  const [tabOrdering, setTabOrdering] = React.useState({
+  const { editMode } = useSidebarContext();
+
+  // Local state to manage current tab name and ordering
+  const [tabOrdering, setTabOrdering] = useState({
     local: ["Step1", "Step2", "Step3"],
   });
+  const [tabName, setTabName] = useState<string | undefined>(undefined);
 
-  const tabName = isString(queryTabName) ? queryTabName : "";
+  // Monitor router changes and update tab name accordingly
+  useEffect(() => {
+    if (router.isReady && isString(router.query.tabname)) {
+      const queryTabName = router.query.tabname as string;
+      setTabName(queryTabName);
+      setCurrentTabName(queryTabName);
+    }
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
-    loadConfig();
-  }, [router.pathname, isLoggedIn, tabName]);
-
-  const loadConfig = async () => {
-    await loadTabNames();
-    if (tabOrdering.local.length === 0) {
-      await loadHomebaseTabOrder();
+    if (isLoggedIn && tabName) {
+      loadConfig();
+      if (tabOrdering.local.length === 0) {
+        loadHomebaseTabOrder();
+      }
     }
-    await loadTab(tabName);
-  };
-  const homebaseTabConfig = tabConfigs[tabName]?.config;
-  const saveConfig = async (config: SpaceConfigSaveDetails) => {
-    await saveTab(tabName, config);
-    return commitTab(tabName);
-  };
-  const resetConfig = () => resetTab(tabName);
-  const commitConfig = async () => {
-    commitTab(tabName);
-    commitHomebaseTabOrder();
-    for (const tabName of tabOrdering.local) {
-      await commitTab(tabName);
+  }, [isLoggedIn, tabName]);
+
+  function switchTabTo(newTabName: string) {
+    if (tabName) {
+      const configToSave = getTabConfig(tabName);
+      saveConfig(configToSave);
+      commitHomebaseTab(newTabName);
     }
-  };
-
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName(tabName), []);
-
-  if (isNull(tabName)) {
-    // TODO: Insert 404 page
-    return;
+    router.push(`/home/${newTabName}`);
   }
-  async function switchTabTo(newTabName) {
-    if (homebaseTabConfig) {
-      await saveTab(tabName, homebaseTabConfig);
-      await commitTab(tabName);
-    }
-
-    if (newTabName === "Feed") {
-      router.push(`/home`);
-    } else {
-      router.push(`/home/${newTabName}`);
-    }
-  }
-
-  function getSpacePageUrl(tabName: string) {
-    if (tabName === "Feed") {
-      return `/home`;
-    }
-    return `/home/${tabName}`;
-  }
-
-  const { editMode } = useSidebarContext();
 
   const tabBar = (
     <TabBar
-      getSpacePageUrl={getSpacePageUrl}
+      getSpacePageUrl={(tab) => `/home/${tab}`}
       inHomebase={true}
-      currentTab={tabName}
+      currentTab={tabName ?? "Feed"}
       tabList={tabOrdering.local}
       switchTabTo={switchTabTo}
       updateTabOrder={updateHomebaseTabOrder}
@@ -123,14 +109,14 @@ const Home: NextPageWithLayout = () => {
       deleteTab={deleteHomebaseTab}
       createTab={createHomebaseTab}
       renameTab={renameHomebaseTab}
+      commitTab={commitHomebaseTab}
       commitTabOrder={commitHomebaseTabOrder}
-      commitTab={commitTab}
     />
   );
 
-  const args = isInitializing
+  const args: SpacePageArgs = isInitializing
     ? {
-        config: homebaseTabConfig ?? undefined,
+        config: undefined,
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
@@ -138,22 +124,24 @@ const Home: NextPageWithLayout = () => {
       }
     : !isLoggedIn
       ? {
-          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+          config:
+            // test whic tab the user is in
+            getTabConfig(tabName || "Feed"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: homebaseTabConfig,
+          config: getTabConfig(tabName || "Feed"),
           saveConfig,
-          // To get types to match since store.commitConfig is debounced
           commitConfig: async () => await commitConfig(),
           resetConfig,
           tabBar: tabBar,
         };
 
-  return <SpacePage {...args} />;
+  // Use the unique key directly in the JSX to trigger re-render
+  return <SpacePage key={tabName ?? "default-tab"} {...args} />;
 };
 
 export default Home;
