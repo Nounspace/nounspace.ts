@@ -75,6 +75,7 @@ export function FidgetWrapper({
     setCurrentFidgetSettings(
       <FidgetSettingsEditor
         fidgetId={bundle.id}
+        fidgetType={bundle.fidgetType}
         properties={bundle.properties}
         settings={settingsWithDefaults}
         onSave={onSave}

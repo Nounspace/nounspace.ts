@@ -4,10 +4,18 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { UpdatableSpaceConfig } from "@/common/data/stores/app/space/spaceStore";
-import { FidgetInstanceData } from "@/common/fidgets";
+import { FidgetInstanceData, FidgetSettings } from "@/common/fidgets";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import { UserTheme } from "@/common/lib/theme";
-import { first, includes, isArray, isNil, isObject, isUndefined } from "lodash";
+import {
+  first,
+  includes,
+  isArray,
+  isNil,
+  isObject,
+  isString,
+  isUndefined,
+} from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 export type SharedContentInfo = {
@@ -30,7 +38,10 @@ type SharedTab = SharedContentBase & {
 
 type SharedFidget = SharedContentBase & {
   type: "fidget";
-  content: FidgetInstanceData;
+  content: {
+    fidgetType: string;
+    settings: FidgetSettings;
+  };
 };
 
 type SharedTheme = SharedContentBase & {
@@ -114,17 +125,28 @@ async function retrieveSharedContent(
       .from("sharedContentRegistrations")
       .select()
       .eq("cid", cid);
-    if (
-      fileData.contentType === "application/json" &&
-      !isNil(fileData.data) &&
-      !isNil(sharingInfo) &&
-      sharingInfo.length > 0
-    ) {
+    if (isNil(fileData.data)) {
+      res.status(500).json({
+        result: "error",
+        error: {
+          message: "Invalid file found for this CID",
+        },
+      });
+      return;
+    }
+    const sharedContent = (
+      fileData.data instanceof Blob
+        ? JSON.parse(await fileData.data.text())
+        : isString(fileData.data)
+          ? JSON.parse(fileData.data)
+          : fileData.data
+    ) as SharedContentDetails;
+    if (!isNil(sharingInfo) && sharingInfo.length > 0) {
       res.status(200).json({
         result: "success",
         value: {
           contentInfo: first(sharingInfo)!,
-          contentDetails: fileData.data as unknown as SharedContentDetails,
+          contentDetails: sharedContent,
         },
       });
       return;
@@ -192,7 +214,7 @@ async function createSharedContent(
   }
 
   try {
-    const ipfsUploadResp = await pinata.upload.json(data.content);
+    const ipfsUploadResp = await pinata.upload.json(data.content, {});
     await supabaseClient.from("sharedContentRegistrations").insert({
       cid: ipfsUploadResp.cid,
       ...data.metadata,

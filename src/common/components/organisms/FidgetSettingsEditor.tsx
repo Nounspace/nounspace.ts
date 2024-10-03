@@ -5,7 +5,11 @@ import {
   FidgetFieldConfig,
 } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
-import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
+import {
+  FaShareNodes,
+  FaTrashCan,
+  FaTriangleExclamation,
+} from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
@@ -23,10 +27,23 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import Modal from "@/common/components/molecules/Modal";
+import Spinner from "../atoms/spinner";
+import axiosBackend from "@/common/data/api/backend";
+import { useAppStore } from "@/common/data/stores/app";
+import { isUndefined } from "lodash";
+import { signSignable } from "@/common/lib/signedFiles";
+import {
+  SharedContentDetails,
+  SharedContentInfo,
+  SharedContentResponse,
+} from "@/pages/api/space/shared";
+import moment from "moment";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
   readonly properties: FidgetProperties;
+  readonly fidgetType: string;
   settings: FidgetSettings;
   onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
   unselect: () => void;
@@ -127,12 +144,18 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   fidgetId,
   properties,
   settings,
+  fidgetType,
   onSave,
   unselect,
   removeFidget,
 }) => {
+  const { getIdentity } = useAppStore((s) => ({
+    getIdentity: s.account.getCurrentIdentity,
+  }));
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
+  const [sharedURL, setSharedUrl] = useState<string>();
 
   useEffect(() => {
     setState(settings);
@@ -144,6 +167,52 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     analytics.track(AnalyticsEvent.EDIT_FIDGET, {
       fidgetType: properties.fidgetName,
     });
+  };
+
+  const openShareModal = async () => {
+    const identity = getIdentity();
+    setShowShareModal(true);
+    if (isUndefined(identity)) {
+      setSharedUrl("NOT LOGGED IN");
+    } else {
+      const unsignedPostDetails: Omit<SharedContentInfo, "signature" | "cid"> =
+        {
+          publicKey: identity.rootKeys.publicKey,
+          name: "",
+          timestamp: moment().toISOString(),
+        };
+      const unsignedFidgetData: Omit<SharedContentDetails, "signature"> = {
+        type: "fidget",
+        content: {
+          settings,
+          fidgetType,
+        },
+        author: identity.rootKeys.publicKey,
+      };
+      try {
+        const resp = await axiosBackend.post<SharedContentResponse>(
+          "/api/space/shared/",
+          {
+            metadata: signSignable(
+              unsignedPostDetails,
+              identity.rootKeys.privateKey,
+            ),
+            content: signSignable(
+              unsignedFidgetData,
+              identity.rootKeys.privateKey,
+            ),
+          },
+        );
+        const cid = resp.data.value?.contentInfo.cid;
+        setSharedUrl(
+          cid
+            ? `https://nounspace.com/share/${cid}`
+            : "Error occurred, no CID returned",
+        );
+      } catch (e) {
+        setSharedUrl("Failed to create sharable link");
+      }
+    }
   };
 
   // 'keypress' event misbehaves on mobile so we track 'Enter' key via 'keydown' event
@@ -161,120 +230,134 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   );
 
   return (
-    <form
-      onSubmit={_onSave}
-      className="flex-col flex h-full"
-      // onKeyDown={onKeyDown}
-    >
-      <div className="h-full overflow-auto">
-        <div className="flex pb-4 m-2">
-          <button onClick={unselect} className="my-auto">
-            <BackArrowIcon />
-          </button>
-          <h1 className="capitalize text-lg pl-4">
-            Edit {properties.fidgetName} Fidget
-          </h1>
-        </div>
-        <div className="gap-3 flex flex-col">
-          <Tabs defaultValue="settings">
-            <TabsList className={tabListClasses}>
-              <TabsTrigger value="settings" className={tabTriggerClasses}>
-                Settings
-              </TabsTrigger>
-              {groupedFields.style.length > 0 && (
-                <TabsTrigger value="style" className={tabTriggerClasses}>
-                  Style
+    <>
+      <Modal open={showShareModal} setOpen={setShowShareModal}>
+        {sharedURL ? sharedURL : <Spinner />}
+      </Modal>
+      <form
+        onSubmit={_onSave}
+        className="flex-col flex h-full"
+        // onKeyDown={onKeyDown}
+      >
+        <div className="h-full overflow-auto">
+          <div className="flex pb-4 m-2">
+            <button onClick={unselect} className="my-auto">
+              <BackArrowIcon />
+            </button>
+            <h1 className="capitalize text-lg pl-4">
+              Edit {properties.fidgetName} Fidget
+            </h1>
+          </div>
+          <div className="gap-3 flex flex-col">
+            <Tabs defaultValue="settings">
+              <TabsList className={tabListClasses}>
+                <TabsTrigger value="settings" className={tabTriggerClasses}>
+                  Settings
                 </TabsTrigger>
+                {groupedFields.style.length > 0 && (
+                  <TabsTrigger value="style" className={tabTriggerClasses}>
+                    Style
+                  </TabsTrigger>
+                )}
+                {groupedFields.code.length > 0 && (
+                  <TabsTrigger value="code" className={tabTriggerClasses}>
+                    Code
+                  </TabsTrigger>
+                )}
+              </TabsList>
+              <TabsContent value="settings" className={tabContentClasses}>
+                <FidgetSettingsGroup
+                  fidgetId={fidgetId}
+                  fields={groupedFields.settings}
+                  state={state}
+                  setState={setState}
+                  onSave={onSave}
+                />
+              </TabsContent>
+              {groupedFields.style.length > 0 && (
+                <TabsContent value="style" className={tabContentClasses}>
+                  <FidgetSettingsGroup
+                    fidgetId={fidgetId}
+                    fields={groupedFields.style}
+                    state={state}
+                    setState={setState}
+                    onSave={onSave}
+                  />
+                </TabsContent>
               )}
               {groupedFields.code.length > 0 && (
-                <TabsTrigger value="code" className={tabTriggerClasses}>
-                  Code
-                </TabsTrigger>
+                <TabsContent value="code" className={tabContentClasses}>
+                  <FidgetSettingsGroup
+                    fidgetId={fidgetId}
+                    fields={groupedFields.code}
+                    state={state}
+                    setState={setState}
+                    onSave={onSave}
+                  />
+                </TabsContent>
               )}
-            </TabsList>
-            <TabsContent value="settings" className={tabContentClasses}>
-              <FidgetSettingsGroup
-                fidgetId={fidgetId}
-                fields={groupedFields.settings}
-                state={state}
-                setState={setState}
-                onSave={onSave}
-              />
-            </TabsContent>
-            {groupedFields.style.length > 0 && (
-              <TabsContent value="style" className={tabContentClasses}>
-                <FidgetSettingsGroup
-                  fidgetId={fidgetId}
-                  fields={groupedFields.style}
-                  state={state}
-                  setState={setState}
-                  onSave={onSave}
-                />
-              </TabsContent>
-            )}
-            {groupedFields.code.length > 0 && (
-              <TabsContent value="code" className={tabContentClasses}>
-                <FidgetSettingsGroup
-                  fidgetId={fidgetId}
-                  fields={groupedFields.code}
-                  state={state}
-                  setState={setState}
-                  onSave={onSave}
-                />
-              </TabsContent>
-            )}
-          </Tabs>
+            </Tabs>
+          </div>
         </div>
-      </div>
 
-      <div className="shrink-0 flex flex-col gap-3 pb-8">
-        {showConfirmCancel ? (
-          // Back Button and Exit Button (shows second)
-          <>
-            <div className="pt-2 flex gap-2 items-center justify-center">
+        <div className="shrink-0 flex flex-col gap-3 pb-8">
+          {showConfirmCancel ? (
+            // Back Button and Exit Button (shows second)
+            <>
+              <div className="pt-2 flex gap-2 items-center justify-center">
+                <Button
+                  type="button"
+                  onClick={() => setShowConfirmCancel(false)}
+                  size="icon"
+                  variant="secondary"
+                >
+                  <BackArrowIcon />
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    removeFidget(fidgetId);
+                  }}
+                  variant="destructive"
+                  width="auto"
+                >
+                  <FaTriangleExclamation
+                    className="h-8l shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="ml-4 mr-4">Delete</span>
+                </Button>
+              </div>
+            </>
+          ) : (
+            // X Button and Save Button (shows first)
+            <div className="pt-2 gap-2 flex items-center justify-center">
               <Button
                 type="button"
-                onClick={() => setShowConfirmCancel(false)}
+                onClick={() => setShowConfirmCancel(true)}
                 size="icon"
                 variant="secondary"
               >
-                <BackArrowIcon />
+                <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
               </Button>
+
               <Button
                 type="button"
-                onClick={() => {
-                  removeFidget(fidgetId);
-                }}
-                variant="destructive"
-                width="auto"
+                onClick={() => openShareModal()}
+                size="icon"
+                variant="secondary"
               >
-                <FaTriangleExclamation
-                  className="h-8l shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="ml-4 mr-4">Delete</span>
+                <FaShareNodes className="h-8l shrink-0" aria-hidden="true" />
+              </Button>
+
+              <Button type="submit" variant="primary" width="auto">
+                <div className="flex items-center">Done</div>
               </Button>
             </div>
-          </>
-        ) : (
-          // X Button and Save Button (shows first)
-          <div className="pt-2 gap-2 flex items-center justify-center">
-            <Button
-              type="button"
-              onClick={() => setShowConfirmCancel(true)}
-              size="icon"
-              variant="secondary"
-            >
-              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
-            </Button>
-
-            <Button type="submit" variant="primary" width="auto">
-              <div className="flex items-center">Done</div>
-            </Button>
-          </div>
-        )}
-      </div>
-    </form>
+          )}
+        </div>
+      </form>
+    </>
   );
 };
 
