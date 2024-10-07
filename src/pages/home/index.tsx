@@ -8,18 +8,21 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import { isString } from "lodash";
 import {
-  TAB1_HOMEBASE_CONFIG,
-  TAB2_HOMEBASE_CONFIG,
-} from "@/constants/tab1Homebaseconfig";
+  FIDGETS_TAB_HOMEBASE_CONFIG,
+  PRESS_TAB_HOME_CONFIG,
+  NOUNS_TAB_HOMEBASE_CONFIG,
+} from "@/constants/initialHomebaseTabsConfig";
 
 // Enhanced logging to trace configuration logic
 const getTabConfig = (tabName: string) => {
   console.log(`getTabConfig called with tabName: ${tabName}`);
   switch (tabName) {
-    case "Step1":
-      return TAB1_HOMEBASE_CONFIG;
-    case "Step2":
-      return TAB2_HOMEBASE_CONFIG;
+    case "Fidgets":
+      return FIDGETS_TAB_HOMEBASE_CONFIG;
+    case "Nouns":
+      return NOUNS_TAB_HOMEBASE_CONFIG;
+    case "Press":
+      return PRESS_TAB_HOME_CONFIG;
     default:
       return USER_NOT_LOGGED_IN_HOMEBASE_CONFIG;
   }
@@ -66,10 +69,15 @@ const Home: NextPageWithLayout = () => {
 
   // Local state to manage current tab name and ordering
   const [tabOrdering, setTabOrdering] = useState({
-    local: ["Step1", "Step2", "Step3"],
+    local: ["Fidgets", "Nouns", "Press"],
   });
   const [tabName, setTabName] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    if (isLoggedIn && tabName === undefined) {
+      router.push("/homebase");
+    }
+  }, [isLoggedIn, tabName]);
   // Monitor router changes and update tab name accordingly
   useEffect(() => {
     if (router.isReady && isString(router.query.tabname)) {
@@ -100,8 +108,9 @@ const Home: NextPageWithLayout = () => {
   const tabBar = (
     <TabBar
       getSpacePageUrl={(tab) => `/home/${tab}`}
-      inHomebase={true}
-      currentTab={tabName ?? "Feed"}
+      inHome={true}
+      inHomebase={false}
+      currentTab={tabName ?? "Welcome"}
       tabList={tabOrdering.local}
       switchTabTo={switchTabTo}
       updateTabOrder={updateHomebaseTabOrder}
@@ -126,14 +135,14 @@ const Home: NextPageWithLayout = () => {
       ? {
           config:
             // test whic tab the user is in
-            getTabConfig(tabName || "Feed"),
+            getTabConfig(tabName || "welcome"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName || "Feed"),
+          config: getTabConfig(tabName || "welcome"),
           saveConfig,
           commitConfig: async () => await commitConfig(),
           resetConfig,
@@ -141,7 +150,7 @@ const Home: NextPageWithLayout = () => {
         };
 
   // Use the unique key directly in the JSX to trigger re-render
-  return <SpacePage key={tabName ?? "default-tab"} {...args} />;
+  return <SpacePage key={tabName ?? "welcome"} {...args} />;
 };
 
 export default Home;

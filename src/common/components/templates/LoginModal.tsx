@@ -6,6 +6,7 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
+import { useRouter } from "next/router";
 
 const LoginModal = ({
   open,
@@ -23,6 +24,7 @@ const LoginModal = ({
   }));
 
   const { authenticated, ready } = usePrivy();
+  const router = useRouter();
   const { login } = useLogin({
     onComplete: (_user, isNewUser, wasAlreadyAuthenticated) => {
       if (!wasAlreadyAuthenticated) {
@@ -48,6 +50,7 @@ const LoginModal = ({
       open
     ) {
       login();
+      router.push("/homebase");
     }
   }, [currentStep, open, ready, authenticated]);
 
