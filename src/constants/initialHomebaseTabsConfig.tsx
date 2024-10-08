@@ -384,14 +384,14 @@ export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
           background: "rgba(70, 69, 69, 0.27)",
           css: "",
           fidgetBorderColor: "rgb(159, 111, 206)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+          fidgetBorderWidth: "2px",
           fidgetShadow: "0 4px 8px rgba(0,0,0,0.25)",
           fontColor: "rgb(221, 221, 221)",
           fontFamily: "'__Inter_36bd41', '__Inter_Fallback_36bd41'",
           headingsFontColor: "rgb(228, 228, 228)",
           headingsFontFamily:
             "'__Trispace_3014ec', '__Trispace_Fallback_3014ec'",
-          text: "Did you ever wish you could do more on social than post, like, and comment? Fidgets make this possible. In fact, Fidgets make anything possible. Arrange and configure a growing library of Fidgets on your social profile (your Space) or your homebase to seamlessly bridge the vast digital universe into social, and social into to digital universe. \n\nLearn more about each Fidget from the Fidget on the right 👉\n\nJoin the Discord to get early access to the  Fidget SDK\n\nCheck out a few examples of Fidgets below 📺  ⏹️  🌐 🛰️ 🏛️",
+          text: "Did you ever wish you could do more on social than post, like, and comment? Fidgets make this possible. In fact, Fidgets make anything possible. Arrange and configure a growing library of Fidgets on your social profile (your Space) or your homebase to seamlessly bridge the vast digital universe into social, and social into to digital universe. \n\nLearn more about each Fidget from the Fidget on the right 👉\n\nJoin the [Discord](https://discord.gg/eYQeXU2WuH) to get early access to the  Fidget SDK\n\nCheck out a few examples of Fidgets below 📺  ⏹️  🌐 🛰️ 🏛️",
           title: "Fidgets are customizable fun-sized apps",
           urlColor: "rgb(40, 206, 246)",
         },
@@ -497,7 +497,7 @@ export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
           background: "rgba(65, 64, 64, 0.15)",
           css: "",
           fidgetBorderColor: "rgb(62, 153, 245)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+          fidgetBorderWidth: "2px",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
           headingsFontFamily: "Londrina Solid",
           itemBackground: "rgba(75, 82, 88, 0)",
@@ -1068,7 +1068,7 @@ export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
           background: "var(--user-theme-fidget-background)",
           fidgetBorderColor: "rgba(255, 109, 109, 1)",
           fidgetBorderWidth: "2px",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
+          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
           selectedDao: {
             contract: "",
             graphUrl:
@@ -1113,19 +1113,19 @@ export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
       fidgetType: "iframe",
       id: "iframe:ede8bb6b-7f84-41fe-97ce-51aa96711f15",
     },
-    "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "var(--user-theme-fidget-background)",
-          text: "Jot down your ideas and grow them.",
-          title: "Text Fidget",
-        },
-      },
-      fidgetType: "text",
-      id: "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e",
-    },
+    // "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e": {
+    //   config: {
+    //     data: {},
+    //     editable: true,
+    //     settings: {
+    //       background: "var(--user-theme-fidget-background)",
+    //       text: "Jot down your ideas and grow them.",
+    //       title: "Text Fidget",
+    //     },
+    //   },
+    //   fidgetType: "text",
+    //   id: "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e",
+    // },
   },
   isEditable: true,
   fidgetTrayContents: [],

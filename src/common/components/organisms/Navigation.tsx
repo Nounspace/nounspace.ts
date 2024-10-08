@@ -64,6 +64,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
 
+  function handleLogout() {
+    logout();
+    router.push("/home");
+  }
+
   function turnOnEditMode() {
     enterEditMode();
   }
@@ -233,7 +238,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   <NavButton
                     label={"Logout"}
                     Icon={LogoutIcon}
-                    onClick={logout}
+                    onClick={handleLogout}
                   />
                 )}
                 {!isLoggedIn && (
