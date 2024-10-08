@@ -21,6 +21,7 @@ import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { Badge } from "@/common/components/atoms/badge";
+import { usePathname } from "next/navigation";
 
 type NavItemProps = {
   label: string;
@@ -63,6 +64,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
+  const pathname = usePathname();
+  const isNotificationsPage = pathname === "/notifications";
+  const isExplorerPage = pathname === "/explore";
 
   function turnOnEditMode() {
     enterEditMode();
@@ -254,7 +258,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
-                {isEditable && (
+                {!isNotificationsPage && !isExplorerPage && isEditable && (
                   <Button
                     onClick={turnOnEditMode}
                     size="icon"
