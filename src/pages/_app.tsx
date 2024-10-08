@@ -31,6 +31,10 @@ const sidebarLayout = (page: React.ReactElement) => {
   );
 };
 
+// TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
+// And a public key. If valid, we can prerender as if it is that user signed in
+// This will allow us to prerender some logged in state since we will know what user it is
+
 export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   // Use the layout defined at the page level, if available
   const getLayout = Component.getLayout ?? sidebarLayout;

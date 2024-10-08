@@ -14,36 +14,37 @@ import {
 import {
   cloneDeep,
   debounce,
+  filter,
   fromPairs,
   isArray,
+  isNil,
   isUndefined,
   map,
   mergeWith,
 } from "lodash";
-import {
-  NameChangeRequest,
-  UpdateSpaceResponse,
-} from "@/pages/api/space/registry/[spaceId]";
 import moment from "moment";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import stringify from "fast-json-stable-stringify";
 import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
+import createIntialPersonSpaceConfigForFid, {
+  INITIAL_SPACE_CONFIG_EMPTY,
+} from "@/constants/initialPersonSpace";
+import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
 import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+  RegisterNewSpaceTabResponse,
+  UnsignedSpaceTabRegistration,
+} from "@/pages/api/space/registry/[spaceId]/tabs";
 import {
-  UnsignedUpdateSpaceOrderRequest,
-  UpdateSpaceOrderResponse,
-} from "@/pages/api/space/spaceOrder";
+  UnsignedUpdateTabOrderRequest,
+  UpdateTabOrderRequest,
+} from "@/pages/api/space/registry/[spaceId]";
 
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
 // But a space that is saved in the DB doesn't store
-// Fidget data or editablity
+// Fidget data or editability
 // So we rebuild the details, but without those fields
 export type DatabaseWritableSpaceConfig = Omit<
   SpaceConfig,
@@ -78,21 +79,23 @@ export type UpdatableSpaceConfig = DatabaseWritableSpaceConfig & {
 interface CachedSpace {
   // Machine generated ID, immutable
   id: SpaceId;
-  config: UpdatableSpaceConfig;
   updatedAt: string;
+  tabs: {
+    [tabName: string]: UpdatableSpaceConfig;
+  };
+  order: string[];
+}
+
+interface LocalSpace extends CachedSpace {
+  changedNames: {
+    [newName: string]: string;
+  };
 }
 
 interface SpaceState {
   remoteSpaces: Record<string, CachedSpace>;
   editableSpaces: Record<SpaceId, string>;
-  localSpaces: Record<string, UpdatableSpaceConfig>;
-  spaceLookups: Record<
-    number,
-    {
-      local: SpaceLookupInfo[];
-      remote: SpaceLookupInfo[];
-    }
-  >;
+  localSpaces: Record<string, LocalSpace>;
 }
 
 export interface SpaceLookupInfo {
@@ -101,121 +104,228 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
-  loadSpaceOrderForFid: (fid: number) => Promise<SpaceLookupInfo[]>;
-  updateLocalSpaceOrdering: (
-    fid: number,
-    newOrder: SpaceLookupInfo[],
-    commit?: boolean,
-  ) => void;
-  commitSpaceOrderToDatabase: (fid: number) => Promise<void> | undefined;
-  loadSpace: (spaceId: string, fid: number) => Promise<void>;
-  registerSpace: (fid: number, name: string) => Promise<string | undefined>;
-  renameSpace: (spaceId: string, name: string) => Promise<void>;
-  loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
-  commitSpaceToDatabase: (spaceId: string) => Promise<void> | undefined;
-  saveLocalSpace: (
+  commitSpaceTabToDatabase: (
     spaceId: string,
+    tabName: string,
+  ) => Promise<void> | undefined;
+  saveLocalSpaceTab: (
+    spaceId: string,
+    tabName: string,
     config: UpdatableDatabaseWritableSpaceSaveConfig,
+    newName?: string,
   ) => Promise<void>;
+  loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
+  loadSpaceTabOrder: (spaceId: string) => Promise<void>;
+  loadSpaceTab: (
+    spaceId: string,
+    tabName: string,
+    fid?: number,
+  ) => Promise<void>;
+  deleteSpaceTab: (
+    spaceId: string,
+    tabName: string,
+  ) => Promise<void> | undefined;
+  createSpaceTab: (
+    spaceId: string,
+    tabName: string,
+    initialConfig?: Omit<SpaceConfig, "isEditable">,
+  ) => Promise<void> | undefined;
+  updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
+  commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
+  registerSpace: (fid: number, name: string) => Promise<string | undefined>;
   clear: () => void;
 }
 
 export type SpaceStore = SpaceState & SpaceActions;
 
-export const spaceStoreDefaults: SpaceState = {
+export const spaceStoreprofiles: SpaceState = {
   remoteSpaces: {},
   editableSpaces: {},
   localSpaces: {},
-  spaceLookups: {},
 };
 
 export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
-  ...spaceStoreDefaults,
-  async loadSpaceOrderForFid(fid) {
-    try {
-      const { data } = await axiosBackend.get<UpdateSpaceOrderResponse>(
-        `/api/space/spaceOrder`,
-        { params: { fid } },
+  ...spaceStoreprofiles,
+  commitSpaceTabToDatabase: debounce(
+    async (spaceId: string, tabName: string) => {
+      const localCopy = cloneDeep(
+        get().space.localSpaces[spaceId].tabs[tabName],
       );
-      if (data && data.result === "success") {
-        set((draft) => {
-          draft.space.spaceLookups[fid] = {
-            local: cloneDeep(data.value || []),
-            remote: cloneDeep(data.value || []),
-          };
-        }, "commitSpaceOrderToDatabase");
-        return data.value || [];
-      } else {
-        set((draft) => {
-          draft.space.spaceLookups[fid] = {
-            local: [],
-            remote: [],
-          };
-        }, "commitSpaceOrderToDatabase");
+      const oldTabName =
+        get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
+      if (localCopy) {
+        const file = await get().account.createSignedFile(
+          stringify(localCopy),
+          "json",
+          { fileName: tabName },
+        );
+        try {
+          await axiosBackend.post(
+            `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
+            file,
+          );
+          set((draft) => {
+            draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
+            delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
+            delete draft.space.localSpaces[spaceId].changedNames[tabName];
+          }, "commitSpaceTabToDatabase");
+        } catch (e) {
+          console.error(e);
+          throw e;
+        }
       }
-      return [];
-    } catch (e) {
-      console.error(e);
-      set((draft) => {
-        draft.space.spaceLookups[fid] = {
-          local: [],
-          remote: [],
-        };
-      }, "commitSpaceOrderToDatabase");
-      return [];
-    }
-  },
-  updateLocalSpaceOrdering(fid, newOrder, commit = false) {
-    if (isUndefined(get().space.spaceLookups[fid])) {
-      set((draft) => {
-        draft.space.spaceLookups[fid] = {
-          local: [],
-          remote: [],
-        };
-      }, "initializeLocalSpaceOrdering");
-    }
+    },
+    1000,
+  ),
+  saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
+    const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+    mergeWith(localCopy, config, (_, newItem) => {
+      if (isArray(newItem)) return newItem;
+    });
     set((draft) => {
-      draft.space.spaceLookups[fid].local = newOrder;
-    }, "updateLocalSpaceOrdering");
-    if (commit) {
-      get().space.commitSpaceOrderToDatabase(fid);
-    }
+      if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
+        draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
+        draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
+        delete draft.space.localSpaces[spaceId].tabs[tabName];
+      } else {
+        draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
+      }
+      const newTimestamp = moment().toISOString();
+      draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+      console.log(
+        `Updated local space ${spaceId} timestamp to ${newTimestamp}`,
+      );
+    }, "saveLocalSpaceTab");
   },
-  commitSpaceOrderToDatabase: debounce(async (fid) => {
-    const unsignedRequest: UnsignedUpdateSpaceOrderRequest = {
+  deleteSpaceTab: debounce(async (spaceId, tabName) => {
+    // This deletes locally and remotely at the same time
+    // We can separate these out, but I think deleting feels better as a single decisive action
+    const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
+      publicKey: get().account.currentSpaceIdentityPublicKey!,
       timestamp: moment().toISOString(),
-      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-      ordering: map(get().space.spaceLookups[fid].local, (i) => i.spaceId),
-      fid,
+      spaceId,
+      tabName,
     };
     const signedRequest = signSignable(
-      unsignedRequest,
+      unsignedDeleteTabRequest,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
-      const { data } = await axiosBackend.post<UpdateSpaceOrderResponse>(
-        `/api/space/spaceOrder`,
-        signedRequest,
+      await axiosBackend.delete(
+        `/api/space/registry/${spaceId}/tabs/${tabName}`,
+        { data: signedRequest },
       );
-      if (data && data.result === "success") {
-        set((draft) => {
-          draft.space.spaceLookups[fid].remote = data.value!;
-        }, "commitSpaceOrderToDatabase");
-      }
+      set((draft) => {
+        delete draft.space.localSpaces[spaceId].tabs[tabName];
+        delete draft.space.remoteSpaces[spaceId].tabs[tabName];
+        draft.space.localSpaces[spaceId].order = filter(
+          draft.space.localSpaces[spaceId].order,
+          (x) => x !== tabName,
+        );
+        draft.space.remoteSpaces[spaceId].order = filter(
+          draft.space.localSpaces[spaceId].order,
+          (x) => x !== tabName,
+        );
+      }, "deleteSpaceTab");
+      return get().space.commitSpaceOrderToDatabase(spaceId);
     } catch (e) {
       console.error(e);
     }
   }, 1000),
-  loadSpace: async (spaceId, fid) => {
-    // TO DO: skip if cached copy is recent enough
+  createSpaceTab: debounce(
+    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY) => {
+      const unsignedRequest: UnsignedSpaceTabRegistration = {
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+        timestamp: moment().toISOString(),
+        spaceId,
+        tabName,
+      };
+      const signedRequest = signSignable(
+        unsignedRequest,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
+      );
+      try {
+        await axiosBackend.post<RegisterNewSpaceTabResponse>(
+          `/api/space/registry/${spaceId}/tabs`,
+          signedRequest,
+        );
+        set((draft) => {
+          if (isUndefined(draft.space.localSpaces[spaceId])) {
+            draft.space.localSpaces[spaceId] = {
+              tabs: {},
+              order: [],
+              updatedAt: moment().toISOString(),
+              changedNames: {},
+              id: spaceId,
+            };
+          }
+
+          draft.space.localSpaces[spaceId].tabs[tabName] = {
+            ...cloneDeep(initialConfig),
+            isPrivate: false,
+          };
+          draft.space.localSpaces[spaceId].order.push(tabName);
+        }, "createSpaceTab");
+        return get().space.commitSpaceOrderToDatabase(spaceId);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    1000,
+  ),
+  updateLocalSpaceOrder: async (spaceId, newOrder) => {
+    set((draft) => {
+      draft.space.localSpaces[spaceId].order = newOrder;
+    });
+  },
+  commitSpaceOrderToDatabase: debounce(async (spaceId) => {
+    const unsignedReq: UnsignedUpdateTabOrderRequest = {
+      spaceId,
+      tabOrder: get().space.localSpaces[spaceId].order,
+      publicKey: get().account.currentSpaceIdentityPublicKey!,
+      timestamp: moment().toISOString(),
+    };
+    const signedRequest = signSignable(
+      unsignedReq,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
     try {
-      const supabase = createClient();
+      await axiosBackend.post<RegisterNewSpaceTabResponse>(
+        `/api/space/registry/${spaceId}`,
+        signedRequest,
+      );
+      set((draft) => {
+        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment(0).toISOString(),
+            id: spaceId,
+          };
+        }
+
+        draft.space.remoteSpaces[spaceId].order = cloneDeep(
+          get().space.localSpaces[spaceId].order,
+        );
+      }, "commitSpaceOrderToDatabase");
+    } catch (e) {
+      console.error(e);
+    }
+  }, 1000),
+  loadSpaceTab: async (spaceId, tabName, fid) => {
+    const supabase = createClient();
+    try {
+      // Fetch the public URL for the space tab file
       const {
         data: { publicUrl },
-      } = await supabase.storage.from("spaces").getPublicUrl(spaceId);
+      } = await supabase.storage
+        .from("spaces")
+        .getPublicUrl(`${spaceId}/tabs/${tabName}`);
+
+      // Download the file content, ensuring no caching
       const { data } = await axios.get<Blob>(publicUrl, {
         responseType: "blob",
         headers: {
@@ -224,49 +334,182 @@ export const createSpaceStoreFunc = (
           Expires: "0",
         },
       });
+
+      // Parse the file data and decrypt it
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const spaceConfig = JSON.parse(
+      const remoteSpaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
-      const currentLocalCopy = get().space.localSpaces[spaceId];
-      if (
-        (spaceConfig &&
-          spaceConfig.timestamp &&
-          currentLocalCopy &&
-          currentLocalCopy.timestamp &&
-          moment(currentLocalCopy.timestamp).isAfter(
-            moment(spaceConfig.timestamp),
-          )) ||
-        (spaceConfig &&
-          isUndefined(spaceConfig.timestamp) &&
-          currentLocalCopy &&
-          currentLocalCopy.timestamp)
-      ) {
-        console.debug(`local copy of space ${spaceId} config is more recent`);
-        return;
-      }
-      const updatableSpaceConfig = {
-        ...spaceConfig,
+
+      // Prepare the remote space config for updating, including privacy status
+      const remoteUpdatableSpaceConfig = {
+        ...remoteSpaceConfig,
         isPrivate: fileData.isEncrypted,
       };
-      const cachedSpace: CachedSpace = {
-        id: spaceId,
-        config: cloneDeep(updatableSpaceConfig),
-        updatedAt: moment().toISOString(),
-      };
+
       set((draft) => {
-        draft.space.remoteSpaces[spaceId] = cachedSpace;
-        draft.space.localSpaces[spaceId] = cloneDeep(updatableSpaceConfig);
-      }, "loadSpace");
+        // Initialize local and remote spaces if they don't exist
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+          draft.space.remoteSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment().toISOString(),
+            id: spaceId,
+          };
+        }
+
+        const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
+        const remoteTab = draft.space.remoteSpaces[spaceId].tabs[tabName];
+
+        // Compare timestamps if local tab exists
+        if (localTab) {
+          const localTimestamp = moment(localTab.timestamp);
+          const remoteTimestamp = moment(remoteUpdatableSpaceConfig.timestamp);
+
+          console.log(
+            `Local timestamp for ${spaceId}/${tabName}: ${localTimestamp.toISOString()}`,
+          );
+          console.log(
+            `Remote timestamp for ${spaceId}/${tabName}: ${remoteTimestamp.toISOString()}`,
+          );
+
+          if (remoteTimestamp.isAfter(localTimestamp)) {
+            // Remote is newer, update both local and remote
+            draft.space.remoteSpaces[spaceId].tabs[tabName] =
+              remoteUpdatableSpaceConfig;
+            draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
+              remoteUpdatableSpaceConfig,
+            );
+            console.log(`Updated ${spaceId}/${tabName} with newer remote data`);
+          } else {
+            // Local is newer or same age, keep local data
+            console.log(
+              `Kept local data for ${spaceId}/${tabName}, updated remote to match`,
+            );
+            draft.space.remoteSpaces[spaceId].tabs[tabName] =
+              cloneDeep(localTab);
+          }
+        } else {
+          // No local tab, create it with remote data
+          draft.space.remoteSpaces[spaceId].tabs[tabName] =
+            remoteUpdatableSpaceConfig;
+          draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
+            remoteUpdatableSpaceConfig,
+          );
+          console.log(
+            `Created local tab ${spaceId}/${tabName} with remote data`,
+          );
+        }
+
+        // Update timestamps
+        const newTimestamp = moment().toISOString();
+        draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
+        draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+
+        console.log(`Loaded remote space tab ${spaceId}/${tabName}`);
+      }, "loadSpaceTab");
     } catch (e) {
-      const initialHomebase = {
-        ...createIntialPersonSpaceConfigForFid(fid),
-        isPrivate: false,
-      };
-      set((draft) => {
-        draft.space.localSpaces[spaceId] = cloneDeep(initialHomebase);
-      }, "loadSpace");
+      console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
+    }
+  },
+  loadSpaceTabOrder: async (spaceId: string) => {
+    try {
+      // Fetch the remote tab order data
+      const supabase = createClient();
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+        .from("spaces")
+        .getPublicUrl(`${spaceId}/tabOrder`);
+      const { data } = await axios.get<Blob>(publicUrl, {
+        responseType: "blob",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
+      const tabOrderReq = JSON.parse(
+        await data.text(),
+      ) as UpdateTabOrderRequest;
+
+      // Compare local and remote timestamps
+      const localSpace = get().space.localSpaces[spaceId];
+      const remoteTimestamp = moment(tabOrderReq.timestamp);
+      const localTimestamp = localSpace
+        ? moment(localSpace.updatedAt)
+        : moment(0);
+
+      console.log(
+        `Space ${spaceId} - Remote timestamp: ${remoteTimestamp.toISOString()}`,
+      );
+      console.log(
+        `Space ${spaceId} - Local timestamp: ${localTimestamp.toISOString()}`,
+      );
+
+      if (remoteTimestamp.isAfter(localTimestamp)) {
+        // Remote data is newer, update the store
+        set((draft) => {
+          // Initialize local space if it doesn't exist
+          if (isUndefined(draft.space.localSpaces[spaceId])) {
+            draft.space.localSpaces[spaceId] = {
+              tabs: {},
+              order: [],
+              updatedAt: remoteTimestamp.toISOString(),
+              changedNames: {},
+              id: spaceId,
+            };
+          }
+          // Initialize remote space if it doesn't exist
+          if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+            draft.space.remoteSpaces[spaceId] = {
+              tabs: {},
+              order: [],
+              updatedAt: remoteTimestamp.toISOString(),
+              id: spaceId,
+            };
+          }
+
+          // Update both local and remote spaces with new tab order
+          draft.space.localSpaces[spaceId].order = tabOrderReq.tabOrder;
+          draft.space.localSpaces[spaceId].updatedAt =
+            remoteTimestamp.toISOString();
+          draft.space.remoteSpaces[spaceId].order = tabOrderReq.tabOrder;
+          draft.space.remoteSpaces[spaceId].updatedAt =
+            remoteTimestamp.toISOString();
+          console.log(`Updating local space ${spaceId} with remote data`);
+        }, "loadSpaceInfo");
+      } else {
+        // Local data is newer or same age, keep local data
+        console.log(
+          `Local copy of space ${spaceId} tab order is more recent. Local: ${localTimestamp.toISOString()}, Remote: ${remoteTimestamp.toISOString()}`,
+        );
+      }
+    } catch (e) {
+      // Error handling: create default local space if needed
       console.debug(e);
+      set((draft) => {
+        if (isUndefined(draft.space.localSpaces[spaceId])) {
+          draft.space.localSpaces[spaceId] = {
+            tabs: {},
+            order: [],
+            updatedAt: moment(0).toISOString(),
+            changedNames: {},
+            id: spaceId,
+          };
+        }
+        draft.space.localSpaces[spaceId].order = ["Profile"];
+        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
+      }, "loadSpaceInfoProfile");
     }
   },
   registerSpace: async (fid, name) => {
@@ -280,7 +523,7 @@ export const createSpaceStoreFunc = (
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
-    // TO DO: Error handling
+    // TODO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
@@ -290,36 +533,14 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Profile",
+        createIntialPersonSpaceConfigForFid(fid),
+      );
       return newSpaceId;
     } catch (e) {
       null;
-    }
-  },
-  renameSpace: async (spaceId: string, name: string) => {
-    try {
-      const unsignedNameRequest: Omit<NameChangeRequest, "signature"> = {
-        newName: name,
-        publicKey: get().account.currentSpaceIdentityPublicKey!,
-        timestamp: moment().toISOString(),
-      };
-      const signedNameRequest = signSignable(
-        unsignedNameRequest,
-        get().account.getCurrentIdentity()!.rootKeys.privateKey,
-      );
-      const { data } = await axiosBackend.post<UpdateSpaceResponse>(
-        `/api/space/registry/${spaceId}`,
-        {
-          name: signedNameRequest,
-        },
-      );
-      if (!isUndefined(data.value) && data.value.name) {
-        set((draft) => {
-          draft.space.editableSpaces[spaceId] = data.value!.name;
-        }, "renameSpace");
-      }
-    } catch (e) {
-      console.error(e);
-      throw new Error("Failed to rename space");
     }
   },
   loadEditableSpaces: async () => {
@@ -347,48 +568,6 @@ export const createSpaceStoreFunc = (
       return {};
     }
   },
-  commitSpaceToDatabase: debounce(async (spaceId) => {
-    const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
-    if (localCopy) {
-      const file = localCopy.isPrivate
-        ? await get().account.createEncryptedSignedFile(
-            stringify({
-              ...localCopy,
-              isPrivate: undefined,
-            }),
-            "json",
-            { useRootKey: true },
-          )
-        : await get().account.createSignedFile(
-            stringify({ ...localCopy, isPrivate: undefined }),
-            "json",
-          );
-      // TO DO: Error handling
-      await axiosBackend.post(`/api/space/registry/${spaceId}`, {
-        spaceConfig: file,
-      });
-
-      analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
-
-      set((draft) => {
-        draft.space.remoteSpaces[spaceId] = {
-          id: spaceId,
-          config: localCopy,
-          updatedAt: moment().toISOString(),
-        };
-      }, "commitSpaceToDatabase");
-    }
-  }, 1000),
-  saveLocalSpace: async (spaceId, changedConfig) => {
-    const localCopy = cloneDeep(get().space.localSpaces[spaceId]);
-    mergeWith(localCopy, changedConfig, (_, newItem) => {
-      if (isArray(newItem)) return newItem;
-    });
-    localCopy.timestamp = moment().toISOString();
-    set((draft) => {
-      draft.space.localSpaces[spaceId] = localCopy;
-    }, "saveLocalSpace");
-  },
   clear: () => {
     set(
       (draft) => {
@@ -406,5 +585,4 @@ export const partializedSpaceStore = (state: AppStore): SpaceState => ({
   remoteSpaces: state.space.remoteSpaces,
   editableSpaces: state.space.editableSpaces,
   localSpaces: state.space.localSpaces,
-  spaceLookups: state.space.spaceLookups,
 });

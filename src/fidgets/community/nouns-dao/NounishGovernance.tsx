@@ -27,7 +27,7 @@ export type NounishGovernanceSettings = {
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
-  fidgetName: "Proposals",
+  fidgetName: "Nounish Governance",
   icon: 0x1f3db,
   fields: [
     {
