@@ -75,7 +75,7 @@ const Home: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (isLoggedIn && tabName === undefined) {
-      router.push("/homebase");
+      router.push("/");
     }
   }, [isLoggedIn, tabName]);
   // Monitor router changes and update tab name accordingly

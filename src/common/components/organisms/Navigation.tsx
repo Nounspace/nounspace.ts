@@ -65,8 +65,8 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const notificationBadgeText = useNotificationBadgeText();
 
   function handleLogout() {
-    logout();
     router.push("/home");
+    logout();
   }
 
   function turnOnEditMode() {
