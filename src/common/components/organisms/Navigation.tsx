@@ -68,6 +68,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const isNotificationsPage = pathname === "/notifications";
   const isExplorerPage = pathname === "/explore";
 
+  function handleLogout() {
+    router.push("/home");
+    logout();
+  }
+
   function turnOnEditMode() {
     enterEditMode();
   }
@@ -237,7 +242,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   <NavButton
                     label={"Logout"}
                     Icon={LogoutIcon}
-                    onClick={logout}
+                    onClick={handleLogout}
                   />
                 )}
                 {!isLoggedIn && (

@@ -110,7 +110,8 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
       fontColor: "#000000",
       headingsFont: "Inter",
       headingsFontColor: "#000000",
-      musicURL: "https://www.youtube.com/watch?v=biiH_-nBfQs&list=PLRRiqw2OEIPHQe6X0qeQ6VkJUOqKKr_aM&index=1",
+      musicURL:
+        "https://www.youtube.com/watch?v=biiH_-nBfQs&list=PLRRiqw2OEIPHQe6X0qeQ6VkJUOqKKr_aM&index=1",
     },
   },
   fidgetInstanceDatums: {
@@ -190,7 +191,7 @@ const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
           fontFamily: "var(--user-theme-font)",
           headingsFontColor: "var(--user-theme-headings-font-color)",
           headingsFontFamily: "var(--user-theme-headings-font)",
-          text: "Your space to create, customize, and explore. To customize your own space, you need to hold at least one pair of nOGs. If you don't have nOGs yet, you can mint them in the fidget below!",
+          text: "Your space to create, customize, and explore. \n\n For premium nounspace access for life, mint one of 11,111 nOGs (nounspace OG NFTs) from the Fidget below!",
           title: "Welcome to nounspace! 🚀👾",
         },
       },
