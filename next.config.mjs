@@ -48,7 +48,7 @@ const nextConfig = {
     return [
       {
         source: "/",
-        destination: "/homebase",
+        destination: "/home",
         permanent: true,
       },
       {
