@@ -73,10 +73,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     logout();
   }
 
-  function handleLogout() {
-    router.push("/home");
-    logout();
-  }
 
   function turnOnEditMode() {
     enterEditMode();
