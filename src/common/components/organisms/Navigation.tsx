@@ -21,6 +21,7 @@ import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { Badge } from "@/common/components/atoms/badge";
+import { usePathname } from "next/navigation";
 
 type NavItemProps = {
   label: string;
@@ -63,6 +64,15 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const userTheme: UserTheme = useUserTheme();
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
+  const pathname = usePathname();
+  const isNotificationsPage = pathname === "/notifications";
+  const isExplorerPage = pathname === "/explore";
+
+  function handleLogout() {
+    router.push("/home");
+    logout();
+  }
+
 
   function turnOnEditMode() {
     enterEditMode();
@@ -176,9 +186,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             <div className="flex-auto">
               <ul className="space-y-2">
                 <NavItem
-                  label="Homebase"
+                  label={isLoggedIn ? "Homebase" : "Home"}
                   Icon={HomeIcon}
-                  href="/homebase"
+                  href={isLoggedIn ? "/homebase" : "/home"}
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
@@ -233,7 +243,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   <NavButton
                     label={"Logout"}
                     Icon={LogoutIcon}
-                    onClick={logout}
+                    onClick={handleLogout}
                   />
                 )}
                 {!isLoggedIn && (
@@ -254,7 +264,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
-                {isEditable && (
+                {!isNotificationsPage && !isExplorerPage && isEditable && (
                   <Button
                     onClick={turnOnEditMode}
                     size="icon"

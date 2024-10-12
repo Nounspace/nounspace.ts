@@ -13,6 +13,7 @@ import NogsGateButton from "./NogsGateButton";
 import Link from "next/link";
 
 interface TabBarProps {
+  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -28,6 +29,7 @@ interface TabBarProps {
 }
 
 function TabBar({
+  inHome,
   inHomebase,
   inEditMode,
   currentTab,
@@ -103,7 +105,11 @@ function TabBar({
         >
           <AnimatePresence initial={false}>
             {map(
-              inHomebase ? ["Feed", ...tabList] : tabList,
+              inHome
+                ? ["Welcome", ...tabList]
+                : inHomebase
+                  ? ["Feed", ...tabList]
+                  : tabList,
               (tabName: string) => {
                 return (
                   <Tab
@@ -113,9 +119,17 @@ function TabBar({
                     inEditMode={inEditMode}
                     isSelected={currentTab === tabName}
                     onClick={() => {}}
-                    removeable={tabName !== "Feed" && tabName !== "Profile"}
+                    removeable={
+                      tabName !== "Feed" &&
+                      tabName !== "Profile" &&
+                      tabName !== "Welcome"
+                    }
                     draggable={inEditMode}
-                    renameable={tabName !== "Feed" && tabName !== "Profile"}
+                    renameable={
+                      tabName !== "Feed" &&
+                      tabName !== "Profile" &&
+                      tabName !== "Welcome"
+                    }
                     onRemove={() => handleDeleteTab(tabName)}
                     renameTab={handleRenameTab}
                   />

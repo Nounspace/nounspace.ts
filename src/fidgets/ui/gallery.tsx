@@ -16,7 +16,7 @@ export type GalleryFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
-  fidgetName: "gallery",
+  fidgetName: "Image",
   icon: 0x1f5bc,
   fields: [
     {
@@ -44,9 +44,9 @@ const galleryConfig: FidgetProperties = {
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 2,
+    minHeight: 1,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 1,
     maxWidth: 36,
   },
 };
