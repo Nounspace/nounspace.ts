@@ -73,6 +73,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     logout();
   }
 
+  function handleLogout() {
+    router.push("/home");
+    logout();
+  }
+
   function turnOnEditMode() {
     enterEditMode();
   }
@@ -185,9 +190,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             <div className="flex-auto">
               <ul className="space-y-2">
                 <NavItem
-                  label="Homebase"
+                  label={isLoggedIn ? "Homebase" : "Home"}
                   Icon={HomeIcon}
-                  href="/homebase"
+                  href={isLoggedIn ? "/homebase" : "/home"}
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
