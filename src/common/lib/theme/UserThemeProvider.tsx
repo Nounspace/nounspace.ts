@@ -14,14 +14,14 @@ export const useUserTheme = () => {
     getCurrentSpace: state.currentSpace.getCurrentSpaceConfig,
   }));
 
-  const { getCurrentTab } = useAppStore((state) => ({
-    getCurrentTab: state.currentSpace.getCurrentTabName,
+  const { getCurrentTabName } = useAppStore((state) => ({
+    getCurrentTabName: state.currentSpace.getCurrentTabName,
   }));
 
   const currentSpace = getCurrentSpace();
-  const currentTab = getCurrentTab();
-  return currentSpace && currentTab && currentSpace[currentTab]
-    ? currentSpace[currentTab].theme
+  const currentTabName = getCurrentTabName();
+  return currentSpace && currentTabName && currentSpace[currentTabName]
+    ? currentSpace[currentTabName].theme
     : defaultTheme;
 };
 
