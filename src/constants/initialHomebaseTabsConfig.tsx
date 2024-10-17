@@ -359,7 +359,7 @@ export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
 </head>
 <body>
     <div class="container">
-        <img src="https://github.com/Nounspace/nounspace.ts/blob/main/public/images/rainforest.png?raw=true" class="background">
+        <img src="https://nounspace.com/images/rainforest.png?raw=true" class="background">
         <p class="message">to infinity and beyond</p>
     </div>
 </body>
