@@ -798,7 +798,7 @@ export const imageParallax = `
 <!-- To change the text displayed, replace the message below -->
 <body>
     <div class="container">
-        <img src="https://github.com/Nounspace/nounspace.ts/blob/main/public/images/rainforest.png?raw=true" class="background">
+        <img src="https://nounspace.com/images/rainforest.png?raw=true" class="background">
         <p class="message">to infinity and beyond</p>
         <div class="circle-container"><div class="circle"></div></div>
         <div class="circle-container"><div class="circle"></div></div>
