@@ -172,8 +172,16 @@ export const createHomeBaseTabStoreFunc = (
       req,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
+    const initialConfig = {
+      ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
+      theme: {
+        ...cloneDeep(INITIAL_HOMEBASE_CONFIG.theme),
+        id: `Homebase-${tabName}-Theme`,
+        name: `Homebase-${tabName}-Theme`,
+      },
+    };
     const file = await get().account.createEncryptedSignedFile(
-      stringify(INITIAL_HOMEBASE_CONFIG),
+      stringify(initialConfig),
       "json",
       { useRootKey: true },
     );
@@ -186,8 +194,8 @@ export const createHomeBaseTabStoreFunc = (
         set((draft) => {
           // Add the new tab to the tabs object
           draft.homebase.tabs[tabName] = {
-            config: cloneDeep(INITIAL_HOMEBASE_CONFIG),
-            remoteConfig: cloneDeep(INITIAL_HOMEBASE_CONFIG),
+            config: cloneDeep(initialConfig),
+            remoteConfig: cloneDeep(initialConfig),
           };
 
           // Add the new tab to the local tab order
@@ -282,6 +290,7 @@ export const createHomeBaseTabStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
+      console.log("spaceConfig", spaceConfig);
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
         draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
