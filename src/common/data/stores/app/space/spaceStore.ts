@@ -195,9 +195,6 @@ export const createSpaceStoreFunc = (
       }
       const newTimestamp = moment().toISOString();
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
-      console.log(
-        `Updated local space ${spaceId} timestamp to ${newTimestamp}`,
-      );
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: debounce(async (spaceId, tabName) => {
@@ -381,13 +378,6 @@ export const createSpaceStoreFunc = (
           const localTimestamp = moment(localTab.timestamp);
           const remoteTimestamp = moment(remoteUpdatableSpaceConfig.timestamp);
 
-          console.log(
-            `Local timestamp for ${spaceId}/${tabName}: ${localTimestamp.toISOString()}`,
-          );
-          console.log(
-            `Remote timestamp for ${spaceId}/${tabName}: ${remoteTimestamp.toISOString()}`,
-          );
-
           if (remoteTimestamp.isAfter(localTimestamp)) {
             // Remote is newer, update both local and remote
             draft.space.remoteSpaces[spaceId].tabs[tabName] =
@@ -395,12 +385,8 @@ export const createSpaceStoreFunc = (
             draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
               remoteUpdatableSpaceConfig,
             );
-            console.log(`Updated ${spaceId}/${tabName} with newer remote data`);
           } else {
             // Local is newer or same age, keep local data
-            console.log(
-              `Kept local data for ${spaceId}/${tabName}, updated remote to match`,
-            );
             draft.space.remoteSpaces[spaceId].tabs[tabName] =
               cloneDeep(localTab);
           }
@@ -411,17 +397,12 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
             remoteUpdatableSpaceConfig,
           );
-          console.log(
-            `Created local tab ${spaceId}/${tabName} with remote data`,
-          );
         }
 
         // Update timestamps
         const newTimestamp = moment().toISOString();
         draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
         draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
-
-        console.log(`Loaded remote space tab ${spaceId}/${tabName}`);
       }, "loadSpaceTab");
     } catch (e) {
       console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
@@ -455,13 +436,6 @@ export const createSpaceStoreFunc = (
         ? moment(localSpace.updatedAt)
         : moment(0);
 
-      console.log(
-        `Space ${spaceId} - Remote timestamp: ${remoteTimestamp.toISOString()}`,
-      );
-      console.log(
-        `Space ${spaceId} - Local timestamp: ${localTimestamp.toISOString()}`,
-      );
-
       if (remoteTimestamp.isAfter(localTimestamp)) {
         // Remote data is newer, update the store
         set((draft) => {
@@ -492,13 +466,7 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId].order = tabOrderReq.tabOrder;
           draft.space.remoteSpaces[spaceId].updatedAt =
             remoteTimestamp.toISOString();
-          console.log(`Updating local space ${spaceId} with remote data`);
         }, "loadSpaceInfo");
-      } else {
-        // Local data is newer or same age, keep local data
-        console.log(
-          `Local copy of space ${spaceId} tab order is more recent. Local: ${localTimestamp.toISOString()}, Remote: ${remoteTimestamp.toISOString()}`,
-        );
       }
     } catch (e) {
       // Error handling: create default local space if needed
@@ -544,6 +512,7 @@ export const createSpaceStoreFunc = (
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
+      console.log("Created space", newSpaceId);
       return newSpaceId;
     } catch (e) {
       null;
