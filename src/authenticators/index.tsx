@@ -83,7 +83,7 @@ export function createAuthenticator<
    * @param  {String} name  Name of the Authenticator that is being made
    * @param  {M} methods  The methods that a developer can call for this authenticator
    * @param  {AuthenticatorInitializer<D>} initializerComponent A component that allows the user
-   * to register sensative data for the Authenticator
+   * to register sensitive data for the Authenticator
    * @return {AuthenticatorComponent<D, M>}  A component that can be used
    */
   return (args) => {
