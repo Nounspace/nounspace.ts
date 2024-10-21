@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import {
   forwardRef,
   useImperativeHandle,
@@ -62,6 +61,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
   };
 
   const enterHandler = () => {
+    console.log(selectedIndex, props.items);
     selectItem(selectedIndex);
   };
 
@@ -80,6 +80,8 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
 
       if (event.key === "ArrowDown") {
         downHandler();
+        console.log("downHandler");
+        console.log(selectedIndex);
         return true;
       }
 
