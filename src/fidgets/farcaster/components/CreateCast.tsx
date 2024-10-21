@@ -38,6 +38,7 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
+import { log } from "console";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -269,8 +270,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
+      console.log("Embeds before setting draft:", newEmbeds); // Log embeds
+
       // Await the result of getFarcasterMentions before using reduce
-      const fetchedMentions = await getFarcasterMentions(API_URL)(text); // Await the resolved array
+      const fetchedMentions = await getFarcasterMentions(API_URL)(text);
+
+      console.log("Fetched Mentions:", fetchedMentions); // Log fetched mentions
 
       const mentionsToFids = fetchedMentions.reduce(
         (acc, mention) => {
@@ -280,13 +285,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
         {} as { [key: string]: string },
       );
 
-      setDraft((prevDraft) => ({
-        ...prevDraft,
-        text,
-        embeds: newEmbeds,
-        parentUrl: channel?.parent_url || undefined,
-        mentionsToFids,
-      }));
+      console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
+
+      setDraft((prevDraft) => {
+        console.log("Previous Draft:", prevDraft); // Log previous draft
+        const updatedDraft = {
+          ...prevDraft,
+          text,
+          embeds: newEmbeds,
+          parentUrl: channel?.parent_url || undefined,
+          mentionsToFids, // Correct type with strings
+        };
+        console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
+        return updatedDraft;
+      });
     };
 
     fetchMentionsAndSetDraft();
