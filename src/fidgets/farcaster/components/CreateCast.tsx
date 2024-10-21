@@ -299,7 +299,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <EditorContent
               editor={editor}
               autoFocus
-              className="w-full h-full min-h-[150px] opacity-80 opacity-80"
+              className="w-full h-full min-h-[150px]  opacity-80"
             />
             <div className="z-50">
               <EmbedsEditor
