@@ -6,7 +6,7 @@ To add any code to the `nounspace/Nounspace.ts` repo, you will need to open a PR
 Nounspace is written fully in typescript. At time of writing this (5/7/24), we are still in the process of fixing type errors that exist from the original codebase.
 
 ## Steps to open a PR
-Nounspace expects its contibutors to follow the "Fork and Pull" method to open PRs. Bellow is a TL;DR for this process
+Nounspace expects its contributors to follow the "Fork and Pull" method to open PRs. Below is a TL;DR for this process
 
 1. Fork `nounspace/Nounspace.ts`
   a. Press the `fork` button at the top of the page

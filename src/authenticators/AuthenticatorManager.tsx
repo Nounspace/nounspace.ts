@@ -310,7 +310,7 @@ export function useAuthenticatorManager() {
 
   if (!context) {
     throw new Error(
-      `useAuthenticatorManager must be use within AuthenticatorManagerProvider`,
+      `useAuthenticatorManager must be used within AuthenticatorManagerProvider`,
     );
   }
 
