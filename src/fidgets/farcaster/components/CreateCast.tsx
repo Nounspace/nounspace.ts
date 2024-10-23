@@ -39,6 +39,7 @@ import {
   submitCast,
 } from "../utils";
 import { log } from "console";
+import { GiConsoleController } from "react-icons/gi";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -272,33 +273,45 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       console.log("Embeds before setting draft:", newEmbeds); // Log embeds
 
-      // Await the result of getFarcasterMentions before using reduce
-      const fetchedMentions = await getFarcasterMentions(API_URL)(text);
-
-      console.log("Fetched Mentions:", fetchedMentions); // Log fetched mentions
-
-      const mentionsToFids = fetchedMentions.reduce(
-        (acc, mention) => {
-          acc[mention.username] = mention.fid.toString(); // Convert fid to string
-          return acc;
-        },
-        {} as { [key: string]: string },
+      // Use a regex to extract usernames (assuming they are in the format @username)
+      const usernamePattern = /@([a-zA-Z0-9_]+)/g; // Adjust pattern if needed
+      const usernames = [...text.matchAll(usernamePattern)].map(
+        (match) => match[1],
       );
+      console.log("Extracted Usernames:", usernames); // Log extracted usernames
 
-      console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
+      if (usernames.length > 0) {
+        try {
+          // Fetch the FIDs corresponding to the usernames
+          const fetchedMentions =
+            await getMentionFidsByUsernames(API_URL)(usernames);
+          console.log("Fetched Mentions with FIDs:", fetchedMentions); // Log fetched mentions
 
-      setDraft((prevDraft) => {
-        console.log("Previous Draft:", prevDraft); // Log previous draft
-        const updatedDraft = {
-          ...prevDraft,
-          text,
-          embeds: newEmbeds,
-          parentUrl: channel?.parent_url || undefined,
-          mentionsToFids, // Correct type with strings
-        };
-        console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
-        return updatedDraft;
-      });
+          const mentionsToFids = fetchedMentions.reduce(
+            (acc, mention) => {
+              acc[mention.username] = mention.fid.toString(); // Convert fid to string
+              return acc;
+            },
+            {} as { [key: string]: string },
+          );
+
+          setDraft((prevDraft) => {
+            console.log("Previous Draft:", prevDraft); // Log previous draft
+
+            const updatedDraft = {
+              ...prevDraft,
+              text,
+              embeds: newEmbeds,
+              parentUrl: channel?.parent_url || undefined,
+              mentionsToFids, // Correct type with strings
+            };
+            console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
+            return updatedDraft;
+          });
+        } catch (error) {
+          console.error("Error fetching FIDs:", error);
+        }
+      }
     };
 
     fetchMentionsAndSetDraft();
