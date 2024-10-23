@@ -38,7 +38,7 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import { log } from "console";
+import { error, log } from "console";
 import { GiConsoleController } from "react-icons/gi";
 
 // Fixed missing imports and incorrect object types
@@ -278,18 +278,28 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const usernames = [...text.matchAll(usernamePattern)].map(
         (match) => match[1],
       );
-      console.log("Extracted Usernames:", usernames); // Log extracted usernames
 
-      if (usernames.length > 0) {
+      // Remove duplicate usernames
+      const uniqueUsernames = Array.from(new Set(usernames));
+      console.log("Unique Usernames:", uniqueUsernames); // Log unique usernames
+
+      if (uniqueUsernames.length > 0) {
         try {
           // Fetch the FIDs corresponding to the usernames
           const fetchedMentions =
-            await getMentionFidsByUsernames(API_URL)(usernames);
-          console.log("Fetched Mentions with FIDs:", fetchedMentions); // Log fetched mentions
+            await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
+          console.log("Fetched Mentions Response:", fetchedMentions); // Log the full response
+
+          // Ensure only unique mentions are processed
           const mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
-              acc[mention.username] = mention.fid.toString(); // Convert fid to string
+              if (mention && mention.username && mention.fid) {
+                // Add unique mentions
+                acc[mention.username] = mention.fid.toString(); // Convert fid to string
+              } else {
+                console.error("Malformed mention object:", mention); // Log malformed objects
+              }
               return acc;
             },
             {} as { [key: string]: string },
@@ -297,6 +307,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
           setDraft((prevDraft) => {
             console.log("Previous Draft:", prevDraft); // Log previous draft
+            console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
 
             const updatedDraft = {
               ...prevDraft,
@@ -305,6 +316,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               parentUrl: channel?.parent_url || undefined,
               mentionsToFids, // Correct type with strings
             };
+
             console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
             return updatedDraft;
           });
