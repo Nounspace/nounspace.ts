@@ -15,7 +15,17 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { debounce, map, isEmpty, isUndefined, values, reduce } from "lodash";
+import {
+  debounce,
+  map,
+  isEmpty,
+  isUndefined,
+  values,
+  reduce,
+  forEach,
+  replace,
+  trim,
+} from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
@@ -40,6 +50,9 @@ import {
 } from "../utils";
 import { error, log } from "console";
 import { GiConsoleController } from "react-icons/gi";
+import { hash } from "crypto";
+import { type } from "os";
+import { text } from "stream/consumers";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -77,6 +90,7 @@ export type DraftType = {
   embeds?: FarcasterEmbed[];
   parentUrl?: string;
   parentCastId?: ParentCastIdType;
+  mentionsPositions?: number[]; // <-- Add this property
 };
 
 type CreateCastProps = {
@@ -90,66 +104,6 @@ export type ModProtocolCastAddBody = Exclude<
 > & {
   type: CastType;
 };
-
-async function publishPost(
-  draft: DraftType,
-  fid: number,
-  signer: Signer,
-): Promise<{ success: boolean; message?: string }> {
-  if (draft.parentCastId) {
-    const { fid, hash } = draft.parentCastId;
-    if (hash.length !== 20) {
-      return { success: false, message: "Invalid parent cast ID hash length." };
-    }
-  }
-
-  // Fixing 'then' error by awaiting and calling 'getFarcasterMentions' correctly
-  const mentions = draft.mentionsToFids
-    ? Object.values(draft.mentionsToFids).map(Number)
-    : [];
-  const mentionsPositions =
-    mentions.length > 0
-      ? mentions.map((_, idx) => idx * 5) // Dummy positions, replace with real logic if needed
-      : [];
-
-  const unsignedCastBody: ModProtocolCastAddBody = {
-    type: CastType.CAST,
-    text: draft.text,
-    embeds: draft.embeds || [],
-    parentUrl: draft.parentUrl || undefined,
-    parentCastId: draft.parentCastId
-      ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
-      : undefined,
-    mentions: mentions, // Fixed the mentions issue
-    mentionsPositions: mentionsPositions, // Fixed the positions
-    embedsDeprecated: [],
-  };
-
-  if (!unsignedCastBody)
-    return { success: false, message: "Invalid cast data." };
-
-  try {
-    const result = await submitCast(
-      { ...unsignedCastBody, type: CastType.CAST },
-      fid,
-      signer,
-    );
-
-    if (result) {
-      return { success: true };
-    } else {
-      return { success: false, message: "Failed to submit cast." };
-    }
-  } catch (e) {
-    return {
-      success: false,
-      message: "An error occurred while submitting the cast.",
-    };
-  }
-}
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
@@ -273,14 +227,18 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       console.log("Embeds before setting draft:", newEmbeds); // Log embeds
 
-      // Use a regex to extract usernames (assuming they are in the format @username)
-      const usernamePattern = /@([a-zA-Z0-9_]+)/g; // Adjust pattern if needed
-      const usernames = [...text.matchAll(usernamePattern)].map(
-        (match) => match[1],
+      // Use regex to extract usernames (e.g., @username)
+      const usernamePattern = /@([a-zA-Z0-9_]+)/g;
+      const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
+        (match) => ({
+          username: match[1],
+          position: match.index!, // Get the position of the mention
+        }),
       );
 
-      // Remove duplicate usernames
-      const uniqueUsernames = Array.from(new Set(usernames));
+      const uniqueUsernames = Array.from(
+        new Set(usernamesWithPositions.map((u) => u.username)),
+      );
       console.log("Unique Usernames:", uniqueUsernames); // Log unique usernames
 
       if (uniqueUsernames.length > 0) {
@@ -289,13 +247,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
-          console.log("Fetched Mentions Response:", fetchedMentions); // Log the full response
+          console.log("Fetched Mentions Response:", fetchedMentions); // Log fetched mentions
 
           // Ensure only unique mentions are processed
           const mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
-                // Add unique mentions
                 acc[mention.username] = mention.fid.toString(); // Convert fid to string
               } else {
                 console.error("Malformed mention object:", mention); // Log malformed objects
@@ -305,18 +262,26 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
+          // Map the positions of each mention for use in the `mentionsPositions` array
+          const mentionsPositions = usernamesWithPositions.map(
+            ({ username, position }) => ({
+              fid: mentionsToFids[username],
+              position,
+            }),
+          );
+
           setDraft((prevDraft) => {
             console.log("Previous Draft:", prevDraft); // Log previous draft
-            console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
 
+            console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
             const updatedDraft = {
               ...prevDraft,
-              text,
+              text, // Preserve the original text (including @mentions)
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
               mentionsToFids, // Correct type with strings
+              mentionsPositions: mentionsPositions.map((mp) => mp.position), // Pass the positions correctly
             };
-
             console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
             return updatedDraft;
           });
@@ -328,6 +293,65 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
     fetchMentionsAndSetDraft();
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
+  async function publishPost(
+    draft: DraftType,
+    fid: number,
+    signer: Signer,
+  ): Promise<{ success: boolean; message?: string }> {
+    if (draft.parentCastId) {
+      const { fid, hash } = draft.parentCastId;
+      if (hash.length !== 20) {
+        return {
+          success: false,
+          message: "Invalid parent cast ID hash length.",
+        };
+      }
+    }
+
+    // Prepare the mentions and their positions
+    const mentions = draft.mentionsToFids
+      ? Object.values(draft.mentionsToFids).map(Number)
+      : [];
+    const mentionsPositions = draft.mentionsPositions || []; // Use the correct positions
+
+    const unsignedCastBody: ModProtocolCastAddBody = {
+      type: CastType.CAST,
+      text: draft.text,
+      embeds: draft.embeds || [],
+      parentUrl: draft.parentUrl || undefined,
+      parentCastId: draft.parentCastId
+        ? {
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
+        : undefined,
+      mentions: mentions, // Pass mentions (FIDs)
+      mentionsPositions: mentionsPositions, // Pass positions here
+      embedsDeprecated: [],
+    };
+
+    if (!unsignedCastBody)
+      return { success: false, message: "Invalid cast data." };
+
+    try {
+      const result = await submitCast(
+        { ...unsignedCastBody, type: CastType.CAST },
+        fid,
+        signer,
+      );
+
+      if (result) {
+        return { success: true };
+      } else {
+        return { success: false, message: "Failed to submit cast." };
+      }
+    } catch (e) {
+      return {
+        success: false,
+        message: "An error occurred while submitting the cast.",
+      };
+    }
+  }
 
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
