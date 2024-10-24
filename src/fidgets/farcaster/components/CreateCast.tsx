@@ -269,6 +269,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
+          // Remove the mentions from the text to prevent duplicates
+          const sanitizedText = text.replace(usernamePattern, "");
+
           // Map the positions of each mention for use in the `mentionsPositions` array
           const mentionsPositions = usernamesWithPositions
             .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
@@ -291,7 +294,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
             const updatedDraft = {
               ...prevDraft,
-              text, // Preserve the original text (including @mentions)
+              text: sanitizedText, // Use sanitized text without mentions in the final submission
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
               mentionsToFids, // Correct type with strings

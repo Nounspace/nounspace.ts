@@ -1,32 +1,16 @@
 "use client";
-import React from "react";
-import {
+import React, {
   forwardRef,
   useImperativeHandle,
   useState,
   useEffect,
-  HTMLAttributes,
 } from "react";
 import { FarcasterMention } from "@mod-protocol/farcaster";
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { debounce } from "lodash";
-import { id } from "node_modules/@lifi/widget/_esm/i18n";
-import { text } from "stream/consumers";
 
-function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-primary/10", className)}
-      {...props}
-    />
-  );
-}
-
-export function cn(...inputs: ClassValue[]) {
+function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
@@ -37,25 +21,19 @@ type MentionListRef = {
 type Props = {
   items: Array<FarcasterMention | null>;
   command: any;
-  onMentionSelected?: (mention: FarcasterMention) => void; // <-- Add this line
 };
 
 export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const selectItem = (index: number) => {
+  const selectItem = debounce((index: number) => {
     const item = props.items[index];
     if (item) {
       setSelectedIndex(index); // Ensure the state updates with the clicked item
       const mentionText = `@${item.username}`; // The text that will appear in the editor
       props.command({ id: item.username, text: mentionText, fid: item.fid }); // Pass the username and FID to the parent
-
-      // Call onMentionSelected if it exists
-      if (props.onMentionSelected) {
-        props.onMentionSelected(item); // Pass the selected mention to the callback
-      }
     }
-  };
+  }, 200);
 
   const upHandler = () => {
     setSelectedIndex(
@@ -125,7 +103,6 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
                   borderRadius: "100%",
                   width: "48px",
                   height: "48px",
-                  // image may not be a square
                   backgroundImage: `url(${item.avatar_url})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -157,3 +134,15 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
 });
 
 MentionList.displayName = "MentionList";
+
+function Skeleton({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("animate-pulse rounded-md bg-primary/10", className)}
+      {...props}
+    />
+  );
+}
