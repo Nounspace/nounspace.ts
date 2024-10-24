@@ -37,19 +37,25 @@ type MentionListRef = {
 type Props = {
   items: Array<FarcasterMention | null>;
   command: any;
+  onMentionSelected?: (mention: FarcasterMention) => void; // <-- Add this line
 };
 
 export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const selectItem = debounce((index: number) => {
+  const selectItem = (index: number) => {
     const item = props.items[index];
     if (item) {
       setSelectedIndex(index); // Ensure the state updates with the clicked item
       const mentionText = `@${item.username}`; // The text that will appear in the editor
       props.command({ id: item.username, text: mentionText, fid: item.fid }); // Pass the username and FID to the parent
+
+      // Call onMentionSelected if it exists
+      if (props.onMentionSelected) {
+        props.onMentionSelected(item); // Pass the selected mention to the callback
+      }
     }
-  }, 200);
+  };
 
   const upHandler = () => {
     setSelectedIndex(

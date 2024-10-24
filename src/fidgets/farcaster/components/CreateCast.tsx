@@ -25,6 +25,8 @@ import {
   forEach,
   replace,
   trim,
+  filter,
+  keys,
 } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
@@ -145,8 +147,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
-    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
+    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer)) {
       return false;
+    }
+
+    // Delay submission if mentions are still being resolved
+    if (Object.keys(draft.mentionsToFids || {}).length === 0) {
+      console.error("Mentions not fully resolved yet.");
+      return false;
+    }
 
     const result = await publishPost(draft, fid, signer);
 
@@ -225,8 +234,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      console.log("Embeds before setting draft:", newEmbeds); // Log embeds
-
       // Use regex to extract usernames (e.g., @username)
       const usernamePattern = /@([a-zA-Z0-9_]+)/g;
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
@@ -263,12 +270,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
           );
 
           // Map the positions of each mention for use in the `mentionsPositions` array
-          const mentionsPositions = usernamesWithPositions.map(
-            ({ username, position }) => ({
+          const mentionsPositions = usernamesWithPositions
+            .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
+            .map(({ username, position }) => ({
               fid: mentionsToFids[username],
               position,
-            }),
-          );
+            }));
+
+          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
+            console.error(
+              "Mismatch between mentions and their positions:",
+              mentionsToFids,
+              mentionsPositions,
+            );
+          }
 
           setDraft((prevDraft) => {
             console.log("Previous Draft:", prevDraft); // Log previous draft
@@ -293,6 +308,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
     fetchMentionsAndSetDraft();
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
+
   async function publishPost(
     draft: DraftType,
     fid: number,
