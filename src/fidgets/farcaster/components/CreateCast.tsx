@@ -28,6 +28,7 @@ import {
   filter,
   keys,
   size,
+  indexOf,
 } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
@@ -231,38 +232,43 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
+  // Updated regex in useEffect for handling mentions
 
+  // Updated regex in useEffect for handling mentions
   useEffect(() => {
     if (!editor) return;
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
-      //regex
-      const usernamePattern = /@([a-zA-Z0-9_.]+)/g;
+
+      // Updated regex to include .eth usernames
+      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
         (match) => ({
           username: match[1],
-          position: match.index!, // Get the position of the mention
+          position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
         }),
       );
 
       const uniqueUsernames = Array.from(
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
-      console.log("Unique Usernames:", uniqueUsernames); // Log unique usernames
+
+      console.log("Unique Usernames:", uniqueUsernames); // Debugging usernames
 
       if (uniqueUsernames.length > 0) {
         try {
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
-          console.log("Fetched Mentions Response:", fetchedMentions); // Log fetched mentions
+          console.log("Fetched Mentions Response:", fetchedMentions); // Debugging mentions
 
           const mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
-                acc[mention.username] = mention.fid.toString(); // Convert fid to string
+                acc[mention.username] = mention.fid.toString(); // Ensure fid as string
               } else {
                 console.error("Malformed mention object:", mention); // Log malformed objects
               }
@@ -271,17 +277,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Remove the mentions from the text to prevent duplicates
-          const sanitizedText = text.replace(usernamePattern, "");
-
-          // Map the positions of each mention for use in the `mentionsPositions` array
+          // Handle mention positions
           const mentionsPositions = usernamesWithPositions
-            .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
-            .map(({ username, position }) => ({
-              fid: mentionsToFids[username],
-              position,
-            }));
-
+            .filter(({ username }) => mentionsToFids[username]) // Only if fid exists
+            .map(({ username, position }) => position);
+          console.log("Mentions to FIDs:", mentionsToFids); // Debugging mentions
+          console.log("Mentions Positions:", mentionsPositions); // Debugging positions
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
               "Mismatch between mentions and their positions:",
@@ -290,17 +291,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
+          // Update draft with sanitized text and correct mentions
           setDraft((prevDraft) => {
-            const updatedDraft = {
+            return {
               ...prevDraft,
-              text: sanitizedText, // Use sanitized text without mentions in the final submission
+              text, // Keep the original text
               embeds: newEmbeds,
-              parentUrl: channel?.parent_url || undefined,
-              mentionsToFids, // Correct type with strings
-              mentionsPositions: mentionsPositions.map((mp) => mp.position), // Pass the positions correctly
+              mentionsToFids, // Updated mentions
+              mentionsPositions, // Positions
             };
-            console.log("Updated Draft:", updatedDraft); // Log the updated draft
-            return updatedDraft;
           });
         } catch (error) {
           console.error("Error fetching FIDs:", error);
@@ -309,7 +308,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     };
 
     fetchMentionsAndSetDraft();
-  }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
+  }, [text, embeds, initialEmbeds, isPublishing, editor]);
 
   async function publishPost(
     draft: DraftType,
