@@ -235,7 +235,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Use regex to extract usernames (e.g., @username)
-      const usernamePattern = /@([a-zA-Z0-9_]+)/g;
+      const usernamePattern = /@([a-zA-Z0-9_.]+)/g;
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
         (match) => ({
           username: match[1],
