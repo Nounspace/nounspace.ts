@@ -113,7 +113,7 @@ export const CastAvatar = ({
         )}
       >
         <AvatarImage
-          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${user.pfp_url}`}
+          src={`${user.pfp_url}`}
           alt={user?.display_name}
           className="object-cover"
         />
