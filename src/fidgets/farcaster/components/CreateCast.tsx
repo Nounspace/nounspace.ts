@@ -245,9 +245,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
       // Regex to match pure @username mentions
       const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
 
-      // Regex to match URLs with @username inside
-      const urlPattern = /(https?:\/\/[^\s]*\/@[a-zA-Z0-9_.]+)/g;
+      // Regex to match URLs
+      const urlPattern = /(https?:\/\/[^\s]+)/g;
 
+      // Extract URLs and track their positions
+      const urlsWithPositions = [...text.matchAll(urlPattern)].map((match) => ({
+        url: match[0],
+        startPosition: match.index!,
+        endPosition: match.index! + match[0].length,
+      }));
+
+      // Extract mentions and their positions
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
         (match) => ({
           username: match[1],
@@ -255,19 +263,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
         }),
       );
 
-      // Capture URLs to exclude later
-      const urlsWithMentions = [...text.matchAll(urlPattern)].map((match) => ({
-        url: match[0],
-        position: match.index!,
-      }));
-
-      // Filter out URLs from the mentionable usernames
+      // Filter out mentions that appear within URLs
       const filteredUsernamesWithPositions = usernamesWithPositions.filter(
         ({ position }) => {
-          return !urlsWithMentions.some(
-            ({ position: urlPosition }) =>
-              position > urlPosition &&
-              position < urlPosition + match[0].length, // If the mention is part of a URL, ignore it
+          return !urlsWithPositions.some(
+            ({ startPosition, endPosition }) =>
+              position >= startPosition && position <= endPosition,
           );
         },
       );
@@ -275,8 +276,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const uniqueUsernames = Array.from(
         new Set(filteredUsernamesWithPositions.map((u) => u.username)),
       );
-
-      console.log("Unique Usernames:", uniqueUsernames); // Log pure usernames (no URLs)
 
       if (uniqueUsernames.length > 0) {
         try {
@@ -295,16 +294,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Remove the mentions from the text to prevent duplicates
+          // Replace mentions within the text with placeholders to prevent duplication
           const sanitizedText = text.replace(usernamePattern, "");
 
-          // Map the positions of each mention for use in the `mentionsPositions` array
+          // Calculate positions after filtering out URL-based mentions
           const mentionsPositions = filteredUsernamesWithPositions
             .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
-            .map(({ username, position }) => ({
-              fid: mentionsToFids[username],
-              position,
-            }));
+            .map(({ position }) => position);
 
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
@@ -321,9 +317,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
               mentionsToFids, // Correct type with strings
-              mentionsPositions: mentionsPositions.map((mp) => mp.position), // Pass the positions correctly
+              mentionsPositions, // Use positions adjusted for URLs
             };
-            console.log("Updated Draft:", updatedDraft); // Log the updated draft
+            console.log("Updated Draft before posting:", updatedDraft);
             return updatedDraft;
           });
         } catch (error) {
