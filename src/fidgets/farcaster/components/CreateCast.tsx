@@ -242,8 +242,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions (not inside URLs)
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+      // Regex to match pure @username mentions that are followed by a space, punctuation, or end of string.
+      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|[.,!?]|$)/g;
 
       // Regex to match URLs
       const urlPattern = /(https?:\/\/[^\s]+)/g;
