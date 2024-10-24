@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { FC, use, useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -27,6 +27,7 @@ import {
   trim,
   filter,
   keys,
+  size,
 } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
@@ -37,7 +38,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { CreationMod } from "@mod-protocol/react";
+import { CreationMod, RichEmbed } from "@mod-protocol/react";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
@@ -55,6 +56,10 @@ import { GiConsoleController } from "react-icons/gi";
 import { hash } from "crypto";
 import { type } from "os";
 import { text } from "stream/consumers";
+import api from "@/common/data/database/supabase/clients/api";
+import { form } from "@segment/analytics-next/dist/types/core/auto-track";
+import { commands, hr } from "@uiw/react-md-editor";
+import { url } from "inspector";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -233,8 +238,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
-
-      // Use regex to extract usernames (e.g., @username)
+      //regex
       const usernamePattern = /@([a-zA-Z0-9_.]+)/g;
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
         (match) => ({
@@ -250,13 +254,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       if (uniqueUsernames.length > 0) {
         try {
-          // Fetch the FIDs corresponding to the usernames
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
           console.log("Fetched Mentions Response:", fetchedMentions); // Log fetched mentions
 
-          // Ensure only unique mentions are processed
           const mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
@@ -289,9 +291,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
           }
 
           setDraft((prevDraft) => {
-            console.log("Previous Draft:", prevDraft); // Log previous draft
-
-            console.log("Mentions to FIDs Mapping:", mentionsToFids); // Log mention to FIDs mapping
             const updatedDraft = {
               ...prevDraft,
               text: sanitizedText, // Use sanitized text without mentions in the final submission
@@ -300,7 +299,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               mentionsToFids, // Correct type with strings
               mentionsPositions: mentionsPositions.map((mp) => mp.position), // Pass the positions correctly
             };
-            console.log("Updated Draft before posting:", updatedDraft); // Log updated draft
+            console.log("Updated Draft:", updatedDraft); // Log the updated draft
             return updatedDraft;
           });
         } catch (error) {
@@ -344,8 +343,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
             hash: draft.parentCastId.hash,
           }
         : undefined,
-      mentions: mentions, // Pass mentions (FIDs)
-      mentionsPositions: mentionsPositions, // Pass positions here
+      mentions, // Pass mentions (FIDs)
+      mentionsPositions, // Pass positions here
       embedsDeprecated: [],
     };
 
