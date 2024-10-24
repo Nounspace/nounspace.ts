@@ -29,6 +29,7 @@ import {
   keys,
   size,
   indexOf,
+  some,
 } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
@@ -61,6 +62,7 @@ import api from "@/common/data/database/supabase/clients/api";
 import { form } from "@segment/analytics-next/dist/types/core/auto-track";
 import { commands, hr } from "@uiw/react-md-editor";
 import { url } from "inspector";
+import { match } from "assert";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -232,9 +234,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
-  // Updated regex in useEffect for handling mentions
 
-  // Updated regex in useEffect for handling mentions
   useEffect(() => {
     if (!editor) return;
     if (isPublishing) return;
@@ -242,8 +242,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Updated regex to include .eth usernames
+      // Regex to match pure @username mentions
       const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+
+      // Regex to match URLs with @username inside
+      const urlPattern = /(https?:\/\/[^\s]*\/@[a-zA-Z0-9_.]+)/g;
 
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
         (match) => ({
@@ -252,23 +255,38 @@ const CreateCast: React.FC<CreateCastProps> = ({
         }),
       );
 
-      const uniqueUsernames = Array.from(
-        new Set(usernamesWithPositions.map((u) => u.username)),
+      // Capture URLs to exclude later
+      const urlsWithMentions = [...text.matchAll(urlPattern)].map((match) => ({
+        url: match[0],
+        position: match.index!,
+      }));
+
+      // Filter out URLs from the mentionable usernames
+      const filteredUsernamesWithPositions = usernamesWithPositions.filter(
+        ({ position }) => {
+          return !urlsWithMentions.some(
+            ({ position: urlPosition }) =>
+              position > urlPosition &&
+              position < urlPosition + match[0].length, // If the mention is part of a URL, ignore it
+          );
+        },
       );
 
-      console.log("Unique Usernames:", uniqueUsernames); // Debugging usernames
+      const uniqueUsernames = Array.from(
+        new Set(filteredUsernamesWithPositions.map((u) => u.username)),
+      );
+
+      console.log("Unique Usernames:", uniqueUsernames); // Log pure usernames (no URLs)
 
       if (uniqueUsernames.length > 0) {
         try {
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
-          console.log("Fetched Mentions Response:", fetchedMentions); // Debugging mentions
-
           const mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
-                acc[mention.username] = mention.fid.toString(); // Ensure fid as string
+                acc[mention.username] = mention.fid.toString(); // Convert fid to string
               } else {
                 console.error("Malformed mention object:", mention); // Log malformed objects
               }
@@ -277,12 +295,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Handle mention positions
-          const mentionsPositions = usernamesWithPositions
-            .filter(({ username }) => mentionsToFids[username]) // Only if fid exists
-            .map(({ username, position }) => position);
-          console.log("Mentions to FIDs:", mentionsToFids); // Debugging mentions
-          console.log("Mentions Positions:", mentionsPositions); // Debugging positions
+          // Remove the mentions from the text to prevent duplicates
+          const sanitizedText = text.replace(usernamePattern, "");
+
+          // Map the positions of each mention for use in the `mentionsPositions` array
+          const mentionsPositions = filteredUsernamesWithPositions
+            .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
+            .map(({ username, position }) => ({
+              fid: mentionsToFids[username],
+              position,
+            }));
+
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
               "Mismatch between mentions and their positions:",
@@ -291,15 +314,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
-          // Update draft with sanitized text and correct mentions
           setDraft((prevDraft) => {
-            return {
+            const updatedDraft = {
               ...prevDraft,
-              text, // Keep the original text
+              text: sanitizedText, // Use sanitized text without mentions in the final submission
               embeds: newEmbeds,
-              mentionsToFids, // Updated mentions
-              mentionsPositions, // Positions
+              parentUrl: channel?.parent_url || undefined,
+              mentionsToFids, // Correct type with strings
+              mentionsPositions: mentionsPositions.map((mp) => mp.position), // Pass the positions correctly
             };
+            console.log("Updated Draft:", updatedDraft); // Log the updated draft
+            return updatedDraft;
           });
         } catch (error) {
           console.error("Error fetching FIDs:", error);
@@ -308,7 +333,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     };
 
     fetchMentionsAndSetDraft();
-  }, [text, embeds, initialEmbeds, isPublishing, editor]);
+  }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
 
   async function publishPost(
     draft: DraftType,
