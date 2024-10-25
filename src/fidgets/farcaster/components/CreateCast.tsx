@@ -30,6 +30,7 @@ import {
   size,
   indexOf,
   some,
+  slice,
 } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
@@ -244,17 +245,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
-      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$|[^\w@])/g;
-
-      // Regex to match URLs
-      const urlPattern = /(https?:\/\/[^\s]+)/g;
-
-      // Extract URLs and track their positions
-      const urlsWithPositions = [...text.matchAll(urlPattern)].map((match) => ({
-        url: match[0],
-        startPosition: match.index!,
-        endPosition: match.index! + match[0].length,
-      }));
+      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
 
       // Extract mentions and their positions
       const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
@@ -264,18 +255,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
         }),
       );
 
-      // Filter out mentions that overlap with URLs
-      const filteredUsernamesWithPositions = usernamesWithPositions.filter(
-        ({ position }) => {
-          return !urlsWithPositions.some(
-            ({ startPosition, endPosition }) =>
-              position >= startPosition && position <= endPosition,
-          );
-        },
-      );
-
       const uniqueUsernames = Array.from(
-        new Set(filteredUsernamesWithPositions.map((u) => u.username)),
+        new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
       if (uniqueUsernames.length > 0) {
@@ -287,21 +268,35 @@ const CreateCast: React.FC<CreateCastProps> = ({
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
                 acc[mention.username] = mention.fid.toString(); // Convert fid to string
-              } else {
-                console.error("Malformed mention object:", mention); // Log malformed objects
               }
               return acc;
             },
             {} as { [key: string]: string },
           );
 
-          // Replace mentions within the text with placeholders to prevent duplication
-          const sanitizedText = text.replace(usernamePattern, "");
+          // Initialize empty sanitized text and mention positions array
+          let sanitizedText = text;
+          const mentionsPositions: number[] = [];
+          let currentTextIndex = 0;
 
-          // Calculate positions after filtering out URL-based mentions
-          const mentionsPositions = filteredUsernamesWithPositions
-            .filter(({ username }) => mentionsToFids[username]) // Ensure the username has an FID
-            .map(({ position }) => position);
+          // Loop through each mention and replace them one by one in the sanitizedText
+          for (const mention of usernamesWithPositions) {
+            const { username, position } = mention;
+
+            // Adjust the position as mentions are replaced and text length changes
+            let mentionIndex = sanitizedText.indexOf(
+              username,
+              currentTextIndex,
+            );
+            if (mentionIndex !== -1) {
+              mentionsPositions.push(mentionIndex); // Add the position
+
+              // Remove the mention from sanitized text by slicing and replacing
+              sanitizedText = `${sanitizedText.slice(0, mentionIndex)}${sanitizedText.slice(mentionIndex + username.length)}`;
+
+              currentTextIndex = mentionIndex; // Move forward in the text
+            }
+          }
 
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
@@ -314,11 +309,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
           setDraft((prevDraft) => {
             const updatedDraft = {
               ...prevDraft,
-              text: sanitizedText, // Use sanitized text without mentions in the final submission
+              text: sanitizedText, // Final sanitized text without mentions
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
-              mentionsToFids, // Correct type with strings
-              mentionsPositions, // Use positions adjusted for URLs
+              mentionsToFids, // Updated mentionsToFids
+              mentionsPositions, // Final recalculated positions
             };
             console.log("Updated Draft before posting:", updatedDraft);
             return updatedDraft;
