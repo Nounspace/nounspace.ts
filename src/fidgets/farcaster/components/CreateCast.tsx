@@ -303,7 +303,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             // As we find each mention, update the positions list
             const mentionIndex = finalText.indexOf(username, currentTextIndex);
             if (mentionIndex !== -1) {
-              mentionsPositions.push(mentionIndex); // Log the position for each mention
+              mentionsPositions.push(mentionIndex - 1); // Log the position for each mention
               currentTextIndex = mentionIndex + username.length; // Move forward in the text
             }
           }
