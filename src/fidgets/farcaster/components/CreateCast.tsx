@@ -284,7 +284,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             const { username, position } = mention;
 
             // Adjust the position as mentions are replaced and text length changes
-            let mentionIndex = sanitizedText.indexOf(
+            const mentionIndex = sanitizedText.indexOf(
               username,
               currentTextIndex,
             );
