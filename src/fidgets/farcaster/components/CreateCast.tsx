@@ -239,11 +239,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!editor) return;
     if (isPublishing) return;
 
+    // Extract mentions and their positions without affecting URLs
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions that are followed by a space, punctuation, or end of string.
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|[.,!?]|$)/g;
+      // Regex to match pure @username mentions, ensuring it's not part of a URL
+      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
 
       // Regex to match URLs
       const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -263,7 +264,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         }),
       );
 
-      // Filter out mentions that appear within URLs
+      // Filter out mentions that overlap with URLs
       const filteredUsernamesWithPositions = usernamesWithPositions.filter(
         ({ position }) => {
           return !urlsWithPositions.some(
@@ -294,7 +295,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Replace mentions within the text with placeholders to prevent duplication
+          // Sanitize text to ensure only valid mentions are tracked, excluding URLs
           const sanitizedText = text.replace(usernamePattern, "");
 
           // Calculate positions after filtering out URL-based mentions
