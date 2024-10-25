@@ -15,23 +15,7 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import {
-  debounce,
-  map,
-  isEmpty,
-  isUndefined,
-  values,
-  reduce,
-  forEach,
-  replace,
-  trim,
-  filter,
-  keys,
-  size,
-  indexOf,
-  some,
-  slice,
-} from "lodash";
+import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
