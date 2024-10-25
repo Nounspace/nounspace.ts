@@ -6,6 +6,9 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings, FontFamily, Color } from "@/common/lib/theme";
 import SwitchButton from "../components/molecules/ViewSelector";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import { FilterTypeSelector } from "@/fidgets/farcaster/Feed";
+import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
+import PlatformSelector from "../components/molecules/PlatformSelector";
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
   background?: Color;
@@ -44,7 +47,10 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
     | typeof CSSInput
     | typeof HTMLInput
     | typeof ImageScaleSlider
-    | typeof SwitchButton; // change the name of ViewSelector.tsx file in next link fidget PR
+    | typeof SwitchButton
+    | typeof FeedTypeSelector
+    | typeof FilterTypeSelector
+    | typeof PlatformSelector; // new input components for feed fidget
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;

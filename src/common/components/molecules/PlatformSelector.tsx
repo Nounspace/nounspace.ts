@@ -8,7 +8,7 @@ import {
 } from "@/common/components/atoms/select";
 
 export interface Platform {
-  name: string;
+  name?: string;
   icon?: string;
 }
 
@@ -18,7 +18,7 @@ export interface PlatformSelectorProps {
   className?: string;
 }
 
-export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
+const PlatformSelector: React.FC<PlatformSelectorProps> = ({
   onChange,
   value = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
   className,
@@ -59,7 +59,7 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
         </SelectTrigger>
         <SelectContent>
           {settings.map((app: Platform) => (
-            <SelectItem key={app.name} value={app.name}>
+            <SelectItem key={app.name} value={app.name || ""}>
               <div className="flex items-center">
                 {app.icon && (
                   <img
@@ -68,7 +68,7 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
                     className="mr-2 h-auto w-5 rounded-sm"
                   />
                 )}
-                <span>{app.name}</span>
+                {app.name && <span>{app.name}</span>}
               </div>
             </SelectItem>
           ))}
@@ -77,3 +77,5 @@ export const PlatformSelector: React.FC<PlatformSelectorProps> = ({
     </div>
   );
 };
+
+export default PlatformSelector;
