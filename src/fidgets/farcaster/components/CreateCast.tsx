@@ -239,12 +239,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!editor) return;
     if (isPublishing) return;
 
-    // Extract mentions and their positions without affecting URLs
+    // Function to fetch mentions and set the draft with proper mention positions
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$|[^\w@])/g;
 
       // Regex to match URLs
       const urlPattern = /(https?:\/\/[^\s]+)/g;
@@ -295,7 +295,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Sanitize text to ensure only valid mentions are tracked, excluding URLs
+          // Replace mentions within the text with placeholders to prevent duplication
           const sanitizedText = text.replace(usernamePattern, "");
 
           // Calculate positions after filtering out URL-based mentions
