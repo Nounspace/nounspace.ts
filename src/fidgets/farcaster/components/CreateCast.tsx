@@ -240,20 +240,22 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!editor) return;
     if (isPublishing) return;
 
-    // Function to fetch mentions and set the draft with proper mention positions
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
       const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
 
-      // Extract mentions and their positions
-      const usernamesWithPositions = [...text.matchAll(usernamePattern)].map(
-        (match) => ({
-          username: match[1],
-          position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
-        }),
-      );
+      // The working copy of the text for position calculation
+      const workingText = text;
+
+      // Extract mentions and their positions from the original text
+      const usernamesWithPositions = [
+        ...workingText.matchAll(usernamePattern),
+      ].map((match) => ({
+        username: match[1],
+        position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
+      }));
 
       const uniqueUsernames = Array.from(
         new Set(usernamesWithPositions.map((u) => u.username)),
@@ -261,6 +263,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       if (uniqueUsernames.length > 0) {
         try {
+          // Fetch the FIDs for the mentioned users
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
@@ -274,27 +277,23 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          // Initialize empty sanitized text and mention positions array
-          let sanitizedText = text;
           const mentionsPositions: number[] = [];
-          let currentTextIndex = 0;
 
-          // Loop through each mention and replace them one by one in the sanitizedText
+          // Traverse mentions and track positions while replacing them in the working text
+          let currentTextIndex = 0;
+          let finalText = text; // Keep the original text to display but update mention positions
+
           for (const mention of usernamesWithPositions) {
             const { username, position } = mention;
 
-            // Adjust the position as mentions are replaced and text length changes
-            const mentionIndex = sanitizedText.indexOf(
-              username,
-              currentTextIndex,
-            );
+            // As we find each mention, update the positions list
+            const mentionIndex = finalText.indexOf(username, currentTextIndex);
             if (mentionIndex !== -1) {
-              mentionsPositions.push(mentionIndex); // Add the position
+              mentionsPositions.push(mentionIndex); // Log the position for each mention
+              currentTextIndex = mentionIndex + username.length; // Move forward in the text
 
-              // Remove the mention from sanitized text by slicing and replacing
-              sanitizedText = `${sanitizedText.slice(0, mentionIndex)}${sanitizedText.slice(mentionIndex + username.length)}`;
-
-              currentTextIndex = mentionIndex; // Move forward in the text
+              // Optionally, remove the duplicate `@username` from the final text (visible text)
+              finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
             }
           }
 
@@ -306,13 +305,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
+          // Update the draft with recalculated text and positions
           setDraft((prevDraft) => {
             const updatedDraft = {
               ...prevDraft,
-              text: sanitizedText, // Final sanitized text without mentions
+              text: finalText, // Use the modified text for submission
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
-              mentionsToFids, // Updated mentionsToFids
+              mentionsToFids, // Correct FIDs
               mentionsPositions, // Final recalculated positions
             };
             console.log("Updated Draft before posting:", updatedDraft);
