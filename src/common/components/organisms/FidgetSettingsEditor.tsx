@@ -41,7 +41,7 @@ type FidgetSettingsRowProps = {
   id: string;
 };
 
-const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
+export const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
   return fields.reduce(
     (acc, field) => {
       if (field.group) {
@@ -58,7 +58,7 @@ const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
   );
 };
 
-const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
+export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   field,
   value,
   onChange,
@@ -92,7 +92,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   );
 };
 
-const FidgetSettingsGroup: React.FC<{
+export const FidgetSettingsGroup: React.FC<{
   fidgetId: string;
   fields: FidgetFieldConfig[];
   state: FidgetSettings;
