@@ -283,6 +283,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
           let currentTextIndex = 0;
           let finalText = text; // Keep the original text to display but update mention positions
 
+          // for (const mention of usernamesWithPositions) {
+          //   const { username, position } = mention;
+
+          //   // As we find each mention, update the positions list
+          //   const mentionIndex = finalText.indexOf(username, currentTextIndex);
+          //   if (mentionIndex !== -1) {
+          //     mentionsPositions.push(mentionIndex); // Log the position for each mention
+          //     currentTextIndex = mentionIndex + username.length; // Move forward in the text
+
+          //     // Optionally, remove the duplicate `@username` from the final text (visible text)
+          //     finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
+          //   }
+          // }
+
           for (const mention of usernamesWithPositions) {
             const { username, position } = mention;
 
@@ -291,10 +305,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
             if (mentionIndex !== -1) {
               mentionsPositions.push(mentionIndex); // Log the position for each mention
               currentTextIndex = mentionIndex + username.length; // Move forward in the text
-
-              // Optionally, remove the duplicate `@username` from the final text (visible text)
-              finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
             }
+          }
+
+          for (const mention of usernamesWithPositions) {
+            const { username, position } = mention;
+            // Optionally, remove the duplicate `@username` from the final text (visible text)
+            finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
           }
 
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
