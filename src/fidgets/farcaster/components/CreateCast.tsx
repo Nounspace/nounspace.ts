@@ -227,7 +227,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
-      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+      const usernamePattern =
+        /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)(?![^\s]*:\/\/)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -261,44 +262,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
           );
 
           const mentionsPositions: number[] = [];
-
-          // Traverse mentions and track positions while replacing them in the working text
           const currentTextIndex = 0;
-          const finalText = text; // Keep the original text to display but update mention positions
-
-          // for (const mention of usernamesWithPositions) {
-          //   const { username, position } = mention;
-
-          //   // As we find each mention, update the positions list
-          //   const mentionIndex = finalText.indexOf(username, currentTextIndex);
-          //   if (mentionIndex !== -1) {
-          //     mentionsPositions.push(mentionIndex); // Log the position for each mention
-          //     currentTextIndex = mentionIndex + username.length; // Move forward in the text
-
-          //     // Optionally, remove the duplicate `@username` from the final text (visible text)
-          //     finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
-          //   }
-          // }
-
-          // for (const mention of usernamesWithPositions) {
-          //   const { username, position } = mention;
-
-          // As we find each mention, update the positions list
-          //   const mentionIndex = finalText.indexOf(username, currentTextIndex);
-          //   if (mentionIndex !== -1) {
-          //     mentionsPositions.push(mentionIndex - 1); // Log the position for each mention
-          //     currentTextIndex = mentionIndex + username.length; // Move forward in the text
-          //   }
-          // }
-
-          // for (const mention of usernamesWithPositions) {
-          //   const { username, position } = mention;
-          //   // Optionally, remove the duplicate `@username` from the final text (visible text)
-          //   finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
-          // }
-
+          const finalText = text;
           const mentions = [];
           let mentionsText = text;
+
           for (let i = 0; i < mentionsText.length; i++) {
             if (mentionsText[i] === "@") {
               // console.log("found @ at pos: " + i);
@@ -328,15 +296,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
-          // Update the draft with recalculated text and positions
           setDraft((prevDraft) => {
             const updatedDraft = {
               ...prevDraft,
-              text: mentionsText, // Use the modified text for submission
+              text: mentionsText,
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
-              mentionsToFids, // Correct FIDs
-              mentionsPositions, // Final recalculated positions
+              mentionsToFids,
+              mentionsPositions,
             };
             console.log("Updated Draft before posting:", updatedDraft);
             return updatedDraft;
