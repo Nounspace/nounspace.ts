@@ -267,7 +267,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           let mentionsText = text;
 
           for (let i = 0; i < mentionsText.length; i++) {
-            if (mentionsText[i] === "@" && mentionsText[i - 1] !== "/") {
+            if (mentionsText[i] === "@" && mentionsText[i - 1] === " ") {
               // console.log("found @ at pos: " + i);
               let mentionIndex = i + 1;
               while (
