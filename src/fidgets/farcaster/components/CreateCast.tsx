@@ -48,6 +48,7 @@ import { form } from "@segment/analytics-next/dist/types/core/auto-track";
 import { commands, hr } from "@uiw/react-md-editor";
 import { url } from "inspector";
 import { match } from "assert";
+import { test } from "gray-matter";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -267,8 +268,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
           let mentionsText = text;
 
           for (let i = 0; i < mentionsText.length; i++) {
-            if (mentionsText[i] === "@" && mentionsText[i - 1] !== "/") {
-              // console.log("found @ at pos: " + i);
+            if (
+              mentionsText[i] === "@" &&
+              ((mentionsText[i - 1] !== "/" &&
+                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
+                mentionsText[i - 1] === undefined)
+            ) {
               let mentionIndex = i + 1;
               while (
                 mentionIndex < mentionsText.length &&
