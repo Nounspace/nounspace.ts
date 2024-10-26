@@ -227,8 +227,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
-      const usernamePattern =
-        /(?:^|\s)@([a-zA-Z0-9_.]+)(?=\s|$)(?![^\s]*:\/\/)/g;
+      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -268,7 +267,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           let mentionsText = text;
 
           for (let i = 0; i < mentionsText.length; i++) {
-            if (mentionsText[i] === "@") {
+            if (mentionsText[i] === "@" && mentionsText[i - 1] !== "/") {
               // console.log("found @ at pos: " + i);
               let mentionIndex = i + 1;
               while (
