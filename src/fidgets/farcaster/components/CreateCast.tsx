@@ -15,7 +15,7 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { debounce, map, isEmpty, isUndefined } from "lodash";
+import { debounce, map, isEmpty, isUndefined, replace } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
@@ -219,7 +219,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
-
   useEffect(() => {
     if (!editor) return;
     if (isPublishing) return;
@@ -281,23 +280,47 @@ const CreateCast: React.FC<CreateCastProps> = ({
           //   }
           // }
 
-          for (const mention of usernamesWithPositions) {
-            const { username, position } = mention;
+          // for (const mention of usernamesWithPositions) {
+          //   const { username, position } = mention;
 
-            // As we find each mention, update the positions list
-            const mentionIndex = finalText.indexOf(username, currentTextIndex);
-            if (mentionIndex !== -1) {
-              mentionsPositions.push(mentionIndex - 1); // Log the position for each mention
-              currentTextIndex = mentionIndex + username.length; // Move forward in the text
+          // As we find each mention, update the positions list
+          //   const mentionIndex = finalText.indexOf(username, currentTextIndex);
+          //   if (mentionIndex !== -1) {
+          //     mentionsPositions.push(mentionIndex - 1); // Log the position for each mention
+          //     currentTextIndex = mentionIndex + username.length; // Move forward in the text
+          //   }
+          // }
+
+          // for (const mention of usernamesWithPositions) {
+          //   const { username, position } = mention;
+          //   // Optionally, remove the duplicate `@username` from the final text (visible text)
+          //   finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
+          // }
+
+          let mentions = [];
+          let prevIndex = 0;
+          let mentionsText = text;
+          for (let i = 0; i < mentionsText.length; i++) {
+            if (mentionsText[i] === "@") {
+              // console.log("found @ at pos: " + i);
+              let mentionIndex = i + 1;
+              while (
+                mentionIndex < mentionsText.length &&
+                mentionsText[mentionIndex] !== " " &&
+                mentionsText[mentionIndex] !== "\n"
+              )
+                mentionIndex++;
+              const mention = mentionsText.substring(i + 1, mentionIndex);
+              const position = i;
+              mentionsPositions.push(position);
+              mentionsText = mentionsText.replace(`@${mention}`, "");
             }
           }
 
-          for (const mention of usernamesWithPositions) {
-            const { username, position } = mention;
-            // Optionally, remove the duplicate `@username` from the final text (visible text)
-            finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
-          }
-
+          console.log(mentions);
+          console.log("mentionsText.length" + mentionsText.length);
+          if (mentions.length > 10)
+            console.log("only up to 10 mentions. " + mentions.length);
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
               "Mismatch between mentions and their positions:",
@@ -310,7 +333,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           setDraft((prevDraft) => {
             const updatedDraft = {
               ...prevDraft,
-              text: finalText, // Use the modified text for submission
+              text: mentionsText, // Use the modified text for submission
               embeds: newEmbeds,
               parentUrl: channel?.parent_url || undefined,
               mentionsToFids, // Correct FIDs
