@@ -263,8 +263,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
           const mentionsPositions: number[] = [];
 
           // Traverse mentions and track positions while replacing them in the working text
-          let currentTextIndex = 0;
-          let finalText = text; // Keep the original text to display but update mention positions
+          const currentTextIndex = 0;
+          const finalText = text; // Keep the original text to display but update mention positions
 
           // for (const mention of usernamesWithPositions) {
           //   const { username, position } = mention;
@@ -297,8 +297,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           //   finalText = finalText.replace(`@${username}`, ``); // Keep one `@`
           // }
 
-          let mentions = [];
-          let prevIndex = 0;
+          const mentions = [];
           let mentionsText = text;
           for (let i = 0; i < mentionsText.length; i++) {
             if (mentionsText[i] === "@") {
