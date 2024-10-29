@@ -39,6 +39,10 @@ import {
   UnsignedUpdateTabOrderRequest,
   UpdateTabOrderRequest,
 } from "@/pages/api/space/registry/[spaceId]";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
 
 type SpaceId = string;
 
@@ -272,6 +276,8 @@ export const createSpaceStoreFunc = (
 
           draft.space.localSpaces[spaceId].order.push(tabName);
         }, "createSpaceTab");
+        analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
+
         return get().space.commitSpaceOrderToDatabase(spaceId);
       } catch (e) {
         console.error(e);
@@ -314,6 +320,7 @@ export const createSpaceStoreFunc = (
           get().space.localSpaces[spaceId].order,
         );
       }, "commitSpaceOrderToDatabase");
+      analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
     } catch (e) {
       console.error(e);
     }
