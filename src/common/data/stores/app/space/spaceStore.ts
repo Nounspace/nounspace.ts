@@ -197,6 +197,9 @@ export const createSpaceStoreFunc = (
       } else {
         draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
       }
+      if (newName && newName !== tabName) {
+        analytics.track(AnalyticsEvent.CHANGE_TAB_NAME);
+      }
       const newTimestamp = moment().toISOString();
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
     }, "saveLocalSpaceTab");
