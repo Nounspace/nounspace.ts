@@ -9,7 +9,8 @@ export enum AnalyticsEvent {
   CONNECT_WALLET = "Connect Wallet",
   SIGN_UP = "Sign Up",
   LINK_FID = "Link FID",
-  SAVE_SPACE_THEME = "Save Space Theme",
+  CREATE_NEW_TAB = "Create New Tab",
+  SAVE_SPACE_THEME = "Save Space Theme in Space",
   SAVE_HOMEBASE_THEME = "Save Homebase Theme",
   ADD_FIDGET = "Add Fidget",
   EDIT_FIDGET = "Edit Fidget",
@@ -34,6 +35,7 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.CONNECT_WALLET]: { hasNogs: boolean };
   [AnalyticsEvent.SIGN_UP]: Record<string, never>;
   [AnalyticsEvent.LINK_FID]: { fid: number };
+  [AnalyticsEvent.CREATE_NEW_TAB]: Record<string, never>;
   [AnalyticsEvent.SAVE_SPACE_THEME]: Record<string, never>;
   [AnalyticsEvent.SAVE_HOMEBASE_THEME]: Record<string, never>;
   [AnalyticsEvent.ADD_FIDGET]: { fidgetType: string };
