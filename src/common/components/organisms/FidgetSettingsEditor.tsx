@@ -135,7 +135,6 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   unselect,
   removeFidget,
 }) => {
-  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
 
   useEffect(() => {
@@ -232,51 +231,20 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
       </div>
 
       <div className="shrink-0 flex flex-col gap-3 pb-8">
-        {showConfirmCancel ? (
-          // Back Button and Exit Button (shows second)
-          <>
-            <div className="pt-2 flex gap-2 items-center justify-center">
-              <Button
-                type="button"
-                onClick={() => setShowConfirmCancel(false)}
-                size="icon"
-                variant="secondary"
-              >
-                <BackArrowIcon />
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  removeFidget(fidgetId);
-                }}
-                variant="destructive"
-                width="auto"
-              >
-                <FaTriangleExclamation
-                  className="h-8l shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="ml-4 mr-4">Delete</span>
-              </Button>
-            </div>
-          </>
-        ) : (
-          // X Button and Save Button (shows first)
-          <div className="pt-2 gap-2 flex items-center justify-center">
-            <Button
-              type="button"
-              onClick={() => setShowConfirmCancel(true)}
-              size="icon"
-              variant="secondary"
-            >
-              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
-            </Button>
+        <div className="pt-2 gap-2 flex items-center justify-center">
+          <Button
+            type="button"
+            onClick={() => removeFidget(fidgetId)}
+            size="icon"
+            variant="secondary"
+          >
+            <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
+          </Button>
 
-            <Button type="submit" variant="primary" width="auto">
-              <div className="flex items-center">Done</div>
-            </Button>
-          </div>
-        )}
+          <Button type="submit" variant="primary" width="auto">
+            <div className="flex items-center">Done</div>
+          </Button>
+        </div>
       </div>
     </form>
   );
