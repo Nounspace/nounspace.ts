@@ -101,24 +101,28 @@ const FidgetSettingsGroup: React.FC<{
 }> = ({ fields, state, setState, onSave, fidgetId }) => {
   return (
     <>
-      {fields.map((field, i) => (
-        <FidgetSettingsRow
-          field={field}
-          key={`${fidgetId}-${i}-${field.fieldName}`}
-          id={`${fidgetId}-${i}-${field.fieldName}`}
-          value={state[field.fieldName]}
-          onChange={(val) => {
-            const data = {
-              ...state,
-              [field.fieldName]: val,
-            };
+      {fields.map((field, i) => {
+        const value =
+          (field.fieldName in state && state[field.fieldName]) || "";
+        return (
+          <FidgetSettingsRow
+            field={field}
+            key={`${fidgetId}-${i}-${field.fieldName}`}
+            id={`${fidgetId}-${i}-${field.fieldName}`}
+            value={value}
+            onChange={(val) => {
+              const data = {
+                ...state,
+                [field.fieldName]: val,
+              };
 
-            setState(data);
-            onSave(data);
-          }}
-          hide={field.disabledIf && field.disabledIf(state)}
-        />
-      ))}
+              setState(data);
+              onSave(data);
+            }}
+            hide={field.disabledIf && field.disabledIf(state)}
+          />
+        );
+      })}
     </>
   );
 };

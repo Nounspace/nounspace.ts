@@ -3,10 +3,17 @@ import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import FidgetTray from "./FidgetTray";
-import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
+import { toast } from "sonner";
+import {
+  FidgetArgs,
+  FidgetBundle,
+  FidgetInstanceData,
+  FidgetModule,
+} from "@/common/fidgets";
 import FidgetPicker from "./FidgetPicker";
 import { v4 as uuidv4 } from "uuid";
 import { fromPairs, map } from "lodash";
+import { CompleteFidgets } from "@/fidgets";
 
 export interface EditorPanelProps {
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,6 +37,8 @@ export interface EditorPanelProps {
   isPickingFidget: boolean;
   setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
   openFidgetPicker(): void;
+  selectFidget(fidgetBundle: FidgetBundle): void;
+  addFidgetToGrid(fidget: FidgetInstanceData): boolean;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -49,6 +58,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   isPickingFidget,
   setIsPickingFidget,
   openFidgetPicker,
+  selectFidget,
+  addFidgetToGrid,
 }) => {
   function generateFidgetInstance(
     fidgetId: string,
@@ -75,7 +86,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     return newFidgetInstanceData;
   }
 
-  function addFidgetToTray(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
+  // Add fidget to grid if space is available, otherwise add to tray
+  function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
     // Generate new fidget instance
     const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
 
@@ -83,11 +95,24 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
     saveFidgetInstanceDatums(fidgetInstanceDatums);
 
-    // Add it to the tray
-    const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
-    saveTrayContents(newTrayContents);
-
     setIsPickingFidget(false);
+
+    const bundle = {
+      ...newFidgetInstanceData,
+      properties: CompleteFidgets[fidgetId].properties,
+    };
+
+    const addedToGrid = addFidgetToGrid(bundle);
+
+    if (!addedToGrid) {
+      toast("No space available on the grid. Fidget added to the tray.", {
+        duration: 2000,
+      });
+      const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+      saveTrayContents(newTrayContents);
+    }
+
+    selectFidget(bundle);
   }
 
   return (
@@ -104,7 +129,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
             <>
               {isPickingFidget ? (
                 <FidgetPicker
-                  addFidgetToTray={addFidgetToTray}
+                  addFidget={addFidget}
                   setCurrentlyDragging={setCurrentlyDragging}
                   setExternalDraggedItem={setExternalDraggedItem}
                   generateFidgetInstance={generateFidgetInstance}
@@ -130,6 +155,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           openFidgetPicker={openFidgetPicker}
           saveTrayContents={saveTrayContents}
           removeFidget={removeFidget}
+          selectedFidgetID={selectedFidgetID}
+          selectFidget={selectFidget}
         />
       </div>
     </aside>
