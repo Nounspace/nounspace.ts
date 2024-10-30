@@ -37,13 +37,13 @@ export const useUserTheme = () => {
 
   if (currentSpaceId === HOMEBASE_ID) {
     if (currentTabName === "Feed" || !currentTabName) {
-      console.log("Tab Name:", currentTabName);
-      console.log("Theme selected: Homebase Feed or default");
-      console.log("Theme:", homebaseConfig?.theme);
+      // console.log("Tab Name:", currentTabName);
+      // console.log("Theme selected: Homebase Feed or default");
+      // console.log("Theme:", homebaseConfig?.theme);
       return homebaseConfig?.theme ?? defaultTheme;
     } else {
-      console.log(`Theme selected: Homebase tab - ${currentTabName}`);
-      console.log("Theme:", homebaseTabs[currentTabName]?.config?.theme);
+      // console.log(`Theme selected: Homebase tab - ${currentTabName}`);
+      // console.log("Theme:", homebaseTabs[currentTabName]?.config?.theme);
       return homebaseTabs[currentTabName]?.config?.theme ?? defaultTheme;
     }
   } else {
