@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FarcasterFrameContext,
   FrameActionBodyPayload,
@@ -20,7 +20,9 @@ import {
   makeFrameAction,
 } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
-import { isUndefined } from "lodash";
+import { isUndefined, slice } from "lodash";
+import { log, error } from "console";
+import { getAddress } from "viem";
 
 // Due to issue with FrameImageNext from @frame.js/render/next
 // Implement the exact same thing again
@@ -80,7 +82,10 @@ async function createFrameActionMessage(
       buttonIndex,
       castId,
       state,
-      inputText: inputText !== undefined ? Buffer.from(inputText) : undefined,
+      inputText:
+        inputText !== undefined
+          ? new Uint8Array(Buffer.from(inputText))
+          : undefined,
       address,
       transactionId,
     }),
@@ -104,6 +109,8 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
   showError = true,
 }) => {
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("frame");
+  // Inside the component or hook where you manage wallet connection
+  console.log("fuck", signer, isLoadingSigner);
 
   const signFrameAction = async ({
     buttonIndex,
@@ -127,6 +134,17 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
     body: FrameActionBodyPayload;
     searchParams: URLSearchParams;
   }> => {
+    console.log("Starting signFrameAction with the following parameters:", {
+      buttonIndex,
+      frameContext,
+      frameButton,
+      target,
+      inputText,
+      state,
+      transactionId,
+      url,
+    });
+
     const { message, trustedBytes } = await createFrameActionMessage(signer!, {
       fid,
       buttonIndex,
@@ -134,10 +152,15 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
         fid: frameContext.castId.fid,
         hash: hexToBytes(frameContext.castId.hash.slice(2)),
       },
-      state: state !== undefined ? Buffer.from(state) : undefined,
-      url: Buffer.from(url),
-      // it seems the message in hubs actually requires a value here.
-      inputText: inputText !== undefined ? Buffer.from(inputText) : undefined,
+      state:
+        state !== undefined
+          ? new Uint8Array(Buffer.from(state).buffer)
+          : undefined,
+      url: new Uint8Array(Buffer.from(url)),
+      inputText:
+        inputText !== undefined
+          ? Uint8Array.from(Buffer.from(inputText))
+          : undefined,
       address:
         frameContext.address !== undefined
           ? hexToBytes(frameContext.address.slice(2))
@@ -148,7 +171,11 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
           : undefined,
     });
 
+    console.log("Message generated:", message);
+    console.log("Trusted bytes for transaction:", trustedBytes);
+
     if (!message) {
+      console.error("Failed to create frame action message");
       throw new Error("hub error");
     }
 
@@ -156,6 +183,8 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
       postType: transactionId ? "post" : frameButton.action,
       postUrl: target ?? "",
     });
+
+    console.log("Transaction search parameters:", searchParams.toString());
 
     return {
       searchParams,
@@ -210,7 +239,13 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
     return null;
   }
 
-  return <FrameUI frameState={frameState} FrameImage={FrameImageNext} />;
+  return (
+    <FrameUI
+      frameState={frameState}
+      FrameImage={FrameImageNext}
+      enableImageDebugging
+    />
+  );
 };
 
 export default FrameEmbed;
