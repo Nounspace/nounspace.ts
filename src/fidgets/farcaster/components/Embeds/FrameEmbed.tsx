@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FarcasterFrameContext,
   FrameActionBodyPayload,
@@ -20,12 +20,10 @@ import {
   makeFrameAction,
 } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
-import { isUndefined, slice } from "lodash";
-import { log, error } from "console";
-import { getAddress } from "viem";
+import { usePrivy } from "@privy-io/react-auth"; // Import usePrivy
+import { isUndefined } from "lodash";
 
-// Due to issue with FrameImageNext from @frame.js/render/next
-// Implement the exact same thing again
+// Custom FrameImage component due to an issue with FrameImageNext from @frame.js/render/next
 function FrameImageNext(
   props: ImgHTMLAttributes<HTMLImageElement> & { src: string },
 ): React.ReactNode {
@@ -109,8 +107,29 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
   showError = true,
 }) => {
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("frame");
-  // Inside the component or hook where you manage wallet connection
-  console.log("fuck", signer, isLoadingSigner);
+  const { user, authenticated, ready } = usePrivy(); // Use Privy to access the user
+
+  const [connectedAddress, setConnectedAddress] = useState<
+    `0x${string}` | undefined
+  >(undefined);
+
+  useEffect(() => {
+    if (ready && authenticated && user) {
+      // Retrieve the wallet address from the Privy user object, assuming it's stored in user.wallets[0]
+      const rawAddress = user.wallet?.[0]?.address;
+      if (rawAddress) {
+        const formattedAddress = rawAddress.startsWith("0x")
+          ? (rawAddress as `0x${string}`)
+          : (`0x${rawAddress}` as `0x${string}`);
+        console.log("Connected wallet address from Privy:", formattedAddress);
+        setConnectedAddress(formattedAddress);
+      } else {
+        console.error("No wallet address found in Privy user.");
+      }
+    } else {
+      console.log("User not authenticated or Privy not ready.");
+    }
+  }, [ready, authenticated, user]);
 
   const signFrameAction = async ({
     buttonIndex,
@@ -145,7 +164,12 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
       url,
     });
 
-    const { message, trustedBytes } = await createFrameActionMessage(signer!, {
+    if (!signer) {
+      console.error("No signer available. Cannot proceed with transaction.");
+      throw new Error("No signer available.");
+    }
+
+    const { message, trustedBytes } = await createFrameActionMessage(signer, {
       fid,
       buttonIndex,
       castId: {
@@ -161,14 +185,12 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
         inputText !== undefined
           ? Uint8Array.from(Buffer.from(inputText))
           : undefined,
-      address:
-        frameContext.address !== undefined
-          ? hexToBytes(frameContext.address.slice(2))
-          : undefined,
-      transactionId:
-        transactionId !== undefined
-          ? hexToBytes(transactionId.slice(2))
-          : undefined,
+      address: connectedAddress
+        ? hexToBytes(connectedAddress.slice(2))
+        : undefined,
+      transactionId: transactionId
+        ? hexToBytes(transactionId.slice(2))
+        : undefined,
     });
 
     console.log("Message generated:", message);
@@ -201,7 +223,7 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
             hash: frameContext.castId.hash,
           },
           inputText,
-          address: frameContext.address,
+          address: connectedAddress,
           transactionId,
           state,
         },
@@ -217,15 +239,15 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
     frameActionProxy: "/frames",
     frameGetProxy: "/frames",
     frameContext: fallbackFrameContext,
-    connectedAddress: undefined,
+    connectedAddress, // Use address from Privy user
     dangerousSkipSigning: false,
     signerState: {
-      hasSigner: !isLoadingSigner,
+      hasSigner: !!signer,
       isLoadingSigner,
       signFrameAction,
       onSignerlessFramePress: () =>
         console.error(
-          "User is not signed into farcaster and so cannot use frames!",
+          "User is not signed into Farcaster and so cannot use frames!",
         ),
     },
   });
