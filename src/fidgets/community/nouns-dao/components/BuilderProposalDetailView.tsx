@@ -154,7 +154,6 @@ export const BuilderProposalDetailView = ({
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
-
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">
@@ -167,7 +166,7 @@ export const BuilderProposalDetailView = ({
           <FaArrowLeft />
         </Button>
         <a
-          href={`https://www.nouns.camp/proposals/${proposal.id}`}
+          href={`https://www.nouns.build/dao/base/${proposal.dao.tokenAddress}/vote/${proposal.proposalNumber}`}
           target="_blank"
           rel="noreferrer"
         >
