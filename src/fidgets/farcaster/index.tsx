@@ -62,16 +62,18 @@ export function useFarcasterSigner(
 ) {
   const authenticatorManager = useAuthenticatorManager();
   const [isLoadingSigner, setIsLoadingSigner] = useState(true);
+  const [signer, setSigner] = useState<Signer>();
+  const [fid, setFid] = useState(-1);
+  const [address, setAddress] = useState<`0x${string}` | undefined>(undefined);
+
   useEffect(() => {
     authenticatorManager
       .getInitializedAuthenticators()
       .then((initilizedAuths) =>
-        setIsLoadingSigner(
-          indexOf(initilizedAuths, FARCASTER_AUTHENTICATOR_NAME) === -1,
-        ),
+        setIsLoadingSigner(indexOf(initilizedAuths, authenticatorName) === -1),
       );
   }, [authenticatorManager.lastUpdatedAt]);
-  const [signer, setSigner] = useState<Signer>();
+
   useEffect(() => {
     createFarcasterSignerFromAuthenticatorManager(
       authenticatorManager,
@@ -79,12 +81,12 @@ export function useFarcasterSigner(
       authenticatorName,
     ).then((signer) => setSigner(signer));
   }, [authenticatorManager.lastUpdatedAt]);
-  const [fid, setFid] = useState(-1);
+
   useEffect(() => {
     authenticatorManager
       .callMethod({
         requestingFidgetId: fidgetId,
-        authenticatorId: FARCASTER_AUTHENTICATOR_NAME,
+        authenticatorId: authenticatorName,
         methodName: "getAccountFid",
         isLookup: true,
       })
@@ -96,10 +98,33 @@ export function useFarcasterSigner(
       });
   }, [authenticatorManager.lastUpdatedAt]);
 
+  // New effect to fetch the address
+  useEffect(() => {
+    authenticatorManager
+      .callMethod({
+        requestingFidgetId: fidgetId,
+        authenticatorId: authenticatorName,
+        methodName: "getAddress", // Adjust if different
+        isLookup: true,
+      })
+      .then((methodResult) => {
+        if (methodResult.result === "success") {
+          const fetchedAddress = methodResult.value as string;
+          const formattedAddress = fetchedAddress.startsWith("0x")
+            ? (fetchedAddress as `0x${string}`)
+            : (`0x${fetchedAddress}` as `0x${string}`);
+          setAddress(formattedAddress);
+        } else {
+          console.error("Failed to retrieve address:", methodResult);
+        }
+      });
+  }, [authenticatorManager.lastUpdatedAt]);
+
   return {
     authenticatorManager,
     isLoadingSigner,
     signer,
     fid,
+    address, // Return the address as part of the hook result
   };
 }
