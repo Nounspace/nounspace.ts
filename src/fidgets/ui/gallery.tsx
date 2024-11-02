@@ -11,6 +11,7 @@ import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import MediaSourceSelector, {
   MediaSource,
 } from "@/common/components/molecules/MediaSourceSelector";
+import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -19,12 +20,20 @@ export type GalleryFidgetSettings = {
   selectMediaSource: MediaSource;
   nftAddress: string;
   nftTokenId: string;
+  network: AlchemyNetwork;
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
   fidgetName: "Image",
   icon: 0x1f5bc,
   fields: [
+    {
+      fieldName: "RedirectionURL",
+      required: false,
+      inputSelector: TextInput,
+      default: "",
+      group: "style",
+    },
     {
       fieldName: "selectMediaSource",
       displayName: "selectMediaSource",
@@ -42,6 +51,15 @@ const galleryConfig: FidgetProperties = {
       group: "settings",
       disabledIf: (settings) =>
         settings?.selectMediaSource?.name !== "Image URL",
+    },
+    {
+      fieldName: "network",
+      displayName: "Network",
+      inputSelector: AlchemyChainSelector,
+      required: true,
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name === "Image URL",
     },
     {
       fieldName: "nftAddress",
@@ -71,13 +89,6 @@ const galleryConfig: FidgetProperties = {
         settings?.selectMediaSource?.name !== "Select from Wallet",
     },
     {
-      fieldName: "RedirectionURL",
-      required: false,
-      inputSelector: TextInput,
-      default: "",
-      group: "settings",
-    },
-    {
       fieldName: "Scale",
       required: false,
       inputSelector: ImageScaleSlider,
@@ -94,7 +105,7 @@ const galleryConfig: FidgetProperties = {
   },
 };
 
-type AlchemyNetwork =
+export type AlchemyNetwork =
   | "eth"
   | "polygon"
   | "opt"
@@ -116,8 +127,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   useEffect(() => {
     if (settings.selectMediaSource?.name === "Import NFT") {
       const fetchNFTData = async () => {
-        const { nftAddress, nftTokenId } = settings;
-        const network: AlchemyNetwork = "base";
+        const { nftAddress, nftTokenId, network } = settings;
         const base_url = getAlchemyChainUrlV3(network);
         const url = `${base_url}/getNFTMetadata?contractAddress=${nftAddress}&tokenId=${nftTokenId}&refreshCache=false`;
 
@@ -129,8 +139,10 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
             headers: { accept: "application/json" },
           });
           const data = await response.json();
+          console.log(data);
           if (data.image && data.image.cachedUrl) {
             setNftImageUrl(data.image.cachedUrl);
+            setError(null);
           } else {
             setError(
               "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct.",
@@ -144,13 +156,28 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
       };
 
       fetchNFTData();
+    } else if (settings.selectMediaSource?.name === "Image URL") {
+      setNftImageUrl(settings.imageUrl);
+      setError(null);
     }
-  }, [settings.selectMediaSource, settings.nftAddress, settings.nftTokenId]);
+  }, [
+    settings.selectMediaSource,
+    settings.nftAddress,
+    settings.nftTokenId,
+    settings.network,
+  ]);
 
   const contentStyle = {
-    backgroundImage: `url(${settings.selectMediaSource?.name === "Import NFT" ? nftImageUrl : settings.imageUrl})`,
+    backgroundImage: `url(${nftImageUrl})`,
+    display: error ? "none" : "block",
     transform: `scale(${settings.Scale})`,
     transition: "transform 0.3s ease",
+  } as CSSProperties;
+
+  const errorStyle = {
+    color: "red",
+    textAlign: "center",
+    marginTop: "10px",
   } as CSSProperties;
 
   const wrapperStyle = {
@@ -172,7 +199,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
           className="bg-cover bg-center w-full h-full"
           style={contentStyle}
         ></div>
-        {error && <div className="error-message">{error}</div>}
+        {error && <div style={errorStyle}>{error}</div>}
       </div>
     </a>
   ) : (
@@ -184,7 +211,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
         className="bg-cover bg-center w-full h-full"
         style={contentStyle}
       ></div>
-      {error && <div className="error-message">{error}</div>}
+      {error && <div style={errorStyle}>{error}</div>}
     </div>
   );
 };
