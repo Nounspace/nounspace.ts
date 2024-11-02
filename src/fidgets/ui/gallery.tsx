@@ -8,6 +8,7 @@ import {
 } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import MediaSourceSelector from "@/common/components/molecules/MediaSourceSelector";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -20,12 +21,22 @@ const galleryConfig: FidgetProperties = {
   icon: 0x1f5bc,
   fields: [
     {
+      fieldName: "selectMediaSource",
+      displayName: "selectMediaSource",
+      inputSelector: MediaSourceSelector,
+      required: false,
+      default: { name: "Image URL" },
+      group: "settings",
+    },
+    {
       fieldName: "imageUrl",
       required: true,
       inputSelector: TextInput,
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== "Image URL",
     },
     {
       fieldName: "RedirectionURL",
