@@ -7,8 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import TextInput from "./TextInput";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
+import { NeynarUser } from "@/pages/api/farcaster/neynar/user";
 
 export interface AlchemyNftSelectorValue {
   chain: AlchemyNetwork | undefined;
@@ -28,6 +28,8 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   value,
   className,
 }) => {
+  const username = "skateboard";
+
   const [selectedImage, setSelectedImage] = useState<number | undefined>();
   const [textInputValue, setTextInputValue] = useState<string>(
     value.walletAddress,
@@ -37,6 +39,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   >(value.chain);
   const [nftImages, setNftImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [verifiedAddresses, setVerifiedAddresses] = useState<string[]>([]);
   const settings = CHAIN_OPTIONS;
 
   useEffect(() => {
@@ -47,6 +50,31 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
       imageUrl: selectedImage !== undefined ? nftImages[selectedImage] : "",
     });
   }, [selectedChain, textInputValue, selectedImage, nftImages]);
+
+  useEffect(() => {
+    const fetchVerifiedAddress = async () => {
+      try {
+        const response = await fetch(
+          `/api/farcaster/neynar/user?username=${username}`,
+        );
+        const data = await response.json();
+        const user = data.user as NeynarUser;
+        console.log({ user });
+        if (data && user.verifications.length > 0) {
+          setError(null);
+          setVerifiedAddresses(user.verifications);
+          setTextInputValue(user.verifications[0]);
+        } else {
+          setError("No verified address found for user " + username);
+        }
+      } catch (err: any) {
+        setError("Error fetching verified address");
+        console.error("Error fetching verified address:", err);
+      }
+    };
+
+    fetchVerifiedAddress();
+  }, [selectedChain]);
 
   useEffect(() => {
     const fetchNFTs = async () => {
@@ -61,7 +89,6 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
         try {
           const response = await fetch(url, options);
           const data = await response.json();
-          console.log({ data });
           if (data.error) {
             // setError(data.error.message);
             throw new Error(data.error.message);
@@ -71,7 +98,6 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
             setError(null);
           }
 
-          console.log({ data });
           const images = data.ownedNfts.map(
             (nft: any) => nft.image.cachedUrl || "",
           );
@@ -90,12 +116,27 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div>
-        <span className="text-sm">Enter Wallet Address</span>
-        <TextInput
+        <span className="text-sm">Select Verified Wallet Address</span>
+        <Select
+          onValueChange={(value) => setTextInputValue(value)}
           value={textInputValue}
-          onChange={(value) => setTextInputValue(value)}
-          className="!border-input !h-8 !rounded-xl text-sm"
-        />
+        >
+          <SelectTrigger className={className}>
+            <SelectValue
+              placeholder="Select a verified address"
+              className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
+            >
+              {textInputValue || "Select a verified address"}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {verifiedAddresses.map((address, i) => (
+              <SelectItem value={address} key={i}>
+                {address}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div>
         <span className="text-sm">Select Network</span>
