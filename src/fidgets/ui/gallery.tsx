@@ -12,7 +12,9 @@ import MediaSourceSelector, {
   MediaSource,
 } from "@/common/components/molecules/MediaSourceSelector";
 import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
-import AlchemyNftSelector from "@/common/components/molecules/AlchemyNFTSelector";
+import AlchemyNftSelector, {
+  AlchemyNftSelectorValue,
+} from "@/common/components/molecules/AlchemyNFTSelector";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -22,6 +24,7 @@ export type GalleryFidgetSettings = {
   nftAddress: string;
   nftTokenId: string;
   network: AlchemyNetwork;
+  nftSelector: AlchemyNftSelectorValue;
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
@@ -60,10 +63,10 @@ const galleryConfig: FidgetProperties = {
       required: true,
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name === "Image URL",
+        settings?.selectMediaSource?.name !== "Import NFT",
     },
     {
-      fieldName: "nft",
+      fieldName: "nftSelector",
       displayName: "NFT",
       inputSelector: AlchemyNftSelector,
       required: true,
@@ -160,6 +163,12 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     } else if (settings.selectMediaSource?.name === "Image URL") {
       setNftImageUrl(settings.imageUrl);
       setError(null);
+    } else if (settings.selectMediaSource?.name === "Select from Wallet") {
+      setNftImageUrl(settings.nftSelector?.imageUrl || "");
+      setError(null);
+    } else {
+      setNftImageUrl(null);
+      setError("Please select a media source.");
     }
   }, [
     settings.selectMediaSource,

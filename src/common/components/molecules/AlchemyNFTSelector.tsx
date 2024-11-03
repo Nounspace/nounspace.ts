@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AlchemyNetwork } from "@/fidgets/ui/gallery";
 import {
   Select,
@@ -10,9 +10,16 @@ import {
 import TextInput from "./TextInput";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
 
+export interface AlchemyNftSelectorValue {
+  chain: AlchemyNetwork | undefined;
+  walletAddress: string;
+  selectedImage: number | undefined;
+  imageUrl: string;
+}
+
 export interface AlchemyNftSelectorProps {
-  onChange: (imageUrl: string) => void;
-  value: string;
+  onChange: (value: AlchemyNftSelectorValue) => void;
+  value: AlchemyNftSelectorValue;
   className?: string;
 }
 
@@ -21,9 +28,26 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   value,
   className,
 }) => {
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [textInputValue, setTextInputValue] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<number | undefined>(
+    value.selectedImage,
+  );
+  const [textInputValue, setTextInputValue] = useState<string>(
+    value.walletAddress,
+  );
+  const [selectedChain, setSelectedChain] = useState<
+    AlchemyNetwork | undefined
+  >(value.chain);
   const settings = CHAIN_OPTIONS;
+
+  useEffect(() => {
+    onChange({
+      chain: selectedChain,
+      walletAddress: textInputValue,
+      selectedImage,
+      imageUrl:
+        "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+    });
+  }, [selectedChain, textInputValue, selectedImage]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -39,21 +63,19 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
         <span className="text-sm">Select Network</span>
         <Select
           onValueChange={(selectedName) => {
-            const selectedChain = settings.find(
-              (chain) => chain === selectedName,
-            );
-            if (selectedChain) {
-              onChange(selectedChain);
+            const chain = settings.find((chain) => chain === selectedName);
+            if (chain) {
+              setSelectedChain(chain);
             }
           }}
-          value={value}
+          value={selectedChain}
         >
           <SelectTrigger className={className}>
             <SelectValue
               placeholder="Select a chain"
               className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
             >
-              {value || "Select a chain"}
+              {selectedChain || "Select a chain"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
