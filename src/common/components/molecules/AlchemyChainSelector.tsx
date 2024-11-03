@@ -45,8 +45,6 @@ export const AlchemyChainSelector: React.FC<AlchemyChainSelectorProps> = ({
 }) => {
   const settings = CHAIN_OPTIONS;
 
-  console.log({ value });
-
   return (
     <Select
       onValueChange={(selectedName) => {

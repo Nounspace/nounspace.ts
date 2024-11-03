@@ -134,16 +134,12 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
         const { nftAddress, nftTokenId, network } = settings;
         const base_url = getAlchemyChainUrlV3(network);
         const url = `${base_url}/getNFTMetadata?contractAddress=${nftAddress}&tokenId=${nftTokenId}&refreshCache=false`;
-
-        console.log(url);
-
         try {
           const response = await fetch(url, {
             method: "GET",
             headers: { accept: "application/json" },
           });
           const data = await response.json();
-          console.log(data);
           if (data.image && data.image.cachedUrl) {
             setNftImageUrl(data.image.cachedUrl);
             setError(null);
