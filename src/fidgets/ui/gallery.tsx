@@ -12,6 +12,7 @@ import MediaSourceSelector, {
   MediaSource,
 } from "@/common/components/molecules/MediaSourceSelector";
 import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
+import AlchemyNftSelector from "@/common/components/molecules/AlchemyNFTSelector";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -62,6 +63,15 @@ const galleryConfig: FidgetProperties = {
         settings?.selectMediaSource?.name === "Image URL",
     },
     {
+      fieldName: "nft",
+      displayName: "NFT",
+      inputSelector: AlchemyNftSelector,
+      required: true,
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== "Select from Wallet",
+    },
+    {
       fieldName: "nftAddress",
       required: true,
       inputSelector: TextInput,
@@ -78,15 +88,6 @@ const galleryConfig: FidgetProperties = {
       group: "settings",
       disabledIf: (settings) =>
         settings?.selectMediaSource?.name !== "Import NFT",
-    },
-    {
-      fieldName: "walletAddress",
-      required: true,
-      inputSelector: TextInput,
-      default: "",
-      group: "settings",
-      disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Select from Wallet",
     },
     {
       fieldName: "Scale",
