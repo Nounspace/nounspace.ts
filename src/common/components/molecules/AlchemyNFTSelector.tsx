@@ -60,7 +60,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
       imageUrl:
         selectedImage !== undefined ? nftImages[selectedImage] : value.imageUrl,
     });
-  }, [selectedChain, walletAddress, selectedImage, nftImages]);
+  }, [selectedImage]);
 
   useEffect(() => {
     const fetchVerifiedAddress = async () => {
