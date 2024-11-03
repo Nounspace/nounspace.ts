@@ -120,7 +120,7 @@ export type AlchemyNetwork =
   | "frax"
   | "zora";
 
-const getAlchemyChainUrlV3 = (network: AlchemyNetwork) => {
+export const getAlchemyChainUrlV3 = (network: AlchemyNetwork) => {
   return `https://${network}-mainnet.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`;
 };
 

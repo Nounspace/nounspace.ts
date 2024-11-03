@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AlchemyNetwork } from "@/fidgets/ui/gallery";
+import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
 import {
   Select,
   SelectContent,
@@ -28,15 +28,15 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   value,
   className,
 }) => {
-  const [selectedImage, setSelectedImage] = useState<number | undefined>(
-    value.selectedImage,
-  );
+  const [selectedImage, setSelectedImage] = useState<number | undefined>();
   const [textInputValue, setTextInputValue] = useState<string>(
     value.walletAddress,
   );
   const [selectedChain, setSelectedChain] = useState<
     AlchemyNetwork | undefined
   >(value.chain);
+  const [nftImages, setNftImages] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const settings = CHAIN_OPTIONS;
 
   useEffect(() => {
@@ -44,10 +44,48 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
       chain: selectedChain,
       walletAddress: textInputValue,
       selectedImage,
-      imageUrl:
-        "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+      imageUrl: selectedImage !== undefined ? nftImages[selectedImage] : "",
     });
-  }, [selectedChain, textInputValue, selectedImage]);
+  }, [selectedChain, textInputValue, selectedImage, nftImages]);
+
+  useEffect(() => {
+    const fetchNFTs = async () => {
+      if (selectedChain && textInputValue) {
+        const base_url = getAlchemyChainUrlV3(selectedChain);
+        const url = `${base_url}/getNFTsForOwner?owner=${textInputValue}&pageSize=100`;
+        const options = {
+          method: "GET",
+          headers: { accept: "application/json" },
+        };
+
+        try {
+          const response = await fetch(url, options);
+          const data = await response.json();
+          console.log({ data });
+          if (data.error) {
+            // setError(data.error.message);
+            throw new Error(data.error.message);
+          } else if (data.ownedNfts.length === 0) {
+            throw new Error("No NFTs found for this address");
+          } else {
+            setError(null);
+          }
+
+          console.log({ data });
+          const images = data.ownedNfts.map(
+            (nft: any) => nft.image.cachedUrl || "",
+          );
+          setNftImages(images);
+          setError(null);
+        } catch (err: any) {
+          setError(err.message);
+          console.error("Error fetching NFTs:", err);
+        }
+      }
+    };
+
+    fetchNFTs();
+  }, [selectedChain, textInputValue]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -90,19 +128,31 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
       <div>
         <span className="text-sm">Select NFT</span>
         <div className="grid grid-cols-3 gap-2 p-3 border border-gray-300 cursor-pointer rounded-lg max-h-[200px] overflow-y-scroll">
-          {Array.from({ length: 18 }).map((_, index) => (
-            <div
-              key={index}
-              className={`origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
-              onClick={() => setSelectedImage(index)}
-            >
-              <img
-                src={`https://via.placeholder.com/150?text=Image+${index + 1}`}
-                alt={`Image ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ))}
+          {error ? (
+            <div className="col-span-3 text-red-500 text-center">{error}</div>
+          ) : (
+            nftImages.map((image, index) => (
+              <div
+                key={index}
+                className={`origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
+                onClick={() => {
+                  setSelectedImage(index);
+                  onChange({
+                    chain: selectedChain,
+                    walletAddress: textInputValue,
+                    selectedImage: index,
+                    imageUrl: image,
+                  });
+                }}
+              >
+                <img
+                  src={image}
+                  alt={`NFT ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

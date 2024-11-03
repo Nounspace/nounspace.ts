@@ -27,9 +27,9 @@ export const CHAIN_OPTIONS: AlchemyNetwork[] = [
   "arb",
   "base",
   "starknet",
-  "astar",
-  "frax",
-  "zora",
+  // "astar",
+  // "frax",
+  // "zora",
 ];
 
 export interface AlchemyChainSelectorProps {
