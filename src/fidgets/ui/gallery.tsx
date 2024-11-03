@@ -32,13 +32,6 @@ const galleryConfig: FidgetProperties = {
   icon: 0x1f5bc,
   fields: [
     {
-      fieldName: "RedirectionURL",
-      required: false,
-      inputSelector: TextInput,
-      default: "",
-      group: "style",
-    },
-    {
       fieldName: "selectMediaSource",
       displayName: "selectMediaSource",
       inputSelector: MediaSourceSelector,
@@ -98,6 +91,13 @@ const galleryConfig: FidgetProperties = {
       inputSelector: ImageScaleSlider,
       default: 1,
       group: "style",
+    },
+    {
+      fieldName: "RedirectionURL",
+      required: false,
+      inputSelector: TextInput,
+      default: "",
+      group: "settings",
     },
     ...defaultStyleFields,
   ],
