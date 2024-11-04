@@ -17,18 +17,18 @@ export default function VerifiedNft() {
           y2="13.8434528%"
           id="linearGradient-1"
         >
-          <stop stop-color="#3772F9" offset="0%"></stop>
-          <stop stop-color="#7C37F9" offset="100%"></stop>
+          <stop stopColor="#3772F9" offset="0%"></stop>
+          <stop stopColor="#7C37F9" offset="100%"></stop>
         </linearGradient>
       </defs>
       <g
         id="Page-1"
         stroke="none"
-        stroke-width="1"
+        strokeWidth="1"
         fill="none"
-        fill-rule="evenodd"
+        fillRule="evenodd"
       >
-        <g id="twitter-verified-badge" fill-rule="nonzero">
+        <g id="twitter-verified-badge" fillRule="nonzero">
           <rect
             id="Rectangle"
             fill="#FFFFFF"
