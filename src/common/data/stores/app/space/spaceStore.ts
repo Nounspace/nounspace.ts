@@ -518,7 +518,7 @@ export const createSpaceStoreFunc = (
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
-      console.log("Created space", newSpaceId);
+      // console.log("Created space", newSpaceId);
       return newSpaceId;
     } catch (e) {
       null;
