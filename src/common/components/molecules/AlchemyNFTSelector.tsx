@@ -156,10 +156,10 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
         <div>
           <span className="text-sm">Select Network</span>
           <Select
-            onValueChange={(selectedName) => {
-              const chain = settings.find((chain) => chain === selectedName);
+            onValueChange={(selectedId) => {
+              const chain = settings.find((chain) => chain.id === selectedId);
               if (chain) {
-                setSelectedChain(chain);
+                setSelectedChain(chain.id);
               }
             }}
             value={selectedChain}
@@ -169,13 +169,14 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
                 placeholder="Select a chain"
                 className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
               >
-                {selectedChain || "Select a chain"}
+                {settings.find((chain) => chain.id === selectedChain)?.name ||
+                  "Select a chain"}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {settings.map((chain, i) => (
-                <SelectItem value={chain} key={i}>
-                  {chain}
+                <SelectItem value={chain.id} key={i}>
+                  {chain.name}
                 </SelectItem>
               ))}
             </SelectContent>
