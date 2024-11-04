@@ -15,7 +15,7 @@ import {
 
 // Enhanced logging to trace configuration logic
 const getTabConfig = (tabName: string) => {
-  console.log(`getTabConfig called with tabName: ${tabName}`);
+  // console.log(`getTabConfig called with tabName: ${tabName}`);
   switch (tabName) {
     case "Fidgets":
       return FIDGETS_TAB_HOMEBASE_CONFIG;

@@ -176,7 +176,7 @@ export const NounishGovernance: React.FC<
           loading={listLoading}
           isBuilderSubgraph={isBuilderSubgraph}
           title={isBuilderSubgraph ? selectedDao.name : "Nouns DAO"}
-          daoIcon={selectedDao.icon || "images/nounspace_logo.png"}
+          daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
         />
       )}
     </CardContent>

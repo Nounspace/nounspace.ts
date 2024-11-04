@@ -142,8 +142,8 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
 
   function calculateHeight(value: number) {
     const translation = (value - 1) * 30;
-    console.log("calculateHeight", translation);
-    console.log("calculateHeight", `${translation}%`);
+    // console.log("calculateHeight", translation);
+    // console.log("calculateHeight", `${translation}%`);
     return `${translation}%`;
   }
 
