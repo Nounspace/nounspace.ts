@@ -35,7 +35,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const settings = CHAIN_OPTIONS;
 
   const farcasterSigner = useFarcasterSigner("gallery");
-  const fid = farcasterSigner.fid <= 0 ? 196328 : farcasterSigner.fid;
+  const fid = farcasterSigner.fid;
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
