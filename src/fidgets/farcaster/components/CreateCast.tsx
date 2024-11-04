@@ -1,4 +1,4 @@
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { FC, use, useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -15,9 +15,9 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { debounce, map, isEmpty, isUndefined } from "lodash";
+import { debounce, map, isEmpty, isUndefined, replace } from "lodash";
 import { Button } from "@/common/components/atoms/button";
-import { MentionList } from "@mod-protocol/react-ui-shadcn/dist/components/mention-list";
+import { MentionList } from "./mentionList";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { ChannelPicker } from "./channelPicker";
 import {
@@ -25,7 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { CreationMod } from "@mod-protocol/react";
+import { CreationMod, RichEmbed } from "@mod-protocol/react";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
@@ -38,9 +38,19 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import { FIDsApiAxiosParamCreator } from "@standard-crypto/farcaster-js-hub-rest";
-// import { bytesToHex } from "@noble/ciphers/utils";
-// import { bytesToHexString } from "@farcaster/core";
+import { error, log } from "console";
+import { GiConsoleController } from "react-icons/gi";
+import { hash } from "crypto";
+import { type } from "os";
+import { text } from "stream/consumers";
+import api from "@/common/data/database/supabase/clients/api";
+import { form } from "@segment/analytics-next/dist/types/core/auto-track";
+import { commands, hr } from "@uiw/react-md-editor";
+import { url } from "inspector";
+import { match } from "assert";
+import { test } from "gray-matter";
+
+// Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
 
@@ -49,7 +59,6 @@ const debouncedGetMentions = debounce(getMentions, 200, {
   trailing: false,
 });
 const getUrlMetadata = fetchUrlMetadata(API_URL);
-// const getMentionFids = getMentionFidsByUsernames(API_URL);
 
 const onError = (err) => {
   console.error(err);
@@ -77,6 +86,7 @@ export type DraftType = {
   embeds?: FarcasterEmbed[];
   parentUrl?: string;
   parentCastId?: ParentCastIdType;
+  mentionsPositions?: number[]; // <-- Add this property
 };
 
 type CreateCastProps = {
@@ -90,57 +100,6 @@ export type ModProtocolCastAddBody = Exclude<
 > & {
   type: CastType;
 };
-
-async function publishPost(
-  draft: DraftType,
-  fid: number,
-  signer: Signer,
-): Promise<{ success: boolean; message?: string }> {
-  if (draft.parentCastId) {
-    const { fid, hash } = draft.parentCastId;
-    if (hash.length !== 20) {
-      return { success: false, message: "Invalid parent cast ID hash length." };
-    }
-  }
-
-  const unsignedCastBody: ModProtocolCastAddBody = {
-    type: CastType.CAST,
-    text: draft.text,
-    embeds: draft.embeds || [],
-    parentUrl: draft.parentUrl || undefined,
-    parentCastId: draft.parentCastId
-      ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
-      : undefined,
-    mentions: [],
-    embedsDeprecated: [],
-    mentionsPositions: [],
-  };
-
-  if (!unsignedCastBody)
-    return { success: false, message: "Invalid cast data." };
-
-  try {
-    const result = await submitCast(
-      { ...unsignedCastBody, type: CastType.CAST },
-      fid,
-      signer,
-    );
-
-    if (result) {
-      return { success: true };
-    } else {
-      return { success: false, message: "Failed to submit cast." };
-    }
-  } catch (e) {
-    return {
-      success: false,
-      message: "An error occurred while submitting the cast.",
-    };
-  }
-}
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
@@ -173,26 +132,24 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const debouncedGetChannels = useCallback(
     debounce(
       async (query: string) => {
-        console.log("debouncedGetChannels", query);
-        console.log(fid);
-        if (query !== null) {
-          return await fetchChannelsByName(query);
-        } else {
-          console.log("fetchChannelsForUser", fid);
-          return await fetchChannelsForUser(20721);
-        }
+        return await fetchChannelsByName(query);
       },
       200,
       { leading: true, trailing: false },
     ),
-    [fid],
+    [],
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
-    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer))
+    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer)) {
       return false;
+    }
 
-    setDraft((prev) => ({ ...prev, status: DraftStatus.publishing }));
+    // Delay submission if mentions are still being resolved
+    if (Object.keys(draft.mentionsToFids || {}).length === 0) {
+      console.error("Mentions not fully resolved yet.");
+      return false;
+    }
 
     const result = await publishPost(draft, fid, signer);
 
@@ -263,20 +220,168 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
-
   useEffect(() => {
-    if (!editor) return; // no updates before editor is initialized
+    if (!editor) return;
     if (isPublishing) return;
 
-    const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
+    const fetchMentionsAndSetDraft = async () => {
+      const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-    setDraft((prevDraft) => ({
-      ...prevDraft,
-      text,
-      embeds: newEmbeds,
-      parentUrl: channel?.parent_url || undefined,
-    }));
+      // Regex to match pure @username mentions, ensuring it's not part of a URL
+      const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
+
+      // The working copy of the text for position calculation
+      const workingText = text;
+
+      // Extract mentions and their positions from the original text
+      const usernamesWithPositions = [
+        ...workingText.matchAll(usernamePattern),
+      ].map((match) => ({
+        username: match[1],
+        position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
+      }));
+
+      const uniqueUsernames = Array.from(
+        new Set(usernamesWithPositions.map((u) => u.username)),
+      );
+
+      if (uniqueUsernames.length > 0) {
+        try {
+          // Fetch the FIDs for the mentioned users
+          const fetchedMentions =
+            await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
+
+          const mentionsToFids = fetchedMentions.reduce(
+            (acc, mention) => {
+              if (mention && mention.username && mention.fid) {
+                acc[mention.username] = mention.fid.toString(); // Convert fid to string
+              }
+              return acc;
+            },
+            {} as { [key: string]: string },
+          );
+
+          const mentionsPositions: number[] = [];
+          const currentTextIndex = 0;
+          const finalText = text;
+          const mentions = [];
+          let mentionsText = text;
+
+          for (let i = 0; i < mentionsText.length; i++) {
+            if (
+              mentionsText[i] === "@" &&
+              ((mentionsText[i - 1] !== "/" &&
+                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
+                mentionsText[i - 1] === undefined)
+            ) {
+              let mentionIndex = i + 1;
+              while (
+                mentionIndex < mentionsText.length &&
+                mentionsText[mentionIndex] !== " " &&
+                mentionsText[mentionIndex] !== "\n"
+              )
+                mentionIndex++;
+              const mention = mentionsText.substring(i + 1, mentionIndex);
+              const position = i;
+              mentionsPositions.push(position);
+              mentionsText = mentionsText.replace(`@${mention}`, "");
+            }
+          }
+
+          // console.log(mentions);
+          // console.log("mentionsText.length" + mentionsText.length);
+          if (mentions.length > 10)
+            if (
+              Object.keys(mentionsToFids).length !== mentionsPositions.length
+            ) {
+              // console.log("only up to 10 mentions. " + mentions.length);
+              console.error(
+                "Mismatch between mentions and their positions:",
+                mentionsToFids,
+                mentionsPositions,
+              );
+            }
+
+          setDraft((prevDraft) => {
+            const updatedDraft = {
+              ...prevDraft,
+              text: mentionsText,
+              embeds: newEmbeds,
+              parentUrl: channel?.parent_url || undefined,
+              mentionsToFids,
+              mentionsPositions,
+            };
+            // console.log("Updated Draft before posting:", updatedDraft);
+            return updatedDraft;
+          });
+        } catch (error) {
+          console.error("Error fetching FIDs:", error);
+        }
+      }
+    };
+
+    fetchMentionsAndSetDraft();
   }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
+
+  async function publishPost(
+    draft: DraftType,
+    fid: number,
+    signer: Signer,
+  ): Promise<{ success: boolean; message?: string }> {
+    if (draft.parentCastId) {
+      const { fid, hash } = draft.parentCastId;
+      if (hash.length !== 20) {
+        return {
+          success: false,
+          message: "Invalid parent cast ID hash length.",
+        };
+      }
+    }
+
+    // Prepare the mentions and their positions
+    const mentions = draft.mentionsToFids
+      ? Object.values(draft.mentionsToFids).map(Number)
+      : [];
+    const mentionsPositions = draft.mentionsPositions || []; // Use the correct positions
+
+    const unsignedCastBody: ModProtocolCastAddBody = {
+      type: CastType.CAST,
+      text: draft.text,
+      embeds: draft.embeds || [],
+      parentUrl: draft.parentUrl || undefined,
+      parentCastId: draft.parentCastId
+        ? {
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
+        : undefined,
+      mentions, // Pass mentions (FIDs)
+      mentionsPositions, // Pass positions here
+      embedsDeprecated: [],
+    };
+
+    if (!unsignedCastBody)
+      return { success: false, message: "Invalid cast data." };
+
+    try {
+      const result = await submitCast(
+        { ...unsignedCastBody, type: CastType.CAST },
+        fid,
+        signer,
+      );
+
+      if (result) {
+        return { success: true };
+      } else {
+        return { success: false, message: "Failed to submit cast." };
+      }
+    } catch (e) {
+      return {
+        success: false,
+        message: "An error occurred while submitting the cast.",
+      };
+    }
+  }
 
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
@@ -299,11 +404,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <EditorContent
               editor={editor}
               autoFocus
-              className="w-full h-full min-h-[150px] opacity-80 opacity-80"
+              className="w-full h-full min-h-[150px] opacity-80"
             />
             <div className="z-50">
               <EmbedsEditor
-                embeds={[]}
+                embeds={embeds}
                 setEmbeds={setEmbeds}
                 RichEmbed={() => <div />}
               />

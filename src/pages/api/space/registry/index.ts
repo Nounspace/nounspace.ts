@@ -41,7 +41,7 @@ async function identityCanRegisterForFid(identity: string, fid: number) {
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
     .eq("fid", fid);
-  console.log(data);
+  // console.log(data);
   return (
     data !== null &&
     findIndex(data, (i) => i.identityPublicKey === identity) !== -1
@@ -55,7 +55,7 @@ async function registerNewSpace(
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
   const registration = req.body;
-  console.log(registration);
+  // console.log(registration);
   if (!isSpaceRegistration(registration)) {
     res.status(400).json({
       result: "error",

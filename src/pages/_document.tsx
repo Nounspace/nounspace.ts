@@ -6,13 +6,13 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        <meta name="description" content="Nounspace" />
-        <meta property="og:site_name" content="Nounspace" />
-        <meta property="og:title" content="Nounspace" />
+        <meta name="description" content="nounspace" />
+        <meta property="og:site_name" content="nounspace" />
+        <meta property="og:title" content="nounspace" />
         <meta property="og:type" content="website" />
         <meta
           property="og:description"
-          content="Nounspace is a client for Farcaster"
+          content="nounspace is a customizable Farcaster client that offers a growing library of mini-apps called Fidgets. Create, customize, and explore on nounspace."
         />
         <meta property="og:image" content="/images/nounspace_og.png" />
         <meta property="og:image:type" content="image/jpeg" />

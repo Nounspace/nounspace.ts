@@ -98,8 +98,6 @@ export function FidgetWrapper({
     bundle.properties,
   );
 
-  const [doubleCheck, setDoubleCheck] = useState(false);
-
   const onSave = async (
     newSettings: FidgetSettings,
     shouldUnselect?: boolean,
@@ -166,61 +164,22 @@ export function FidgetWrapper({
             </TooltipProvider>
           </Card>
         </button>
-        {!doubleCheck ? (
-          <button
-            onClick={() => {
-              setDoubleCheck(true);
-            }}
-          >
-            <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <FaX className="w-5/12" />
-                  </TooltipTrigger>
-                  <TooltipContent>Remove Fidget</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </Card>
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={() => {
-                setDoubleCheck(false);
-              }}
-            >
-              <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1">
-                        <BackArrowIcon />
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Cancel</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </Card>
-            </button>
-            <button
-              onClick={() => {
-                removeFidget(bundle.id);
-              }}
-            >
-              <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <FaX className="w-5/12" />
-                    </TooltipTrigger>
-                    <TooltipContent>Confirm Delete</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </Card>
-            </button>
-          </>
-        )}
+        <button
+          onClick={() => {
+            removeFidget(bundle.id);
+          }}
+        >
+          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <FaX className="w-5/12" />
+                </TooltipTrigger>
+                <TooltipContent>Remove Fidget</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </Card>
+        </button>
       </div>
       <Card
         className={
