@@ -69,13 +69,16 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
           `/api/farcaster/neynar/user?username=${username}`,
         );
         const data = await response.json();
+        if (!data) {
+          setError("No verified address found for user " + username);
+          return;
+        }
+
         const user = data.user as NeynarUser;
-        if (data && user.verifications.length > 0) {
+        if (user.verifications.length > 0) {
           setError(null);
           setVerifiedAddresses(user.verifications);
           setWalletAddress(user.verifications[0]);
-        } else {
-          setError("No verified address found for user " + username);
         }
       } catch (err: any) {
         setError("Error fetching verified address");
