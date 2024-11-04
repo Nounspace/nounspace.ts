@@ -15,6 +15,13 @@ import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSele
 import AlchemyNftSelector, {
   AlchemyNftSelectorValue,
 } from "@/common/components/molecules/AlchemyNFTSelector";
+import VerifiedNft from "@/common/components/atoms/icons/VerifiedNft";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/common/components/atoms/tooltip";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -205,6 +212,18 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
           className="bg-cover bg-center w-full h-full"
           style={contentStyle}
         ></div>
+        {settings.selectMediaSource?.name === "Select from Wallet" ? (
+          <div className="absolute bottom-2 right-2 flex h-fit w-fit">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <VerifiedNft />
+                </TooltipTrigger>
+                <TooltipContent side="left">Verified Owner</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ) : null}
         {error && <div style={errorStyle}>{error}</div>}
       </div>
     </a>
@@ -217,6 +236,18 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
         className="bg-cover bg-center w-full h-full"
         style={contentStyle}
       ></div>
+      {settings.selectMediaSource?.name === "Select from Wallet" ? (
+        <div className="absolute bottom-2 right-2 flex h-fit w-fit">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <VerifiedNft />
+              </TooltipTrigger>
+              <TooltipContent side="left">Verified Owner</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      ) : null}
       {error && <div style={errorStyle}>{error}</div>}
     </div>
   );
