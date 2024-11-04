@@ -1,5 +1,3 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
 import {
   Select,
   SelectContent,
@@ -7,12 +5,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
-import { NeynarUser } from "@/pages/api/farcaster/neynar/user";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { first, values } from "lodash";
+import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
+import { NeynarUser } from "@/pages/api/farcaster/neynar/user";
+import { first } from "lodash";
+import React, { useEffect, useMemo, useState } from "react";
+import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
 
 export interface AlchemyNftSelectorValue {
   chain: AlchemyNetwork | undefined;
@@ -40,23 +40,29 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
 
-  const [selectedImage, setSelectedImage] = useState<number | undefined>();
-  const [walletAddress, setWalletAddress] = useState<string>(
+  // Initialize local state with values from props
+  const [selectedImage, setSelectedImage] = useState<number | undefined>(
+    value.selectedImage,
+  );
+  const [walletAddress, setWalletAddress] = useState<string | undefined>(
     value.walletAddress,
   );
-
   const [selectedChain, setSelectedChain] = useState<
     AlchemyNetwork | undefined
-  >();
+  >(value.chain);
+
   const [nftImages, setNftImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [verifiedAddresses, setVerifiedAddresses] = useState<string[]>([]);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     const fetchVerifiedAddress = async () => {
       try {
         const response = await fetch(
           `/api/farcaster/neynar/user?username=${username}`,
+          { signal: abortController.signal },
         );
         const data = await response.json();
         if (!data) {
@@ -68,19 +74,25 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
         if (user.verifications.length > 0) {
           setError(null);
           setVerifiedAddresses(user.verifications);
-          setWalletAddress(user.verifications[0]);
         }
       } catch (err: any) {
-        setError("Error fetching verified address");
-        console.error("Error fetching verified address:", err);
+        if (!abortController.signal.aborted) {
+          setError("Error fetching verified address");
+          console.error("Error fetching verified address:", err);
+        }
       }
     };
 
-    setVerifiedAddresses([]);
     fetchVerifiedAddress();
+
+    return () => {
+      abortController.abort();
+    };
   }, [username]);
 
   useEffect(() => {
+    const abortController = new AbortController();
+
     const fetchNFTs = async () => {
       if (selectedChain && walletAddress) {
         const base_url = getAlchemyChainUrlV3(selectedChain);
@@ -88,13 +100,13 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
         const options = {
           method: "GET",
           headers: { accept: "application/json" },
+          signal: abortController.signal,
         };
 
         try {
           const response = await fetch(url, options);
           const data = await response.json();
           if (data.error) {
-            // setError(data.error.message);
             throw new Error(data.error.message);
           } else if (data.ownedNfts.length === 0) {
             throw new Error("No NFTs found for this address");
@@ -108,14 +120,33 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
           setNftImages(images);
           setError(null);
         } catch (err: any) {
-          setError(err.message);
-          console.error("Error fetching NFTs:", err);
+          if (!abortController.signal.aborted) {
+            setError(err.message);
+            console.error("Error fetching NFTs:", err);
+          }
         }
       }
     };
 
     fetchNFTs();
+
+    return () => {
+      abortController.abort();
+    };
   }, [selectedChain, walletAddress]);
+
+  // Synchronize local state with props when props change
+  useEffect(() => {
+    setSelectedImage(value.selectedImage);
+  }, [value.selectedImage]);
+
+  useEffect(() => {
+    setWalletAddress(value.walletAddress);
+  }, [value.walletAddress]);
+
+  useEffect(() => {
+    setSelectedChain(value.chain);
+  }, [value.chain]);
 
   return (
     <div className="flex flex-col gap-2">
