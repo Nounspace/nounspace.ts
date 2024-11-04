@@ -52,19 +52,6 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [verifiedAddresses, setVerifiedAddresses] = useState<string[]>([]);
 
-  // const _onChange = useCallback(
-  //   (val: AlchemyNftSelectorValue) => {
-  //     onChange(val);
-  //   },
-  //   [onChange],
-  // );
-
-  // useEffect(() => {
-  //   setSelectedChain(value.chain);
-  //   setWalletAddress(value.walletAddress);
-  //   setSelectedImage(value.selectedImage);
-  // }, [value]);
-
   useEffect(() => {
     const fetchVerifiedAddress = async () => {
       try {
