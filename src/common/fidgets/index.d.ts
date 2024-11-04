@@ -9,6 +9,8 @@ import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import { FilterTypeSelector } from "@/fidgets/farcaster/Feed";
 import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
 import PlatformSelector from "../components/molecules/PlatformSelector";
+import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
+import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
   background?: Color;
@@ -50,7 +52,9 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
     | typeof SwitchButton
     | typeof FeedTypeSelector
     | typeof FilterTypeSelector
-    | typeof PlatformSelector; // new input components for feed fidget
+    | typeof PlatformSelector
+    | typeof AlchemyChainSelector
+    | typeof AlchemyNftSelector;
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;

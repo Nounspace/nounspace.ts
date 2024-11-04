@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
 import {
   Select,
@@ -12,7 +12,7 @@ import { NeynarUser } from "@/pages/api/farcaster/neynar/user";
 import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { first } from "lodash";
+import { first, values } from "lodash";
 
 export interface AlchemyNftSelectorValue {
   chain: AlchemyNetwork | undefined;
@@ -33,6 +33,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   className,
 }) => {
   const settings = CHAIN_OPTIONS;
+  console.log("value", value);
 
   const farcasterSigner = useFarcasterSigner("gallery");
   const fid = farcasterSigner.fid <= 0 ? 196328 : farcasterSigner.fid;
@@ -52,15 +53,18 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [verifiedAddresses, setVerifiedAddresses] = useState<string[]>([]);
 
+  const _onChange = useCallback(
+    (val: AlchemyNftSelectorValue) => {
+      onChange(val);
+    },
+    [onChange],
+  );
+
   useEffect(() => {
-    onChange({
-      chain: selectedChain,
-      walletAddress: walletAddress,
-      selectedImage,
-      imageUrl:
-        selectedImage !== undefined ? nftImages[selectedImage] : value.imageUrl,
-    });
-  }, [selectedImage]);
+    setSelectedChain(value.chain);
+    setWalletAddress(value.walletAddress);
+    setSelectedImage(value.selectedImage);
+  }, [value]);
 
   useEffect(() => {
     const fetchVerifiedAddress = async () => {
@@ -196,7 +200,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
                   className={`origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
                   onClick={() => {
                     setSelectedImage(index);
-                    onChange({
+                    _onChange({
                       chain: selectedChain,
                       walletAddress: walletAddress,
                       selectedImage: index,
