@@ -33,7 +33,6 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   className,
 }) => {
   const settings = CHAIN_OPTIONS;
-  console.log("value", value);
 
   const farcasterSigner = useFarcasterSigner("gallery");
   const fid = farcasterSigner.fid <= 0 ? 196328 : farcasterSigner.fid;
@@ -42,29 +41,29 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const username = useMemo(() => user?.username, [user]);
 
   const [selectedImage, setSelectedImage] = useState<number | undefined>();
-  const [selectedChain, setSelectedChain] = useState<
-    AlchemyNetwork | undefined
-  >(value.chain);
   const [walletAddress, setWalletAddress] = useState<string>(
     value.walletAddress,
   );
 
+  const [selectedChain, setSelectedChain] = useState<
+    AlchemyNetwork | undefined
+  >();
   const [nftImages, setNftImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [verifiedAddresses, setVerifiedAddresses] = useState<string[]>([]);
 
-  const _onChange = useCallback(
-    (val: AlchemyNftSelectorValue) => {
-      onChange(val);
-    },
-    [onChange],
-  );
+  // const _onChange = useCallback(
+  //   (val: AlchemyNftSelectorValue) => {
+  //     onChange(val);
+  //   },
+  //   [onChange],
+  // );
 
-  useEffect(() => {
-    setSelectedChain(value.chain);
-    setWalletAddress(value.walletAddress);
-    setSelectedImage(value.selectedImage);
-  }, [value]);
+  // useEffect(() => {
+  //   setSelectedChain(value.chain);
+  //   setWalletAddress(value.walletAddress);
+  //   setSelectedImage(value.selectedImage);
+  // }, [value]);
 
   useEffect(() => {
     const fetchVerifiedAddress = async () => {
@@ -200,7 +199,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
                   className={`origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
                   onClick={() => {
                     setSelectedImage(index);
-                    _onChange({
+                    onChange({
                       chain: selectedChain,
                       walletAddress: walletAddress,
                       selectedImage: index,
