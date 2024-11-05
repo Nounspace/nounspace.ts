@@ -22,6 +22,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/common/components/atoms/tooltip";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import { Color } from "@/common/lib/theme";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -32,6 +34,7 @@ export type GalleryFidgetSettings = {
   nftTokenId: string;
   network: AlchemyNetwork;
   nftSelector: AlchemyNftSelectorValue;
+  badgeColor: Color;
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
@@ -106,6 +109,15 @@ const galleryConfig: FidgetProperties = {
       default: "",
       group: "settings",
     },
+    {
+      fieldName: "badgeColor",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      default: "rgb(55, 114, 249)",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== "Select from Wallet",
+    },
     ...defaultStyleFields,
   ],
   size: {
@@ -134,6 +146,7 @@ export const getAlchemyChainUrlV3 = (network: AlchemyNetwork) => {
 const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [badgeColor, setBadgeColor] = useState<Color>(settings.badgeColor);
 
   useEffect(() => {
     if (settings.selectMediaSource?.name === "Import NFT") {
@@ -180,6 +193,10 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     settings.network,
   ]);
 
+  useEffect(() => {
+    setBadgeColor(settings.badgeColor);
+  }, [settings.badgeColor]);
+
   const contentStyle = {
     backgroundImage: `url(${nftImageUrl})`,
     display: error ? "none" : "block",
@@ -217,7 +234,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  <VerifiedNft />
+                  <VerifiedNft color={badgeColor} />
                 </TooltipTrigger>
                 <TooltipContent side="left">Verified Owner</TooltipContent>
               </Tooltip>
@@ -241,7 +258,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <VerifiedNft />
+                <VerifiedNft color={badgeColor} />
               </TooltipTrigger>
               <TooltipContent side="left">Verified Owner</TooltipContent>
             </Tooltip>
