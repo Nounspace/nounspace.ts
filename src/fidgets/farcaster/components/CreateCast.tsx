@@ -142,29 +142,56 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
   const onSubmitPost = async (): Promise<boolean> => {
     if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer)) {
+      console.error(
+        "Submission failed: Missing text or embeds, or signer is undefined.",
+        {
+          draftText: draft?.text,
+          draftEmbedsLength: draft?.embeds?.length,
+          signerUndefined: isUndefined(signer),
+        },
+      );
       return false;
     }
 
-    // Delay submission if mentions are still being resolved
-    if (Object.keys(draft.mentionsToFids || {}).length === 0) {
-      console.error("Mentions not fully resolved yet.");
+    // Delay submission only if there are mentions and they are not resolved
+    if (
+      (draft.mentionsPositions?.length || 0) > 0 &&
+      Object.keys(draft.mentionsToFids || {}).length === 0
+    ) {
+      console.error("Mentions not fully resolved yet.", {
+        mentionsPositions: draft.mentionsPositions,
+        mentionsToFids: draft.mentionsToFids,
+      });
       return false;
     }
 
-    const result = await publishPost(draft, fid, signer);
+    try {
+      const result = await publishPost(draft, fid, signer);
 
-    if (result.success) {
-      setSubmitStatus("success");
-      setDraft((prev) => ({ ...prev, status: DraftStatus.published }));
-      setTimeout(() => {
-        afterSubmit();
-      }, 3000);
-    } else {
+      if (result.success) {
+        setSubmitStatus("success");
+        setDraft((prev) => ({ ...prev, status: DraftStatus.published }));
+        setTimeout(() => {
+          afterSubmit();
+        }, 3000);
+      } else {
+        console.error(
+          `Failed to publish post: ${result.message || "Unknown error"}`,
+        );
+        setSubmitStatus("error");
+        setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
+      }
+
+      return result.success;
+    } catch (error) {
+      console.error(
+        "An unexpected error occurred during post submission:",
+        error,
+      );
       setSubmitStatus("error");
       setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
+      return false;
     }
-
-    return result.success;
   };
 
   const isPublishing = draft?.status === DraftStatus.publishing;
@@ -245,13 +272,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
+      let mentionsToFids: { [key: string]: string } = {};
+      let mentionsPositions: number[] = [];
+      let mentionsText = text; // Initialize mentionsText with current text
+
       if (uniqueUsernames.length > 0) {
         try {
           // Fetch the FIDs for the mentioned users
           const fetchedMentions =
             await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
-          const mentionsToFids = fetchedMentions.reduce(
+          mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
               if (mention && mention.username && mention.fid) {
                 acc[mention.username] = mention.fid.toString(); // Convert fid to string
@@ -261,11 +292,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             {} as { [key: string]: string },
           );
 
-          const mentionsPositions: number[] = [];
+          mentionsPositions = [];
           const currentTextIndex = 0;
           const finalText = text;
           const mentions = [];
-          let mentionsText = text;
+          mentionsText = text;
 
           for (let i = 0; i < mentionsText.length; i++) {
             if (
@@ -288,36 +319,35 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }
           }
 
-          // console.log(mentions);
-          // console.log("mentionsText.length" + mentionsText.length);
+          console.log(mentions);
+          console.log("mentionsText.length" + mentionsText.length);
           if (mentions.length > 10)
-            if (
-              Object.keys(mentionsToFids).length !== mentionsPositions.length
-            ) {
-              // console.log("only up to 10 mentions. " + mentions.length);
-              console.error(
-                "Mismatch between mentions and their positions:",
-                mentionsToFids,
-                mentionsPositions,
-              );
-            }
-
-          setDraft((prevDraft) => {
-            const updatedDraft = {
-              ...prevDraft,
-              text: mentionsText,
-              embeds: newEmbeds,
-              parentUrl: channel?.parent_url || undefined,
+            console.log("only up to 10 mentions. " + mentions.length);
+          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
+            console.error(
+              "Mismatch between mentions and their positions:",
               mentionsToFids,
               mentionsPositions,
-            };
-            // console.log("Updated Draft before posting:", updatedDraft);
-            return updatedDraft;
-          });
+            );
+          }
         } catch (error) {
           console.error("Error fetching FIDs:", error);
         }
       }
+
+      // Update the draft regardless of mentions
+      setDraft((prevDraft) => {
+        const updatedDraft = {
+          ...prevDraft,
+          text: mentionsText,
+          embeds: newEmbeds,
+          parentUrl: channel?.parent_url || undefined,
+          mentionsToFids,
+          mentionsPositions,
+        };
+        console.log("Updated Draft before posting:", updatedDraft);
+        return updatedDraft;
+      });
     };
 
     fetchMentionsAndSetDraft();
