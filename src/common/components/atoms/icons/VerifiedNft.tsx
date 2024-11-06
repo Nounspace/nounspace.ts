@@ -15,7 +15,6 @@ export default function VerifiedNft({ color }: { color: Color }) {
         : `${(index / (stops.length - 1)) * 100}%`;
       return { color, offset };
     });
-    console.log("values", values);
     return values;
   };
 
