@@ -75,7 +75,7 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
       )}
       id={id}
     >
-      <div className="md:mb-0 md:w-1/3">
+      <div className="md:mb-0 md:w-2/3">
         <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
           {field.displayName || field.fieldName}
         </label>
