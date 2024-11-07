@@ -10,6 +10,7 @@ import { defaultStyleFields } from "@/fidgets/helpers";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import MediaSourceSelector, {
   MediaSource,
+  MediaSourceTypes,
 } from "@/common/components/molecules/MediaSourceSelector";
 import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
 import AlchemyNftSelector, {
@@ -24,6 +25,7 @@ import {
 } from "@/common/components/atoms/tooltip";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import { Color } from "@/common/lib/theme";
+import { ErrorWrapper } from "@/fidgets/helpers";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
@@ -43,21 +45,22 @@ const galleryConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "selectMediaSource",
-      displayName: "selectMediaSource",
+      displayName: "Source",
       inputSelector: MediaSourceSelector,
       required: false,
-      default: { name: "Image URL" },
+      default: { name: MediaSourceTypes.URL },
       group: "settings",
     },
     {
       fieldName: "imageUrl",
+      displayName: "Image URL",
       required: true,
       inputSelector: TextInput,
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Image URL",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.URL,
     },
     {
       fieldName: "network",
@@ -66,7 +69,7 @@ const galleryConfig: FidgetProperties = {
       required: true,
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Import NFT",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
     },
     {
       fieldName: "nftSelector",
@@ -75,25 +78,27 @@ const galleryConfig: FidgetProperties = {
       required: true,
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Select from Wallet",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
     },
     {
       fieldName: "nftAddress",
+      displayName: "Collection Address",
       required: true,
       inputSelector: TextInput,
       default: "",
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Import NFT",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
     },
     {
       fieldName: "nftTokenId",
+      displayName: "Token ID",
       required: true,
       inputSelector: TextInput,
       default: "",
       group: "settings",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Import NFT",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
     },
     {
       fieldName: "Scale",
@@ -103,7 +108,8 @@ const galleryConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "RedirectionURL",
+      fieldName: "Link",
+      displayName: "Links To",
       required: false,
       inputSelector: TextInput,
       default: "",
@@ -111,12 +117,13 @@ const galleryConfig: FidgetProperties = {
     },
     {
       fieldName: "badgeColor",
+      displayName: "Badge Color",
       required: false,
       inputSelector: ColorSelector,
       group: "style",
       default: "rgb(55, 114, 249)",
       disabledIf: (settings) =>
-        settings?.selectMediaSource?.name !== "Select from Wallet",
+        settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
     },
     ...defaultStyleFields,
   ],
@@ -149,7 +156,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   const [badgeColor, setBadgeColor] = useState<Color>(settings.badgeColor);
 
   useEffect(() => {
-    if (settings.selectMediaSource?.name === "Import NFT") {
+    if (settings.selectMediaSource?.name === MediaSourceTypes.EXTERNAL) {
       const fetchNFTData = async () => {
         const { nftAddress, nftTokenId, network } = settings;
         const base_url = getAlchemyChainUrlV3(network);
@@ -176,10 +183,10 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
       };
 
       fetchNFTData();
-    } else if (settings.selectMediaSource?.name === "Image URL") {
+    } else if (settings.selectMediaSource?.name === MediaSourceTypes.URL) {
       setNftImageUrl(settings.imageUrl);
       setError(null);
-    } else if (settings.selectMediaSource?.name === "Select from Wallet") {
+    } else if (settings.selectMediaSource?.name === MediaSourceTypes.WALLET) {
       setNftImageUrl(settings.nftSelector?.imageUrl || "");
       setError(null);
     } else {
@@ -229,7 +236,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
           className="bg-cover bg-center w-full h-full"
           style={contentStyle}
         ></div>
-        {settings.selectMediaSource?.name === "Select from Wallet" ? (
+        {settings.selectMediaSource?.name === MediaSourceTypes.WALLET ? (
           <div className="absolute bottom-2 right-2 flex h-fit w-fit">
             <TooltipProvider>
               <Tooltip>
@@ -253,7 +260,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
         className="bg-cover bg-center w-full h-full"
         style={contentStyle}
       ></div>
-      {settings.selectMediaSource?.name === "Select from Wallet" ? (
+      {settings.selectMediaSource?.name === MediaSourceTypes.WALLET ? (
         <div className="absolute bottom-2 right-2 flex h-fit w-fit">
           <TooltipProvider>
             <Tooltip>
@@ -265,7 +272,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
           </TooltipProvider>
         </div>
       ) : null}
-      {error && <div style={errorStyle}>{error}</div>}
+      {error && <ErrorWrapper icon="⚠️" message={error} />}
     </div>
   );
 };

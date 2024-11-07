@@ -10,7 +10,7 @@ import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl } from "@/fidgets/helpers";
+import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
 export type IFrameFidgetSettings = {
   url: string;
   size: number;
@@ -47,20 +47,6 @@ const frameConfig: FidgetProperties = {
     minWidth: 2,
     maxWidth: 36,
   },
-};
-
-const ErrorWrapper: React.FC<{
-  message: React.ReactNode;
-  icon?: React.ReactNode;
-}> = ({ message, icon }) => {
-  return (
-    <div className="flex flex-col gap-1 size-full items-center justify-center text-center p-4 absolute top-0 right-0 bottom-0 left-0">
-      {icon && <div className="text-[20px]">{icon}</div>}
-      <p className="text-gray-400 font-semibold text-sm leading-tight max-w-[60ch]">
-        {message}
-      </p>
-    </div>
-  );
 };
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({

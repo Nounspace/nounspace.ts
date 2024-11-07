@@ -7,10 +7,11 @@ import {
   SelectItem,
 } from "@/common/components/atoms/select";
 
-export type MediaSourceTypes =
-  | "Image URL"
-  | "Import NFT"
-  | "Select from Wallet";
+export enum MediaSourceTypes {
+  URL = "URL",
+  WALLET = "My Wallet",
+  EXTERNAL = "External NFT Collection",
+}
 
 export interface MediaSource {
   name?: MediaSourceTypes;
@@ -24,13 +25,13 @@ export interface MediaSourceSelectorProps {
 
 const settings: MediaSource[] = [
   {
-    name: "Image URL",
+    name: MediaSourceTypes.URL,
   },
   {
-    name: "Import NFT",
+    name: MediaSourceTypes.WALLET,
   },
   {
-    name: "Select from Wallet",
+    name: MediaSourceTypes.EXTERNAL,
   },
 ];
 
