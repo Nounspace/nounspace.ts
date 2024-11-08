@@ -11,6 +11,7 @@ import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
 import PlatformSelector from "../components/molecules/PlatformSelector";
 import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
 import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
+
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
   background?: Color;
