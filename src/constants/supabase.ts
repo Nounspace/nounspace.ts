@@ -11,7 +11,7 @@ export function authenticatorsPath(identityPublicKey: string) {
 }
 
 export function homebasePath(identityPublicKey: string) {
-  return `${identityPublicKey}/homebase`;
+  return `${identityPublicKey}/feed`;
 }
 
 export function homebaseTabsPath(identityPublicKey: string, tabName: string) {

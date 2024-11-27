@@ -73,7 +73,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     logout();
   }
 
-
   function turnOnEditMode() {
     enterEditMode();
   }
@@ -186,9 +185,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             <div className="flex-auto">
               <ul className="space-y-2">
                 <NavItem
-                  label={isLoggedIn ? "Homebase" : "Home"}
+                  label={isLoggedIn ? "Feed" : "Home"}
                   Icon={HomeIcon}
-                  href={isLoggedIn ? "/homebase" : "/home"}
+                  href={isLoggedIn ? "/feed" : "/home"}
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
