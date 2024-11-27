@@ -25,12 +25,12 @@ export default function InfoToast() {
   const isLoggedIn = getIsLoggedIn();
 
   const checkPageType = (pathname, spaceFarcasterName, username) => {
-    if (pathname === "/homebase") {
+    if (pathname === "/feed") {
       return {
         type: "homebase",
         storedStateKey: "homebaseToastDisplayed",
         message:
-          "Your homebase is a space that only you can see. Click the paintbrush to customize it 🚀",
+          "Your feed is a space that only you can see. Click the paintbrush to customize it 🚀",
       };
     } else if (pathname.startsWith("/s/") && spaceFarcasterName === username) {
       return {
