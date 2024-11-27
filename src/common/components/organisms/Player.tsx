@@ -16,6 +16,8 @@ type ContentMetadata = {
   thumbnail?: string | null;
 };
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
+import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
+import { zeroAddress } from "viem";
 export type PlayerProps = {
   url: string | string[];
 };
@@ -44,8 +46,29 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     ready,
   });
 
-  const getYouTubeMetadata = async (_url) => {
-    const response = await fetch(`/api/metadata/youtube?url=${_url}`);
+  const getMetadata = async (_url: string | string[]) => {
+    // Handle array of URLs by taking the first one
+    const videoUrl = Array.isArray(_url) ? _url[0] : _url;
+
+    if (videoUrl.includes("ipfs")) {
+      // Parse URL parameters for IPFS content
+      const url = new URL(videoUrl);
+      const contractName = url.searchParams.get("contractName");
+      const contractAddress = url.searchParams.get("contractAddress");
+      const thumbnailUrl = url.searchParams.get("thumbnailUrl");
+
+      setMetadata({
+        title: contractName || "NFT Video",
+        channel:
+          formatEthereumAddress(contractAddress || zeroAddress) ||
+          "IPFS Content",
+        thumbnail: thumbnailUrl || null,
+      });
+      return;
+    }
+
+    // Default to YouTube metadata
+    const response = await fetch(`/api/metadata/youtube?url=${videoUrl}`);
     const data = await response.json();
     const snippet = data?.value?.snippet;
 
@@ -59,7 +82,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
   };
 
   useEffect(() => {
-    getYouTubeMetadata(url);
+    getMetadata(url);
   }, [url]);
 
   useEffect(() => {

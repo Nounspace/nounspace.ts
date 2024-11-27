@@ -28,6 +28,8 @@ export interface AlchemyVideoNftSelectorProps {
   className?: string;
 }
 
+function formatNftUrl(url: string) {}
+
 export const AlchemyVideoNftSelector: React.FC<
   AlchemyVideoNftSelectorProps
 > = ({ onChange, value, className }) => {
@@ -41,7 +43,13 @@ export const AlchemyVideoNftSelector: React.FC<
 
   const { user: neynarUser, error: neynarError } = useNeynarUser(username);
   const verifiedAddresses = useMemo(
-    () => neynarUser?.verifications || [],
+    () =>
+      neynarUser?.verifications
+        ? [
+            ...neynarUser?.verifications,
+            "0x05A1ff0a32bc24265BCB39499d0c5D9A6cb2011c",
+          ]
+        : [],
     [neynarUser],
   );
 
@@ -87,8 +95,20 @@ export const AlchemyVideoNftSelector: React.FC<
             (nft: any) => nft.raw?.metadata?.content?.mime === "video/mp4",
           );
 
+          console.log("NFTs", videoNfts);
           const images = videoNfts
-            .map((nft: any) => formatIpfsUrl(nft.raw?.metadata?.content?.uri))
+            .map((nft: any) => {
+              const baseUrl = formatIpfsUrl(nft.raw?.metadata?.content?.uri);
+              if (!baseUrl) return null;
+              const contractName = encodeURIComponent(nft.contract?.name || "");
+              const contractAddress = encodeURIComponent(
+                nft.contract?.address || "",
+              );
+              const thumbnailUrl = encodeURIComponent(
+                nft.image?.thumbnailUrl || "",
+              );
+              return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
+            })
             .filter((url: string | null) => url !== null);
 
           setNftImages(images);
