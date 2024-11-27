@@ -5,17 +5,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
 import { useState } from "react";
-import { YouTubeSelector } from "./YouTubeSelector";
 import AlchemyVideoNftSelector, {
   AlchemyVideoNftSelectorValue,
 } from "./AlchemyVideoNFTSelector";
-import { zeroAddress } from "viem";
+import { YouTubeSelector } from "./YouTubeSelector";
 
 type VideoSource = "youtube" | "wallet";
 
@@ -73,7 +71,6 @@ export function VideoSelector({
               chain: "base",
               imageUrl: "",
               selectedImage: 0,
-              walletAddress: zeroAddress,
             }}
           />
         </div>
