@@ -68,15 +68,15 @@ const Homebase: NextPageWithLayout = () => {
 
   function switchTabTo(tabName: string) {
     if (tabName !== "Feed") {
-      router.push(`/homebase/${tabName}`);
+      router.push(`/feed/${tabName}`);
     }
   }
 
   function getSpacePageUrl(tabName: string) {
     if (tabName === "Feed") {
-      return `/homebase`;
+      return `/feed`;
     } else {
-      return `/homebase/${tabName}`;
+      return `/feed/${tabName}`;
     }
   }
 

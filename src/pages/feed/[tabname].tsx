@@ -40,7 +40,6 @@ const Homebase: NextPageWithLayout = () => {
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     getCurrentTabName: state.currentSpace.getCurrentTabName,
-
     tabOrdering: state.homebase.tabOrdering,
     loadTabNames: state.homebase.loadTabNames,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
@@ -115,17 +114,17 @@ const Homebase: NextPageWithLayout = () => {
     }
 
     if (newTabName === "Feed") {
-      router.push(`/homebase`);
+      router.push(`/feed`);
     } else {
-      router.push(`/homebase/${newTabName}`);
+      router.push(`/feed/${newTabName}`);
     }
   }
 
   function getSpacePageUrl(tabName: string) {
     if (tabName === "Feed") {
-      return `/homebase`;
+      return `/feed`;
     }
-    return `/homebase/${tabName}`;
+    return `/feed/${tabName}`;
   }
 
   const { editMode } = useSidebarContext();
