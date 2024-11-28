@@ -13,13 +13,12 @@ import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
 import { first } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
-import { formatIpfsUrl } from "./VideoSelector";
 
 export interface AlchemyVideoNftSelectorValue {
-  chain: AlchemyNetwork | undefined;
+  chain?: AlchemyNetwork;
   walletAddress?: string;
-  selectedImage: number | undefined;
-  imageUrl: string;
+  selectedImage?: number;
+  imageUrl?: string;
 }
 
 export interface AlchemyVideoNftSelectorProps {
@@ -28,7 +27,34 @@ export interface AlchemyVideoNftSelectorProps {
   className?: string;
 }
 
-function formatNftUrl(url: string) {}
+export function formatIpfsUrl(url?: string, nft?: any) {
+  if (!url || !nft) return null;
+
+  const baseUrl = `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
+  const contractName = encodeURIComponent(nft.contract?.name || "");
+  const contractAddress = encodeURIComponent(nft.contract?.address || "");
+  const thumbnailUrl = encodeURIComponent(nft.image?.thumbnailUrl || "");
+
+  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
+}
+
+export function formatArweaveUrl(url?: string, nft?: any) {
+  if (!url) return url;
+  return `https://arweave.net/${url.split("://")[1]}`;
+}
+
+function formatNftUrl(nft: any) {
+  const baseUrl =
+    nft.raw?.metadata?.content?.uri || nft.raw?.metadata?.animation_url;
+
+  if (!baseUrl) {
+    return null;
+  } else if (baseUrl.startsWith("ipfs://")) {
+    return formatIpfsUrl(baseUrl, nft);
+  } else if (baseUrl.startsWith("ar://")) {
+    return formatArweaveUrl(baseUrl, nft);
+  }
+}
 
 export const AlchemyVideoNftSelector: React.FC<
   AlchemyVideoNftSelectorProps
@@ -91,25 +117,22 @@ export const AlchemyVideoNftSelector: React.FC<
             setError(null);
           }
 
+          console.log("Owned NFTs", data.ownedNfts);
+
           const videoNfts = data.ownedNfts.filter(
-            (nft: any) => nft.raw?.metadata?.content?.mime === "video/mp4",
+            (nft: any) =>
+              // nft.raw?.metadata?.mimeType === "audio/wave"  || @fix arweave audio
+              nft.raw?.metadata?.content?.mime === "video/mp4",
           );
 
           console.log("NFTs", videoNfts);
           const images = videoNfts
             .map((nft: any) => {
-              const baseUrl = formatIpfsUrl(nft.raw?.metadata?.content?.uri);
-              if (!baseUrl) return null;
-              const contractName = encodeURIComponent(nft.contract?.name || "");
-              const contractAddress = encodeURIComponent(
-                nft.contract?.address || "",
-              );
-              const thumbnailUrl = encodeURIComponent(
-                nft.image?.thumbnailUrl || "",
-              );
-              return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
+              return formatNftUrl(nft);
             })
             .filter((url: string | null) => url !== null);
+
+          console.log("Images", images);
 
           setNftImages(images);
           setError(null);
@@ -135,7 +158,6 @@ export const AlchemyVideoNftSelector: React.FC<
     }
   }, [neynarError]);
 
-  // Synchronize local state with props when props change
   useEffect(() => {
     setSelectedImage(value.selectedImage);
   }, [value.selectedImage]);
@@ -173,11 +195,7 @@ export const AlchemyVideoNftSelector: React.FC<
           </SelectContent>
         </Select>
       </div>
-      {!walletAddress ? (
-        <div className="text-sm text-gray-500">
-          Please select a wallet address
-        </div>
-      ) : (
+      {walletAddress && (
         <>
           <div>
             <span className="text-sm">Select Network</span>
@@ -231,19 +249,22 @@ export const AlchemyVideoNftSelector: React.FC<
                         });
                       }}
                     >
-                      {/* <img
-                        src={image}
-                        alt={`NFT ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      /> */}
-                      <video
-                        autoPlay
-                        loop
-                        muted
-                        controls={false}
-                        src={image}
-                        className="w-full h-full object-cover pointer-events-none"
-                      ></video>
+                      {image.includes("ipfs") ? (
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          controls={false}
+                          src={image}
+                          className="w-full h-full object-cover pointer-events-none"
+                        ></video>
+                      ) : (
+                        <audio
+                          controls={false}
+                          className="w-full h-full object-cover pointer-events-none"
+                          src={image}
+                        ></audio>
+                      )}
                     </div>
                   ))
                 )}

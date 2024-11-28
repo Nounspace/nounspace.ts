@@ -39,7 +39,7 @@ export function VideoSelector({
 
   function handleNftSelect(value: AlchemyVideoNftSelectorValue) {
     console.log("NFT selected", value);
-    handleVideoSelect(value.imageUrl);
+    if (value.imageUrl) handleVideoSelect(value.imageUrl);
   }
 
   return (
@@ -65,14 +65,7 @@ export function VideoSelector({
       )}
       {videoSource === "wallet" && (
         <div className="text-sm text-gray-500">
-          <AlchemyVideoNftSelector
-            onChange={handleNftSelect}
-            value={{
-              chain: "base",
-              imageUrl: "",
-              selectedImage: 0,
-            }}
-          />
+          <AlchemyVideoNftSelector onChange={handleNftSelect} value={{}} />
         </div>
       )}
 
@@ -91,13 +84,4 @@ export function VideoSelector({
       )}
     </div>
   );
-}
-
-export function formatIpfsUrl(url?: string) {
-  if (!url) return "";
-
-  if (url.startsWith("ipfs")) {
-    return `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
-  }
-  return url;
 }
