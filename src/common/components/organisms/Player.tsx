@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import ReactPlayer, { YouTubeConfig } from "react-player/youtube";
+import { YouTubeConfig } from "react-player/youtube";
+import ReactPlayer from "react-player";
 import Image from "next/image";
 import useHasWindow from "@/common/lib/hooks/useHasWindow";
 import { IconType } from "react-icons";
@@ -165,7 +166,9 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
           light={false}
           controls={false}
           muted={muted}
-          config={youtubeConfig}
+          config={{
+            youtube: youtubeConfig,
+          }}
           onReady={onReady}
           onStart={onStart}
           onPause={onPause}
