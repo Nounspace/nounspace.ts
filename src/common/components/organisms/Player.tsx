@@ -51,7 +51,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     // Handle array of URLs by taking the first one
     const videoUrl = Array.isArray(_url) ? _url[0] : _url;
 
-    if (videoUrl.includes("ipfs")) {
+    if (videoUrl.includes("ipfs") || videoUrl.includes("arweave")) {
       // Parse URL parameters for IPFS content
       const url = new URL(videoUrl);
       const contractName = url.searchParams.get("contractName");

@@ -14,6 +14,7 @@ import AlchemyVideoNftSelector, {
   AlchemyVideoNftSelectorValue,
 } from "./AlchemyVideoNFTSelector";
 import { YouTubeSelector } from "./YouTubeSelector";
+import Player from "../organisms/Player";
 
 type VideoSource = "youtube" | "wallet";
 
@@ -72,14 +73,7 @@ export function VideoSelector({
       {selectedVideo && (
         <div className="mt-4">
           <h5>Selected Song:</h5>
-          <iframe
-            width="100%"
-            height="150"
-            className="rounded-lg"
-            src={selectedVideo}
-            frameBorder="0"
-            allowFullScreen
-          />
+          <Player url={selectedVideo} />
         </div>
       )}
     </div>

@@ -27,33 +27,35 @@ export interface AlchemyVideoNftSelectorProps {
   className?: string;
 }
 
-export function formatIpfsUrl(url?: string, nft?: any) {
-  if (!url || !nft) return null;
-
-  const baseUrl = `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
-  const contractName = encodeURIComponent(nft.contract?.name || "");
-  const contractAddress = encodeURIComponent(nft.contract?.address || "");
-  const thumbnailUrl = encodeURIComponent(nft.image?.thumbnailUrl || "");
-
-  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
+export function formatIpfsUrl(url?: string) {
+  if (!url) return null;
+  return `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
 }
 
-export function formatArweaveUrl(url?: string, nft?: any) {
+export function formatArweaveUrl(url?: string) {
   if (!url) return url;
   return `https://arweave.net/${url.split("://")[1]}`;
 }
 
 function formatNftUrl(nft: any) {
-  const baseUrl =
+  let baseUrl =
     nft.raw?.metadata?.content?.uri || nft.raw?.metadata?.animation_url;
 
   if (!baseUrl) {
     return null;
-  } else if (baseUrl.startsWith("ipfs://")) {
-    return formatIpfsUrl(baseUrl, nft);
-  } else if (baseUrl.startsWith("ar://")) {
-    return formatArweaveUrl(baseUrl, nft);
   }
+
+  if (baseUrl.startsWith("ipfs://")) {
+    baseUrl = formatIpfsUrl(baseUrl);
+  } else if (baseUrl.startsWith("ar://")) {
+    baseUrl = formatArweaveUrl(baseUrl);
+  }
+
+  const contractName = encodeURIComponent(nft.contract?.name || "");
+  const contractAddress = encodeURIComponent(nft.contract?.address || "");
+  const thumbnailUrl = encodeURIComponent(nft.image?.thumbnailUrl || "");
+
+  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
 }
 
 export const AlchemyVideoNftSelector: React.FC<
@@ -121,7 +123,7 @@ export const AlchemyVideoNftSelector: React.FC<
 
           const videoNfts = data.ownedNfts.filter(
             (nft: any) =>
-              // nft.raw?.metadata?.mimeType === "audio/wave"  || @fix arweave audio
+              nft.raw?.metadata?.mimeType === "audio/wave" ||
               nft.raw?.metadata?.content?.mime === "video/mp4",
           );
 
@@ -249,7 +251,16 @@ export const AlchemyVideoNftSelector: React.FC<
                         });
                       }}
                     >
-                      {image.includes("ipfs") ? (
+                      {image.includes("arweave") ? (
+                        <img
+                          src={
+                            new URL(image).searchParams.get("thumbnailUrl") ||
+                            image
+                          }
+                          alt="NFT"
+                          className="w-full h-full object-cover pointer-events-none"
+                        />
+                      ) : (
                         <video
                           autoPlay
                           loop
@@ -258,12 +269,6 @@ export const AlchemyVideoNftSelector: React.FC<
                           src={image}
                           className="w-full h-full object-cover pointer-events-none"
                         ></video>
-                      ) : (
-                        <audio
-                          controls={false}
-                          className="w-full h-full object-cover pointer-events-none"
-                          src={image}
-                        ></audio>
                       )}
                     </div>
                   ))
