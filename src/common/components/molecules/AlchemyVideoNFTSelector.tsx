@@ -38,7 +38,7 @@ export function formatArweaveUrl(url?: string) {
   return `https://arweave.net/${url.split("://")[1]}`;
 }
 
-function formatNftUrl(nft: any) {
+function formatNftUrl(nft: any, chain: AlchemyNetwork = "eth") {
   let baseUrl =
     nft.raw?.metadata?.content?.uri || nft.raw?.metadata?.animation_url;
 
@@ -56,7 +56,7 @@ function formatNftUrl(nft: any) {
   const contractAddress = encodeURIComponent(nft.contract?.address || "");
   const thumbnailUrl = encodeURIComponent(nft.image?.thumbnailUrl || "");
 
-  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}`;
+  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}&chain=${chain}`;
 }
 
 export const AlchemyVideoNftSelector: React.FC<
@@ -129,7 +129,7 @@ export const AlchemyVideoNftSelector: React.FC<
           console.log("NFTs", videoNfts);
           const images = videoNfts
             .map((nft: any) => {
-              return formatNftUrl(nft);
+              return formatNftUrl(nft, selectedChain);
             })
             .filter((url: string | null) => url !== null);
 

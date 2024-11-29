@@ -9,16 +9,20 @@ import {
   SelectValue,
 } from "@/common/components/atoms/select";
 
-export const CHAIN_OPTIONS: { id: AlchemyNetwork; name: string }[] = [
-  { id: "eth", name: "Ethereum" },
-  { id: "polygon", name: "Polygon" },
-  { id: "opt", name: "Optimism" },
-  { id: "arb", name: "Arbitrum" },
-  { id: "base", name: "Base" },
-  { id: "starknet", name: "StarkNet" },
-  // { id: "astar", name: "Astar" },
-  // { id: "frax", name: "Frax" },
-  // { id: "zora", name: "Zora" },
+export const CHAIN_OPTIONS: {
+  id: AlchemyNetwork;
+  name: string;
+  scanUrl: string;
+}[] = [
+  { id: "eth", name: "Ethereum", scanUrl: "https://etherscan.io" },
+  { id: "polygon", name: "Polygon", scanUrl: "https://polygonscan.com" },
+  { id: "opt", name: "Optimism", scanUrl: "https://optimistic.etherscan.io" },
+  { id: "arb", name: "Arbitrum", scanUrl: "https://arbiscan.io" },
+  { id: "base", name: "Base", scanUrl: "https://basescan.org" },
+  { id: "starknet", name: "StarkNet", scanUrl: "https://voyager.online" },
+  // { id: "astar", name: "Astar", scanUrl: "https://astar.subscan.io" },
+  // { id: "frax", name: "Frax", scanUrl: "https://fraxscan.com" },
+  // { id: "zora", name: "Zora", scanUrl: "https://zorascan.io" },
 ];
 
 export interface AlchemyChainSelectorProps {

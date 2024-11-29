@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  ReactElement,
+} from "react";
 import { YouTubeConfig } from "react-player/youtube";
 import ReactPlayer from "react-player";
 import Image from "next/image";
@@ -11,14 +17,17 @@ import {
 } from "react-icons/lia";
 import { Button } from "@/common/components/atoms/button";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-type ContentMetadata = {
-  title?: string | null;
-  channel?: string | null;
-  thumbnail?: string | null;
-};
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
-import { zeroAddress } from "viem";
+import { Address, isAddress, zeroAddress } from "viem";
+import ScanAddress from "../molecules/ScanAddress";
+import { AlchemyNetwork } from "@/fidgets/ui/gallery";
+
+type ContentMetadata = {
+  title?: string | null;
+  channel?: string | null | ReactElement;
+  thumbnail?: string | null;
+};
 export type PlayerProps = {
   url: string | string[];
 };
@@ -55,14 +64,15 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
       // Parse URL parameters for IPFS content
       const url = new URL(videoUrl);
       const contractName = url.searchParams.get("contractName");
-      const contractAddress = url.searchParams.get("contractAddress");
+      const contractAddress = url.searchParams.get(
+        "contractAddress",
+      ) as Address;
       const thumbnailUrl = url.searchParams.get("thumbnailUrl");
+      const chain = url.searchParams.get("chain") as AlchemyNetwork;
 
       setMetadata({
-        title: contractName || "NFT Video",
-        channel:
-          formatEthereumAddress(contractAddress || zeroAddress) ||
-          "IPFS Content",
+        title: contractName || "NFT",
+        channel: <ScanAddress address={contractAddress} chain={chain} />,
         thumbnail: thumbnailUrl || null,
       });
       return;
