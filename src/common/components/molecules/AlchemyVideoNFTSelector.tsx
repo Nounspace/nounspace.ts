@@ -14,6 +14,7 @@ import { first } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
 import { zeroAddress } from "viem";
+import Image from "next/image";
 
 export interface AlchemyVideoNftSelectorValue {
   chain?: AlchemyNetwork;
@@ -30,7 +31,10 @@ export interface AlchemyVideoNftSelectorProps {
 
 export function formatIpfsUrl(url?: string) {
   if (!url) return null;
-  return `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
+  const token = process.env.NEXT_PUBLIC_IPFS_TOKEN;
+  const isDev = process.env.NODE_ENV === "development";
+  const baseUrl = `https://nounspace.mypinata.cloud/ipfs/${url.split("://")[1]}`;
+  return isDev && token ? `${baseUrl}?pinataGatewayToken=${token}` : baseUrl;
 }
 
 export function formatArweaveUrl(url?: string) {
@@ -52,11 +56,18 @@ function formatNftUrl(nft: any, chain: AlchemyNetwork = "eth") {
     baseUrl = formatArweaveUrl(baseUrl);
   }
 
-  const contractName = encodeURIComponent(nft.contract?.name || "");
-  const contractAddress = encodeURIComponent(nft.contract?.address || "");
-  const thumbnailUrl = encodeURIComponent(nft.image?.thumbnailUrl || "");
+  const contractName = nft.contract?.name || "";
+  const contractAddress = nft.contract?.address || "";
+  const thumbnailUrl = nft.image?.thumbnailUrl || "";
 
-  return `${baseUrl}?contractName=${contractName}&contractAddress=${contractAddress}&thumbnailUrl=${thumbnailUrl}&chain=${chain}`;
+  const url = new URL(baseUrl);
+
+  url.searchParams.set("contractName", contractName);
+  url.searchParams.set("contractAddress", contractAddress);
+  url.searchParams.set("thumbnailUrl", thumbnailUrl);
+  url.searchParams.set("chain", chain);
+
+  return url.toString();
 }
 
 export const AlchemyVideoNftSelector: React.FC<
@@ -123,22 +134,17 @@ export const AlchemyVideoNftSelector: React.FC<
             setError(null);
           }
 
-          console.log("Owned NFTs", data.ownedNfts);
-
           const videoNfts = data.ownedNfts.filter(
             (nft: any) =>
               nft.raw?.metadata?.mimeType === "audio/wave" ||
               nft.raw?.metadata?.content?.mime === "video/mp4",
           );
 
-          console.log("NFTs", videoNfts);
           const images = videoNfts
             .map((nft: any) => {
               return formatNftUrl(nft, selectedChain);
             })
             .filter((url: string | null) => url !== null);
-
-          console.log("Images", images);
 
           setNftImages(images);
           setError(null);
@@ -257,41 +263,44 @@ export const AlchemyVideoNftSelector: React.FC<
                     {error}
                   </div>
                 ) : (
-                  nftImages.map((image, index) => (
-                    <div
-                      key={index}
-                      className={`cursor-pointer origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
-                      onClick={() => {
-                        setSelectedImage(index);
-                        onChange({
-                          chain: selectedChain,
-                          walletAddress: walletAddress,
-                          selectedImage: index,
-                          imageUrl: image,
-                        });
-                      }}
-                    >
-                      {image.includes("arweave") ? (
-                        <img
-                          src={
-                            new URL(image).searchParams.get("thumbnailUrl") ||
-                            image
-                          }
-                          alt="NFT"
-                          className="w-full h-full object-cover pointer-events-none"
+                  nftImages.map((image, index) => {
+                    const thumbnailUrl =
+                      new URL(image).searchParams.get("thumbnailUrl") || image;
+                    return (
+                      <div
+                        key={index}
+                        className={`relative cursor-pointer origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
+                        onClick={() => {
+                          setSelectedImage(index);
+                          onChange({
+                            chain: selectedChain,
+                            walletAddress: walletAddress,
+                            selectedImage: index,
+                            imageUrl: image,
+                          });
+                        }}
+                      >
+                        <Image
+                          src={thumbnailUrl}
+                          alt="NFT Thumbnail"
+                          width={200}
+                          height={200}
+                          className="w-full h-full object-cover pointer-events-none absolute"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
-                      ) : (
                         <video
                           autoPlay
                           loop
                           muted
                           controls={false}
                           src={image}
-                          className="w-full h-full object-cover pointer-events-none"
+                          className="w-full h-full object-cover pointer-events-none absolute z-10"
                         ></video>
-                      )}
-                    </div>
-                  ))
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
