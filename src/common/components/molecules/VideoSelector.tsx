@@ -9,7 +9,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import { useState } from "react";
+import React, { useState } from "react";
 import AlchemyVideoNftSelector, {
   AlchemyVideoNftSelectorValue,
 } from "./AlchemyVideoNFTSelector";

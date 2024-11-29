@@ -13,6 +13,7 @@ import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
 import { first } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
+import { zeroAddress } from "viem";
 
 export interface AlchemyVideoNftSelectorValue {
   chain?: AlchemyNetwork;
@@ -69,15 +70,13 @@ export const AlchemyVideoNftSelector: React.FC<
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
 
-  const { user: neynarUser, error: neynarError } = useNeynarUser(username);
+  const {
+    user: neynarUser,
+    error: neynarError,
+    isLoading: isLoadingAddresses,
+  } = useNeynarUser(username);
   const verifiedAddresses = useMemo(
-    () =>
-      neynarUser?.verifications
-        ? [
-            ...neynarUser?.verifications,
-            "0x05A1ff0a32bc24265BCB39499d0c5D9A6cb2011c",
-          ]
-        : [],
+    () => neynarUser?.verifications || [],
     [neynarUser],
   );
 
@@ -179,21 +178,33 @@ export const AlchemyVideoNftSelector: React.FC<
         <Select
           onValueChange={(value) => setWalletAddress(value)}
           value={walletAddress}
+          disabled={isLoadingAddresses}
         >
           <SelectTrigger className={className}>
             <SelectValue
-              placeholder="Select a verified address"
+              placeholder={
+                isLoadingAddresses
+                  ? "Loading addresses..."
+                  : "Select a verified address"
+              }
               className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
             >
-              {formatEthereumAddress(walletAddress) || "Select address"}
+              {formatEthereumAddress(walletAddress) ||
+                (isLoadingAddresses ? "Loading..." : "Select address")}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            {verifiedAddresses.map((address, i) => (
-              <SelectItem value={address} key={i}>
-                {formatEthereumAddress(address)}
+            {verifiedAddresses.length === 0 && !isLoadingAddresses ? (
+              <SelectItem value={zeroAddress} disabled>
+                No verified addresses found
               </SelectItem>
-            ))}
+            ) : (
+              verifiedAddresses.map((address, i) => (
+                <SelectItem value={address} key={i}>
+                  {formatEthereumAddress(address)}
+                </SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>

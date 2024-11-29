@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 export const useNeynarUser = (username: string | undefined) => {
   const [user, setUser] = useState<NeynarUser | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -42,5 +42,5 @@ export const useNeynarUser = (username: string | undefined) => {
     };
   }, [username]);
 
-  return { user, error, loading };
+  return { user, error, isLoading };
 };
