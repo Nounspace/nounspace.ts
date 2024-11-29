@@ -262,6 +262,10 @@ export const AlchemyVideoNftSelector: React.FC<
                   <div className="col-span-3 text-red-500 text-center">
                     {error}
                   </div>
+                ) : nftImages.length === 0 ? (
+                  <div className="col-span-3 text-center">
+                    No video or audio NFTs found
+                  </div>
                 ) : (
                   nftImages.map((image, index) => {
                     const thumbnailUrl =
@@ -291,6 +295,8 @@ export const AlchemyVideoNftSelector: React.FC<
                           }}
                         />
                         <video
+                          width={200}
+                          height={200}
                           autoPlay
                           loop
                           muted
