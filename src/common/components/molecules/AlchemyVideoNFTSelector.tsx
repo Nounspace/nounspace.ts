@@ -93,14 +93,16 @@ export const AlchemyVideoNftSelector: React.FC<
 
   const [nftImages, setNftImages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoadingNFTs, setIsLoadingNFTs] = useState(false);
 
   useEffect(() => {
     const abortController = new AbortController();
 
     const fetchNFTs = async () => {
       if (selectedChain && walletAddress) {
+        setIsLoadingNFTs(true);
         const base_url = getAlchemyChainUrlV3(selectedChain);
-        const url = `${base_url}/getNFTsForOwner?owner=${walletAddress}&pageSize=100`;
+        const url = `${base_url}/getNFTsForOwner?owner=${walletAddress}&withMetadata=true&excludeFilters[]=AIRDROPS&pageSize=100`;
         const options = {
           method: "GET",
           headers: { accept: "application/json" },
@@ -109,6 +111,9 @@ export const AlchemyVideoNftSelector: React.FC<
 
         try {
           const response = await fetch(url, options);
+          if (!response.ok) {
+            throw new Error(`Error fetching NFTs: ${response.statusText}`);
+          }
           const data = await response.json();
           if (data.error) {
             throw new Error(data.error.message);
@@ -141,6 +146,8 @@ export const AlchemyVideoNftSelector: React.FC<
           if (!abortController.signal.aborted) {
             setError(err.message);
           }
+        } finally {
+          setIsLoadingNFTs(false);
         }
       }
     };
@@ -159,22 +166,22 @@ export const AlchemyVideoNftSelector: React.FC<
     }
   }, [neynarError]);
 
-  useEffect(() => {
-    setSelectedImage(value.selectedImage);
-  }, [value.selectedImage]);
+  // useEffect(() => {
+  //   setSelectedImage(value.selectedImage);
+  // }, [value.selectedImage]);
 
-  useEffect(() => {
-    setWalletAddress(value.walletAddress);
-  }, [value.walletAddress]);
+  // useEffect(() => {
+  //   setWalletAddress(value.walletAddress);
+  // }, [value.walletAddress]);
 
-  useEffect(() => {
-    setSelectedChain(value.chain);
-  }, [value.chain]);
+  // useEffect(() => {
+  //   setSelectedChain(value.chain);
+  // }, [value.chain]);
 
   return (
     <div className="flex flex-col gap-2">
       <div>
-        <span className="text-sm">Select Wallet Address</span>
+        <span className="text-sm">Wallet Address</span>
         <Select
           onValueChange={(value) => setWalletAddress(value)}
           value={walletAddress}
@@ -211,7 +218,7 @@ export const AlchemyVideoNftSelector: React.FC<
       {walletAddress && (
         <>
           <div>
-            <span className="text-sm">Select Network</span>
+            <span className="text-sm">Network</span>
             <Select
               onValueChange={(selectedId) => {
                 const chain = settings.find((chain) => chain.id === selectedId);
@@ -241,9 +248,11 @@ export const AlchemyVideoNftSelector: React.FC<
           </div>
           {selectedChain && (
             <div>
-              <span className="text-sm">Select NFT</span>
-              <div className="grid grid-cols-3 gap-2 p-3 border border-gray-300 cursor-pointer rounded-lg max-h-[200px] overflow-y-scroll">
-                {error ? (
+              <span className="text-sm">NFT</span>
+              <div className="grid grid-cols-3 gap-2 p-3 border border-gray-300 rounded-lg max-h-[200px] overflow-y-scroll">
+                {isLoadingNFTs ? (
+                  <div className="col-span-3 text-center">Loading NFTs...</div>
+                ) : error ? (
                   <div className="col-span-3 text-red-500 text-center">
                     {error}
                   </div>
@@ -251,7 +260,7 @@ export const AlchemyVideoNftSelector: React.FC<
                   nftImages.map((image, index) => (
                     <div
                       key={index}
-                      className={`origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
+                      className={`cursor-pointer origin-center w-full aspect-square rounded-sm flex items-center justify-center overflow-hidden ${selectedImage === index ? "scale-105 border-2 border-blue-500" : "hover:scale-105 hover:border-2 hover:border-blue-300"}`}
                       onClick={() => {
                         setSelectedImage(index);
                         onChange({
