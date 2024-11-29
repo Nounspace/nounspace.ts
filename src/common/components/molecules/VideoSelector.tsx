@@ -30,7 +30,7 @@ export function VideoSelector({
   const [selectedVideo, setSelectedVideo] = useState<string | null>(
     initialVideoURL,
   );
-  const [videoSource, setVideoSource] = useState<VideoSource>("youtube");
+  const [videoSource, setVideoSource] = useState<VideoSource>();
 
   function handleVideoSelect(videoUrl: string) {
     setSelectedVideo(videoUrl);
@@ -45,21 +45,18 @@ export function VideoSelector({
 
   return (
     <div className="grid gap-2">
-      <div>
-        <span className="text-sm">Select video source</span>
-        <Select
-          onValueChange={(value: VideoSource) => setVideoSource(value)}
-          value={videoSource}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select a video source" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="youtube">Select from YouTube</SelectItem>
-            <SelectItem value="wallet">Select from Wallet</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Select
+        onValueChange={(value: VideoSource) => setVideoSource(value)}
+        value={videoSource}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select a video source" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="youtube">Select from YouTube</SelectItem>
+          <SelectItem value="wallet">Select from Wallet</SelectItem>
+        </SelectContent>
+      </Select>
 
       {videoSource === "youtube" && (
         <YouTubeSelector onVideoSelect={handleVideoSelect} />

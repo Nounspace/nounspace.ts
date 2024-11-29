@@ -30,7 +30,7 @@ export interface AlchemyVideoNftSelectorProps {
 }
 
 export function formatIpfsUrl(url?: string) {
-  if (!url) return null;
+  if (!url || !url.startsWith("ipfs://")) return url || "";
   const token = process.env.NEXT_PUBLIC_IPFS_TOKEN;
   const isDev = process.env.NODE_ENV === "development";
   const baseUrl = `https://nounspace.mypinata.cloud/ipfs/${url.split("://")[1]}`;
@@ -56,9 +56,11 @@ function formatNftUrl(nft: any, chain: AlchemyNetwork = "eth") {
     baseUrl = formatArweaveUrl(baseUrl);
   }
 
-  const contractName = nft.contract?.name || "";
+  const contractName = nft?.name || "";
   const contractAddress = nft.contract?.address || "";
-  const thumbnailUrl = nft.image?.thumbnailUrl || "";
+  const thumbnailUrl = formatIpfsUrl(
+    nft.image?.thumbnailUrl || nft?.raw?.metadata?.image || "",
+  );
 
   const url = new URL(baseUrl);
 
