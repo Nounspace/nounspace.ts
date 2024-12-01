@@ -55,7 +55,8 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
     | typeof FilterTypeSelector
     | typeof PlatformSelector
     | typeof AlchemyChainSelector
-    | typeof AlchemyNftSelector;
+    | typeof AlchemyNftSelector
+    | typeof ChainSelector;
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;

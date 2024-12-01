@@ -14,12 +14,13 @@ const cspHeader = `
     object-src 'self';
     base-uri 'self';
     form-action 'self';
-    frame-ancestors 'self';
+    frame-ancestors 'self' https://belongtous.xyz https://clanker.world https://dexscreener.com https://dex.guru https://matcha-iframe.vercel.app https://www.nounspace.com https://allyourbase.fun https://matcha.xyz;
     frame-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://*;
     child-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://www.youtube.com https://*;
     connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://auth.privy.nounspace.com https://privy.nounspace.com/api/v1/analytics_events wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems;
     upgrade-insecure-requests;
 `;
+
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -75,6 +76,7 @@ const nextConfig = {
   //     },
   //   ];
   // },
+
 };
 
 export default withBundleAnalyzer(nextConfig);
