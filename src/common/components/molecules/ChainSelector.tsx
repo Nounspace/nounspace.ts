@@ -1,5 +1,4 @@
 import React from "react";
-
 import {
   Select,
   SelectContent,
@@ -7,7 +6,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import { CHAIN_OPTIONS } from "@/fidgets/swap/utils/chains";
+
+const CHAIN_OPTIONS = [
+  { id: 1, name: "Ethereum Mainnet" },
+  { id: 137, name: "Polygon" },
+  { id: 8453, name: "Base" },
+  { id: 56, name: "Binance Smart Chain" },
+  { id: 10, name: "Optimism" },
+  { id: 42161, name: "Arbitrum One" },
+  { id: 43114, name: "Avalanche" },
+  { id: 250, name: "Fantom" },
+  { id: 100, name: "Gnosis Chain" },
+  { id: 5, name: "Goerli Testnet" },
+];
 
 export interface ChainSelectorProps {
   onChange: (chainId: number) => void;
@@ -20,12 +31,14 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   value,
   className,
 }) => {
-  const settings = CHAIN_OPTIONS;
+  // Find the selected chain name or fallback to "Select a chain"
+  const selectedChainName =
+    CHAIN_OPTIONS.find((chain) => chain.id === value)?.name || "Select a chain";
 
   return (
     <Select
       onValueChange={(selectedId) => {
-        const selectedChain = settings.find(
+        const selectedChain = CHAIN_OPTIONS.find(
           (chain) => chain.id === Number(selectedId),
         );
         if (selectedChain) {
@@ -33,18 +46,20 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         }
       }}
     >
-      <SelectTrigger className={className}>
+      <SelectTrigger
+        className={className}
+        aria-label="Select blockchain network"
+      >
         <SelectValue
           placeholder="Select a chain"
           className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
         >
-          {settings.find((chain) => chain.id === value)?.name ||
-            "Select a chain"}
+          {selectedChainName}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        {settings.map((chain, i) => (
-          <SelectItem value={chain.id.toString()} key={i}>
+        {CHAIN_OPTIONS.map((chain) => (
+          <SelectItem value={chain.id.toString()} key={chain.id}>
             {chain.name}
           </SelectItem>
         ))}
