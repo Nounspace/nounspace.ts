@@ -11,16 +11,26 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
 import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 import { Widget, WidgetConfig } from "@rango-dev/widget-embedded";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
 
 type RangoFidgetSettings = {
+  SwapTitle: string;
   defaultSellToken: string;
   defaultBuyToken: string;
-  fromChain: number;
-  toChain: number;
+  fromChain: string;
+  toChain: string;
+  // style
   background: string;
   fontFamily: string;
   fontColor: string;
   swapScale: number;
+  borderRadius: number;
+  padding: string;
+  margin: string;
+  foreground: string;
+  swapItem: string;
+  primary: string;
+  secondary: string;
 } & FidgetSettingsStyle;
 
 const rangoProperties: FidgetProperties = {
@@ -28,36 +38,71 @@ const rangoProperties: FidgetProperties = {
   icon: 0x1f501,
   fields: [
     {
+      fieldName: "SwapTitle",
+      default: "Swap Widget",
+      required: true,
+      inputSelector: TextInput,
+      group: "settings",
+    },
+    {
       fieldName: "defaultSellToken",
-      default: "",
+      default: "ETH",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "defaultBuyToken",
-      default: "0x0a93a7BE7e7e426fC046e204C44d6b03A302b631",
+      default: "ETH",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "fromChain",
-      default: 8453,
+      default: "BASE",
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
       fieldName: "toChain",
-      default: 8453,
+      default: "OPTIMISM",
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
       fieldName: "background",
-      default: "",
+      default: "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      default: "#000000",
+      required: false,
+      inputSelector: SimpleColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "swapItem",
+      default: "#cccccc",
+      required: false,
+      inputSelector: SimpleColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "primary",
+      default: "#1C3CF1",
+      required: false,
+      inputSelector: SimpleColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "secondary",
+      default: "#1C3CF1",
       required: false,
       inputSelector: SimpleColorSelector,
       group: "style",
@@ -69,20 +114,13 @@ const rangoProperties: FidgetProperties = {
       inputSelector: FontSelector,
       group: "style",
     },
-    {
-      fieldName: "fontColor",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "swapScale",
-      default: 1,
-      required: false,
-      inputSelector: WidthSlider,
-      group: "style",
-    },
+    // {
+    //   fieldName: "swapScale",
+    //   default: 1,
+    //   required: false,
+    //   inputSelector: WidthSlider,
+    //   group: "style",
+    // },
   ],
   size: {
     minHeight: 3,
@@ -94,36 +132,102 @@ const rangoProperties: FidgetProperties = {
 
 const Swap2: React.FC<{ settings: RangoFidgetSettings }> = ({ settings }) => {
   useEffect(() => {
-    // Check and prevent duplicate custom element registration
     if (!customElements.get("wcm-button")) {
-      console.log("wcm-button is not defined. Importing provider...");
       import("@rango-dev/provider-walletconnect-2");
-    } else {
-      console.log("wcm-button already defined. Skipping provider import.");
     }
   }, []);
 
-  const config: WidgetConfig = {
-    apiKey:
-      process.env.NEXT_PUBLIC_RANGO_API_KEY ||
-      "c6381a79-2817-4602-83bf-6a641a409e32",
-    walletConnectProjectId:
-      process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ||
-      "e24844c5deb5193c1c14840a7af6a40b",
+  // Configuration variables
+  const defaultApiKey =
+    process.env.NEXT_PUBLIC_RANGO_API_KEY ||
+    "c6381a79-2817-4602-83bf-6a641a409e32";
+  const defaultWalletConnectId =
+    process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ||
+    "e24844c5deb5193c1c14840a7af6a40b";
+
+  const defaultTitle = settings.SwapTitle || "My Swap";
+  const defaultAmount = 0.0169;
+
+  // Chain configuration
+  const fromChain = settings.fromChain?.toString() || "BASE";
+  const toChain = settings.toChain?.toString() || "BASE";
+  const defaultSellToken = settings.defaultSellToken || "ETH";
+  const defaultBuyToken = settings.defaultBuyToken || "ETH";
+
+  // Theme and style configuration
+  const fontFamily = settings.fontFamily || "Londrina Solid";
+  const lightColors = {
+    background:
+      settings.background || "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
+    foreground: settings.fontColor || "#000000",
+    neutral: settings.swapItem || "#cccccc",
+    primary: settings.primary || "#1C3CF1",
+    secondary: settings.secondary || "#ffffff",
+  };
+  const darkColors = {
+    background:
+      settings.background || "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
+    foreground: settings.fontColor || "#ffffff",
+    neutral: settings.swapItem || "#666666",
+    primary: settings.primary || "#1C3CF1",
+    secondary: settings.secondary || "#ffffff",
+  };
+
+  const borderRadius = 10;
+  const secondaryBorderRadius = 10;
+
+  const themeConfig = {
+    mode: "light" as "light",
+    fontFamily,
+    colors: {
+      light: lightColors,
+      dark: darkColors,
+    },
+    borderRadius,
+    secondaryBorderRadius,
+  };
+
+  // Widget configuration
+  const widgetConfig: WidgetConfig = {
+    apiKey: defaultApiKey,
+    walletConnectProjectId: defaultWalletConnectId,
+    title: defaultTitle,
+    amount: defaultAmount,
+    from: {
+      blockchain: fromChain,
+      token: {
+        blockchain: fromChain,
+        symbol: defaultSellToken,
+      },
+    },
+    to: {
+      blockchain: toChain,
+      token: {
+        blockchain: toChain,
+        symbol: defaultBuyToken,
+      },
+    },
+    theme: themeConfig,
+  };
+
+  // Style configuration for the container
+  const containerStyle: React.CSSProperties = {
+    overflow: "auto",
+    width: "100%",
+    height: "100%",
+    transform: `scale(${settings.swapScale})`,
+    transformOrigin: "top left",
+    display: "flex",
+    justifyContent: "center",
+    borderRadius: settings.borderRadius,
+    padding: settings.padding,
+    margin: settings.margin,
+    backgroundColor: "transparent",
   };
 
   return (
-    <div
-      style={{
-        overflow: "auto",
-        width: "100%",
-        height: "100%",
-        backgroundColor: settings.background || "transparent",
-        transform: `scale(${settings.swapScale})`,
-        transformOrigin: "top left",
-      }}
-    >
-      <Widget config={config} />
+    <div style={containerStyle}>
+      <Widget config={widgetConfig} />
     </div>
   );
 };
