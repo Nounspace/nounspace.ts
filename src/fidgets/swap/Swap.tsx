@@ -28,14 +28,14 @@ const matchaProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "defaultSellToken",
-      default: "",
+      default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "defaultBuyToken",
-      default: "0x0a93a7BE7e7e426fC046e204C44d6b03A302b631",
+      default: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       required: true,
       inputSelector: TextInput,
       group: "settings",
@@ -102,7 +102,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
     if (fromChain) params.append("sellChain", fromChain.toString());
     if (toChain) params.append("buyChain", toChain.toString());
-
+    console.log(`${matchaBaseUrl}?${params.toString()}`);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
