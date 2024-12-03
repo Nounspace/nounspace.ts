@@ -38,21 +38,21 @@ const CHAIN_OPTIONS = [
     name: "Optimism",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/OPTIMISM/icon.svg",
   },
-  {
-    id: "BTC",
-    name: "Bitcoin",
-    logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BTC/icon.svg",
-  },
-  {
-    id: "LTC",
-    name: "Litecoin",
-    logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LTC/icon.svg",
-  },
-  {
-    id: "DOGE",
-    name: "Dogecoin",
-    logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/DOGE/icon.svg",
-  },
+  // {
+  //   id: "BTC",
+  //   name: "Bitcoin",
+  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BTC/icon.svg",
+  // },
+  // {
+  //   id: "LTC",
+  //   name: "Litecoin",
+  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LTC/icon.svg",
+  // },
+  // {
+  //   id: "DOGE",
+  //   name: "Dogecoin",
+  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/DOGE/icon.svg",
+  // },
   // add BASE
   {
     id: "BASE",
