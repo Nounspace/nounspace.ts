@@ -81,14 +81,14 @@ const rangoProperties: FidgetProperties = {
     },
     {
       fieldName: "fontColor",
-      default: "#000000",
+      default: "#FFFFFF",
       required: false,
       inputSelector: SimpleColorSelector,
       group: "style",
     },
     {
       fieldName: "swapItem",
-      default: "#cccccc",
+      default: "#2596be",
       required: false,
       inputSelector: SimpleColorSelector,
       group: "style",
