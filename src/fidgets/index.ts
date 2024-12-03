@@ -15,7 +15,7 @@ import snapShot from "./snapshot/SnapShot";
 import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
-import Swap2 from "./swap/Swap2";
+// import Swap2 from "./swap/Swap2";
 
 export const CompleteFidgets = {
   //
@@ -38,7 +38,7 @@ export const CompleteFidgets = {
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
   Swap: Swap,
-  Swap2: Swap2,
+  // Swap2: Swap2,
   Rss: rss,
   Video: VideoFidget,
 };
