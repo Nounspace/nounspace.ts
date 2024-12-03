@@ -177,7 +177,7 @@ const Swap2: React.FC<{ settings: RangoFidgetSettings }> = ({ settings }) => {
   const secondaryBorderRadius = 10;
 
   const themeConfig = {
-    mode: "light" as "light",
+    mode: "light" as const,
     fontFamily,
     colors: {
       light: lightColors,
