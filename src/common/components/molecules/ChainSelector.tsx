@@ -38,6 +38,17 @@ const CHAIN_OPTIONS = [
     name: "Optimism",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/OPTIMISM/icon.svg",
   },
+  // Blast
+  {
+    id: "BLAST",
+    name: "Blast",
+    logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BLAST/icon.svg",
+  },
+  {
+    id: "LINEA",
+    name: "Linea",
+    logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LINEA/icon.svg",
+  },
   // {
   //   id: "BTC",
   //   name: "Bitcoin",
