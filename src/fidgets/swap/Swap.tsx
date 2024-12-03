@@ -102,7 +102,6 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
     if (fromChain) params.append("sellChain", fromChain.toString());
     if (toChain) params.append("buyChain", toChain.toString());
-    console.log(`${matchaBaseUrl}?${params.toString()}`);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
