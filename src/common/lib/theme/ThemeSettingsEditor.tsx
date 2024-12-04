@@ -37,6 +37,7 @@ import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import { GiOpenBook } from "react-icons/gi";
 import { FaBook } from "react-icons/fa";
 import { MdMenuBook } from "react-icons/md";
+import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -52,12 +53,13 @@ export function ThemeSettingsEditor({
   cancelExitEditMode,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+  const [activeTheme, setActiveTheme] = useState(theme.id);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(
     theme.properties.musicURL,
   );
-  const [activeTheme, setActiveTheme] = useState(theme.id);
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     const query = event.target.value;
@@ -336,47 +338,10 @@ export function ThemeSettingsEditor({
                 <h4 className="text-sm mt-4">Music</h4>
                 <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
               </div>
-              <input
-                type="text"
-                placeholder="Search or paste YouTube link"
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="input-classname rounded-sm p-1 border border-gray-300"
+              <VideoSelector
+                initialVideoURL={theme.properties.musicURL}
+                onVideoSelect={themePropSetter("musicURL")}
               />
-              <ul className="mt-2">
-                {searchResults.map((result: any) => (
-                  <li
-                    key={result.id.videoId}
-                    onClick={() => {
-                      handleVideoSelect(result.id.videoId);
-                      setSearchResults([]);
-                    }}
-                    className="cursor-pointer hover:bg-gray-200 p-2 rounded text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <img
-                        className="rounded-sm h-8"
-                        src={result.snippet.thumbnails.default.url}
-                        alt={result.snippet.title}
-                      />
-                      <span>{result.snippet.title}</span>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              {selectedVideo && (
-                <div className="mt-4">
-                  <h5> Selected Song:</h5>
-                  <iframe
-                    width="100%"
-                    height="150"
-                    className="rounded-lg"
-                    src={`https://www.youtube.com/embed/${new URL(selectedVideo).searchParams.get("v")}`}
-                    frameBorder="0"
-                    allowFullScreen
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>
