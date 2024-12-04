@@ -309,8 +309,9 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   commitHomebaseTabToDatabase: debounce(async (tabname) => {
-    const localCopy = cloneDeep(get().homebase.tabs[tabname].config);
-    if (localCopy) {
+    const tab = get().homebase.tabs[tabname];
+    if (tab && tab.config) {
+      const localCopy = cloneDeep(tab.config);
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
         "json",
