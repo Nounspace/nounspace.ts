@@ -38,17 +38,6 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import { error, log } from "console";
-import { GiConsoleController } from "react-icons/gi";
-import { hash } from "crypto";
-import { type } from "os";
-import { text } from "stream/consumers";
-import api from "@/common/data/database/supabase/clients/api";
-import { form } from "@segment/analytics-next/dist/types/core/auto-track";
-import { commands, hr } from "@uiw/react-md-editor";
-import { url } from "inspector";
-import { match } from "assert";
-import { test } from "gray-matter";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
