@@ -73,7 +73,7 @@ const CHAIN_OPTIONS = [
 ];
 
 export interface ChainSelectorProps {
-  onChange: (chainName: string) => void; // Pass string name as expected by Rango
+  onChange: (chainName: string) => void;
   value: string | null;
   className?: string;
 }
