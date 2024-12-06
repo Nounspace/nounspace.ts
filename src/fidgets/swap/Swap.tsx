@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -6,81 +6,103 @@ import {
   FidgetModule,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { Widget } from "./Widget";
 import SimpleColorSelector from "@/common/components/molecules/SimpleColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ThemeSelector from "@/common/components/molecules/ThemeSelector";
-import { WidgetTheme } from "@lifi/widget";
-import { resolveCssVariable } from "./utils/cssUtils";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
 import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
+import { Widget, WidgetConfig } from "@rango-dev/widget-embedded";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
 
-export type LifiFidgetSettings = {
-  text: string;
-  background: string;
-  components: string;
-  fontFamily: string;
-  fontColor: string;
-  secondaryColor: string;
-  headerColor: string;
-  message: string;
-  themes?: WidgetTheme;
+type RangoFidgetSettings = {
+  SwapTitle: string;
   defaultSellToken: string;
   defaultBuyToken: string;
-  fromChain: number;
-  toChain: number;
+  fromChain: string;
+  toChain: string;
+  // style
+  background: string;
+  fontFamily: string;
+  fontColor: string;
   swapScale: number;
+  borderRadius: number;
+  padding: string;
+  margin: string;
+  foreground: string;
+  swapItem: string;
+  primary: string;
+  secondary: string;
 } & FidgetSettingsStyle;
 
-const lifiProperties: FidgetProperties = {
-  fidgetName: "Swap",
+const rangoProperties: FidgetProperties = {
+  fidgetName: "Swap2",
   icon: 0x1f501,
   fields: [
     {
+      fieldName: "SwapTitle",
+      default: "Swap Widget",
+      required: true,
+      inputSelector: TextInput,
+      group: "settings",
+    },
+    {
       fieldName: "defaultSellToken",
-      default: "",
+      default: "ETH",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "defaultBuyToken",
-      default: "0x0a93a7BE7e7e426fC046e204C44d6b03A302b631",
+      default: "ETH",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "fromChain",
-      default: 8453,
+      default: "BASE",
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
       fieldName: "toChain",
-      default: 8453,
+      default: "OPTIMISM",
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
-      fieldName: "themes",
-      default: "Custom",
+      fieldName: "background",
+      default: "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
       required: false,
-      inputSelector: ThemeSelector,
+      inputSelector: ColorSelector,
       group: "style",
     },
     {
-      fieldName: "background",
-      default: "",
+      fieldName: "fontColor",
+      default: "#FFFFFF",
       required: false,
       inputSelector: SimpleColorSelector,
       group: "style",
     },
     {
-      fieldName: "components",
-      default: "",
+      fieldName: "swapItem",
+      default: "#2596be",
+      required: false,
+      inputSelector: SimpleColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "primary",
+      default: "#1C3CF1",
+      required: false,
+      inputSelector: SimpleColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "secondary",
+      default: "#1C3CF1",
       required: false,
       inputSelector: SimpleColorSelector,
       group: "style",
@@ -92,27 +114,13 @@ const lifiProperties: FidgetProperties = {
       inputSelector: FontSelector,
       group: "style",
     },
-    {
-      fieldName: "fontColor",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "secondaryColor",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "swapScale",
-      default: 1,
-      required: false,
-      inputSelector: WidthSlider,
-      group: "style",
-    },
+    // {
+    //   fieldName: "swapScale",
+    //   default: 1,
+    //   required: false,
+    //   inputSelector: WidthSlider,
+    //   group: "style",
+    // },
   ],
   size: {
     minHeight: 3,
@@ -122,57 +130,109 @@ const lifiProperties: FidgetProperties = {
   },
 };
 
-const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
-  const background = settings.background?.startsWith("var")
-    ? resolveCssVariable(settings.background)
-    : settings.background || resolveCssVariable("");
+const Swap2: React.FC<{ settings: RangoFidgetSettings }> = ({ settings }) => {
+  useEffect(() => {
+    if (!customElements.get("wcm-button")) {
+      import("@rango-dev/provider-walletconnect-2");
+    }
+  }, []);
 
-  const components = settings.components?.startsWith("var")
-    ? resolveCssVariable(settings.components)
-    : settings.components || resolveCssVariable("");
+  // Configuration variables
+  const defaultApiKey =
+    process.env.NEXT_PUBLIC_RANGO_API_KEY ||
+    "c6381a79-2817-4602-83bf-6a641a409e32";
+  const defaultWalletConnectId =
+    process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID ||
+    "e24844c5deb5193c1c14840a7af6a40b";
 
+  const defaultTitle = settings.SwapTitle || "My Swap";
+  const defaultAmount = 0.0169;
+
+  // Chain configuration
+  const fromChain = settings.fromChain?.toString() || "BASE";
+  const toChain = settings.toChain?.toString() || "BASE";
+  const defaultSellToken = settings.defaultSellToken || "ETH";
+  const defaultBuyToken = settings.defaultBuyToken || "ETH";
+
+  // Theme and style configuration
   const fontFamily = settings.fontFamily || "Londrina Solid";
+  const lightColors = {
+    background:
+      settings.background || "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
+    foreground: settings.fontColor || "#000000",
+    neutral: settings.swapItem || "#cccccc",
+    primary: settings.primary || "#1C3CF1",
+    secondary: settings.secondary || "#ffffff",
+  };
+  const darkColors = {
+    background:
+      settings.background || "linear-gradient(90deg, #19194e 0%, #254e78 100%)",
+    foreground: settings.fontColor || "#ffffff",
+    neutral: settings.swapItem || "#666666",
+    primary: settings.primary || "#1C3CF1",
+    secondary: settings.secondary || "#ffffff",
+  };
 
-  const fontColor =
-    settings.fontColor || resolveCssVariable("--user-theme-font-color");
+  const borderRadius = 10;
+  const secondaryBorderRadius = 10;
 
-  const secondaryColor =
-    settings.secondaryColor ||
-    resolveCssVariable("--user-theme-secondary-color");
+  const themeConfig = {
+    mode: "light" as const,
+    fontFamily,
+    colors: {
+      light: lightColors,
+      dark: darkColors,
+    },
+    borderRadius,
+    secondaryBorderRadius,
+  };
 
-  function calculateHeight(value: number) {
-    const translation = (value - 1) * 30;
-    // console.log("calculateHeight", translation);
-    // console.log("calculateHeight", `${translation}%`);
-    return `${translation}%`;
-  }
+  // Widget configuration
+  const widgetConfig: WidgetConfig = {
+    apiKey: defaultApiKey,
+    walletConnectProjectId: defaultWalletConnectId,
+    title: defaultTitle,
+    amount: defaultAmount,
+    from: {
+      blockchain: fromChain,
+      token: {
+        blockchain: fromChain,
+        symbol: defaultSellToken,
+      },
+    },
+    to: {
+      blockchain: toChain,
+      token: {
+        blockchain: toChain,
+        symbol: defaultBuyToken,
+      },
+    },
+    theme: themeConfig,
+  };
+
+  // Style configuration for the container
+  const containerStyle: React.CSSProperties = {
+    overflow: "auto",
+    width: "100%",
+    height: "100%",
+    transform: `scale(${settings.swapScale})`,
+    transformOrigin: "top left",
+    display: "flex",
+    justifyContent: "center",
+    borderRadius: settings.borderRadius,
+    padding: settings.padding,
+    margin: settings.margin,
+    backgroundColor: "transparent",
+  };
 
   return (
-    <div
-      style={{
-        overflow: "auto",
-        width: "100%",
-        marginTop: calculateHeight(settings.swapScale),
-        transform: `scale(${settings.swapScale})`,
-      }}
-    >
-      <Widget
-        background={background}
-        fontFamily={fontFamily}
-        components={components}
-        fontColor={fontColor}
-        secondaryColor={secondaryColor}
-        themes={settings.themes || {}}
-        sellToken={settings.defaultSellToken}
-        buyToken={settings.defaultBuyToken}
-        fromChain={settings.fromChain || 8453}
-        toChain={settings.toChain | 8453}
-      />
+    <div style={containerStyle}>
+      <Widget config={widgetConfig} />
     </div>
   );
 };
 
 export default {
-  fidget: Swap,
-  properties: lifiProperties,
-} as FidgetModule<FidgetArgs<LifiFidgetSettings>>;
+  fidget: Swap2,
+  properties: rangoProperties,
+} as FidgetModule<FidgetArgs<RangoFidgetSettings>>;
