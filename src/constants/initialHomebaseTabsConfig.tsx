@@ -214,8 +214,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
       musicURL: 'https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804'
     }
   },
-  remoteConfig: {
-    fidgetInstanceDatums: {},
+  fidgetInstanceDatums: {
     'text:281541a8-d9f4-46e6-b574-8e6ca0867b02': {
       config: {
         data: {},
@@ -236,7 +235,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         }
       },
       fidgetType: 'text',
-      id: 'text:600c2517-be2d-49ef-bd99-4391681d5f02'
+      id: 'text:281541a8-d9f4-46e6-b574-8e6ca0867b02'
     },
     'text:7ff78427-4a17-4195-a962-7f08e66f3f3f': {
       config: {
@@ -379,9 +378,9 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
       fidgetType: 'iframe',
       id: 'iframe:8fa2c65f-6224-4b75-afcc-d5cad0c2e7e5'
     },
-    isEditable: true,
-    fidgetTrayContents: []
-  }
+  },
+  isEditable: true,
+  fidgetTrayContents: []
 };
 
 export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
@@ -1046,7 +1045,7 @@ export const PRESS_TAB_HOME_CONFIG: SpaceConfig = {
     },
   },
   isEditable: true,
-  fidgetTrayContents: [],
+  fidgetTrayContents: []
 };
 
 export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
@@ -1261,19 +1260,6 @@ export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
       fidgetType: "iframe",
       id: "iframe:ede8bb6b-7f84-41fe-97ce-51aa96711f15",
     },
-    // "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e": {
-    //   config: {
-    //     data: {},
-    //     editable: true,
-    //     settings: {
-    //       background: "var(--user-theme-fidget-background)",
-    //       text: "Jot down your ideas and grow them.",
-    //       title: "Text Fidget",
-    //     },
-    //   },
-    //   fidgetType: "text",
-    //   id: "text:f9a58fb6-18b7-43fc-bca8-55fdce50343e",
-    // },
   },
   isEditable: true,
   fidgetTrayContents: [],
