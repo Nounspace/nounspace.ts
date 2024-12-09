@@ -84,7 +84,7 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   className,
 }) => {
   // Find the selected chain name or fallback to "Select a chain"
-  const selectedChain = CHAIN_OPTIONS.find((chain) => chain.id === value);
+  const selectedChain = CHAIN_OPTIONS.find((chain) => chain.name === value);
   const selectedChainName = selectedChain?.name || "Select a chain";
   const selectedChainLogo = selectedChain?.logo;
 
