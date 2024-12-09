@@ -10,230 +10,378 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
     layoutConfig: {
       layout: [
         {
-          h: 4,
-          i: "iframe:45e7e2e0-2b6a-467a-814e-95995089a913",
+          h: 3,
+          i: 'text:a387c228-e3be-49ce-afc5-2cf724fc6a9a',
           maxH: 36,
           maxW: 36,
           minH: 2,
-          minW: 2,
+          minW: 3,
           moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 6,
-          x: 6,
-          y: 0,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 5,
+          x: 0,
+          y: 0
         },
         {
-          h: 9,
-          i: "feed:a3be1c38-b83a-42f7-abce-014ae049ffc7",
+          h: 7,
+          i: 'feed:0a733141-d56e-41c9-9eba-7bf5a52d8bb3',
           maxH: 36,
           maxW: 36,
           minH: 2,
           minW: 4,
           moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
           w: 5,
           x: 0,
-          y: 0,
+          y: 3
         },
         {
-          h: 6,
-          i: "iframe:0f8fd96c-8cb7-4aac-86de-a2d184a96302",
+          h: 3,
+          i: 'Video:ae0ef24e-b2d0-4a50-95ce-7bc3493cced5',
           maxH: 36,
           maxW: 36,
           minH: 2,
           minW: 2,
           moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 3,
-          x: 9,
-          y: 4,
-        },
-        {
-          h: 6,
-          i: "iframe:d65e4ea9-d6ac-48d0-8eaf-d4c2c4187f7a",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
           w: 4,
           x: 5,
-          y: 4,
+          y: 0
         },
-      ],
+        {
+          h: 2,
+          i: 'text:8f46b706-2663-4548-b60a-2a0540ff555c',
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 3,
+          moved: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 3,
+          x: 5,
+          y: 5
+        },
+        {
+          h: 2,
+          i: 'text:830ce08f-d62a-4612-813f-c07fc99fe6c9',
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 3,
+          moved: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 3,
+          x: 5,
+          y: 3
+        },
+        {
+          h: 7,
+          i: 'iframe:fe5a0ca2-bd55-488e-90a9-287e2b47cf38',
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 4,
+          x: 8,
+          y: 3
+        },
+        {
+          h: 3,
+          i: 'text:7ff78427-4a17-4195-a962-7f08e66f3f3f',
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 3,
+          moved: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 3,
+          x: 9,
+          y: 0
+        },
+        {
+          h: 3,
+          i: 'text:281541a8-d9f4-46e6-b574-8e6ca0867b02',
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 3,
+          moved: false,
+          resizeHandles: [
+            's',
+            'w',
+            'e',
+            'n',
+            'sw',
+            'nw',
+            'se',
+            'ne'
+          ],
+          'static': false,
+          w: 3,
+          x: 5,
+          y: 7
+        }
+      ]
     },
-    layoutFidget: "grid",
+    layoutFidget: 'grid'
   },
   theme: {
-    id: "tesseractPattern",
-    name: "Tesseract Pattern",
+    id: 'colorBlobs',
+    name: 'Color Blobs',
     properties: {
-      background: "#FFFFFF",
-      backgroundHTML: `
-<style>
-body {
-  background-color: white;
-  background-image: linear-gradient(45deg, pink 25%, transparent 25%),
-                    linear-gradient(-45deg, pink 25%, transparent 25%),
-                    linear-gradient(45deg, transparent 75%, dodgerblue 75%),
-                    linear-gradient(-45deg, transparent 75%, dodgerblue 75%);
-  background-size: 25vmin 25vmin;
-  background-position: 12.5vmin 0,
-                       -12.5vmin 12.5vmin,
-                       12.5vmin -12.5vmin,
-                       -12.5vmin 0;
-  animation: color 4000ms cubic-bezier(0.76, 0, 0.24, 1) infinite,
-             position 4000ms cubic-bezier(0.76, 0, 0.24, 1) infinite;
-}
-
-@keyframes color {
-  0%, 25% {
-    background-color: white;
-  }
-  26%, 50% {
-    background-color: pink;
-  }
-  51%, 75% {
-    background-color: white;
-  }
-  76%, 100% {
-    background-color: dodgerblue;
-  }
-}
-
-@keyframes position {
-  0% {
-    background-position: 12.5vmin 0,
-                         -12.5vmin 12.5vmin,
-                         12.5vmin -12.5vmin,
-                         -12.5vmin 0;
-  }
-  25% {
-    background-position: 12.5vmin 50vmin,
-                         -12.5vmin 62.5vmin,
-                         12.5vmin 37.5vmin,
-                         -12.5vmin 50vmin;
-  }
-  50% {
-    background-position: 37.5vmin 100vmin,
-                         -37.5vmin 112.5vmin,
-                         25vmin 87.5vmin,
-                         -25vmin 100vmin;
-  }
-  75% {
-    background-position: 37.5vmin 150vmin,
-                         -37.5vmin 162.5vmin,
-                         25vmin 137.5vmin,
-                         -25vmin 150vmin;
-  }
-  100% {
-    background-position: 62.5vmin 200vmin,
-                         -62.5vmin 212.5vmin,
-                         62.5vmin 187.5vmin,
-                         -62.5vmin 200vmin;
-  }
-}
-
-@media (prefers-reduced-motion) {
-  body {
-    animation: none;
-  }
-}
-</style>`,
-      fidgetBackground: "#FFFFFFE6", // Equivalent to rgb(255 255 255 / 0.9)
-      fidgetBorderColor: "#F8B4D9",
-      fidgetBorderWidth: "2px",
-      fidgetShadow: "none",
-      font: "Exo",
-      fontColor: "#000000",
-      headingsFont: "Work Sans",
-      headingsFontColor: "#000000",
-      musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
-    },
+      background: '#fbe9e0',
+      backgroundHTML: '\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width,initial-scale=1">\n    <title>SVG Animation</title>\n    <style>\n        body {\n            background-color: #fee440;\n            margin: 0;\n            padding: 0;\n        }\n        svg {\n            position: fixed;\n            top: 0;\n            left: 0;\n            width: 100%;\n            height: 100vh;\n        }\n        .links {\n            position: fixed;\n            bottom: 20px;\n            right: 20px;\n            font-size: 18px;\n            font-family: sans-serif;\n        }\n        a {\n            text-decoration: none;\n            color: #000;\n            margin-left: 1em;\n        }\n        a:hover {\n            text-decoration: underline;\n        }\n        a img.icon {\n            display: inline-block;\n            height: 1em;\n            margin: 0 0 -0.1em 0.3em;\n        }\n        @keyframes rotate {\n            0% {\n                transform: rotate(0);\n            }\n            100% {\n                transform: rotate(360deg);\n            }\n        }\n        .out-top {\n            animation: rotate 20s linear infinite;\n            transform-origin: 13px 25px;\n        }\n        .in-top {\n            animation: rotate 10s linear infinite;\n            transform-origin: 13px 25px;\n        }\n        .out-bottom {\n            animation: rotate 25s linear infinite;\n            transform-origin: 84px 93px;\n        }\n        .in-bottom {\n            animation: rotate 15s linear infinite;\n            transform-origin: 84px 93px;\n        }\n    </style>\n</head>\n<body>\n    <svg preserveAspectRatio="xMidYMid slice" viewBox="10 10 80 80">\n        <path fill="#9b5de5" class="out-top" d="M37-5C25.1-14.7,5.7-19.1-9.2-10-28.5,1.8-32.7,31.1-19.8,49c15.5,21.5,52.6,22,67.2,2.3C59.4,35,53.7,8.5,37-5Z"/>\n        <path fill="#f15bb5" class="in-top" d="M20.6,4.1C11.6,1.5-1.9,2.5-8,11.2-16.3,23.1-8.2,45.6,7.4,50S42.1,38.9,41,24.5C40.2,14.1,29.4,6.6,20.6,4.1Z"/>\n        <path fill="#00bbf9" class="out-bottom" d="M105.9,48.6c-12.4-8.2-29.3-4.8-39.4.8-23.4,12.8-37.7,51.9-19.1,74.1s63.9,15.3,76-5.6c7.6-13.3,1.8-31.1-2.3-43.8C117.6,63.3,114.7,54.3,105.9,48.6Z"/>\n        <path fill="#00f5d4" class="in-bottom" d="M102,67.1c-9.6-6.1-22-3.1-29.5,2-15.4,10.7-19.6,37.5-7.6,47.8s35.9,3.9,44.5-12.5C115.5,92.6,113.9,74.6,102,67.1Z"/>\n    </svg>\n>\n</body>\n</html>\n',
+      fidgetBackground: 'rgb(255 255 255 / 0.5)',
+      fidgetBorderColor: '#ffffff',
+      fidgetBorderWidth: '1px',
+      fidgetShadow: 'none',
+      font: 'Quicksand',
+      fontColor: '#000000',
+      headingsFont: 'Roboto',
+      headingsFontColor: '#000000',
+      musicURL: 'https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804'
+    }
   },
-  fidgetInstanceDatums: {
-    "iframe:45e7e2e0-2b6a-467a-814e-95995089a913": {
+  remoteConfig: {
+    fidgetInstanceDatums: {},
+    'text:281541a8-d9f4-46e6-b574-8e6ca0867b02': {
       config: {
         data: {},
         editable: true,
         settings: {
-          background: "var(--user-theme-fidget-background)",
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
-          size: 0.9,
-          url: "https://space.nounspace.com",
-        },
+          background: 'var(--user-theme-fidget-background)',
+          css: '',
+          fidgetBorderColor: 'rgb(255, 98, 98)',
+          fidgetBorderWidth: '2px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
+          headingsFontColor: 'var(--user-theme-headings-font-color)',
+          headingsFontFamily: 'var(--user-theme-headings-font)',
+          text: 'You can embed any website or app that allows it. Try it out with the portal for $SPACE, the governance & utility token for nounspace.',
+          title: 'This is a Web Embed Fidget ➡️',
+          urlColor: 'blue'
+        }
       },
-      fidgetType: "iframe",
-      id: "iframe:45e7e2e0-2b6a-467a-814e-95995089a913",
+      fidgetType: 'text',
+      id: 'text:600c2517-be2d-49ef-bd99-4391681d5f02'
     },
-    "feed:a3be1c38-b83a-42f7-abce-014ae049ffc7": {
+    'text:7ff78427-4a17-4195-a962-7f08e66f3f3f': {
       config: {
         data: {},
         editable: true,
         settings: {
-          Xhandle: "thenounspace",
-          background: "var(--user-theme-fidget-background)",
-          channel: "",
-          feedType: "following",
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
-          filterType: "fids",
-          fontColor: "var(--user-theme-font-color)",
-          fontFamily: "var(--user-theme-font)",
+          background: 'var(--user-theme-fidget-background)',
+          css: '',
+          fidgetBorderColor: 'rgb(255, 180, 92)',
+          fidgetBorderWidth: '2px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
+          headingsFontColor: 'var(--user-theme-headings-font-color)',
+          headingsFontFamily: 'var(--user-theme-headings-font)',
+          text: 'As an open-source and community-owned platform, **everyone** is invited to join the community and contribute to building the future of social.\n\nIf you have any questions, join the community [Discord](https://discord.gg/eYQeXU2WuH) or tag [@nounspacetom](https://nounspace.com/s/nounspacetom) in a cast.\n',
+          title: '',
+          urlColor: 'blue'
+        }
+      },
+      fidgetType: 'text',
+      id: 'text:7ff78427-4a17-4195-a962-7f08e66f3f3f'
+    },
+    'text:830ce08f-d62a-4612-813f-c07fc99fe6c9': {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: 'var(--user-theme-fidget-background)',
+          css: '',
+          fidgetBorderColor: 'rgba(253, 228, 65, 1)',
+          fidgetBorderWidth: '2px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
+          headingsFontColor: 'var(--user-theme-headings-font-color)',
+          headingsFontFamily: 'var(--user-theme-headings-font)',
+          text: 'Use it to embed any video from Youtube or Vimeo.',
+          title: 'This is a Video Fidget ⬆️ ',
+          urlColor: 'blue'
+        }
+      },
+      fidgetType: 'text',
+      id: 'text:830ce08f-d62a-4612-813f-c07fc99fe6c9'
+    },
+    'text:8f46b706-2663-4548-b60a-2a0540ff555c': {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: 'var(--user-theme-fidget-background)',
+          css: '',
+          fidgetBorderColor: 'rgba(8, 188, 249, 1)',
+          fidgetBorderWidth: '2px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
+          headingsFontColor: 'var(--user-theme-headings-font-color)',
+          headingsFontFamily: 'var(--user-theme-headings-font)',
+          text: 'Filter it to show any user or channel on Farcaster or X.',
+          title: '⬅️ This is a Feed Fidget',
+          urlColor: 'blue'
+        }
+      },
+      fidgetType: 'text',
+      id: 'text:8f46b706-2663-4548-b60a-2a0540ff555c'
+    },
+    'text:a387c228-e3be-49ce-afc5-2cf724fc6a9a': {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: 'var(--user-theme-fidget-background)',
+          css: '',
+          fidgetBorderColor: 'rgba(155, 94, 229, 1)',
+          fidgetBorderWidth: '2px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
+          headingsFontColor: 'var(--user-theme-headings-font-color)',
+          headingsFontFamily: 'var(--user-theme-headings-font)',
+          text: 'The customizable Farcaster client inspired by Myspace.\n\nLog in with Farcaster  to customize the look, sound, and functionality of your Feed and Profile Space with **Themes**, **Fidgets** (aka mini-apps), and **Tabs**.',
+          title: 'GM, and welcome to nounspace 🚀 👾',
+          urlColor: 'blue'
+        }
+      },
+      fidgetType: 'text',
+      id: 'text:a387c228-e3be-49ce-afc5-2cf724fc6a9a'
+    },
+    'feed:0a733141-d56e-41c9-9eba-7bf5a52d8bb3': {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          Xhandle: 'thenounspace',
+          background: 'rgba(255, 255, 255, 0.87)',
+          channel: 'nounspace',
+          feedType: 'filter',
+          fidgetBorderColor: 'rgba(240, 93, 181, 1)',
+          fidgetBorderWidth: '4px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
+          filterType: 'channel_id',
+          fontColor: 'var(--user-theme-font-color)',
+          fontFamily: 'var(--user-theme-font)',
           selectPlatform: {
-            icon: "/images/twitter.avif",
-            name: "The other app",
+            icon: '/images/farcaster.jpeg',
+            name: 'Farcaster'
           },
-          style: "light",
-          urlColor: "blue",
-          users: "",
-        },
+          style: 'light',
+          users: ''
+        }
       },
-      fidgetType: "feed",
-      id: "feed:a3be1c38-b83a-42f7-abce-014ae049ffc7",
+      fidgetType: 'feed',
+      id: 'feed:0a733141-d56e-41c9-9eba-7bf5a52d8bb3'
     },
-    "iframe:0f8fd96c-8cb7-4aac-86de-a2d184a96302": {
+    'iframe:fe5a0ca2-bd55-488e-90a9-287e2b47cf38': {
       config: {
         data: {},
         editable: true,
         settings: {
-          background: "var(--user-theme-fidget-background)",
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
+          background: 'var(--user-theme-fidget-background)',
+          fidgetBorderColor: 'rgba(0, 227, 196, 1)',
+          fidgetBorderWidth: '4px',
+          fidgetShadow: 'var(--user-theme-fidget-shadow)',
           size: 0.6,
-          url: "https://nounswap.wtf",
-        },
+          url: 'https://space.nounspace.com'
+        }
       },
-      fidgetType: "iframe",
-      id: "iframe:0f8fd96c-8cb7-4aac-86de-a2d184a96302",
+      fidgetType: 'iframe',
+      id: 'iframe:fe5a0ca2-bd55-488e-90a9-287e2b47cf38'
     },
-    "iframe:d65e4ea9-d6ac-48d0-8eaf-d4c2c4187f7a": {
+    'iframe:8fa2c65f-6224-4b75-afcc-d5cad0c2e7e5': {
       config: {
         data: {},
         editable: true,
         settings: {
-          background: "var(--user-theme-fidget-background)",
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
-          url: "https://irb0gie.vercel.app",
-        },
+          url: 'https://player.vimeo.com/video/973566244?h=c6cefbe4c3'
+        }
       },
-      fidgetType: "iframe",
-      id: "iframe:d65e4ea9-d6ac-48d0-8eaf-d4c2c4187f7a",
+      fidgetType: 'iframe',
+      id: 'iframe:8fa2c65f-6224-4b75-afcc-d5cad0c2e7e5'
     },
-  },
-  isEditable: true,
-  fidgetTrayContents: [],
+    isEditable: true,
+    fidgetTrayContents: []
+  }
 };
 
 export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
