@@ -33,7 +33,7 @@ export function formatIpfsUrl(url?: string) {
   if (!url || !url.startsWith("ipfs://")) return url || "";
   const token = process.env.NEXT_PUBLIC_IPFS_TOKEN;
   const isDev = process.env.NODE_ENV === "development";
-  const baseUrl = `https://nounspace.mypinata.cloud/ipfs/${url.split("://")[1]}`;
+  const baseUrl = `https://gateway.pinata.cloud/ipfs/${url.split("://")[1]}`;
   return isDev && token ? `${baseUrl}?pinataGatewayToken=${token}` : baseUrl;
 }
 
