@@ -372,6 +372,8 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
+          background: 'rgba(255, 255, 255, 0)',
+          fidgetBorderColor: 'rgba(0, 227, 196, 0)',
           url: 'https://player.vimeo.com/video/973566244?h=c6cefbe4c3',
         }
       },
