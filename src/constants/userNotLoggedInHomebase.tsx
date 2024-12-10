@@ -298,7 +298,6 @@ export const USER_NOT_LOGGED_IN_HOMEBASE_CONFIG: SpaceConfig = {
         editable: true,
         settings: {
           url: "https://player.vimeo.com/video/973566244?h=c6cefbe4c3",
-          fidgetBorderColor: "rgba(0, 227, 196, 0)",
         },
       },
       fidgetType: "iframe",
