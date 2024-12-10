@@ -220,7 +220,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          background: 'var(--user-theme-fidget-background)',
+          background: 'rgb(255, 255, 255)',
           css: '',
           fidgetBorderColor: 'rgb(255, 98, 98)',
           fidgetBorderWidth: '2px',
@@ -242,7 +242,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          background: 'var(--user-theme-fidget-background)',
+          background: 'rgb(255, 255, 255)',
           css: '',
           fidgetBorderColor: 'rgb(255, 180, 92)',
           fidgetBorderWidth: '2px',
@@ -264,7 +264,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          background: 'var(--user-theme-fidget-background)',
+          background: 'rgb(255, 255, 255)',
           css: '',
           fidgetBorderColor: 'rgba(253, 228, 65, 1)',
           fidgetBorderWidth: '2px',
@@ -286,7 +286,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          background: 'var(--user-theme-fidget-background)',
+          background: 'rgb(255, 255, 255)',
           css: '',
           fidgetBorderColor: 'rgba(8, 188, 249, 1)',
           fidgetBorderWidth: '2px',
@@ -308,7 +308,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          background: 'var(--user-theme-fidget-background)',
+          background: 'rgb(255, 255, 255)',
           css: '',
           fidgetBorderColor: 'rgba(155, 94, 229, 1)',
           fidgetBorderWidth: '2px',
@@ -372,7 +372,8 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
         data: {},
         editable: true,
         settings: {
-          url: 'https://player.vimeo.com/video/973566244?h=c6cefbe4c3'
+          url: 'https://player.vimeo.com/video/973566244?h=c6cefbe4c3',
+          fidgetBorderColor: "rgba(0, 227, 196, 0)"
         }
       },
       fidgetType: 'iframe',
