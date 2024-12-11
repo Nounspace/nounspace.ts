@@ -1,27 +1,26 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  ReactElement,
-} from "react";
-import { YouTubeConfig } from "react-player/youtube";
-import ReactPlayer from "react-player";
-import Image from "next/image";
-import useHasWindow from "@/common/lib/hooks/useHasWindow";
-import { IconType } from "react-icons";
-import {
-  LiaVolumeUpSolid,
-  LiaVolumeMuteSolid,
-  LiaCircleNotchSolid,
-} from "react-icons/lia";
 import { Button } from "@/common/components/atoms/button";
+import useHasWindow from "@/common/lib/hooks/useHasWindow";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
-import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
-import { Address, isAddress, zeroAddress } from "viem";
-import ScanAddress from "../molecules/ScanAddress";
 import { AlchemyNetwork } from "@/fidgets/ui/gallery";
+import Image from "next/image";
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { IconType } from "react-icons";
+import {
+  LiaCircleNotchSolid,
+  LiaVolumeMuteSolid,
+  LiaVolumeUpSolid,
+} from "react-icons/lia";
+import ReactPlayer from "react-player";
+import { YouTubeConfig } from "react-player/youtube";
+import { Address } from "viem";
+import ScanAddress from "../molecules/ScanAddress";
 
 type ContentMetadata = {
   title?: string | null;
@@ -55,8 +54,10 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     started,
     ready,
   });
+  const latestUrlRef = useRef<string | string[]>(url);
 
   const getMetadata = async (_url: string | string[]) => {
+    latestUrlRef.current = _url;
     // Handle array of URLs by taking the first one
     const videoUrl = Array.isArray(_url) ? _url[0] : _url;
 
@@ -84,6 +85,8 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     const snippet = data?.value?.snippet;
 
     if (!snippet) return;
+
+    if (latestUrlRef.current !== _url) return;
 
     setMetadata({
       title: snippet.title,
