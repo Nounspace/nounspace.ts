@@ -62,8 +62,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     }),
   );
   const userTheme: UserTheme = useUserTheme();
-  console.log("Navigation.tsx: userTheme", userTheme);
-
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
