@@ -5,7 +5,7 @@ import {
   FidgetFieldConfig,
 } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
-import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
+import { FaTrashCan } from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,

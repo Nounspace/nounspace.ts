@@ -8,7 +8,6 @@ import {
   CommandInput,
   CommandItem,
   CommandEmpty,
-  CommandGroup,
   CommandList,
 } from "@/common/components/atoms/command"; // Adjust the import paths if needed
 import {

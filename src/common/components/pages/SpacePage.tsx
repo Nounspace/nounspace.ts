@@ -3,7 +3,6 @@ import Space, { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
 import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import moment from "moment";
 
 export type SpacePageArgs = {
   config?: SpaceConfig;

@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from "react";
-import { isNil, size } from "lodash";
+import { isNil } from "lodash";
 import {
   FidgetArgs,
   FidgetProperties,

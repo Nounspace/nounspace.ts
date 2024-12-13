@@ -1,16 +1,9 @@
 import React from "react";
 import { FaPlus } from "react-icons/fa6";
-import { first, map } from "lodash";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { memo, useEffect, useMemo, useState } from "react";
-import { useAppStore } from "@/common/data/stores/app";
+import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
-import { useRouter } from "next/router";
-import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
-import Link from "next/link";
 
 interface TabBarProps {
   inHome?: boolean;

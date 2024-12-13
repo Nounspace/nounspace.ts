@@ -34,8 +34,6 @@ import { FaInfoCircle } from "react-icons/fa";
 import { THEMES } from "@/constants/themes";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
-import { GiOpenBook } from "react-icons/gi";
-import { FaBook } from "react-icons/fa";
 import { MdMenuBook } from "react-icons/md";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 

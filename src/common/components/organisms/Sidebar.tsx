@@ -4,10 +4,8 @@ import React, {
   useState,
   useRef,
   useMemo,
-  useEffect,
 } from "react";
 import Navigation from "./Navigation";
-import LoadingSidebar from "./LoadingSidebar";
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };

@@ -1,4 +1,4 @@
-import React, { FC, use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { debounce, map, isEmpty, isUndefined, replace } from "lodash";
+import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
@@ -25,7 +25,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { CreationMod, RichEmbed } from "@mod-protocol/react";
+import { CreationMod } from "@mod-protocol/react";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
@@ -282,8 +282,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
           );
 
           mentionsPositions = [];
-          const currentTextIndex = 0;
-          const finalText = text;
+          // const currentTextIndex = 0;
+          // const finalText = text;
           const mentions = [];
           mentionsText = text;
 

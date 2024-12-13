@@ -20,7 +20,7 @@ import {
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { bytesToHexString, ReactionType } from "@farcaster/core";
+import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";

@@ -3,8 +3,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import { APP_FID } from "@/constants/app";
 import { AppSigner } from "@/constants/appServerSide";
-import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
-import { ALCHEMY_API, WARPCAST_API } from "@/constants/urls";
+import { WARPCAST_API } from "@/constants/urls";
 import {
   SIGNED_KEY_REQUEST_TYPE,
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { Card, CardContent } from "@/common/components/atoms/card";
 import { toast } from "sonner";
@@ -18,7 +18,6 @@ import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
 import StashIcon from "../components/atoms/icons/Stash";
 import { FaX } from "react-icons/fa6";
-import BackArrowIcon from "../components/atoms/icons/BackArrow";
 import {
   Tooltip,
   TooltipContent,

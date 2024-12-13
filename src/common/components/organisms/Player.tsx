@@ -18,8 +18,7 @@ import {
 import { Button } from "@/common/components/atoms/button";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
-import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
-import { Address, isAddress, zeroAddress } from "viem";
+import { Address } from "viem";
 import ScanAddress from "../molecules/ScanAddress";
 import { AlchemyNetwork } from "@/fidgets/ui/gallery";
 
