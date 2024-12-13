@@ -121,12 +121,13 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
       params.append("ref", optionalFeeRecipient); // Referral address
       params.append("swapFeeBps", "10"); // Example fee percentage in bps (adjust as needed)
     }
-    // function calculateHeight(value: number) {
-    //   const translation = (value - 1) * 30;
-    //   return `${translation}%`;
-    // }
     return `${matchaBaseUrl}?${params.toString()}`;
   };
+
+  // function calculateHeight(value: number) {
+  //   const translation = (value - 1) * 30;
+  //   return `${translation}%`;
+  // }
 
   return (
     <div
