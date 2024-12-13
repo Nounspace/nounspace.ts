@@ -7,6 +7,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
+import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -81,13 +82,13 @@ const matchaProperties: FidgetProperties = {
     //   inputSelector: SimpleColorSelector,
     //   group: "style",
     // },
-    // {
-    //   fieldName: "swapScale",
-    //   default: 1,
-    //   required: false,
-    //   inputSelector: WidthSlider,
-    //   group: "style",
-    // },
+    {
+      fieldName: "swapScale",
+      default: 1,
+      required: false,
+      inputSelector: WidthSlider,
+      group: "style",
+    },
   ],
   size: {
     minHeight: 3,
@@ -124,31 +125,41 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
-  // function calculateHeight(value: number) {
-  //   const translation = (value - 1) * 30;
-  //   return `${translation}%`;
-  // }
+  function calculateHeight(value: number) {
+    const translation = (value - 1) * 30;
+    const scale = value;
+    return `translateY(${translation}%) scale(${scale})`;
+  }
 
   return (
     <div
       style={{
-        overflow: "auto",
+        position: "relative",
         width: "100%",
         height: "100%",
+        overflow: "hidden",
         backgroundColor: settings.background || "transparent",
-        transform: `scale(${settings.swapScale})`,
-        transformOrigin: "top left",
       }}
     >
-      <iframe
-        src={buildMatchaUrl()}
+      <div
         style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: `translate(-50%, -50%) scale(${settings.swapScale})`,
+          transformOrigin: "center",
         }}
-        title="Matcha Swap"
-      />
+      >
+        <iframe
+          src="https://simpleswap.io/widget/df29d743-6c03-4c7e-a745-4a0bfd19c656"
+          style={{
+            width: "480px", // Original iframe width
+            height: "660px", // Original iframe height
+            border: "none",
+          }}
+          title="Matcha Swap"
+        />
+      </div>
     </div>
   );
 };

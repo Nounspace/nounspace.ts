@@ -9,7 +9,7 @@ export type WidthSliderProps = {
 };
 
 const WidthSlider: React.FC<WidthSliderProps> = ({
-  min = 1,
+  min = 0.1,
   max = 2.1,
   step = 0.1,
   defaultValue = 1,
