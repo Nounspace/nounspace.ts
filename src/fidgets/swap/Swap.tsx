@@ -17,6 +17,7 @@ type MatchaFidgetSettings = {
   fontFamily: string;
   fontColor: string;
   swapScale: number;
+  optionalFeeRecipient?: string;
 } & FidgetSettingsStyle;
 
 const matchaProperties: FidgetProperties = {
@@ -49,6 +50,14 @@ const matchaProperties: FidgetProperties = {
       default: 8453,
       required: false,
       inputSelector: ChainSelector,
+      group: "settings",
+    },
+    // added inout for optional fee recipient
+    {
+      fieldName: "optionalFeeRecipient",
+      default: "0xabc..12345",
+      required: false,
+      inputSelector: TextInput,
       group: "settings",
     },
     // {
@@ -92,7 +101,13 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
 
   const buildMatchaUrl = () => {
-    const { defaultSellToken, defaultBuyToken, fromChain, toChain } = settings;
+    const {
+      defaultSellToken,
+      defaultBuyToken,
+      fromChain,
+      toChain,
+      optionalFeeRecipient,
+    } = settings;
 
     const params = new URLSearchParams();
     if (defaultSellToken) params.append("sellAddress", defaultSellToken);
@@ -100,13 +115,18 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (fromChain)
       params.append("sellChain", fromChain.toString().toLowerCase());
     if (toChain) params.append("buyChain", toChain.toString().toLowerCase());
+
+    // Add referral reward parameters if optionalFeeRecipient is provided
+    if (optionalFeeRecipient) {
+      params.append("ref", optionalFeeRecipient); // Referral address
+      params.append("swapFeeBps", "10"); // Example fee percentage in bps (adjust as needed)
+    }
+    // function calculateHeight(value: number) {
+    //   const translation = (value - 1) * 30;
+    //   return `${translation}%`;
+    // }
     return `${matchaBaseUrl}?${params.toString()}`;
   };
-
-  // function calculateHeight(value: number) {
-  //   const translation = (value - 1) * 30;
-  //   return `${translation}%`;
-  // }
 
   return (
     <div
