@@ -56,7 +56,7 @@ const matchaProperties: FidgetProperties = {
     // added inout for optional fee recipient
     {
       fieldName: "optionalFeeRecipient",
-      default: "0xabc..12345",
+      default: "",
       required: false,
       inputSelector: TextInput,
       group: "settings",
@@ -151,7 +151,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
         }}
       >
         <iframe
-          src="https://simpleswap.io/widget/df29d743-6c03-4c7e-a745-4a0bfd19c656"
+          src={buildMatchaUrl()}
           style={{
             width: "480px", // Original iframe width
             height: "660px", // Original iframe height
