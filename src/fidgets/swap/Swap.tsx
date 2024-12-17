@@ -54,13 +54,13 @@ const matchaProperties: FidgetProperties = {
       group: "settings",
     },
     // added inout for optional fee recipient
-    {
-      fieldName: "optionalFeeRecipient",
-      default: "",
-      required: false,
-      inputSelector: TextInput,
-      group: "settings",
-    },
+    // {
+    //   fieldName: "optionalFeeRecipient",
+    //   default: "",
+    //   required: false,
+    //   inputSelector: TextInput,
+    //   group: "settings",
+    // },
     // {
     //   fieldName: "background",
     //   default: "",
@@ -102,13 +102,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
 
   const buildMatchaUrl = () => {
-    const {
-      defaultSellToken,
-      defaultBuyToken,
-      fromChain,
-      toChain,
-      optionalFeeRecipient,
-    } = settings;
+    const { defaultSellToken, defaultBuyToken, fromChain, toChain } = settings;
 
     const params = new URLSearchParams();
     if (defaultSellToken) params.append("sellAddress", defaultSellToken);
@@ -116,12 +110,6 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (fromChain)
       params.append("sellChain", fromChain.toString().toLowerCase());
     if (toChain) params.append("buyChain", toChain.toString().toLowerCase());
-
-    // Add referral reward parameters if optionalFeeRecipient is provided
-    if (optionalFeeRecipient) {
-      params.append("ref", optionalFeeRecipient); // Referral address
-      params.append("swapFeeBps", "10"); // Example fee percentage in bps (adjust as needed)
-    }
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
