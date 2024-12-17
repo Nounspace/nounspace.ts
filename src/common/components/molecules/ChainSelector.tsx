@@ -9,64 +9,47 @@ import {
 
 const CHAIN_OPTIONS = [
   {
-    id: "ETH",
+    id: "1", // Ethereum Mainnet Chain ID
     name: "Ethereum",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/ETH/icon.svg",
   },
   {
-    id: "BSC",
+    id: "56", // Binance Smart Chain Mainnet Chain ID
     name: "Binance Smart Chain",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BSC/icon.svg",
   },
   {
-    id: "ARBITRUM",
+    id: "42161", // Arbitrum One Chain ID
     name: "Arbitrum",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/ARBITRUM/icon.svg",
   },
   {
-    id: "POLYGON",
+    id: "137", // Polygon Mainnet Chain ID
     name: "Polygon",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/POLYGON/icon.svg",
   },
   {
-    id: "AVAX",
+    id: "43114", // Avalanche C-Chain Chain ID
     name: "Avalanche",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/AVAX_CCHAIN/icon.svg",
   },
   {
-    id: "OPTIMISM",
+    id: "10", // Optimism Mainnet Chain ID
     name: "Optimism",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/OPTIMISM/icon.svg",
   },
-  // Blast
   {
-    id: "BLAST",
+    id: "81457", // Blast Mainnet Chain ID
     name: "Blast",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BLAST/icon.svg",
   },
   {
-    id: "LINEA",
+    id: "59144", // Linea Mainnet Chain ID
     name: "Linea",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LINEA/icon.svg",
   },
-  // {
-  //   id: "BTC",
-  //   name: "Bitcoin",
-  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BTC/icon.svg",
-  // },
-  // {
-  //   id: "LTC",
-  //   name: "Litecoin",
-  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LTC/icon.svg",
-  // },
-  // {
-  //   id: "DOGE",
-  //   name: "Dogecoin",
-  //   logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/DOGE/icon.svg",
-  // },
-  // add BASE
   {
-    id: "BASE",
+    id: "8453", // Base Mainnet Chain ID
     name: "Base",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BASE/icon.svg",
   },
