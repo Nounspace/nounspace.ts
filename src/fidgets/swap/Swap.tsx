@@ -113,7 +113,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (toChain) params.append("buyChain", toChain.toString().toLowerCase());
     return `${matchaBaseUrl}?${params.toString()}`;
   };
-  let size = settings.size || 1;
+  const size = settings.size || 1;
   const scaleValue = size;
 
   return (
