@@ -2,7 +2,7 @@ import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { first, isUndefined } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import UserPrimarySpace, { SpacePageProps } from ".";
+import UserPrimarySpace, { UserDefinedSpacePageProps } from ".";
 
 export const getServerSideProps = (async ({
   params,
@@ -74,6 +74,6 @@ export const getServerSideProps = (async ({
       },
     };
   }
-}) satisfies GetServerSideProps<SpacePageProps>;
+}) satisfies GetServerSideProps<UserDefinedSpacePageProps>;
 
 export default UserPrimarySpace;
