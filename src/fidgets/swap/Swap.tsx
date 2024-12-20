@@ -7,6 +7,8 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
+import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -17,6 +19,8 @@ type MatchaFidgetSettings = {
   fontFamily: string;
   fontColor: string;
   swapScale: number;
+  optionalFeeRecipient?: string;
+  size: number;
 } & FidgetSettingsStyle;
 
 const matchaProperties: FidgetProperties = {
@@ -51,6 +55,14 @@ const matchaProperties: FidgetProperties = {
       inputSelector: ChainSelector,
       group: "settings",
     },
+    // added inout for optional fee recipient
+    // {
+    //   fieldName: "optionalFeeRecipient",
+    //   default: "",
+    //   required: false,
+    //   inputSelector: TextInput,
+    //   group: "settings",
+    // },
     // {
     //   fieldName: "background",
     //   default: "",
@@ -72,13 +84,12 @@ const matchaProperties: FidgetProperties = {
     //   inputSelector: SimpleColorSelector,
     //   group: "style",
     // },
-    // {
-    //   fieldName: "swapScale",
-    //   default: 1,
-    //   required: false,
-    //   inputSelector: WidthSlider,
-    //   group: "style",
-    // },
+    {
+      fieldName: "size",
+      required: false,
+      inputSelector: IFrameWidthSlider,
+      group: "style",
+    },
   ],
   size: {
     minHeight: 3,
@@ -102,31 +113,21 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
     if (toChain) params.append("buyChain", toChain.toString().toLowerCase());
     return `${matchaBaseUrl}?${params.toString()}`;
   };
-
-  // function calculateHeight(value: number) {
-  //   const translation = (value - 1) * 30;
-  //   return `${translation}%`;
-  // }
+  const size = settings.size || 1;
+  const scaleValue = size;
 
   return (
-    <div
-      style={{
-        overflow: "auto",
-        width: "100%",
-        height: "100%",
-        backgroundColor: settings.background || "transparent",
-        transform: `scale(${settings.swapScale})`,
-        transformOrigin: "top left",
-      }}
-    >
+    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
         src={buildMatchaUrl()}
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{
-          width: "100%",
-          height: "100%",
-          border: "none",
+          transform: `scale(${scaleValue})`,
+          transformOrigin: "0 0",
+          width: `${100 / scaleValue}%`,
+          height: `${100 / scaleValue}%`,
         }}
-        title="Matcha Swap"
+        className="size-full"
       />
     </div>
   );
