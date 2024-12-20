@@ -377,7 +377,7 @@ export const createSpaceStoreFunc = (
         }
 
         const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
-        const remoteTab = draft.space.remoteSpaces[spaceId].tabs[tabName];
+        // const remoteTab = draft.space.remoteSpaces[spaceId].tabs[tabName];
 
         // Compare timestamps if local tab exists
         if (localTab) {
