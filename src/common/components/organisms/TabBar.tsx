@@ -7,7 +7,7 @@ import { memo, useEffect, useMemo, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 import Link from "next/link";
