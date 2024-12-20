@@ -57,16 +57,15 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SpeedInsights />
-
         <Suspense>
-          <Providers>{children}</Providers>
+          <Providers>{sidebarLayout(children)}</Providers>
         </Suspense>
       </body>
     </html>
   );
 }
 
-const sidebarLayout = (page: React.ReactElement) => {
+const sidebarLayout = (page: React.ReactNode) => {
   return (
     <>
       <div className="min-h-screen max-w-screen h-screen w-screen">
