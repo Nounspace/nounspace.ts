@@ -1,5 +1,4 @@
 import React from "react";
-import BrandHeader from "../molecules/BrandHeader";
 
 export default function LoadingSidebar() {
   return (
