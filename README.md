@@ -35,17 +35,17 @@ The Nounspace App follows the Atomic Design Pattern
 
 `src/common/ui` contains all of the display components for all other layers of the atomic design. `src/common/ui/components` are a mixture of Molecules and Organisms that were imported from `herocast`, they still need to be split into their appropriate folders (`src/common/ui/molecules` & `src/common/ui/organisms`).
 
-`src/common/data` contains the access to datastreams, in the form of database connections and API's
+`src/common/data` contains access to datastreams, in the form of database connections and API's
 
 `src/common/lib` contains useful functions for accessing formatted data, along with helpers functions inside the `utils` directory.
 
 `src/styles` contains information for managing website styling
 
-`src/constants` contains all static information that is the needed to run the app. This includes actual constants, along with some global types
+`src/constants` contains all static information that is needed to run the app. This includes actual constants, along with some global types
 
 ### Refactoring
 
-This file structure is adapted from `herocast`, and not all files have been cleaned up properly. If you find files or data that is placed in the wrong location, please refactor it. For example, there are some constants that are not placed in the `src/constants` directory, and instead are in the other files
+This file structure is adapted from `herocast`, and not all files have been cleaned up properly. If you find files or data that are placed in the wrong location, please refactor it. For example, there are some constants that are not placed in the `src/constants` directory, and instead are in the other files
 
 
 ### DB scheme: accounts
