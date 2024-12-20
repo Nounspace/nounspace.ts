@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { NextPageWithLayout } from "../_app";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";

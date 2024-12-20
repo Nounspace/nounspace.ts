@@ -1,10 +1,11 @@
+"use client";
+
 import React, {
   createContext,
   useContext,
   useState,
   useRef,
   useMemo,
-  useEffect,
 } from "react";
 import Navigation from "./Navigation";
 import LoadingSidebar from "./LoadingSidebar";
