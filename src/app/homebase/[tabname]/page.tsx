@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { NextPageWithLayout } from "../../../pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
