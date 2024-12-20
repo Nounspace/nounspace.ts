@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -72,7 +72,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     router.push("/home");
     logout();
   }
-
 
   function turnOnEditMode() {
     enterEditMode();
