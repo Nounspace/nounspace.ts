@@ -4,11 +4,10 @@ import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
 import { useRouter } from "next/router";
-import { isArray, isNull, isString, noop } from "lodash";
+import { isNull, isString } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import tabOrder from "../api/space/homebase/tabOrder";
 
 const Homebase: NextPageWithLayout = () => {
   const {

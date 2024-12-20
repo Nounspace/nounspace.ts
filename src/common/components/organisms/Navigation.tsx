@@ -129,7 +129,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           target={openInNewTab ? "_blank" : undefined}
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
-          <Icon aria-hidden="true" />
+          <Icon />
           <span className="ms-3">{label}</span>
         </Link>
       </li>
