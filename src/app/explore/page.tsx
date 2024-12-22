@@ -1,7 +1,10 @@
 import React from "react";
 import { groupBy } from "lodash";
 import Image from "next/image";
-import { getAllMarkdownFiles } from "@/common/data/explore/loadExploreMarkdown";
+import {
+  getAllMarkdownFiles,
+  PostData,
+} from "@/common/data/explore/loadExploreMarkdown";
 import ExploreCard from "./ExploreCard";
 
 const categories = [
@@ -18,7 +21,7 @@ const categories = [
 
 export default async function Explore() {
   const posts = await getAllMarkdownFiles();
-  const groupedPosts = groupBy(posts, (post) => post?.category);
+  const groupedPosts = groupBy(posts, (post: PostData) => post?.category);
 
   return (
     <div className="min-h-screen max-w-screen h-screen w-screen">
@@ -56,7 +59,7 @@ export default async function Explore() {
                     {title}
                   </h2>
                   <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {groupedPosts[title].map((post, i) => (
+                    {groupedPosts[title].map((post: PostData, i: number) => (
                       <ExploreCard key={`${post.slug}-${i}`} post={post} />
                     ))}
                   </div>
