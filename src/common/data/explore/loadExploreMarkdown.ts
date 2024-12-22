@@ -3,6 +3,7 @@ import supabaseClient from "../database/supabase/clients/server";
 import { endsWith, filter, isNull, map, startsWith } from "lodash";
 
 type MatterResultData = {
+  category: string;
   title: string;
   bio: string;
   image: string;
