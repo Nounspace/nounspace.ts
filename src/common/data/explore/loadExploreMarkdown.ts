@@ -61,7 +61,10 @@ export async function getAllSlugs() {
       return [];
     }
     return map(
-      filter(data, (d) => endsWith(d.name, ".md") && !startsWith(d.name, ".")),
+      filter(
+        data,
+        (d: FileObject) => endsWith(d.name, ".md") && !startsWith(d.name, "."),
+      ),
       (d) => d.name.replace(/\.md$/, ""),
     );
   }
