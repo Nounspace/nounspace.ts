@@ -7,23 +7,16 @@ import {
   FidgetModule,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { isValidUrl } from "@/common/lib/utils/url";
-import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
+import ThemeSelector from "@/common/components/molecules/ThemeSelector";
+
 export type MarketDataProps = {
   chain: { id: string; name: string } | null;
   token: string;
   size: number;
+  theme: string;
 } & FidgetSettingsStyle;
-
-const DISALLOW_URL_PATTERNS = [
-  /javascript:/i,
-  /^data:/i,
-  /<script/i,
-  /%3Cscript/i,
-];
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Market Data",
@@ -43,6 +36,14 @@ const frameConfig: FidgetProperties = {
       inputSelector: TextInput,
       group: "settings",
     },
+    {
+      fieldName: "theme",
+      displayName: "Theme",
+      inputSelector: ThemeSelector,
+      required: false,
+      group: "style",
+      default: "light",
+    },
     ...defaultStyleFields,
     {
       fieldName: "size",
@@ -60,12 +61,17 @@ const frameConfig: FidgetProperties = {
 };
 
 const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
-  settings: { chain = { id: "8453", name: "base" }, token, size = 1 },
+  settings: {
+    chain = { id: "8453", name: "base" },
+    token,
+    size = 1,
+    theme = "light",
+  },
 }) => {
   const dexscreenerBaseUrl = "https://dexscreener.com";
 
   const buildDexScreenerUrl = () => {
-    return `${dexscreenerBaseUrl}/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=light&theme=dark&chartStyle=1&chartType=usd&interval=60`;
+    return `${dexscreenerBaseUrl}/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
   };
 
   const scaleValue = size;
