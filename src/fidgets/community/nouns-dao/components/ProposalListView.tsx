@@ -8,6 +8,7 @@ import {
   AvatarImage,
 } from "@/common/components/atoms/avatar";
 import { FidgetSpinner } from "react-loader-spinner";
+import { NumberFieldState } from "react-stately";
 
 const ProposalListView = ({
   proposals,
@@ -20,7 +21,7 @@ const ProposalListView = ({
 }: {
   proposals: any[];
   setProposal: (proposalId: string, proposal: any) => void;
-  currentBlock: any;
+  currentBlock: number;
   loading: boolean;
   isBuilderSubgraph: boolean;
   title: string;
