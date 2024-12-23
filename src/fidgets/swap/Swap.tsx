@@ -13,8 +13,8 @@ import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 type MatchaFidgetSettings = {
   defaultSellToken: string;
   defaultBuyToken: string;
-  fromChain: number;
-  toChain: number;
+  fromChain: { id: string; name: string } | null;
+  toChain: { id: string; name: string } | null;
   background: string;
   fontFamily: string;
   fontColor: string;
@@ -43,19 +43,18 @@ const matchaProperties: FidgetProperties = {
     },
     {
       fieldName: "fromChain",
-      default: 8453,
+      default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
       fieldName: "toChain",
-      default: 8453,
+      default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
-    // added inout for optional fee recipient
     // {
     //   fieldName: "optionalFeeRecipient",
     //   default: "",
@@ -99,21 +98,30 @@ const matchaProperties: FidgetProperties = {
   },
 };
 
-const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({ settings }) => {
+const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
+  settings: {
+    defaultSellToken,
+    defaultBuyToken,
+    fromChain = { id: "8453", name: "Base" },
+    toChain = { id: "8453", name: "Base" },
+    optionalFeeRecipient,
+    size = 1,
+  },
+}) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
 
   const buildMatchaUrl = () => {
-    const { defaultSellToken, defaultBuyToken, fromChain, toChain } = settings;
-
     const params = new URLSearchParams();
     if (defaultSellToken) params.append("sellAddress", defaultSellToken);
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
-    if (fromChain)
-      params.append("sellChain", fromChain.toString().toLowerCase());
-    if (toChain) params.append("buyChain", toChain.toString().toLowerCase());
+    if (fromChain && fromChain.id)
+      params.append("sellChain", fromChain.id.toLowerCase());
+    if (toChain && toChain.id)
+      params.append("buyChain", toChain.id.toLowerCase());
+    // if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
-  const size = settings.size || 1;
+
   const scaleValue = size;
 
   return (
