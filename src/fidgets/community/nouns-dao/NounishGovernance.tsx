@@ -14,7 +14,16 @@ import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
+// import { http, createConfig, getBlock } from '@wagmi/core'
+// import { mainnet } from '@wagmi/core/chains'
 
+// export const Nconfig = createConfig({
+//   chains: [mainnet],
+//   transports: {
+//     [mainnet.id]: http(),
+
+//   },
+// })
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
@@ -34,7 +43,7 @@ export const nounishGovernanceConfig: FidgetProperties = {
       fieldName: "selectedDao",
       default: {
         name: "Nouns DAO",
-        contract: "", // nouns dao does not have a contract address
+        contract: "", // nouns dao does not need a contract address
         graphUrl: NOUNS_DAO,
       }, // Updated default value
       required: false,
@@ -76,7 +85,7 @@ export const NounishGovernance: React.FC<
     graphUrl: string;
     icon: string;
   }>(settings.selectedDao);
-
+  console.log(selectedProposal);
   useEffect(() => {
     setSelectedDao(settings.selectedDao);
   }, [settings.selectedDao]);
@@ -129,8 +138,29 @@ export const NounishGovernance: React.FC<
     }
   }, [proposalDetailData, detailLoading]);
 
-  const currentBlock = proposalsData?._meta?.block;
+  // useEffect(() => {
+  //   const fetchBlock = async () => {
+  //     const block = await getBlock(Nconfig);
+  //     console.log(block);
+  //   };
+  //   fetchBlock();
+  // }, []);
+  // const blockNumber = getBlock(Nconfig, {
+  //   blockTag: 'latest'
+  // })
+  // const fetchCurrentBlock = async () => {
+  //   const block = await getBlock(Nconfig, {
+  //     blockTag: 'latest'
+  //   });
+  //   return block;
+  // };
 
+  // const block = fetchCurrentBlock();
+  // console.log(block);
+
+  const currentBlock = 0;
+  console.log(proposalsData);
+  // console.log("Current block:", blockNumber); // Debug current block
   if (listError || detailError) {
     return <div>Error loading data</div>;
   }

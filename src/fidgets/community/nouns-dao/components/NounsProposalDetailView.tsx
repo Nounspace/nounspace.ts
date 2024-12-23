@@ -25,7 +25,9 @@ const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
       <div className="text-xs/[1.25]" style={{ color: labelColor }}>
         {label}
       </div>
-      <div className="text-sm/[1.25] text-gray-800 font-medium">{value}</div>
+      <div className="text-sm/[1.25] text-gray-800 font-medium">
+        {String(value)}
+      </div>
       <Progress
         className="h-[6px] rounded-[2px] mt-[2px]"
         value={percentage}

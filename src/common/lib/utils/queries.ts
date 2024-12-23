@@ -1,4 +1,24 @@
-export const NOUNS_PROPOSALS_QUERY = `  query ProposalsQuery {    _meta {      block {        number        timestamp      }    }    proposals(orderBy: startBlock, orderDirection: desc) {      id      title      status      startBlock      endBlock
+export const NOUNS_PROPOSALS_QUERY = `
+  query ProposalsQuery {
+    proposals(first: 1000, orderBy: createdBlock, orderDirection: desc) {
+      id
+      title
+      status
+      forVotes
+      againstVotes
+      abstainVotes
+      quorumVotes
+      executionETA
+      startBlock
+      endBlock
+      updatePeriodEndBlock
+      objectionPeriodEndBlock
+      onTimelockV1
+      signers {
+        id
+        __typename
+      }
+      __typename
     }
   }
 `;
@@ -68,36 +88,37 @@ export const NOUNS_PROPOSAL_DETAIL_QUERY = `
       }
     }
     proposal(id: $id) {
+id
+    description
+    status
+    proposalThreshold
+    quorumVotes
+    forVotes
+    againstVotes
+    abstainVotes
+    createdTransactionHash
+    createdBlock
+    createdTimestamp
+    startBlock
+    endBlock
+    updatePeriodEndBlock
+    objectionPeriodEndBlock
+    executionETA
+    targets
+    values
+    signatures
+    calldatas
+    onTimelockV1
+    voteSnapshotBlock
+    proposer {
       id
-      title
-      status
-      startBlock
-      endBlock
-      forVotes
-      againstVotes
-      abstainVotes
-      quorumVotes
-      createdTimestamp
-      voteSnapshotBlock
-      proposer {
-        id
-        nounsRepresented {
-          id
-        }
-      }
-      signers {
-        id
-        nounsRepresented {
-          id
-        }
-      }
+      __typename
     }
-    proposalVersions(
-      where: {proposal_: {id: $id}}
-      orderBy: createdAt
-      orderDirection: desc
-    ) {
-      createdAt
+    signers {
+      id
+      __typename
     }
+    __typename
   }
+}
 `;

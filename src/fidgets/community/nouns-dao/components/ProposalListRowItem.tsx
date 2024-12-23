@@ -61,33 +61,86 @@ export const estimateBlockTime = (
   return new Date(estimatedUnix);
 };
 
+const getProposalState = (proposal: any, currentBlock: any) => {
+  const {
+    startBlock,
+    endBlock,
+    eta,
+    quorumVotes,
+    objectionPeriodEndBlock,
+    updatePeriodEndBlock,
+    executionETA,
+    forVotes,
+    againstVotes,
+    abstainVotes,
+  } = proposal;
+
+  if (currentBlock < startBlock) {
+    return "PENDING";
+  } else if (currentBlock >= startBlock && currentBlock <= endBlock) {
+    return "ACTIVE";
+  } else if (
+    currentBlock > endBlock &&
+    forVotes + againstVotes + abstainVotes < quorumVotes
+  ) {
+    return "DEFEATED";
+  } else if (
+    currentBlock > endBlock &&
+    forVotes > againstVotes &&
+    currentBlock < objectionPeriodEndBlock
+  ) {
+    return "OBJECTION_PERIOD";
+  } else if (
+    currentBlock > endBlock &&
+    forVotes > againstVotes &&
+    currentBlock < updatePeriodEndBlock
+  ) {
+    return "UPDATABLE";
+  } else if (
+    currentBlock > endBlock &&
+    forVotes > againstVotes &&
+    currentBlock >= updatePeriodEndBlock &&
+    currentBlock < eta
+  ) {
+    return "QUEUED";
+  } else if (currentBlock >= eta && currentBlock < executionETA) {
+    return "EXECUTED";
+  } else if (currentBlock >= executionETA) {
+    return "EXPIRED";
+  } else {
+    return "UNKNOWN";
+  }
+};
+
 const ProposalListRowItem = ({
   proposal,
   setProposal,
   currentBlock,
 }: {
   proposal: any;
-  setProposal: (proposalId: string, proposal: any) => void; // Update the type here
+  setProposal: (proposalId: string, proposal: any) => void;
   currentBlock: any;
 }) => {
+  const proposalStatus = getProposalState(proposal, currentBlock);
+
   const getDateBadgeText = () => {
-    if (!["ACTIVE", "PENDING"].includes(proposal.status)) {
+    if (!["ACTIVE", "PENDING"].includes(proposalStatus)) {
       return null;
     }
     const startBlock = Number(proposal.startBlock);
     const endBlock = Number(proposal.endBlock);
 
-    if (currentBlock.number < startBlock) {
+    if (currentBlock < startBlock) {
       const startDate = estimateBlockTime(
         startBlock,
-        currentBlock.number,
+        currentBlock,
         currentBlock.timestamp,
       );
       return "Starts " + moment(startDate).fromNow();
-    } else if (currentBlock.number < endBlock) {
+    } else if (currentBlock < endBlock) {
       const endDate = estimateBlockTime(
         endBlock,
-        currentBlock.number,
+        currentBlock,
         currentBlock.timestamp,
       );
       return "Ends " + moment(endDate).fromNow();
@@ -98,7 +151,9 @@ const ProposalListRowItem = ({
 
   return (
     <div
-      onClick={() => setProposal(proposal.id, proposal)} // Pass both proposalId and proposal
+      onClick={() => {
+        setProposal(proposal.id, proposal);
+      }}
       className={mergeClasses(
         "flex overflow-hidden border border-gray-200 bg-gray-50 rounded-[8px]",
         "p-3 py-2.5 gap-3 cursor-pointer hover:bg-white items-center",
@@ -127,6 +182,7 @@ const ProposalListRowItem = ({
         )}
       </div>
       <StatusBadge status={proposal.status} />
+      {/* TODO: change for newer implementation */}
     </div>
   );
 };
