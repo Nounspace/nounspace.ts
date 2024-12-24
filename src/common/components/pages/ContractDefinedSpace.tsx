@@ -7,9 +7,9 @@ import TabBar from "../organisms/TabBar";
 import SpacePage from "./SpacePage";
 import router from "next/router";
 import { useSidebarContext } from "../organisms/Sidebar";
-import { OwnerType } from "@/pages/t/base/[contractAddress]";
 import { useWallets } from "@privy-io/react-auth";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { OwnerType } from "@/common/data/api/ethers";
 
 function createDefaultLayout(
   contractAddr: string,
