@@ -1,7 +1,8 @@
 import { AlchemyProvider } from "ethers/providers";
 import { Interface } from "ethers/abi";
 import { Contract } from "ethers/contract";
-import { OwnerType } from "@/pages/t/base/[contractAddress]";
+
+export type OwnerType = "address" | "fid";
 
 export const baseProvider = new AlchemyProvider(
   "base",
