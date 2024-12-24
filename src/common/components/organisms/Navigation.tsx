@@ -122,7 +122,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           href={disable ? "#" : href}
           className={mergeClasses(
             "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-            href === router.asPath ? "bg-gray-100" : "",
+            href === pathname ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
