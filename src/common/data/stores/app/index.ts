@@ -1,3 +1,5 @@
+"use client";
+
 import { createJSONStorage } from "zustand/middleware";
 import {
   createStore,

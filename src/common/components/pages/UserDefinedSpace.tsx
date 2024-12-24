@@ -7,7 +7,7 @@ import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import TabBar from "../organisms/TabBar";
 import SpacePage from "./SpacePage";
-import router from "next/router";
+import router from "next/navigation";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useSidebarContext } from "../organisms/Sidebar";
 
