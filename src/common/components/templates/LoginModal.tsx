@@ -34,6 +34,7 @@ const LoginModal = ({
         }
       }
       setCurrentStep(SetupStep.SIGNED_IN);
+      router.push("/homebase");
     },
     onError: () => {
       setOpen(false);
@@ -51,7 +52,6 @@ const LoginModal = ({
       open
     ) {
       login();
-      router.push("/homebase");
     }
   }, [currentStep, open, ready, authenticated]);
 
