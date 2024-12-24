@@ -52,7 +52,7 @@ export default function UserDefinedSpace({
     setCurrentTabName: state.currentSpace.setCurrentTabName,
 
     // TODO: update these two to work with tabs?
-    registerSpace: state.space.registerSpace,
+    registerSpace: state.space.registerSpaceFid,
     getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
 
     loadSpaceTab: state.space.loadSpaceTab,
@@ -153,6 +153,7 @@ export default function UserDefinedSpace({
   };
 
   const memoizedConfig = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { timestamp, ...restConfig } = config;
     return restConfig;
   }, [

@@ -9,13 +9,15 @@ import axiosBackend from "../../../api/backend";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
-  SpaceRegistration,
+  SpaceRegistrationContract,
+  SpaceRegistrationFid,
 } from "@/pages/api/space/registry";
 import {
   cloneDeep,
   debounce,
   filter,
   fromPairs,
+  includes,
   isArray,
   isNil,
   isUndefined,
@@ -43,6 +45,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -107,6 +110,7 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
+  addContractEditableSpaces: (spaceId: string, identities: string[]) => void;
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
@@ -135,7 +139,11 @@ interface SpaceActions {
   ) => Promise<void> | undefined;
   updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
   commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
-  registerSpace: (fid: number, name: string) => Promise<string | undefined>;
+  registerSpaceFid: (fid: number, name: string) => Promise<string | undefined>;
+  registerSpaceContract: (
+    address: string,
+    name: string,
+  ) => Promise<string | undefined>;
   clear: () => void;
 }
 
@@ -152,6 +160,13 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
+  addContractEditableSpaces: (spaceId, identities) => {
+    if (includes(identities, get().account.currentSpaceIdentityPublicKey)) {
+      set((draft) => {
+        draft.space.editableSpaces[spaceId] = spaceId;
+      }, "addContractEditableSpaces");
+    }
+  },
   commitSpaceTabToDatabase: debounce(
     async (spaceId: string, tabName: string) => {
       const localCopy = cloneDeep(
@@ -377,7 +392,6 @@ export const createSpaceStoreFunc = (
         }
 
         const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
-        // const remoteTab = draft.space.remoteSpaces[spaceId].tabs[tabName];
 
         // Compare timestamps if local tab exists
         if (localTab) {
@@ -492,8 +506,8 @@ export const createSpaceStoreFunc = (
       }, "loadSpaceInfoProfile");
     }
   },
-  registerSpace: async (fid, name) => {
-    const unsignedRegistration: Omit<SpaceRegistration, "signature"> = {
+  registerSpaceFid: async (fid, name) => {
+    const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
@@ -517,6 +531,38 @@ export const createSpaceStoreFunc = (
         newSpaceId,
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
+      );
+      // console.log("Created space", newSpaceId);
+      return newSpaceId;
+    } catch (e) {
+      null;
+    }
+  },
+  registerSpaceContract: async (address, name) => {
+    const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+      spaceName: name,
+      timestamp: moment().toISOString(),
+      contractAddress: address,
+    };
+    const registration = signSignable(
+      unsignedRegistration,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+    // TODO: Error handling
+    try {
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry",
+        registration,
+      );
+      const newSpaceId = data.value!.spaceId;
+      set((draft) => {
+        draft.space.editableSpaces[newSpaceId] = name;
+      }, "registerSpace");
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Profile",
+        createInitialContractSpaceConfigForAddress(address),
       );
       // console.log("Created space", newSpaceId);
       return newSpaceId;
