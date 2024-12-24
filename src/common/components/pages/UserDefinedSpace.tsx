@@ -10,6 +10,7 @@ import SpacePage from "./SpacePage";
 import router from "next/navigation";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useSidebarContext } from "../organisms/Sidebar";
+import { useRouter } from "next/navigation";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -67,6 +68,7 @@ export default function UserDefinedSpace({
   }));
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
+  const router = useRouter();
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
