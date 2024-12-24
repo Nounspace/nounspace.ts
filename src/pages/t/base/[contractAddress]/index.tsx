@@ -4,6 +4,7 @@ import {
   baseProvider,
   contractOwnerFromContract,
   loadEthersContract,
+  OwnerType,
 } from "@/common/data/api/ethers";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { loadOnwingIdentitiesForAddress } from "@/common/data/database/supabase/serverHelpers";
@@ -14,8 +15,6 @@ import { first, isArray, isNil, isString, isUndefined } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import React, { useEffect } from "react";
-
-export type OwnerType = "address" | "fid";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
