@@ -30,10 +30,11 @@ const LoginModal = ({
       if (!wasAlreadyAuthenticated) {
         if (isNewUser) {
           // redirect to the new user tutorial?
+        } else {
+          router.push("/homebase");
         }
       }
       setCurrentStep(SetupStep.SIGNED_IN);
-      router.push("/homebase");
     },
     onError: () => {
       setOpen(false);
