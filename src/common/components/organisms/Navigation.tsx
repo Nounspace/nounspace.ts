@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -122,7 +122,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           href={disable ? "#" : href}
           className={mergeClasses(
             "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-            href === router.asPath ? "bg-gray-100" : "",
+            href === pathname ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}

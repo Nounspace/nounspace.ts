@@ -6,7 +6,7 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const LoginModal = ({
   open,
@@ -30,6 +30,8 @@ const LoginModal = ({
       if (!wasAlreadyAuthenticated) {
         if (isNewUser) {
           // redirect to the new user tutorial?
+        } else {
+          router.push("/homebase");
         }
       }
       setCurrentStep(SetupStep.SIGNED_IN);
@@ -50,7 +52,6 @@ const LoginModal = ({
       open
     ) {
       login();
-      router.push("/homebase");
     }
   }, [currentStep, open, ready, authenticated]);
 
