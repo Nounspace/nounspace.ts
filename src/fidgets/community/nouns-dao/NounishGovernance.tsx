@@ -14,6 +14,7 @@ import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
+import axios from "axios";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -34,24 +35,12 @@ export const nounishGovernanceConfig: FidgetProperties = {
       fieldName: "selectedDao",
       default: {
         name: "Nouns DAO",
-        contract: "", // nouns dao does not have a contract address
+        contract: "", // nouns dao does not need a contract address
         graphUrl: NOUNS_DAO,
-      }, // Updated default value
+      },
       required: false,
       inputSelector: DaoSelector,
     },
-    // {
-    //   fieldName: "customSubgraphUrl",
-    //   default: "",
-    //   required: true,
-    //   inputSelector: TextInput,
-    // },
-    // {
-    //   fieldName: "customDaoContractAddress",
-    //   default: "",
-    //   required: true,
-    //   inputSelector: TextInput,
-    // },
     ...defaultStyleFields,
   ],
   size: {
@@ -66,16 +55,7 @@ export const NounishGovernance: React.FC<
   FidgetArgs<NounishGovernanceSettings>
 > = ({ settings }) => {
   const [proposalId, setProposalId] = useState<string | null>(null);
-  const [proposals, setProposals] = useState<any[]>([]);
-  const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
-  const [proposalVersions, setProposalVersions] = useState<any[]>([]);
-  const [proposalLoading, setProposalLoading] = useState<boolean>(false);
-  const [selectedDao, setSelectedDao] = useState<{
-    name: string;
-    contract: string;
-    graphUrl: string;
-    icon: string;
-  }>(settings.selectedDao);
+  const [selectedDao, setSelectedDao] = useState(settings.selectedDao);
 
   useEffect(() => {
     setSelectedDao(settings.selectedDao);
@@ -88,7 +68,8 @@ export const NounishGovernance: React.FC<
 
   const daoContractAddress =
     selectedDao?.contract || settings.daoContractAddress;
-  const graphUrl = selectedDao?.graphUrl || settings.subgraphUrl;
+  const graphUrl =
+    selectedDao?.graphUrl || "https://www.nouns.camp/subgraphs/nouns";
 
   const {
     data: proposalsData,
@@ -115,21 +96,28 @@ export const NounishGovernance: React.FC<
     variables: { id: proposalId },
   });
 
-  useEffect(() => {
-    if (proposalsData) {
-      setProposals(proposalsData.proposals || []);
-    }
-  }, [proposalsData]);
+  const [currentBlock, setCurrentBlock] = useState<{
+    number: number;
+    timestamp: number;
+  }>({ number: 0, timestamp: 0 });
 
   useEffect(() => {
-    if (proposalDetailData) {
-      setSelectedProposal(proposalDetailData.proposal || null);
-      setProposalVersions(proposalDetailData.proposalVersions || []);
-      setProposalLoading(detailLoading);
-    }
-  }, [proposalDetailData, detailLoading]);
+    const fetchBlockNumber = async () => {
+      try {
+        const response = await axios.get(
+          "https://pioneers.dev/api/v1/blockHeight/eip155%3A1",
+        );
+        setCurrentBlock({
+          number: Number(response.data.height),
+          timestamp: Date.now(),
+        });
+      } catch (error) {
+        console.error("Error fetching block number:", error);
+      }
+    };
 
-  const currentBlock = proposalsData?._meta?.block;
+    fetchBlockNumber();
+  }, []);
 
   if (listError || detailError) {
     return <div>Error loading data</div>;
@@ -137,45 +125,41 @@ export const NounishGovernance: React.FC<
 
   const handleGoBack = () => {
     setProposalId(null);
-    setSelectedProposal(null);
-    setProposalVersions([]);
-    setProposalLoading(false);
   };
 
-  const handleSetProposal = (proposalId: string, proposal: any) => {
+  const handleSetProposal = (proposalId: string) => {
+    console.log("Setting proposal ID:", proposalId);
     setProposalId(proposalId);
-    setSelectedProposal(proposal);
-    setProposalVersions([]);
   };
 
   return (
     <CardContent className="size-full overflow-scroll p-4">
-      {selectedProposal ? (
+      {proposalId && proposalDetailData ? (
         isBuilderSubgraph ? (
           <BuilderProposalDetailView
-            proposal={selectedProposal}
+            proposal={proposalDetailData.proposal}
             goBack={handleGoBack}
             currentBlock={currentBlock}
-            loading={proposalLoading}
-            versions={proposalVersions}
+            loading={detailLoading}
+            versions={proposalDetailData.proposalVersions}
           />
         ) : (
           <NounsProposalDetailView
-            proposal={selectedProposal}
-            versions={proposalVersions}
+            proposal={proposalDetailData.proposal}
+            versions={proposalDetailData.proposalVersions}
             goBack={handleGoBack}
             currentBlock={currentBlock}
-            loading={proposalLoading}
+            loading={detailLoading}
           />
         )
       ) : (
         <ProposalListView
-          proposals={proposals}
+          proposals={proposalsData?.proposals || []}
           currentBlock={currentBlock}
           setProposal={handleSetProposal}
           loading={listLoading}
           isBuilderSubgraph={isBuilderSubgraph}
-          title={isBuilderSubgraph ? selectedDao.name : "Nouns DAO"}
+          title={selectedDao.name}
           daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
         />
       )}
