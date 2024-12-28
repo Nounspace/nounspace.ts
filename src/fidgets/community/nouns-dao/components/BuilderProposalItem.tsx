@@ -53,10 +53,11 @@ const BuilderProposalItem = ({
   setProposal,
 }: {
   proposal: any;
-  setProposal: (proposalId: string, proposal: any) => void;
+  setProposal: (proposalId: string) => void;
 }) => {
   const handleProposalClick = () => {
-    setProposal(proposal.proposalId, proposal);
+    console.log("Proposal clicked:", proposal.proposalId);
+    setProposal(proposal.proposalId);
   };
   return (
     <div

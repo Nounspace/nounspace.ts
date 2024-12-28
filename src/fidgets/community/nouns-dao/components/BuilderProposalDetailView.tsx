@@ -12,6 +12,7 @@ import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
+import { Address } from "viem";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
@@ -96,17 +97,21 @@ export const BuilderProposalDetailView = ({
   proposal: ProposalData;
   versions: any[];
   goBack: () => void;
-  currentBlock: any;
+  currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
-  const proposer = proposal?.proposer?.id;
-  const sponsor = proposal?.signers?.length
-    ? proposal.signers[0].id
-    : undefined;
+  const proposer =
+    typeof proposal.proposer === "string"
+      ? proposal.proposer
+      : (proposal.proposer.id as `0x${string}`);
+  const sponsor =
+    "signers" in proposal && proposal.signers.length
+      ? (proposal.signers[0].id as Address)
+      : undefined;
   const version = versions?.length;
 
   const { data: proposerEnsName } = useEnsName({
-    address: proposer,
+    address: proposer as Address,
     chainId: mainnet.id,
   });
 
@@ -165,19 +170,21 @@ export const BuilderProposalDetailView = ({
         >
           <FaArrowLeft />
         </Button>
-        <a
-          href={`https://www.nouns.build/dao/base/${proposal.dao.tokenAddress}/vote/${proposal.proposalNumber}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full shadow-none h-8 w-8"
+        {"dao" in proposal && "proposalNumber" in proposal && (
+          <a
+            href={`https://www.nouns.build/dao/base/${proposal.dao.tokenAddress}/vote/${proposal.proposalNumber}`}
+            target="_blank"
+            rel="noreferrer"
           >
-            <RiExternalLinkLine size={16} />
-          </Button>
-        </a>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full shadow-none h-8 w-8"
+            >
+              <RiExternalLinkLine size={16} />
+            </Button>
+          </a>
+        )}
       </div>
       <div className="flex-auto overflow-hidden">
         <div
@@ -258,15 +265,21 @@ export const BuilderProposalDetailView = ({
                 subtext={formattedEndTime}
                 value={formattedEndDate}
               />
-              <InfoBox
-                label="Snapshot"
-                subtext="Taken at block"
-                value={proposal.voteSnapshotBlock}
-              />
+              {"voteSnapshotBlock" in proposal && (
+                <InfoBox
+                  label="Snapshot"
+                  subtext="Taken at block"
+                  value={proposal.voteSnapshotBlock}
+                />
+              )}
             </div>
             <div className="flex flex-col gap-2 p-5">
-              <ReactMarkdown>{proposal.description}</ReactMarkdown>
+              {"description" in proposal && (
+                <ReactMarkdown>{proposal.description}</ReactMarkdown>
+              )}
             </div>
+            <div>Current Block Number: {currentBlock.number}</div>
+            <div>Current Block Timestamp: {currentBlock.timestamp}</div>
           </div>
         </div>
       </div>
