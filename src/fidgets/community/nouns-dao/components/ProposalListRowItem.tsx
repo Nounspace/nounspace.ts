@@ -61,17 +61,92 @@ export const estimateBlockTime = (
   return new Date(estimatedUnix);
 };
 
+export const getProposalState = (
+  proposal: any,
+  currentBlock: { number: number; timestamp: number },
+) => {
+  const {
+    id,
+    startBlock,
+    endBlock,
+    quorumVotes,
+    createdTimestamp,
+    objectionPeriodEndBlock,
+    updatePeriodEndBlock,
+    forVotes,
+    againstVotes,
+    abstainVotes,
+    canceledTimestamp,
+    queuedTimestamp,
+    executedTimestamp,
+  } = proposal;
+
+  const minThreshold = 80;
+  const maxThreshold = 120;
+  const dynamicThreshold = Math.min(
+    maxThreshold,
+    minThreshold +
+      (maxThreshold - minThreshold) *
+        (Number(againstVotes) /
+          (Number(forVotes) + Number(againstVotes) + Number(abstainVotes))),
+  );
+
+  if (canceledTimestamp) {
+    return "CANCELLED";
+  } else if (executedTimestamp) {
+    return "EXECUTED";
+  } else if (queuedTimestamp) {
+    return "QUEUED";
+  } else if (currentBlock.number < Number(startBlock)) {
+    return "PENDING";
+  } else if (
+    currentBlock.number >= Number(startBlock) &&
+    currentBlock.number <= Number(endBlock)
+  ) {
+    return "ACTIVE";
+  } else if (
+    currentBlock.number > Number(endBlock) &&
+    (Number(forVotes) + Number(againstVotes) + Number(abstainVotes) <
+      Number(quorumVotes) ||
+      Number(forVotes) < dynamicThreshold)
+  ) {
+    return "DEFEATED";
+  } else if (
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number < Number(objectionPeriodEndBlock)
+  ) {
+    return "OBJECTION_PERIOD";
+  } else if (
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number < Number(updatePeriodEndBlock)
+  ) {
+    return "UPDATABLE";
+  } else if (
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number >= Number(updatePeriodEndBlock)
+  ) {
+    return "DEFEATED"; // If not queued by this point, it's defeated
+  } else {
+    return "UNKNOWN";
+  }
+};
+
 const ProposalListRowItem = ({
   proposal,
   setProposal,
   currentBlock,
 }: {
   proposal: any;
-  setProposal: (proposalId: string, proposal: any) => void; // Update the type here
-  currentBlock: any;
+  setProposal: (proposalId: string, proposal: any) => void;
+  currentBlock: { number: number; timestamp: number };
 }) => {
+  const proposalStatus = getProposalState(proposal, currentBlock);
+
   const getDateBadgeText = () => {
-    if (!["ACTIVE", "PENDING"].includes(proposal.status)) {
+    if (!["ACTIVE", "PENDING"].includes(proposalStatus)) {
       return null;
     }
     const startBlock = Number(proposal.startBlock);
@@ -81,24 +156,31 @@ const ProposalListRowItem = ({
       const startDate = estimateBlockTime(
         startBlock,
         currentBlock.number,
-        currentBlock.timestamp,
+        currentBlock.timestamp / 1000, // Convert timestamp to seconds
       );
       return "Starts " + moment(startDate).fromNow();
     } else if (currentBlock.number < endBlock) {
       const endDate = estimateBlockTime(
         endBlock,
         currentBlock.number,
-        currentBlock.timestamp,
+        currentBlock.timestamp / 1000, // Convert timestamp to seconds
       );
       return "Ends " + moment(endDate).fromNow();
     }
     return null;
   };
+
   const dateBadgeText = getDateBadgeText();
+
+  if (proposal.id === "712") {
+    console.log(proposal, getProposalState(proposal, currentBlock));
+  }
 
   return (
     <div
-      onClick={() => setProposal(proposal.id, proposal)} // Pass both proposalId and proposal
+      onClick={() => {
+        setProposal(proposal.id, proposal);
+      }}
       className={mergeClasses(
         "flex overflow-hidden border border-gray-200 bg-gray-50 rounded-[8px]",
         "p-3 py-2.5 gap-3 cursor-pointer hover:bg-white items-center",
@@ -126,7 +208,7 @@ const ProposalListRowItem = ({
           </div>
         )}
       </div>
-      <StatusBadge status={proposal.status} />
+      <StatusBadge status={proposalStatus} />
     </div>
   );
 };
