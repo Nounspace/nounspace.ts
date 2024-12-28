@@ -3,14 +3,13 @@ import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import type { ProposalData } from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
-import { estimateBlockTime } from "./ProposalListRowItem";
+import { estimateBlockTime, getProposalState } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
@@ -95,10 +94,10 @@ export const NounsProposalDetailView = ({
   currentBlock,
   loading,
 }: {
-  proposal: ProposalData;
+  proposal: any;
   versions: any[];
   goBack: () => void;
-  currentBlock: any;
+  currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
   const proposer = proposal?.proposer?.id;
@@ -194,7 +193,7 @@ export const NounsProposalDetailView = ({
                   Proposal {proposal.id}
                 </span>
                 <StatusBadge
-                  status={proposal.status}
+                  status={getProposalState(proposal, currentBlock)}
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>

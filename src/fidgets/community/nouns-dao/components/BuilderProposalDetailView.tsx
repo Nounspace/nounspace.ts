@@ -96,7 +96,7 @@ export const BuilderProposalDetailView = ({
   proposal: ProposalData;
   versions: any[];
   goBack: () => void;
-  currentBlock: any;
+  currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
   const proposer = proposal?.proposer?.id;
@@ -267,6 +267,8 @@ export const BuilderProposalDetailView = ({
             <div className="flex flex-col gap-2 p-5">
               <ReactMarkdown>{proposal.description}</ReactMarkdown>
             </div>
+            <div>Current Block Number: {currentBlock.number}</div>
+            <div>Current Block Timestamp: {currentBlock.timestamp}</div>
           </div>
         </div>
       </div>

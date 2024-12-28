@@ -61,52 +61,74 @@ export const estimateBlockTime = (
   return new Date(estimatedUnix);
 };
 
-const getProposalState = (proposal: any, currentBlock: any) => {
+export const getProposalState = (
+  proposal: any,
+  currentBlock: { number: number; timestamp: number },
+) => {
   const {
+    id,
     startBlock,
     endBlock,
-    eta,
     quorumVotes,
+    createdTimestamp,
     objectionPeriodEndBlock,
     updatePeriodEndBlock,
-    executionETA,
     forVotes,
     againstVotes,
     abstainVotes,
+    canceledTimestamp,
+    queuedTimestamp,
+    executedTimestamp,
   } = proposal;
 
-  if (currentBlock < startBlock) {
+  const minThreshold = 80;
+  const maxThreshold = 120;
+  const dynamicThreshold = Math.min(
+    maxThreshold,
+    minThreshold +
+      (maxThreshold - minThreshold) *
+        (Number(againstVotes) /
+          (Number(forVotes) + Number(againstVotes) + Number(abstainVotes))),
+  );
+
+  if (canceledTimestamp) {
+    return "CANCELLED";
+  } else if (executedTimestamp) {
+    return "EXECUTED";
+  } else if (queuedTimestamp) {
+    return "QUEUED";
+  } else if (currentBlock.number < Number(startBlock)) {
     return "PENDING";
-  } else if (currentBlock >= startBlock && currentBlock <= endBlock) {
+  } else if (
+    currentBlock.number >= Number(startBlock) &&
+    currentBlock.number <= Number(endBlock)
+  ) {
     return "ACTIVE";
   } else if (
-    currentBlock > endBlock &&
-    forVotes + againstVotes + abstainVotes < quorumVotes
+    currentBlock.number > Number(endBlock) &&
+    (Number(forVotes) + Number(againstVotes) + Number(abstainVotes) <
+      Number(quorumVotes) ||
+      Number(forVotes) < dynamicThreshold)
   ) {
     return "DEFEATED";
   } else if (
-    currentBlock > endBlock &&
-    forVotes > againstVotes &&
-    currentBlock < objectionPeriodEndBlock
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number < Number(objectionPeriodEndBlock)
   ) {
     return "OBJECTION_PERIOD";
   } else if (
-    currentBlock > endBlock &&
-    forVotes > againstVotes &&
-    currentBlock < updatePeriodEndBlock
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number < Number(updatePeriodEndBlock)
   ) {
     return "UPDATABLE";
   } else if (
-    currentBlock > endBlock &&
-    forVotes > againstVotes &&
-    currentBlock >= updatePeriodEndBlock &&
-    currentBlock < eta
+    currentBlock.number > Number(endBlock) &&
+    Number(forVotes) >= dynamicThreshold &&
+    currentBlock.number >= Number(updatePeriodEndBlock)
   ) {
-    return "QUEUED";
-  } else if (currentBlock >= eta && currentBlock < executionETA) {
-    return "EXECUTED";
-  } else if (currentBlock >= executionETA) {
-    return "EXPIRED";
+    return "DEFEATED"; // If not queued by this point, it's defeated
   } else {
     return "UNKNOWN";
   }
@@ -119,7 +141,7 @@ const ProposalListRowItem = ({
 }: {
   proposal: any;
   setProposal: (proposalId: string, proposal: any) => void;
-  currentBlock: any;
+  currentBlock: { number: number; timestamp: number };
 }) => {
   const proposalStatus = getProposalState(proposal, currentBlock);
 
@@ -130,24 +152,29 @@ const ProposalListRowItem = ({
     const startBlock = Number(proposal.startBlock);
     const endBlock = Number(proposal.endBlock);
 
-    if (currentBlock < startBlock) {
+    if (currentBlock.number < startBlock) {
       const startDate = estimateBlockTime(
         startBlock,
-        currentBlock,
-        currentBlock.timestamp,
+        currentBlock.number,
+        currentBlock.timestamp / 1000, // Convert timestamp to seconds
       );
       return "Starts " + moment(startDate).fromNow();
-    } else if (currentBlock < endBlock) {
+    } else if (currentBlock.number < endBlock) {
       const endDate = estimateBlockTime(
         endBlock,
-        currentBlock,
-        currentBlock.timestamp,
+        currentBlock.number,
+        currentBlock.timestamp / 1000, // Convert timestamp to seconds
       );
       return "Ends " + moment(endDate).fromNow();
     }
     return null;
   };
+
   const dateBadgeText = getDateBadgeText();
+
+  if (proposal.id === "712") {
+    console.log(proposal, getProposalState(proposal, currentBlock));
+  }
 
   return (
     <div
@@ -181,8 +208,7 @@ const ProposalListRowItem = ({
           </div>
         )}
       </div>
-      <StatusBadge status={proposal.status} />
-      {/* TODO: change for newer implementation */}
+      <StatusBadge status={proposalStatus} />
     </div>
   );
 };
