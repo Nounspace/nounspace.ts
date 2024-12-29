@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { PrivyClientConfig, PrivyProvider } from "@privy-io/react-auth";
 
