@@ -23,11 +23,13 @@ export async function getAllMarkdownFiles(): Promise<PostData[]> {
     if (isNull(data)) {
       return [];
     }
-    return Promise.all(
-      map(data, (d: FileObject) =>
-        getMarkdownFileBySlug(d.name.replace(/\.md$/, "")),
-      ),
-    );
+    return (
+      await Promise.all(
+        map(data, (d: FileObject) =>
+          getMarkdownFileBySlug(d.name.replace(/\.md$/, "")),
+        ),
+      )
+    ).filter((d) => !isNull(d));
   }
 }
 
