@@ -1,6 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect } from "react";
-import { useRouter } from "next/router";
+import { usePathname, useSearchParams } from "next/navigation";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
@@ -91,10 +91,12 @@ export const analytics = {
 export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const router = useRouter();
   const fid = useCurrentFid();
   const identityPublicKey = useCurrentSpaceIdentityPublicKey();
   const writeKey = process.env.NEXT_PUBLIC_SEGMENT_WRITE_KEY;
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (writeKey) {
@@ -112,17 +114,7 @@ export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
 
   useEffect(() => {
     analytics.page();
-
-    const handleRouteChange = () => {
-      analytics.page();
-    };
-
-    router.events.on("routeChangeComplete", handleRouteChange);
-
-    return () => {
-      router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, [router.events]);
+  }, [pathname, searchParams]);
 
   return children;
 };
