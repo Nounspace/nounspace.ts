@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Chain, Transport } from "viem";
 import { createConfig } from "wagmi";
