@@ -19,7 +19,7 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   a. get a Neynar API key https://docs.neynar.com/docs -> `NEYNAR_API_KEY` <br>
   b. get an Alchemy API key https://www.alchemy.com -> `NEXT_PUBLIC_ALCHEMY_API_KEY` <br>
   c. get your Farcaster account FID and mnemonic -> `NEXT_PUBLIC_APP_FID` + `APP_MNENOMIC`<br>
-  d. launch local copy of Supabase with `supabase start`, use the info provided -> <br>
+  d. launch local copy of Supabase with `supabase start` (in the root directory of this repo), use the info provided -> <br>
  `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 ## Contributing and making Fidgets
