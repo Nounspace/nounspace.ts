@@ -3,7 +3,11 @@ import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import type { ProposalData } from "@/fidgets/community/nouns-dao";
+import type {
+  ProposalData,
+  BuilderProposalData,
+  NounsProposalData,
+} from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
@@ -12,6 +16,10 @@ import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import rehypeRaw from "rehype-raw";
+import { remark } from "remark";
+import remarkGfm from "remark-gfm";
 import { Address } from "viem";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
@@ -101,13 +109,8 @@ export const BuilderProposalDetailView = ({
   loading: boolean;
 }) => {
   const proposer =
-    typeof proposal.proposer === "string"
-      ? proposal.proposer
-      : (proposal.proposer.id as `0x${string}`);
-  const sponsor =
-    "signers" in proposal && proposal.signers.length
-      ? (proposal.signers[0].id as Address)
-      : undefined;
+    (proposal as BuilderProposalData).proposer ||
+    (proposal as NounsProposalData).proposer.id;
   const version = versions?.length;
 
   const { data: proposerEnsName } = useEnsName({
@@ -115,13 +118,7 @@ export const BuilderProposalDetailView = ({
     chainId: mainnet.id,
   });
 
-  const { data: sponsorEnsName } = useEnsName({
-    address: sponsor,
-    chainId: mainnet.id,
-  });
-
   const proposerEnsOrAddress = proposerEnsName ?? proposer;
-  const sponsorEnsOrAddress = sponsorEnsName ?? sponsor;
 
   if (loading) {
     return (
@@ -152,13 +149,14 @@ export const BuilderProposalDetailView = ({
 
   const endDate = currentBlock
     ? estimateBlockTime(
-        Number(proposal.endBlock),
+        Number((proposal as BuilderProposalData).voteEnd),
         currentBlock.number,
         currentBlock.timestamp,
       )
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
+
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">
@@ -170,9 +168,9 @@ export const BuilderProposalDetailView = ({
         >
           <FaArrowLeft />
         </Button>
-        {"dao" in proposal && "proposalNumber" in proposal && (
+        {(proposal as BuilderProposalData).dao?.tokenAddress && (
           <a
-            href={`https://www.nouns.build/dao/base/${proposal.dao.tokenAddress}/vote/${proposal.proposalNumber}`}
+            href={`https://www.nouns.build/dao/base/${(proposal as BuilderProposalData).dao.tokenAddress}/vote/${(proposal as BuilderProposalData).proposalNumber}`}
             target="_blank"
             rel="noreferrer"
           >
@@ -194,24 +192,17 @@ export const BuilderProposalDetailView = ({
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
               <div className="flex items-center">
-                <span className="flex-none mr-2 text-gray-700 font-medium text-xs/[1.25]">
-                  Proposal {proposal.id}
-                </span>
                 <StatusBadge
                   status={proposal.status}
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
               <p className="font-medium text-base/[1.25]">{proposal.title}</p>
-              {(proposer || sponsor) && (
+              {proposer && (
                 <div className="flex gap-4">
                   <AddressInfo
                     label="Proposed by"
                     address={proposerEnsOrAddress}
-                  />
-                  <AddressInfo
-                    label="Sponsored by"
-                    address={sponsorEnsOrAddress}
                   />
                 </div>
               )}
@@ -265,18 +256,20 @@ export const BuilderProposalDetailView = ({
                 subtext={formattedEndTime}
                 value={formattedEndDate}
               />
-              {"voteSnapshotBlock" in proposal && (
-                <InfoBox
-                  label="Snapshot"
-                  subtext="Taken at block"
-                  value={proposal.voteSnapshotBlock}
-                />
-              )}
+              <InfoBox
+                label="Snapshot"
+                subtext="Taken at block"
+                value={(proposal as BuilderProposalData).snapshotBlockNumber}
+              />
             </div>
             <div className="flex flex-col gap-2 p-5">
-              {"description" in proposal && (
-                <ReactMarkdown>{proposal.description}</ReactMarkdown>
-              )}
+              <ReactMarkdown
+                components={MarkdownRenderers()}
+                rehypePlugins={[rehypeRaw]}
+                remarkPlugins={[remarkGfm]}
+              >
+                {proposal.description}
+              </ReactMarkdown>
             </div>
             <div>Current Block Number: {currentBlock.number}</div>
             <div>Current Block Timestamp: {currentBlock.timestamp}</div>
