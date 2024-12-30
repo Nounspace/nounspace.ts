@@ -8,10 +8,23 @@ export type BaseProposalData = {
   againstVotes: string;
   abstainVotes: string;
   quorumVotes: string;
+  createdBlock: string;
+  createdTimestamp: string;
+  createdTransactionHash: string;
+  lastUpdatedBlock?: string;
+  lastUpdatedTimestamp?: string;
+  canceledBlock?: string;
+  canceledTimestamp?: string;
+  canceledTransactionHash?: string;
+  queuedBlock?: string;
+  queuedTimestamp?: string;
+  queuedTransactionHash?: string;
+  executedBlock?: string;
+  executedTimestamp?: string;
+  executedTransactionHash?: string;
 };
 
 export type NounsProposalData = BaseProposalData & {
-  createdTimestamp: string;
   voteSnapshotBlock: string;
   proposer: {
     id: string;
