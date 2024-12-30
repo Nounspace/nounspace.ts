@@ -172,10 +172,6 @@ const ProposalListRowItem = ({
 
   const dateBadgeText = getDateBadgeText();
 
-  if (proposal.id === "712") {
-    console.log(proposal, getProposalState(proposal, currentBlock));
-  }
-
   return (
     <div
       onClick={() => {

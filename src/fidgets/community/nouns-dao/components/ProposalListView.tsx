@@ -58,7 +58,7 @@ const ProposalListView = ({
             <BuilderProposalItem
               key={i}
               proposal={proposal}
-              setProposal={() => setProposal(proposal.proposalId)}
+              setProposal={setProposal}
             />
           ) : (
             <ProposalListRowItem

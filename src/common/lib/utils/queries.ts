@@ -52,6 +52,7 @@ export const NOUNS_PROPOSALS_QUERY = `
     ) {
       id
       title
+      description
       status
       createdBlock
       createdTimestamp
