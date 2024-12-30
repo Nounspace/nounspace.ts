@@ -85,17 +85,6 @@ export const NounishGovernance: React.FC<
     },
   });
 
-  const {
-    data: proposalDetailData,
-    loading: detailLoading,
-    error: detailError,
-  } = useGraphqlQuery({
-    url: graphUrl,
-    query: NOUNS_PROPOSAL_DETAIL_QUERY,
-    skip: !proposalId || isBuilderSubgraph,
-    variables: { id: proposalId },
-  });
-
   const [currentBlock, setCurrentBlock] = useState<{
     number: number;
     timestamp: number;
@@ -119,7 +108,7 @@ export const NounishGovernance: React.FC<
     fetchBlockNumber();
   }, []);
 
-  if (listError || detailError) {
+  if (listError) {
     return <div>Error loading data</div>;
   }
 
@@ -128,28 +117,32 @@ export const NounishGovernance: React.FC<
   };
 
   const handleSetProposal = (proposalId: string) => {
-    console.log("Setting proposal ID:", proposalId);
     setProposalId(proposalId);
   };
 
+  const selectedProposal = isBuilderSubgraph
+    ? proposalsData?.proposals.find(
+        (proposal) => proposal.proposalId === proposalId,
+      )
+    : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
   return (
     <CardContent className="size-full overflow-scroll p-4">
-      {proposalId && proposalDetailData ? (
+      {proposalId && selectedProposal ? (
         isBuilderSubgraph ? (
           <BuilderProposalDetailView
-            proposal={proposalDetailData.proposal}
+            proposal={selectedProposal}
             goBack={handleGoBack}
             currentBlock={currentBlock}
-            loading={detailLoading}
-            versions={proposalDetailData.proposalVersions}
+            loading={listLoading}
+            versions={[]}
           />
         ) : (
           <NounsProposalDetailView
-            proposal={proposalDetailData.proposal}
-            versions={proposalDetailData.proposalVersions}
+            proposal={selectedProposal}
+            versions={selectedProposal}
             goBack={handleGoBack}
             currentBlock={currentBlock}
-            loading={detailLoading}
+            loading={listLoading}
           />
         )
       ) : (
