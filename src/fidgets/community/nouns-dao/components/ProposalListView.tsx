@@ -19,8 +19,8 @@ const ProposalListView = ({
   daoIcon,
 }: {
   proposals: any[];
-  setProposal: (proposalId: string, proposal: any) => void;
-  currentBlock: any;
+  setProposal: (proposalId: string) => void;
+  currentBlock: { number: number; timestamp: number };
   loading: boolean;
   isBuilderSubgraph: boolean;
   title: string;
