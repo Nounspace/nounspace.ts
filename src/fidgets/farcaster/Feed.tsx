@@ -325,7 +325,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
               data.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
                   {filterType === FilterType.Keyword
-                    ? // @ts-ignore
+                    ? // @ts-expect-error
                       page.result.casts?.map(
                         (
                           cast,
