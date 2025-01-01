@@ -109,7 +109,7 @@ export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
       try {
         const url = `https://api.neynar.com/v2/farcaster/cast/search?q=${keyword}&priority_mode=false&limit=25&cursor=${cursor}`;
         const apiKey = process.env.NEYNAR_API_KEY;
-        const { data } = await axiosBackend.get<FeedResponse>(url, {
+        const { data } = await axiosBackend.get<any>(url, {
           headers: {
             "x-api-key": apiKey,
           },
