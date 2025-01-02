@@ -106,24 +106,19 @@ export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
     queryKey: ["keywordCasts", keyword],
     staleTime: 1000 * 60 * 1,
     queryFn: async ({ pageParam: cursor }) => {
-      try {
-        const url = `https://api.neynar.com/v2/farcaster/cast/search?q=${keyword}&priority_mode=false&limit=25&cursor=${cursor}`;
-        const apiKey = process.env.NEYNAR_API_KEY;
-        const { data } = await axiosBackend.get<any>(url, {
-          headers: {
-            "x-api-key": apiKey,
-          },
-        });
-        return data;
-      } catch (error) {
-        console.error("Error fetching casts by keyword:", error);
-        throw error;
-      }
+      const params: any = {
+        q: keyword,
+        priority_mode: false,
+        limit: 25,
+        cursor,
+      };
+      const { data } = await axiosBackend.get(
+        "/api/farcaster/neynar/searchByKeyword",
+        { params: { ...params, keyword } },
+      );
+      return data;
     },
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage, _allPages, _lastPageParam, _allPageParams) =>
-      !isUndefined(lastPage) && !isUndefined(lastPage.next)
-        ? lastPage.next.cursor
-        : undefined,
+    getNextPageParam: (lastPage) => lastPage?.next?.cursor ?? undefined,
   });
 };
