@@ -33,12 +33,6 @@ const frameConfig: FidgetProperties = {
       group: "settings",
     },
     ...defaultStyleFields,
-    {
-      fieldName: "size",
-      required: false,
-      inputSelector: IFrameWidthSlider,
-      group: "style",
-    },
   ],
   size: {
     minHeight: 2,
@@ -51,10 +45,7 @@ const frameConfig: FidgetProperties = {
 const Chat: React.FC<
   FidgetArgs<ChatFidgetSettings> & { inEditMode: boolean }
 > = ({
-  settings: {
-    roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
-    size = 1,
-  },
+  settings: { roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" },
 }) => {
   console.log("Room name:", roomName);
 
@@ -69,8 +60,6 @@ const Chat: React.FC<
 
   const url = `https://chat-fidget.vercel.app/?room=${roomName}`;
 
-  const scaleValue = size;
-
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
@@ -78,12 +67,6 @@ const Chat: React.FC<
         src={url}
         title="Chat Fidget"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation allow-forms allow-modals allow-cursor-lock allow-orientation-lock allow-pointer-lock allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-        }}
         className="size-full"
       />
     </div>
