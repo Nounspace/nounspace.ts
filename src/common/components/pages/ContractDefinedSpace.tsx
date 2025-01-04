@@ -9,7 +9,7 @@ import router from "next/router";
 import { useSidebarContext } from "../organisms/Sidebar";
 import { useWallets } from "@privy-io/react-auth";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
-import { OwnerType } from "@/common/data/api/ethers";
+import { OwnerType } from "@/common/data/api/etherscan";
 
 function createDefaultLayout(
   contractAddr: string,
