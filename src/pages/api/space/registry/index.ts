@@ -1,8 +1,7 @@
 import {
-  baseProvider,
   contractOwnerFromContract,
-  loadEthersContract,
-} from "@/common/data/api/ethers";
+  loadEthersViewOnlyContract,
+} from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
@@ -83,7 +82,7 @@ async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
 ) {
-  const contract = await loadEthersContract(baseProvider, contractAddress);
+  const contract = await loadEthersViewOnlyContract(contractAddress);
   const { ownerId, ownerIdType } = await contractOwnerFromContract(contract);
   if (isNil(ownerId)) {
     return false;
