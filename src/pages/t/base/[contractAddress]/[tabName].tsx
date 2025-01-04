@@ -1,8 +1,6 @@
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import ContractPrimarySpace, {
-  ContractSpacePageProps,
-  loadContractData,
-} from ".";
+import ContractPrimarySpace, { ContractSpacePageProps } from ".";
+import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
 
 export const getServerSideProps = (async ({
   params,
