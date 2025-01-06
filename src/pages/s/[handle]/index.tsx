@@ -14,7 +14,7 @@ import {
   type UserMetadata,
 } from "@/common/lib/utils/generateUserMetadataHtml";
 
-export type SpacePageProps = {
+export type UserDefinedSpacePageProps = {
   spaceId: string | null;
   fid: number | null;
   handle: string | string[] | null | undefined;
@@ -94,14 +94,14 @@ export const getServerSideProps = (async ({
       },
     };
   }
-}) satisfies GetServerSideProps<SpacePageProps>;
+}) satisfies GetServerSideProps<UserDefinedSpacePageProps>;
 
 export const UserPrimarySpace: NextPageWithLayout = ({
   spaceId,
   tabName,
   fid,
   userMetadata,
-}: SpacePageProps) => {
+}: UserDefinedSpacePageProps) => {
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));

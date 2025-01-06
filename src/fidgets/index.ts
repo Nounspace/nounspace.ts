@@ -16,6 +16,7 @@ import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
+import chat from "./ui/chat";
 
 export const CompleteFidgets = {
   //
@@ -41,6 +42,7 @@ export const CompleteFidgets = {
   Rss: rss,
   Video: VideoFidget,
   Market: marketData,
+  Chat: chat,
 };
 
 export const LayoutFidgets = {

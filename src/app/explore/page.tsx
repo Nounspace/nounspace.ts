@@ -1,19 +1,11 @@
 import React from "react";
 import { groupBy } from "lodash";
-import Link from "next/link";
 import Image from "next/image";
-import { getAllMarkdownFiles } from "@/common/data/explore/loadExploreMarkdown";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider"; // Import analytics
-import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-
-export async function getStaticProps() {
-  const posts = await getAllMarkdownFiles();
-  return {
-    props: {
-      posts,
-    },
-  };
-}
+import {
+  getAllMarkdownFiles,
+  PostData,
+} from "@/common/data/explore/loadExploreMarkdown";
+import ExploreCard from "./ExploreCard";
 
 const categories = [
   { title: "Nounish", image: "/images/explore-icons/nounish.png" },
@@ -27,11 +19,9 @@ const categories = [
   { title: "People", image: "/images/explore-icons/people.png" },
 ];
 
-export default function Explore({ posts }) {
-  // const { homebaseConfig } = useAppStore((state) => ({
-  //   homebaseConfig: state.homebase.homebaseConfig,
-  // }));
-  const groupedPosts = groupBy(posts, (post) => post.category);
+export default async function Explore() {
+  const posts = await getAllMarkdownFiles();
+  const groupedPosts = groupBy(posts, (post: PostData) => post?.category);
 
   return (
     <div className="min-h-screen max-w-screen h-screen w-screen">
@@ -69,7 +59,7 @@ export default function Explore({ posts }) {
                     {title}
                   </h2>
                   <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {groupedPosts[title].map((post, i) => (
+                    {groupedPosts[title].map((post: PostData, i: number) => (
                       <ExploreCard key={`${post.slug}-${i}`} post={post} />
                     ))}
                   </div>
@@ -82,29 +72,3 @@ export default function Explore({ posts }) {
     </div>
   );
 }
-
-const ExploreCard = ({ post }) => {
-  return (
-    <Link
-      onClick={() => {
-        trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE_CARD, {
-          slug: post.slug,
-        });
-      }}
-      href={`/s/${post.slug}`}
-      className="block border border-gray-300 rounded-lg overflow-hidden bg-[#FCFFF4] hover:shadow-md transition-all duration-100 ease-out hover:-translate-y-1"
-    >
-      <div className="h-36 w-full bg-gray-200 overflow-hidden relative">
-        <Image
-          src={post.image}
-          alt={post.title}
-          fill
-          className="object-cover object-center"
-        />
-      </div>
-      <div className="p-3">
-        <h2 className="text-lg font-bold">@{post.title}</h2>
-      </div>
-    </Link>
-  );
-};

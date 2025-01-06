@@ -1,32 +1,48 @@
-import { indexOf, isNil, mapValues, noop, first } from "lodash";
+import { cloneDeep, find, indexOf, isNil, mapValues } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
-import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { SpaceConfigSaveDetails } from "../templates/Space";
-import Profile from "@/fidgets/ui/profile";
+import { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
 import TabBar from "../organisms/TabBar";
 import SpacePage from "./SpacePage";
 import router from "next/router";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useSidebarContext } from "../organisms/Sidebar";
+import { useWallets } from "@privy-io/react-auth";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { OwnerType } from "@/common/data/api/etherscan";
+
+function createDefaultLayout(
+  contractAddr: string,
+  pinnedCastId?: string,
+): Omit<SpaceConfig, "isEditable"> {
+  const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+  // Edit config based on contractAddr and pinnedCastId
+  return config;
+}
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export default function UserDefinedSpace({
+export default function ContractDefinedSpace({
   spaceId: providedSpaceId,
   tabName: providedTabName,
-  fid,
+  pinnedCastId,
+  contractAddress,
+  ownerId,
+  ownerIdType,
 }: {
   spaceId: string | null;
   tabName: string;
-  fid: number;
+  contractAddress: string;
+  pinnedCastId?: string;
+  ownerId: string | number | null;
+  ownerIdType: OwnerType;
 }) {
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
+  const { wallets, ready: walletsReady } = useWallets();
   const {
     editableSpaces,
     localSpaces,
@@ -52,7 +68,7 @@ export default function UserDefinedSpace({
     setCurrentTabName: state.currentSpace.setCurrentTabName,
 
     // TODO: update these two to work with tabs?
-    registerSpace: state.space.registerSpaceFid,
+    registerSpace: state.space.registerSpaceContract,
     getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
 
     loadSpaceTab: state.space.loadSpaceTab,
@@ -133,14 +149,24 @@ export default function UserDefinedSpace({
 
   const isEditable = useMemo(() => {
     return (
-      (isNil(spaceId) && fid === currentUserFid) ||
-      (!isNil(spaceId) && spaceId in editableSpaces)
+      isNil(spaceId) &&
+      ((ownerIdType === "fid" && ownerId === currentUserFid) ||
+        (ownerIdType === "address" &&
+          !isNil(find(wallets, (w) => w.address === ownerId))) ||
+        (!isNil(spaceId) && spaceId in editableSpaces))
     );
-  }, [editableSpaces, currentUserFid]);
+  }, [
+    editableSpaces,
+    currentUserFid,
+    spaceId,
+    ownerId,
+    ownerIdType,
+    walletsReady,
+  ]);
 
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
-    () => createIntialPersonSpaceConfigForFid(fid),
-    [fid],
+    () => createDefaultLayout(contractAddress, pinnedCastId),
+    [contractAddress, pinnedCastId],
   );
 
   const currentConfig = getCurrentSpaceConfig();
@@ -169,7 +195,7 @@ export default function UserDefinedSpace({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "Profile").then((newSpaceId) => {
+      registerSpace(contractAddress, "Profile").then((newSpaceId) => {
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
@@ -231,25 +257,13 @@ export default function UserDefinedSpace({
     }
   }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
 
-  const profile = (
-    <Profile.fidget
-      settings={{ fid }}
-      saveData={async () => noop()}
-      data={{}}
-    />
-  );
-
-  const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
-
   function switchTabTo(tabName: string) {
     spaceId && saveLocalSpaceTab(spaceId, providedTabName, config);
-    router.push(`/s/${username}/${tabName}`);
+    router.push(`/t/base/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
-    return `/s/${username}/${tabName}`;
+    return `/t/base/${contractAddress}/${tabName}`;
   }
 
   const { editMode } = useSidebarContext();
@@ -292,7 +306,6 @@ export default function UserDefinedSpace({
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
-      profile={profile}
       tabBar={tabBar}
       loading={loading}
     />

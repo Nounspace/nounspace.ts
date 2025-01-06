@@ -15,7 +15,10 @@ import { CastThreadView } from "./components/CastThreadView";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
-import { useGetCasts } from "@/common/data/queries/farcaster";
+import {
+  useGetCasts,
+  useGetCastsByKeyword,
+} from "@/common/data/queries/farcaster"; // Import new hook
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import PlatformSelector from "@/common/components/molecules/PlatformSelector";
@@ -29,6 +32,7 @@ import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
+  Keyword = "keyword", // Add new filter type
 }
 
 export type FeedFidgetSettings = {
@@ -36,6 +40,7 @@ export type FeedFidgetSettings = {
   filterType: FilterType;
   users?: string; // this should be a number array, but that requires special inputs to build later
   channel?: string;
+  keyword?: string; // Add keyword field
   selectPlatform: Platform;
   Xhandle: string;
   style: string;
@@ -44,6 +49,7 @@ export type FeedFidgetSettings = {
 const FILTER_TYPES = [
   { name: "Channel", value: FilterType.Channel },
   { name: "Users", value: FilterType.Users },
+  { name: "Keyword", value: FilterType.Keyword }, // Add new filter type
 ];
 
 export const FilterTypeSelector: React.FC<{
@@ -118,6 +124,17 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Channel ||
         settings.selectPlatform?.name === "The other app",
+      default: "",
+    },
+    {
+      fieldName: "keyword",
+      displayName: "Keyword",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Keyword ||
+        settings?.selectPlatform?.name === "The other app",
       default: "",
     },
     {
@@ -201,8 +218,9 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     Xhandle,
     style,
   } = settings;
-  const { feedType, users, channel, filterType } = settings;
+  const { feedType, users, channel, filterType, keyword } = settings;
   const { fid } = useFarcasterSigner("feed");
+
   const {
     data,
     isFetchingNextPage,
@@ -210,13 +228,16 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     hasNextPage,
     isError,
     isPending,
-  } = useGetCasts({
-    feedType,
-    fid,
-    filterType,
-    fids: users,
-    channel,
-  });
+  } =
+    filterType === FilterType.Keyword
+      ? useGetCastsByKeyword({ keyword: keyword || "" })
+      : useGetCasts({
+          feedType,
+          fid,
+          filterType,
+          fids: users,
+          channel,
+        });
 
   const threadStack = useLifoQueue<string>();
   const [ref, inView] = useInView();
@@ -280,9 +301,31 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
             ) : !isNil(data) ? (
               data.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
-                  {page.casts.map((cast, index) => (
-                    <CastRow cast={cast} key={index} onSelect={onSelectCast} />
-                  ))}
+                  {filterType === FilterType.Keyword
+                    ? page.result.casts?.map(
+                        (
+                          cast,
+                          index, // Ensure casts array is accessed correctly for keyword filter
+                        ) => (
+                          <CastRow
+                            cast={cast}
+                            key={index}
+                            onSelect={onSelectCast}
+                          />
+                        ),
+                      )
+                    : page.casts?.map(
+                        (
+                          cast,
+                          index, // Ensure casts array is accessed correctly for other filters
+                        ) => (
+                          <CastRow
+                            cast={cast}
+                            key={index}
+                            onSelect={onSelectCast}
+                          />
+                        ),
+                      )}
                 </React.Fragment>
               ))
             ) : (
@@ -318,8 +361,6 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
   const isThreadView = threadStack.last !== undefined;
 
-  // Note: feed is mounted in its own scroll container to maintain its scroll position when
-  // returning from a thread.
   return (
     <div
       className="h-full"
@@ -333,12 +374,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           {renderThread()}
         </div>
       )}
-      <div
-        className={mergeClasses(
-          "h-full overflow-y-scroll justify-center items-center",
-          isThreadView ? "invisible" : "visible",
-        )}
-      >
+      <div className="h-full overflow-y-scroll justify-center items-center">
         {renderFeedContent()}
       </div>
     </div>

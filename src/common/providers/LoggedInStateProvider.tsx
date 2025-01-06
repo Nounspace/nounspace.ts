@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore, useLogout } from "@/common/data/stores/app";

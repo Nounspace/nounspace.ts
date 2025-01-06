@@ -1,5 +1,9 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React, { Suspense } from "react";
+import "@/styles/globals.css";
+import Providers from "@/common/providers";
+import Sidebar from "@/common/components/organisms/Sidebar";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata = {
   title: "Nounspace",
@@ -37,6 +41,10 @@ export const metadata = {
   },
 };
 
+// TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
+// And a public key. If valid, we can prerender as if it is that user signed in
+// This will allow us to prerender some logged in state since we will know what user it is
+
 export default function RootLayout({
   children,
 }: {
@@ -45,8 +53,26 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Suspense>{children}</Suspense>
+        <SpeedInsights />
+        <Suspense>
+          <Providers>{sidebarLayout(children)}</Providers>
+        </Suspense>
       </body>
     </html>
   );
 }
+
+const sidebarLayout = (page: React.ReactNode) => {
+  return (
+    <>
+      <div className="min-h-screen max-w-screen h-screen w-screen">
+        <div className="flex w-full h-full">
+          <div className="flex mx-auto transition-all duration-100 ease-out z-10">
+            <Sidebar />
+          </div>
+          {page}
+        </div>
+      </div>
+    </>
+  );
+};

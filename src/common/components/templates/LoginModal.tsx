@@ -1,3 +1,4 @@
+"use client";
 import { useAppStore } from "@/common/data/stores/app";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import React, { useEffect, useState } from "react";
@@ -6,7 +7,7 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 const LoginModal = ({
   open,
