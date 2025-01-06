@@ -2,13 +2,19 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 
 export type UserMetadata = {
+  fid?: number;
   username?: string;
   displayName?: string;
   pfpUrl?: string;
   bio?: string;
 };
 
-export const generateUserMetadataHtml = (userMetadata?: UserMetadata) => {
+// TODO @serubin convert this to app router nextjs
+export const UserMetadata = ({
+  userMetadata,
+}: {
+  userMetadata: UserMetadata | null;
+}) => {
   if (!userMetadata) {
     return null;
   }
