@@ -4,60 +4,59 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/common/components/atoms/select";
 
 const CHAIN_OPTIONS = [
   {
-    id: "1", // Ethereum Mainnet Chain ID
-    name: "Ethereum",
+    id: "1",
+    name: "ethereum",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/ETH/icon.svg",
   },
   {
-    id: "56", // Binance Smart Chain Mainnet Chain ID
-    name: "Binance Smart Chain",
+    id: "56",
+    name: "binance smart chain",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BSC/icon.svg",
   },
   {
-    id: "42161", // Arbitrum One Chain ID
-    name: "Arbitrum",
+    id: "42161",
+    name: "arbitrum",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/ARBITRUM/icon.svg",
   },
   {
-    id: "137", // Polygon Mainnet Chain ID
-    name: "Polygon",
+    id: "137",
+    name: "polygon",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/POLYGON/icon.svg",
   },
   {
-    id: "43114", // Avalanche C-Chain Chain ID
-    name: "Avalanche",
+    id: "43114",
+    name: "avalanche",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/AVAX_CCHAIN/icon.svg",
   },
   {
-    id: "10", // Optimism Mainnet Chain ID
-    name: "Optimism",
+    id: "10",
+    name: "optimism",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/OPTIMISM/icon.svg",
   },
   {
-    id: "81457", // Blast Mainnet Chain ID
-    name: "Blast",
+    id: "81457",
+    name: "blast",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BLAST/icon.svg",
   },
   {
-    id: "59144", // Linea Mainnet Chain ID
-    name: "Linea",
+    id: "59144",
+    name: "linea",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/LINEA/icon.svg",
   },
   {
-    id: "8453", // Base Mainnet Chain ID
-    name: "Base",
+    id: "8453",
+    name: "base",
     logo: "https://raw.githubusercontent.com/rango-exchange/assets/main/blockchains/BASE/icon.svg",
   },
 ];
 
 export interface ChainSelectorProps {
-  onChange: (chainName: string) => void;
-  value: string | null;
+  onChange: (chain: { id: string; name: string }) => void;
+  value: { id: string; name: string } | null; // Expect full object as value
   className?: string;
 }
 
@@ -66,19 +65,17 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
   value,
   className,
 }) => {
-  // Find the selected chain name or fallback to "Select a chain"
-  const selectedChain = CHAIN_OPTIONS.find((chain) => chain.id === value);
-  const selectedChainName = selectedChain?.name || "Select a chain";
-  const selectedChainLogo = selectedChain?.logo;
+  const selectedChain = CHAIN_OPTIONS.find((chain) => chain.id === value?.id);
 
   return (
     <Select
+      value={selectedChain?.id || ""}
       onValueChange={(selectedId) => {
         const selectedChain = CHAIN_OPTIONS.find(
           (chain) => chain.id === selectedId,
         );
         if (selectedChain) {
-          onChange(selectedChain.id); // Pass the string ID (e.g., "ETH") to onChange
+          onChange({ id: selectedChain.id, name: selectedChain.name });
         }
       }}
     >
@@ -87,19 +84,18 @@ export const ChainSelector: React.FC<ChainSelectorProps> = ({
         aria-label="Select blockchain network"
       >
         <div className="flex items-center">
-          {selectedChainLogo && (
-            <img
-              src={selectedChainLogo}
-              alt={selectedChainName}
-              className="h-6 w-6 mr-2"
-            />
+          {selectedChain ? (
+            <>
+              <img
+                src={selectedChain.logo}
+                alt={selectedChain.name}
+                className="h-6 w-6 mr-2"
+              />
+              <span>{selectedChain.name}</span>
+            </>
+          ) : (
+            <span>Select a chain</span>
           )}
-          <SelectValue
-            placeholder="Select a chain"
-            className="py-1 px-3 h-10 w-fit block bg-white border border-gray-300 cursor-pointer rounded-lg disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700"
-          >
-            {selectedChainName}
-          </SelectValue>
         </div>
       </SelectTrigger>
       <SelectContent>

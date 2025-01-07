@@ -27,6 +27,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -65,30 +66,6 @@ export const FilterTypeSelector: React.FC<{
     />
   );
 };
-
-function XStyleSelector({
-  onChange,
-  value,
-  className,
-}: {
-  onChange: (value: string) => void;
-  value: string;
-  className?: string;
-}) {
-  const styles = [
-    { name: "Light", value: "light" },
-    { name: "Dark", value: "dark" },
-  ];
-
-  return (
-    <SettingsSelector
-      onChange={onChange}
-      value={value}
-      settings={styles}
-      className={className}
-    />
-  );
-}
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
@@ -163,7 +140,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "style",
       displayName: "Feed Style",
-      inputSelector: XStyleSelector,
+      inputSelector: ThemeSelector,
       required: false,
       group: "style",
       disabledIf: (settings) =>
