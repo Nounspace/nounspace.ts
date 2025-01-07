@@ -1,6 +1,9 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React, { Suspense } from "react";
 import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import type { NextPage } from "next";
+import Head from "next/head";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -45,6 +48,10 @@ export const metadata = {
 // And a public key. If valid, we can prerender as if it is that user signed in
 // This will allow us to prerender some logged in state since we will know what user it is
 
+// TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
+// And a public key. If valid, we can prerender as if it is that user signed in
+// This will allow us to prerender some logged in state since we will know what user it is
+
 export default function RootLayout({
   children,
 }: {
@@ -54,15 +61,16 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SpeedInsights />
+
         <Suspense>
-          <Providers>{sidebarLayout(children)}</Providers>
+          <Providers>{children}</Providers>
         </Suspense>
       </body>
     </html>
   );
 }
 
-const sidebarLayout = (page: React.ReactNode) => {
+const sidebarLayout = (page: React.ReactElement) => {
   return (
     <>
       <div className="min-h-screen max-w-screen h-screen w-screen">

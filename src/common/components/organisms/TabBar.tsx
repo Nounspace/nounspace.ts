@@ -4,6 +4,8 @@ import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
+import { useRouter } from "next/navigation";
+import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
