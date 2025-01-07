@@ -7,10 +7,14 @@ import {
   Signable,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { isArray, isString, map, isNull } from "lodash";
+import { isArray, isString, isNull, first } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./tabs/[tabId]";
 import stringify from "fast-json-stable-stringify";
+import {
+  loadIdentitiesOwningContractSpace,
+  loadOwnedItentitiesForSpaceByFid,
+} from "@/common/data/database/supabase/serverHelpers";
 
 type TabInfo = string[];
 
@@ -110,18 +114,19 @@ async function updateSpaceTabOrder(
 }
 
 export async function identitiesCanModifySpace(spaceId: string) {
-  const { data } = await supabase
-    .from("fidRegistrations")
-    .select(
-      `
-    fid,
-    identityPublicKey,
-    spaceRegistrations!inner (
-      fid
-    )`,
-    )
-    .eq("spaceRegistrations.spaceId", spaceId);
-  return data === null ? [] : map(data, (d) => d.identityPublicKey);
+  console.log(spaceId);
+  const { data: spaceRegistrationData } = await supabase
+    .from("spaceRegistrations")
+    .select("contractAddress")
+    .eq("spaceId", spaceId);
+  if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
+    return [];
+  const contractAddress = first(spaceRegistrationData)!.contractAddress;
+  if (!isNull(contractAddress)) {
+    return await loadIdentitiesOwningContractSpace(contractAddress);
+  } else {
+    return await loadOwnedItentitiesForSpaceByFid(spaceId);
+  }
 }
 
 async function spacePublicKeys(req: NextApiRequest, res: NextApiResponse) {
