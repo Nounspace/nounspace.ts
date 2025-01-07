@@ -3,6 +3,8 @@ import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
+import { useRouter } from "next/navigation";
+import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";

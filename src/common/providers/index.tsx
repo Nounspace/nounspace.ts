@@ -1,5 +1,6 @@
-import React from "react";
+"use client";
 
+import React from "react";
 import Wagmi from "./Wagmi";
 import Query from "./Query";
 import Theme from "./Theme";
