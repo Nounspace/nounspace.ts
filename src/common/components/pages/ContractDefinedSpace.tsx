@@ -3,13 +3,14 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
-import TabBar from "../organisms/TabBar";
 import SpacePage from "./SpacePage";
 import router from "next/router";
 import { useSidebarContext } from "../organisms/Sidebar";
 import { useWallets } from "@privy-io/react-auth";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { OwnerType } from "@/common/data/api/etherscan";
+import { Address } from "viem";
+import TabBar from "../organisms/TabBar";
 
 function createDefaultLayout(
   contractAddr: string,
@@ -270,9 +271,11 @@ export default function ContractDefinedSpace({
 
   const tabBar = (
     <TabBar
+      isTokenPage={true}
       inHomebase={false}
       currentTab={providedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
+      contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
       updateTabOrder={async (newOrder) => {
         return spaceId ? updateSpaceTabOrder(spaceId, newOrder) : undefined;
