@@ -198,11 +198,10 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             {tokenPrice !== null ? `$${tokenPrice}` : "Loading..."}
           </div>
           <div
-            className={`text-sm font-medium ${
-              priceChange && parseFloat(priceChange) > 0
+            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
                 ? "text-green-500"
                 : "text-red-500"
-            }`}
+              }`}
           >
             {priceChange ? `${priceChange}%` : "Loading..."}
           </div>

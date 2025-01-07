@@ -130,7 +130,7 @@ function TabBar({
                       tabName={tabName}
                       inEditMode={inEditMode}
                       isSelected={currentTab === tabName}
-                      onClick={() => {}}
+                      onClick={() => { }}
                       removeable={
                         tabName !== "Feed" &&
                         tabName !== "Profile" &&
