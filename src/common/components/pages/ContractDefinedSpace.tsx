@@ -1,4 +1,4 @@
-import { cloneDeep, find, indexOf, isNil, mapValues } from "lodash";
+import { cloneDeep, find, indexOf, isNil, mapValues, toString } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
@@ -150,11 +150,12 @@ export default function ContractDefinedSpace({
 
   const isEditable = useMemo(() => {
     return (
-      isNil(spaceId) &&
-      ((ownerIdType === "fid" && ownerId === currentUserFid) ||
-        (ownerIdType === "address" &&
-          !isNil(find(wallets, (w) => w.address === ownerId))) ||
-        (!isNil(spaceId) && spaceId in editableSpaces))
+      (isNil(spaceId) &&
+        ((ownerIdType === "fid" &&
+          toString(ownerId) === toString(currentUserFid)) ||
+          (ownerIdType === "address" &&
+            !isNil(find(wallets, (w) => w.address === ownerId))))) ||
+      (!isNil(spaceId) && spaceId in editableSpaces)
     );
   }, [
     editableSpaces,
