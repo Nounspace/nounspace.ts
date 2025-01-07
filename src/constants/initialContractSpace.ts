@@ -48,7 +48,7 @@ const createInitialContractSpaceConfigForAddress = (
           Xhandle: "thenounspace",
           background: "var(--user-theme-fidget-background)",
           feedType: "filter",
-          keyword: "Native",
+          keyword: "$NATIVE",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
@@ -144,7 +144,7 @@ const createInitialContractSpaceConfigForAddress = (
   };
   config.layoutDetails.layoutConfig.layout.push(
     {
-      h: 10,
+      h: 9,
       i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
       maxH: 36,
       maxW: 36,
@@ -158,7 +158,7 @@ const createInitialContractSpaceConfigForAddress = (
       y: 0,
     },
     {
-      h: 6,
+      h: 5,
       i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
       maxH: 36,
       maxW: 36,
@@ -172,7 +172,7 @@ const createInitialContractSpaceConfigForAddress = (
       y: 0,
     },
     {
-      h: 6,
+      h: 5,
       i: "iframe:68f89429-695b-4162-b663-d5a87d322d75",
       maxH: 36,
       maxW: 36,
