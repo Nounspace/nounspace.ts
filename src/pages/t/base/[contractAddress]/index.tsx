@@ -51,8 +51,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
 
   if (!isNil(ownerId) && !isNil(contractAddress)) {
     if (
-      (isNil(spaceId) && tabName === "profile") ||
-      tabName === null ||
+      (isNil(spaceId) && (tabName === "profile" || tabName === null)) ||
       !isNil(spaceId)
     )
       return (
