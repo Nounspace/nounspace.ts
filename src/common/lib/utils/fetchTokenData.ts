@@ -1,5 +1,3 @@
-import tokensABI from "@/contracts/tokensABI";
-
 export interface TokenAttribute {
   address: string;
   name: string;
