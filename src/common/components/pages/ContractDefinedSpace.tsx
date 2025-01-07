@@ -11,12 +11,18 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { OwnerType } from "@/common/data/api/etherscan";
 import { Address } from "viem";
 import TabBar from "../organisms/TabBar";
+import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 
 function createDefaultLayout(
   contractAddr: string,
-  pinnedCastId?: string,
+  pinnedCastId: string,
+  tokenSymbol: string,
 ): Omit<SpaceConfig, "isEditable"> {
-  const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+  const config = createInitialContractSpaceConfigForAddress(
+    contractAddr,
+    pinnedCastId,
+    tokenSymbol,
+  );
   // Edit config based on contractAddr and pinnedCastId
   return config;
 }
