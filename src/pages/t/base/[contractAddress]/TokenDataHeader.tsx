@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../TokensAbi";
+import tokensABI from "../../../../common/lib/utils/TokensAbi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 

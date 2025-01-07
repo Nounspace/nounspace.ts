@@ -1,4 +1,4 @@
-import tokensABI from "@/pages/t/base/TokensAbi";
+import tokensABI from "@/common/lib/utils/TokensAbi";
 
 export interface TokenAttribute {
   address: string;
