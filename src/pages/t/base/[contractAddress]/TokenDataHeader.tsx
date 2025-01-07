@@ -198,7 +198,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         {/* Price Details */}
         <div className="text-right">
           <div className="text-black font-bold">
-            {tokenPrice !== null ? `$${tokenPrice}` : "Loading..."}
+            {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
             className={`text-sm font-medium ${
@@ -207,7 +207,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 : "text-red-500"
             }`}
           >
-            {priceChange ? `${priceChange}%` : "Loading..."}
+            {priceChange ? `${priceChange}%` : " "}
           </div>
         </div>
         {/* Action Icons */}

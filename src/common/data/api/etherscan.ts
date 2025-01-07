@@ -109,7 +109,10 @@ export async function contractOwnerFromContract(contract) {
     ownerId = (await contract.deployer()) as string;
   } else {
     // Finally use contract creator address as a fall back
-    ownerId = contract.deploymentTransaction()?.from;
+    const deploymentTx = contract.deploymentTransaction();
+    if (deploymentTx) {
+      ownerId = deploymentTx.from;
+    }
   }
 
   return {
