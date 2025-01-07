@@ -1,41 +1,36 @@
 import React from "react";
-import { first } from "lodash";
 import { getTabList, getUserMetadata, type Tab } from "./utils";
 import UserPrimarySpace, { SpacePageProps } from "./UserPrimarySpace";
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
-import { UserSpaceProvider } from "./context";
 
 const loadUserSpaceData = async (handle: string): Promise<SpacePageProps> => {
   const userMetadata = await getUserMetadata(handle);
   const fid = userMetadata?.fid || null;
-  let spaceId: number | null = null;
-  let tabName: string | null = null;
 
-  if (fid) {
-    const tabList = await getTabList(fid);
-    const defaultTab: Tab | undefined = first(tabList);
-
-    spaceId = defaultTab?.spaceId ?? null;
-    tabName = defaultTab?.spaceName ?? null;
+  if (!fid) {
+    return { fid: null, spaceId: null, tabName: null };
   }
 
-  console.log("2 ===", fid, spaceId, tabName);
+  const tabList = await getTabList(fid);
+  if (!tabList || tabList.length === 0) {
+    return { fid, spaceId: null, tabName: null };
+  }
+
+  const defaultTab: Tab = tabList[0];
+
+  const spaceId = defaultTab.spaceId;
+  const tabName = defaultTab.spaceName;
 
   return { fid, spaceId, tabName };
 };
 
-const UserPrimarySpacePage = ({ params: { handle } }) => {
+const UserPrimarySpacePage = async ({ params: { handle } }) => {
   if (!handle) {
     return <SpaceNotFound />;
   }
 
-  const loadUserSpacePromise = loadUserSpaceData(handle);
-
-  return (
-    <UserSpaceProvider userSpacePromise={loadUserSpacePromise}>
-      <UserPrimarySpace />
-    </UserSpaceProvider>
-  );
+  const { fid, spaceId, tabName } = await loadUserSpaceData(handle);
+  return <UserPrimarySpace fid={fid} spaceId={spaceId} tabName={tabName} />;
 };
 
 export default UserPrimarySpacePage;
