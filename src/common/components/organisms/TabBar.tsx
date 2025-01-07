@@ -4,6 +4,7 @@ import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
+import TokenTabBarHeader from "@/pages/t/base/TokenTabBarHeader";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -19,6 +20,8 @@ interface TabBarProps {
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
+  isTokenPage?: boolean;
+  contractAddress?: `0x${string}`;
 }
 
 function TabBar({
@@ -35,6 +38,8 @@ function TabBar({
   renameTab,
   commitTab,
   getSpacePageUrl,
+  isTokenPage,
+  contractAddress,
 }: TabBarProps) {
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -88,51 +93,64 @@ function TabBar({
 
   return (
     <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
-      {tabList && (
-        <Reorder.Group
-          as="ol"
-          axis="x"
-          onReorder={updateTabOrder}
-          className="flex flex-row gap-4 grow items-start m-4 tabs"
-          values={tabList}
-        >
-          <AnimatePresence initial={false}>
-            {map(
-              inHome
-                ? ["Welcome", ...tabList]
-                : inHomebase
-                  ? ["Feed", ...tabList]
-                  : tabList,
-              (tabName: string) => {
-                return (
-                  <Tab
-                    key={tabName}
-                    getSpacePageUrl={getSpacePageUrl}
-                    tabName={tabName}
-                    inEditMode={inEditMode}
-                    isSelected={currentTab === tabName}
-                    onClick={() => {}}
-                    removeable={
-                      tabName !== "Feed" &&
-                      tabName !== "Profile" &&
-                      tabName !== "Welcome"
-                    }
-                    draggable={inEditMode}
-                    renameable={
-                      tabName !== "Feed" &&
-                      tabName !== "Profile" &&
-                      tabName !== "Welcome"
-                    }
-                    onRemove={() => handleDeleteTab(tabName)}
-                    renameTab={handleRenameTab}
-                  />
-                );
-              },
-            )}
-          </AnimatePresence>
-        </Reorder.Group>
+      {isTokenPage && contractAddress && (
+        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
+          <TokenTabBarHeader
+            tokenImage={undefined}
+            isPending={false}
+            error={null}
+            tokenName={undefined}
+            tokenSymbol={undefined}
+            contractAddress={contractAddress}
+          />
+        </div>
       )}
-
+      <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
+        {tabList && (
+          <Reorder.Group
+            as="ol"
+            axis="x"
+            onReorder={updateTabOrder}
+            className="flex flex-row gap-4 grow items-start m-4 tabs"
+            values={tabList}
+          >
+            <AnimatePresence initial={false}>
+              {map(
+                inHome
+                  ? ["Welcome", ...tabList]
+                  : inHomebase
+                    ? ["Feed", ...tabList]
+                    : tabList,
+                (tabName: string) => {
+                  return (
+                    <Tab
+                      key={tabName}
+                      getSpacePageUrl={getSpacePageUrl}
+                      tabName={tabName}
+                      inEditMode={inEditMode}
+                      isSelected={currentTab === tabName}
+                      onClick={() => {}}
+                      removeable={
+                        tabName !== "Feed" &&
+                        tabName !== "Profile" &&
+                        tabName !== "Welcome"
+                      }
+                      draggable={inEditMode}
+                      renameable={
+                        tabName !== "Feed" &&
+                        tabName !== "Profile" &&
+                        tabName !== "Welcome"
+                      }
+                      onRemove={() => handleDeleteTab(tabName)}
+                      renameTab={handleRenameTab}
+                    />
+                  );
+                },
+              )}
+            </AnimatePresence>
+          </Reorder.Group>
+        )}
+      </div>
       {inEditMode ? (
         <div className="mr-36 flex flex-row z-infinity">
           <NogsGateButton

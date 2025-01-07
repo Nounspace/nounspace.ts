@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { IoMdShare } from "react-icons/io";
+import { useReadContract } from "wagmi";
+import tokensABI from "@/contracts/tokensABI";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
-import { IoMdShare } from "react-icons/io";
 
 interface TokenTabBarHeaderProps {
   tokenImage: string | undefined;
@@ -25,23 +27,46 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   const [image, setImage] = useState<string | null>(tokenImage || null);
   const [marketCap, setMarketCap] = useState<string | null>(null);
   const [priceChange, setPriceChange] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(tokenName || null);
+  const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
+
+  const wagmiContractConfig = {
+    address: contractAddress as `0x${string}`,
+    abi: tokensABI,
+  };
+
+  const { data: contractImage } = useReadContract<
+    typeof tokensABI,
+    "image",
+    []
+  >({
+    ...wagmiContractConfig,
+    functionName: "image",
+  });
+
+  const { data: contractName } = useReadContract<typeof tokensABI, "name", []>({
+    ...wagmiContractConfig,
+    functionName: "name",
+  });
 
   useEffect(() => {
     const getTokenData = async () => {
       try {
-        const { price, image, marketCap, priceChange } =
-          await fetchTokenData(contractAddress);
+        const { price, image, marketCap, priceChange, tokenName, tokenSymbol } =
+          await fetchTokenData(contractAddress, contractImage as string | null);
         setTokenPrice(price);
-        setImage(image);
+        setImage(image || (contractImage as string | null));
         setMarketCap(marketCap ? formatNumber(parseFloat(marketCap)) : null);
         setPriceChange(priceChange);
+        setName(tokenName || (contractName as string | null));
+        setSymbol(tokenSymbol);
       } catch (err) {
         console.error("Error fetching token data:", err);
       }
     };
 
     getTokenData();
-  }, [contractAddress]);
+  }, [contractAddress, contractImage, contractName]);
 
   const handleAddToMetamask = async () => {
     try {
@@ -51,7 +76,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
           type: "ERC20",
           options: {
             address: contractAddress,
-            symbol: tokenSymbol,
+            symbol: symbol,
             decimals: 18,
             image: image,
           },
@@ -98,18 +123,34 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             <AvatarImage
               src={image}
               style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 borderRadius: "100%",
+                overflow: "hidden",
+                backgroundColor: image ? "transparent" : "#ccc",
               }}
             />
           ) : (
-            <AvatarFallback className="text-black font-bold">
-              {tokenName ? tokenName.charAt(0) : "?"}
+            <AvatarFallback
+              className="text-black font-bold"
+              style={{
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "100%",
+                overflow: "hidden",
+                backgroundColor: image ? "transparent" : "#ccc",
+              }}
+            >
+              {name ? name.charAt(0) : "?"}
             </AvatarFallback>
           )}
-          {tokenName === "nounspace" && (
+          {name === "nounspace" && (
             <div
               style={{
                 width: "100%",
@@ -131,10 +172,8 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         {/* Token Info */}
         <div>
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-black">
-              {tokenName || "Loading..."}
-            </span>
-            <span className="text-gray-500 text-sm">{tokenSymbol || ""}</span>
+            <span className="font-bold text-black">{name || "Loading..."}</span>
+            <span className="text-gray-500 text-sm">{symbol || ""}</span>
           </div>
           <div className="text-gray-500 text-sm">
             {marketCap ? `$${marketCap}` : "Loading..."}
@@ -178,6 +217,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             onClick={handleCopyUrl}
           />
         </div>
+        <div className="w-0.5 h-12 bg-gray-200 m-5" />
       </div>
     </div>
   );
