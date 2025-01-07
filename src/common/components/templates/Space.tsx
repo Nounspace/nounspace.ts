@@ -1,4 +1,5 @@
 "use client";
+
 import React, { ReactNode, useEffect } from "react";
 import {
   FidgetConfig,
