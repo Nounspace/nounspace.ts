@@ -98,7 +98,13 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   const handleCopyUrl = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const url = window.location.href;
+    const tempInput = document.createElement("input");
+    tempInput.value = url;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
     alert("URL copied to clipboard");
   };
 

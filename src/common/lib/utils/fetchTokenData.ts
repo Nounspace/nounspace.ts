@@ -1,5 +1,3 @@
-import tokensABI from "@/common/lib/utils/TokensAbi";
-
 export interface TokenAttribute {
   address: string;
   name: string;
