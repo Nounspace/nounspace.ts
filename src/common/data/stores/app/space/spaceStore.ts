@@ -570,7 +570,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createInitialContractSpaceConfigForAddress(address),
+        createInitialContractSpaceConfigForAddress(address, null),
       );
       // console.log("Created space", newSpaceId);
       return newSpaceId;
