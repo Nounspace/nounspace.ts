@@ -30,9 +30,25 @@ const categories = [
   { title: "People", image: "/images/explore-icons/people.png" },
 ];
 
+const fetchTokens = async (page: number) => {
+  const res = await fetch(
+    `https://clanker-terminal.vercel.app/api/tokens?page=${page}`,
+    {
+      cache: "no-cache",
+    },
+  );
+  if (!res.ok) {
+    console.error("Failed to fetch tokens");
+    return [];
+  }
+  const data = await res.json();
+  return data;
+};
+
 export default async function Explore() {
   const posts = await getAllMarkdownFiles();
   const groupedPosts = groupBy(posts, (post: PostData) => post?.category);
+  const tokens = await fetchTokens(1);
 
   return (
     <div className="min-h-screen max-w-screen max-h-screen h-screen w-screen p-5 overflow-y-scroll">
@@ -51,7 +67,7 @@ export default async function Explore() {
               title="Explore Clanker Tokens"
               image="/images/clanker_galaxy.png"
             />
-            <TokensGrid />
+            <TokensGrid tokens={tokens} />
           </div>
         </TabsContent>
         <TabsContent value="spaces" className={tabContentClasses}>

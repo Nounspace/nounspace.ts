@@ -1,5 +1,3 @@
-"use client";
-
 import { formatDistanceToNow } from "date-fns";
 import {
   ChartNoAxesColumn,
@@ -12,7 +10,6 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Address } from "viem";
 
 export interface Token {
@@ -32,24 +29,7 @@ export interface Token {
   priceChange: number;
 }
 
-export function TokensGrid() {
-  const [tokens, setTokens] = useState<Token[]>([]);
-  const [page, setPage] = useState(1);
-
-  useEffect(() => {
-    const fetchTokens = async () => {
-      const res = await fetch(
-        `https://clanker-terminal.vercel.app/api/tokens?page=${page}`,
-      );
-      const data = await res.json();
-      setTokens(data);
-    };
-    fetchTokens();
-    // Automatically fetch new tokens every minute
-    // const interval = setInterval(fetchTokens, 60000);
-    // return () => clearInterval(interval);
-  }, [page]);
-
+export function TokensGrid({ tokens }: { tokens: Token[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 mt-6">
       {tokens.map((token) => (
