@@ -34,7 +34,6 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   contractAddress,
   owningIdentities,
 }: ContractSpacePageProps) => {
-  console.log("loaded client side");
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
       loadEditableSpaces: state.space.loadEditableSpaces,
