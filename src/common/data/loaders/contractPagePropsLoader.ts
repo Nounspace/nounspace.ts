@@ -5,7 +5,7 @@ import {
   loadEthersViewOnlyContract,
   OwnerType,
 } from "../api/etherscan";
-import { loadOnwingIdentitiesForAddress } from "../database/supabase/serverHelpers";
+import { loadOwnedItentitiesForWalletAddress } from "../database/supabase/serverHelpers";
 import supabaseClient from "../database/supabase/clients/server";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
@@ -69,7 +69,7 @@ export async function loadContractData(
   }
 
   if (ownerIdType === "address" && !isNil(ownerId)) {
-    owningIdentities = await loadOnwingIdentitiesForAddress(ownerId);
+    owningIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
   }
 
   if (isNil(ownerId)) {
@@ -86,21 +86,11 @@ export async function loadContractData(
     };
   }
 
-  let spaceId: string | null = null;
-
-  if (ownerIdType === "fid") {
-    const { data } = await supabaseClient
-      .from("spaceRegistrations")
-      .select("spaceId, spaceName")
-      .eq("fid", ownerId);
-    spaceId = first(data)?.spaceId || null;
-  } else {
-    const { data } = await supabaseClient
-      .from("spaceRegistrations")
-      .select("spaceId, spaceName")
-      .eq("contractAddress", ownerId);
-    spaceId = first(data)?.spaceId || null;
-  }
+  const { data } = await supabaseClient
+    .from("spaceRegistrations")
+    .select("spaceId, spaceName")
+    .eq("contractAddress", contractAddress);
+  const spaceId = first(data)?.spaceId || null;
 
   return {
     props: {
