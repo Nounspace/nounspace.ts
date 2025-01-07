@@ -29,6 +29,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   const [priceChange, setPriceChange] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(tokenName || null);
   const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
@@ -60,8 +61,10 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         setPriceChange(priceChange);
         setName(tokenName || (contractName as string | null));
         setSymbol(tokenSymbol);
+        setFetchError(null);
       } catch (err) {
         console.error("Error fetching token data:", err);
+        setFetchError("Failed to fetch token data. Please try again later.");
       }
     };
 
@@ -225,6 +228,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         </div>
         <div className="w-0.5 h-12 bg-gray-200 m-5" />
       </div>
+      {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>
   );
 };
