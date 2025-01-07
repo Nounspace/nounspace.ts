@@ -8,7 +8,7 @@ import { NextPageWithLayout } from "@/pages/_app";
 import { isArray, isNil } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
@@ -42,7 +42,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   );
 
   useEffect(() => {
-    if (spaceId) addContractEditableSpaces(spaceId, owningIdentities);
+    addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
 
   useEffect(() => {
@@ -71,4 +71,4 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   return <SpaceNotFound />;
 };
 
-export default ContractDefinedSpace;
+export default ContractPrimarySpace;
