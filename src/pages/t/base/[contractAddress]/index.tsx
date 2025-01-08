@@ -8,7 +8,7 @@ import { NextPageWithLayout } from "@/pages/_app";
 import { isArray, isNil } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;

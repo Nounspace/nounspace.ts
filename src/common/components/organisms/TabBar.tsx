@@ -4,7 +4,8 @@ import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
-import TokenTabBarHeader from "@/pages/t/base/TokenTabBarHeader";
+import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
+import { Address } from "viem";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -21,7 +22,7 @@ interface TabBarProps {
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
-  contractAddress?: `0x${string}`;
+  contractAddress?: Address;
 }
 
 function TabBar({
