@@ -112,7 +112,10 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 w-full">
+    <div
+      className="flex items-center justify-between px-4 py-2 w-full"
+      style={{ overflowY: "hidden" }}
+    >
       {/* Avatar and Token Details */}
       <div className="flex items-center space-x-4">
         {/* Avatar */}
@@ -195,7 +198,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         {/* Price Details */}
         <div className="text-right">
           <div className="text-black font-bold">
-            {tokenPrice !== null ? `$${tokenPrice}` : "Loading..."}
+            {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
             className={`text-sm font-medium ${
@@ -204,7 +207,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 : "text-red-500"
             }`}
           >
-            {priceChange ? `${priceChange}%` : "Loading..."}
+            {priceChange ? `${priceChange}%` : " "}
           </div>
         </div>
         {/* Action Icons */}
