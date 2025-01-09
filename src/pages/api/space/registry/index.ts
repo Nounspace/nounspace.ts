@@ -1,12 +1,9 @@
-import {
-  contractOwnerFromContract,
-  loadEthersViewOnlyContract,
-} from "@/common/data/api/etherscan";
+import { contractOwnerFromContractAddress } from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
-import { loadOnwingIdentitiesForAddress } from "@/common/data/database/supabase/serverHelpers";
+import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import {
   findIndex,
@@ -54,9 +51,7 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
 }
 
 function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
-  return (
-    isSpaceRegistration(maybe) && typeof maybe["contractAddress"] == "string"
-  );
+  return isSpaceRegistration(maybe) && typeof maybe["fid"] == "string";
 }
 
 export type RegisterNewSpaceResponse = NounspaceResponse<SpaceInfo>;
@@ -82,14 +77,14 @@ async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
 ) {
-  const contract = await loadEthersViewOnlyContract(contractAddress);
-  const { ownerId, ownerIdType } = await contractOwnerFromContract(contract);
+  const { ownerId, ownerIdType } =
+    await contractOwnerFromContractAddress(contractAddress);
   if (isNil(ownerId)) {
     return false;
   } else if (ownerIdType === "fid") {
     return identityCanRegisterForFid(identity, parseInt(ownerId));
   }
-  return includes(await loadOnwingIdentitiesForAddress(ownerId), identity);
+  return includes(await loadOwnedItentitiesForWalletAddress(ownerId), identity);
 }
 
 // Handles the registration of a new space name to requesting identity
