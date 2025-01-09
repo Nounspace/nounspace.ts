@@ -34,7 +34,6 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   contractAddress,
   owningIdentities,
 }: ContractSpacePageProps) => {
-  console.log("loaded client side");
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
       loadEditableSpaces: state.space.loadEditableSpaces,
@@ -43,7 +42,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   );
 
   useEffect(() => {
-    if (spaceId) addContractEditableSpaces(spaceId, owningIdentities);
+    addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
 
   useEffect(() => {
@@ -52,8 +51,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
 
   if (!isNil(ownerId) && !isNil(contractAddress)) {
     if (
-      (isNil(spaceId) && tabName === "profile") ||
-      tabName === null ||
+      (isNil(spaceId) && (tabName === "profile" || tabName === null)) ||
       !isNil(spaceId)
     )
       return (
@@ -73,4 +71,4 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   return <SpaceNotFound />;
 };
 
-export default ContractDefinedSpace;
+export default ContractPrimarySpace;
