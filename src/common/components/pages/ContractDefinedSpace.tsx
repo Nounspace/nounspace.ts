@@ -152,8 +152,12 @@ export default function ContractDefinedSpace({
     // Hardcoded rule for specific contractAddress and user
     if (
       contractAddress === "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" &&
-      // connected user wallet is 0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5
-      toString(ownerId) === "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5"
+      !isNil(
+        find(
+          wallets,
+          (w) => w.address === "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5",
+        ),
+      )
     ) {
       return true;
     }
@@ -174,6 +178,7 @@ export default function ContractDefinedSpace({
     ownerIdType,
     walletsReady,
     contractAddress, // Ensure contractAddress is included in dependencies
+    wallets, // Ensure wallets is included in dependencies
   ]);
 
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
@@ -206,6 +211,9 @@ export default function ContractDefinedSpace({
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
+    console.log("isEditable", isEditable);
+    console.log("spaceId", spaceId);
+    console.log("currentUserFid", currentUserFid);
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
       registerSpace(contractAddress, "Profile").then((newSpaceId) => {
         if (newSpaceId) {
