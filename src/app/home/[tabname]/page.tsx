@@ -43,7 +43,6 @@ const Home = () => {
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
-  const { editMode } = useSidebarContext();
 
   // Local state to manage current tab name and ordering
   const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
@@ -59,11 +58,7 @@ const Home = () => {
     }
 
     setCurrentTabName(tabName);
-
-    if (isLoggedIn && !params) {
-      router.push("/homebase");
-    }
-  }, [isLoggedIn, params]);
+  }, [params]);
 
   function switchTabTo(newTabName: string) {
     router.push(`/home/${newTabName}`);
@@ -76,7 +71,7 @@ const Home = () => {
       currentTab={tabName}
       tabList={tabOrdering}
       switchTabTo={switchTabTo}
-      inEditMode={editMode}
+      inEditMode={false}
       updateTabOrder={() => {}}
       deleteTab={() => {}}
       createTab={() => {}}
