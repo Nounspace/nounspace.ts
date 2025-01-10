@@ -23,7 +23,14 @@ export interface ContractSpacePageProps {
 export const getServerSideProps = (async ({
   params,
 }: GetServerSidePropsContext) => {
-  return loadContractData(params);
+  const data = await loadContractData(params);
+
+  // Ensure pinnedCastId is either null or omitted if undefined
+  if (data.props.pinnedCastId === undefined) {
+    delete data.props.pinnedCastId;
+  }
+
+  return data;
 }) satisfies GetServerSideProps<ContractSpacePageProps>;
 
 export const ContractPrimarySpace: NextPageWithLayout = ({
@@ -49,9 +56,22 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
     loadEditableSpaces();
   }, []);
 
+  // Hardcoded rule for specific contractAddress and user
+  if (
+    contractAddress === "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" &&
+    owningIdentities.includes("527313")
+  ) {
+    console.log("Hardcoded rule applied: setting ownerId to 527313");
+    ownerId = "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5";
+    ownerIdType = "address";
+  }
+
+  console.log("ownerId:", ownerId);
+  console.log("ownerIdType:", ownerIdType);
+
   if (!isNil(ownerId) && !isNil(contractAddress)) {
     if (
-      (isNil(spaceId) && (tabName === "profile" || tabName === null)) ||
+      (isNil(spaceId) && (tabName === "Profile" || tabName === null)) ||
       !isNil(spaceId)
     )
       return (

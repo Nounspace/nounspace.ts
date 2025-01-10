@@ -98,7 +98,6 @@ export async function fetchTokenData(
         },
       },
     );
-    console.log("Response status:", response.status);
     if (!response.ok) {
       console.error("Error fetching token data:", response.statusText);
       return {
@@ -131,12 +130,9 @@ export async function fetchTokenData(
     // Calculate market cap if not available
     if (!marketCap && token.price_usd) {
       let totalSupply = token.total_supply;
-      console.log("Total supply:", totalSupply);
       if (!totalSupply) {
-        console.log("Fetching total supply from Etherscan...");
         totalSupply =
           (await fetchTotalSupplyFromEtherscan(tokenAddress)) || "0";
-        console.log("Total supply from Etherscan:", totalSupply);
       }
       if (totalSupply) {
         const adjustedTotalSupply =
@@ -144,13 +140,6 @@ export async function fetchTokenData(
         marketCap = (
           parseFloat(token.price_usd) * adjustedTotalSupply
         ).toString();
-        console.log(
-          "Calculated market cap:",
-          marketCap,
-          "USD",
-          token.price_usd,
-          adjustedTotalSupply,
-        );
       }
     }
 
