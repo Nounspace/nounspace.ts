@@ -3,7 +3,6 @@
 import React, { useEffect } from "react";
 import { NextPageWithLayout } from "../../pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
-import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { FeedType } from "@neynar/nodejs-sdk";
@@ -110,7 +109,7 @@ const Homebase: NextPageWithLayout = () => {
       }
     : !isLoggedIn
       ? {
-          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+          config: undefined,
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},

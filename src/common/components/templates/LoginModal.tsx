@@ -7,6 +7,7 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
+import { useRouter } from "next/navigation";
 
 const LoginModal = ({
   open,
@@ -17,6 +18,7 @@ const LoginModal = ({
   setOpen: (v: boolean) => void;
   showClose: boolean;
 }) => {
+  const router = useRouter();
   const { currentStep, setCurrentStep } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
