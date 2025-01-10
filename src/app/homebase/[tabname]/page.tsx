@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { NextPageWithLayout } from "@/pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage from "@/common/components/pages/SpacePage";
 import { useRouter, useParams } from "next/navigation";
@@ -9,9 +8,8 @@ import { isNull, isString } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
-const Homebase: NextPageWithLayout = () => {
+const Homebase = () => {
   const {
     tabConfigs,
     loadTab,
@@ -58,31 +56,36 @@ const Homebase: NextPageWithLayout = () => {
   const isInitializing = getIsInitializing();
   const [tabName, setTabName] = useState<string>("");
 
+  // Monitor router changes and update tab name accordingly
   useEffect(() => {
-    if (isLoggedIn) {
+    if (params && isString(params.tabname)) {
+      const queryTabName = params.tabname;
+      setTabName(queryTabName);
+      setCurrentTabName(queryTabName);
+    }
+  }, [params]);
+
+  useEffect(() => {
+    if (isLoggedIn && tabName) {
       loadConfig();
-      setCurrentSpaceId(HOMEBASE_ID);
-      if (!tabOrdering.local) {
+      if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
-    } else {
-      router.push("/home");
     }
-  }, [isLoggedIn, params]);
+  }, [isLoggedIn, tabName]);
 
   const loadConfig = async () => {
-    if (params && isString(params.tabname)) {
-      setTabName(params.tabname);
-      setCurrentTabName(params.tabname);
-    }
+    const currentTabName =
+      params && isString(params.tabname) ? params.tabname : "";
+    setTabName(currentTabName);
+    setCurrentTabName(currentTabName);
 
-    loadTab(tabName);
-    loadTabNames();
-    if (!tabOrdering.local) {
-      loadHomebaseTabOrder();
+    await loadTabNames();
+    if (tabOrdering.local.length === 0) {
+      await loadHomebaseTabOrder();
     }
+    await loadTab(tabName);
   };
-
   const homebaseTabConfig = tabConfigs[tabName]?.config;
   const saveConfig = async (config: SpaceConfigSaveDetails) => {
     await saveTab(tabName, config);
@@ -97,6 +100,13 @@ const Homebase: NextPageWithLayout = () => {
     }
   };
 
+  useEffect(() => setCurrentSpaceId("homebase"), []);
+  useEffect(() => setCurrentTabName(tabName), []);
+
+  if (isNull(tabName)) {
+    // TODO: Insert 404 page
+    return;
+  }
   async function switchTabTo(newTabName) {
     if (homebaseTabConfig) {
       await saveTab(tabName, homebaseTabConfig);
@@ -136,13 +146,20 @@ const Homebase: NextPageWithLayout = () => {
     />
   );
 
-  const args =
-    isInitializing || !isLoggedIn
+  const args = isInitializing
+    ? {
+        config: homebaseTabConfig ?? undefined,
+        saveConfig: undefined,
+        commitConfig: undefined,
+        resetConfig: undefined,
+        tabBar: tabBar,
+      }
+    : !isLoggedIn
       ? {
-          config: undefined,
-          saveConfig: undefined,
-          commitConfig: undefined,
-          resetConfig: undefined,
+          config: homebaseTabConfig ?? undefined,
+          saveConfig: async () => {},
+          commitConfig: async () => {},
+          resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
