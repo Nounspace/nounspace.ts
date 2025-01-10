@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { NextPageWithLayout } from "@/pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
-import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
 import { useRouter, useParams } from "next/navigation";
 import { isNull, isString } from "lodash";
@@ -98,10 +97,6 @@ const Homebase: NextPageWithLayout = () => {
     }
   };
 
-  if (isNull(tabName)) {
-    // TODO: Insert 404 page
-    return;
-  }
   async function switchTabTo(newTabName) {
     if (homebaseTabConfig) {
       await saveTab(tabName, homebaseTabConfig);
@@ -141,20 +136,13 @@ const Homebase: NextPageWithLayout = () => {
     />
   );
 
-  const args = isInitializing
-    ? {
-        config: homebaseTabConfig ?? undefined,
-        saveConfig: undefined,
-        commitConfig: undefined,
-        resetConfig: undefined,
-        tabBar: tabBar,
-      }
-    : !isLoggedIn
+  const args =
+    isInitializing || !isLoggedIn
       ? {
-          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
-          saveConfig: async () => {},
-          commitConfig: async () => {},
-          resetConfig: async () => {},
+          config: undefined,
+          saveConfig: undefined,
+          commitConfig: undefined,
+          resetConfig: undefined,
           tabBar: tabBar,
         }
       : {

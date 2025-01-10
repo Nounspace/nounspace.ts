@@ -10,7 +10,6 @@ import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader"
 import { Address } from "viem";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -28,7 +27,6 @@ interface TabBarProps {
 }
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
@@ -119,11 +117,7 @@ function TabBar({
           >
             <AnimatePresence initial={false}>
               {map(
-                inHome
-                  ? ["Welcome", ...tabList]
-                  : inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
+                inHomebase ? ["Feed", ...tabList] : tabList,
                 (tabName: string) => {
                   return (
                     <Tab
