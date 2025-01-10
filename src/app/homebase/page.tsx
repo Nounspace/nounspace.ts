@@ -11,6 +11,7 @@ import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
 const Homebase: NextPageWithLayout = () => {
   const router = useRouter();
@@ -55,14 +56,16 @@ const Homebase: NextPageWithLayout = () => {
   const isInitializing = getIsInitializing();
   const currentFid = useCurrentFid();
 
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName("Feed"), []);
   useEffect(() => {
     if (isLoggedIn) {
+      setCurrentSpaceId(HOMEBASE_ID);
+      setCurrentTabName("Feed");
       loadConfig();
       if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
+    } else {
+      router.push("/home");
     }
   }, [isLoggedIn]);
 

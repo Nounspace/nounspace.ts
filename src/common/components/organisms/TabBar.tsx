@@ -125,19 +125,13 @@ function TabBar({
                       getSpacePageUrl={getSpacePageUrl}
                       tabName={tabName}
                       inEditMode={inEditMode}
-                      isSelected={currentTab === tabName}
+                      isSelected={
+                        currentTab.toLowerCase() === tabName.toLowerCase()
+                      }
                       onClick={() => {}}
-                      removeable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
+                      removeable={tabName !== "Feed" && tabName !== "Profile"}
                       draggable={inEditMode}
-                      renameable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
+                      renameable={tabName !== "Feed" && tabName !== "Profile"}
                       onRemove={() => handleDeleteTab(tabName)}
                       renameTab={handleRenameTab}
                     />
