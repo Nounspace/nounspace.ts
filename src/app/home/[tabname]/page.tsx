@@ -30,9 +30,16 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+  const {
+    getIsLoggedIn,
+    getIsInitializing,
+    setCurrentSpaceId,
+    setCurrentTabName,
+  } = useAppStore((state) => ({
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
+    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
@@ -40,14 +47,18 @@ const Home = () => {
 
   // Local state to manage current tab name and ordering
   const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
-  const [tabName, setTabName] = useState<string | undefined>("Welcome");
+  const [tabName, setTabName] = useState<string>("Welcome");
 
   useEffect(() => {
+    setCurrentSpaceId("home");
+
     if (params && isString(params.tabname)) {
       setTabName(params.tabname as string);
     } else {
       setTabName("Welcome");
     }
+
+    setCurrentTabName(tabName);
 
     if (isLoggedIn && !params) {
       router.push("/homebase");
@@ -62,7 +73,7 @@ const Home = () => {
     <TabBar
       getSpacePageUrl={(tab) => `/home/${tab}`}
       inHomebase={false}
-      currentTab={tabName ?? "Welcome"}
+      currentTab={tabName}
       tabList={tabOrdering}
       switchTabTo={switchTabTo}
       inEditMode={editMode}
@@ -85,14 +96,14 @@ const Home = () => {
       }
     : !isLoggedIn
       ? {
-          config: getTabConfig(tabName ?? "welcome"),
+          config: getTabConfig(tabName),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName ?? "welcome"),
+          config: getTabConfig(tabName),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
