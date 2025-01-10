@@ -81,9 +81,12 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
 }) => {
   const buildUrl = () => {
     if (dataSource === "geckoterminal") {
-      return `https://www.geckoterminal.com/${chain?.name ?? "base"}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
+      const lightChart = theme === "light" ? 1 : 0;
+      const url = `https://www.geckoterminal.com/${chain?.name ?? "base"}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=${lightChart}`;
+      return url;
     }
-    return `https://dexscreener.com/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
+    const url = `https://dexscreener.com/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
+    return url;
   };
 
   const scaleValue = size;
