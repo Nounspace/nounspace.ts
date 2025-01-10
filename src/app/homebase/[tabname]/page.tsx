@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
-import SpacePage from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import { useRouter, useParams } from "next/navigation";
 import { isNull, isString } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 const Homebase = () => {
   const {
@@ -56,42 +57,39 @@ const Homebase = () => {
   const isInitializing = getIsInitializing();
   const [tabName, setTabName] = useState<string>("");
 
-  // Monitor router changes and update tab name accordingly
+  // First time load
   useEffect(() => {
+    setCurrentSpaceId("homebase");
     if (params && isString(params.tabname)) {
-      const queryTabName = params.tabname;
-      setTabName(queryTabName);
-      setCurrentTabName(queryTabName);
+      if (tabName !== params.tabname) {
+        loadConfig();
+      }
     }
   }, [params]);
 
-  useEffect(() => {
-    if (isLoggedIn && tabName) {
-      loadConfig();
-      if (tabOrdering.local.length === 0) {
-        loadHomebaseTabOrder();
-      }
-    }
-  }, [isLoggedIn, tabName]);
+  const homebaseTabConfig = tabConfigs[tabName]?.config;
 
   const loadConfig = async () => {
     const currentTabName =
       params && isString(params.tabname) ? params.tabname : "";
+
     setTabName(currentTabName);
     setCurrentTabName(currentTabName);
 
-    await loadTabNames();
     if (tabOrdering.local.length === 0) {
-      await loadHomebaseTabOrder();
+      loadHomebaseTabOrder();
     }
-    await loadTab(tabName);
+
+    return loadTab(tabName);
   };
-  const homebaseTabConfig = tabConfigs[tabName]?.config;
+
   const saveConfig = async (config: SpaceConfigSaveDetails) => {
     await saveTab(tabName, config);
     return commitTab(tabName);
   };
+
   const resetConfig = () => resetTab(tabName);
+
   const commitConfig = async () => {
     commitTab(tabName);
     commitHomebaseTabOrder();
@@ -100,13 +98,6 @@ const Homebase = () => {
     }
   };
 
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName(tabName), []);
-
-  if (isNull(tabName)) {
-    // TODO: Insert 404 page
-    return;
-  }
   async function switchTabTo(newTabName) {
     if (homebaseTabConfig) {
       await saveTab(tabName, homebaseTabConfig);
@@ -146,7 +137,7 @@ const Homebase = () => {
     />
   );
 
-  const args = isInitializing
+  const args: SpacePageArgs = isInitializing
     ? {
         config: homebaseTabConfig ?? undefined,
         saveConfig: undefined,
@@ -154,22 +145,14 @@ const Homebase = () => {
         resetConfig: undefined,
         tabBar: tabBar,
       }
-    : !isLoggedIn
-      ? {
-          config: homebaseTabConfig ?? undefined,
-          saveConfig: async () => {},
-          commitConfig: async () => {},
-          resetConfig: async () => {},
-          tabBar: tabBar,
-        }
-      : {
-          config: homebaseTabConfig,
-          saveConfig,
-          // To get types to match since store.commitConfig is debounced
-          commitConfig: async () => await commitConfig(),
-          resetConfig,
-          tabBar: tabBar,
-        };
+    : {
+        config: homebaseTabConfig,
+        saveConfig: async (config: SpaceConfigSaveDetails) =>
+          await saveConfig(config),
+        commitConfig: async () => await commitConfig(),
+        resetConfig,
+        tabBar: tabBar,
+      };
 
   return <SpacePage {...args} />;
 };
