@@ -14,7 +14,6 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
 function Homebase() {
-  const router = useRouter();
   const {
     homebaseConfig,
     saveConfig,
@@ -52,6 +51,8 @@ function Homebase() {
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
   }));
+
+  const router = useRouter();
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
   const currentFid = useCurrentFid();
