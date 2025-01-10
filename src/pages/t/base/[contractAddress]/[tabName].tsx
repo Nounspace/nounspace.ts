@@ -18,7 +18,9 @@ export const getServerSideProps: GetServerSideProps<
     contractAddress === "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" &&
     (contractData.props.owningIdentities as string[]).includes("527313")
   ) {
-    console.log("Hardcoded rule applied: setting ownerId to 527313");
+    console.log(
+      "Hardcoded rule applied: setting ownerId to 0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5",
+    );
     contractData.props.ownerId = "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5";
     contractData.props.ownerIdType = "address";
   }
