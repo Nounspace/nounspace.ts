@@ -64,6 +64,18 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+        {
+            source: '/',
+            destination: '/home/welcome'
+        },
+        {
+          source: '/home',
+          destination: '/home/welcome'
+      }
+    ];
+}
   // async headers() {
   //   return [
   //     {

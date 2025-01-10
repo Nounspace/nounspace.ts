@@ -14,9 +14,7 @@ import {
   NOUNS_TAB_HOMEBASE_CONFIG,
 } from "@/constants/initialHomebaseTabsConfig";
 
-// Enhanced logging to trace configuration logic
 const getTabConfig = (tabName: string) => {
-  // console.log(`getTabConfig called with tabName: ${tabName}`);
   switch (tabName) {
     case "Fidgets":
       return FIDGETS_TAB_HOMEBASE_CONFIG;
@@ -32,38 +30,9 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const {
-    saveConfig,
-    loadConfig,
-    commitConfig,
-    resetConfig,
-    getIsLoggedIn,
-    getIsInitializing,
-    setCurrentSpaceId,
-    setCurrentTabName,
-    loadHomebaseTabOrder,
-    updateHomebaseTabOrder,
-    createHomebaseTab,
-    deleteHomebaseTab,
-    renameHomebaseTab,
-    commitHomebaseTab,
-    commitHomebaseTabOrder,
-  } = useAppStore((state) => ({
-    saveConfig: state.homebase.saveHomebaseConfig,
-    loadConfig: state.homebase.loadHomebase,
-    commitConfig: state.homebase.commitHomebaseToDatabase,
-    commitHomebaseTab: state.homebase.commitHomebaseTabToDatabase,
-    resetConfig: state.homebase.resetHomebaseConfig,
+  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
-    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
-    setCurrentTabName: state.currentSpace.setCurrentTabName,
-    loadHomebaseTabOrder: state.homebase.loadTabOrdering,
-    updateHomebaseTabOrder: state.homebase.updateTabOrdering,
-    commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
-    createHomebaseTab: state.homebase.createTab,
-    deleteHomebaseTab: state.homebase.deleteTab,
-    renameHomebaseTab: state.homebase.renameTab,
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
@@ -75,31 +44,17 @@ const Home = () => {
   });
   const [tabName, setTabName] = useState<string | undefined>(undefined);
 
-  // Monitor router changes and update tab name accordingly
   useEffect(() => {
-    if (!params) return;
-    const tabParam = params.tabname;
-    if (typeof tabParam === "string") {
-      setTabName(tabParam);
-      setCurrentTabName(tabParam);
+    if (params && isString(params.tabname)) {
+      setTabName(params.tabname as string);
     }
-  }, [params]);
 
-  useEffect(() => {
-    if (isLoggedIn && tabName) {
-      loadConfig();
-      if (tabOrdering.local.length === 0) {
-        loadHomebaseTabOrder();
-      }
+    if (isLoggedIn && tabName === undefined) {
+      router.push("/");
     }
-  }, [isLoggedIn, tabName]);
+  }, [isLoggedIn, params]);
 
   function switchTabTo(newTabName: string) {
-    if (tabName) {
-      const configToSave = getTabConfig(tabName);
-      saveConfig(configToSave);
-      commitHomebaseTab(newTabName);
-    }
     router.push(`/home/${newTabName}`);
   }
 
@@ -108,16 +63,16 @@ const Home = () => {
       getSpacePageUrl={(tab) => `/home/${tab}`}
       inHome={true}
       inHomebase={false}
-      currentTab={tabName ?? "welcome"}
+      currentTab={tabName ?? "Welcome"}
       tabList={tabOrdering.local}
       switchTabTo={switchTabTo}
-      updateTabOrder={updateHomebaseTabOrder}
       inEditMode={editMode}
-      deleteTab={deleteHomebaseTab}
-      createTab={createHomebaseTab}
-      renameTab={renameHomebaseTab}
-      commitTab={commitHomebaseTab}
-      commitTabOrder={commitHomebaseTabOrder}
+      updateTabOrder={() => {}}
+      deleteTab={() => {}}
+      createTab={() => {}}
+      renameTab={() => {}}
+      commitTab={() => {}}
+      commitTabOrder={() => {}}
     />
   );
 
@@ -131,9 +86,7 @@ const Home = () => {
       }
     : !isLoggedIn
       ? {
-          config:
-            // test whic tab the user is in
-            getTabConfig(tabName || "welcome"),
+          config: getTabConfig(tabName || "welcome"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
@@ -141,14 +94,14 @@ const Home = () => {
         }
       : {
           config: getTabConfig(tabName || "welcome"),
-          saveConfig,
-          commitConfig: async () => await commitConfig(),
-          resetConfig,
+          saveConfig: async () => {},
+          commitConfig: async () => {},
+          resetConfig: async () => {},
           tabBar: tabBar,
         };
 
   // Use the unique key directly in the JSX to trigger re-render
-  return <SpacePage key={tabName ?? "default-tab"} {...args} />;
+  return <SpacePage key={tabName ?? "welcome"} {...args} />;
 };
 
 export default Home;
