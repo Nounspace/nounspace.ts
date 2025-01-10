@@ -1,6 +1,7 @@
 import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
+import MarketDataSelector from "@/common/components/molecules/MarketDataSelector";
 import {
   FidgetArgs,
   FidgetProperties,
@@ -16,6 +17,7 @@ export type MarketDataProps = {
   token: string;
   size: number;
   theme: string;
+  dataSource: string;
 } & FidgetSettingsStyle;
 
 const frameConfig: FidgetProperties = {
@@ -44,6 +46,14 @@ const frameConfig: FidgetProperties = {
       group: "style",
       default: "light",
     },
+    {
+      fieldName: "dataSource",
+      displayName: "Data Source",
+      inputSelector: MarketDataSelector,
+      required: true,
+      group: "settings",
+      default: "dexscreener",
+    },
     ...defaultStyleFields,
     {
       fieldName: "size",
@@ -66,12 +76,14 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
     token,
     size = 1,
     theme = "light",
+    dataSource = "dexscreener",
   },
 }) => {
-  const dexscreenerBaseUrl = "https://dexscreener.com";
-
-  const buildDexScreenerUrl = () => {
-    return `${dexscreenerBaseUrl}/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
+  const buildUrl = () => {
+    if (dataSource === "geckoterminal") {
+      return `https://www.geckoterminal.com/${chain?.name ?? "base"}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=0`;
+    }
+    return `https://dexscreener.com/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
   };
 
   const scaleValue = size;
@@ -79,8 +91,8 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
-        src={buildDexScreenerUrl()}
-        title="DexScreener Market Data"
+        src={buildUrl()}
+        title="Market Data"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{
           transform: `scale(${scaleValue})`,
