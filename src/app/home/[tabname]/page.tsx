@@ -3,16 +3,16 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
-import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import { isString } from "lodash";
 import {
+  WELCOME_TAB_HOMEBASE_CONFIG,
   FIDGETS_TAB_HOMEBASE_CONFIG,
   PRESS_TAB_HOME_CONFIG,
   NOUNS_TAB_HOMEBASE_CONFIG,
-} from "@/constants/initialHomebaseTabsConfig";
+} from "@/constants/homePageTabConfigs";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
@@ -23,7 +23,7 @@ const getTabConfig = (tabName: string) => {
     case "Press":
       return PRESS_TAB_HOME_CONFIG;
     default:
-      return USER_NOT_LOGGED_IN_HOMEBASE_CONFIG;
+      return WELCOME_TAB_HOMEBASE_CONFIG;
   }
 };
 
@@ -39,18 +39,18 @@ const Home = () => {
   const { editMode } = useSidebarContext();
 
   // Local state to manage current tab name and ordering
-  const [tabOrdering, setTabOrdering] = useState({
-    local: ["Fidgets", "Nouns", "Press"],
-  });
-  const [tabName, setTabName] = useState<string | undefined>(undefined);
+  const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
+  const [tabName, setTabName] = useState<string | undefined>("Welcome");
 
   useEffect(() => {
     if (params && isString(params.tabname)) {
       setTabName(params.tabname as string);
+    } else {
+      setTabName("Welcome");
     }
 
-    if (isLoggedIn && tabName === undefined) {
-      router.push("/");
+    if (isLoggedIn && !params) {
+      router.push("/homebase");
     }
   }, [isLoggedIn, params]);
 
@@ -61,10 +61,9 @@ const Home = () => {
   const tabBar = (
     <TabBar
       getSpacePageUrl={(tab) => `/home/${tab}`}
-      inHome={true}
       inHomebase={false}
       currentTab={tabName ?? "Welcome"}
-      tabList={tabOrdering.local}
+      tabList={tabOrdering}
       switchTabTo={switchTabTo}
       inEditMode={editMode}
       updateTabOrder={() => {}}
@@ -86,14 +85,14 @@ const Home = () => {
       }
     : !isLoggedIn
       ? {
-          config: getTabConfig(tabName || "welcome"),
+          config: getTabConfig(tabName ?? "welcome"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName || "welcome"),
+          config: getTabConfig(tabName ?? "welcome"),
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},

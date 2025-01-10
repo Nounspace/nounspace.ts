@@ -23,7 +23,6 @@ export default function UserDefinedSpace({
   tabName: string;
   fid: number;
 }) {
-  const router = useRouter();
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,

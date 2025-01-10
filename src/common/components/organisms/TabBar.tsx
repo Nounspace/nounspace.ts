@@ -14,7 +14,6 @@ import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -35,7 +34,6 @@ const PERMANENT_TABS = ["Feed", "Profile", "Welcome"];
 const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
@@ -128,11 +126,7 @@ function TabBar({
             >
               <AnimatePresence initial={false}>
                 {map(
-                  inHome
-                    ? ["Welcome", ...tabList]
-                    : inHomebase
-                      ? ["Feed", ...tabList]
-                      : tabList,
+                  inHomebase ? ["Feed", ...tabList] : tabList,
                   (tabName: string) => {
                     return (
                       <Tab
