@@ -9,6 +9,7 @@ import { isNull, isString } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
 const Homebase: NextPageWithLayout = () => {
   const {
@@ -57,16 +58,15 @@ const Homebase: NextPageWithLayout = () => {
   const isInitializing = getIsInitializing();
   const [tabName, setTabName] = useState<string>("");
 
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName(tabName), []);
-
-  // Monitor router changes and update as needed
   useEffect(() => {
     if (isLoggedIn) {
       loadConfig();
+      setCurrentSpaceId(HOMEBASE_ID);
       if (!tabOrdering.local) {
         loadHomebaseTabOrder();
       }
+    } else {
+      router.push("/home");
     }
   }, [isLoggedIn, params]);
 
