@@ -66,16 +66,16 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-        {
-            source: '/',
-            destination: '/home'
-        },
-        {
-          source: '/home',
-          destination: '/home/welcome'
-      }
+      {
+        source: '/',
+        destination: '/home/welcome'
+      },
+      {
+        source: '/home',
+        destination: '/home/welcome'
+      },
     ];
-}
+  },
   // async headers() {
   //   return [
   //     {

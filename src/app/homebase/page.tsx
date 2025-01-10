@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
-const Homebase: NextPageWithLayout = () => {
+function Homebase() {
   const router = useRouter();
   const {
     homebaseConfig,
@@ -64,10 +64,8 @@ const Homebase: NextPageWithLayout = () => {
       if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
-    } else {
-      router.push("/home");
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, router]);
 
   function switchTabTo(tabName: string) {
     if (tabName !== "Feed") {
@@ -155,6 +153,6 @@ const Homebase: NextPageWithLayout = () => {
   }
 
   return <SpacePage {...args} />;
-};
+}
 
 export default Homebase;
