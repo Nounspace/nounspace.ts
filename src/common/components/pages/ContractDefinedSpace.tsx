@@ -149,6 +149,15 @@ export default function ContractDefinedSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const isEditable = useMemo(() => {
+    // Hardcoded rule for specific contractAddress and user
+    if (
+      contractAddress === "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" &&
+      // connected user wallet is 0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5
+      toString(ownerId) === "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5"
+    ) {
+      return true;
+    }
+
     return (
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
@@ -164,6 +173,7 @@ export default function ContractDefinedSpace({
     ownerId,
     ownerIdType,
     walletsReady,
+    contractAddress, // Ensure contractAddress is included in dependencies
   ]);
 
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
