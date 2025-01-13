@@ -14,6 +14,11 @@ import { Address } from "viem";
 import TabBar from "../organisms/TabBar";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 import { useReadContract } from "wagmi";
+import { FaComments, FaDollarSign, FaLink } from "react-icons/fa6";
+import { FaExchangeAlt, FaStream } from "react-icons/fa";
+import { MobileContractDefinedSpace } from "./MobileSpace";
+
+const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 // TODO: send to utils
 interface ContractAbi {
@@ -421,6 +426,15 @@ export const clankerTokenAbi: ContractAbi[] = [
   },
 ] as const;
 
+interface ContractDefinedSpaceProps {
+  spaceId: string | null;
+  tabName: string;
+  contractAddress: string;
+  pinnedCastId?: string;
+  ownerId: string | number | null;
+  ownerIdType: OwnerType;
+}
+
 function createDefaultLayout(
   contractAddr: string,
   pinnedCastId: string,
@@ -438,23 +452,14 @@ function createDefaultLayout(
   );
 }
 
-const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
-
-const ContractDefinedSpace = ({
+const DesktopContractDefinedSpace = ({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   pinnedCastId,
   contractAddress: initialContractAddress,
   ownerId,
   ownerIdType,
-}: {
-  spaceId: string | null;
-  tabName: string;
-  contractAddress: string;
-  pinnedCastId?: string;
-  ownerId: string | number | null;
-  ownerIdType: OwnerType;
-}) => {
+}: ContractDefinedSpaceProps) => {
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
@@ -815,6 +820,30 @@ const ContractDefinedSpace = ({
       tabBar={tabBar}
       loading={loading}
     />
+  );
+};
+
+const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      console.log("resize");
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  return isMobile ? (
+    <MobileContractDefinedSpace />
+  ) : (
+    <DesktopContractDefinedSpace {...props} />
   );
 };
 

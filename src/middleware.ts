@@ -11,7 +11,10 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("https://space.nounspace.com"));
     }
 
-    return NextResponse.redirect(new URL(`${MOBILE_REDIRECT_URL}`));
+    // url.searchParams.set("viewport", "mobile");
+    // return NextResponse.rewrite(url);
+
+    // return NextResponse.redirect(new URL(`${MOBILE_REDIRECT_URL}`));
   }
 
   return NextResponse.next();
