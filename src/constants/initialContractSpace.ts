@@ -7,8 +7,8 @@ import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
 export const createInitialContractSpaceConfigForAddress = async (
   address: string,
   tokenSymbol: string | null,
-  castHash: string,
-  casterFid: string,
+  castHash: string | null,
+  casterFid: string | null,
   symbol: string,
 ): Promise<Omit<SpaceConfig, "isEditable">> => {
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
@@ -35,22 +35,25 @@ export const createInitialContractSpaceConfigForAddress = async (
       fidgetType: "Swap",
       id: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
     },
-    "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "var(--user-theme-fidget-background)",
-          castHash: castHash,
-          casterFid: casterFid,
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
+    ...(castHash &&
+      casterFid && {
+        "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              background: "var(--user-theme-fidget-background)",
+              castHash: castHash,
+              casterFid: casterFid,
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+            },
+          },
+          fidgetType: "cast",
+          id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
         },
-      },
-      fidgetType: "cast",
-      id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-    },
+      }),
     "feed:3de67742-56f2-402c-b751-7e769cdcfc56": {
       config: {
         data: {},
@@ -219,20 +222,24 @@ export const createInitialContractSpaceConfigForAddress = async (
       x: 8,
       y: 8,
     },
-    {
-      h: 4,
-      i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-      maxH: 4,
-      maxW: 12,
-      minH: 1,
-      minW: 3,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 4,
-      y: 0,
-    },
+    ...(castHash && casterFid
+      ? [
+          {
+            h: 4,
+            i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
+            maxH: 4,
+            maxW: 12,
+            minH: 1,
+            minW: 3,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 0,
+          },
+        ]
+      : []),
   );
 
   return config;
