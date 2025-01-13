@@ -841,7 +841,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   }, []);
 
   return isMobile ? (
-    <MobileContractDefinedSpace />
+    <MobileContractDefinedSpace contractAddress={props.contractAddress} />
   ) : (
     <DesktopContractDefinedSpace {...props} />
   );

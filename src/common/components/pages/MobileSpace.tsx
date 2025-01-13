@@ -1,4 +1,5 @@
 import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
+import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { useState } from "react";
 import { IconType } from "react-icons";
 import { BsBarChartFill } from "react-icons/bs";
@@ -6,10 +7,15 @@ import { FaLink } from "react-icons/fa6";
 import { IoIosChatboxes } from "react-icons/io";
 import { MdOutlineSwapHoriz } from "react-icons/md";
 import { SiFarcaster } from "react-icons/si";
+import { Address } from "viem";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
-export const MobileContractDefinedSpace = () => {
+export const MobileContractDefinedSpace = ({
+  contractAddress,
+}: {
+  contractAddress: string;
+}) => {
   const [tab, setTab] = useState<Pages>("Price");
 
   const IconButton = ({
@@ -36,6 +42,16 @@ export const MobileContractDefinedSpace = () => {
 
   return (
     <div className="h-[100dvh] w-full flex flex-col">
+      <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
+        <TokenTabBarHeader
+          tokenImage={undefined}
+          isPending={false}
+          error={null}
+          tokenName={undefined}
+          tokenSymbol={undefined}
+          contractAddress={contractAddress}
+        />
+      </div>
       <div className="flex-1 p-4">
         {tab === "Price" && <div>Price</div>}
         {tab === "Swaps" && <div>Swaps</div>}
@@ -43,7 +59,7 @@ export const MobileContractDefinedSpace = () => {
         {tab === "Links" && <div>Links</div>}
         {tab === "Feed" && <div>Feed</div>}
       </div>
-      <div className="flex items-end justify-around w-full py-2">
+      <div className="flex items-end justify-around w-full py-2 border-t border-t-gray-200">
         <IconButton
           size={20}
           icon={BsBarChartFill}
