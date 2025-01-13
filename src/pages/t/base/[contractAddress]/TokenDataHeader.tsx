@@ -111,12 +111,9 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   return (
-    <div
-      className="flex items-center justify-between px-4 py-2 w-full"
-      style={{ overflowY: "hidden" }}
-    >
+    <div className="flex items-center justify-between px-2 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
       {/* Avatar and Token Details */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 md:space-x-4">
         {/* Avatar */}
         <Avatar
           style={{
@@ -228,7 +225,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-5" />
+        <div className="w-0.5 h-12 bg-gray-200 m-5 hidden md:visible" />
       </div>
       {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>
