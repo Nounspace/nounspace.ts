@@ -46,6 +46,7 @@ import {
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -567,10 +568,29 @@ export const createSpaceStoreFunc = (
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
+
+      // Fetch contract data
+      const contract = await loadEthersViewOnlyContract(address);
+      const [rawCastHash, rawFid, rawSymbol] = await Promise.all([
+        contract?.castHash?.(),
+        contract?.fid?.(),
+        contract?.symbol?.(),
+      ]);
+
+      const castHash = rawCastHash?.toString() || "";
+      const casterFid = rawFid?.toString() || "";
+      const symbol = rawSymbol?.toString() || "";
+
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        createInitialContractSpaceConfigForAddress(address, null),
+        await createInitialContractSpaceConfigForAddress(
+          address,
+          symbol,
+          castHash,
+          casterFid,
+          symbol,
+        ),
       );
       // console.log("Created space", newSpaceId);
       return newSpaceId;
