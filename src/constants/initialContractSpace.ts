@@ -2,13 +2,24 @@ import { SpaceConfig } from "@/common/components/templates/Space";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
 
-const createInitialContractSpaceConfigForAddress = (
+export const createInitialContractSpaceConfigForAddress = async (
   address: string,
-  pinnedCastId: string | null,
-): Omit<SpaceConfig, "isEditable"> => {
+  tokenSymbol: string | null,
+  castHash: string,
+  casterFid: string,
+  symbol: string,
+): Promise<Omit<SpaceConfig, "isEditable">> => {
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
+  console.log(
+    "createInitialContractSpaceConfigForAddress",
+    address,
+    tokenSymbol,
+    castHash,
+    casterFid,
+    symbol,
+  );
   config.fidgetInstanceDatums = {
     "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1": {
       config: {
@@ -30,8 +41,8 @@ const createInitialContractSpaceConfigForAddress = (
         editable: true,
         settings: {
           background: "var(--user-theme-fidget-background)",
-          castHash: "0x49b7c1c69120964b59a2f98c9020d2ea35b3737d",
-          casterFid: "316088",
+          castHash: castHash,
+          casterFid: casterFid,
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
@@ -48,7 +59,7 @@ const createInitialContractSpaceConfigForAddress = (
           Xhandle: "thenounspace",
           background: "var(--user-theme-fidget-background)",
           feedType: "filter",
-          keyword: "$NATIVE",
+          keyword: `$${symbol || tokenSymbol}`,
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
@@ -60,7 +71,7 @@ const createInitialContractSpaceConfigForAddress = (
       fidgetType: "feed",
       id: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
     },
-    "iframe:68f89429-695b-4162-b663-d5a87d322d75": {
+    "Market:733222fa-38f8-4343-9fa2-6646bb47dde0": {
       config: {
         data: {},
         editable: true,
@@ -69,11 +80,12 @@ const createInitialContractSpaceConfigForAddress = (
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
-          url: `https://dexscreener.com/base/${address}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=light&theme=dark&chartStyle=1&chartType=usd&interval=60`,
+          chain: "base",
+          token: address,
         },
       },
-      fidgetType: "iframe",
-      id: "iframe:68f89429-695b-4162-b663-d5a87d322d75",
+      fidgetType: "Market",
+      id: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
     },
     "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57": {
       config: {
@@ -82,7 +94,7 @@ const createInitialContractSpaceConfigForAddress = (
         settings: {
           DescriptionColor: "black",
           HeaderColor: "black",
-          background: "var(--user-theme-fidget-background)",
+          background: "rgba(255, 255, 255, 0.5)",
           css: "",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
@@ -112,39 +124,47 @@ const createInitialContractSpaceConfigForAddress = (
               url: `https://basescan.org/address/${address}`,
             },
           ],
-          title: "$[SYMBOL] Links",
+          title: `$${tokenSymbol || symbol} Links`,
           viewMode: "list",
         },
       },
       fidgetType: "links",
       id: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
     },
-    // 'text:3e0a9e9c-1be5-4705-9ba2-36b2adab57aa': {
-    //   config: {
-    //     data: {},
-    //     editable: true,
-    //     settings: {
-    //       background: 'rgba(231, 229, 229, 0.5)',
-    //       css: '',
-    //       fidgetBorderColor: 'var(--user-theme-fidget-border-color)',
-    //       fidgetBorderWidth: 'var(--user-theme-fidget-border-width)',
-    //       fidgetShadow: 'var(--user-theme-fidget-shadow)',
-    //       fontColor: 'var(--user-theme-font-color)',
-    //       fontFamily: 'var(--user-theme-font)',
-    //       headingsFontColor: 'var(--user-theme-headings-font-color)',
-    //       headingsFontFamily: 'var(--user-theme-headings-font)',
-    //       text: 'To customize this space, sign in with the Farcaster account that deployed the token: [@username](https://nounspace.com/s/[username])',
-    //       title: '',
-    //       urlColor: 'blue'
-    //     }
-    //   },
-    //   fidgetType: 'text',
-    //   id: 'text:3e0a9e9c-1be5-4705-9ba2-36b2adab57aa'
-    // }
+    "Chat:09528872-6659-460e-bb25-0c200cccb0ec": {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: "var(--user-theme-fidget-background)",
+          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+          fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+          fidgetShadow: "var(--user-theme-fidget-shadow)",
+          roomName: address,
+        },
+      },
+      fidgetType: "Chat",
+      id: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+    },
   };
+
   config.layoutDetails.layoutConfig.layout.push(
     {
-      h: 9,
+      h: 6,
+      i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+      maxH: 36,
+      maxW: 36,
+      minH: 2,
+      minW: 2,
+      moved: false,
+      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+      static: false,
+      w: 4,
+      x: 4,
+      y: 4,
+    },
+    {
+      h: 8,
       i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
       maxH: 36,
       maxW: 36,
@@ -154,7 +174,7 @@ const createInitialContractSpaceConfigForAddress = (
       resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
       static: false,
       w: 4,
-      x: 0,
+      x: 8,
       y: 0,
     },
     {
@@ -168,12 +188,12 @@ const createInitialContractSpaceConfigForAddress = (
       resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
       static: false,
       w: 4,
-      x: 4,
-      y: 0,
+      x: 0,
+      y: 5,
     },
     {
       h: 5,
-      i: "iframe:68f89429-695b-4162-b663-d5a87d322d75",
+      i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
       maxH: 36,
       maxW: 36,
       minH: 2,
@@ -182,11 +202,11 @@ const createInitialContractSpaceConfigForAddress = (
       resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
       static: false,
       w: 4,
-      x: 8,
+      x: 0,
       y: 0,
     },
     {
-      h: 4,
+      h: 2,
       i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
       maxH: 36,
       maxW: 36,
@@ -196,8 +216,8 @@ const createInitialContractSpaceConfigForAddress = (
       resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
       static: false,
       w: 4,
-      x: 4,
-      y: 6,
+      x: 8,
+      y: 8,
     },
     {
       h: 4,
@@ -210,10 +230,11 @@ const createInitialContractSpaceConfigForAddress = (
       resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
       static: false,
       w: 4,
-      x: 8,
-      y: 6,
+      x: 4,
+      y: 0,
     },
   );
+
   return config;
 };
 
