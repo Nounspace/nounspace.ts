@@ -111,7 +111,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between px-2 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
+    <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
       {/* Avatar and Token Details */}
       <div className="flex items-center space-x-2 md:space-x-4">
         {/* Avatar */}
@@ -207,7 +207,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
           </div>
         </div>
         {/* Action Icons */}
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-2">
           <img
             src="https://logosarchive.com/wp-content/uploads/2022/02/Metamask-icon.svg"
             alt="metamask"
