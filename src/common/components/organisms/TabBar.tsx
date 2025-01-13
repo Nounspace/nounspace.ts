@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
@@ -6,6 +6,7 @@ import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";
+import { Button, Modal, Box } from "@mui/material";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -91,6 +92,7 @@ function TabBar({
       return tabList[0];
     }
   }
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
@@ -151,7 +153,30 @@ function TabBar({
             </AnimatePresence>
           </Reorder.Group>
         )}
+        {isTokenPage && contractAddress && (
+          <>
+            <Modal
+              open={modalOpen}
+              onClose={() => setModalOpen(false)}
+              aria-labelledby="modal-title"
+              aria-describedby="modal-description"
+            >
+              <Box>{/* Modal content goes here */}</Box>
+            </Modal>
+            <div className="mt-2 *:flex flex-row z-infinity">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => setModalOpen(true)}
+                className=" m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              >
+                Claim This Space
+              </Button>
+            </div>
+          </>
+        )}
       </div>
+
       {inEditMode ? (
         <div className="mr-36 flex flex-row z-infinity">
           <NogsGateButton
