@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../../../../common/lib/utils/TokensAbi";
+import tokensABI from "@/contracts/tokensABI";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 
@@ -29,22 +29,22 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   const [priceChange, setPriceChange] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(tokenName || null);
   const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
-    abi: [
-      "function image() view returns (string memory)",
-      "function name() view returns (string memory)",
-    ],
+    abi: tokensABI,
   };
 
-  const { data: contractImage } = useReadContract({
+  const { data: contractImage } = useReadContract<
+    typeof tokensABI,
+    "image",
+    []
+  >({
     ...wagmiContractConfig,
     functionName: "image",
   });
 
-  const { data: contractName } = useReadContract({
+  const { data: contractName } = useReadContract<typeof tokensABI, "name", []>({
     ...wagmiContractConfig,
     functionName: "name",
   });
@@ -60,10 +60,8 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         setPriceChange(priceChange);
         setName(tokenName || (contractName as string | null));
         setSymbol(tokenSymbol);
-        setFetchError(null);
       } catch (err) {
         console.error("Error fetching token data:", err);
-        setFetchError("Failed to fetch token data. Please try again later.");
       }
     };
 
@@ -100,21 +98,12 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   const handleCopyUrl = () => {
-    const url = window.location.href;
-    const tempInput = document.createElement("input");
-    tempInput.value = url;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    document.execCommand("copy");
-    document.body.removeChild(tempInput);
+    navigator.clipboard.writeText(window.location.href);
     alert("URL copied to clipboard");
   };
 
   return (
-    <div
-      className="flex items-center justify-between px-4 py-2 w-full"
-      style={{ overflowY: "hidden" }}
-    >
+    <div className="flex items-center justify-between px-4 py-2 w-full">
       {/* Avatar and Token Details */}
       <div className="flex items-center space-x-4">
         {/* Avatar */}
@@ -197,7 +186,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         {/* Price Details */}
         <div className="text-right">
           <div className="text-black font-bold">
-            {tokenPrice !== null ? `$${tokenPrice}` : " "}
+            {tokenPrice !== null ? `$${tokenPrice}` : "Loading..."}
           </div>
           <div
             className={`text-sm font-medium ${
@@ -206,7 +195,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 : "text-red-500"
             }`}
           >
-            {priceChange ? `${priceChange}%` : " "}
+            {priceChange ? `${priceChange}%` : "Loading..."}
           </div>
         </div>
         {/* Action Icons */}
@@ -230,7 +219,6 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         </div>
         <div className="w-0.5 h-12 bg-gray-200 m-5" />
       </div>
-      {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>
   );
 };
