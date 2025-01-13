@@ -20,6 +20,9 @@ export const createInitialContractSpaceConfigForAddress = async (
     casterFid,
     symbol,
   );
+
+  const isClankerToken = !!castHash && !!casterFid;
+
   config.fidgetInstanceDatums = {
     "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1": {
       config: {
@@ -35,25 +38,24 @@ export const createInitialContractSpaceConfigForAddress = async (
       fidgetType: "Swap",
       id: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
     },
-    ...(castHash &&
-      casterFid && {
-        "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
-          config: {
-            data: {},
-            editable: true,
-            settings: {
-              background: "var(--user-theme-fidget-background)",
-              castHash: castHash,
-              casterFid: casterFid,
-              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-              fidgetShadow: "var(--user-theme-fidget-shadow)",
-            },
+    ...(isClankerToken && {
+      "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
+        config: {
+          data: {},
+          editable: true,
+          settings: {
+            background: "var(--user-theme-fidget-background)",
+            castHash: castHash,
+            casterFid: casterFid,
+            fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+            fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+            fidgetShadow: "var(--user-theme-fidget-shadow)",
           },
-          fidgetType: "cast",
-          id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
         },
-      }),
+        fidgetType: "cast",
+        id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
+      },
+    }),
     "feed:3de67742-56f2-402c-b751-7e769cdcfc56": {
       config: {
         data: {},
@@ -151,96 +153,276 @@ export const createInitialContractSpaceConfigForAddress = async (
     },
   };
 
-  config.layoutDetails.layoutConfig.layout.push(
-    {
-      h: 6,
-      i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
-      maxH: 36,
-      maxW: 36,
-      minH: 2,
-      minW: 2,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 4,
-      y: 4,
+  config.layoutDetails.layoutConfig.layout = isClankerToken
+    ? [
+        {
+          h: 6,
+          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 4,
+          y: 4,
+        },
+        {
+          h: 8,
+          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 4,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 8,
+          y: 0,
+        },
+        {
+          h: 5,
+          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+          maxH: 36,
+          maxW: 36,
+          minH: 3,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 0,
+          y: 5,
+        },
+        {
+          h: 5,
+          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 0,
+          y: 0,
+        },
+        {
+          h: 2,
+          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 8,
+          y: 8,
+        },
+        {
+          h: 4,
+          i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
+          maxH: 4,
+          maxW: 12,
+          minH: 1,
+          minW: 3,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 4,
+          y: 0,
+        },
+      ]
+    : [
+        {
+          h: 8,
+          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 4,
+          y: 0,
+        },
+        {
+          h: 2,
+          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 4,
+          y: 8,
+        },
+        {
+          h: 10,
+          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 4,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 8,
+          y: 0,
+        },
+        {
+          h: 5,
+          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+          maxH: 36,
+          maxW: 36,
+          minH: 2,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 0,
+          y: 0,
+        },
+        {
+          h: 5,
+          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+          maxH: 36,
+          maxW: 36,
+          minH: 3,
+          minW: 2,
+          moved: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          static: false,
+          w: 4,
+          x: 0,
+          y: 5,
+        },
+      ];
+
+  config.theme = {
+    id: "default",
+    name: "Default",
+    properties: {
+      background: "#ffffff",
+      backgroundHTML: `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+          <title>Aurora Borealis (Light Theme)</title>
+          <style>
+            /* 1. Page Reset & Lighter Background */
+            body {
+              margin: 0;
+              height: 100vh;
+              /* A subtle sky-like gradient */
+              background: linear-gradient(180deg, #eef9ff, #dbeffd);
+              overflow: hidden;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              font-family: Arial, sans-serif;
+              color: #333; /* darker text for contrast */
+              position: relative;
+            }
+
+            /* 2. Aurora Gradient (Pastel & Blurred) */
+            .aurora {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: linear-gradient(
+                120deg,
+                rgba(102, 178, 255, 0.4),
+                rgba(102, 255, 178, 0.4),
+                rgba(255, 153, 255, 0.4),
+                rgba(153, 204, 255, 0.4)
+              );
+              background-size: 200% 200%;
+              animation: aurora 10s infinite ease-in-out;
+              /* A gentle blur to enhance the glow effect */
+              filter: blur(40px);
+            }
+
+            @keyframes aurora {
+              0% {
+                background-position: 0% 50%;
+              }
+              50% {
+                background-position: 100% 50%;
+              }
+              100% {
+                background-position: 0% 50%;
+              }
+            }
+
+            /* 3. Optional Content Layer (above the aurora) */
+            .content {
+              z-index: 1;
+              text-align: center;
+              position: relative;
+            }
+
+            .content h1 {
+              font-size: 3rem;
+              margin: 0;
+              color: #006070; /* teal-ish for a calmer look */
+            }
+
+            .content p {
+              font-size: 1.5rem;
+              margin: 10px 0 0;
+              color: #009688;
+            }
+
+            /* 4. Light, Subtle Overlay */
+            /* Using white in the radial gradient for a more diffused look */
+            .overlay {
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              background: radial-gradient(circle, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.3) 100%);
+              pointer-events: none;
+              z-index: 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="aurora"></div>
+          <div class="overlay"></div>
+        </body>
+        </html>
+      `,
+      fidgetBackground: "#ffffffb0", // equivalent to rgba(255, 255, 255, 0.69)
+      fidgetBorderColor: "#eeeeee", // equivalent to rgba(238, 238, 238, 1)
+      fidgetBorderWidth: "0",
+      fidgetShadow: "none",
+      font: "Inter",
+      fontColor: "#000000",
+      headingsFont: "Inter",
+      headingsFontColor: "#000000",
+      musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
     },
-    {
-      h: 8,
-      i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
-      maxH: 36,
-      maxW: 36,
-      minH: 2,
-      minW: 4,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 8,
-      y: 0,
-    },
-    {
-      h: 5,
-      i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
-      maxH: 36,
-      maxW: 36,
-      minH: 3,
-      minW: 2,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 0,
-      y: 5,
-    },
-    {
-      h: 5,
-      i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
-      maxH: 36,
-      maxW: 36,
-      minH: 2,
-      minW: 2,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 0,
-      y: 0,
-    },
-    {
-      h: 2,
-      i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
-      maxH: 36,
-      maxW: 36,
-      minH: 2,
-      minW: 2,
-      moved: false,
-      resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-      static: false,
-      w: 4,
-      x: 8,
-      y: 8,
-    },
-    ...(castHash && casterFid
-      ? [
-          {
-            h: 4,
-            i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-            maxH: 4,
-            maxW: 12,
-            minH: 1,
-            minW: 3,
-            moved: false,
-            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-            static: false,
-            w: 4,
-            x: 4,
-            y: 0,
-          },
-        ]
-      : []),
-  );
+  };
 
   return config;
 };
