@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, Suspense, useEffect } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -112,7 +112,9 @@ export default function Space({
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
-            <InfoToast />
+            <Suspense fallback={<div>Loading...</div>}>
+              <InfoToast />
+            </Suspense>
           </div>
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
