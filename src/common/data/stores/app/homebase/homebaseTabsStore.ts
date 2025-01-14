@@ -329,6 +329,9 @@ export const createHomeBaseTabStoreFunc = (
     }
   }, 1000),
   async saveHomebaseTabConfig(tabName, config) {
+    console.log("Tabs", get().homebase.tabs);
+    console.log("Tab name", tabName);
+    console.log("Config", config);
     const localCopy = cloneDeep(
       get().homebase.tabs[tabName].config,
     ) as SpaceConfig;
