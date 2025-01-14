@@ -63,7 +63,7 @@ export async function loadContractData(
   }
   const abi = contract.interface;
 
-  let pinnedCastId: string | undefined;
+  let pinnedCastId: string | null = "";
   let owningIdentities: string[] = [];
   const { ownerId, ownerIdType } = await contractOwnerFromContract(contract);
 
