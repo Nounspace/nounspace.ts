@@ -149,7 +149,7 @@ export const MobileContractDefinedSpace = ({
           )}
         >
           <iframe
-            src={`https://www.geckoterminal.com/base/pools/${contractAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=dark`}
+            src={`https://www.geckoterminal.com/base/pools/${contractAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=1`}
             title="Market Data"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
