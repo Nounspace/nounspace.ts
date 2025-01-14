@@ -33,19 +33,18 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
-    abi: tokensABI,
+    abi: [
+      "function image() view returns (string memory)",
+      "function name() view returns (string memory)",
+    ],
   };
 
-  const { data: contractImage } = useReadContract<
-    typeof tokensABI,
-    "image",
-    []
-  >({
+  const { data: contractImage } = useReadContract({
     ...wagmiContractConfig,
     functionName: "image",
   });
 
-  const { data: contractName } = useReadContract<typeof tokensABI, "name", []>({
+  const { data: contractName } = useReadContract({
     ...wagmiContractConfig,
     functionName: "name",
   });
