@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { remark } from "remark";
 import html from "remark-html";
 import {
@@ -59,12 +59,14 @@ export default async function Post({ params }) {
   const post = await getPostOrSlug(params!.slug as string);
   if (isExplorePost(post)) {
     return (
-      <div>
-        <h1>{post.title}</h1>
-        <p>{post.bio}</p>
-        <Image src={post.image} alt={post.title} fill />
-        <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <div>
+          <h1>{post.title}</h1>
+          <p>{post.bio}</p>
+          <Image src={post.image} alt={post.title} fill />
+          <div dangerouslySetInnerHTML={{ __html: post.contentHtml }} />
+        </div>
+      </Suspense>
     );
   }
   return (
