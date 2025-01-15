@@ -6,13 +6,17 @@ import { useEffect } from "react";
 import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 
-export type SpacePageProps = {
+export type UserDefinedSpacePageProps = {
   fid: number | null;
   spaceId: string | null;
   tabName: string | string[] | null | undefined;
 };
 
-export const UserPrimarySpace = ({ fid, spaceId, tabName }: SpacePageProps) => {
+export const UserPrimarySpace = ({
+  fid,
+  spaceId,
+  tabName,
+}: UserDefinedSpacePageProps) => {
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
