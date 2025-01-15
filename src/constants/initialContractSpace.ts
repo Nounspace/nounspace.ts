@@ -2,7 +2,42 @@ import { SpaceConfig } from "@/common/components/templates/Space";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
+
+// TODO: MOVE TO Fetch token data or replace for clanker API in the future
+// export async function fetchClankerTokenData(contractAddress: string) {
+//   const { data: rawCastHash, error: castHashError } = useReadContract({
+//     address: contractAddress as Address,
+//     abi: clankerTokenAbi,
+//     functionName: "castHash",
+//   });
+//   console.log("fetchClankerTokenData", rawCastHash);
+//   const { data: rawFid, error: fidError } = useReadContract({
+//     address: contractAddress as Address,
+//     abi: clankerTokenAbi,
+//     functionName: "fid",
+//   });
+//   const { data: rawSymbol, error: symbolError } = useReadContract({
+//     address: contractAddress as Address,
+//     abi: clankerTokenAbi,
+//     functionName: "symbol",
+//   });
+
+//   if (castHashError) {
+//     console.error("Error fetching castHash:", castHashError);
+//   }
+//   if (fidError) {
+//     console.error("Error fetching fid:", fidError);
+//   }
+//   if (symbolError) {
+//     console.error("Error fetching symbol:", symbolError);
+//   }
+
+//   return {
+//     castHash: rawCastHash?.toString() || "",
+//     casterFid: rawFid?.toString() || "",
+//     symbol: rawSymbol?.toString() || "",
+//   };
+// }
 
 export const createInitialContractSpaceConfigForAddress = async (
   address: string,
@@ -10,7 +45,18 @@ export const createInitialContractSpaceConfigForAddress = async (
   castHash: string | null,
   casterFid: string | null,
   symbol: string,
+  isClankerToken: boolean,
 ): Promise<Omit<SpaceConfig, "isEditable">> => {
+  console.log(
+    "createInitialContractSpaceConfigForAddress",
+    address,
+    tokenSymbol,
+    castHash,
+    casterFid,
+    symbol,
+    isClankerToken,
+  );
+
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
   console.log(
     "createInitialContractSpaceConfigForAddress",
@@ -19,9 +65,8 @@ export const createInitialContractSpaceConfigForAddress = async (
     castHash,
     casterFid,
     symbol,
+    isClankerToken,
   );
-
-  const isClankerToken = !!castHash && !!casterFid;
 
   config.fidgetInstanceDatums = {
     "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1": {
@@ -38,24 +83,26 @@ export const createInitialContractSpaceConfigForAddress = async (
       fidgetType: "Swap",
       id: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
     },
-    ...(isClankerToken && {
-      "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
-        config: {
-          data: {},
-          editable: true,
-          settings: {
-            background: "var(--user-theme-fidget-background)",
-            castHash: castHash,
-            casterFid: casterFid,
-            fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-            fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-            fidgetShadow: "var(--user-theme-fidget-shadow)",
+    ...(isClankerToken &&
+      castHash &&
+      casterFid && {
+        "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              background: "var(--user-theme-fidget-background)",
+              castHash: castHash,
+              casterFid: casterFid,
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+            },
           },
+          fidgetType: "cast",
+          id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
         },
-        fidgetType: "cast",
-        id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-      },
-    }),
+      }),
     "feed:3de67742-56f2-402c-b751-7e769cdcfc56": {
       config: {
         data: {},
@@ -153,165 +200,166 @@ export const createInitialContractSpaceConfigForAddress = async (
     },
   };
 
-  config.layoutDetails.layoutConfig.layout = isClankerToken
-    ? [
-        {
-          h: 6,
-          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 4,
-        },
-        {
-          h: 8,
-          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 4,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
-          maxH: 36,
-          maxW: 36,
-          minH: 3,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 5,
-        },
-        {
-          h: 5,
-          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 0,
-        },
-        {
-          h: 2,
-          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 8,
-        },
-        {
-          h: 4,
-          i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-          maxH: 4,
-          maxW: 12,
-          minH: 1,
-          minW: 3,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 0,
-        },
-      ]
-    : [
-        {
-          h: 8,
-          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 0,
-        },
-        {
-          h: 2,
-          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 8,
-        },
-        {
-          h: 10,
-          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 4,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
-          maxH: 36,
-          maxW: 36,
-          minH: 3,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 5,
-        },
-      ];
+  config.layoutDetails.layoutConfig.layout =
+    isClankerToken && castHash && casterFid
+      ? [
+          {
+            h: 6,
+            i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 4,
+          },
+          {
+            h: 8,
+            i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 4,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+            maxH: 36,
+            maxW: 36,
+            minH: 3,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 5,
+          },
+          {
+            h: 5,
+            i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 0,
+          },
+          {
+            h: 2,
+            i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 8,
+          },
+          {
+            h: 4,
+            i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
+            maxH: 4,
+            maxW: 12,
+            minH: 1,
+            minW: 3,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 0,
+          },
+        ]
+      : [
+          {
+            h: 8,
+            i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 0,
+          },
+          {
+            h: 2,
+            i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 8,
+          },
+          {
+            h: 10,
+            i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 4,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+            maxH: 36,
+            maxW: 36,
+            minH: 3,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 5,
+          },
+        ];
 
   config.theme = {
     id: "default",

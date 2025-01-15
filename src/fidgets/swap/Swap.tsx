@@ -124,6 +124,32 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
 
   const scaleValue = size;
 
+  React.useEffect(() => {
+    let currentScrollY = window.scrollY;
+    let preventScroll = false;
+
+    const handleScroll = () => {
+      if (preventScroll && window.scrollY !== currentScrollY) {
+        window.scrollTo(0, currentScrollY);
+      }
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.action === "connectWallet") {
+        preventScroll = true;
+        currentScrollY = window.scrollY;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
+
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
@@ -134,6 +160,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
           transformOrigin: "0 0",
           width: `${100 / scaleValue}%`,
           height: `${100 / scaleValue}%`,
+          overflow: "hidden",
         }}
         className="size-full"
       />

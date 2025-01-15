@@ -85,6 +85,7 @@ export async function fetchTokenData(
   priceChange: string | null;
   tokenName: string | null;
   tokenSymbol: string | null;
+  decimals: number | null;
 }> {
   const baseUrl = "https://api.geckoterminal.com/api/v2";
   const network = "base";
@@ -108,6 +109,7 @@ export async function fetchTokenData(
         priceChange: null,
         tokenName: null,
         tokenSymbol: null,
+        decimals: null,
       };
     }
 
@@ -166,6 +168,7 @@ export async function fetchTokenData(
       priceChange: priceChange,
       tokenName: token.name || null,
       tokenSymbol: token.symbol || null,
+      decimals: token.decimals,
     });
 
     return {
@@ -175,6 +178,7 @@ export async function fetchTokenData(
       priceChange: priceChange,
       tokenName: token.name || null,
       tokenSymbol: token.symbol || null,
+      decimals: token.decimals || null,
     };
   } catch (error) {
     console.error("Error fetching token data:", error);
@@ -185,6 +189,7 @@ export async function fetchTokenData(
       priceChange: null,
       tokenName: null,
       tokenSymbol: null,
+      decimals: null,
     };
   }
 }
