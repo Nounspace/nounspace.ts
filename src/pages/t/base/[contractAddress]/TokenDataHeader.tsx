@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../../../../common/lib/utils/TokensAbi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 
@@ -111,12 +110,9 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   return (
-    <div
-      className="flex items-center justify-between px-4 py-2 w-full"
-      style={{ overflowY: "hidden" }}
-    >
+    <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
       {/* Avatar and Token Details */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 md:space-x-4">
         {/* Avatar */}
         <Avatar
           style={{
@@ -210,7 +206,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
           </div>
         </div>
         {/* Action Icons */}
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-2">
           <img
             src="https://logosarchive.com/wp-content/uploads/2022/02/Metamask-icon.svg"
             alt="metamask"
@@ -228,7 +224,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-5" />
+        <div className="w-0.5 h-12 bg-gray-200 m-5 hidden md:visible" />
       </div>
       {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>

@@ -590,6 +590,8 @@ export const createSpaceStoreFunc = (
           castHash,
           casterFid,
           symbol,
+          // temp build fix
+          false,
         ),
       );
       // console.log("Created space", newSpaceId);
