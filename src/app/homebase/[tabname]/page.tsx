@@ -60,11 +60,15 @@ const HomebaseTab = () => {
 
   async function loadTabConfig() {
     setLoading(true);
+    console.log("Loading tab config");
+    await loadTabNames();
+    console.log("Tab names loaded");
     if (tabOrdering.local.length === 0) {
-      await loadTabNames();
       await loadTabOrder();
     }
+    console.log("Tab order loaded");
     await loadTab(tabName);
+    console.log("Specific tab loaded");
     setLoading(false);
     await loadRemainingTabs();
   }
@@ -76,7 +80,7 @@ const HomebaseTab = () => {
     if (!isNil(tabName)) {
       loadTabConfig();
     }
-  }, [tabName]);
+  }, []);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(async () => {
@@ -96,7 +100,6 @@ const HomebaseTab = () => {
   };
 
   const memoizedConfig = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { timestamp, ...restConfig } = config;
     return restConfig;
   }, [
@@ -119,11 +122,6 @@ const HomebaseTab = () => {
   };
 
   async function switchTabTo(newTabName) {
-    if (tabConfigs[tabName]?.config) {
-      await saveTab(tabName, tabConfigs[tabName]?.config);
-      await commitTab(tabName);
-    }
-
     if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
