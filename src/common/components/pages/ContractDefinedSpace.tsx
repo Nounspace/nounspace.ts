@@ -29,6 +29,7 @@ interface ContractDefinedSpaceProps {
   pinnedCastId?: string;
   ownerId: string | number | null;
   ownerIdType: OwnerType;
+  isClankerToken: boolean;
 }
 
 function createDefaultLayout(
@@ -38,6 +39,7 @@ function createDefaultLayout(
   castHash: string,
   casterFid: string,
   symbol: string,
+  isClankerToken: boolean,
 ): Promise<Omit<SpaceConfig, "isEditable">> {
   return createInitialContractSpaceConfigForAddress(
     contractAddr,
@@ -45,6 +47,7 @@ function createDefaultLayout(
     castHash,
     casterFid,
     symbol,
+    isClankerToken,
   );
 }
 
@@ -105,6 +108,28 @@ const DesktopContractDefinedSpace = ({
   const [contractAddress, setContractAddress] = useState(
     initialContractAddress,
   );
+
+  const [isClankerToken, setIsClankerToken] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const contract = await fetch(
+        `/api/basescan/contract?contractAddress=${contractAddress}`,
+      );
+      const contractData: BasescanResult = await contract.json();
+      if (
+        contractData.contractFactory &&
+        [
+          "0x250c9FB2b411B48273f69879007803790A6AeA47".toLocaleLowerCase(), // v0
+          "0x9B84fcE5Dcd9a38d2D01d5D72373F6b6b067c3e1".toLocaleLowerCase(), // v1
+          "0x732560fa1d1A76350b1A500155BA978031B53833".toLocaleLowerCase(), // v2
+        ].includes(contractData.contractFactory.toLocaleLowerCase())
+      ) {
+        setIsClankerToken(true);
+      }
+    };
+    fetchData();
+  }, [contractAddress]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -191,44 +216,6 @@ const DesktopContractDefinedSpace = ({
   const [casterFid, setCasterFid] = useState<string>("");
   const [symbol, setSymbol] = useState<string>("");
 
-  const { data: rawCastHash, error: castHashError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "castHash",
-  });
-  console.log("Raw Cast Hash:", rawCastHash);
-  const { data: rawFid, error: fidError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "fid",
-  });
-  console.log("Raw Fid:", rawFid);
-  const { data: rawSymbol, error: symbolError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "symbol",
-  });
-
-  useEffect(() => {
-    if (castHashError) {
-      console.error("Error fetching castHash:", castHashError);
-    }
-    if (fidError) {
-      console.error("Error fetching fid:", fidError);
-    }
-    if (symbolError) {
-      console.error("Error fetching symbol:", symbolError);
-    }
-
-    setCastHash(rawCastHash?.toString() || "");
-    setCasterFid(rawFid?.toString() || "");
-    setSymbol(rawSymbol?.toString() || "");
-
-    console.log("Cast Hash:", castHash);
-    console.log("Caster Fid:", casterFid);
-    console.log("Symbol:", symbol);
-  }, [rawCastHash, rawFid, rawSymbol, castHashError, fidError, symbolError]);
-
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
     () =>
       createDefaultLayout(
@@ -238,12 +225,19 @@ const DesktopContractDefinedSpace = ({
         castHash,
         casterFid,
         symbol,
+        isClankerToken,
       ),
-    [contractAddress, pinnedCastId, castHash, casterFid, symbol],
+    [
+      contractAddress,
+      pinnedCastId,
+      castHash,
+      casterFid,
+      symbol,
+      isClankerToken,
+    ],
   );
 
   const currentConfig = getCurrentSpaceConfig();
-  console.log("Current Config:", currentConfig);
 
   const config = useMemo(() => {
     const fetchConfig = async () => {
@@ -421,31 +415,9 @@ const DesktopContractDefinedSpace = ({
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   const [isMobile, setIsMobile] = useState(false);
-  const [isClankerToken, setIsClankerToken] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const contract = await fetch(
-        `/api/basescan/contract?contractAddress=${props.contractAddress}`,
-      );
-      const contractData: BasescanResult = await contract.json();
-      if (
-        contractData.contractFactory &&
-        [
-          "0x250c9FB2b411B48273f69879007803790A6AeA47".toLocaleLowerCase(), // v0
-          "0x9B84fcE5Dcd9a38d2D01d5D72373F6b6b067c3e1".toLocaleLowerCase(), // v1
-          "0x732560fa1d1A76350b1A500155BA978031B53833".toLocaleLowerCase(), // v2
-        ].includes(contractData.contractFactory.toLocaleLowerCase())
-      ) {
-        setIsClankerToken(true);
-      }
-    };
-    fetchData();
-  }, []);
 
   useEffect(() => {
     const handleResize = () => {
-      console.log("resize");
       setIsMobile(window.innerWidth <= 768);
     };
 
@@ -460,7 +432,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   return isMobile ? (
     <MobileContractDefinedSpace
       contractAddress={props.contractAddress}
-      isClankerToken={isClankerToken}
+      isClankerToken={props.isClankerToken}
     />
   ) : (
     <DesktopContractDefinedSpace {...props} />

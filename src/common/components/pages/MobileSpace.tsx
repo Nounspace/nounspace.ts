@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { useGetCastsByKeyword } from "@/common/data/queries/farcaster"; // Import new hook
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
@@ -5,7 +6,6 @@ import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { isNil } from "lodash";
-import React, { useEffect, useState } from "react";
 import { IconType } from "react-icons";
 import { BsBarChartFill } from "react-icons/bs";
 import { FaLink } from "react-icons/fa6";
