@@ -17,6 +17,7 @@ import { useReadContract } from "wagmi";
 import { FaComments, FaDollarSign, FaLink } from "react-icons/fa6";
 import { FaExchangeAlt, FaStream } from "react-icons/fa";
 import { MobileContractDefinedSpace } from "./MobileSpace";
+import { BasescanResult } from "@/pages/api/basescan/contract";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -825,6 +826,26 @@ const DesktopContractDefinedSpace = ({
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [isClankerToken, setIsClankerToken] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const contract = await fetch(
+        `/api/basescan/contract?contractAddress=${props.contractAddress}`,
+      );
+      const contractData: BasescanResult = await contract.json();
+      if (
+        [
+          "0x250c9FB2b411B48273f69879007803790A6AeA47".toLocaleLowerCase(), // v0
+          "0x9B84fcE5Dcd9a38d2D01d5D72373F6b6b067c3e1".toLocaleLowerCase(), // v1
+          "0x732560fa1d1A76350b1A500155BA978031B53833".toLocaleLowerCase(), // v2
+        ].includes(contractData.contractFactory.toLocaleLowerCase())
+      ) {
+        setIsClankerToken(true);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -841,7 +862,10 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   }, []);
 
   return isMobile ? (
-    <MobileContractDefinedSpace contractAddress={props.contractAddress} />
+    <MobileContractDefinedSpace
+      contractAddress={props.contractAddress}
+      isClankerToken={isClankerToken}
+    />
   ) : (
     <DesktopContractDefinedSpace {...props} />
   );

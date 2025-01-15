@@ -27,8 +27,10 @@ type TokenData = {
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
+  isClankerToken,
 }: {
   contractAddress: string;
+  isClankerToken: boolean;
 }) => {
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
@@ -130,8 +132,8 @@ export const MobileContractDefinedSpace = ({
   };
 
   return (
-    <div className="h-[100dvh] w-full flex flex-col">
-      <div className="flex flex-row justify-center h-16 w-full z-30 bg-white">
+    <div className="h-full w-full flex flex-col">
+      <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
         <TokenTabBarHeader
           tokenImage={undefined}
           isPending={false}
@@ -184,27 +186,29 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}
         >
+          {isClankerToken && (
+            <LinkItem
+              href={`https://www.clanker.world/clanker/${contractAddress}`}
+              imgSrc="https://www.clanker.world/_next/image?url=https%3A%2F%2Fimagedelivery.net%2FBXluQx4ige9GuW0Ia56BHw%2F295953fa-15ed-4d3c-241d-b6c1758c6200%2Foriginal&w=256&q=75"
+              alt="Clanker.world"
+              label="Clanker.world"
+            />
+          )}
           <LinkItem
-            href={`https://www.clanker.world/clanker/${contractAddress}`}
-            imgSrc="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAM1BMVEX////q5PfUxe7o4fbMu+uPadTGs+jKueqJYNHEseiJYtKOZ9PJt+rUx+7MuuvPwOvm3vVnLuiEAAAAXUlEQVR4Ac3QAxaAQAAE0LXR/S+bXdNDWuOvSSGBMsYhCikVRG2MxejcFZoHcXoDQCF9gBiMURC1cfYzpDFSiEnKAHF6w4TuiMscs0bt+69JQyW8VyvkOVeH6p/QAF54BSckEkJ8AAAAAElFTkSuQmCC"
-            alt="Clanker.world"
-            label="Clanker.world"
-          />
-          <LinkItem
-            href={`https://dexscreener.com/base/${contractAddress}`}
-            imgSrc="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAAAAABXZoBIAAAA/ElEQVR4AY3NIYyCYBiH8adv9tuM168ni9FCvmifhchoBIKFZN/sgY1KMxBtNvO3EQ2054ZTAU83f+F9wxP+fGyd52v+mQHfB6+aH54UxD4k7BhbOhExkTiSMVGQ+VBQMNYF1t5sCE4nA8xOdp3nOZyNJos1xkQQsZHKnMHWliTkNEfSkBIsJtEGqLQGDj5HPXLRjkZfxJxOJX2OhVZQ6v3vGOz1tGKnumd50pLBQbWivB1tGAR7GUpi78LAq46qpvNqzl1msBf/bjb2glvuQoK9IzT2iFtuFhGktnMF/WrNIVoyUkNmvHYLNa+Eumx5Z2G34q2q5r3ZFx/7A7k9CEA1KNm+AAAAAElFTkSuQmCC"
-            alt="DexScreener"
-            label="DexScreener"
+            href={`https://www.geckoterminal.com/base/pools/${contractAddress}`}
+            imgSrc="https://www.geckoterminal.com/_next/image?url=https%3A%2F%2Fs.geckoterminal.com%2F_next%2Fstatic%2Fmedia%2Flogo_icon.845c1574.png&w=64&q=75"
+            alt="CoinGecko"
+            label="CoinGecko"
           />
           <LinkItem
             href={`https://basescan.org/address/${contractAddress}`}
-            imgSrc="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEGElEQVR4AbWWA5AcXRSFX2ytbe/+DNccx6vYtm3bTjm2jUGyVg/CRmzb6dwXdO12LaYHt+oMu/s797zbQMYWy7JVMzIyYkaPHjstOTlln1SmKBCJpDfFYukNqUxe2D459cCwESOmnz17Nh62rY4sVXfu3LGZOHHiJIlUdsfG1v577Tr12PLUyMaOFUuk9ydPnjqNJEl7k8HQRZWVK1f2a9Y8/GmduvU5gLHC+zRr3uL50uXLB+P0BMFfvnzZqHvPXkegY8Fgvho2smW79ehx8vXr17bGRu4qkyl05oL5kkikV+7fv+9RYecyOQe3uKRyBTZhV+aa9+7d95CloXx179HrRKkzsWLF6t4wwd/NBSQmibW7d+9OP3DgSFuscRMmbIY5KDETK1asGFQCjgckPDzysSU63LNnT2f+9SMqKuZ98W2aNw9//ubNGwduo6lTp46rW6+BRSI+efJkMuJVTEzca/4pOmHSpKnc2sNwMEIgdvaObOs2bTPaJaccxFK0bFXQoKGN0QawRCLJPWBXQ3B5Dbe1cxC09smpaSdh50rFYq4sb9kqV4gB3ARUMBo9evQkoTF36dJ1Ix+SnJy6V4iB6OjYV2CgAUpLS99dTtTf/fwDPvv5B3729PT+CmtnEQNOzq7fVq9e3QnhgqteXmlwX1//L0eOHGkFLp2x4CLlDXfBU+YawMs9d+78idyfIrGk1AFMSEy6iXi1YMGigeYYcHRy+Y6n/8/8qAiyK0qCe3qpBhJENxCvli1b1s9UAz4+fp8XLFo0/A9cSVxvqSq6rkVSqVxnbQPDho2gt27dKvvzPeMyFaYirj9TEuRF1LZd8hFrG4Cunf58Vhbd8FIR1E2InwUTO9CAQYPmW9kAVxcIOgDAzC84SEtORAcOH5bBZdgiBmDC2UKtNrE0uJKgoyDyhxwcS8tE43jqRsfEPjfXwPLly6fjO2op8VeCqIcC/GNxOHy/m5+fXw3hGjhw8HIhBrp3774GGVFKLekGsMMYyJdaS07nNtTr9b4BgcEfStzXE0UM4tWuXbu6QNRnzp8/H1oe2GBgq8P6DgTQ89Lg0P3Ls3rGkXeRWTA8MCjko5u757d//v3//dix45aUFmd54N1wZwVwK1UReYkH5WtUWY9ljiAvUH0koHYbDNXVBNlLWXSdqAAM3V+/cPw4WQOZWziN8zqqsVpLLeFNdzmibmYS11xNhp7SauvAQeJVWnoexHzZOCh3zt/O0FJhRsM2wimiKSRDNFo6WU1Qs2FqVXCgN4KgHJzKO1fIeCIhhc9RiHYCOH8rHMrpA+w/L/POnVrI1FLnUu5woGWg1wLA7yC1DcpLlB+yVGWTZH2NlkmBjtbCwTNg6h/BHHwF2FeY/qdwtcuB/zapdXSnzEt3bJCR9QPwKOxl9MLyXAAAAABJRU5ErkJggg=="
+            imgSrc="https://etherscan.io/images/brandassets/etherscan-logo-circle.svg"
             alt="BaseScan"
             label="BaseScan"
           />
           <div
             onClick={handleAddToMetamask}
-            className="flex items-center justify-center p-2 rounded-md bg-gray-100 font-medium text-xl"
+            className="flex items-center justify-center p-2 rounded-md bg-gray-100 font-medium text-lg"
           >
             <img
               src="https://logosarchive.com/wp-content/uploads/2022/02/Metamask-icon.svg"
@@ -248,7 +252,7 @@ export const MobileContractDefinedSpace = ({
           </>
         </div>
       </div>
-      <div className="flex items-end justify-around w-full py-2 border-t border-t-gray-200">
+      <div className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200">
         <IconButton
           size={20}
           icon={BsBarChartFill}
