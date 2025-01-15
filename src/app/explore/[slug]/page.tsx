@@ -59,7 +59,7 @@ export default async function Post({ params }) {
   const post = await getPostOrSlug(params!.slug as string);
   if (isExplorePost(post)) {
     return (
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense>
         <div>
           <h1>{post.title}</h1>
           <p>{post.bio}</p>
