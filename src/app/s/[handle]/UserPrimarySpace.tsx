@@ -1,5 +1,5 @@
 "use client";
-import React, { use } from "react";
+import React from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { isArray, isNil } from "lodash";
 import { useEffect } from "react";
@@ -12,11 +12,7 @@ export type SpacePageProps = {
   tabName: string | string[] | null | undefined;
 };
 
-export const UserPrimarySpace = async ({
-  fid,
-  spaceId,
-  tabName,
-}: SpacePageProps) => {
+export const UserPrimarySpace = ({ fid, spaceId, tabName }: SpacePageProps) => {
   const { loadEditableSpaces } = useAppStore((state) => ({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
