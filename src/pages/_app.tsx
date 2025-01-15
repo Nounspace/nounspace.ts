@@ -19,9 +19,9 @@ type AppPropsWithLayout = AppProps & {
 const sidebarLayout = (page: React.ReactElement) => {
   return (
     <>
-      <div className="min-h-screen max-w-screen h-screen w-screen">
+      <div className="min-h-[100dvh] md:min-h-screen h-[100dvh] md:h-screen max-w-screen w-screen">
         <div className="flex w-full h-full">
-          <div className="flex mx-auto transition-all duration-100 ease-out z-10">
+          <div className="mx-auto transition-all duration-100 ease-out z-10 hidden md:flex">
             <Sidebar />
           </div>
           {page}

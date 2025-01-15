@@ -6,6 +6,17 @@ import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";
+import user from "@/pages/api/farcaster/neynar/user";
+import { Button } from "../atoms/button";
+import { useAppStore } from "@/common/data/stores/app";
+import Modal from "../molecules/Modal";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "../atoms/tooltip";
+import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -42,6 +53,33 @@ function TabBar({
   isTokenPage,
   contractAddress,
 }: TabBarProps) {
+  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+    (state) => ({
+      setModalOpen: state.setup.setModalOpen,
+      getIsLoggedIn: state.getIsAccountReady,
+      getIsInitializing: state.getIsInitializing,
+    }),
+  );
+
+  const [isModalOpen, setModalOpenState] = React.useState(false);
+  const [tokenSymbol, setTokenSymbol] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (contractAddress) {
+      fetchTokenData(contractAddress, null).then((data) => {
+        setTokenSymbol(data.tokenSymbol);
+      });
+    }
+  }, [contractAddress]);
+
+  const handleClaimClick = () => {
+    setModalOpenState(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpenState(false);
+  };
+
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
@@ -92,80 +130,129 @@ function TabBar({
     }
   }
 
+  const isLoggedIn = getIsLoggedIn();
+
   return (
-    <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
-      {isTokenPage && contractAddress && (
-        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
-          <TokenTabBarHeader
-            tokenImage={undefined}
-            isPending={false}
-            error={null}
-            tokenName={undefined}
-            tokenSymbol={undefined}
-            contractAddress={contractAddress}
-          />
-        </div>
-      )}
-      <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
-        {tabList && (
-          <Reorder.Group
-            as="ol"
-            axis="x"
-            onReorder={updateTabOrder}
-            className="flex flex-row gap-4 grow items-start m-4 tabs"
-            values={tabList}
-          >
-            <AnimatePresence initial={false}>
-              {map(
-                inHome
-                  ? ["Welcome", ...tabList]
-                  : inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
-                (tabName: string) => {
-                  return (
-                    <Tab
-                      key={tabName}
-                      getSpacePageUrl={getSpacePageUrl}
-                      tabName={tabName}
-                      inEditMode={inEditMode}
-                      isSelected={currentTab === tabName}
-                      onClick={() => {}}
-                      removeable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
-                      draggable={inEditMode}
-                      renameable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
-                      onRemove={() => handleDeleteTab(tabName)}
-                      renameTab={handleRenameTab}
-                    />
-                  );
-                },
-              )}
-            </AnimatePresence>
-          </Reorder.Group>
+    <TooltipProvider>
+      <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
+        {isTokenPage && contractAddress && (
+          <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
+            <TokenTabBarHeader
+              tokenImage={undefined}
+              isPending={false}
+              error={null}
+              tokenName={undefined}
+              tokenSymbol={undefined}
+              contractAddress={contractAddress}
+            />
+          </div>
         )}
-      </div>
-      {inEditMode ? (
-        <div className="mr-36 flex flex-row z-infinity">
-          <NogsGateButton
-            onClick={() => handleCreateTab(generateNewTabName())}
-            className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-          >
-            <div className="ml-2">
-              <FaPlus />
-            </div>
-            <span className="ml-4 mr-2">Tab</span>
-          </NogsGateButton>
+        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
+          {tabList && (
+            <Reorder.Group
+              as="ol"
+              axis="x"
+              onReorder={updateTabOrder}
+              className="flex flex-row gap-4 grow items-start m-4 tabs"
+              values={tabList}
+            >
+              <AnimatePresence initial={false}>
+                {map(
+                  inHome
+                    ? ["Welcome", ...tabList]
+                    : inHomebase
+                      ? ["Feed", ...tabList]
+                      : tabList,
+                  (tabName: string) => {
+                    return (
+                      <Tab
+                        key={tabName}
+                        getSpacePageUrl={getSpacePageUrl}
+                        tabName={tabName}
+                        inEditMode={inEditMode}
+                        isSelected={currentTab === tabName}
+                        onClick={() => {}}
+                        removeable={
+                          tabName !== "Feed" &&
+                          tabName !== "Profile" &&
+                          tabName !== "Welcome"
+                        }
+                        draggable={inEditMode}
+                        renameable={
+                          tabName !== "Feed" &&
+                          tabName !== "Profile" &&
+                          tabName !== "Welcome"
+                        }
+                        onRemove={() => handleDeleteTab(tabName)}
+                        renameTab={handleRenameTab}
+                      />
+                    );
+                  },
+                )}
+              </AnimatePresence>
+            </Reorder.Group>
+          )}
         </div>
-      ) : null}
-    </div>
+        {isTokenPage && !getIsInitializing() && !isLoggedIn && (
+          <div className="flex items-center mr-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="line-clamp-1 min-w-40 max-w-xs truncate"
+                  variant="primary"
+                  color="primary"
+                  onClick={handleClaimClick}
+                >
+                  Claim this Space
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                Log in with the Farcaster account that deployed ${tokenSymbol}{" "}
+                to customize this space.
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
+        {inEditMode ? (
+          <div className="mr-36 flex flex-row z-infinity">
+            <NogsGateButton
+              onClick={() => handleCreateTab(generateNewTabName())}
+              className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+            >
+              <div className="ml-2">
+                <FaPlus />
+              </div>
+              <span className="ml-4 mr-2">Tab</span>
+            </NogsGateButton>
+          </div>
+        ) : null}
+        <Modal
+          open={isModalOpen}
+          setOpen={handleModalClose}
+          title={`Claim ${tokenSymbol}'s Token Space`}
+          description={`Login in with the Farcaster Account that deployed ${tokenSymbol} to customize this space.`}
+        >
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full"
+            src="/images/tutorial.webm"
+          />
+          <div className="flex flex-col items-center justify-center p-4">
+            <Button
+              className="line-clamp-1 min-w-40 max-w-xs truncate"
+              variant="primary"
+              color="primary"
+              onClick={() => setModalOpen(true)}
+            >
+              Sign In
+            </Button>
+          </div>
+        </Modal>
+      </div>
+    </TooltipProvider>
   );
 }
 

@@ -18,6 +18,7 @@ export interface ContractSpacePageProps {
   pinnedCastId?: string;
   owningIdentities: string[];
   ownerId: string | null;
+  isClankerToken?: boolean;
 }
 
 export const getServerSideProps = (async ({
@@ -33,6 +34,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   ownerIdType,
   contractAddress,
   owningIdentities,
+  isClankerToken,
 }: ContractSpacePageProps) => {
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
@@ -63,6 +65,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
             spaceId={spaceId}
             tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
             contractAddress={contractAddress}
+            isClankerToken={isClankerToken || false}
           />
         </>
       );
