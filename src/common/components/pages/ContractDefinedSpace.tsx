@@ -30,25 +30,6 @@ interface ContractDefinedSpaceProps {
   isClankerToken: boolean;
 }
 
-function createDefaultLayout(
-  contractAddr: string,
-  pinnedCastId: string,
-  tokenSymbol: string,
-  castHash: string,
-  casterFid: string,
-  symbol: string,
-  isClankerToken: boolean,
-): Promise<Omit<SpaceConfig, "isEditable">> {
-  return createInitialContractSpaceConfigForAddress(
-    contractAddr,
-    tokenSymbol,
-    castHash,
-    casterFid,
-    symbol,
-    isClankerToken,
-  );
-}
-
 const DesktopContractDefinedSpace = ({
   spaceId: providedSpaceId,
   tabName: providedTabName,
@@ -232,55 +213,40 @@ const DesktopContractDefinedSpace = ({
     getTokenData();
   }, [contractAddress]);
 
-  console.log(currentUserFid);
-  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
+  const INITIAL_SPACE_CONFIG = useMemo(
     () =>
-      createDefaultLayout(
+      createInitialContractSpaceConfigForAddress(
         contractAddress ?? "",
-        pinnedCastId ?? "",
-        "",
-        castHash,
-        casterFid,
-        symbol,
+        symbol ?? "",
+        castHash ?? "",
+        casterFid ?? "",
+        symbol ?? "",
         isClankerToken,
       ),
-    [
-      contractAddress,
-      pinnedCastId,
-      castHash,
-      casterFid,
-      symbol,
-      isClankerToken,
-    ],
+    [contractAddress, symbol, castHash, casterFid, isClankerToken],
   );
 
   const currentConfig = getCurrentSpaceConfig();
 
-  const config = useMemo(() => {
-    const fetchConfig = async () => {
-      const initialConfig = await INITIAL_PERSONAL_SPACE_CONFIG;
-      return {
-        ...(currentConfig?.tabs?.[providedTabName] || initialConfig),
-        isEditable,
-      };
-    };
-    return fetchConfig();
-  }, [
-    currentConfig,
-    providedTabName,
-    INITIAL_PERSONAL_SPACE_CONFIG,
+  const config = {
+    ...(currentConfig?.tabs[providedTabName]
+      ? currentConfig.tabs[providedTabName]
+      : INITIAL_SPACE_CONFIG),
     isEditable,
-  ]);
+  };
 
   const memoizedConfig = useMemo(() => {
-    const resolveConfig = async () => {
-      const resolvedConfig = await config;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { timestamp, ...restConfig } = resolvedConfig;
-      return restConfig;
-    };
-    return resolveConfig();
-  }, [config]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { ...restConfig } = config;
+    return restConfig;
+  }, [
+    config.fidgetInstanceDatums,
+    config.layoutID,
+    config.layoutDetails,
+    config.isEditable,
+    config.fidgetTrayContents,
+    config.theme,
+  ]);
 
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
@@ -334,7 +300,7 @@ const DesktopContractDefinedSpace = ({
   // Otherwise, it restores the tab to its last saved remote state.
   const resetConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
-    const initialConfig = await INITIAL_PERSONAL_SPACE_CONFIG;
+    const initialConfig = INITIAL_SPACE_CONFIG;
     if (isNil(remoteSpaces[spaceId])) {
       saveLocalSpaceTab(spaceId, providedTabName, {
         ...initialConfig,
@@ -347,7 +313,7 @@ const DesktopContractDefinedSpace = ({
         remoteSpaces[spaceId].tabs[providedTabName],
       );
     }
-  }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
+  }, [spaceId, INITIAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
 
   async function switchTabTo(tabName: string) {
     if (spaceId) {
@@ -398,35 +364,10 @@ const DesktopContractDefinedSpace = ({
     />
   );
 
-  const [resolvedConfig, setResolvedConfig] = useState<SpaceConfig | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    memoizedConfig
-      .then((newConfig) => {
-        if (JSON.stringify(newConfig) !== JSON.stringify(resolvedConfig)) {
-          setResolvedConfig(newConfig);
-        }
-      })
-      .catch((error) => {
-        console.error("Error resolving config:", error);
-      });
-  }, [memoizedConfig, resolvedConfig]);
-
-  useEffect(() => {
-    if (!resolvedConfig) {
-      console.warn("Resolved Config is not ready, falling back to default.");
-      INITIAL_PERSONAL_SPACE_CONFIG.then((config) => {
-        setResolvedConfig({ ...config, isEditable: false });
-      });
-    }
-  }, [resolvedConfig, INITIAL_PERSONAL_SPACE_CONFIG]);
-
   return (
     <SpacePage
       key={spaceId + providedTabName}
-      config={resolvedConfig ?? undefined}
+      config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
