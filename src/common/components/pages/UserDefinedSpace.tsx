@@ -1,3 +1,4 @@
+"use client";
 import { indexOf, isNil, mapValues, noop, first } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
