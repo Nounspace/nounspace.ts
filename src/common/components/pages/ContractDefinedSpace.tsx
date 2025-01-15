@@ -56,12 +56,15 @@ const DesktopContractDefinedSpace = ({
   ownerId,
   ownerIdType,
 }: ContractDefinedSpaceProps) => {
+  console.log(ownerId);
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
+
   const { wallets, ready: walletsReady } = useWallets();
+
   const {
     editableSpaces,
     localSpaces,
@@ -105,7 +108,6 @@ const DesktopContractDefinedSpace = ({
   const [contractAddress, setContractAddress] = useState(
     initialContractAddress,
   );
-
   const [isClankerToken, setIsClankerToken] = useState(false);
 
   useEffect(() => {
@@ -195,7 +197,8 @@ const DesktopContractDefinedSpace = ({
     return (
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
-          toString(ownerId) === toString(currentUserFid)) ||
+          (toString(ownerId) === toString(currentUserFid) ||
+            Number(ownerId) === currentUserFid)) ||
           (ownerIdType === "address" &&
             !isNil(find(wallets, (w) => w.address === ownerId))))) ||
       (!isNil(spaceId) && spaceId in editableSpaces)
@@ -212,7 +215,7 @@ const DesktopContractDefinedSpace = ({
   const [castHash, setCastHash] = useState<string>("");
   const [casterFid, setCasterFid] = useState<string>("");
   const [symbol, setSymbol] = useState<string>("");
-
+  console.log(currentUserFid);
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
     () =>
       createDefaultLayout(
