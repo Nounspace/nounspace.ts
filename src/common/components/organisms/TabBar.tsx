@@ -23,6 +23,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
+  isClankerToken?: boolean;
 }
 
 function TabBar({
@@ -41,6 +42,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
+  isClankerToken,
 }: TabBarProps) {
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -97,6 +99,7 @@ function TabBar({
       {isTokenPage && contractAddress && (
         <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
           <TokenTabBarHeader
+            isClankerToken={isClankerToken || false}
             tokenImage={undefined}
             isPending={false}
             error={null}

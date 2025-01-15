@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../../lib/utils/TokensAbi";
+import { ClankerAbiV2 } from "@/common/lib/utils/TokensAbi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 
@@ -33,11 +33,11 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
-    abi: tokensABI,
+    abi: ClankerAbiV2,
   };
 
   const { data: contractImage } = useReadContract<
-    typeof tokensABI,
+    typeof ClankerAbiV2,
     "image",
     []
   >({
@@ -45,7 +45,11 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
     functionName: "image",
   });
 
-  const { data: contractName } = useReadContract<typeof tokensABI, "name", []>({
+  const { data: contractName } = useReadContract<
+    typeof ClankerAbiV2,
+    "name",
+    []
+  >({
     ...wagmiContractConfig,
     functionName: "name",
   });
