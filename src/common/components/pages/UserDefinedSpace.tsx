@@ -3,7 +3,7 @@ import { indexOf, isNil, mapValues, noop, first } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
-import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+import createInitialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import TabBar from "../organisms/TabBar";
@@ -141,7 +141,7 @@ export default function UserDefinedSpace({
   }, [editableSpaces, currentUserFid]);
 
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
-    () => createIntialPersonSpaceConfigForFid(fid),
+    () => createInitialPersonSpaceConfigForFid(fid),
     [fid],
   );
 

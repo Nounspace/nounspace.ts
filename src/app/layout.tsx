@@ -61,9 +61,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SpeedInsights />
-        <Suspense>
-          <Providers>{sidebarLayout(children)}</Providers>
-        </Suspense>
+        <Providers>{sidebarLayout(children)}</Providers>
       </body>
     </html>
   );
