@@ -63,6 +63,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
             spaceId={spaceId}
             tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
             contractAddress={contractAddress}
+            isClankerToken={false}
           />
         </>
       );

@@ -1,10 +1,8 @@
 // We can only use pinnedCast if the Token is a Clanker v2
 
 import { SpaceConfig } from "@/common/components/templates/Space";
-import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
 
 export const createInitialContractSpaceConfigForAddress = async (
   address: string,
