@@ -2,10 +2,6 @@ import { SpaceConfig } from "@/common/components/templates/Space";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
-import { clankerTokenAbi } from "@/utils/clankerAbi";
-import { useReadContract } from "wagmi";
-import { Address } from "viem";
 
 // TODO: MOVE TO Fetch token data or replace for clanker API in the future
 // export async function fetchClankerTokenData(contractAddress: string) {

@@ -16,6 +16,7 @@ import { FaExchangeAlt, FaStream } from "react-icons/fa";
 import { MobileContractDefinedSpace } from "./MobileSpace";
 import { BasescanResult } from "@/pages/api/basescan/contract";
 import { clankerTokenAbi } from "@/utils/clankerAbi";
+import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -215,6 +216,22 @@ const DesktopContractDefinedSpace = ({
   const [castHash, setCastHash] = useState<string>("");
   const [casterFid, setCasterFid] = useState<string>("");
   const [symbol, setSymbol] = useState<string>("");
+
+  useEffect(() => {
+    const getTokenData = async () => {
+      try {
+        const { tokenSymbol } = await fetchTokenData(
+          contractAddress,
+          "" as string | null,
+        );
+        setSymbol(tokenSymbol || "");
+      } catch (err) {
+        console.error("Error fetching token data:", err);
+      }
+    };
+    getTokenData();
+  }, [contractAddress]);
+
   console.log(currentUserFid);
   const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
     () =>
