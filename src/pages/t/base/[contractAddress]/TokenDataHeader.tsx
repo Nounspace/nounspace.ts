@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../../../../common/lib/utils/TokensAbi";
+import { ClankerAbiV2 } from "@/common/lib/utils/TokensAbi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 
@@ -13,6 +13,7 @@ interface TokenTabBarHeaderProps {
   tokenName: string | undefined;
   tokenSymbol: string | undefined;
   contractAddress: string;
+  isClankerToken: boolean;
 }
 
 const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
@@ -22,6 +23,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   tokenName,
   tokenSymbol,
   contractAddress,
+  isClankerToken,
 }) => {
   const [tokenPrice, setTokenPrice] = useState<string | null>(null);
   const [image, setImage] = useState<string | null>(tokenImage || null);
@@ -39,15 +41,19 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
     ],
   };
 
-  const { data: contractImage } = useReadContract({
-    ...wagmiContractConfig,
-    functionName: "image",
-  });
+  const { data: contractImage, error: imageError } = isClankerToken
+    ? useReadContract({
+        ...wagmiContractConfig,
+        functionName: "image",
+      })
+    : { data: null, error: null };
 
-  const { data: contractName } = useReadContract({
-    ...wagmiContractConfig,
-    functionName: "name",
-  });
+  const { data: contractName, error: nameError } = isClankerToken
+    ? useReadContract({
+        ...wagmiContractConfig,
+        functionName: "name",
+      })
+    : { data: null, error: null };
 
   useEffect(() => {
     const getTokenData = async () => {
@@ -68,7 +74,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
     };
 
     getTokenData();
-  }, [contractAddress, contractImage, contractName]);
+  }, [contractAddress, contractImage, contractName, imageError, nameError]);
 
   const handleAddToMetamask = async () => {
     try {

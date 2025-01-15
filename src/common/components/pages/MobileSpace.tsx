@@ -135,6 +135,7 @@ export const MobileContractDefinedSpace = ({
     <div className="h-full w-full flex flex-col">
       <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
         <TokenTabBarHeader
+          isClankerToken={isClankerToken}
           tokenImage={undefined}
           isPending={false}
           error={null}

@@ -1,3 +1,5 @@
+// only clankertokens v2 have castHash and casterFid
+
 "use client";
 import { find, indexOf, isNil, mapValues, toString } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,8 +19,8 @@ import { useReadContract } from "wagmi";
 import { FaComments, FaDollarSign, FaLink } from "react-icons/fa6";
 import { FaExchangeAlt, FaStream } from "react-icons/fa";
 import { MobileContractDefinedSpace } from "./MobileSpace";
-import { BasescanResult } from "@/pages/api/basescan/contract";
-import { clankerTokenAbi } from "@/utils/clankerAbi";
+import contract, { BasescanResult } from "@/pages/api/basescan/contract";
+import { ClankerAbiV2 } from "@/common/lib/utils/TokensAbi";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -29,6 +31,7 @@ interface ContractDefinedSpaceProps {
   pinnedCastId?: string;
   ownerId: string | number | null;
   ownerIdType: OwnerType;
+  isClankerToken: boolean;
 }
 
 function createDefaultLayout(
@@ -55,6 +58,7 @@ const DesktopContractDefinedSpace = ({
   contractAddress: initialContractAddress,
   ownerId,
   ownerIdType,
+  isClankerToken,
 }: ContractDefinedSpaceProps) => {
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -145,6 +149,7 @@ const DesktopContractDefinedSpace = ({
   );
 
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
       setIsSignedIntoFarcaster(
@@ -191,45 +196,47 @@ const DesktopContractDefinedSpace = ({
   const [casterFid, setCasterFid] = useState<string>("");
   const [symbol, setSymbol] = useState<string>("");
 
-  const { data: rawCastHash, error: castHashError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "castHash",
-  });
-  console.log("Raw Cast Hash:", rawCastHash);
-  const { data: rawFid, error: fidError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "fid",
-  });
-  console.log("Raw Fid:", rawFid);
-  const { data: rawSymbol, error: symbolError } = useReadContract({
-    address: contractAddress as Address,
-    abi: clankerTokenAbi,
-    functionName: "symbol",
-  });
-
   useEffect(() => {
-    if (castHashError) {
-      console.error("Error fetching castHash:", castHashError);
-    }
-    if (fidError) {
-      console.error("Error fetching fid:", fidError);
-    }
-    if (symbolError) {
-      console.error("Error fetching symbol:", symbolError);
-    }
+    if (isClankerToken) {
+      const { data: rawCastHash, error: castHashError } = useReadContract({
+        address: contractAddress as Address,
+        abi: ClankerAbiV2,
+        functionName: "castHash",
+      });
+      console.log("Raw Cast Hash:", rawCastHash);
+      const { data: rawFid, error: fidError } = useReadContract({
+        address: contractAddress as Address,
+        abi: ClankerAbiV2,
+        functionName: "fid",
+      });
+      console.log("Raw Fid:", rawFid);
+      const { data: rawSymbol, error: symbolError } = useReadContract({
+        address: contractAddress as Address,
+        abi: ClankerAbiV2,
+        functionName: "symbol",
+      });
 
-    setCastHash(rawCastHash?.toString() || "");
-    setCasterFid(rawFid?.toString() || "");
-    setSymbol(rawSymbol?.toString() || "");
+      if (castHashError) {
+        console.error("Error fetching castHash:", castHashError);
+      }
+      if (fidError) {
+        console.error("Error fetching fid:", fidError);
+      }
+      if (symbolError) {
+        console.error("Error fetching symbol:", symbolError);
+      }
 
-    console.log("Cast Hash:", castHash);
-    console.log("Caster Fid:", casterFid);
-    console.log("Symbol:", symbol);
-  }, [rawCastHash, rawFid, rawSymbol, castHashError, fidError, symbolError]);
+      setCastHash(rawCastHash?.toString() || "");
+      setCasterFid(rawFid?.toString() || "");
+      setSymbol(rawSymbol?.toString() || "");
 
-  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
+      console.log("Cast Hash:", castHash);
+      console.log("Caster Fid:", casterFid);
+      console.log("Symbol:", symbol);
+    }
+  }, [isClankerToken, contractAddress]);
+
+  const INITIAL_TOKEN_SPACE_CONFIG = useMemo(
     () =>
       createDefaultLayout(
         contractAddress ?? "",
@@ -243,23 +250,17 @@ const DesktopContractDefinedSpace = ({
   );
 
   const currentConfig = getCurrentSpaceConfig();
-  console.log("Current Config:", currentConfig);
 
   const config = useMemo(() => {
     const fetchConfig = async () => {
-      const initialConfig = await INITIAL_PERSONAL_SPACE_CONFIG;
+      const initialConfig = await INITIAL_TOKEN_SPACE_CONFIG;
       return {
         ...(currentConfig?.tabs?.[providedTabName] || initialConfig),
         isEditable,
       };
     };
     return fetchConfig();
-  }, [
-    currentConfig,
-    providedTabName,
-    INITIAL_PERSONAL_SPACE_CONFIG,
-    isEditable,
-  ]);
+  }, [currentConfig, providedTabName, INITIAL_TOKEN_SPACE_CONFIG, isEditable]);
 
   const memoizedConfig = useMemo(() => {
     const resolveConfig = async () => {
@@ -323,7 +324,7 @@ const DesktopContractDefinedSpace = ({
   // Otherwise, it restores the tab to its last saved remote state.
   const resetConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
-    const initialConfig = await INITIAL_PERSONAL_SPACE_CONFIG;
+    const initialConfig = await INITIAL_TOKEN_SPACE_CONFIG;
     if (isNil(remoteSpaces[spaceId])) {
       saveLocalSpaceTab(spaceId, providedTabName, {
         ...initialConfig,
@@ -336,7 +337,7 @@ const DesktopContractDefinedSpace = ({
         remoteSpaces[spaceId].tabs[providedTabName],
       );
     }
-  }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
+  }, [spaceId, INITIAL_TOKEN_SPACE_CONFIG, remoteSpaces, providedTabName]);
 
   async function switchTabTo(tabName: string) {
     if (spaceId) {
@@ -356,6 +357,7 @@ const DesktopContractDefinedSpace = ({
     <TabBar
       isTokenPage={true}
       inHomebase={false}
+      isClankerToken={isClankerToken}
       currentTab={providedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
       contractAddress={contractAddress as Address}
@@ -400,11 +402,11 @@ const DesktopContractDefinedSpace = ({
   useEffect(() => {
     if (!resolvedConfig) {
       console.warn("Resolved Config is not ready, falling back to default.");
-      INITIAL_PERSONAL_SPACE_CONFIG.then((config) => {
+      INITIAL_TOKEN_SPACE_CONFIG.then((config) => {
         setResolvedConfig({ ...config, isEditable: false });
       });
     }
-  }, [resolvedConfig, INITIAL_PERSONAL_SPACE_CONFIG]);
+  }, [resolvedConfig, INITIAL_TOKEN_SPACE_CONFIG]);
 
   return (
     <SpacePage
@@ -429,23 +431,29 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
         `/api/basescan/contract?contractAddress=${props.contractAddress}`,
       );
       const contractData: BasescanResult = await contract.json();
-      if (
-        contractData.contractFactory &&
-        [
-          "0x250c9FB2b411B48273f69879007803790A6AeA47".toLocaleLowerCase(), // v0
-          "0x9B84fcE5Dcd9a38d2D01d5D72373F6b6b067c3e1".toLocaleLowerCase(), // v1
-          "0x732560fa1d1A76350b1A500155BA978031B53833".toLocaleLowerCase(), // v2
-        ].includes(contractData.contractFactory.toLocaleLowerCase())
-      ) {
-        setIsClankerToken(true);
+      const factoryAddress = contractData.contractFactory?.toLocaleLowerCase();
+      if (factoryAddress) {
+        if (factoryAddress === "0x250c9fb2b411b48273f69879007803790a6aea47") {
+          console.log("Clanker Token Detected: v0");
+        } else if (
+          factoryAddress === "0x9b84fce5dcd9a38d2d01d5d72373f6b6b067c3e1"
+        ) {
+          console.log("Clanker Token Detected: v1");
+        } else if (
+          factoryAddress === "0x732560fa1d1a76350b1a500155ba978031b53833"
+        ) {
+          console.log("Clanker Token Detected: v2");
+          setIsClankerToken(true);
+        }
+        console.log("Factory Address:", factoryAddress);
       }
     };
     fetchData();
-  }, []);
+  }, [contract]);
+  console.log("IsClankerToken:", isClankerToken);
 
   useEffect(() => {
     const handleResize = () => {
-      console.log("resize");
       setIsMobile(window.innerWidth <= 768);
     };
 
@@ -463,7 +471,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
       isClankerToken={isClankerToken}
     />
   ) : (
-    <DesktopContractDefinedSpace {...props} />
+    <DesktopContractDefinedSpace {...props} isClankerToken={isClankerToken} />
   );
 };
 
