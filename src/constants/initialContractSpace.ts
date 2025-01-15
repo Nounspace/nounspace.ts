@@ -39,14 +39,14 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
 //   };
 // }
 
-export const createInitialContractSpaceConfigForAddress = async (
+export const createInitialContractSpaceConfigForAddress = (
   address: string,
   tokenSymbol: string | null,
   castHash: string | null,
   casterFid: string | null,
   symbol: string,
   isClankerToken: boolean,
-): Promise<Omit<SpaceConfig, "isEditable">> => {
+): Omit<SpaceConfig, "isEditable"> => {
   console.log(
     "createInitialContractSpaceConfigForAddress",
     address,
