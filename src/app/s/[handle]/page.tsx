@@ -1,6 +1,8 @@
 import React from "react";
 import { getTabList, getUserMetadata, type Tab } from "./utils";
-import UserPrimarySpace, { SpacePageProps } from "./UserPrimarySpace";
+import UserPrimarySpace, {
+  UserDefinedSpacePageProps,
+} from "./UserPrimarySpace";
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
@@ -8,7 +10,7 @@ import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string,
-): Promise<SpacePageProps> => {
+): Promise<UserDefinedSpacePageProps> => {
   const userMetadata = await getUserMetadata(handle);
   const fid = userMetadata?.fid || null;
 
