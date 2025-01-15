@@ -4,17 +4,16 @@ import MOBILE_REDIRECT_URL from "@/constants/mobileRedirectUrl";
 
 export async function middleware(request: NextRequest) {
   const { device } = userAgent(request);
-  const url = request.nextUrl;
+  const path = request.nextUrl.pathname;
 
   if (device.type === "mobile") {
-    if (url.pathname === "/s/spacetoken") {
+    if (path === "/s/spacetoken") {
       return NextResponse.redirect(new URL("https://space.nounspace.com"));
     }
 
-    // url.searchParams.set("viewport", "mobile");
-    // return NextResponse.rewrite(url);
-
-    // return NextResponse.redirect(new URL(`${MOBILE_REDIRECT_URL}`));
+    if (!path.startsWith('/t')){
+      return NextResponse.redirect(new URL(`${MOBILE_REDIRECT_URL}`));
+    }
   }
 
   return NextResponse.next();
