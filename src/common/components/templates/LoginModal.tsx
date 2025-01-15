@@ -51,7 +51,7 @@ const LoginModal = ({
       open
     ) {
       login();
-      router.push("/homebase");
+      // router.push("/homebase");
     }
   }, [currentStep, open, ready, authenticated]);
 
