@@ -1,6 +1,9 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React, { Suspense } from "react";
 import "@/styles/globals.css";
+import type { AppProps } from "next/app";
+import type { NextPage } from "next";
+import Head from "next/head";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -40,6 +43,10 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
 };
+
+// TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
+// And a public key. If valid, we can prerender as if it is that user signed in
+// This will allow us to prerender some logged in state since we will know what user it is
 
 // TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
 // And a public key. If valid, we can prerender as if it is that user signed in

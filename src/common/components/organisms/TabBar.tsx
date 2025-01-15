@@ -3,12 +3,13 @@ import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
+import { useRouter } from "next/navigation";
+import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -26,7 +27,6 @@ interface TabBarProps {
 }
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
@@ -60,6 +60,7 @@ function TabBar({
 
   async function handleCreateTab(tabName: string) {
     await createTab(tabName);
+    await commitTabOrder();
     switchTabTo(tabName);
   }
 
@@ -117,11 +118,7 @@ function TabBar({
           >
             <AnimatePresence initial={false}>
               {map(
-                inHome
-                  ? ["Welcome", ...tabList]
-                  : inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
+                inHomebase ? ["Feed", ...tabList] : tabList,
                 (tabName: string) => {
                   return (
                     <Tab
@@ -129,19 +126,13 @@ function TabBar({
                       getSpacePageUrl={getSpacePageUrl}
                       tabName={tabName}
                       inEditMode={inEditMode}
-                      isSelected={currentTab === tabName}
+                      isSelected={
+                        currentTab.toLowerCase() === tabName.toLowerCase()
+                      }
                       onClick={() => {}}
-                      removeable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
+                      removeable={tabName !== "Feed" && tabName !== "Profile"}
                       draggable={inEditMode}
-                      renameable={
-                        tabName !== "Feed" &&
-                        tabName !== "Profile" &&
-                        tabName !== "Welcome"
-                      }
+                      renameable={tabName !== "Feed" && tabName !== "Profile"}
                       onRemove={() => handleDeleteTab(tabName)}
                       renameTab={handleRenameTab}
                     />

@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import defaultTheme from "@/common/lib/theme/defaultTheme";
 import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";

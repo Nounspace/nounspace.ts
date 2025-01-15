@@ -32,6 +32,7 @@ const LoginModal = ({
         if (isNewUser) {
           // redirect to the new user tutorial?
         }
+        router.push("/homebase");
       }
       setCurrentStep(SetupStep.SIGNED_IN);
     },
@@ -51,7 +52,6 @@ const LoginModal = ({
       open
     ) {
       login();
-      router.push("/homebase");
     }
   }, [currentStep, open, ready, authenticated]);
 

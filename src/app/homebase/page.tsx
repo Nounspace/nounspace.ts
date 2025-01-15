@@ -1,36 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { NextPageWithLayout } from "../_app";
-import { useRouter } from "next/router";
+"use client";
+
+import React, { useEffect } from "react";
+import { NextPageWithLayout } from "../../pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
-import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
-import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
+import { FeedType } from "@neynar/nodejs-sdk";
+import { noop } from "lodash";
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import TabBar from "@/common/components/organisms/TabBar";
-import { isString } from "lodash";
-import {
-  FIDGETS_TAB_HOMEBASE_CONFIG,
-  PRESS_TAB_HOME_CONFIG,
-  NOUNS_TAB_HOMEBASE_CONFIG,
-} from "@/constants/initialHomebaseTabsConfig";
+import { useRouter } from "next/navigation";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
-// Enhanced logging to trace configuration logic
-const getTabConfig = (tabName: string) => {
-  // console.log(`getTabConfig called with tabName: ${tabName}`);
-  switch (tabName) {
-    case "Fidgets":
-      return FIDGETS_TAB_HOMEBASE_CONFIG;
-    case "Nouns":
-      return NOUNS_TAB_HOMEBASE_CONFIG;
-    case "Press":
-      return PRESS_TAB_HOME_CONFIG;
-    default:
-      return USER_NOT_LOGGED_IN_HOMEBASE_CONFIG;
-  }
-};
-
-const Home: NextPageWithLayout = () => {
-  const router = useRouter();
+function Homebase() {
   const {
+    homebaseConfig,
     saveConfig,
     loadConfig,
     commitConfig,
@@ -39,6 +24,7 @@ const Home: NextPageWithLayout = () => {
     getIsInitializing,
     setCurrentSpaceId,
     setCurrentTabName,
+    tabOrdering,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
     createHomebaseTab,
@@ -47,6 +33,7 @@ const Home: NextPageWithLayout = () => {
     commitHomebaseTab,
     commitHomebaseTabOrder,
   } = useAppStore((state) => ({
+    homebaseConfig: state.homebase.homebaseConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
     loadConfig: state.homebase.loadHomebase,
     commitConfig: state.homebase.commitHomebaseToDatabase,
@@ -56,6 +43,7 @@ const Home: NextPageWithLayout = () => {
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
+    tabOrdering: state.homebase.tabOrdering,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
     updateHomebaseTabOrder: state.homebase.updateTabOrdering,
     commitHomebaseTabOrder: state.homebase.commitTabOrderingToDatabase,
@@ -63,49 +51,44 @@ const Home: NextPageWithLayout = () => {
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
   }));
+
+  const router = useRouter();
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
-  const { editMode } = useSidebarContext();
-
-  // Local state to manage current tab name and ordering
-  const [tabOrdering, setTabOrdering] = useState({
-    local: ["Fidgets", "Nouns", "Press"],
-  });
-  const [tabName, setTabName] = useState<string | undefined>(undefined);
-
-  // Monitor router changes and update tab name accordingly
-  useEffect(() => {
-    if (router.isReady && isString(router.query.tabname)) {
-      const queryTabName = router.query.tabname as string;
-      setTabName(queryTabName);
-      setCurrentTabName(queryTabName);
-    }
-  }, [router.isReady, router.query]);
+  const currentFid = useCurrentFid();
 
   useEffect(() => {
-    if (isLoggedIn && tabName) {
+    if (isLoggedIn) {
+      setCurrentSpaceId(HOMEBASE_ID);
+      setCurrentTabName("Feed");
       loadConfig();
       if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
     }
-  }, [isLoggedIn, tabName]);
+  }, [isLoggedIn, router]);
 
-  function switchTabTo(newTabName: string) {
-    if (tabName) {
-      const configToSave = getTabConfig(tabName);
-      saveConfig(configToSave);
-      commitHomebaseTab(newTabName);
+  function switchTabTo(tabName: string) {
+    if (tabName !== "Feed") {
+      router.push(`/homebase/${tabName}`);
     }
-    router.push(`/home/${newTabName}`);
   }
+
+  function getSpacePageUrl(tabName: string) {
+    if (tabName === "Feed") {
+      return `/homebase`;
+    } else {
+      return `/homebase/${tabName}`;
+    }
+  }
+
+  const { editMode } = useSidebarContext();
 
   const tabBar = (
     <TabBar
-      getSpacePageUrl={(tab) => `/home/${tab}`}
-      inHome={true}
-      inHomebase={false}
-      currentTab={tabName ?? "welcome"}
+      getSpacePageUrl={getSpacePageUrl}
+      inHomebase={true}
+      currentTab={"Feed"}
       tabList={tabOrdering.local}
       switchTabTo={switchTabTo}
       updateTabOrder={updateHomebaseTabOrder}
@@ -120,7 +103,7 @@ const Home: NextPageWithLayout = () => {
 
   const args: SpacePageArgs = isInitializing
     ? {
-        config: undefined,
+        config: homebaseConfig ?? undefined,
         saveConfig: undefined,
         commitConfig: undefined,
         resetConfig: undefined,
@@ -128,24 +111,49 @@ const Home: NextPageWithLayout = () => {
       }
     : !isLoggedIn
       ? {
-          config:
-            // test whic tab the user is in
-            getTabConfig(tabName || "welcome"),
+          config: undefined,
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName || "welcome"),
-          saveConfig,
-          commitConfig: async () => await commitConfig(),
+          config: homebaseConfig,
+          saveConfig: async (config) => {
+            await saveConfig(config);
+            return commitConfig();
+          },
+          // To get types to match since store.commitConfig is debounced
+          commitConfig: async () => {
+            await commitConfig();
+            for (const tabName of tabOrdering.local) {
+              await commitHomebaseTab(tabName);
+            }
+          },
           resetConfig,
           tabBar: tabBar,
         };
 
-  // Use the unique key directly in the JSX to trigger re-render
-  return <SpacePage key={tabName ?? "default-tab"} {...args} />;
-};
+  if (currentFid) {
+    args.feed = (
+      <FeedModule.fidget
+        settings={{
+          feedType: FeedType.Following,
+          users: "",
+          filterType: FilterType.Users,
+          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+          Xhandle: "",
+          style: "",
+          fontFamily: "var(--user-theme-font)",
+          fontColor: "var(--user-theme-font-color)" as any, // Type assertion
+        }}
+        saveData={async () => noop()}
+        data={{}}
+      />
+    );
+  }
 
-export default Home;
+  return <SpacePage {...args} />;
+}
+
+export default Homebase;

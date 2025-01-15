@@ -47,14 +47,21 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/",
-        destination: "/home",
-        permanent: true,
-      },
-      {
         source: '/signatures',
         destination: 'https://docs.nounspace.com/nounspace-alpha/accounts/signatures',
         permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/',
+        destination: '/home/welcome'
+      },
+      {
+        source: '/home',
+        destination: '/home/welcome'
       },
     ];
   },
