@@ -5,7 +5,10 @@ import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 
-const loadUserSpaceData = async (handle: string): Promise<SpacePageProps> => {
+const loadUserSpaceData = async (
+  handle: string,
+  tabNameParam?: string,
+): Promise<SpacePageProps> => {
   const userMetadata = await getUserMetadata(handle);
   const fid = userMetadata?.fid || null;
 
@@ -21,7 +24,7 @@ const loadUserSpaceData = async (handle: string): Promise<SpacePageProps> => {
   const defaultTab: Tab = tabList[0];
 
   const spaceId = defaultTab.spaceId;
-  const tabName = defaultTab.spaceName;
+  const tabName = tabNameParam || defaultTab.spaceName;
 
   return { fid, spaceId, tabName };
 };
@@ -41,12 +44,21 @@ export async function generateMetadata({
   return getUserMetadataStructure(userMetadata);
 }
 
-const UserPrimarySpacePage = async ({ params: { handle } }) => {
+const UserPrimarySpacePage = async ({
+  params: { handle, tabName: tabNameParam },
+}) => {
   if (!handle) {
     return <SpaceNotFound />;
   }
 
-  const { fid, spaceId, tabName } = await loadUserSpaceData(handle);
+  if (tabNameParam) {
+    tabNameParam = decodeURIComponent(tabNameParam);
+  }
+
+  const { fid, spaceId, tabName } = await loadUserSpaceData(
+    handle,
+    tabNameParam,
+  );
 
   return <UserPrimarySpace fid={fid} spaceId={spaceId} tabName={tabName} />;
 };
