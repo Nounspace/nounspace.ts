@@ -112,7 +112,7 @@ export default function Space({
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense>
               <InfoToast />
             </Suspense>
           </div>
