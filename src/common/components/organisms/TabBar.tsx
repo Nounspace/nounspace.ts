@@ -7,7 +7,7 @@ import NogsGateButton from "./NogsGateButton";
 import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";
 import user from "@/pages/api/farcaster/neynar/user";
-import { Button } from "@mui/material";
+import { Button } from "../atoms/button";
 import { useAppStore } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";
 import {
@@ -199,7 +199,7 @@ function TabBar({
               <TooltipTrigger asChild>
                 <Button
                   className="line-clamp-1 min-w-40 max-w-xs truncate"
-                  variant="contained"
+                  variant="primary"
                   color="primary"
                   onClick={handleClaimClick}
                 >
@@ -243,7 +243,7 @@ function TabBar({
           <div className="flex flex-col items-center justify-center p-4">
             <Button
               className="line-clamp-1 min-w-40 max-w-xs truncate"
-              variant="contained"
+              variant="primary"
               color="primary"
               onClick={() => setModalOpen(true)}
             >
