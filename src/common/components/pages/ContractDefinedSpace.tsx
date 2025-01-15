@@ -386,10 +386,16 @@ const DesktopContractDefinedSpace = ({
   );
 
   useEffect(() => {
-    memoizedConfig.then(setResolvedConfig).catch((error) => {
-      console.error("Error resolving config:", error);
-    });
-  }, [memoizedConfig]);
+    memoizedConfig
+      .then((newConfig) => {
+        if (JSON.stringify(newConfig) !== JSON.stringify(resolvedConfig)) {
+          setResolvedConfig(newConfig);
+        }
+      })
+      .catch((error) => {
+        console.error("Error resolving config:", error);
+      });
+  }, [memoizedConfig, resolvedConfig]);
 
   useEffect(() => {
     if (!resolvedConfig) {
