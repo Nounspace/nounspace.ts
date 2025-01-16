@@ -1,22 +1,20 @@
 "use client";
-import { find, indexOf, isNil, mapValues, toString } from "lodash";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { useAppStore } from "@/common/data/stores/app";
-import { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
-import SpacePage from "./SpacePage";
-import router from "next/router";
-import { useSidebarContext } from "../organisms/Sidebar";
-import { useWallets } from "@privy-io/react-auth";
 import { OwnerType } from "@/common/data/api/etherscan";
-import { Address } from "viem";
-import TabBar from "../organisms/TabBar";
-import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { FaExchangeAlt, FaStream } from "react-icons/fa";
-import { MobileContractDefinedSpace } from "./MobileSpace";
-import { BasescanResult } from "@/pages/api/basescan/contract";
-import { clankerTokenAbi } from "@/utils/clankerAbi";
+import { useAppStore } from "@/common/data/stores/app";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import { ClankerProvider, useClanker } from "@/common/providers/Clanker";
+import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import { useWallets } from "@privy-io/react-auth";
+import { find, indexOf, isNil, mapValues, toString } from "lodash";
+import router from "next/router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Address } from "viem";
+import { useSidebarContext } from "../organisms/Sidebar";
+import TabBar from "../organisms/TabBar";
+import { SpaceConfigSaveDetails } from "../templates/Space";
+import { MobileContractDefinedSpace } from "./MobileSpace";
+import SpacePage from "./SpacePage";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -27,7 +25,6 @@ interface ContractDefinedSpaceProps {
   pinnedCastId?: string;
   ownerId: string | number | null;
   ownerIdType: OwnerType;
-  isClankerToken: boolean;
 }
 
 const DesktopContractDefinedSpace = ({
@@ -46,6 +43,7 @@ const DesktopContractDefinedSpace = ({
   } = useAuthenticatorManager();
 
   const { wallets, ready: walletsReady } = useWallets();
+  const { clankerData } = useClanker();
 
   const {
     editableSpaces,
@@ -90,27 +88,6 @@ const DesktopContractDefinedSpace = ({
   const [contractAddress, setContractAddress] = useState(
     initialContractAddress,
   );
-  const [isClankerToken, setIsClankerToken] = useState(false);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const contract = await fetch(
-        `/api/basescan/contract?contractAddress=${contractAddress}`,
-      );
-      const contractData: BasescanResult = await contract.json();
-      if (
-        contractData.contractFactory &&
-        [
-          "0x250c9FB2b411B48273f69879007803790A6AeA47".toLocaleLowerCase(), // v0
-          "0x9B84fcE5Dcd9a38d2D01d5D72373F6b6b067c3e1".toLocaleLowerCase(), // v1
-          "0x732560fa1d1A76350b1A500155BA978031B53833".toLocaleLowerCase(), // v2
-        ].includes(contractData.contractFactory.toLocaleLowerCase())
-      ) {
-        setIsClankerToken(true);
-      }
-    };
-    fetchData();
-  }, [contractAddress]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -199,19 +176,26 @@ const DesktopContractDefinedSpace = ({
   const [symbol, setSymbol] = useState<string>("");
 
   useEffect(() => {
+    if (clankerData) {
+      if (clankerData.cast_hash) setCastHash(clankerData.cast_hash);
+      if (clankerData.requestor_fid)
+        setCasterFid(String(clankerData.requestor_fid));
+      setSymbol(clankerData.symbol);
+    }
+  }, [clankerData]);
+
+  useEffect(() => {
     const getTokenData = async () => {
+      if (clankerData) return;
       try {
-        const { tokenSymbol } = await fetchTokenData(
-          contractAddress,
-          "" as string | null,
-        );
+        const { tokenSymbol } = await fetchTokenData(contractAddress, null);
         setSymbol(tokenSymbol || "");
       } catch (err) {
         console.error("Error fetching token data:", err);
       }
     };
     getTokenData();
-  }, [contractAddress]);
+  }, [contractAddress, clankerData]);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
@@ -221,9 +205,9 @@ const DesktopContractDefinedSpace = ({
         castHash ?? "",
         casterFid ?? "",
         symbol ?? "",
-        isClankerToken,
+        !!clankerData,
       ),
-    [contractAddress, symbol, castHash, casterFid, isClankerToken],
+    [contractAddress, symbol, castHash, casterFid, clankerData],
   );
 
   const currentConfig = getCurrentSpaceConfig();
@@ -393,13 +377,14 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
     };
   }, []);
 
-  return isMobile ? (
-    <MobileContractDefinedSpace
-      contractAddress={props.contractAddress}
-      isClankerToken={props.isClankerToken}
-    />
-  ) : (
-    <DesktopContractDefinedSpace {...props} />
+  return (
+    <ClankerProvider contractAddress={props.contractAddress as Address}>
+      {isMobile ? (
+        <MobileContractDefinedSpace contractAddress={props.contractAddress} />
+      ) : (
+        <DesktopContractDefinedSpace {...props} />
+      )}
+    </ClankerProvider>
   );
 };
 
