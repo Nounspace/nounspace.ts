@@ -1,4 +1,5 @@
 "use client";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { OwnerType } from "@/common/data/api/etherscan";
 import { useAppStore } from "@/common/data/stores/app";
@@ -8,7 +9,6 @@ import createInitialContractSpaceConfigForAddress from "@/constants/initialContr
 import { useWallets } from "@privy-io/react-auth";
 import { find, indexOf, isNil, mapValues, toString } from "lodash";
 import router from "next/router";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
 import { useSidebarContext } from "../organisms/Sidebar";
 import TabBar from "../organisms/TabBar";
