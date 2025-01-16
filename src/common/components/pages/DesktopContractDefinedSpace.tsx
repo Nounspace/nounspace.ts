@@ -46,6 +46,38 @@ const DesktopContractDefinedSpace = ({
   const { wallets, ready: walletsReady } = useWallets();
   const { clankerData } = useClanker();
 
+  const [castHash, setCastHash] = useState<string>("");
+  const [casterFid, setCasterFid] = useState<string>("");
+  const [symbol, setSymbol] = useState<string>("");
+
+  const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  const [spaceId, setSpaceId] = useState(providedSpaceId);
+  const [contractAddress, setContractAddress] = useState(
+    initialContractAddress,
+  );
+
+  useEffect(() => {
+    if (clankerData) {
+      if (clankerData.cast_hash) setCastHash(clankerData.cast_hash);
+      if (clankerData.requestor_fid)
+        setCasterFid(String(clankerData.requestor_fid));
+      setSymbol(clankerData.symbol);
+    }
+  }, [clankerData]);
+
+  useEffect(() => {
+    const getTokenData = async () => {
+      if (clankerData) return;
+      try {
+        const { tokenSymbol } = await fetchTokenData(contractAddress, null);
+        setSymbol(tokenSymbol || "");
+      } catch (err) {
+        console.error("Error fetching token data:", err);
+      }
+    };
+    getTokenData();
+  }, [contractAddress, clankerData]);
+
   const {
     editableSpaces,
     localSpaces,
@@ -84,11 +116,6 @@ const DesktopContractDefinedSpace = ({
     updateSpaceTabOrder: state.space.updateLocalSpaceOrder,
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
   }));
-  const [loading, setLoading] = useState(!isNil(providedSpaceId));
-  const [spaceId, setSpaceId] = useState(providedSpaceId);
-  const [contractAddress, setContractAddress] = useState(
-    initialContractAddress,
-  );
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -155,6 +182,7 @@ const DesktopContractDefinedSpace = ({
 
   const isEditable = useMemo(() => {
     return (
+      parseInt(casterFid) === currentUserFid ||
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
           (toString(ownerId) === toString(currentUserFid) ||
@@ -170,33 +198,8 @@ const DesktopContractDefinedSpace = ({
     ownerId,
     ownerIdType,
     walletsReady,
+    casterFid,
   ]);
-
-  const [castHash, setCastHash] = useState<string>("");
-  const [casterFid, setCasterFid] = useState<string>("");
-  const [symbol, setSymbol] = useState<string>("");
-
-  useEffect(() => {
-    if (clankerData) {
-      if (clankerData.cast_hash) setCastHash(clankerData.cast_hash);
-      if (clankerData.requestor_fid)
-        setCasterFid(String(clankerData.requestor_fid));
-      setSymbol(clankerData.symbol);
-    }
-  }, [clankerData]);
-
-  useEffect(() => {
-    const getTokenData = async () => {
-      if (clankerData) return;
-      try {
-        const { tokenSymbol } = await fetchTokenData(contractAddress, null);
-        setSymbol(tokenSymbol || "");
-      } catch (err) {
-        console.error("Error fetching token data:", err);
-      }
-    };
-    getTokenData();
-  }, [contractAddress, clankerData]);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
