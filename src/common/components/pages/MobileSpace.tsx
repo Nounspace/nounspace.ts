@@ -13,6 +13,7 @@ import { IoIosChatboxes } from "react-icons/io";
 import { MdOutlineSwapHoriz } from "react-icons/md";
 import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
+import { useClanker } from "@/common/providers/Clanker";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 type TokenData = {
@@ -27,14 +28,13 @@ type TokenData = {
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
-  isClankerToken,
 }: {
   contractAddress: string;
-  isClankerToken: boolean;
 }) => {
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
   const [tokenData, setTokenData] = useState<TokenData>();
+  const { clankerData } = useClanker();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,7 +186,7 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}
         >
-          {isClankerToken && (
+          {clankerData && (
             <LinkItem
               href={`https://www.clanker.world/clanker/${contractAddress}`}
               imgSrc="https://www.clanker.world/_next/image?url=https%3A%2F%2Fimagedelivery.net%2FBXluQx4ige9GuW0Ia56BHw%2F295953fa-15ed-4d3c-241d-b6c1758c6200%2Foriginal&w=256&q=75"

@@ -47,6 +47,8 @@ import {
 } from "@/common/providers/AnalyticsProvider";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
+import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import { Address } from "viem";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -569,29 +571,24 @@ export const createSpaceStoreFunc = (
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
 
-      // Fetch contract data
-      const contract = await loadEthersViewOnlyContract(address);
-      const [rawCastHash, rawFid, rawSymbol] = await Promise.all([
-        contract?.castHash?.(),
-        contract?.fid?.(),
-        contract?.symbol?.(),
-      ]);
+      const clankerData = await fetchClankerByAddress(address as Address);
 
-      const castHash = rawCastHash?.toString() || "";
-      const casterFid = rawFid?.toString() || "";
-      const symbol = rawSymbol?.toString() || "";
+      const castHash = clankerData?.cast_hash || "";
+      const casterFid = clankerData?.requestor_fid
+        ? String(clankerData.requestor_fid)
+        : "";
+      const symbol = clankerData?.symbol || "";
 
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
-        await createInitialContractSpaceConfigForAddress(
+        createInitialContractSpaceConfigForAddress(
           address,
           symbol,
           castHash,
           casterFid,
           symbol,
-          // temp build fix
-          false,
+          !!clankerData,
         ),
       );
       // console.log("Created space", newSpaceId);
