@@ -1,3 +1,4 @@
+"use client";
 import { indexOf, isNil, mapValues, noop, first } from "lodash";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
@@ -7,9 +8,9 @@ import { SpaceConfigSaveDetails } from "../templates/Space";
 import Profile from "@/fidgets/ui/profile";
 import TabBar from "../organisms/TabBar";
 import SpacePage from "./SpacePage";
-import router from "next/router";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useSidebarContext } from "../organisms/Sidebar";
+import { useRouter } from "next/navigation";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -22,6 +23,7 @@ export default function UserDefinedSpace({
   tabName: string;
   fid: number;
 }) {
+  const router = useRouter();
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,

@@ -26,7 +26,7 @@ import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import FarcasterLinkify from "./linkify";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";

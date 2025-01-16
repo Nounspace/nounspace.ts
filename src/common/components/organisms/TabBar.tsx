@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
@@ -25,16 +26,19 @@ interface TabBarProps {
   currentTab: string;
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
-  commitTabOrder: () => void;
+  commitTabOrder: () => Promise<void>;
   switchTabTo: (tabName: string) => void;
-  deleteTab: (tabName: string) => void;
-  createTab: (tabName: string) => void;
-  renameTab: (tabName: string, newName: string) => void;
-  commitTab: (tabName: string) => void;
+  deleteTab: (tabName: string) => Promise<void>;
+  createTab: (tabName: string) => Promise<void>;
+  renameTab: (tabName: string, newName: string) => Promise<void>;
+  commitTab: (tabName: string) => Promise<void>;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
 }
+
+const PERMANENT_TABS = ["Feed", "Profile", "Welcome"];
+const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 function TabBar({
   inHome,
@@ -111,7 +115,7 @@ function TabBar({
     const uniqueName = generateUniqueTabName(newName);
 
     await renameTab(tabName, uniqueName);
-    await updateTabOrder(
+    updateTabOrder(
       tabList.map((name) => (name === tabName ? uniqueName : name)),
     );
     await commitTab(uniqueName);
@@ -172,17 +176,9 @@ function TabBar({
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
                         onClick={() => {}}
-                        removeable={
-                          tabName !== "Feed" &&
-                          tabName !== "Profile" &&
-                          tabName !== "Welcome"
-                        }
+                        removeable={isEditableTab(tabName)}
                         draggable={inEditMode}
-                        renameable={
-                          tabName !== "Feed" &&
-                          tabName !== "Profile" &&
-                          tabName !== "Welcome"
-                        }
+                        renameable={isEditableTab(tabName)}
                         onRemove={() => handleDeleteTab(tabName)}
                         renameTab={handleRenameTab}
                       />
