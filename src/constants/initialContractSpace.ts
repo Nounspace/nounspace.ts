@@ -163,10 +163,10 @@ export const createInitialContractSpaceConfigForAddress = async (
             },
             {
               avatar:
-                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAAAAABXZoBIAAAA/ElEQVR4AY3NIYyCYBiH8adv9tuM168ni9FCvmifhchoBIKFZN/sgY1KMxBtNvO3EQ2054ZTAU83f+F9wxP+fGyd52v+mQHfB6+aH54UxD4k7BhbOhExkTiSMVGQ+VBQMNYF1t5sCE4nA8xOdp3nOZyNJos1xkQQsZHKnMHWliTkNEfSkBIsJtEGqLQGDj5HPXLRjkZfxJxOJX2OhVZQ6v3vGOz1tGKnumd50pLBQbWivB1tGAR7GUpi78LAq46qpvNqzl1msBf/bjb2glvuQoK9IzT2iFtuFhGktnMF/WrNIVoyUkNmvHYLNa+Eumx5Z2G34q2q5r3ZFx/7A7k9CEA1KNm+AAAAAElFTkSuQmCC",
+                "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Ljc3Nzc3Nzg3Nzc3NzctKzc3Nzc3Nzc3Kzc3Nzc3Nzc3ODc3Nzc3Nys3N//AABEIABwAHAMBIgACEQEDEQH/xAAaAAABBQEAAAAAAAAAAAAAAAAHAgQFBggD/8QAKRAAAgEDAgQFBQAAAAAAAAAAAQIDAAURBDEGEiFREyJBccEHFKHR8P/EABgBAAIDAAAAAAAAAAAAAAAAAAIDAQQF/8QAHhEAAQQDAAMAAAAAAAAAAAAAAgABAxEEEiETQVH/2gAMAwEAAhEDEQA/ABZGperdZOBdRcYQ87SpI4ykMcfM2O5HxTbgPQQ6ozayXDNAwCIdgd8n4o4/TZJ5LNNrdVpmgaedhEHGHMa4AJ925j7YrekIYofI7WnuVMs/3zhi4WdpDPEJIY3MbTRMHVG6eV8E8jdR5WwagmBBxR6v3FMV5F5suj0/2ulaR4JplQBpzjDMD+O+3WgHqX8Od05geViMjY0stmBiNqtRfOrvYb3PaNWJYTlT0dDs47H9+lGvhLjKRLa7W9hNC4OI5D1gf+9NjvWeSxpxBrJ4VYRyFQRg4O4qvDliw6SNYoNr46vfGHE6xNJpdFJmRifFlXv6gfJoftJzMSaS7s5yxyaTScnLKcr9Ib+L/9k=",
               description: "",
-              text: "DexScreener",
-              url: `https://dexscreener.com/base/${address}`,
+              text: "GeckoTerminal",
+              url: `https://geckoterminal.com/base/pools/${address}`,
             },
             {
               avatar:
