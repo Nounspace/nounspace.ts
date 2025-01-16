@@ -4,6 +4,7 @@ import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
+import { useClanker } from "@/common/providers/Clanker";
 
 interface TokenTabBarHeaderProps {
   tokenImage: string | undefined;
@@ -29,6 +30,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   const [name, setName] = useState<string | null>(tokenName || null);
   const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const { clankerData } = useClanker();
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
@@ -49,16 +51,28 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   });
 
   useEffect(() => {
+    if (clankerData) {
+      setName(clankerData.name);
+      setSymbol(clankerData.symbol);
+      setImage(clankerData.img_url);
+    }
+  }, [clankerData]);
+
+  useEffect(() => {
     const getTokenData = async () => {
       try {
         const { price, image, marketCap, priceChange, tokenName, tokenSymbol } =
           await fetchTokenData(contractAddress, contractImage as string | null);
         setTokenPrice(price);
-        setImage(image || (contractImage as string | null));
         setMarketCap(marketCap ? formatNumber(parseFloat(marketCap)) : null);
         setPriceChange(priceChange);
-        setName(tokenName || (contractName as string | null));
-        setSymbol(tokenSymbol);
+
+        if (!clankerData) {
+          setName(tokenName || (contractName as string | null));
+          setImage(image || (contractImage as string | null));
+          setSymbol(tokenSymbol);
+        }
+
         setFetchError(null);
       } catch (err) {
         console.error("Error fetching token data:", err);
@@ -138,6 +152,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 borderRadius: "100%",
                 overflow: "hidden",
                 backgroundColor: image ? "transparent" : "#ccc",
+                objectFit: "cover",
               }}
             />
           ) : (
