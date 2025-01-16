@@ -111,10 +111,7 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
-  addContractEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
+  addContractEditableSpaces: (spaceId: string, identities: string[]) => void;
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
@@ -165,12 +162,7 @@ export const createSpaceStoreFunc = (
 ): SpaceStore => ({
   ...spaceStoreprofiles,
   addContractEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
+    if (includes(identities, get().account.currentSpaceIdentityPublicKey)) {
       set((draft) => {
         draft.space.editableSpaces[spaceId] = spaceId;
       }, "addContractEditableSpaces");
@@ -615,10 +607,7 @@ export const createSpaceStoreFunc = (
           map(data.value.spaces, (si) => [si.spaceId, si.spaceName]),
         );
         set((draft) => {
-          draft.space.editableSpaces = {
-            ...draft.space.editableSpaces,
-            ...editableSpaces,
-          };
+          draft.space.editableSpaces = editableSpaces;
         }, "loadEditableSpaces");
         return editableSpaces;
       }
