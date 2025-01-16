@@ -14,7 +14,7 @@ export enum SetupStep {
   TOKENS_FOUND = "Loading Identity...",
   IDENTITY_LOADED = "Loading Authenticators...",
   AUTHENTICATORS_LOADED = "Installing required Authenticators...",
-  REQUIRED_AUTHENTICATORS_INSTALLED = "Initializing Authenicators...",
+  REQUIRED_AUTHENTICATORS_INSTALLED = "Initializing Authenticators...",
   AUTHENTICATORS_INITIALIZED = "Registering accounts...",
   ACCOUNTS_REGISTERED = "Loading...",
   DONE = "DONE",

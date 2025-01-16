@@ -23,7 +23,7 @@ export default function VersionCheckProivder({
         setVersionMisaligned(true);
       }
     } catch {
-      console.error("Failed to check for new versio");
+      console.error("Failed to check for new version");
     } finally {
       if (!versionsMisaligned) {
         pollTimeOut.current = setTimeout(() => setNeedsRecheck(true), 100000);
