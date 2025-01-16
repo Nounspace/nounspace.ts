@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { useReadContract } from "wagmi";
-import tokensABI from "../../lib/utils/TokensAbi";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
+import { useClanker } from "@/common/providers/Clanker";
 
-interface TokenTabBarHeaderProps {
+interface TokenDataHeaderProps {
   tokenImage: string | undefined;
   isPending: boolean;
   error: Error | null;
@@ -15,7 +15,7 @@ interface TokenTabBarHeaderProps {
   contractAddress: string;
 }
 
-const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
+const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
   tokenImage,
   isPending,
   error,
@@ -30,25 +30,33 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   const [name, setName] = useState<string | null>(tokenName || null);
   const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const { clankerData } = useClanker();
 
   const wagmiContractConfig = {
     address: contractAddress as `0x${string}`,
-    abi: tokensABI,
+    abi: [
+      "function image() view returns (string memory)",
+      "function name() view returns (string memory)",
+    ],
   };
 
-  const { data: contractImage } = useReadContract<
-    typeof tokensABI,
-    "image",
-    []
-  >({
+  const { data: contractImage } = useReadContract({
     ...wagmiContractConfig,
     functionName: "image",
   });
 
-  const { data: contractName } = useReadContract<typeof tokensABI, "name", []>({
+  const { data: contractName } = useReadContract({
     ...wagmiContractConfig,
     functionName: "name",
   });
+
+  useEffect(() => {
+    if (clankerData) {
+      setName(clankerData.name);
+      setSymbol(clankerData.symbol);
+      setImage(clankerData.img_url);
+    }
+  }, [clankerData]);
 
   useEffect(() => {
     const getTokenData = async () => {
@@ -56,11 +64,15 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         const { price, image, marketCap, priceChange, tokenName, tokenSymbol } =
           await fetchTokenData(contractAddress, contractImage as string | null);
         setTokenPrice(price);
-        setImage(image || (contractImage as string | null));
         setMarketCap(marketCap ? formatNumber(parseFloat(marketCap)) : null);
         setPriceChange(priceChange);
-        setName(tokenName || (contractName as string | null));
-        setSymbol(tokenSymbol);
+
+        if (!clankerData) {
+          setName(tokenName || (contractName as string | null));
+          setImage(image || (contractImage as string | null));
+          setSymbol(tokenSymbol);
+        }
+
         setFetchError(null);
       } catch (err) {
         console.error("Error fetching token data:", err);
@@ -112,9 +124,9 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 w-full">
+    <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
       {/* Avatar and Token Details */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 md:space-x-4">
         {/* Avatar */}
         <Avatar
           style={{
@@ -140,6 +152,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 borderRadius: "100%",
                 overflow: "hidden",
                 backgroundColor: image ? "transparent" : "#ccc",
+                objectFit: "cover",
               }}
             />
           ) : (
@@ -195,7 +208,7 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
         {/* Price Details */}
         <div className="text-right">
           <div className="text-black font-bold">
-            {tokenPrice !== null ? `$${tokenPrice}` : "Loading..."}
+            {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
             className={`text-sm font-medium ${
@@ -204,11 +217,11 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
                 : "text-red-500"
             }`}
           >
-            {priceChange ? `${priceChange}%` : "Loading..."}
+            {priceChange ? `${priceChange}%` : " "}
           </div>
         </div>
         {/* Action Icons */}
-        <div className="flex items-center space-x-2">
+        <div className="hidden md:flex items-center space-x-2">
           <img
             src="https://logosarchive.com/wp-content/uploads/2022/02/Metamask-icon.svg"
             alt="metamask"
@@ -226,11 +239,11 @@ const TokenTabBarHeader: React.FC<TokenTabBarHeaderProps> = ({
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-5" />
+        <div className="w-0.5 h-12 bg-gray-200 m-5 hidden md:visible" />
       </div>
       {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>
   );
 };
 
-export default TokenTabBarHeader;
+export default TokenDataHeader;

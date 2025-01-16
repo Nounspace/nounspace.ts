@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Loading from "@/common/components/molecules/Loading";
-import { useGetCastsByKeyword } from "@/common/data/queries/farcaster"; // Import new hook
+import { useGetCastsByKeyword } from "@/common/data/queries/farcaster";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
-import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { isNil } from "lodash";
 import { IconType } from "react-icons";
 import { BsBarChartFill } from "react-icons/bs";
@@ -14,6 +13,7 @@ import { MdOutlineSwapHoriz } from "react-icons/md";
 import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 import { useClanker } from "@/common/providers/Clanker";
+import TokenDataHeader from "../organisms/TokenDataHeader";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 type TokenData = {
@@ -134,7 +134,7 @@ export const MobileContractDefinedSpace = ({
   return (
     <div className="h-full w-full flex flex-col">
       <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
-        <TokenTabBarHeader
+        <TokenDataHeader
           tokenImage={undefined}
           isPending={false}
           error={null}
