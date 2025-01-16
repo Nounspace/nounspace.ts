@@ -4,7 +4,6 @@ import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
-import TokenTabBarHeader from "@/pages/t/base/[contractAddress]/TokenDataHeader";
 import { Address } from "viem";
 import user from "@/pages/api/farcaster/neynar/user";
 import { Button } from "../atoms/button";
@@ -17,6 +16,7 @@ import {
   TooltipProvider,
 } from "../atoms/tooltip";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import TokenDataHeader from "./TokenDataHeader";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -137,7 +137,7 @@ function TabBar({
       <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
-            <TokenTabBarHeader
+            <TokenDataHeader
               tokenImage={undefined}
               isPending={false}
               error={null}
