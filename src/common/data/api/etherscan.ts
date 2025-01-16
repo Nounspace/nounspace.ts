@@ -2,7 +2,7 @@ import { EtherScanChains } from "@/constants/etherscanChainIds";
 import axios from "axios";
 import { Contract, Interface } from "ethers";
 import { AlchemyProvider, Provider } from "ethers/providers";
-import { filter, isUndefined } from "lodash";
+import { filter } from "lodash";
 
 export type OwnerType = "address" | "fid";
 
@@ -96,15 +96,7 @@ export async function loadEthersViewOnlyContract(
   }
 }
 
-export async function contractOwnerFromContractAddress(
-  contractAddress: string,
-) {
-  const contract = await loadEthersViewOnlyContract(contractAddress);
-  if (isUndefined(contract)) return { ownerId: undefined, ownerIdType: "fid" };
-  return contractOwnerFromContract(contract);
-}
-
-export async function contractOwnerFromContract(contract: Contract) {
+export async function contractOwnerFromContract(contract) {
   let ownerId: string | undefined = "";
   let ownerIdType: OwnerType = "address";
   const abi = contract.interface;
