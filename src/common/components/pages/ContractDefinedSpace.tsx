@@ -1,4 +1,6 @@
 "use client";
+
+import React from "react";
 import { OwnerType } from "@/common/data/api/etherscan";
 import { ClankerProvider } from "@/common/providers/Clanker";
 import dynamic from "next/dynamic";

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { OwnerType } from "@/common/data/api/etherscan";
 import { useAppStore } from "@/common/data/stores/app";
