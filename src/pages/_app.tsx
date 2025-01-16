@@ -7,6 +7,8 @@ import Head from "next/head";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ClankerProvider } from "@/common/providers/Clanker";
+import { Address } from "viem";
 
 export type NextPageWithLayout<P = any, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: React.ReactElement) => React.ReactNode;
@@ -45,7 +47,17 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <Head>
         <title>Nounspace</title>
       </Head>
-      <Providers>{getLayout(<Component {...pageProps} />)}</Providers>
+      <Providers>
+        {pageProps.contractAddress ? (
+          <ClankerProvider
+            contractAddress={pageProps.contractAddress as Address}
+          >
+            {getLayout(<Component {...pageProps} />)}
+          </ClankerProvider>
+        ) : (
+          getLayout(<Component {...pageProps} />)
+        )}
+      </Providers>
     </>
   );
 }

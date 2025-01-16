@@ -20,7 +20,7 @@ const ClankerContext = createContext<ClankerContextProps | undefined>(
 
 interface ClankerProviderProps {
   children: ReactNode;
-  contractAddress: Address;
+  contractAddress?: Address;
 }
 
 export const ClankerProvider: React.FC<ClankerProviderProps> = ({
@@ -40,7 +40,9 @@ export const ClankerProvider: React.FC<ClankerProviderProps> = ({
   };
 
   useEffect(() => {
-    fetchClanker(contractAddress);
+    if (contractAddress) {
+      fetchClanker(contractAddress);
+    }
   }, [contractAddress]);
 
   return (
