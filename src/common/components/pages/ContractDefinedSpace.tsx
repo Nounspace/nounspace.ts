@@ -2,7 +2,7 @@
 
 import React from "react";
 import { OwnerType } from "@/common/data/api/etherscan";
-import { ClankerProvider } from "@/common/providers/Clanker";
+import { TokenProvider } from "@/common/providers/TokenProvider";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Address } from "viem";
@@ -34,7 +34,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   }, []);
 
   return (
-    <ClankerProvider contractAddress={props.contractAddress as Address}>
+    <TokenProvider contractAddress={props.contractAddress as Address}>
       {isMobile ? (
         <MobileContractDefinedSpace contractAddress={props.contractAddress} />
       ) : (
@@ -42,7 +42,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
           <DynamicDesktopContractDefinedSpace {...props} />
         </div>
       )}
-    </ClankerProvider>
+    </TokenProvider>
   );
 };
 

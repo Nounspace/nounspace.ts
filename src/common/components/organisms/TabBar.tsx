@@ -5,7 +5,6 @@ import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
-import user from "@/pages/api/farcaster/neynar/user";
 import { Button } from "../atoms/button";
 import { useAppStore } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";
@@ -15,7 +14,7 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "../atoms/tooltip";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import { useToken } from "@/common/providers/TokenProvider";
 import TokenDataHeader from "./TokenDataHeader";
 
 interface TabBarProps {
@@ -62,15 +61,7 @@ function TabBar({
   );
 
   const [isModalOpen, setModalOpenState] = React.useState(false);
-  const [tokenSymbol, setTokenSymbol] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    if (contractAddress) {
-      fetchTokenData(contractAddress, null).then((data) => {
-        setTokenSymbol(data.tokenSymbol);
-      });
-    }
-  }, [contractAddress]);
+  const { tokenData } = useToken();
 
   const handleClaimClick = () => {
     setModalOpenState(true);
@@ -137,14 +128,7 @@ function TabBar({
       <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
-            <TokenDataHeader
-              tokenImage={undefined}
-              isPending={false}
-              error={null}
-              tokenName={undefined}
-              tokenSymbol={undefined}
-              contractAddress={contractAddress}
-            />
+            <TokenDataHeader />
           </div>
         )}
         <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
@@ -207,8 +191,8 @@ function TabBar({
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                Log in with the Farcaster account that deployed ${tokenSymbol}{" "}
-                to customize this space.
+                Log in with the Farcaster account that deployed $
+                {tokenData?.symbol} to customize this space.
               </TooltipContent>
             </Tooltip>
           </div>
@@ -229,8 +213,8 @@ function TabBar({
         <Modal
           open={isModalOpen}
           setOpen={handleModalClose}
-          title={`Claim ${tokenSymbol}'s Token Space`}
-          description={`Login in with the Farcaster Account that deployed ${tokenSymbol} to customize this space.`}
+          title={`Claim ${tokenData?.symbol}'s Token Space`}
+          description={`Login in with the Farcaster Account that deployed ${tokenData?.symbol} to customize this space.`}
         >
           <video
             autoPlay

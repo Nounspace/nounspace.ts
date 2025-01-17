@@ -4,8 +4,7 @@ import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { OwnerType } from "@/common/data/api/etherscan";
 import { useAppStore } from "@/common/data/stores/app";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
-import { useClanker } from "@/common/providers/Clanker";
+import { useToken } from "@/common/providers/TokenProvider";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 import { useWallets } from "@privy-io/react-auth";
 import { find, indexOf, isNil, mapValues, toString } from "lodash";
@@ -36,7 +35,6 @@ const DesktopContractDefinedSpace = ({
   ownerId,
   ownerIdType,
 }: ContractDefinedSpaceProps) => {
-  console.log(ownerId);
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
@@ -44,39 +42,14 @@ const DesktopContractDefinedSpace = ({
   } = useAuthenticatorManager();
 
   const { wallets, ready: walletsReady } = useWallets();
-  const { clankerData } = useClanker();
-
-  const [castHash, setCastHash] = useState<string>("");
-  const [casterFid, setCasterFid] = useState<string>("");
-  const [symbol, setSymbol] = useState<string>("");
+  const { tokenData } = useToken();
+  console.log(tokenData);
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
   const [contractAddress, setContractAddress] = useState(
     initialContractAddress,
   );
-
-  useEffect(() => {
-    if (clankerData) {
-      if (clankerData.cast_hash) setCastHash(clankerData.cast_hash);
-      if (clankerData.requestor_fid)
-        setCasterFid(String(clankerData.requestor_fid));
-      setSymbol(clankerData.symbol);
-    }
-  }, [clankerData]);
-
-  useEffect(() => {
-    const getTokenData = async () => {
-      if (clankerData) return;
-      try {
-        const { tokenSymbol } = await fetchTokenData(contractAddress, null);
-        setSymbol(tokenSymbol || "");
-      } catch (err) {
-        console.error("Error fetching token data:", err);
-      }
-    };
-    getTokenData();
-  }, [contractAddress, clankerData]);
 
   const {
     editableSpaces,
@@ -123,13 +96,17 @@ const DesktopContractDefinedSpace = ({
     setCurrentTabName(providedTabName);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
+      console.log("Loading space tab order for spaceId:", providedSpaceId);
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
+          console.log("Loaded space tab order for spaceId:", providedSpaceId);
           // After loading the tab order, load the specific tab
+          console.log("Loading space tab:", providedTabName);
           return loadSpaceTab(providedSpaceId, providedTabName);
         })
         .then(() => {
+          console.log("Loaded space tab:", providedTabName);
           setSpaceId(providedSpaceId);
           setLoading(false);
           // Load remaining tabs after the initial one has finished
@@ -148,7 +125,9 @@ const DesktopContractDefinedSpace = ({
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
         if (tabName !== providedTabName) {
+          console.log("Loading remaining tab:", tabName);
           await loadSpaceTab(spaceId, tabName);
+          console.log("Loaded remaining tab:", tabName);
         }
       }
     },
@@ -182,7 +161,7 @@ const DesktopContractDefinedSpace = ({
 
   const isEditable = useMemo(() => {
     return (
-      parseInt(casterFid) === currentUserFid ||
+      parseInt(toString(tokenData?.requestor_fid) || "") === currentUserFid ||
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
           (toString(ownerId) === toString(currentUserFid) ||
@@ -198,20 +177,19 @@ const DesktopContractDefinedSpace = ({
     ownerId,
     ownerIdType,
     walletsReady,
-    casterFid,
+    tokenData?.requestor_fid,
   ]);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
       createInitialContractSpaceConfigForAddress(
-        contractAddress ?? "",
-        symbol ?? "",
-        castHash ?? "",
-        casterFid ?? "",
-        symbol ?? "",
-        !!clankerData,
+        contractAddress,
+        tokenData?.cast_hash || "",
+        toString(tokenData?.requestor_fid) || "",
+        tokenData?.symbol || "",
+        !!tokenData,
       ),
-    [contractAddress, symbol, castHash, casterFid, clankerData],
+    [contractAddress, tokenData],
   );
 
   const currentConfig = getCurrentSpaceConfig();
