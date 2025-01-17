@@ -1,5 +1,5 @@
 import axios from "axios";
-export interface TokenAttribute {
+export interface GeckoTokenAttribute {
   address: string;
   name: string;
   symbol: string;
@@ -31,7 +31,7 @@ export interface GeckoTokenResponse {
   data: {
     id: string;
     type: string;
-    attributes: TokenAttribute;
+    attributes: GeckoTokenAttribute;
     relationships: Relationships;
   };
   included: {
@@ -46,6 +46,7 @@ export interface GeckoTokenResponse {
   }[];
 }
 
+// TODO: We can may be remove this and save a call
 async function fetchTotalSupplyFromEtherscan(
   tokenAddress: string,
 ): Promise<string | null> {
@@ -86,6 +87,13 @@ export async function fetchTokenData(
   tokenName: string | null;
   tokenSymbol: string | null;
   decimals: number | null;
+  coingecko_coin_id: string | null;
+  total_supply: string;
+  fdv_usd: string | null;
+  total_reserve_in_usd: string | null;
+  volume_usd: {
+    h24: string | null;
+  };
 }> {
   const baseUrl = "https://api.geckoterminal.com/api/v2";
   const network = "base";
@@ -110,6 +118,13 @@ export async function fetchTokenData(
         tokenName: null,
         tokenSymbol: null,
         decimals: null,
+        coingecko_coin_id: null,
+        total_supply: "",
+        fdv_usd: null,
+        total_reserve_in_usd: null,
+        volume_usd: {
+          h24: null,
+        },
       };
     }
 
@@ -169,6 +184,13 @@ export async function fetchTokenData(
       tokenName: token.name || null,
       tokenSymbol: token.symbol || null,
       decimals: token.decimals,
+      coingecko_coin_id: token.coingecko_coin_id || null,
+      total_supply: token.total_supply || "",
+      fdv_usd: token.fdv_usd || null,
+      total_reserve_in_usd: token.total_reserve_in_usd || null,
+      volume_usd: {
+        h24: token.volume_usd?.h24 || null,
+      },
     });
 
     return {
@@ -179,6 +201,13 @@ export async function fetchTokenData(
       tokenName: token.name || null,
       tokenSymbol: token.symbol || null,
       decimals: token.decimals || null,
+      coingecko_coin_id: token.coingecko_coin_id || null,
+      total_supply: token.total_supply || "",
+      fdv_usd: token.fdv_usd || null,
+      total_reserve_in_usd: token.total_reserve_in_usd || null,
+      volume_usd: {
+        h24: token.volume_usd?.h24 || null,
+      },
     };
   } catch (error) {
     console.error("Error fetching token data:", error);
@@ -190,6 +219,13 @@ export async function fetchTokenData(
       tokenName: null,
       tokenSymbol: null,
       decimals: null,
+      coingecko_coin_id: null,
+      total_supply: "",
+      fdv_usd: null,
+      total_reserve_in_usd: null,
+      volume_usd: {
+        h24: null,
+      },
     };
   }
 }
