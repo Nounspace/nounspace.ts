@@ -7,7 +7,6 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
-import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 
 type MatchaFidgetSettings = {

@@ -46,7 +46,6 @@ import {
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { loadEthersViewOnlyContract } from "@/common/data/api/etherscan";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { Address } from "viem";
 type SpaceId = string;

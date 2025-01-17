@@ -1,43 +1,6 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
-import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-
-// TODO: MOVE TO Fetch token data or replace for clanker API in the future
-// export async function fetchClankerTokenData(contractAddress: string) {
-//   const { data: rawCastHash, error: castHashError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "castHash",
-//   });
-//   console.log("fetchClankerTokenData", rawCastHash);
-//   const { data: rawFid, error: fidError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "fid",
-//   });
-//   const { data: rawSymbol, error: symbolError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "symbol",
-//   });
-
-//   if (castHashError) {
-//     console.error("Error fetching castHash:", castHashError);
-//   }
-//   if (fidError) {
-//     console.error("Error fetching fid:", fidError);
-//   }
-//   if (symbolError) {
-//     console.error("Error fetching symbol:", symbolError);
-//   }
-
-//   return {
-//     castHash: rawCastHash?.toString() || "",
-//     casterFid: rawFid?.toString() || "",
-//     symbol: rawSymbol?.toString() || "",
-//   };
-// }
 
 export const createInitialContractSpaceConfigForAddress = (
   address: string,
