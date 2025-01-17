@@ -1,6 +1,8 @@
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import ContractPrimarySpace, { ContractSpacePageProps } from ".";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
+import { TokenProvider } from "@/common/providers/TokenProvider";
+import { Address } from "viem";
 
 export const getServerSideProps: GetServerSideProps<
   ContractSpacePageProps
@@ -16,4 +18,10 @@ export const getServerSideProps: GetServerSideProps<
   };
 };
 
-export default ContractPrimarySpace;
+const WrappedContractPrimarySpace = (props: ContractSpacePageProps) => (
+  <TokenProvider contractAddress={props.contractAddress as Address}>
+    <ContractPrimarySpace {...props} />
+  </TokenProvider>
+);
+
+export default WrappedContractPrimarySpace;

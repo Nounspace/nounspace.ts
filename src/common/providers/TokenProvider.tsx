@@ -23,7 +23,7 @@ const TokenContext = createContext<TokenContextProps | undefined>(undefined);
 
 interface TokenProviderProps {
   children: ReactNode;
-  contractAddress: Address;
+  contractAddress?: Address;
 }
 
 export const TokenProvider: React.FC<TokenProviderProps> = ({
@@ -72,7 +72,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
   };
 
   useEffect(() => {
-    fetchTokenInfo(contractAddress);
+    fetchTokenInfo(contractAddress as Address);
   }, [contractAddress]);
 
   return (
