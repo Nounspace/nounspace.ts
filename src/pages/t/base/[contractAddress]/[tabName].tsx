@@ -1,3 +1,4 @@
+import React from "react";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import ContractPrimarySpace, { ContractSpacePageProps } from ".";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
