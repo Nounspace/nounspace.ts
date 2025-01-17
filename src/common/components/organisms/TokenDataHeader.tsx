@@ -1,87 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
-import { useReadContract } from "wagmi";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
-import { useClanker } from "@/common/providers/Clanker";
+import { useToken } from "@/common/providers/TokenProvider";
 
-interface TokenDataHeaderProps {
-  tokenImage: string | undefined;
-  isPending: boolean;
-  error: Error | null;
-  tokenName: string | undefined;
-  tokenSymbol: string | undefined;
-  contractAddress: string;
-}
-
-const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
-  tokenImage,
-  isPending,
-  error,
-  tokenName,
-  tokenSymbol,
-  contractAddress,
-}) => {
+const TokenDataHeader: React.FC = () => {
   const [tokenPrice, setTokenPrice] = useState<string | null>(null);
-  const [image, setImage] = useState<string | null>(tokenImage || null);
   const [marketCap, setMarketCap] = useState<string | null>(null);
   const [priceChange, setPriceChange] = useState<string | null>(null);
-  const [name, setName] = useState<string | null>(tokenName || null);
-  const [symbol, setSymbol] = useState<string | null>(tokenSymbol || null);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const { clankerData } = useClanker();
-
-  const wagmiContractConfig = {
-    address: contractAddress as `0x${string}`,
-    abi: [
-      "function image() view returns (string memory)",
-      "function name() view returns (string memory)",
-    ],
-  };
-
-  const { data: contractImage } = useReadContract({
-    ...wagmiContractConfig,
-    functionName: "image",
-  });
-
-  const { data: contractName } = useReadContract({
-    ...wagmiContractConfig,
-    functionName: "name",
-  });
+  const { tokenData } = useToken();
+  const contractAddress = tokenData?.address || "";
+  const name = tokenData?.name || "Loading...";
+  const symbol = tokenData?.symbol || "";
+  const image = tokenData?.image_url || null;
 
   useEffect(() => {
-    if (clankerData) {
-      setName(clankerData.name);
-      setSymbol(clankerData.symbol);
-      setImage(clankerData.img_url);
+    if (tokenData) {
+      setTokenPrice(tokenData.price_usd);
+      setMarketCap(
+        tokenData.market_cap_usd
+          ? formatNumber(parseFloat(tokenData.market_cap_usd))
+          : null,
+      );
+      setPriceChange(tokenData.volume_usd.h24);
     }
-  }, [clankerData]);
-
-  useEffect(() => {
-    const getTokenData = async () => {
-      try {
-        const { price, image, marketCap, priceChange, tokenName, tokenSymbol } =
-          await fetchTokenData(contractAddress, contractImage as string | null);
-        setTokenPrice(price);
-        setMarketCap(marketCap ? formatNumber(parseFloat(marketCap)) : null);
-        setPriceChange(priceChange);
-
-        if (!clankerData) {
-          setName(tokenName || (contractName as string | null));
-          setImage(image || (contractImage as string | null));
-          setSymbol(tokenSymbol);
-        }
-
-        setFetchError(null);
-      } catch (err) {
-        console.error("Error fetching token data:", err);
-        setFetchError("Failed to fetch token data. Please try again later.");
-      }
-    };
-
-    getTokenData();
-  }, [contractAddress, contractImage, contractName]);
+  }, [tokenData]);
 
   const handleAddToMetamask = async () => {
     try {
@@ -97,12 +41,7 @@ const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
           },
         },
       });
-
-      if (wasAdded) {
-        console.log("Token added to MetaMask");
-      } else {
-        console.log("Token not added");
-      }
+      console.log("Token added to MetaMask", wasAdded);
     } catch (error) {
       console.error("Error adding token to MetaMask", error);
     }
@@ -125,9 +64,7 @@ const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
 
   return (
     <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
-      {/* Avatar and Token Details */}
       <div className="flex items-center space-x-2 md:space-x-4">
-        {/* Avatar */}
         <Avatar
           style={{
             width: "40px",
@@ -169,7 +106,7 @@ const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
                 backgroundColor: image ? "transparent" : "#ccc",
               }}
             >
-              {name ? name.charAt(0) : "?"}
+              {typeof name === "string" ? name.charAt(0) : "?"}
             </AvatarFallback>
           )}
           {name === "nounspace" && (
@@ -194,8 +131,8 @@ const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
         {/* Token Info */}
         <div>
           <div className="flex items-center space-x-2">
-            <span className="font-bold text-black">{name || "Loading..."}</span>
-            <span className="text-gray-500 text-sm">{symbol || ""}</span>
+            <span className="font-bold text-black">{name}</span>
+            <span className="text-gray-500 text-sm">{symbol}</span>
           </div>
           <div className="text-gray-500 text-sm">
             {marketCap ? `$${marketCap}` : "Loading..."}
@@ -217,7 +154,9 @@ const TokenDataHeader: React.FC<TokenDataHeaderProps> = ({
                 : "text-red-500"
             }`}
           >
-            {priceChange ? `${priceChange}%` : " "}
+            {priceChange
+              ? `${(parseFloat(priceChange) / 1000).toFixed(2)}%`
+              : "0% "}
           </div>
         </div>
         {/* Action Icons */}
