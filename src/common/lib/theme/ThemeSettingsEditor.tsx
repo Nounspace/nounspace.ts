@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -53,43 +53,41 @@ export function ThemeSettingsEditor({
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(
-    theme.properties.musicURL,
-  );
+  // const [searchQuery, setSearchQuery] = useState("");
+  // const [searchResults, setSearchResults] = useState([]);
+  // const [selectedVideo, setSelectedVideo] = useState<string | null>(
+  //   theme.properties.musicURL,
+  // );
 
-  function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
-    const query = event.target.value;
-    setSearchQuery(query);
+  // function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
+  //   const query = event.target.value;
+  //   setSearchQuery(query);
 
-    if (query.length > 2) {
-      searchYouTube(query);
-    }
-  }
+  //   if (query.length > 2) {
+  //     searchYouTube(query);
+  //   }
+  // }
 
-  async function searchYouTube(query: string) {
-    try {
-      const response = await fetch(
-        `/api/youtube-search?query=${encodeURIComponent(query)}`,
-      );
-      const data = await response.json();
-      setSearchResults(data || []);
-    } catch (error) {
-      console.error("Error fetching YouTube search results:", error);
-    }
-  }
+  // async function searchYouTube(query: string) {
+  //   try {
+  //     const response = await fetch(
+  //       `/api/youtube-search?query=${encodeURIComponent(query)}`,
+  //     );
+  //     const data = await response.json();
+  //     setSearchResults(data || []);
+  //   } catch (error) {
+  //     console.error("Error fetching YouTube search results:", error);
+  //   }
+  // }
 
-  function handleVideoSelect(videoId: string) {
-    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-    setSelectedVideo(videoUrl);
-    themePropSetter("musicURL")(videoUrl);
-  }
+  // function handleVideoSelect(videoId: string) {
+  //   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  //   setSelectedVideo(videoUrl);
+  //   themePropSetter("musicURL")(videoUrl);
+  // }
 
-  function themePropSetter<T extends string>(
-    property: string,
-  ): (value: string) => void {
-    return (value: string): void => {
+  function themePropSetter<T>(property: string): (value: T) => void {
+    return (value: T): void => {
       saveTheme({
         ...theme,
         properties: {
@@ -97,7 +95,7 @@ export function ThemeSettingsEditor({
           [property]: value,
         },
       });
-      if (property === "musicURL") {
+      if (property === "musicURL" && typeof value === "string") {
         analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
       }
     };
@@ -110,7 +108,6 @@ export function ThemeSettingsEditor({
     headingsFont,
     headingsFontColor,
     backgroundHTML,
-    musicURL,
     fidgetBackground,
     fidgetBorderWidth,
     fidgetBorderColor,
@@ -193,6 +190,7 @@ export function ThemeSettingsEditor({
                   <TabsTrigger value="code" className={tabTriggerClasses}>
                     Code
                   </TabsTrigger>
+                  Code
                 </TabsList>
 
                 {/* Fonts */}
@@ -338,7 +336,7 @@ export function ThemeSettingsEditor({
               </div>
               <VideoSelector
                 initialVideoURL={theme.properties.musicURL}
-                onVideoSelect={themePropSetter("musicURL")}
+                onVideoSelect={themePropSetter<string>("musicURL")}
               />
             </div>
           </div>

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   TooltipContent,
   TooltipProvider,
@@ -22,13 +23,15 @@ const BrandHeader = () => {
             rel="noopener noreferrer"
           >
             <TooltipTrigger asChild>
-              <img
-                src="/images/noggles.svg"
-                className="h-13 me-3 mb-4"
-                alt="Nounspace Logo"
-                width={60}
-                height={40}
-              />
+              <div className="flex items-center">
+                <Image
+                  src="/images/noggles.svg"
+                  className="h-13 me-3 mb-4"
+                  alt="Nounspace Logo"
+                  width={60}
+                  height={40}
+                />
+              </div>
             </TooltipTrigger>
           </Link>
           <TooltipContent className=" bg-gray-200 font-black" side="left">

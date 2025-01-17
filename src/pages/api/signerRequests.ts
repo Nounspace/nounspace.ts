@@ -75,7 +75,7 @@ async function handlePost(
   req: NextApiRequest,
   res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
 ) {
-  const { publicKey, requestingWallet } = req.body as CreateSignerRequest;
+  const { publicKey } = req.body as CreateSignerRequest;
 
   if (isUndefined(publicKey)) {
     return res.status(400).json({
