@@ -14,8 +14,8 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "../atoms/tooltip";
-import { useToken } from "@/common/providers/TokenProvider";
 import TokenDataHeader from "./TokenDataHeader";
+import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -59,17 +59,6 @@ function TabBar({
       getIsInitializing: state.getIsInitializing,
     }),
   );
-
-  const [isModalOpen, setModalOpenState] = React.useState(false);
-  const { tokenData } = useToken();
-
-  const handleClaimClick = () => {
-    setModalOpenState(true);
-  };
-
-  const handleModalClose = () => {
-    setModalOpenState(false);
-  };
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -178,24 +167,7 @@ function TabBar({
           )}
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && (
-          <div className="flex items-center mr-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  className="line-clamp-1 min-w-40 max-w-xs truncate"
-                  variant="primary"
-                  color="primary"
-                  onClick={handleClaimClick}
-                >
-                  Claim this Space
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                Log in with the Farcaster account that deployed $
-                {tokenData?.symbol} to customize this space.
-              </TooltipContent>
-            </Tooltip>
-          </div>
+          <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
@@ -210,31 +182,6 @@ function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
-        <Modal
-          open={isModalOpen}
-          setOpen={handleModalClose}
-          title={`Claim ${tokenData?.symbol}'s Token Space`}
-          description={`Login in with the Farcaster Account that deployed ${tokenData?.symbol} to customize this space.`}
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            className="w-full h-full"
-            src="/images/tutorial.webm"
-          />
-          <div className="flex flex-col items-center justify-center p-4">
-            <Button
-              className="line-clamp-1 min-w-40 max-w-xs truncate"
-              variant="primary"
-              color="primary"
-              onClick={() => setModalOpen(true)}
-            >
-              Sign In
-            </Button>
-          </div>
-        </Modal>
       </div>
     </TooltipProvider>
   );

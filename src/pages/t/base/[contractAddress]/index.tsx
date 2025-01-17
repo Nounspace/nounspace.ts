@@ -9,6 +9,8 @@ import { isArray, isNil } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import React, { useEffect } from "react";
+import { TokenProvider } from "@/common/providers/TokenProvider";
+import { Address } from "viem";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
@@ -55,7 +57,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
       !isNil(spaceId)
     )
       return (
-        <>
+        <TokenProvider contractAddress={contractAddress as Address}>
           <Head>{generateContractMetadataHtml(contractAddress)}</Head>
           <ContractDefinedSpace
             ownerId={ownerId}
@@ -64,7 +66,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
             tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
             contractAddress={contractAddress}
           />
-        </>
+        </TokenProvider>
       );
   }
 
