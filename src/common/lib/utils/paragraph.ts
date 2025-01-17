@@ -36,7 +36,7 @@ const PARAGRAPH_XYZ_ARTICLE_ENDPOINT = "https://paragraph.xyz/api/v2/blogs/";
 export const getParagraphXyzArticle = async (
   url: string,
 ): Promise<ParagraphXyzArticleType | null> => {
-  // asumes url to have format: https://paragraph.xyz/@{author}/{post-title}
+  // assumes url to have format: https://paragraph.xyz/@{author}/{post-title}
   const articleSlug = url.split("?")[0].split("@")[1];
   if (!articleSlug) {
     return null;
