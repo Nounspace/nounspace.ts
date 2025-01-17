@@ -114,10 +114,16 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
     const params = new URLSearchParams();
     if (defaultSellToken) params.append("sellAddress", defaultSellToken);
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
-    if (fromChain && fromChain.id)
+    if (fromChain && fromChain.id) {
       params.append("sellChain", fromChain.id.toLowerCase());
-    if (toChain && toChain.id)
+    } else {
+      params.append("sellChain", "8453");
+    }
+    if (toChain && toChain.id) {
       params.append("buyChain", toChain.id.toLowerCase());
+    } else {
+      params.append("buyChain", "8453");
+    }
     // if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
