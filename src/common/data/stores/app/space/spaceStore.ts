@@ -584,7 +584,6 @@ export const createSpaceStoreFunc = (
         "Profile",
         createInitialContractSpaceConfigForAddress(
           address,
-          symbol,
           castHash,
           casterFid,
           symbol,
