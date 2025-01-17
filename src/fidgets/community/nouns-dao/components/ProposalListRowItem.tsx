@@ -66,11 +66,9 @@ export const getProposalState = (
   currentBlock: { number: number; timestamp: number },
 ) => {
   const {
-    id,
     startBlock,
     endBlock,
     quorumVotes,
-    createdTimestamp,
     objectionPeriodEndBlock,
     updatePeriodEndBlock,
     forVotes,

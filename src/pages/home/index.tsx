@@ -37,7 +37,6 @@ const Home: NextPageWithLayout = () => {
     resetConfig,
     getIsLoggedIn,
     getIsInitializing,
-    setCurrentSpaceId,
     setCurrentTabName,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
@@ -68,9 +67,9 @@ const Home: NextPageWithLayout = () => {
   const { editMode } = useSidebarContext();
 
   // Local state to manage current tab name and ordering
-  const [tabOrdering, setTabOrdering] = useState({
+  const tabOrdering = {
     local: ["Fidgets", "Nouns", "Press"],
-  });
+  };
   const [tabName, setTabName] = useState<string | undefined>(undefined);
 
   useEffect(() => {

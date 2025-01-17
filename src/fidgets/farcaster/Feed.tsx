@@ -20,7 +20,6 @@ import {
   useGetCastsByKeyword,
 } from "@/common/data/queries/farcaster"; // Import new hook
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import PlatformSelector from "@/common/components/molecules/PlatformSelector";
 import { Platform } from "@/common/components/molecules/PlatformSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";

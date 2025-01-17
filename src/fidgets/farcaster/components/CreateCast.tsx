@@ -348,7 +348,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     signer: Signer,
   ): Promise<{ success: boolean; message?: string }> {
     if (draft.parentCastId) {
-      const { fid, hash } = draft.parentCastId;
+      const { hash } = draft.parentCastId;
       if (hash.length !== 20) {
         return {
           success: false,
