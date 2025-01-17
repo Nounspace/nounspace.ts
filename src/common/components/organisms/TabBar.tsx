@@ -5,7 +5,6 @@ import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
-import user from "@/pages/api/farcaster/neynar/user";
 import { Button } from "../atoms/button";
 import { useAppStore } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";

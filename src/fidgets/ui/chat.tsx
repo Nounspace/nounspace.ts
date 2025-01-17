@@ -5,21 +5,14 @@ import {
   FidgetProperties,
   FidgetModule,
   type FidgetSettingsStyle,
-  type FidgetFieldConfig,
 } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import { ErrorWrapper } from "@/fidgets/helpers";
 
 export type ChatFidgetSettings = {
   roomName: string;
   size: number;
 } & FidgetSettingsStyle;
-
-interface ExtendedFidgetFieldConfig
-  extends FidgetFieldConfig<FidgetSettingsStyle> {
-  placeholder?: string;
-}
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Chat",
@@ -47,8 +40,6 @@ const Chat: React.FC<
 > = ({
   settings: { roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" },
 }) => {
-  console.log("Room name:", roomName);
-
   if (!roomName) {
     return (
       <ErrorWrapper

@@ -18,7 +18,6 @@ import { estimateBlockTime } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import rehypeRaw from "rehype-raw";
-import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import { Address } from "viem";
 
