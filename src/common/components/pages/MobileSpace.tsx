@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { useGetCastsByKeyword } from "@/common/data/queries/farcaster";
-import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
 import { isNil } from "lodash";
@@ -12,19 +11,10 @@ import { IoIosChatboxes } from "react-icons/io";
 import { MdOutlineSwapHoriz } from "react-icons/md";
 import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
-import { useClanker } from "@/common/providers/Clanker";
+import { useToken } from "@/common/providers/TokenProvider";
 import TokenDataHeader from "../organisms/TokenDataHeader";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
-type TokenData = {
-  price: string | null;
-  image: string | null;
-  marketCap: string | null;
-  priceChange: string | null;
-  tokenName: string | null;
-  tokenSymbol: string | null;
-  decimals: number | null;
-};
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
@@ -33,16 +23,7 @@ export const MobileContractDefinedSpace = ({
 }) => {
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
-  const [tokenData, setTokenData] = useState<TokenData>();
-  const { clankerData } = useClanker();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await fetchTokenData(contractAddress, null);
-      setTokenData(res);
-    };
-    fetchData();
-  }, []);
+  const { tokenData } = useToken();
 
   const {
     data,
@@ -52,11 +33,10 @@ export const MobileContractDefinedSpace = ({
     isError,
     isPending,
   } = useGetCastsByKeyword({
-    keyword: tokenData ? `$${tokenData.tokenSymbol}` : "",
+    keyword: tokenData ? `$${tokenData.symbol}` : "",
   });
 
   useEffect(() => {
-    console.log({ inView, hasNextPage });
     if (inView && hasNextPage) {
       fetchNextPage();
     }
@@ -114,9 +94,9 @@ export const MobileContractDefinedSpace = ({
           type: "ERC20",
           options: {
             address: contractAddress,
-            symbol: tokenData?.tokenSymbol,
+            symbol: tokenData?.symbol,
             decimals: tokenData?.decimals,
-            image: tokenData?.image,
+            image: tokenData?.image_url,
           },
         },
       });
@@ -134,14 +114,7 @@ export const MobileContractDefinedSpace = ({
   return (
     <div className="h-full w-full flex flex-col">
       <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
-        <TokenDataHeader
-          tokenImage={undefined}
-          isPending={false}
-          error={null}
-          tokenName={undefined}
-          tokenSymbol={undefined}
-          contractAddress={contractAddress}
-        />
+        <TokenDataHeader />
       </div>
       <div className="flex-1 overflow-y-scroll">
         <div
@@ -186,7 +159,7 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}
         >
-          {clankerData && (
+          {tokenData?.cast_hash && (
             <LinkItem
               href={`https://www.clanker.world/clanker/${contractAddress}`}
               imgSrc="https://www.clanker.world/_next/image?url=https%3A%2F%2Fimagedelivery.net%2FBXluQx4ige9GuW0Ia56BHw%2F295953fa-15ed-4d3c-241d-b6c1758c6200%2Foriginal&w=256&q=75"

@@ -3,70 +3,21 @@ import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
 
-// TODO: MOVE TO Fetch token data or replace for clanker API in the future
-// export async function fetchClankerTokenData(contractAddress: string) {
-//   const { data: rawCastHash, error: castHashError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "castHash",
-//   });
-//   console.log("fetchClankerTokenData", rawCastHash);
-//   const { data: rawFid, error: fidError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "fid",
-//   });
-//   const { data: rawSymbol, error: symbolError } = useReadContract({
-//     address: contractAddress as Address,
-//     abi: clankerTokenAbi,
-//     functionName: "symbol",
-//   });
-
-//   if (castHashError) {
-//     console.error("Error fetching castHash:", castHashError);
-//   }
-//   if (fidError) {
-//     console.error("Error fetching fid:", fidError);
-//   }
-//   if (symbolError) {
-//     console.error("Error fetching symbol:", symbolError);
-//   }
-
-//   return {
-//     castHash: rawCastHash?.toString() || "",
-//     casterFid: rawFid?.toString() || "",
-//     symbol: rawSymbol?.toString() || "",
-//   };
-// }
-
 export const createInitialContractSpaceConfigForAddress = (
   address: string,
-  tokenSymbol: string | null,
   castHash: string | null,
   casterFid: string | null,
   symbol: string,
   isClankerToken: boolean,
 ): Omit<SpaceConfig, "isEditable"> => {
-  console.log(
-    "createInitialContractSpaceConfigForAddress",
-    address,
-    tokenSymbol,
-    castHash,
-    casterFid,
-    symbol,
-    isClankerToken,
-  );
+  console.log(`Creating initial contract space config for address:
+    Address: ${address}
+    Cast Hash: ${castHash}
+    Caster Fid: ${casterFid}
+    Symbol: ${symbol}
+    Is Clanker Token: ${isClankerToken}`);
 
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
-  console.log(
-    "createInitialContractSpaceConfigForAddress",
-    address,
-    tokenSymbol,
-    castHash,
-    casterFid,
-    symbol,
-    isClankerToken,
-  );
 
   config.fidgetInstanceDatums = {
     "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1": {
@@ -111,7 +62,7 @@ export const createInitialContractSpaceConfigForAddress = (
           Xhandle: "thenounspace",
           background: "var(--user-theme-fidget-background)",
           feedType: "filter",
-          keyword: `$${symbol || tokenSymbol}`,
+          keyword: `$${symbol}`,
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
@@ -176,7 +127,7 @@ export const createInitialContractSpaceConfigForAddress = (
               url: `https://basescan.org/address/${address}`,
             },
           ],
-          title: `$${tokenSymbol || symbol} Links`,
+          title: `$${symbol} Links`,
           viewMode: "list",
         },
       },
