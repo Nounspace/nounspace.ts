@@ -10,9 +10,10 @@ import {
   fetchTokenData,
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
-import { ClankerToken, fetchClankerByAddress } from "../data/queries/clanker";
+import { ClankerToken } from "../data/queries/clanker";
 
-interface MasterToken extends GeckoTokenAttribute, ClankerToken {}
+interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
+
 
 interface TokenContextProps {
   tokenData: MasterToken | null;
@@ -36,7 +37,10 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
     try {
       console.log("Fetching token data...", address);
       const tokenResponse = await fetchTokenData(address, null);
-      const clankerResponse = await fetchClankerByAddress(address as Address);
+      const clankerResponse = await fetch(
+        `/api/clanker/ca?address=${address}`,
+      ).then((res) => res.json());
+
       const combinedData: MasterToken = {
         address: address,
         name: tokenResponse.tokenName || clankerResponse?.name || "",

@@ -8,7 +8,8 @@ const TokenDataHeader: React.FC = () => {
   const [tokenPrice, setTokenPrice] = useState<string | null>(null);
   const [marketCap, setMarketCap] = useState<string | null>(null);
   const [priceChange, setPriceChange] = useState<string | null>(null);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [fetchError] = useState<string | null>(null);
+
   const { tokenData } = useToken();
   const contractAddress = tokenData?.address || "";
   const name = tokenData?.name || "Loading...";
@@ -148,11 +149,10 @@ const TokenDataHeader: React.FC = () => {
             {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
-            className={`text-sm font-medium ${
-              priceChange && parseFloat(priceChange) > 0
+            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
                 ? "text-green-500"
                 : "text-red-500"
-            }`}
+              }`}
           >
             {priceChange
               ? `${(parseFloat(priceChange) / 1000).toFixed(2)}%`

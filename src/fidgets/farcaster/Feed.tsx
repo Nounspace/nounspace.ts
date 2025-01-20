@@ -20,7 +20,6 @@ import {
   useGetCastsByKeyword,
 } from "@/common/data/queries/farcaster"; // Import new hook
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import PlatformSelector from "@/common/components/molecules/PlatformSelector";
 import { Platform } from "@/common/components/molecules/PlatformSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -232,12 +231,12 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })
       : useGetCasts({
-          feedType,
-          fid,
-          filterType,
-          fids: users,
-          channel,
-        });
+        feedType,
+        fid,
+        filterType,
+        fids: users,
+        channel,
+      });
 
   const threadStack = useLifoQueue<string>();
   const [ref, inView] = useInView();
@@ -303,29 +302,29 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                 <React.Fragment key={pageNum}>
                   {filterType === FilterType.Keyword
                     ? page.result.casts?.map(
-                        (
-                          cast,
-                          index, // Ensure casts array is accessed correctly for keyword filter
-                        ) => (
-                          <CastRow
-                            cast={cast}
-                            key={index}
-                            onSelect={onSelectCast}
-                          />
-                        ),
-                      )
+                      (
+                        cast,
+                        index, // Ensure casts array is accessed correctly for keyword filter
+                      ) => (
+                        <CastRow
+                          cast={cast}
+                          key={index}
+                          onSelect={onSelectCast}
+                        />
+                      ),
+                    )
                     : page.casts?.map(
-                        (
-                          cast,
-                          index, // Ensure casts array is accessed correctly for other filters
-                        ) => (
-                          <CastRow
-                            cast={cast}
-                            key={index}
-                            onSelect={onSelectCast}
-                          />
-                        ),
-                      )}
+                      (
+                        cast,
+                        index, // Ensure casts array is accessed correctly for other filters
+                      ) => (
+                        <CastRow
+                          cast={cast}
+                          key={index}
+                          onSelect={onSelectCast}
+                        />
+                      ),
+                    )}
                 </React.Fragment>
               ))
             ) : (

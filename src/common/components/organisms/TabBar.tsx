@@ -5,13 +5,8 @@ import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
-import { Button } from "../atoms/button";
 import { useAppStore } from "@/common/data/stores/app";
-import Modal from "../molecules/Modal";
 import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
   TooltipProvider,
 } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
@@ -52,7 +47,7 @@ function TabBar({
   isTokenPage,
   contractAddress,
 }: TabBarProps) {
-  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+  const { getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
       getIsLoggedIn: state.getIsAccountReady,
@@ -144,7 +139,7 @@ function TabBar({
                         tabName={tabName}
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
-                        onClick={() => {}}
+                        onClick={() => { }}
                         removeable={
                           tabName !== "Feed" &&
                           tabName !== "Profile" &&

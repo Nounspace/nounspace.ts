@@ -1,14 +1,13 @@
 import React from "react";
+import ChainSelector from "@/common/components/molecules/ChainSelector";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import ChainSelector from "@/common/components/molecules/ChainSelector";
-import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
