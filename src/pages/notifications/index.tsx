@@ -323,7 +323,7 @@ export default function NotificationsPage() {
   const identityPublicKey = useCurrentSpaceIdentityPublicKey();
   const { data, error, fetchNextPage, hasNextPage, isFetching } =
     useNotifications(fid);
-  const [ref, inView] = useInView({
+  const [ref] = useInView({
     skip: !hasNextPage || isFetching,
     onChange: (_inView) => {
       if (_inView) {

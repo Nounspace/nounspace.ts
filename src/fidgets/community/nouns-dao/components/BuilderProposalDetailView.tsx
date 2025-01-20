@@ -18,7 +18,6 @@ import { estimateBlockTime } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import rehypeRaw from "rehype-raw";
-import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import { Address } from "viem";
 
@@ -149,10 +148,10 @@ export const BuilderProposalDetailView = ({
 
   const endDate = currentBlock
     ? estimateBlockTime(
-        Number((proposal as BuilderProposalData).voteEnd),
-        currentBlock.number,
-        currentBlock.timestamp,
-      )
+      Number((proposal as BuilderProposalData).voteEnd),
+      currentBlock.number,
+      currentBlock.timestamp,
+    )
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");

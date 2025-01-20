@@ -8,7 +8,6 @@ import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
-  NOUNS_PROPOSAL_DETAIL_QUERY,
 } from "@/common/lib/utils/queries";
 import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
@@ -122,8 +121,8 @@ export const NounishGovernance: React.FC<
 
   const selectedProposal = isBuilderSubgraph
     ? proposalsData?.proposals.find(
-        (proposal) => proposal.proposalId === proposalId,
-      )
+      (proposal) => proposal.proposalId === proposalId,
+    )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
   return (
     <CardContent className="size-full overflow-scroll p-4">

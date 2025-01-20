@@ -1,4 +1,4 @@
-import axios from "axios";
+
 export interface GeckoTokenAttribute {
   address: string;
   name: string;
@@ -44,36 +44,6 @@ export interface GeckoTokenResponse {
       market_cap_usd: string | null;
     };
   }[];
-}
-
-// TODO: We can may be remove this and save a call
-async function fetchTotalSupplyFromEtherscan(
-  tokenAddress: string,
-): Promise<string | null> {
-  const apiKey = process.env.ETHERSCAN_API_KEY!;
-  const baseUrl = "https://api.etherscan.io/api";
-  try {
-    const response = await axios.get(baseUrl, {
-      params: {
-        module: "stats",
-        action: "tokensupply",
-        contractaddress: tokenAddress,
-        apikey: apiKey,
-      },
-    });
-    if (response.data.status === "1") {
-      return response.data.result;
-    } else {
-      console.error(
-        "Error fetching total supply from Etherscan:",
-        response.data.message,
-      );
-      return null;
-    }
-  } catch (error) {
-    console.error("Error fetching total supply from Etherscan:", error);
-    return null;
-  }
 }
 
 export async function fetchTokenData(
@@ -147,14 +117,8 @@ export async function fetchTokenData(
 
     // Calculate market cap if not available
     if (!marketCap && token.price_usd) {
-      let totalSupply = token.total_supply;
+      const totalSupply = token.total_supply;
       console.log("Total supply:", totalSupply);
-      if (!totalSupply) {
-        console.log("Fetching total supply from Etherscan...");
-        totalSupply =
-          (await fetchTotalSupplyFromEtherscan(tokenAddress)) || "0";
-        console.log("Total supply from Etherscan:", totalSupply);
-      }
       if (totalSupply) {
         const adjustedTotalSupply =
           parseFloat(totalSupply) / Math.pow(10, token.decimals);
