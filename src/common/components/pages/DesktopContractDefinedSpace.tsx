@@ -47,9 +47,8 @@ const DesktopContractDefinedSpace = ({
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
-  const [contractAddress, setContractAddress] = useState(
-    initialContractAddress,
-  );
+  const contractAddress = initialContractAddress
+
 
   const {
     editableSpaces,
