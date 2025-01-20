@@ -9,6 +9,7 @@ const TokenDataHeader: React.FC = () => {
   const [marketCap, setMarketCap] = useState<string | null>(null);
   const [priceChange, setPriceChange] = useState<string | null>(null);
   const [fetchError] = useState<string | null>(null);
+
   const { tokenData } = useToken();
   const contractAddress = tokenData?.address || "";
   const name = tokenData?.name || "Loading...";

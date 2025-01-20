@@ -14,6 +14,7 @@ import { ClankerToken } from "../data/queries/clanker";
 
 interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
 
+
 interface TokenContextProps {
   tokenData: MasterToken | null;
   fetchTokenInfo: (address: string) => void;
@@ -39,6 +40,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       const clankerResponse = await fetch(
         `/api/clanker/ca?address=${address}`,
       ).then((res) => res.json());
+
       const combinedData: MasterToken = {
         address: address,
         name: tokenResponse.tokenName || clankerResponse?.name || "",
