@@ -13,7 +13,7 @@ const TokenDataHeader: React.FC = () => {
   const contractAddress = tokenData?.address || "";
   const name = tokenData?.name || "Loading...";
   const symbol = tokenData?.symbol || "";
-  const image = tokenData?.image_url || null;
+  const image = tokenData?.image_url && tokenData.image_url !== "missing.png" ? tokenData.image_url : tokenData?.img_url || null;
 
   useEffect(() => {
     if (tokenData) {
@@ -149,8 +149,8 @@ const TokenDataHeader: React.FC = () => {
           </div>
           <div
             className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
-                ? "text-green-500"
-                : "text-red-500"
+              ? "text-green-500"
+              : "text-red-500"
               }`}
           >
             {priceChange

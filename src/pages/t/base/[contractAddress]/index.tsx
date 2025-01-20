@@ -36,6 +36,28 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   contractAddress,
   owningIdentities,
 }: ContractSpacePageProps) => {
+  return (
+    <TokenProvider contractAddress={contractAddress as Address}>
+      <ContractPrimarySpaceContent
+        spaceId={spaceId}
+        tabName={tabName}
+        ownerId={ownerId}
+        ownerIdType={ownerIdType}
+        contractAddress={contractAddress}
+        owningIdentities={owningIdentities}
+      />
+    </TokenProvider>
+  );
+};
+
+const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
+  spaceId,
+  tabName,
+  ownerId,
+  ownerIdType,
+  contractAddress,
+  owningIdentities,
+}) => {
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
       loadEditableSpaces: state.space.loadEditableSpaces,
@@ -66,7 +88,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
       !isNil(spaceId)
     )
       return (
-        <TokenProvider contractAddress={contractAddress as Address}>
+        <>
           <Head>
             {loading
               ? <title>Loading token Page...</title>
@@ -79,7 +101,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
             tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
             contractAddress={contractAddress}
           />
-        </TokenProvider>
+        </>
       );
   }
 

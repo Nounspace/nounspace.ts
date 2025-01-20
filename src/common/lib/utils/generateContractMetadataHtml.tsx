@@ -8,25 +8,24 @@ export type UserMetadata = {
   bio?: string;
 };
 
+// const formatPrice = (price: number) => {
+//   if (price >= 1000000) {
+//     return (price / 1000000).toFixed(1) + "M";
+//   } else if (price >= 1000) {
+//     return (price / 1000).toFixed(1) + "k";
+//   } else if (price < 1) {
+//     return price.toFixed(4).replace(/(\.\d{2})\d+$/, "$1").replace(/\.?0+$/, "");
+//   }
+//   return price.toFixed(2).replace(/(\.\d{2})\d+$/, "$1").replace(/\.?0+$/, "");
+// };
+
 export const generateContractMetadataHtml = (
   contractAddress?: string | null,
   tokenData?: MasterToken | null,
 ) => {
   const spaceUrl = `https://nounspace.com/t/base/${contractAddress}`;
-  const priceInfo = tokenData?.price_usd ? ` - $${tokenData.price_usd}` : "";
   const tokenSymbol = tokenData?.symbol ? `  ${tokenData.symbol}` : "";
-  const formatPrice = (price: number) => {
-    if (price >= 1000000) {
-      return (price / 1000000).toFixed(1) + "M";
-    } else if (price >= 1000) {
-      return (price / 1000).toFixed(1) + "k";
-    } else if (price < 1) {
-      return price.toFixed(4).replace(/(\.\d{2})\d+$/, "$1").replace(/\.?0+$/, "");
-    }
-    return price.toFixed(2).replace(/(\.\d{2})\d+$/, "$1").replace(/\.?0+$/, "");
-  };
-
-  const formattedPrice = tokenData?.price_usd ? ` - $${formatPrice(Number(tokenData.price_usd))}` : "";
+  const priceInfo = tokenData?.price_usd ? ` - $${(Number(tokenData.price_usd))}` : "";
 
   return (
     <>
