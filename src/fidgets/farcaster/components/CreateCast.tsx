@@ -92,7 +92,7 @@ export type ModProtocolCastAddBody = Exclude<
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => {},
+  afterSubmit = () => { },
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -348,14 +348,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
     signer: Signer,
   ): Promise<{ success: boolean; message?: string }> {
     if (draft.parentCastId) {
-      const { fid, hash } = draft.parentCastId;
+      const { hash } = draft.parentCastId;
       if (hash.length !== 20) {
         return {
           success: false,
           message: "Invalid parent cast ID hash length.",
         };
       }
-    }
+    } ``
 
     // Prepare the mentions and their positions
     const mentions = draft.mentionsToFids
@@ -370,9 +370,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-            fid: draft.parentCastId.fid,
-            hash: draft.parentCastId.hash,
-          }
+          fid: draft.parentCastId.fid,
+          hash: draft.parentCastId.hash,
+        }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here

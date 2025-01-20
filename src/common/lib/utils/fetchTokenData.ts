@@ -1,4 +1,3 @@
-import axios from "axios";
 export interface GeckoTokenAttribute {
   address: string;
   name: string;

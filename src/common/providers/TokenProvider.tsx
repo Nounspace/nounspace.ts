@@ -10,9 +10,9 @@ import {
   fetchTokenData,
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
-import { ClankerToken, fetchClankerByAddress } from "../data/queries/clanker";
+import { ClankerToken } from "../data/queries/clanker";
 
-interface MasterToken extends GeckoTokenAttribute, ClankerToken {}
+interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
 
 interface TokenContextProps {
   tokenData: MasterToken | null;

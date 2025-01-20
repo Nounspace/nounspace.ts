@@ -37,7 +37,6 @@ const Home: NextPageWithLayout = () => {
     resetConfig,
     getIsLoggedIn,
     getIsInitializing,
-    setCurrentSpaceId,
     setCurrentTabName,
     loadHomebaseTabOrder,
     updateHomebaseTabOrder,
@@ -68,9 +67,9 @@ const Home: NextPageWithLayout = () => {
   const { editMode } = useSidebarContext();
 
   // Local state to manage current tab name and ordering
-  const [tabOrdering, setTabOrdering] = useState({
+  const tabOrdering = {
     local: ["Fidgets", "Nouns", "Press"],
-  });
+  };
   const [tabName, setTabName] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -125,29 +124,29 @@ const Home: NextPageWithLayout = () => {
 
   const args: SpacePageArgs = isInitializing
     ? {
-        config: undefined,
-        saveConfig: undefined,
-        commitConfig: undefined,
-        resetConfig: undefined,
-        tabBar: tabBar,
-      }
+      config: undefined,
+      saveConfig: undefined,
+      commitConfig: undefined,
+      resetConfig: undefined,
+      tabBar: tabBar,
+    }
     : !isLoggedIn
       ? {
-          config:
-            // test whic tab the user is in
-            getTabConfig(tabName || "welcome"),
-          saveConfig: async () => {},
-          commitConfig: async () => {},
-          resetConfig: async () => {},
-          tabBar: tabBar,
-        }
+        config:
+          // test whic tab the user is in
+          getTabConfig(tabName || "welcome"),
+        saveConfig: async () => { },
+        commitConfig: async () => { },
+        resetConfig: async () => { },
+        tabBar: tabBar,
+      }
       : {
-          config: getTabConfig(tabName || "welcome"),
-          saveConfig,
-          commitConfig: async () => await commitConfig(),
-          resetConfig,
-          tabBar: tabBar,
-        };
+        config: getTabConfig(tabName || "welcome"),
+        saveConfig,
+        commitConfig: async () => await commitConfig(),
+        resetConfig,
+        tabBar: tabBar,
+      };
 
   // Use the unique key directly in the JSX to trigger re-render
   return <SpacePage key={tabName ?? "welcome"} {...args} />;
