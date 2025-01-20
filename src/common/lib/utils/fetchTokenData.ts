@@ -117,7 +117,7 @@ export async function fetchTokenData(
 
     // Calculate market cap if not available
     if (!marketCap && token.price_usd) {
-      let totalSupply = token.total_supply;
+      const totalSupply = token.total_supply;
       console.log("Total supply:", totalSupply);
       if (totalSupply) {
         const adjustedTotalSupply =
