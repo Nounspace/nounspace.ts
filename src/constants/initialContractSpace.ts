@@ -36,7 +36,8 @@ export const createInitialContractSpaceConfigForAddress = (
     },
     ...(isClankerToken &&
       castHash &&
-      casterFid && {
+      casterFid &&
+      castHash !== "clank.fun deployment" && {
         "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
           config: {
             data: {},
@@ -152,7 +153,10 @@ export const createInitialContractSpaceConfigForAddress = (
   };
 
   config.layoutDetails.layoutConfig.layout =
-    isClankerToken && castHash && casterFid
+    isClankerToken &&
+    castHash &&
+    casterFid &&
+    castHash !== "clank.fun deployment"
       ? [
           {
             h: 6,
