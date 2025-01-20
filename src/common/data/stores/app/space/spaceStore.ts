@@ -590,7 +590,6 @@ export const createSpaceStoreFunc = (
           !!clankerData,
         ),
       );
-      // console.log("Created space", newSpaceId);
       return newSpaceId;
     } catch (e) {
       null;

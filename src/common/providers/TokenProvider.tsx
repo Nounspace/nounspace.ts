@@ -36,7 +36,9 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
     try {
       console.log("Fetching token data...", address);
       const tokenResponse = await fetchTokenData(address, null);
-      const clankerResponse = await fetchClankerByAddress(address as Address);
+      const clankerResponse = await fetch(
+        `/api/clanker/ca?address=${address}`,
+      ).then((res) => res.json());
       const combinedData: MasterToken = {
         address: address,
         name: tokenResponse.tokenName || clankerResponse?.name || "",
