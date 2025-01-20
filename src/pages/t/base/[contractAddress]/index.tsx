@@ -8,8 +8,8 @@ import { NextPageWithLayout } from "@/pages/_app";
 import { isArray, isNil } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
-import React, { useEffect } from "react";
-import { TokenProvider } from "@/common/providers/TokenProvider";
+import React, { useEffect, useState } from "react";
+import { TokenProvider, useToken } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 
 export interface ContractSpacePageProps {
@@ -36,12 +36,37 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   contractAddress,
   owningIdentities,
 }: ContractSpacePageProps) => {
+  return (
+    <TokenProvider contractAddress={contractAddress as Address}>
+      <ContractPrimarySpaceContent
+        spaceId={spaceId}
+        tabName={tabName}
+        ownerId={ownerId}
+        ownerIdType={ownerIdType}
+        contractAddress={contractAddress}
+        owningIdentities={owningIdentities}
+      />
+    </TokenProvider>
+  );
+};
+
+const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
+  spaceId,
+  tabName,
+  ownerId,
+  ownerIdType,
+  contractAddress,
+  owningIdentities,
+}) => {
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
       loadEditableSpaces: state.space.loadEditableSpaces,
       addContractEditableSpaces: state.space.addContractEditableSpaces,
     }),
   );
+
+  const { tokenData } = useToken();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     addContractEditableSpaces(spaceId, owningIdentities);
@@ -51,14 +76,24 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
     loadEditableSpaces();
   }, []);
 
+  useEffect(() => {
+    if (tokenData) {
+      setLoading(false);
+    }
+  }, [tokenData]);
+
   if (!isNil(ownerId) && !isNil(contractAddress)) {
     if (
       (isNil(spaceId) && (tabName === "profile" || tabName === null)) ||
       !isNil(spaceId)
     )
       return (
-        <TokenProvider contractAddress={contractAddress as Address}>
-          <Head>{generateContractMetadataHtml(contractAddress)}</Head>
+        <>
+          <Head>
+            {loading
+              ? <title>Loading token Page...</title>
+              : generateContractMetadataHtml(contractAddress, tokenData)}
+          </Head>
           <ContractDefinedSpace
             ownerId={ownerId}
             ownerIdType={ownerIdType}
@@ -66,7 +101,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
             tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
             contractAddress={contractAddress}
           />
-        </TokenProvider>
+        </>
       );
   }
 

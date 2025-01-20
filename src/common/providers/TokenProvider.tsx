@@ -12,7 +12,7 @@ import {
 } from "../lib/utils/fetchTokenData";
 import { ClankerToken } from "../data/queries/clanker";
 
-interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
+export interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
 
 
 interface TokenContextProps {
