@@ -66,11 +66,9 @@ export const getProposalState = (
   currentBlock: { number: number; timestamp: number },
 ) => {
   const {
-    id,
     startBlock,
     endBlock,
     quorumVotes,
-    createdTimestamp,
     objectionPeriodEndBlock,
     updatePeriodEndBlock,
     forVotes,
@@ -86,9 +84,9 @@ export const getProposalState = (
   const dynamicThreshold = Math.min(
     maxThreshold,
     minThreshold +
-      (maxThreshold - minThreshold) *
-        (Number(againstVotes) /
-          (Number(forVotes) + Number(againstVotes) + Number(abstainVotes))),
+    (maxThreshold - minThreshold) *
+    (Number(againstVotes) /
+      (Number(forVotes) + Number(againstVotes) + Number(abstainVotes))),
   );
 
   if (canceledTimestamp) {
