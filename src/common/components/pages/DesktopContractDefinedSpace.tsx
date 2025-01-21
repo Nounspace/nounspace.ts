@@ -284,11 +284,24 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    router.push(`/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`);
+
+    // TODO: This is a hack to get the profile tab to work, we need to fix this in a proper way
+    if (tabName === "Profile") {
+      router.push(`/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`);
+    }
+    else {
+      router.push(`/t/base/${contractAddress}/${tabName}`);
+    }
   }
+  // TODO: This is a hack to get the profile tab to work, we need to fix this in a proper way
 
   function getSpacePageUrl(tabName: string) {
-    return `/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`;
+    if (tabName === "Profile") {
+      return `/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`;
+    }
+    else {
+      return `/t/base/${contractAddress}/${tabName}`;
+    }
   }
 
   const { editMode } = useSidebarContext();
