@@ -1,6 +1,7 @@
 import React from "react";
 import Modal from "../molecules/Modal";
 import { Button } from "../atoms/button";
+import { useAppStore } from "@/common/data/stores/app";
 
 interface ClaimModalProps {
   isModalOpen: boolean;
@@ -13,6 +14,17 @@ const ClaimModal: React.FC<ClaimModalProps> = ({
   handleModalClose,
   tokenSymbol,
 }) => {
+  const { setModalOpen } = useAppStore(
+    (state) => ({
+      setModalOpen: state.setup.setModalOpen,
+    }),
+  );
+
+  const handleSignInClick = () => {
+    setModalOpen(true);
+    handleModalClose();
+  };
+
   return (
     <Modal
       open={isModalOpen}
@@ -33,7 +45,7 @@ const ClaimModal: React.FC<ClaimModalProps> = ({
           className="line-clamp-1 min-w-40 max-w-xs truncate"
           variant="primary"
           color="primary"
-          onClick={handleModalClose}
+          onClick={handleSignInClick}
         >
           Sign In
         </Button>
