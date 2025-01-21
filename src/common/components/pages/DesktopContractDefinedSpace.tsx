@@ -335,7 +335,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={resetConfig}
+      resetConfig={async () => {}}
       tabBar={tabBar}
       loading={loading}
     />
