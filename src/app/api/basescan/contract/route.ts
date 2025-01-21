@@ -1,6 +1,5 @@
-import requestHandler from "@/common/data/api/requestHandler";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { NextRequest, NextResponse } from "next/server";
 
 export interface BasescanResponse {
   status: string;
@@ -18,32 +17,27 @@ export interface BasescanResult {
   creationBytecode: string;
 }
 
-async function getContract(req: NextApiRequest, res: NextApiResponse) {
+
+export async function GET(req: NextRequest) {
   try {
-    const { contractAddress } = req.query;
+    const query = req.nextUrl.searchParams;
+    const contractAddress = query.get("contractAddress");
     if (!contractAddress) {
-      return res.status(400).json({ error: "Contract address is required" });
+      return NextResponse.json({ error: "Contract address is required" }, { status: 400 });
     }
 
     const options: AxiosRequestConfig = {
       method: "GET",
       url: `https://api.basescan.org/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${process.env.BASESCAN_API_KEY}`,
-      params: req.query,
+      params: query,
     };
 
     const { data } = await axios.request<BasescanResponse>(options);
-    res.status(200).json(data.result[0]);
+    return NextResponse.json(data.result[0]);
   } catch (e) {
     if (isAxiosError(e)) {
-      res
-        .status(e.response!.data.status || 500)
-        .json(e.response!.data || "An unknown error occurred");
-    } else {
-      res.status(500).json("An unknown error occurred");
+      return NextResponse.json(e.response!.data || "An unknown error occurred", { status: e.response!.data.status || 500 });
     }
+    return NextResponse.json("An unknown error occurred", { status: 500 });
   }
 }
-
-export default requestHandler({
-  get: getContract,
-});
