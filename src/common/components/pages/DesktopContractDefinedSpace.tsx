@@ -284,11 +284,12 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    router.push(`/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`);
+    if (tabName)
+      router.push(`/t/base/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
-    return `/t/base/${contractAddress}/${tabName.toLocaleLowerCase()}`;
+    return `/t/base/${contractAddress}/${tabName}`;
   }
 
   const { editMode } = useSidebarContext();
