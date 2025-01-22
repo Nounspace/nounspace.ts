@@ -591,6 +591,7 @@ export const createSpaceStoreFunc = (
       );
       return newSpaceId;
     } catch (e) {
+      console.log("cagon", e);
       null;
     }
   },

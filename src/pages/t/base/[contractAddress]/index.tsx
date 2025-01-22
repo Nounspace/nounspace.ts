@@ -22,12 +22,15 @@ export interface ContractSpacePageProps {
   ownerId: string | null;
 }
 
+// TODO: Add datafetch for tokens in getServerSideProps
+
 export const getServerSideProps = (async ({
   params,
 }: GetServerSidePropsContext) => {
   return loadContractData(params);
 }) satisfies GetServerSideProps<ContractSpacePageProps>;
 
+// TODO: pass token data to the contract space page
 export const ContractPrimarySpace: NextPageWithLayout = ({
   spaceId,
   tabName,
@@ -37,6 +40,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   owningIdentities,
 }: ContractSpacePageProps) => {
   return (
+    // TODO: pass token data to the TokenProvider
     <TokenProvider contractAddress={contractAddress as Address}>
       <ContractPrimarySpaceContent
         spaceId={spaceId}

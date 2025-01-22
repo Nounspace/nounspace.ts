@@ -77,14 +77,26 @@ async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
 ) {
+  console.log(`[IdentityCheck] Checking if identity ${identity} can register for contract ${contractAddress}`);
   const { ownerId, ownerIdType } =
     await contractOwnerFromContractAddress(contractAddress);
+  console.log(`[IdentityCheck] Owner ID: ${ownerId}, Owner ID Type: ${ownerIdType}`);
+
   if (isNil(ownerId)) {
+    console.log(`[IdentityCheck] Owner ID is nil, returning false`);
     return false;
   } else if (ownerIdType === "fid") {
-    return identityCanRegisterForFid(identity, parseInt(ownerId));
+    console.log(`[IdentityCheck] Owner ID Type is fid, checking if identity can register for fid ${ownerId}`);
+    const canRegisterForFid = await identityCanRegisterForFid(identity, parseInt(ownerId));
+    console.log(`[IdentityCheck] Can register for fid: ${canRegisterForFid}`);
+    return canRegisterForFid;
   }
-  return includes(await loadOwnedItentitiesForWalletAddress(ownerId), identity);
+
+  const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
+  console.log(`[IdentityCheck] Owned identities for wallet address ${ownerId}: ${ownedIdentities}`);
+  const canRegister = includes(ownedIdentities, identity);
+  console.log(`[IdentityCheck] Can register: ${canRegister}`);
+  return canRegister;
 }
 
 // Handles the registration of a new space name to requesting identity
@@ -94,7 +106,8 @@ async function registerNewSpace(
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
   const registration = req.body;
-  // console.log(registration);
+  console.log(registration);
+  console.log(isSpaceRegistration(registration));
   if (!isSpaceRegistration(registration)) {
     res.status(400).json({
       result: "error",
@@ -105,6 +118,7 @@ async function registerNewSpace(
     });
     return;
   }
+  console.log(validateSignable(registration, "identityPublicKey"));
   if (!validateSignable(registration, "identityPublicKey")) {
     res.status(400).json({
       result: "error",

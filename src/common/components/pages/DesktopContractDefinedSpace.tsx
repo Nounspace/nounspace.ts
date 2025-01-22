@@ -31,7 +31,7 @@ const DesktopContractDefinedSpace = ({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   pinnedCastId,
-  contractAddress: initialContractAddress,
+  contractAddress,
   ownerId,
   ownerIdType,
 }: ContractDefinedSpaceProps) => {
@@ -47,7 +47,7 @@ const DesktopContractDefinedSpace = ({
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
-  const contractAddress = initialContractAddress
+
 
   const {
     editableSpaces,
@@ -216,7 +216,9 @@ const DesktopContractDefinedSpace = ({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
+      console.log("Registering before:");
       registerSpace(contractAddress, "Profile").then((newSpaceId) => {
+        console.log("Registered new space for user:", currentUserFid, newSpaceId);
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
@@ -228,6 +230,7 @@ const DesktopContractDefinedSpace = ({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
+      console.log("Saving config:", spaceConfig);
       if (isNil(currentUserFid)) {
         throw new Error("Attempted to save config when user is not signed in!");
       }
@@ -335,7 +338,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={async () => {}}
+      resetConfig={resetConfig}
       tabBar={tabBar}
       loading={loading}
     />
