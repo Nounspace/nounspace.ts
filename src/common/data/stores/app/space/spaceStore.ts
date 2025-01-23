@@ -148,6 +148,7 @@ interface SpaceActions {
   registerSpaceContract: (
     address: string,
     name: string,
+    fid: number,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -548,12 +549,13 @@ export const createSpaceStoreFunc = (
       null;
     }
   },
-  registerSpaceContract: async (address, name) => {
+  registerSpaceContract: async (address, name, tokenOwnerFid) => {
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
       contractAddress: address,
+      tokenOwnerFid,
     };
     const registration = signSignable(
       unsignedRegistration,
