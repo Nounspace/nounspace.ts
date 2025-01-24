@@ -136,14 +136,16 @@ interface SpaceActions {
   deleteSpaceTab: (
     spaceId: string,
     tabName: string,
+    contractAddress?: string,
   ) => Promise<void> | undefined;
   createSpaceTab: (
     spaceId: string,
     tabName: string,
     initialConfig?: Omit<SpaceConfig, "isEditable">,
+    contractAddress?: string,
   ) => Promise<void> | undefined;
   updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
-  commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
+  commitSpaceOrderToDatabase: (spaceId: string, contractAddress: string) => Promise<void> | undefined;
   registerSpaceFid: (fid: number, name: string) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
@@ -226,7 +228,7 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
     }, "saveLocalSpaceTab");
   },
-  deleteSpaceTab: debounce(async (spaceId, tabName) => {
+  deleteSpaceTab: debounce(async (spaceId, tabName, contractAddress) => {
     // This deletes locally and remotely at the same time
     // We can separate these out, but I think deleting feels better as a single decisive action
     const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
@@ -256,18 +258,19 @@ export const createSpaceStoreFunc = (
           (x) => x !== tabName,
         );
       }, "deleteSpaceTab");
-      return get().space.commitSpaceOrderToDatabase(spaceId);
+      return get().space.commitSpaceOrderToDatabase(spaceId, contractAddress);
     } catch (e) {
       console.error(e);
     }
   }, 1000),
   createSpaceTab: debounce(
-    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY) => {
+    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY, contractAddress) => {
       const unsignedRequest: UnsignedSpaceTabRegistration = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
         spaceId,
         tabName,
+        contractAddress,
       };
       const signedRequest = signSignable(
         unsignedRequest,
@@ -303,7 +306,7 @@ export const createSpaceStoreFunc = (
         }, "createSpaceTab");
         analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
-        return get().space.commitSpaceOrderToDatabase(spaceId);
+        return get().space.commitSpaceOrderToDatabase(spaceId, contractAddress);
       } catch (e) {
         console.error(e);
       }
@@ -315,7 +318,7 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].order = newOrder;
     });
   },
-  commitSpaceOrderToDatabase: debounce(async (spaceId) => {
+  commitSpaceOrderToDatabase: debounce(async (spaceId, contractAddress) => {
     const unsignedReq: UnsignedUpdateTabOrderRequest = {
       spaceId,
       tabOrder: get().space.localSpaces[spaceId].order,

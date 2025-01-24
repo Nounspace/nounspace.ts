@@ -12,9 +12,13 @@ import {
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./[tabId]";
 import stringify from "fast-json-stable-stringify";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+// import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import moment from "moment";
 import { isNull } from "lodash";
+import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import { Address } from "viem";
 
 export type RegisterNewSpaceTabResponse = NounspaceResponse<string>;
 
@@ -23,6 +27,7 @@ export type UnsignedSpaceTabRegistration = {
   timestamp: string;
   spaceId: string;
   tabName: string;
+  contractAddress: string; // Add contractAddress here
 };
 
 export type SpaceTabRegistration = UnsignedSpaceTabRegistration & Signable;
@@ -33,7 +38,8 @@ function isSpaceTabRegistration(thing: unknown): thing is SpaceTabRegistration {
     typeof thing["identityPublicKey"] === "string" &&
     typeof thing["timestamp"] === "string" &&
     typeof thing["tabName"] === "string" &&
-    typeof thing["spaceId"] === "string"
+    typeof thing["spaceId"] === "string" &&
+    typeof thing["contractAddress"] === "string" // Add contractAddress validation
   );
 }
 
@@ -89,8 +95,33 @@ async function registerNewSpaceTab(
   // TO DO: Check that the user can register more tabs
   // Currently we are allowing unlimited files on server side
 
+  let tokenData: any
+  const clankerData = await fetchClankerByAddress(registration.contractAddress as Address);
+  if (clankerData === null) {
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: "Clanker data not found",
+      },
+    });
+    tokenData = await fetchTokenData("0xaddress", null);
+    console.log(tokenData)
+  }
+  else {
+    tokenData = clankerData
+    console.log(tokenData)
+  }
+
+
+
+  const initialConfig = createInitialContractSpaceConfigForAddress(
+    tokenData.address, clankerData ? clankerData.cast_hash : null,
+    clankerData ? String(clankerData.requestor_fid) : null, tokenData.symbol,
+    clankerData ? true : false);
+
+
   const uploadedFile: SignedFile = {
-    fileData: stringify(INITIAL_SPACE_CONFIG_EMPTY),
+    fileData: stringify(initialConfig),
     fileType: "json",
     isEncrypted: false,
     timestamp: moment().toISOString(),

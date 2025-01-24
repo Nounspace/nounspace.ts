@@ -323,7 +323,7 @@ const DesktopContractDefinedSpace = ({
         return spaceId ? commitSpaceTab(spaceId, tabName) : undefined;
       }}
       commitTabOrder={async () => {
-        return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
+        return spaceId ? commitSpaceTabOrder(spaceId, contractAddress) : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
     />
@@ -335,7 +335,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={async () => {}}
+      resetConfig={resetConfig}
       tabBar={tabBar}
       loading={loading}
     />
