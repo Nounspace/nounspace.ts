@@ -14,11 +14,12 @@ import { identityCanModifySpace } from "./[tabId]";
 import stringify from "fast-json-stable-stringify";
 // import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import moment from "moment";
-import { isNull } from "lodash";
+import { isNil, isNull } from "lodash";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { Address } from "viem";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 export type RegisterNewSpaceTabResponse = NounspaceResponse<string>;
 
@@ -97,15 +98,8 @@ async function registerNewSpaceTab(
 
   let tokenData: any
   const clankerData = await fetchClankerByAddress(registration.contractAddress as Address);
-  if (clankerData === null) {
-    res.status(500).json({
-      result: "error",
-      error: {
-        message: "Clanker data not found",
-      },
-    });
+  if (!isNil(clankerData)) {
     tokenData = await fetchTokenData("0xaddress", null);
-    console.log(tokenData)
   }
   else {
     tokenData = clankerData
@@ -121,7 +115,7 @@ async function registerNewSpaceTab(
 
 
   const uploadedFile: SignedFile = {
-    fileData: stringify(initialConfig),
+    fileData: stringify(initialConfig || INITIAL_SPACE_CONFIG_EMPTY),
     fileType: "json",
     isEncrypted: false,
     timestamp: moment().toISOString(),
