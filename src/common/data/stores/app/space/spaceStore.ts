@@ -148,6 +148,7 @@ interface SpaceActions {
   registerSpaceContract: (
     address: string,
     name: string,
+    fid: number,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -267,6 +268,7 @@ export const createSpaceStoreFunc = (
         timestamp: moment().toISOString(),
         spaceId,
         tabName,
+        initialConfig,
       };
       const signedRequest = signSignable(
         unsignedRequest,
@@ -304,7 +306,7 @@ export const createSpaceStoreFunc = (
 
         return get().space.commitSpaceOrderToDatabase(spaceId);
       } catch (e) {
-        console.error(e);
+        console.error("Fail creating space:", e);
       }
     },
     1000,
@@ -548,12 +550,13 @@ export const createSpaceStoreFunc = (
       null;
     }
   },
-  registerSpaceContract: async (address, name) => {
+  registerSpaceContract: async (address, name, tokenOwnerFid) => {
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
       contractAddress: address,
+      tokenOwnerFid,
     };
     const registration = signSignable(
       unsignedRegistration,

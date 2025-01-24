@@ -22,7 +22,7 @@ export async function loadContractData(
         spaceId: null,
         ownerId: null,
         ownerIdType: "address" as OwnerType,
-        tabName: null,
+        tabName: "Profile",
         contractAddress: null,
         owningIdentities: [],
       },
@@ -30,7 +30,7 @@ export async function loadContractData(
   }
 
   const { contractAddress, tabName: tabNameUnparsed } = params;
-  const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : null;
+  const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
     isArray(contractAddress) ||
