@@ -268,6 +268,7 @@ export const createSpaceStoreFunc = (
         timestamp: moment().toISOString(),
         spaceId,
         tabName,
+        initialConfig,
       };
       const signedRequest = signSignable(
         unsignedRequest,
@@ -305,7 +306,7 @@ export const createSpaceStoreFunc = (
 
         return get().space.commitSpaceOrderToDatabase(spaceId);
       } catch (e) {
-        console.error(e);
+        console.error("Fail creating space:", e);
       }
     },
     1000,
