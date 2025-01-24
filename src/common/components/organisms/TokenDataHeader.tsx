@@ -1,31 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { AvatarImage, Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import { IoMdShare } from "react-icons/io";
 import { formatNumber } from "@/common/lib/utils/formatNumber";
 import { useToken } from "@/common/providers/TokenProvider";
 
 const TokenDataHeader: React.FC = () => {
-  const [tokenPrice, setTokenPrice] = useState<string | null>(null);
-  const [marketCap, setMarketCap] = useState<string | null>(null);
-  const [priceChange, setPriceChange] = useState<string | null>(null);
-  const [fetchError] = useState<string | null>(null);
   const { tokenData } = useToken();
   const contractAddress = tokenData?.address || "";
   const name = tokenData?.name || "Loading...";
   const symbol = tokenData?.symbol || "";
   const image = tokenData?.image_url && tokenData.image_url !== "missing.png" ? tokenData.image_url : tokenData?.img_url || null;
+  const priceChange = tokenData?.priceChange || null;
+  const tokenPrice = tokenData?.price_usd || null;
+  const marketCap = tokenData?.market_cap_usd
 
-  useEffect(() => {
-    if (tokenData) {
-      setTokenPrice(tokenData.price_usd);
-      setMarketCap(
-        tokenData.market_cap_usd
-          ? formatNumber(parseFloat(tokenData.market_cap_usd))
-          : null,
-      );
-      setPriceChange(tokenData.volume_usd.h24);
-    }
-  }, [tokenData]);
 
   const handleAddToMetamask = async () => {
     try {
@@ -135,7 +123,7 @@ const TokenDataHeader: React.FC = () => {
             <span className="text-gray-500 text-sm">{symbol}</span>
           </div>
           <div className="text-gray-500 text-sm">
-            {marketCap ? `$${marketCap}` : "Loading..."}
+            {marketCap ? `$${formatNumber(Number(marketCap))}` : "Loading..."}
           </div>
         </div>
       </div>
@@ -153,9 +141,7 @@ const TokenDataHeader: React.FC = () => {
               : "text-red-500"
               }`}
           >
-            {priceChange
-              ? `${(parseFloat(priceChange) / 1000).toFixed(2)}%`
-              : "0% "}
+            {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
           </div>
         </div>
         {/* Action Icons */}
@@ -179,7 +165,6 @@ const TokenDataHeader: React.FC = () => {
         </div>
         <div className="w-0.5 h-12 bg-gray-200 m-5 hidden md:visible" />
       </div>
-      {fetchError && <div className="text-red-500">{fetchError}</div>}
     </div>
   );
 };

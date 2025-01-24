@@ -56,6 +56,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
           h24: tokenResponse.volume_usd?.h24 || null,
         },
         market_cap_usd: tokenResponse.marketCap || null,
+        priceChange: tokenResponse.priceChange || null,
         // from clanker
         id: clankerResponse?.id || 0,
         created_at: clankerResponse?.created_at || "",
