@@ -14,6 +14,7 @@ export interface GeckoTokenAttribute {
     h24: string | null;
   };
   market_cap_usd: string | null;
+  priceChange: string | null;
 }
 
 interface RelationshipData {
