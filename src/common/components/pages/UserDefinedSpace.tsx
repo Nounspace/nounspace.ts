@@ -279,7 +279,7 @@ export default function UserDefinedSpace({
         return spaceId ? commitSpaceTab(spaceId, tabName) : undefined;
       }}
       commitTabOrder={async () => {
-        return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
+        return spaceId ? commitSpaceTabOrder(spaceId, '0x') : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
     />
