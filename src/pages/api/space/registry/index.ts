@@ -4,6 +4,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
+import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import {
   findIndex,
@@ -14,6 +15,7 @@ import {
   isUndefined,
 } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
+import { Address } from "viem";
 
 interface SpaceRegistrationBase {
   spaceName: string;
@@ -24,6 +26,7 @@ interface SpaceRegistrationBase {
 
 export interface SpaceRegistrationContract extends SpaceRegistrationBase {
   contractAddress: string;
+  tokenOwnerFid?: number;
 }
 
 export interface SpaceRegistrationFid extends SpaceRegistrationBase {
@@ -62,6 +65,11 @@ export type ModifiableSpacesResponse = NounspaceResponse<{
 }>;
 
 async function identityCanRegisterForFid(identity: string, fid: number) {
+  console.log(
+    "[Nounspace] identityCanRegisterForFid called with",
+    identity,
+    fid,
+  );
   const { data } = await supabaseClient
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
@@ -76,15 +84,54 @@ async function identityCanRegisterForFid(identity: string, fid: number) {
 async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
+  tokenOwnerFid?: number,
 ) {
+  console.log(
+    "[Nounspace] identityCanRegisterForContract called with",
+    identity,
+    contractAddress,
+  );
+
+  if (!isNil(tokenOwnerFid)) {
+    const clankerData = await fetchClankerByAddress(contractAddress as Address);
+    if (clankerData && clankerData.requestor_fid === tokenOwnerFid) {
+      console.log(
+        "[Nounspace] Contract owner is the requester FID, allowing registration",
+      );
+      return true;
+    }
+  }
+
   const { ownerId, ownerIdType } =
     await contractOwnerFromContractAddress(contractAddress);
+  console.log("[Nounspace] Contract owner info:", { ownerId, ownerIdType });
+
   if (isNil(ownerId)) {
+    console.log("[Nounspace] No owner ID found for contract, returning false");
     return false;
   } else if (ownerIdType === "fid") {
-    return identityCanRegisterForFid(identity, parseInt(ownerId));
+    console.log(
+      "[Nounspace] Owner is FID, checking if identity can register for FID:",
+      ownerId,
+    );
+    const canRegister = await identityCanRegisterForFid(
+      identity,
+      parseInt(ownerId),
+    );
+    console.log("[Nounspace] Can register for FID result:", canRegister);
+    return canRegister;
   }
-  return includes(await loadOwnedItentitiesForWalletAddress(ownerId), identity);
+
+  console.log(
+    "[Nounspace] Owner is wallet address, loading owned identities for:",
+    ownerId,
+  );
+  const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
+  console.log("[Nounspace] Owned identities:", ownedIdentities);
+
+  const result = includes(ownedIdentities, identity);
+  console.log("[Nounspace] Is identity included in owned identities?", result);
+  return result;
 }
 
 // Handles the registration of a new space name to requesting identity
@@ -93,6 +140,7 @@ async function registerNewSpace(
   req: NextApiRequest,
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
+  console.log("[Nounspace] registerNewSpace called with", req.body);
   const registration = req.body;
   // console.log(registration);
   if (!isSpaceRegistration(registration)) {
@@ -134,6 +182,7 @@ async function registerNewSpace(
       !(await identityCanRegisterForContract(
         registration.identityPublicKey,
         registration.contractAddress,
+        registration.tokenOwnerFid,
       ))
     ) {
       res.status(400).json({
@@ -146,11 +195,16 @@ async function registerNewSpace(
     }
   }
 
+  if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {
+    delete registration.tokenOwnerFid;
+  }
+
   const { data: result, error } = await supabaseClient
     .from("spaceRegistrations")
     .insert([registration])
     .select();
   if (error) {
+    console.error("[Nounspace] Error registering new space:", error.message);
     res.status(500).json({
       result: "error",
       error: {
@@ -172,6 +226,10 @@ async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
+  console.log(
+    "[Nounspace] listModifiableSpaces called with",
+    req.query.identityPublicKey,
+  );
   const identity = req.query.identityPublicKey;
   if (isUndefined(identity) || isArray(identity)) {
     res.status(400).json({

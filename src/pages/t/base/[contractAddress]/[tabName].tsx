@@ -7,7 +7,12 @@ import { Address } from "viem";
 
 export const getServerSideProps: GetServerSideProps<
   ContractSpacePageProps
-> = async ({ params }: GetServerSidePropsContext) => {
+> = async ({ params, res }: GetServerSidePropsContext) => {
+  res.setHeader(
+    "Cache-Control",
+    "public, s-maxage=10, stale-while-revalidate=59",
+  );
+
   const contractAddress = params?.contractAddress as string;
   const contractData = await loadContractData(params);
 

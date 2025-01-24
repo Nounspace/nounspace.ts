@@ -1,8 +1,8 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
-import packageInfo from './package.json' with { type: "json" };
+import packageInfo from "./package.json" with { type: "json" };
 
 const withBundleAnalyzer = bundlerAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === "true",
 });
 
 const cspHeader = `
@@ -25,7 +25,7 @@ const cspHeader = `
 const nextConfig = {
   // output: 'export', // Outputs a Single-Page Application (SPA).
   // distDir: './dist', // Changes the build output directory to `./dist/`.
-  transpilePackages: ['react-tweet', 'react-best-gradient-color-picker'], // https://react-tweet.vercel.app/next,
+  transpilePackages: ["react-tweet", "react-best-gradient-color-picker"], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -52,8 +52,14 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/signatures',
-        destination: 'https://docs.nounspace.com/nounspace-alpha/accounts/signatures',
+        source: "/signatures",
+        destination:
+          "https://docs.nounspace.com/nounspace-alpha/accounts/signatures",
+        permanent: true,
+      },
+      {
+        source: "/t/base/:contractAddress",
+        destination: "/t/base/:contractAddress/Profile",
         permanent: true,
       },
     ];
