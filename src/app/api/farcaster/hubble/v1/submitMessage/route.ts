@@ -1,7 +1,6 @@
-import requestHandler from "@/common/data/api/requestHandler";
 import { HubRestAPIClient } from "@standard-crypto/farcaster-js-hub-rest";
 import axios, { isAxiosError } from "axios";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 
 const axiosInstance = axios.create({
   headers: {
@@ -14,21 +13,13 @@ const writeClient = new HubRestAPIClient({
   axiosInstance,
 });
 
-async function submitMessage(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: NextRequest) {
   try {
     const result = await writeClient.apis.submitMessage.submitMessage({
       body: req.body,
     });
-    res.status(result.status).json(result.data);
-  } catch (e) {
-    if (isAxiosError(e)) {
-      res.status(e.status || 500).json(e.response?.data);
-    } else {
-      res.status(500).json("Unknown error occurred");
-    }
+    return NextResponse.json(result.data, { status: result.status });
+  } catch (e: any) {
+    return NextResponse.json(e?.response?.data || "Unknown error occurred", { status: e?.status || 500 });
   }
 }
-
-export default requestHandler({
-  post: submitMessage,
-});
