@@ -1,6 +1,7 @@
 import { isNil, map } from "lodash";
 import supabaseClient from "./clients/server";
 import { contractOwnerFromContractAddress } from "../../api/etherscan";
+import { tokenRequestorFromContractAddress } from "../../queries/clanker";
 
 export async function loadOwnedItentitiesForWalletAddress(
   walletAddress: string,
@@ -15,9 +16,20 @@ export async function loadOwnedItentitiesForWalletAddress(
 export async function loadIdentitiesOwningContractSpace(
   contractAddress: string,
 ) {
-  const { ownerId, ownerIdType } =
-    await contractOwnerFromContractAddress(contractAddress);
+  // Fetch the owner of the contract from Clanker
+  let { ownerId, ownerIdType } =
+    await tokenRequestorFromContractAddress(contractAddress);
+
+  // Load the owner of the contract from Etherscan if not found
+  if (isNil(ownerId)) {
+    ({ ownerId, ownerIdType } =
+      await contractOwnerFromContractAddress(contractAddress));
+  }
+
+  // If the owner is still not found, return an empty array
   if (isNil(ownerId)) return [];
+
+  // Load the identities owned by the owner
   if (ownerIdType === "address") {
     return await loadOwnedItentitiesForWalletAddress(ownerId);
   } else {
