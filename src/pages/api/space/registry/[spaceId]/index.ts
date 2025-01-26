@@ -114,7 +114,7 @@ async function updateSpaceTabOrder(
 }
 
 export async function identitiesCanModifySpace(spaceId: string) {
-  console.log(spaceId);
+  console.log("Checking identities that can modify space", stringify(spaceId));
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
     .select("contractAddress")
