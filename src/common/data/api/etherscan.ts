@@ -97,10 +97,14 @@ export async function loadEthersViewOnlyContract(
 }
 
 export async function contractOwnerFromContractAddress(
-  contractAddress: string,
+  contractAddress?: string,
 ) {
+  if (isUndefined(contractAddress))
+    return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
+
   const contract = await loadEthersViewOnlyContract(contractAddress);
-  if (isUndefined(contract)) return { ownerId: undefined, ownerIdType: "fid" };
+  if (isUndefined(contract))
+    return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
   return contractOwnerFromContract(contract);
 }
 
