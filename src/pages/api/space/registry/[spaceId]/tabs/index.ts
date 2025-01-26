@@ -45,6 +45,7 @@ async function registerNewSpaceTab(
 ) {
   const registration = req.body;
   if (!isSpaceTabRegistration(registration)) {
+    console.error("Invalid registration:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -55,6 +56,11 @@ async function registerNewSpaceTab(
     return;
   }
   if (registration.spaceId !== req.query.spaceId) {
+    console.error(
+      "Space ID mismatch:",
+      registration.spaceId,
+      req.query.spaceId,
+    );
     res.status(400).json({
       result: "error",
       error: {
@@ -65,6 +71,7 @@ async function registerNewSpaceTab(
   }
   // TODO: check that timestamp is recent (1 minute? 5 minutes?)
   if (!validateSignable(registration, "identityPublicKey")) {
+    console.error("Invalid signature:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -79,6 +86,11 @@ async function registerNewSpaceTab(
       registration.spaceId,
     ))
   ) {
+    console.error(
+      "Identity cannot manage space:",
+      registration.identityPublicKey,
+      registration.spaceId,
+    );
     res.status(400).json({
       result: "error",
       error: {
@@ -115,7 +127,7 @@ async function registerNewSpaceTab(
       new Blob([stringify(uploadedFile)], { type: "application/json" }),
     );
   if (!isNull(error)) {
-    console.error(error);
+    console.error("Error uploading file:", error);
     res.status(500).json({
       result: "error",
       error: {
