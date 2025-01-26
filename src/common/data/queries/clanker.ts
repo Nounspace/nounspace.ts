@@ -1,4 +1,8 @@
 import { Address } from "viem";
+import {
+  contractOwnerFromContractAddress as etherscanContractOwner,
+  OwnerType,
+} from "../api/etherscan";
 
 export interface ClankerToken {
   id: number;
@@ -35,10 +39,25 @@ export async function fetchClankerByAddress(
       throw new Error(`Failed to fetch data: ${response.statusText}`);
     }
 
-    console.log("Clanker data:", json.data);
     return json.data as ClankerToken;
   } catch (error) {
     console.error("Failed to fetch data:", error);
     return null;
   }
+}
+
+export async function tokenRequestorFromContractAddress(
+  contractAddress: string,
+) {
+  const clankerData = await fetchClankerByAddress(contractAddress as Address);
+  if (clankerData && clankerData?.requestor_fid) {
+    return {
+      ownerId: String(clankerData.requestor_fid),
+      ownerIdType: "fid" as OwnerType,
+    };
+  }
+  return {
+    ownerId: undefined,
+    ownerIdType: "fid" as OwnerType,
+  };
 }
