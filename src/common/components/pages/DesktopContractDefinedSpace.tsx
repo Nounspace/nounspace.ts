@@ -185,7 +185,7 @@ const DesktopContractDefinedSpace = ({
         tokenData?.cast_hash || "",
         toString(tokenData?.requestor_fid) || "",
         tokenData?.symbol || "",
-        !!tokenData,
+        !!tokenData?.cast_hash,
       ),
     [contractAddress, tokenData],
   );
@@ -335,7 +335,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={async () => {}}
+      resetConfig={async () => { }}
       tabBar={tabBar}
       loading={loading}
     />
