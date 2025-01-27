@@ -24,14 +24,21 @@ export const generateContractMetadataHtml = (
   tokenData?: MasterToken | null,
 ) => {
   const spaceUrl = `https://nounspace.com/t/base/${contractAddress}`;
-  const tokenSymbol = tokenData?.symbol ? `  ${tokenData.symbol}` : "";
-  const priceInfo = tokenData?.price_usd ? ` - $${(Number(tokenData.price_usd))}` : "";
+  const priceInfo = tokenData?.geckoData?.price_usd
+    ? ` - $${Number(tokenData.geckoData?.price_usd)}`
+    : "";
+
+  const symbol =
+    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
 
   return (
     <>
-      <title>{tokenSymbol}{priceInfo} USD</title>
-      <meta property="og:title" content={`${tokenSymbol}${priceInfo}`} />
-      <meta name="twitter:title" content={`${tokenSymbol}${priceInfo}`} />
+      <title>
+        {symbol}
+        {priceInfo} USD
+      </title>
+      <meta property="og:title" content={`${symbol}${priceInfo}`} />
+      <meta name="twitter:title" content={`${symbol}${priceInfo}`} />
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />

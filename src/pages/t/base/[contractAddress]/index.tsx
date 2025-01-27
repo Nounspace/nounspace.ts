@@ -9,7 +9,11 @@ import { isArray, isNil } from "lodash";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
-import { TokenProvider, useToken } from "@/common/providers/TokenProvider";
+import {
+  MasterToken,
+  TokenProvider,
+  useToken,
+} from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 
 export interface ContractSpacePageProps {
@@ -20,6 +24,7 @@ export interface ContractSpacePageProps {
   pinnedCastId?: string;
   owningIdentities: string[];
   ownerId: string | null;
+  tokenData?: MasterToken;
 }
 
 export const getServerSideProps = (async ({
@@ -50,7 +55,7 @@ export const ContractPrimarySpace: NextPageWithLayout = ({
   );
 };
 
-const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
+export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId,
   tabName,
   ownerId,
@@ -65,8 +70,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     }),
   );
 
-  const { tokenData } = useToken();
-  const [loading, setLoading] = useState(true);
+  const { tokenData, isLoading } = useToken();
 
   useEffect(() => {
     addContractEditableSpaces(spaceId, owningIdentities);
@@ -76,23 +80,20 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     loadEditableSpaces();
   }, []);
 
-  useEffect(() => {
-    if (tokenData) {
-      setLoading(false);
-    }
-  }, [tokenData]);
-
   if (!isNil(ownerId) && !isNil(contractAddress)) {
     if (
-      (isNil(spaceId) && (tabName?.toLocaleLowerCase() === "profile" || tabName === null)) ||
+      (isNil(spaceId) &&
+        (tabName?.toLocaleLowerCase() === "profile" || tabName === null)) ||
       !isNil(spaceId)
     )
       return (
         <>
           <Head>
-            {loading
-              ? <title>Loading token Page...</title>
-              : generateContractMetadataHtml(contractAddress, tokenData)}
+            {isLoading ? (
+              <title>Loading token Page...</title>
+            ) : (
+              generateContractMetadataHtml(contractAddress, tokenData)
+            )}
           </Head>
           <ContractDefinedSpace
             ownerId={ownerId}

@@ -46,7 +46,7 @@ const DesktopContractDefinedSpace = ({
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
-  const contractAddress = initialContractAddress
+  const contractAddress = initialContractAddress;
 
   const {
     editableSpaces,
@@ -158,7 +158,8 @@ const DesktopContractDefinedSpace = ({
 
   const isEditable = useMemo(() => {
     return (
-      parseInt(toString(tokenData?.requestor_fid) || "") === currentUserFid ||
+      parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") ===
+        currentUserFid ||
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
           (toString(ownerId) === toString(currentUserFid) ||
@@ -174,17 +175,17 @@ const DesktopContractDefinedSpace = ({
     ownerId,
     ownerIdType,
     walletsReady,
-    tokenData?.requestor_fid,
+    tokenData?.clankerData?.requestor_fid,
   ]);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
       createInitialContractSpaceConfigForAddress(
         contractAddress,
-        tokenData?.cast_hash || "",
-        toString(tokenData?.requestor_fid) || "",
-        tokenData?.symbol || "",
-        !!tokenData?.img_url,
+        tokenData?.clankerData?.cast_hash || "",
+        toString(tokenData?.clankerData?.requestor_fid) || "",
+        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
+        !!tokenData?.clankerData,
       ),
     [contractAddress, tokenData],
   );
@@ -215,13 +216,15 @@ const DesktopContractDefinedSpace = ({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(contractAddress, "Profile", currentUserFid).then((newSpaceId) => {
-        if (newSpaceId) {
-          setSpaceId(newSpaceId);
-          setCurrentSpaceId(newSpaceId);
-          setCurrentTabName("Profile");
-        }
-      });
+      registerSpace(contractAddress, "Profile", currentUserFid).then(
+        (newSpaceId) => {
+          if (newSpaceId) {
+            setSpaceId(newSpaceId);
+            setCurrentSpaceId(newSpaceId);
+            setCurrentTabName("Profile");
+          }
+        },
+      );
     }
   }, [isEditable, spaceId, currentUserFid]);
 
@@ -283,8 +286,7 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    if (tabName)
-      router.push(`/t/base/${contractAddress}/${tabName}`);
+    if (tabName) router.push(`/t/base/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
@@ -334,7 +336,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={async () => { }}
+      resetConfig={async () => {}}
       tabBar={tabBar}
       loading={loading}
     />

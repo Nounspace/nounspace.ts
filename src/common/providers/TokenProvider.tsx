@@ -12,12 +12,15 @@ import {
 } from "../lib/utils/fetchTokenData";
 import { ClankerToken } from "../data/queries/clanker";
 
-export interface MasterToken extends GeckoTokenAttribute, ClankerToken { }
-
+export interface MasterToken {
+  geckoData: GeckoTokenAttribute | null;
+  clankerData: ClankerToken | null;
+}
 
 interface TokenContextProps {
   tokenData: MasterToken | null;
   fetchTokenInfo: (address: string) => void;
+  isLoading: boolean;
 }
 
 const TokenContext = createContext<TokenContextProps | undefined>(undefined);
@@ -25,15 +28,21 @@ const TokenContext = createContext<TokenContextProps | undefined>(undefined);
 interface TokenProviderProps {
   children: ReactNode;
   contractAddress?: Address;
+  defaultTokenData?: MasterToken;
 }
 
 export const TokenProvider: React.FC<TokenProviderProps> = ({
   children,
   contractAddress,
+  defaultTokenData,
 }) => {
-  const [tokenData, setTokenData] = useState<MasterToken | null>(null);
+  const [tokenData, setTokenData] = useState<MasterToken | null>(
+    defaultTokenData || null,
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchTokenInfo = async (address: string) => {
+    setIsLoading(true);
     try {
       console.log("Fetching token data...", address);
       const tokenResponse = await fetchTokenData(address, null);
@@ -42,46 +51,27 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       ).then((res) => res.json());
 
       const combinedData: MasterToken = {
-        address: address,
-        name: tokenResponse.tokenName || clankerResponse?.name || "",
-        symbol: tokenResponse.tokenSymbol || clankerResponse?.symbol || "",
-        decimals: tokenResponse.decimals || 0,
-        image_url: tokenResponse.image || clankerResponse?.img_url || "",
-        coingecko_coin_id: tokenResponse.coingecko_coin_id || null,
-        total_supply: tokenResponse.total_supply || "",
-        price_usd: tokenResponse.price || null,
-        fdv_usd: tokenResponse.fdv_usd || null,
-        total_reserve_in_usd: tokenResponse.total_reserve_in_usd || null,
-        volume_usd: {
-          h24: tokenResponse.volume_usd?.h24 || null,
-        },
-        market_cap_usd: tokenResponse.marketCap || null,
-        priceChange: tokenResponse.priceChange || null,
-        // from clanker
-        id: clankerResponse?.id || 0,
-        created_at: clankerResponse?.created_at || "",
-        tx_hash: clankerResponse?.tx_hash || "",
-        contract_address: clankerResponse?.contract_address || "",
-        requestor_fid: clankerResponse?.requestor_fid || null,
-        img_url: clankerResponse?.img_url || "",
-        pool_address: clankerResponse?.pool_address || "",
-        cast_hash: clankerResponse?.cast_hash || null,
-        type: clankerResponse?.type || null,
-        pair: clankerResponse?.pair || null,
+        geckoData: tokenResponse,
+        clankerData: clankerResponse,
       };
       console.log("Token data fetched:", combinedData);
       setTokenData(combinedData);
     } catch (error) {
       console.error("Failed to fetch token data:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Loads if defaultTokenData is not provided
   useEffect(() => {
-    fetchTokenInfo(contractAddress as Address);
-  }, [contractAddress]);
+    if (!defaultTokenData) {
+      fetchTokenInfo(contractAddress as Address);
+    }
+  }, []);
 
   return (
-    <TokenContext.Provider value={{ tokenData, fetchTokenInfo }}>
+    <TokenContext.Provider value={{ tokenData, fetchTokenInfo, isLoading }}>
       {children}
     </TokenContext.Provider>
   );

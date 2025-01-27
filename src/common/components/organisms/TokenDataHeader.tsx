@@ -6,14 +6,19 @@ import { useToken } from "@/common/providers/TokenProvider";
 
 const TokenDataHeader: React.FC = () => {
   const { tokenData } = useToken();
-  const contractAddress = tokenData?.address || "";
-  const name = tokenData?.name || "Loading...";
-  const symbol = tokenData?.symbol || "";
-  const image = tokenData?.image_url && tokenData.image_url !== "missing.png" ? tokenData.image_url : tokenData?.img_url || null;
-  const priceChange = tokenData?.priceChange || null;
-  const tokenPrice = tokenData?.price_usd || null;
-  const marketCap = tokenData?.market_cap_usd
-
+  const contractAddress = tokenData?.clankerData?.contract_address || "";
+  const name =
+    tokenData?.clankerData?.name || tokenData?.geckoData?.name || "Loading...";
+  const symbol =
+    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  const image =
+    tokenData?.clankerData?.img_url ||
+    (tokenData?.geckoData?.image_url !== "missing.png"
+      ? tokenData?.geckoData?.image_url
+      : null);
+  const priceChange = tokenData?.geckoData?.priceChange || null;
+  const tokenPrice = tokenData?.geckoData?.price_usd || null;
+  const marketCap = tokenData?.geckoData?.market_cap_usd || null;
 
   const handleAddToMetamask = async () => {
     try {
@@ -136,10 +141,11 @@ const TokenDataHeader: React.FC = () => {
             {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
-            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
-              ? "text-green-500"
-              : "text-red-500"
-              }`}
+            className={`text-sm font-medium ${
+              priceChange && parseFloat(priceChange) > 0
+                ? "text-green-500"
+                : "text-red-500"
+            }`}
           >
             {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
           </div>
