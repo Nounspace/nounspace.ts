@@ -13,19 +13,21 @@ import supabaseClient from "../database/supabase/clients/server";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
+const defaultContractPageProps = {
+  spaceId: null,
+  ownerId: null,
+  ownerIdType: "address" as OwnerType,
+  tabName: "Profile",
+  contractAddress: null,
+  owningIdentities: [],
+};
+
 export async function loadContractData(
   params: GetServerSidePropsContext["params"],
 ) {
   if (isUndefined(params)) {
     return {
-      props: {
-        spaceId: null,
-        ownerId: null,
-        ownerIdType: "address" as OwnerType,
-        tabName: "Profile",
-        contractAddress: null,
-        owningIdentities: [],
-      },
+      props: defaultContractPageProps,
     };
   }
 
@@ -38,12 +40,8 @@ export async function loadContractData(
   ) {
     return {
       props: {
-        spaceId: null,
-        ownerId: null,
-        ownerIdType: "address" as OwnerType,
+        ...defaultContractPageProps,
         tabName,
-        contractAddress: null,
-        owningIdentities: [],
       },
     };
   }
@@ -52,12 +50,8 @@ export async function loadContractData(
   if (isUndefined(contract)) {
     return {
       props: {
-        spaceId: null,
-        ownerId: null,
-        ownerIdType: "address" as OwnerType,
+        ...defaultContractPageProps,
         tabName,
-        contractAddress: null,
-        owningIdentities: [],
       },
     };
   }
@@ -70,9 +64,7 @@ export async function loadContractData(
   if (isNil(ownerId)) {
     return {
       props: {
-        spaceId: null,
-        ownerId: null,
-        ownerIdType: "address" as OwnerType,
+        ...defaultContractPageProps,
         tabName,
         contractAddress,
         pinnedCastId,
