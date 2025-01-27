@@ -43,7 +43,6 @@ const DesktopContractDefinedSpace = ({
 
   const { wallets, ready: walletsReady } = useWallets();
   const { tokenData } = useToken();
-  console.log(tokenData);
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
@@ -185,7 +184,7 @@ const DesktopContractDefinedSpace = ({
         tokenData?.cast_hash || "",
         toString(tokenData?.requestor_fid) || "",
         tokenData?.symbol || "",
-        !!tokenData?.cast_hash,
+        !!tokenData?.img_url,
       ),
     [contractAddress, tokenData],
   );
