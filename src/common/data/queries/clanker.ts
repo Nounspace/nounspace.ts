@@ -35,13 +35,12 @@ export async function fetchClankerByAddress(
     const json = await response.json();
 
     if (!response.ok) {
-      console.error("Failed to fetch data:", response.statusText, json);
-      throw new Error(`Failed to fetch data: ${response.statusText}`);
+      throw new Error(response.statusText);
     }
 
     return json.data as ClankerToken;
   } catch (error) {
-    console.error("Failed to fetch data:", error);
+    console.error("Failed to fetch Clanker data:", error);
     return null;
   }
 }
