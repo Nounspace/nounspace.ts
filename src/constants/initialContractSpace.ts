@@ -105,13 +105,17 @@ export const createInitialContractSpaceConfigForAddress = (
           headingsFontFamily: "'__Inter_d65c78', '__Inter_Fallback_d65c78'",
           itemBackground: "#e0eeff",
           links: [
-            {
-              avatar:
-                "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAM1BMVEX////q5PfUxe7o4fbMu+uPadTGs+jKueqJYNHEseiJYtKOZ9PJt+rUx+7MuuvPwOvm3vVnLuiEAAAAXUlEQVR4Ac3QAxaAQAAE0LXR/S+bXdNDWuOvSSGBMsYhCikVRG2MxejcFZoHcXoDQCF9gBiMURC1cfYzpDFSiEnKAHF6w4TuiMscs0bt+69JQyW8VyvkOVeH6p/QAF54BSckEkJ8AAAAAElFTkSuQmCC",
-              description: "",
-              text: "Clanker.world",
-              url: `https://www.clanker.world/clanker/${address}`,
-            },
+            ...(isClankerToken
+              ? [
+                {
+                  avatar:
+                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAM1BMVEX////q5PfUxe7o4fbMu+uPadTGs+jKueqJYNHEseiJYtKOZ9PJt+rUx+7MuuvPwOvm3vVnLuiEAAAAXUlEQVR4Ac3QAxaAQAAE0LXR/S+bXdNDWuOvSSGBMsYhCikVRG2MxejcFZoHcXoDQCF9gBiMURC1cfYzpDFSiEnKAHF6w4TuiMscs0bt+69JQyW8VyvkOVeH6p/QAF54BSckEkJ8AAAAAElFTkSuQmCC",
+                  description: "",
+                  text: "Clanker.world",
+                  url: `https://www.clanker.world/clanker/${address}`,
+                },
+              ]
+              : []),
             {
               avatar:
                 "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Ljc3Nzc3Nzg3Nzc3NzctKzc3Nzc3Nzc3Kzc3Nzc3Nzc3ODc3Nzc3Nys3N//AABEIABwAHAMBIgACEQEDEQH/xAAaAAABBQEAAAAAAAAAAAAAAAAHAgQFBggD/8QAKRAAAgEDAgQFBQAAAAAAAAAAAQIDAAURBDEGEiFREyJBccEHFKHR8P/EABgBAAIDAAAAAAAAAAAAAAAAAAIDAQQF/8QAHhEAAQQDAAMAAAAAAAAAAAAAAgABAxEEEiETQVH/2gAMAwEAAhEDEQA/ABZGperdZOBdRcYQ87SpI4ykMcfM2O5HxTbgPQQ6ozayXDNAwCIdgd8n4o4/TZJ5LNNrdVpmgaedhEHGHMa4AJ925j7YrekIYofI7WnuVMs/3zhi4WdpDPEJIY3MbTRMHVG6eV8E8jdR5WwagmBBxR6v3FMV5F5suj0/2ulaR4JplQBpzjDMD+O+3WgHqX8Od05geViMjY0stmBiNqtRfOrvYb3PaNWJYTlT0dDs47H9+lGvhLjKRLa7W9hNC4OI5D1gf+9NjvWeSxpxBrJ4VYRyFQRg4O4qvDliw6SNYoNr46vfGHE6xNJpdFJmRifFlXv6gfJoftJzMSaS7s5yxyaTScnLKcr9Ib+L/9k=",
