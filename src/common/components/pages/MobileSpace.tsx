@@ -24,6 +24,14 @@ export const MobileContractDefinedSpace = ({
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
   const { tokenData } = useToken();
+  const symbol =
+    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  const decimals = tokenData?.geckoData?.decimals || "";
+  const image =
+    tokenData?.clankerData?.img_url ||
+    (tokenData?.geckoData?.image_url !== "missing.png"
+      ? tokenData?.geckoData?.image_url
+      : null);
 
   const {
     data,
@@ -33,7 +41,7 @@ export const MobileContractDefinedSpace = ({
     isError,
     isPending,
   } = useGetCastsByKeyword({
-    keyword: tokenData ? `$${tokenData.symbol}` : "",
+    keyword: tokenData ? `$${symbol}` : "",
   });
 
   useEffect(() => {
@@ -94,9 +102,9 @@ export const MobileContractDefinedSpace = ({
           type: "ERC20",
           options: {
             address: contractAddress,
-            symbol: tokenData?.symbol,
-            decimals: tokenData?.decimals,
-            image: tokenData?.image_url,
+            symbol,
+            decimals,
+            image,
           },
         },
       });
@@ -159,7 +167,7 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}
         >
-          {tokenData?.cast_hash && (
+          {tokenData?.clankerData?.cast_hash && (
             <LinkItem
               href={`https://www.clanker.world/clanker/${contractAddress}`}
               imgSrc="https://www.clanker.world/_next/image?url=https%3A%2F%2Fimagedelivery.net%2FBXluQx4ige9GuW0Ia56BHw%2F295953fa-15ed-4d3c-241d-b6c1758c6200%2Foriginal&w=256&q=75"

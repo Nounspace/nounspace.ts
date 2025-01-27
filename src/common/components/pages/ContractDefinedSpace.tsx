@@ -2,10 +2,8 @@
 
 import React from "react";
 import { OwnerType } from "@/common/data/api/etherscan";
-import { TokenProvider } from "@/common/providers/TokenProvider";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { Address } from "viem";
 import { MobileContractDefinedSpace } from "./MobileSpace";
 
 interface ContractDefinedSpaceProps {
@@ -34,7 +32,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   }, []);
 
   return (
-    <TokenProvider contractAddress={props.contractAddress as Address}>
+    <>
       {isMobile ? (
         <MobileContractDefinedSpace contractAddress={props.contractAddress} />
       ) : (
@@ -42,7 +40,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
           <DynamicDesktopContractDefinedSpace {...props} />
         </div>
       )}
-    </TokenProvider>
+    </>
   );
 };
 

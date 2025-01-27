@@ -1,4 +1,3 @@
-
 export interface GeckoTokenAttribute {
   address: string;
   name: string;
@@ -50,22 +49,7 @@ export interface GeckoTokenResponse {
 export async function fetchTokenData(
   tokenAddress: string,
   contractImage: string | null,
-): Promise<{
-  price: string | null;
-  image: string | null;
-  marketCap: string | null;
-  priceChange: string | null;
-  tokenName: string | null;
-  tokenSymbol: string | null;
-  decimals: number | null;
-  coingecko_coin_id: string | null;
-  total_supply: string;
-  fdv_usd: string | null;
-  total_reserve_in_usd: string | null;
-  volume_usd: {
-    h24: string | null;
-  };
-}> {
+): Promise<GeckoTokenAttribute | null> {
   const baseUrl = "https://api.geckoterminal.com/api/v2";
   const network = "base";
 
@@ -83,22 +67,7 @@ export async function fetchTokenData(
     console.log("Response status:", response.status);
     if (!response.ok) {
       console.error("Error fetching token data:", response.statusText);
-      return {
-        price: null,
-        image: null,
-        marketCap: null,
-        priceChange: null,
-        tokenName: null,
-        tokenSymbol: null,
-        decimals: null,
-        coingecko_coin_id: null,
-        total_supply: "",
-        fdv_usd: null,
-        total_reserve_in_usd: null,
-        volume_usd: {
-          h24: null,
-        },
-      };
+      return null;
     }
 
     const result: GeckoTokenResponse = await response.json();
@@ -151,56 +120,14 @@ export async function fetchTokenData(
       image = contractImage || image;
     }
 
-    console.log("Final result:", {
-      price: token.price_usd || null,
-      image: image || null,
-      marketCap: marketCap,
-      priceChange: priceChange,
-      tokenName: token.name || null,
-      tokenSymbol: token.symbol || null,
-      decimals: token.decimals,
-      coingecko_coin_id: token.coingecko_coin_id || null,
-      total_supply: token.total_supply || "",
-      fdv_usd: token.fdv_usd || null,
-      total_reserve_in_usd: token.total_reserve_in_usd || null,
-      volume_usd: {
-        h24: token.volume_usd?.h24 || null,
-      },
-    });
+    console.log("Token fetch data result:", { token });
 
     return {
-      price: token.price_usd || null,
-      image: image || null,
-      marketCap: marketCap,
-      priceChange: priceChange,
-      tokenName: token.name || null,
-      tokenSymbol: token.symbol || null,
-      decimals: token.decimals || null,
-      coingecko_coin_id: token.coingecko_coin_id || null,
-      total_supply: token.total_supply || "",
-      fdv_usd: token.fdv_usd || null,
-      total_reserve_in_usd: token.total_reserve_in_usd || null,
-      volume_usd: {
-        h24: token.volume_usd?.h24 || null,
-      },
+      ...token,
+      market_cap_usd: marketCap,
     };
   } catch (error) {
     console.error("Error fetching token data:", error);
-    return {
-      price: null,
-      image: null,
-      marketCap: null,
-      priceChange: null,
-      tokenName: null,
-      tokenSymbol: null,
-      decimals: null,
-      coingecko_coin_id: null,
-      total_supply: "",
-      fdv_usd: null,
-      total_reserve_in_usd: null,
-      volume_usd: {
-        h24: null,
-      },
-    };
+    return null;
   }
 }

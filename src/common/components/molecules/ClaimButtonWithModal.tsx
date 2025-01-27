@@ -19,6 +19,8 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
   const { tokenData } = useToken();
+  const symbol =
+    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
 
   const handleClaimClick = () => {
     setModalOpenState(true);
@@ -43,15 +45,15 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Log in with the Farcaster account that deployed ${tokenData?.symbol}{" "}
-            to customize this space.
+            Log in with the Farcaster account that deployed ${symbol} to
+            customize this space.
           </TooltipContent>
         </Tooltip>
       </div>
       <ClaimModal
         isModalOpen={isModalOpen}
         handleModalClose={handleModalClose}
-        tokenSymbol={tokenData?.symbol}
+        tokenSymbol={symbol}
       />
     </TooltipProvider>
   );
