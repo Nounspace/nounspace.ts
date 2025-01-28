@@ -45,9 +45,6 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { fetchClankerByAddress } from "@/common/data/queries/clanker";
-import { Address } from "viem";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
