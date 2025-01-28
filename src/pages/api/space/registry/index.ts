@@ -1,3 +1,4 @@
+import { SpaceConfig } from "@/common/components/templates/Space";
 import { contractOwnerFromContractAddress } from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,
@@ -27,6 +28,7 @@ interface SpaceRegistrationBase {
 export interface SpaceRegistrationContract extends SpaceRegistrationBase {
   contractAddress: string;
   tokenOwnerFid?: number;
+  initialConfig?: Omit<SpaceConfig, "isEditable">;
 }
 
 export interface SpaceRegistrationFid extends SpaceRegistrationBase {

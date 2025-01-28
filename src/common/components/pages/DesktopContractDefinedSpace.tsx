@@ -216,15 +216,18 @@ const DesktopContractDefinedSpace = ({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(contractAddress, "Profile", currentUserFid).then(
-        (newSpaceId) => {
-          if (newSpaceId) {
-            setSpaceId(newSpaceId);
-            setCurrentSpaceId(newSpaceId);
-            setCurrentTabName("Profile");
-          }
-        },
-      );
+      registerSpace(
+        contractAddress,
+        "Profile",
+        currentUserFid,
+        INITIAL_SPACE_CONFIG,
+      ).then((newSpaceId) => {
+        if (newSpaceId) {
+          setSpaceId(newSpaceId);
+          setCurrentSpaceId(newSpaceId);
+          setCurrentTabName("Profile");
+        }
+      });
     }
   }, [isEditable, spaceId, currentUserFid]);
 
