@@ -46,24 +46,24 @@ type SpaceInfo = SpaceRegistrationBase & {
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
-  console.log("[Nounspace] Validating space registration:", maybe);
+  console.log("Validating space registration:", maybe);
   if (!isSignable(maybe, "identityPublicKey")) {
-    console.log("[Nounspace] Not a valid signable object");
+    console.log("Not a valid signable object");
     return false;
   }
   const isValid =
     typeof maybe["spaceName"] === "string" &&
     typeof maybe["timestamp"] === "string";
-  console.log("[Nounspace] Space registration validation result:", isValid);
+  console.log("Space registration validation result:", isValid);
   return isValid;
 }
 
 function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
-  console.log("[Nounspace] Validating FID space registration:", maybe);
+  console.log("Validating FID space registration:", maybe);
   const isValid =
     isSpaceRegistration(maybe) &&
     (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
-  console.log("[Nounspace] FID space registration validation result:", isValid);
+  console.log("FID space registration validation result:", isValid);
   return isValid;
 }
 
@@ -75,11 +75,7 @@ export type ModifiableSpacesResponse = NounspaceResponse<{
 }>;
 
 async function identityCanRegisterForFid(identity: string, fid: number) {
-  console.log(
-    "[Nounspace] identityCanRegisterForFid called with",
-    identity,
-    fid,
-  );
+  console.log("identityCanRegisterForFid called with", identity, fid);
   const { data } = await supabaseClient
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
@@ -96,11 +92,7 @@ export async function fidCanRegisterClanker(
   contractAddress?: string,
   fid?: number,
 ) {
-  console.log(
-    "[Nounspace] fidCanRegisterClanker called with",
-    fid,
-    contractAddress,
-  );
+  console.log("fidCanRegisterClanker called with", fid, contractAddress);
   if (isNil(contractAddress) || isNil(fid)) return false;
 
   const clankerData = await fetchClankerByAddress(contractAddress as Address);
@@ -113,7 +105,7 @@ async function identityCanRegisterForContract(
   tokenOwnerFid?: number,
 ) {
   console.log(
-    "[Nounspace] identityCanRegisterForContract called with",
+    "identityCanRegisterForContract called with",
     identity,
     contractAddress,
   );
@@ -123,41 +115,39 @@ async function identityCanRegisterForContract(
     tokenOwnerFid,
   );
   if (canRegisterClanker) {
-    console.log(
-      "[Nounspace] Contract owner is the requester FID, allowing registration",
-    );
+    console.log("Contract owner is the requester FID, allowing registration");
     return true;
   }
 
   const { ownerId, ownerIdType } =
     await contractOwnerFromContractAddress(contractAddress);
-  console.log("[Nounspace] Contract owner info:", { ownerId, ownerIdType });
+  console.log("Contract owner info:", { ownerId, ownerIdType });
 
   if (isNil(ownerId)) {
-    console.log("[Nounspace] No owner ID found for contract, returning false");
+    console.log("No owner ID found for contract, returning false");
     return false;
   } else if (ownerIdType === "fid") {
     console.log(
-      "[Nounspace] Owner is FID, checking if identity can register for FID:",
+      "Owner is FID, checking if identity can register for FID:",
       ownerId,
     );
     const canRegister = await identityCanRegisterForFid(
       identity,
       parseInt(ownerId),
     );
-    console.log("[Nounspace] Can register for FID result:", canRegister);
+    console.log("Can register for FID result:", canRegister);
     return canRegister;
   }
 
   console.log(
-    "[Nounspace] Owner is wallet address, loading owned identities for:",
+    "Owner is wallet address, loading owned identities for:",
     ownerId,
   );
   const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
-  console.log("[Nounspace] Owned identities:", ownedIdentities);
+  console.log("Owned identities:", ownedIdentities);
 
   const result = includes(ownedIdentities, identity);
-  console.log("[Nounspace] Is identity included in owned identities?", result);
+  console.log("Is identity included in owned identities?", result);
   return result;
 }
 
@@ -167,11 +157,11 @@ async function registerNewSpace(
   req: NextApiRequest,
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
-  console.log("[Nounspace] registerNewSpace called with", req.body);
+  console.log("registerNewSpace called with", req.body);
   const registration = req.body;
   // console.log(registration);
   if (!isSpaceRegistration(registration)) {
-    console.error("[Nounspace] Invalid space registration:", registration);
+    console.error("Invalid space registration:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -182,7 +172,7 @@ async function registerNewSpace(
     return;
   }
   if (!validateSignable(registration, "identityPublicKey")) {
-    console.error("[Nounspace] Invalid signature:", registration);
+    console.error("Invalid signature:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -192,7 +182,7 @@ async function registerNewSpace(
     return;
   }
   if (isSpaceRegistrationFid(registration)) {
-    console.log("[Nounspace] Registering new space for FID:", registration);
+    console.log("Registering new space for FID:", registration);
     if (
       !(await identityCanRegisterForFid(
         registration.identityPublicKey,
@@ -240,7 +230,7 @@ async function registerNewSpace(
     .insert([registration])
     .select();
   if (error) {
-    console.error("[Nounspace] Error registering new space:", error.message);
+    console.error("Error registering new space:", error.message);
     res.status(500).json({
       result: "error",
       error: {
@@ -262,16 +252,10 @@ async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
-  console.log(
-    "[Nounspace] listModifiableSpaces called with",
-    req.query.identityPublicKey,
-  );
+  console.log("listModifiableSpaces called with", req.query.identityPublicKey);
   const identity = req.query.identityPublicKey;
   if (isUndefined(identity) || isArray(identity)) {
-    console.error(
-      "[Nounspace] Invalid identityPublicKey query parameter:",
-      identity,
-    );
+    console.error("Invalid identityPublicKey query parameter:", identity);
     res.status(400).json({
       result: "error",
       error: {
@@ -286,10 +270,7 @@ async function listModifiableSpaces(
     .select("*, fidRegistrations!inner (fid, identityPublicKey)")
     .filter("fidRegistrations.identityPublicKey", "eq", identity);
   if (error) {
-    console.error(
-      "[Nounspace] Error fetching modifiable spaces:",
-      error.message,
-    );
+    console.error("Error fetching modifiable spaces:", error.message);
     res.status(500).json({
       result: "error",
       error: {
