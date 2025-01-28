@@ -15,22 +15,13 @@ import { useSidebarContext } from "../organisms/Sidebar";
 import TabBar from "../organisms/TabBar";
 import { SpaceConfigSaveDetails } from "../templates/Space";
 import SpacePage from "./SpacePage";
+import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
-
-interface ContractDefinedSpaceProps {
-  spaceId: string | null;
-  tabName: string;
-  contractAddress: string;
-  pinnedCastId?: string;
-  ownerId: string | number | null;
-  ownerIdType: OwnerType;
-}
 
 const DesktopContractDefinedSpace = ({
   spaceId: providedSpaceId,
   tabName: providedTabName,
-  pinnedCastId,
   contractAddress: initialContractAddress,
   ownerId,
   ownerIdType,
