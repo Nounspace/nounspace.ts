@@ -1,8 +1,5 @@
 import { Address } from "viem";
-import {
-  contractOwnerFromContractAddress as etherscanContractOwner,
-  OwnerType,
-} from "../api/etherscan";
+import { OwnerType } from "../api/etherscan";
 
 export interface ClankerToken {
   id: number;

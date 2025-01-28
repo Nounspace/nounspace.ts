@@ -53,7 +53,7 @@ export async function fetchTokenData(
   const baseUrl = "https://api.geckoterminal.com/api/v2";
   const network = "base";
 
-  let priceChange: string | null = null;
+  // let priceChange: string | null = null;
 
   try {
     const response = await fetch(
@@ -74,14 +74,14 @@ export async function fetchTokenData(
     console.log("GeckoTokenResponse:", result);
     const token = result.data.attributes;
 
-    if (result.included && result.included.length > 0) {
-      for (const pool of result.included) {
-        if (pool.attributes && pool.attributes.price_change_percentage) {
-          priceChange = pool.attributes.price_change_percentage.h24;
-          break;
-        }
-      }
-    }
+    // if (result.included && result.included.length > 0) {
+    //   for (const pool of result.included) {
+    //     if (pool.attributes && pool.attributes.price_change_percentage) {
+    //       priceChange = pool.attributes.price_change_percentage.h24;
+    //       break;
+    //     }
+    //   }
+    // }
 
     let marketCap = token.market_cap_usd || null;
 
