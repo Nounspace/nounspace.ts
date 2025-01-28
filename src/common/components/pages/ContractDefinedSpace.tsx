@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { MobileContractDefinedSpace } from "./MobileSpace";
 
-interface ContractDefinedSpaceProps {
+export interface ContractDefinedSpaceProps {
   spaceId: string | null;
   tabName: string;
   contractAddress: string;
