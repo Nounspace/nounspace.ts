@@ -103,7 +103,7 @@ async function registerNewSpaceTab(
   // Currently we are allowing unlimited files on server side
 
   console.log(
-    "[Nounspace] registerNewSpaceTab called on registry/[spaceId]/tabs with",
+    "registerNewSpaceTab called on registry/[spaceId]/tabs with",
     registration,
   );
 
