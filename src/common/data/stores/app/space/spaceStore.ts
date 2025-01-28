@@ -149,6 +149,7 @@ interface SpaceActions {
     address: string,
     name: string,
     fid: number,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -550,7 +551,12 @@ export const createSpaceStoreFunc = (
       null;
     }
   },
-  registerSpaceContract: async (address, name, tokenOwnerFid) => {
+  registerSpaceContract: async (
+    address,
+    name,
+    tokenOwnerFid,
+    initialConfig,
+  ) => {
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
@@ -573,25 +579,7 @@ export const createSpaceStoreFunc = (
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
 
-      const clankerData = await fetchClankerByAddress(address as Address);
-
-      const castHash = clankerData?.cast_hash || "";
-      const casterFid = clankerData?.requestor_fid
-        ? String(clankerData.requestor_fid)
-        : "";
-      const symbol = clankerData?.symbol || "";
-
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Profile",
-        createInitialContractSpaceConfigForAddress(
-          address,
-          castHash,
-          casterFid,
-          symbol,
-          !!clankerData,
-        ),
-      );
+      await get().space.createSpaceTab(newSpaceId, "Profile", initialConfig);
       return newSpaceId;
     } catch (e) {
       null;
