@@ -175,10 +175,14 @@ export async function contractOwnerFromContract(contract: Contract) {
         EtherScanChains.base,
       );
       ownerId = contractCreation.contractCreator;
-      const userFid = await neynar.fetchBulkUsersByEthereumAddress([ownerId]);
-      if (userFid[ownerId]) {
-        ownerId = userFid[ownerId][0].fid.toString();
-        ownerIdType = "fid" as OwnerType;
+      try {
+        const userFid = await neynar.fetchBulkUsersByEthereumAddress([ownerId]);
+        if (userFid[ownerId]) {
+          ownerId = userFid[ownerId][0].fid.toString();
+          ownerIdType = "fid" as OwnerType;
+        }
+      } catch (error) {
+        console.error("Error fetching user FID:", error);
       }
       console.log("Contract creator:", contractCreation);
     }
