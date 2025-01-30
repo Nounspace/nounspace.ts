@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
-import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -38,6 +37,8 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
+import EmojiPicker, { Theme } from 'emoji-picker-react';
+import { GoSmiley } from 'react-icons/go';
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -109,6 +110,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const isReply = draft?.parentCastId !== undefined;
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
   const [initialChannels, setInitialChannels] = useState() as any;
+  const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
+  const parentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchInitialChannels = async () => {
@@ -410,6 +413,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return "Cast";
   };
 
+  const handleEmojiClick = (emojiObject: any) => {
+    editor?.chain().focus().insertContent(emojiObject.emoji).run();
+    setIsPickingEmoji(false);
+  };
+
   return (
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
@@ -425,13 +433,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
             />
-            <div className="z-50">
+            {/* <div className="z-50">
               <EmbedsEditor
                 embeds={embeds}
                 setEmbeds={setEmbeds}
                 RichEmbed={() => <div />}
               />
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -468,6 +476,32 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <PhotoIcon className="mr-1 w-5 h-5" />
             Add
           </Button>
+          <Button
+            className="h-10"
+            type="button"
+            variant="ghost"
+            disabled={isPublishing}
+            onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+          >
+            <GoSmiley size={20} />
+          </Button>
+          <div
+            ref={parentRef}
+            style={{
+              opacity: isPickingEmoji ? 1 : 0,
+              pointerEvents: isPickingEmoji ? 'auto' : 'none',
+              marginTop: 50,
+              transition: 'opacity 1s ease',
+              zIndex: 10,
+              position: 'absolute',
+            }}
+          >
+            <EmojiPicker
+              theme={"light" as Theme}
+              onEmojiClick={handleEmojiClick}
+              open={isPickingEmoji}
+            />
+          </div>
           <Popover
             open={!!currentMod}
             onOpenChange={(op: boolean) => {
@@ -514,7 +548,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <div
               key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : embed.castId.hash}`}
             >
-              {renderEmbedForUrl(embed)}
+              {renderEmbedForUrl(embed, true)}
             </div>
           ))}
         </div>

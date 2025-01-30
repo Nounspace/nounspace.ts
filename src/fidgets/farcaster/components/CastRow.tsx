@@ -154,7 +154,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
               }
             }}
           >
-            {renderEmbedForUrl(embedData)}
+            {renderEmbedForUrl(embedData, false)}
           </div>
         );
       })}
