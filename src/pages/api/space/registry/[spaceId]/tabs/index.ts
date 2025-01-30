@@ -125,6 +125,7 @@ async function registerNewSpaceTab(
     .upload(
       `${registration.spaceId}/tabs/${registration.tabName}`,
       new Blob([stringify(uploadedFile)], { type: "application/json" }),
+      { upsert: true },
     );
   if (!isNull(error)) {
     console.error("Error uploading file:", error);
