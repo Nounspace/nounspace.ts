@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
-import { EmbedsEditor } from "@mod-protocol/react-ui-shadcn/dist/lib/embeds";
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -39,6 +38,7 @@ import {
   submitCast,
 } from "../utils";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
+import { GoSmiley } from 'react-icons/go';
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -433,13 +433,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
             />
-            <div className="z-50">
+            {/* <div className="z-50">
               <EmbedsEditor
                 embeds={embeds}
                 setEmbeds={setEmbeds}
                 RichEmbed={() => <div />}
               />
-            </div>
+            </div> */}
           </div>
         )}
 
@@ -479,11 +479,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
           <Button
             className="h-10"
             type="button"
-            variant="outline"
+            variant="ghost"
             disabled={isPublishing}
             onClick={() => setIsPickingEmoji(!isPickingEmoji)}
           >
-            😊
+            <GoSmiley size={20} />
           </Button>
           <div
             ref={parentRef}
@@ -548,7 +548,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <div
               key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : embed.castId.hash}`}
             >
-              {renderEmbedForUrl(embed)}
+              {renderEmbedForUrl(embed, true)}
             </div>
           ))}
         </div>
