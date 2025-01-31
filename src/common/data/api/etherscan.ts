@@ -40,6 +40,7 @@ interface EtherscanResponse {
   result: unknown; // ABI comes as a string that needs to be parsed
 }
 
+//TODO: we might need to create a polygon provider or a multichain provider ? 
 export const baseProvider = new AlchemyProvider(
   "base",
   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
@@ -53,7 +54,6 @@ async function getContractABI(
   const baseUrl = "https://api.etherscan.io";
 
   const apiKey = process.env.ETHERSCAN_API_KEY!;
-  console.log("network getcontractabi", network);
   try {
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
@@ -88,7 +88,6 @@ async function getContractCreator(
 ): Promise<ContractCreation> {
   const baseUrl = "https://api.etherscan.io";
   const apiKey = process.env.ETHERSCAN_API_KEY!;
-  console.log("network getcontractcreator", network);
   try {
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
@@ -120,7 +119,6 @@ async function getViewOnlyContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<ContractAbi[]> {
-  console.log("networ getViewOnlyCon", network);
   const abiUnfiltered = await getContractABI(contractAddress, String(network));
   return filter(
     abiUnfiltered,
@@ -132,10 +130,10 @@ async function getViewOnlyContractABI(
 export async function loadEthersViewOnlyContract(
   contractAddress: string,
   network?: string,
+  //TODO: we might need to create a polygon provider or a multichain provider ? that part seems to be working though, it worth a review
   provider: Provider = baseProvider,
 ) {
   try {
-    console.log("network loadEthersV", network);
     const abi = await getViewOnlyContractABI(contractAddress, network);
     return new Contract(contractAddress, new Interface(abi), provider);
   } catch (e) {
@@ -173,7 +171,6 @@ export async function contractOwnerFromContract(contract: Contract, network?: st
     if (deploymentTx) {
       ownerId = deploymentTx.from;
     } else {
-      console.log("network contractOwnerFromContract", network);
       const contractCreation = await getContractCreator(
         contract.target.toString(),
         String(network),
