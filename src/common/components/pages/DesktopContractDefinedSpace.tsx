@@ -143,7 +143,7 @@ const DesktopContractDefinedSpace = ({
   const isEditable = useMemo(() => {
     return (
       parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") ===
-      currentUserFid ||
+        currentUserFid ||
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
           (toString(ownerId) === toString(currentUserFid) ||
@@ -275,7 +275,8 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    if (tabName) router.push(`/t/${tokenData?.network}/${contractAddress}/${tabName}`);
+    if (tabName)
+      router.push(`/t/${tokenData?.network}/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
@@ -300,7 +301,9 @@ const DesktopContractDefinedSpace = ({
         return spaceId ? deleteSpaceTab(spaceId, tabName) : undefined;
       }}
       createTab={async (tabName) => {
-        return spaceId ? createSpaceTab(spaceId, tabName) : undefined;
+        return spaceId
+          ? createSpaceTab(spaceId, tabName, undefined, tokenData?.network)
+          : undefined;
       }}
       renameTab={async (oldName, newName) => {
         if (spaceId) {
