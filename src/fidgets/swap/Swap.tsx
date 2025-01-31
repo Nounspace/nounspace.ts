@@ -108,6 +108,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   },
 }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
+  const [url, setUrl] = React.useState("");
 
   const buildMatchaUrl = () => {
     const params = new URLSearchParams();
@@ -115,17 +116,17 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
     if (fromChain && fromChain.id) {
       params.append("sellChain", fromChain.id.toLowerCase());
-    } else {
-      params.append("sellChain", "8453");
     }
     if (toChain && toChain.id) {
       params.append("buyChain", toChain.id.toLowerCase());
-    } else {
-      params.append("buyChain", "8453");
     }
-    // if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
+    if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
+
+  React.useEffect(() => {
+    setUrl(buildMatchaUrl());
+  }, [defaultSellToken, defaultBuyToken, fromChain, toChain, optionalFeeRecipient]);
 
   const scaleValue = size;
 
@@ -158,7 +159,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
-        src={buildMatchaUrl()}
+        src={url}
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{
           transform: `scale(${scaleValue})`,

@@ -102,7 +102,7 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
                         {isLoading ? (
                             <title>Loading token Page...</title>
                         ) : (
-                            generateContractMetadataHtml(contractAddress, tokenData)
+                            generateContractMetadataHtml(contractAddress, tokenData, network)
                         )}
                     </Head>
                     <ContractDefinedSpace
@@ -111,6 +111,7 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
                         spaceId={spaceId}
                         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
                         contractAddress={contractAddress}
+                        network={network}
                     />
                 </>
             );
