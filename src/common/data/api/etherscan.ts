@@ -130,7 +130,8 @@ async function getViewOnlyContractABI(
 export async function loadEthersViewOnlyContract(
   contractAddress: string,
   network?: string,
-  //TODO: we might need to create a polygon provider or a multichain provider ? that part seems to be working though, it worth a review
+  //TODO: we might need to create a polygon provider or a multichain provider ? 
+  // that part seems to be working though, it worth a review
   provider: Provider = baseProvider,
 ) {
   try {
