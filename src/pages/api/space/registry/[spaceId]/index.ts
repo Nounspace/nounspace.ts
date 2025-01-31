@@ -113,7 +113,7 @@ async function updateSpaceTabOrder(
   });
 }
 
-export async function identitiesCanModifySpace(spaceId: string) {
+export async function identitiesCanModifySpace(spaceId: string, network?: string) {
   console.log("Checking identities that can modify space", stringify(spaceId));
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
@@ -123,7 +123,7 @@ export async function identitiesCanModifySpace(spaceId: string) {
     return [];
   const contractAddress = first(spaceRegistrationData)!.contractAddress;
   if (!isNull(contractAddress)) {
-    return await loadIdentitiesOwningContractSpace(contractAddress);
+    return await loadIdentitiesOwningContractSpace(contractAddress, String(network));
   } else {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
   }
