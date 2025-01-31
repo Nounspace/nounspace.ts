@@ -47,6 +47,7 @@ export async function fetchClankerByAddress(
 
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
+  network: string,
 ) {
   const clankerData = await fetchClankerByAddress(contractAddress as Address);
   if (clankerData && clankerData?.requestor_fid) {
