@@ -90,13 +90,23 @@ async function updateSpaceTabOrder(
     });
     return;
   }
-  const { error } = await supabase.storage
+
+  console.log(
+    "[registry space] Updating tab order",
+    stringify(updateOrderRequest),
+  );
+
+  const { data, error } = await supabase.storage
     .from("spaces")
     .upload(
       `${updateOrderRequest.spaceId}/tabOrder`,
       new Blob([stringify(updateOrderRequest)], { type: "application/json" }),
       { upsert: true },
     );
+
+  console.log("[registry space] Supabase Data", data);
+  console.log("[registry space] Supabase Error", error);
+
   if (!isNull(error)) {
     console.error(error);
     res.status(500).json({
