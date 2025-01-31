@@ -50,7 +50,10 @@ export async function loadContractData(
   }
   console.log("network contractPageProps", network);
 
-  const contract = await loadEthersViewOnlyContract(contractAddress, String(network));
+  const contract = await loadEthersViewOnlyContract(
+    contractAddress,
+    String(network),
+  );
   if (isUndefined(contract)) {
     return {
       props: {
@@ -63,7 +66,18 @@ export async function loadContractData(
 
   let pinnedCastId: string | null = "";
   let owningIdentities: string[] = [];
-  const { ownerId, ownerIdType } = await contractOwnerFromContract(contract, String(network));
+  let ownerId: string | null = null;
+  let ownerIdType: OwnerType = "address";
+  try {
+    const ownerData = await contractOwnerFromContract(
+      contract,
+      String(network),
+    );
+    ownerId = ownerData.ownerId;
+    ownerIdType = ownerData.ownerIdType;
+  } catch (error) {
+    console.error("Error fetching contract owner:", error);
+  }
 
   if (isNil(ownerId)) {
     return {
