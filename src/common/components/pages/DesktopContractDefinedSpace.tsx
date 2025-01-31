@@ -24,7 +24,6 @@ const DesktopContractDefinedSpace = ({
   contractAddress: initialContractAddress,
   ownerId,
   ownerIdType,
-  network,
 }: ContractDefinedSpaceProps) => {
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -171,9 +170,9 @@ const DesktopContractDefinedSpace = ({
         toString(tokenData?.clankerData?.requestor_fid) || "",
         tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
         !!tokenData?.clankerData,
-        network,
+        tokenData?.network,
       ),
-    [contractAddress, tokenData, network],
+    [contractAddress, tokenData, tokenData?.network],
   );
 
   const currentConfig = getCurrentSpaceConfig();
@@ -207,6 +206,7 @@ const DesktopContractDefinedSpace = ({
         "Profile",
         currentUserFid,
         INITIAL_SPACE_CONFIG,
+        String(tokenData?.network),
       ).then((newSpaceId) => {
         if (newSpaceId) {
           setSpaceId(newSpaceId);
@@ -275,11 +275,11 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    if (tabName) router.push(`/t/${network}/${contractAddress}/${tabName}`);
+    if (tabName) router.push(`/t/${tokenData?.network}/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
-    return `/t/${network}/${contractAddress}/${tabName}`;
+    return `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
   }
 
   const { editMode } = useSidebarContext();

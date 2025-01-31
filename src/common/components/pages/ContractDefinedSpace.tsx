@@ -13,12 +13,10 @@ export interface ContractDefinedSpaceProps {
   pinnedCastId?: string;
   ownerId: string | number | null;
   ownerIdType: OwnerType;
-  network: string;
 }
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   const [isMobile, setIsMobile] = useState(false);
-  const { network } = props;
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -35,7 +33,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   return (
     <>
       {isMobile ? (
-        <MobileContractDefinedSpace contractAddress={props.contractAddress} network={network} />
+        <MobileContractDefinedSpace contractAddress={props.contractAddress} />
       ) : (
         <div className="w-full">
           <DynamicDesktopContractDefinedSpace {...props} />

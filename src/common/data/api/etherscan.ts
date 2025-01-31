@@ -45,7 +45,10 @@ export const baseProvider = new AlchemyProvider(
   "base",
   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
 );
-
+// export const polygonProvider = new AlchemyProvider(
+//   "polygon",
+//   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_POLYGON,
+// );
 async function getContractABI(
   contractAddress: string,
   network?: string,
@@ -61,7 +64,7 @@ async function getContractABI(
         action: "getabi",
         address: contractAddress,
         apikey: apiKey,
-        chainId: network ? EtherScanChains[network] : undefined,
+        chainid: network ? EtherScanChains[network] : undefined,
       },
     });
 
@@ -95,7 +98,7 @@ async function getContractCreator(
         action: "getcontractcreation",
         contractaddresses: contractAddress,
         apikey: apiKey,
-        chainId: network ? EtherScanChains[network] : undefined,
+        chainid: network ? EtherScanChains[network] : undefined,
       },
     });
 
@@ -119,6 +122,7 @@ async function getViewOnlyContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<ContractAbi[]> {
+  console.log("network getViewOnlyContract", network);
   const abiUnfiltered = await getContractABI(contractAddress, String(network));
   return filter(
     abiUnfiltered,
@@ -135,6 +139,7 @@ export async function loadEthersViewOnlyContract(
   provider: Provider = baseProvider,
 ) {
   try {
+    console.log("network loadEthersView", network);
     const abi = await getViewOnlyContractABI(contractAddress, network);
     return new Contract(contractAddress, new Interface(abi), provider);
   } catch (e) {
@@ -148,7 +153,7 @@ export async function contractOwnerFromContractAddress(
 ) {
   if (isUndefined(contractAddress))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
-
+  console.log("network contractOwner", network);
   const contract = await loadEthersViewOnlyContract(contractAddress, network);
   if (isUndefined(contract))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };

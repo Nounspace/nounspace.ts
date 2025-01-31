@@ -45,8 +45,10 @@ export type UpdateSpaceTabRequest = SignedFile & {
 export async function identityCanModifySpace(
   identity: string,
   spaceId: string,
+  network?: string
 ) {
-  const data = await identitiesCanModifySpace(spaceId);
+  console.log("identityCanModifySpace", identity, spaceId, network);
+  const data = await identitiesCanModifySpace(spaceId, network);
   return findIndex(data, (i) => i === identity) !== -1;
 }
 

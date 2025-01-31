@@ -71,7 +71,7 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     ownerIdType,
     contractAddress,
     owningIdentities,
-    network, // Add network to props
+    network,
 }) => {
     const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
         (state) => ({
@@ -81,7 +81,7 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     );
 
     const { tokenData, isLoading } = useToken();
-
+    console.log("network ContractPrimarySpaceContent", network);
     useEffect(() => {
         addContractEditableSpaces(spaceId, owningIdentities);
     }, [spaceId]);
@@ -102,7 +102,7 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
                         {isLoading ? (
                             <title>Loading token Page...</title>
                         ) : (
-                            generateContractMetadataHtml(contractAddress, tokenData, network)
+                            generateContractMetadataHtml(contractAddress, tokenData)
                         )}
                     </Head>
                     <ContractDefinedSpace
@@ -111,7 +111,6 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
                         spaceId={spaceId}
                         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
                         contractAddress={contractAddress}
-                        network={network}
                     />
                 </>
             );
