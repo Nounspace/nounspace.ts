@@ -11,9 +11,8 @@ export type UserMetadata = {
 export const generateContractMetadataHtml = (
   contractAddress?: string | null,
   tokenData?: MasterToken | null,
-  network?: string,
 ) => {
-  const spaceUrl = `https://nounspace.com/t/${network}/${contractAddress}`;
+  const spaceUrl = `https://nounspace.com/t/${tokenData?.network}/${contractAddress}`;
   const priceInfo = tokenData?.geckoData?.price_usd
     ? ` - $${Number(tokenData.geckoData?.price_usd)}`
     : "";

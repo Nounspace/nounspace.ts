@@ -8,15 +8,25 @@ import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 
 async function loadTokenData(contractAddress: Address, network: string): Promise<MasterToken> {
-    const [tokenResponse, clankerResponse] = await Promise.all([
-        fetchTokenData(contractAddress, null, network),
-        fetchClankerByAddress(contractAddress),
-    ]);
+    if (network === "base") {
+        const [tokenResponse, clankerResponse] = await Promise.all([
+            fetchTokenData(contractAddress, null, network),
+            fetchClankerByAddress(contractAddress),
+        ]);
 
-    return {
-        geckoData: tokenResponse,
-        clankerData: clankerResponse,
-    };
+        return {
+            network,
+            geckoData: tokenResponse,
+            clankerData: clankerResponse,
+        };
+    } else {
+        const tokenResponse = await fetchTokenData(contractAddress, null, network);
+        return {
+            network,
+            geckoData: tokenResponse,
+            clankerData: null,
+        };
+    }
 }
 
 export const getServerSideProps: GetServerSideProps<
@@ -29,7 +39,8 @@ export const getServerSideProps: GetServerSideProps<
 
     const contractAddress = params?.contractAddress as string;
     const contractData = await loadContractData(params);
-    const network = Array.isArray(params?.network) ? params.network[0] : params?.network;
+    const network = params?.network as string;
+    console.log("network getServerSide", network);
     const tokenData = await loadTokenData(contractAddress as Address, String(network));
 
     return {
@@ -37,7 +48,7 @@ export const getServerSideProps: GetServerSideProps<
             ...contractData.props,
             contractAddress,
             tokenData,
-            network: params?.network as string, // Pass network as a prop
+            network
         },
     };
 };
