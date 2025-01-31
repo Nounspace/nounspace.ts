@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { OwnerType } from "@/common/data/api/etherscan";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToken } from "@/common/providers/TokenProvider";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
@@ -150,7 +149,7 @@ const DesktopContractDefinedSpace = ({
   const isEditable = useMemo(() => {
     return (
       parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") ===
-        currentUserFid ||
+      currentUserFid ||
       (isNil(spaceId) &&
         ((ownerIdType === "fid" &&
           (toString(ownerId) === toString(currentUserFid) ||
@@ -330,7 +329,7 @@ const DesktopContractDefinedSpace = ({
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
-      resetConfig={async () => {}}
+      resetConfig={resetConfig}
       tabBar={tabBar}
       loading={loading}
     />

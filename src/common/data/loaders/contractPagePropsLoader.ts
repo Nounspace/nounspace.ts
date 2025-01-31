@@ -10,6 +10,7 @@ import {
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
 import supabaseClient from "../database/supabase/clients/server";
+import { string } from "prop-types";
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
@@ -20,6 +21,7 @@ const defaultContractPageProps = {
   tabName: "Profile",
   contractAddress: null,
   owningIdentities: [],
+  network: string,
 };
 
 export async function loadContractData(
@@ -31,7 +33,8 @@ export async function loadContractData(
     };
   }
 
-  const { contractAddress, tabName: tabNameUnparsed } = params;
+  const { contractAddress, tabName: tabNameUnparsed, network } = params;
+  console.log("contractPageProps network", network);
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
@@ -46,7 +49,7 @@ export async function loadContractData(
     };
   }
 
-  const contract = await loadEthersViewOnlyContract(contractAddress);
+  const contract = await loadEthersViewOnlyContract(contractAddress, String(network));
   if (isUndefined(contract)) {
     return {
       props: {
@@ -59,7 +62,7 @@ export async function loadContractData(
 
   let pinnedCastId: string | null = "";
   let owningIdentities: string[] = [];
-  const { ownerId, ownerIdType } = await contractOwnerFromContract(contract);
+  const { ownerId, ownerIdType } = await contractOwnerFromContract(contract, String(network));
 
   if (isNil(ownerId)) {
     return {

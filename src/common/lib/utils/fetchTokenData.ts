@@ -1,3 +1,4 @@
+
 export interface GeckoTokenAttribute {
   address: string;
   name: string;
@@ -49,9 +50,9 @@ export interface GeckoTokenResponse {
 export async function fetchTokenData(
   tokenAddress: string,
   contractImage: string | null,
+  network: string,
 ): Promise<GeckoTokenAttribute | null> {
   const baseUrl = "https://api.geckoterminal.com/api/v2";
-  const network = "base";
 
   // let priceChange: string | null = null;
 
