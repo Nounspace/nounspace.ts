@@ -29,6 +29,7 @@ export interface SpaceRegistrationContract extends SpaceRegistrationBase {
   contractAddress: string;
   tokenOwnerFid?: number;
   initialConfig?: Omit<SpaceConfig, "isEditable">;
+  network?: string;
 }
 
 export interface SpaceRegistrationFid extends SpaceRegistrationBase {
@@ -91,8 +92,9 @@ async function identityCanRegisterForFid(identity: string, fid: number) {
 export async function fidCanRegisterClanker(
   contractAddress?: string,
   fid?: number,
+  network?: string,
 ) {
-  console.log("fidCanRegisterClanker called with", fid, contractAddress);
+  console.log("fidCanRegisterClanker called with", fid, contractAddress, network);
   if (isNil(contractAddress) || isNil(fid)) return false;
 
   const clankerData = await fetchClankerByAddress(contractAddress as Address);
@@ -103,24 +105,28 @@ async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
   tokenOwnerFid?: number,
+  network?: string,
 ) {
   console.log(
     "identityCanRegisterForContract called with",
     identity,
     contractAddress,
+    tokenOwnerFid,
+    network,
   );
 
   const canRegisterClanker = await fidCanRegisterClanker(
     contractAddress,
     tokenOwnerFid,
+    network,
   );
   if (canRegisterClanker) {
     console.log("Contract owner is the requester FID, allowing registration");
     return true;
   }
-
+  console.log("network indentitycanregister:", network);
   const { ownerId, ownerIdType } =
-    await contractOwnerFromContractAddress(contractAddress);
+    await contractOwnerFromContractAddress(contractAddress, network);
   console.log("Contract owner info:", { ownerId, ownerIdType });
 
   if (isNil(ownerId)) {
@@ -206,6 +212,7 @@ async function registerNewSpace(
         registration.identityPublicKey,
         registration.contractAddress,
         registration.tokenOwnerFid,
+        registration.network,
       ))
     ) {
       console.error(

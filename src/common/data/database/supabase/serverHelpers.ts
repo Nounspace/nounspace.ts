@@ -20,7 +20,7 @@ export async function loadIdentitiesOwningContractSpace(
 ) {
   // Fetch the owner of the contract from Clanker
   let { ownerId, ownerIdType } =
-    await tokenRequestorFromContractAddress(contractAddress, network);
+    await tokenRequestorFromContractAddress(contractAddress);
 
   // Load the owner of the contract from Etherscan if not found
   if (isNil(ownerId)) {

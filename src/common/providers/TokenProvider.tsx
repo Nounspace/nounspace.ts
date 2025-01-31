@@ -15,6 +15,7 @@ import { ClankerToken } from "../data/queries/clanker";
 export interface MasterToken {
   geckoData: GeckoTokenAttribute | null;
   clankerData: ClankerToken | null;
+  network?: string;
 }
 
 interface TokenContextProps {
@@ -42,7 +43,6 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
     defaultTokenData || null,
   );
   const [isLoading, setIsLoading] = useState(false);
-
   const fetchTokenInfo = async (address: string, network?: string) => {
     setIsLoading(true);
     try {
@@ -53,6 +53,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       ).then((res) => res.json());
 
       const combinedData: MasterToken = {
+        network: network,
         geckoData: tokenResponse,
         clankerData: clankerResponse,
       };
@@ -64,7 +65,8 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       setIsLoading(false);
     }
   };
-
+  console.log("TokenProvider network:", network);
+  console.log("TokenData:", tokenData);
   // Loads if defaultTokenData is not provided
   useEffect(() => {
     if (!defaultTokenData) {

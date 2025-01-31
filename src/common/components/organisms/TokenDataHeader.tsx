@@ -41,7 +41,7 @@ const TokenDataHeader: React.FC = () => {
   };
 
   const handleOpenBasescan = () => {
-    window.open(`https://basescan.org/address/${contractAddress}`, "_blank");
+    window.open(`https://${tokenData?.network}scan.org/address/${contractAddress}`, "_blank");
   };
 
   const handleCopyUrl = () => {
@@ -141,11 +141,10 @@ const TokenDataHeader: React.FC = () => {
             {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
-            className={`text-sm font-medium ${
-              priceChange && parseFloat(priceChange) > 0
+            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
                 ? "text-green-500"
                 : "text-red-500"
-            }`}
+              }`}
           >
             {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
           </div>
