@@ -48,6 +48,7 @@ export async function loadContractData(
       },
     };
   }
+  console.log("network contractPageProps", network);
 
   const contract = await loadEthersViewOnlyContract(contractAddress, String(network));
   if (isUndefined(contract)) {

@@ -138,15 +138,17 @@ interface SpaceActions {
     spaceId: string,
     tabName: string,
     initialConfig?: Omit<SpaceConfig, "isEditable">,
+    network?: string
   ) => Promise<void> | undefined;
   updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
   commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
-  registerSpaceFid: (fid: number, name: string) => Promise<string | undefined>;
+  registerSpaceFid: (fid: number, name: string, network?: string) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
     name: string,
     fid: number,
     initialConfig: Omit<SpaceConfig, "isEditable">,
+    network: string
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -260,13 +262,14 @@ export const createSpaceStoreFunc = (
     }
   }, 1000),
   createSpaceTab: debounce(
-    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY) => {
+    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY, network) => {
       const unsignedRequest: UnsignedSpaceTabRegistration = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
         spaceId,
         tabName,
         initialConfig,
+        network
       };
       const signedRequest = signSignable(
         unsignedRequest,
@@ -553,6 +556,7 @@ export const createSpaceStoreFunc = (
     name,
     tokenOwnerFid,
     initialConfig,
+    network
   ) => {
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
@@ -560,6 +564,7 @@ export const createSpaceStoreFunc = (
       timestamp: moment().toISOString(),
       contractAddress: address,
       tokenOwnerFid,
+      network
     };
     const registration = signSignable(
       unsignedRegistration,
@@ -576,7 +581,7 @@ export const createSpaceStoreFunc = (
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
 
-      await get().space.createSpaceTab(newSpaceId, "Profile", initialConfig);
+      await get().space.createSpaceTab(newSpaceId, "Profile", initialConfig, network);
       return newSpaceId;
     } catch (e) {
       null;
