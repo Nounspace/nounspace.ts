@@ -47,13 +47,13 @@ export const baseProvider = new AlchemyProvider(
 
 async function getContractABI(
   contractAddress: string,
-  network: EtherScanChains,
+  network?: string,
 ): Promise<ContractAbi[]> {
   // Select the appropriate API endpoint based on network
   const baseUrl = "https://api.etherscan.io";
 
   const apiKey = process.env.ETHERSCAN_API_KEY!;
-
+  console.log("network getcontractabi", network);
   try {
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
@@ -61,7 +61,7 @@ async function getContractABI(
         action: "getabi",
         address: contractAddress,
         apikey: apiKey,
-        chainId: network,
+        chainId: network ? EtherScanChains[network] : undefined,
       },
     });
 
@@ -84,11 +84,11 @@ async function getContractABI(
 
 async function getContractCreator(
   contractAddress: string,
-  network: EtherScanChains,
+  network: string,
 ): Promise<ContractCreation> {
   const baseUrl = "https://api.etherscan.io";
   const apiKey = process.env.ETHERSCAN_API_KEY!;
-
+  console.log("network getcontractcreator", network);
   try {
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
@@ -96,7 +96,7 @@ async function getContractCreator(
         action: "getcontractcreation",
         contractaddresses: contractAddress,
         apikey: apiKey,
-        chainId: network,
+        chainId: network ? EtherScanChains[network] : undefined,
       },
     });
 
@@ -118,9 +118,10 @@ async function getContractCreator(
 
 async function getViewOnlyContractABI(
   contractAddress: string,
-  network: EtherScanChains,
+  network?: string,
 ): Promise<ContractAbi[]> {
-  const abiUnfiltered = await getContractABI(contractAddress, network);
+  console.log("networ getViewOnlyCon", network);
+  const abiUnfiltered = await getContractABI(contractAddress, String(network));
   return filter(
     abiUnfiltered,
     (abiItem) =>
@@ -130,10 +131,11 @@ async function getViewOnlyContractABI(
 
 export async function loadEthersViewOnlyContract(
   contractAddress: string,
-  network: EtherScanChains = EtherScanChains.base,
+  network?: string,
   provider: Provider = baseProvider,
 ) {
   try {
+    console.log("network loadEthersV", network);
     const abi = await getViewOnlyContractABI(contractAddress, network);
     return new Contract(contractAddress, new Interface(abi), provider);
   } catch (e) {
@@ -143,17 +145,18 @@ export async function loadEthersViewOnlyContract(
 
 export async function contractOwnerFromContractAddress(
   contractAddress?: string,
+  network?: string
 ) {
   if (isUndefined(contractAddress))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
 
-  const contract = await loadEthersViewOnlyContract(contractAddress);
+  const contract = await loadEthersViewOnlyContract(contractAddress, network);
   if (isUndefined(contract))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
-  return contractOwnerFromContract(contract);
+  return contractOwnerFromContract(contract, network);
 }
 
-export async function contractOwnerFromContract(contract: Contract) {
+export async function contractOwnerFromContract(contract: Contract, network?: string) {
   let ownerId: string | undefined = "";
   let ownerIdType: OwnerType = "address";
   const abi = contract.interface;
@@ -170,9 +173,10 @@ export async function contractOwnerFromContract(contract: Contract) {
     if (deploymentTx) {
       ownerId = deploymentTx.from;
     } else {
+      console.log("network contractOwnerFromContract", network);
       const contractCreation = await getContractCreator(
         contract.target.toString(),
-        EtherScanChains.base,
+        String(network),
       );
       ownerId = contractCreation.contractCreator;
       try {
