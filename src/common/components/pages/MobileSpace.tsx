@@ -18,8 +18,10 @@ type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
+  network,
 }: {
   contractAddress: string;
+  network: string;
 }) => {
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
@@ -132,7 +134,7 @@ export const MobileContractDefinedSpace = ({
           )}
         >
           <iframe
-            src={`https://www.geckoterminal.com/base/pools/${contractAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=1`}
+            src={`https://www.geckoterminal.com/${network === "polygon" ? "polygon_pos" : network}/pools/${contractAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=1`}
             title="Market Data"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
@@ -145,7 +147,7 @@ export const MobileContractDefinedSpace = ({
           )}
         >
           <iframe
-            src={`https://matcha.xyz/trade?sellAddress=0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&buyAddress=${contractAddress}&sellChain=base&buyChain=base`}
+            src={`https://matcha.xyz/trade?sellAddress=0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&buyAddress=${contractAddress}&sellChain=${network === "polygon" ? 137 : network}&buyChain=${network === "polygon" ? 137 : 8453}`}
             title="Swap Fidget"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
@@ -176,13 +178,13 @@ export const MobileContractDefinedSpace = ({
             />
           )}
           <LinkItem
-            href={`https://www.geckoterminal.com/base/pools/${contractAddress}`}
+            href={`https://www.geckoterminal.com/${network === "polygon" ? "polygon_pos" : network}/pools/${contractAddress}`}
             imgSrc="https://www.geckoterminal.com/_next/image?url=https%3A%2F%2Fs.geckoterminal.com%2F_next%2Fstatic%2Fmedia%2Flogo_icon.845c1574.png&w=64&q=75"
             alt="CoinGecko"
             label="CoinGecko"
           />
           <LinkItem
-            href={`https://basescan.org/address/${contractAddress}`}
+            href={`https://${network}scan.org/address/${contractAddress}`} //lol 
             imgSrc="https://etherscan.io/images/brandassets/etherscan-logo-circle.svg"
             alt="BaseScan"
             label="BaseScan"

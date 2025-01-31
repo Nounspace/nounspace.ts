@@ -55,7 +55,10 @@ export async function fetchTokenData(
   const baseUrl = "https://api.geckoterminal.com/api/v2";
 
   // let priceChange: string | null = null;
-
+  // if network = polygon make network = polygon_pos
+  if (network === "polygon") {
+    network = "polygon_pos";
+  }
   try {
     const response = await fetch(
       `${baseUrl}/networks/${network}/tokens/${tokenAddress}?include=top_pools`,

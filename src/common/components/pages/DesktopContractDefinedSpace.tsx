@@ -24,6 +24,7 @@ const DesktopContractDefinedSpace = ({
   contractAddress: initialContractAddress,
   ownerId,
   ownerIdType,
+  network,
 }: ContractDefinedSpaceProps) => {
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -83,17 +84,13 @@ const DesktopContractDefinedSpace = ({
     setCurrentTabName(providedTabName);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
-      console.log("Loading space tab order for spaceId:", providedSpaceId);
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
-          console.log("Loaded space tab order for spaceId:", providedSpaceId);
           // After loading the tab order, load the specific tab
-          console.log("Loading space tab:", providedTabName);
           return loadSpaceTab(providedSpaceId, providedTabName);
         })
         .then(() => {
-          console.log("Loaded space tab:", providedTabName);
           setSpaceId(providedSpaceId);
           setLoading(false);
           // Load remaining tabs after the initial one has finished
@@ -112,9 +109,7 @@ const DesktopContractDefinedSpace = ({
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
         if (tabName !== providedTabName) {
-          console.log("Loading remaining tab:", tabName);
           await loadSpaceTab(spaceId, tabName);
-          console.log("Loaded remaining tab:", tabName);
         }
       }
     },
@@ -176,8 +171,9 @@ const DesktopContractDefinedSpace = ({
         toString(tokenData?.clankerData?.requestor_fid) || "",
         tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
         !!tokenData?.clankerData,
+        network,
       ),
-    [contractAddress, tokenData],
+    [contractAddress, tokenData, network],
   );
 
   const currentConfig = getCurrentSpaceConfig();
@@ -279,11 +275,11 @@ const DesktopContractDefinedSpace = ({
       const resolvedConfig = await config;
       saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
-    if (tabName) router.push(`/t/base/${contractAddress}/${tabName}`);
+    if (tabName) router.push(`/t/${network}/${contractAddress}/${tabName}`);
   }
 
   function getSpacePageUrl(tabName: string) {
-    return `/t/base/${contractAddress}/${tabName}`;
+    return `/t/${network}/${contractAddress}/${tabName}`;
   }
 
   const { editMode } = useSidebarContext();
