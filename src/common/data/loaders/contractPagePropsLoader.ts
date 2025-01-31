@@ -59,7 +59,15 @@ export async function loadContractData(
 
   let pinnedCastId: string | null = "";
   let owningIdentities: string[] = [];
-  const { ownerId, ownerIdType } = await contractOwnerFromContract(contract);
+  let ownerId: string | null = null;
+  let ownerIdType: OwnerType = "address";
+  try {
+    const ownerData = await contractOwnerFromContract(contract);
+    ownerId = ownerData.ownerId;
+    ownerIdType = ownerData.ownerIdType;
+  } catch (error) {
+    console.error("Error fetching contract owner:", error);
+  }
 
   if (isNil(ownerId)) {
     return {
