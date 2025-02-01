@@ -15,6 +15,7 @@ import {
   loadIdentitiesOwningContractSpace,
   loadOwnedItentitiesForSpaceByFid,
 } from "@/common/data/database/supabase/serverHelpers";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 type TabInfo = string[];
 
@@ -23,6 +24,7 @@ export type UnsignedUpdateTabOrderRequest = {
   timestamp: string;
   tabOrder: TabInfo;
   publicKey: string;
+  network?: EtherScanChainName;
 };
 
 export type UpdateTabOrderRequest = UnsignedUpdateTabOrderRequest & Signable;
@@ -80,6 +82,7 @@ async function updateSpaceTabOrder(
     !(await identityCanModifySpace(
       updateOrderRequest.publicKey,
       updateOrderRequest.spaceId,
+      updateOrderRequest?.network,
     ))
   ) {
     res.status(400).json({
@@ -113,8 +116,16 @@ async function updateSpaceTabOrder(
   });
 }
 
-export async function identitiesCanModifySpace(spaceId: string, network?: string) {
-  console.log("Checking identities that can modify space", stringify(spaceId), network, "network");
+export async function identitiesCanModifySpace(
+  spaceId: string,
+  network?: string,
+) {
+  console.log(
+    "Checking identities that can modify space",
+    stringify(spaceId),
+    network,
+    "network",
+  );
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
     .select("contractAddress")
@@ -123,7 +134,10 @@ export async function identitiesCanModifySpace(spaceId: string, network?: string
     return [];
   const contractAddress = first(spaceRegistrationData)!.contractAddress;
   if (!isNull(contractAddress)) {
-    return await loadIdentitiesOwningContractSpace(contractAddress, String(network));
+    return await loadIdentitiesOwningContractSpace(
+      contractAddress,
+      String(network),
+    );
   } else {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
   }

@@ -15,6 +15,7 @@ import TabBar from "../organisms/TabBar";
 import { SpaceConfigSaveDetails } from "../templates/Space";
 import SpacePage from "./SpacePage";
 import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -247,7 +248,7 @@ const DesktopContractDefinedSpace = ({
 
   const commitConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
-    commitSpaceTab(spaceId, providedTabName);
+    commitSpaceTab(spaceId, providedTabName, tokenData?.network);
   }, [spaceId, providedTabName]);
 
   // Resets the configuration of a space tab.
@@ -313,10 +314,15 @@ const DesktopContractDefinedSpace = ({
         return undefined;
       }}
       commitTab={async (tabName) => {
-        return spaceId ? commitSpaceTab(spaceId, tabName) : undefined;
+        return spaceId
+          ? commitSpaceTab(spaceId, tabName, tokenData?.network)
+          : undefined;
       }}
       commitTabOrder={async () => {
-        return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
+        const network = tokenData?.network
+          ? (tokenData.network as EtherScanChainName)
+          : undefined;
+        return spaceId ? commitSpaceTabOrder(spaceId, network) : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
     />
