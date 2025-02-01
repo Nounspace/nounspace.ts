@@ -1,4 +1,3 @@
-
 export interface GeckoTokenAttribute {
   address: string;
   name: string;
@@ -75,7 +74,6 @@ export async function fetchTokenData(
     }
 
     const result: GeckoTokenResponse = await response.json();
-    console.log("GeckoTokenResponse:", result);
     const token = result.data.attributes;
 
     // if (result.included && result.included.length > 0) {
@@ -123,8 +121,6 @@ export async function fetchTokenData(
     if (image === "missing.png") {
       image = contractImage || image;
     }
-
-    console.log("Token fetch data result:", { token });
 
     return {
       ...token,
