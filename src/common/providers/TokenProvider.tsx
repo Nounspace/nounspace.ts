@@ -47,7 +47,11 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
     setIsLoading(true);
     try {
       console.log("Fetching token data...", address);
-      const tokenResponse = await fetchTokenData(address, null, String(network));
+      const tokenResponse = await fetchTokenData(
+        address,
+        null,
+        String(network),
+      );
       const clankerResponse = await fetch(
         `/api/clanker/ca?address=${address}`,
       ).then((res) => res.json());
@@ -65,8 +69,8 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       setIsLoading(false);
     }
   };
-  console.log("TokenProvider network:", network);
-  console.log("TokenData:", tokenData);
+  // console.log("TokenProvider network:", network);
+  // console.log("TokenData:", tokenData);
   // Loads if defaultTokenData is not provided
   useEffect(() => {
     if (!defaultTokenData) {

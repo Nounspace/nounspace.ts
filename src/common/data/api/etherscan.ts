@@ -40,7 +40,7 @@ interface EtherscanResponse {
   result: unknown; // ABI comes as a string that needs to be parsed
 }
 
-//TODO: we might need to create a polygon provider or a multichain provider ? 
+//TODO: we might need to create a polygon provider or a multichain provider ?
 export const baseProvider = new AlchemyProvider(
   "base",
   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
@@ -53,6 +53,7 @@ async function getContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<ContractAbi[]> {
+  console.log("network getContractABI", network);
   // Select the appropriate API endpoint based on network
   const baseUrl = "https://api.etherscan.io";
 
@@ -123,7 +124,7 @@ async function getViewOnlyContractABI(
   network?: string,
 ): Promise<ContractAbi[]> {
   console.log("network getViewOnlyContract", network);
-  const abiUnfiltered = await getContractABI(contractAddress, String(network));
+  const abiUnfiltered = await getContractABI(contractAddress, network);
   return filter(
     abiUnfiltered,
     (abiItem) =>
@@ -134,7 +135,7 @@ async function getViewOnlyContractABI(
 export async function loadEthersViewOnlyContract(
   contractAddress: string,
   network?: string,
-  //TODO: we might need to create a polygon provider or a multichain provider ? 
+  //TODO: we might need to create a polygon provider or a multichain provider ?
   // that part seems to be working though, it worth a review
   provider: Provider = baseProvider,
 ) {
@@ -149,7 +150,7 @@ export async function loadEthersViewOnlyContract(
 
 export async function contractOwnerFromContractAddress(
   contractAddress?: string,
-  network?: string
+  network?: string,
 ) {
   if (isUndefined(contractAddress))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
@@ -160,7 +161,10 @@ export async function contractOwnerFromContractAddress(
   return contractOwnerFromContract(contract, network);
 }
 
-export async function contractOwnerFromContract(contract: Contract, network?: string) {
+export async function contractOwnerFromContract(
+  contract: Contract,
+  network?: string,
+) {
   let ownerId: string | undefined = "";
   let ownerIdType: OwnerType = "address";
   const abi = contract.interface;

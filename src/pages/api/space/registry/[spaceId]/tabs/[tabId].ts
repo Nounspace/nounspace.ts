@@ -45,7 +45,7 @@ export type UpdateSpaceTabRequest = SignedFile & {
 export async function identityCanModifySpace(
   identity: string,
   spaceId: string,
-  network?: string
+  network?: string,
 ) {
   console.log("identityCanModifySpace", identity, spaceId, network);
   const data = await identitiesCanModifySpace(spaceId, network);
@@ -59,6 +59,9 @@ async function updateSpace(
   const req = incReq.body;
   const spaceId = incReq.query.spaceId as string;
   const tabName = incReq.query.tabId as string;
+  const network = req.network ? (req.network as string) : undefined;
+  if (network) delete req.network;
+
   if (!isSignedFile(req)) {
     res.status(400).json({
       result: "error",
@@ -78,7 +81,7 @@ async function updateSpace(
     });
     return;
   }
-  if (!(await identityCanModifySpace(req.publicKey, spaceId))) {
+  if (!(await identityCanModifySpace(req.publicKey, spaceId, network))) {
     res.status(400).json({
       result: "error",
       error: {
