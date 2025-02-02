@@ -20,6 +20,7 @@ export type UnsignedDeleteSpaceTabRequest = {
   timestamp: string;
   spaceId: string;
   tabName: string;
+  network?: string;
 };
 
 export type DeleteSpaceTabRequest = UnsignedDeleteSpaceTabRequest & Signable;
@@ -127,6 +128,7 @@ async function updateSpace(
 
 async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
   const deleteReq = req.body;
+  console.log("deleteReq", deleteReq);
   const spaceId = req.query.spaceId as string;
   const tabId = req.query.tabId as string;
   if (!isDeleteSpaceTabRequest(deleteReq)) {
@@ -139,7 +141,13 @@ async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
     });
     return;
   }
-  if (!(await identityCanModifySpace(deleteReq.publicKey, spaceId))) {
+  if (
+    !(await identityCanModifySpace(
+      deleteReq.publicKey,
+      spaceId,
+      deleteReq.network,
+    ))
+  ) {
     res.status(400).json({
       result: "error",
       error: {
