@@ -58,8 +58,8 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: "/t/base/:contractAddress",
-        destination: "/t/base/:contractAddress/Profile",
+        source: "/t/:network/:contractAddress",
+        destination: "/t/:network/:contractAddress/Profile",
         permanent: true,
       },
     ];
