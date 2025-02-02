@@ -34,6 +34,9 @@ const DesktopContractDefinedSpace = ({
 
   const { wallets, ready: walletsReady } = useWallets();
   const { tokenData } = useToken();
+  const tokenNetwork = tokenData?.network
+    ? (tokenData.network as EtherScanChainName)
+    : undefined;
 
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
@@ -299,11 +302,13 @@ const DesktopContractDefinedSpace = ({
       }}
       inEditMode={editMode}
       deleteTab={async (tabName) => {
-        return spaceId ? deleteSpaceTab(spaceId, tabName) : undefined;
+        return spaceId
+          ? deleteSpaceTab(spaceId, tabName, tokenNetwork)
+          : undefined;
       }}
       createTab={async (tabName) => {
         return spaceId
-          ? createSpaceTab(spaceId, tabName, undefined, tokenData?.network)
+          ? createSpaceTab(spaceId, tabName, undefined, tokenNetwork)
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
@@ -315,14 +320,11 @@ const DesktopContractDefinedSpace = ({
       }}
       commitTab={async (tabName) => {
         return spaceId
-          ? commitSpaceTab(spaceId, tabName, tokenData?.network)
+          ? commitSpaceTab(spaceId, tabName, tokenNetwork)
           : undefined;
       }}
       commitTabOrder={async () => {
-        const network = tokenData?.network
-          ? (tokenData.network as EtherScanChainName)
-          : undefined;
-        return spaceId ? commitSpaceTabOrder(spaceId, network) : undefined;
+        return spaceId ? commitSpaceTabOrder(spaceId, tokenNetwork) : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
     />

@@ -135,7 +135,7 @@ interface SpaceActions {
   deleteSpaceTab: (
     spaceId: string,
     tabName: string,
-    network?: string,
+    network?: EtherScanChainName,
   ) => Promise<void> | undefined;
   createSpaceTab: (
     spaceId: string,
@@ -143,7 +143,11 @@ interface SpaceActions {
     initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: string,
   ) => Promise<void> | undefined;
-  updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
+  updateLocalSpaceOrder: (
+    spaceId: string,
+    newOrder: string[],
+    network?: string,
+  ) => Promise<void>;
   commitSpaceOrderToDatabase: (
     spaceId: string,
     network?: EtherScanChainName,
@@ -236,41 +240,45 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
     }, "saveLocalSpaceTab");
   },
-  deleteSpaceTab: debounce(async (spaceId, tabName) => {
-    // This deletes locally and remotely at the same time
-    // We can separate these out, but I think deleting feels better as a single decisive action
-    const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
-      publicKey: get().account.currentSpaceIdentityPublicKey!,
-      timestamp: moment().toISOString(),
-      spaceId,
-      tabName,
-    };
-    const signedRequest = signSignable(
-      unsignedDeleteTabRequest,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
-    );
-    try {
-      await axiosBackend.delete(
-        `/api/space/registry/${spaceId}/tabs/${tabName}`,
-        { data: signedRequest },
+  deleteSpaceTab: debounce(
+    async (spaceId, tabName, network?: EtherScanChainName) => {
+      // This deletes locally and remotely at the same time
+      // We can separate these out, but I think deleting feels better as a single decisive action
+      const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
+        publicKey: get().account.currentSpaceIdentityPublicKey!,
+        timestamp: moment().toISOString(),
+        spaceId,
+        tabName,
+        network,
+      };
+      const signedRequest = signSignable(
+        unsignedDeleteTabRequest,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
-      set((draft) => {
-        delete draft.space.localSpaces[spaceId].tabs[tabName];
-        delete draft.space.remoteSpaces[spaceId].tabs[tabName];
-        draft.space.localSpaces[spaceId].order = filter(
-          draft.space.localSpaces[spaceId].order,
-          (x) => x !== tabName,
+      try {
+        await axiosBackend.delete(
+          `/api/space/registry/${spaceId}/tabs/${tabName}`,
+          { data: signedRequest },
         );
-        draft.space.remoteSpaces[spaceId].order = filter(
-          draft.space.localSpaces[spaceId].order,
-          (x) => x !== tabName,
-        );
-      }, "deleteSpaceTab");
-      return get().space.commitSpaceOrderToDatabase(spaceId);
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1000),
+        set((draft) => {
+          delete draft.space.localSpaces[spaceId].tabs[tabName];
+          delete draft.space.remoteSpaces[spaceId].tabs[tabName];
+          draft.space.localSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
+          draft.space.remoteSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
+        }, "deleteSpaceTab");
+        return get().space.commitSpaceOrderToDatabase(spaceId, network);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    1000,
+  ),
   createSpaceTab: debounce(
     async (
       spaceId,
