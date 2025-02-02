@@ -17,7 +17,6 @@ export interface ContractDefinedSpaceProps {
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   const [isMobile, setIsMobile] = useState(false);
-
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);

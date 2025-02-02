@@ -45,6 +45,7 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -116,6 +117,7 @@ interface SpaceActions {
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
+    network?: string,
   ) => Promise<void> | undefined;
   saveLocalSpaceTab: (
     spaceId: string,
@@ -133,20 +135,34 @@ interface SpaceActions {
   deleteSpaceTab: (
     spaceId: string,
     tabName: string,
+    network?: EtherScanChainName,
   ) => Promise<void> | undefined;
   createSpaceTab: (
     spaceId: string,
     tabName: string,
     initialConfig?: Omit<SpaceConfig, "isEditable">,
+    network?: string,
   ) => Promise<void> | undefined;
-  updateLocalSpaceOrder: (spaceId: string, newOrder: string[]) => Promise<void>;
-  commitSpaceOrderToDatabase: (spaceId: string) => Promise<void> | undefined;
-  registerSpaceFid: (fid: number, name: string) => Promise<string | undefined>;
+  updateLocalSpaceOrder: (
+    spaceId: string,
+    newOrder: string[],
+    network?: string,
+  ) => Promise<void>;
+  commitSpaceOrderToDatabase: (
+    spaceId: string,
+    network?: EtherScanChainName,
+  ) => Promise<void> | undefined;
+  registerSpaceFid: (
+    fid: number,
+    name: string,
+    network?: string,
+  ) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
     name: string,
     fid: number,
     initialConfig: Omit<SpaceConfig, "isEditable">,
+    network: string,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -177,7 +193,7 @@ export const createSpaceStoreFunc = (
     }
   },
   commitSpaceTabToDatabase: debounce(
-    async (spaceId: string, tabName: string) => {
+    async (spaceId: string, tabName: string, network?: string) => {
       const localCopy = cloneDeep(
         get().space.localSpaces[spaceId].tabs[tabName],
       );
@@ -192,7 +208,7 @@ export const createSpaceStoreFunc = (
         try {
           await axiosBackend.post(
             `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
-            file,
+            { ...file, network },
           );
           set((draft) => {
             draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
@@ -224,49 +240,59 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
     }, "saveLocalSpaceTab");
   },
-  deleteSpaceTab: debounce(async (spaceId, tabName) => {
-    // This deletes locally and remotely at the same time
-    // We can separate these out, but I think deleting feels better as a single decisive action
-    const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
-      publicKey: get().account.currentSpaceIdentityPublicKey!,
-      timestamp: moment().toISOString(),
+  deleteSpaceTab: debounce(
+    async (spaceId, tabName, network?: EtherScanChainName) => {
+      // This deletes locally and remotely at the same time
+      // We can separate these out, but I think deleting feels better as a single decisive action
+      const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
+        publicKey: get().account.currentSpaceIdentityPublicKey!,
+        timestamp: moment().toISOString(),
+        spaceId,
+        tabName,
+        network,
+      };
+      const signedRequest = signSignable(
+        unsignedDeleteTabRequest,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
+      );
+      try {
+        await axiosBackend.delete(
+          `/api/space/registry/${spaceId}/tabs/${tabName}`,
+          { data: signedRequest },
+        );
+        set((draft) => {
+          delete draft.space.localSpaces[spaceId].tabs[tabName];
+          delete draft.space.remoteSpaces[spaceId].tabs[tabName];
+          draft.space.localSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
+          draft.space.remoteSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
+        }, "deleteSpaceTab");
+        return get().space.commitSpaceOrderToDatabase(spaceId, network);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    1000,
+  ),
+  createSpaceTab: debounce(
+    async (
       spaceId,
       tabName,
-    };
-    const signedRequest = signSignable(
-      unsignedDeleteTabRequest,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
-    );
-    try {
-      await axiosBackend.delete(
-        `/api/space/registry/${spaceId}/tabs/${tabName}`,
-        { data: signedRequest },
-      );
-      set((draft) => {
-        delete draft.space.localSpaces[spaceId].tabs[tabName];
-        delete draft.space.remoteSpaces[spaceId].tabs[tabName];
-        draft.space.localSpaces[spaceId].order = filter(
-          draft.space.localSpaces[spaceId].order,
-          (x) => x !== tabName,
-        );
-        draft.space.remoteSpaces[spaceId].order = filter(
-          draft.space.localSpaces[spaceId].order,
-          (x) => x !== tabName,
-        );
-      }, "deleteSpaceTab");
-      return get().space.commitSpaceOrderToDatabase(spaceId);
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1000),
-  createSpaceTab: debounce(
-    async (spaceId, tabName, initialConfig = INITIAL_SPACE_CONFIG_EMPTY) => {
+      initialConfig = INITIAL_SPACE_CONFIG_EMPTY,
+      network,
+    ) => {
       const unsignedRequest: UnsignedSpaceTabRegistration = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
         spaceId,
         tabName,
         initialConfig,
+        network,
       };
       const signedRequest = signSignable(
         unsignedRequest,
@@ -302,7 +328,7 @@ export const createSpaceStoreFunc = (
         }, "createSpaceTab");
         analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
-        return get().space.commitSpaceOrderToDatabase(spaceId);
+        return get().space.commitSpaceOrderToDatabase(spaceId, network);
       } catch (e) {
         console.error("Fail creating space:", e);
       }
@@ -314,41 +340,45 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].order = newOrder;
     });
   },
-  commitSpaceOrderToDatabase: debounce(async (spaceId) => {
-    const unsignedReq: UnsignedUpdateTabOrderRequest = {
-      spaceId,
-      tabOrder: get().space.localSpaces[spaceId].order,
-      publicKey: get().account.currentSpaceIdentityPublicKey!,
-      timestamp: moment().toISOString(),
-    };
-    const signedRequest = signSignable(
-      unsignedReq,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
-    );
-    try {
-      await axiosBackend.post<RegisterNewSpaceTabResponse>(
-        `/api/space/registry/${spaceId}`,
-        signedRequest,
+  commitSpaceOrderToDatabase: debounce(
+    async (spaceId, network?: EtherScanChainName) => {
+      const unsignedReq: UnsignedUpdateTabOrderRequest = {
+        spaceId,
+        tabOrder: get().space.localSpaces[spaceId].order,
+        publicKey: get().account.currentSpaceIdentityPublicKey!,
+        timestamp: moment().toISOString(),
+        network,
+      };
+      const signedRequest = signSignable(
+        unsignedReq,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
-      set((draft) => {
-        if (isUndefined(draft.space.remoteSpaces[spaceId])) {
-          draft.space.remoteSpaces[spaceId] = {
-            tabs: {},
-            order: [],
-            updatedAt: moment(0).toISOString(),
-            id: spaceId,
-          };
-        }
-
-        draft.space.remoteSpaces[spaceId].order = cloneDeep(
-          get().space.localSpaces[spaceId].order,
+      try {
+        await axiosBackend.post<RegisterNewSpaceTabResponse>(
+          `/api/space/registry/${spaceId}`,
+          signedRequest,
         );
-      }, "commitSpaceOrderToDatabase");
-      analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
-    } catch (e) {
-      console.error(e);
-    }
-  }, 1000),
+        set((draft) => {
+          if (isUndefined(draft.space.remoteSpaces[spaceId])) {
+            draft.space.remoteSpaces[spaceId] = {
+              tabs: {},
+              order: [],
+              updatedAt: moment(0).toISOString(),
+              id: spaceId,
+            };
+          }
+
+          draft.space.remoteSpaces[spaceId].order = cloneDeep(
+            get().space.localSpaces[spaceId].order,
+          );
+        }, "commitSpaceOrderToDatabase");
+        analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
+      } catch (e) {
+        console.error(e);
+      }
+    },
+    1000,
+  ),
   loadSpaceTab: async (spaceId, tabName, fid) => {
     const supabase = createClient();
     try {
@@ -553,6 +583,7 @@ export const createSpaceStoreFunc = (
     name,
     tokenOwnerFid,
     initialConfig,
+    network,
   ) => {
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
@@ -560,6 +591,7 @@ export const createSpaceStoreFunc = (
       timestamp: moment().toISOString(),
       contractAddress: address,
       tokenOwnerFid,
+      network,
     };
     const registration = signSignable(
       unsignedRegistration,
@@ -576,7 +608,12 @@ export const createSpaceStoreFunc = (
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
 
-      await get().space.createSpaceTab(newSpaceId, "Profile", initialConfig);
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Profile",
+        initialConfig,
+        network,
+      );
       return newSpaceId;
     } catch (e) {
       null;

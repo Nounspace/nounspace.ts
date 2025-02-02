@@ -72,29 +72,33 @@ const frameConfig: FidgetProperties = {
 
 const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
   settings: {
-    chain = { id: "8453", name: "base" },
+    chain,
     token,
     size = 1,
     theme = "light",
     dataSource = "dexscreener",
   },
 }) => {
+  const [url, setUrl] = React.useState("");
+
   const buildUrl = () => {
     if (dataSource === "geckoterminal") {
       const lightChart = theme === "light" ? 1 : 0;
-      const url = `https://www.geckoterminal.com/${chain?.name ?? "base"}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=${lightChart}`;
-      return url;
+      return `https://www.geckoterminal.com/${chain?.name}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=${lightChart}`;
     }
-    const url = `https://dexscreener.com/${chain?.name ?? "base"}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
-    return url;
+    return `https://dexscreener.com/${chain?.name}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
   };
+
+  React.useEffect(() => {
+    setUrl(buildUrl());
+  }, [chain, token, theme, dataSource]);
 
   const scaleValue = size;
 
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
       <iframe
-        src={buildUrl()}
+        src={url}
         title="Market Data"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         style={{

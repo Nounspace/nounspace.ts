@@ -5,6 +5,7 @@ import { tokenRequestorFromContractAddress } from "../../queries/clanker";
 
 export async function loadOwnedItentitiesForWalletAddress(
   walletAddress: string,
+  network?: string,
 ) {
   const { data } = await supabaseClient
     .from("walletIdentities")
@@ -15,6 +16,7 @@ export async function loadOwnedItentitiesForWalletAddress(
 
 export async function loadIdentitiesOwningContractSpace(
   contractAddress: string,
+  network: string,
 ) {
   // Fetch the owner of the contract from Clanker
   let { ownerId, ownerIdType } =
@@ -23,7 +25,7 @@ export async function loadIdentitiesOwningContractSpace(
   // Load the owner of the contract from Etherscan if not found
   if (isNil(ownerId)) {
     ({ ownerId, ownerIdType } =
-      await contractOwnerFromContractAddress(contractAddress));
+      await contractOwnerFromContractAddress(contractAddress, network));
   }
 
   // If the owner is still not found, return an empty array

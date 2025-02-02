@@ -8,13 +8,15 @@ export const createInitialContractSpaceConfigForAddress = (
   casterFid: string | null,
   symbol: string,
   isClankerToken: boolean,
+  network?: string,
 ): Omit<SpaceConfig, "isEditable"> => {
-  console.log(`Creating initial contract space config for address:
-    Address: ${address}
-    Cast Hash: ${castHash}
-    Caster Fid: ${casterFid}
-    Symbol: ${symbol}
-    Is Clanker Token: ${isClankerToken}`);
+  // console.log(`Creating initial contract space config for address:
+  //   Address: ${address}
+  //   Cast Hash: ${castHash}
+  //   Caster Fid: ${casterFid}
+  //   Symbol: ${symbol}
+  //   Is Clanker Token: ${isClankerToken}
+  //   Network: ${network}`);
 
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 
@@ -26,8 +28,8 @@ export const createInitialContractSpaceConfigForAddress = (
         settings: {
           defaultBuyToken: address,
           defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-          fromChain: 8453,
-          toChain: 8453,
+          fromChain: network === "polygon" ? { id: "137", name: "polygon" } : { id: "8453", name: "base" },
+          toChain: network === "polygon" ? { id: "137", name: "polygon" } : { id: "8453", name: "base" },
         },
       },
       fidgetType: "Swap",
@@ -83,10 +85,11 @@ export const createInitialContractSpaceConfigForAddress = (
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
-          chain: "base",
+          chain: network === "polygon" ? { id: "137", name: "polygon_pos" } : { id: "8453", name: "base" },
           token: address,
         },
       },
+
       fidgetType: "Market",
       id: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
     },
@@ -121,7 +124,7 @@ export const createInitialContractSpaceConfigForAddress = (
                 "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Ljc3Nzc3Nzg3Nzc3NzctKzc3Nzc3Nzc3Kzc3Nzc3Nzc3ODc3Nzc3Nys3N//AABEIABwAHAMBIgACEQEDEQH/xAAaAAABBQEAAAAAAAAAAAAAAAAHAgQFBggD/8QAKRAAAgEDAgQFBQAAAAAAAAAAAQIDAAURBDEGEiFREyJBccEHFKHR8P/EABgBAAIDAAAAAAAAAAAAAAAAAAIDAQQF/8QAHhEAAQQDAAMAAAAAAAAAAAAAAgABAxEEEiETQVH/2gAMAwEAAhEDEQA/ABZGperdZOBdRcYQ87SpI4ykMcfM2O5HxTbgPQQ6ozayXDNAwCIdgd8n4o4/TZJ5LNNrdVpmgaedhEHGHMa4AJ925j7YrekIYofI7WnuVMs/3zhi4WdpDPEJIY3MbTRMHVG6eV8E8jdR5WwagmBBxR6v3FMV5F5suj0/2ulaR4JplQBpzjDMD+O+3WgHqX8Od05geViMjY0stmBiNqtRfOrvYb3PaNWJYTlT0dDs47H9+lGvhLjKRLa7W9hNC4OI5D1gf+9NjvWeSxpxBrJ4VYRyFQRg4O4qvDliw6SNYoNr46vfGHE6xNJpdFJmRifFlXv6gfJoftJzMSaS7s5yxyaTScnLKcr9Ib+L/9k=",
               description: "",
               text: "GeckoTerminal",
-              url: `https://geckoterminal.com/base/pools/${address}`,
+              url: `https://geckoterminal.com/${network == "polygon" ? "polygon_pos" : network}/pools/${address}`,
             },
             {
               avatar:

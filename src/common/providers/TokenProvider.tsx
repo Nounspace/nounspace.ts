@@ -15,6 +15,7 @@ import { ClankerToken } from "../data/queries/clanker";
 export interface MasterToken {
   geckoData: GeckoTokenAttribute | null;
   clankerData: ClankerToken | null;
+  network?: string;
 }
 
 interface TokenContextProps {
@@ -29,28 +30,34 @@ interface TokenProviderProps {
   children: ReactNode;
   contractAddress?: Address;
   defaultTokenData?: MasterToken;
+  network: string;
 }
 
 export const TokenProvider: React.FC<TokenProviderProps> = ({
   children,
   contractAddress,
   defaultTokenData,
+  network,
 }) => {
   const [tokenData, setTokenData] = useState<MasterToken | null>(
     defaultTokenData || null,
   );
   const [isLoading, setIsLoading] = useState(false);
-
-  const fetchTokenInfo = async (address: string) => {
+  const fetchTokenInfo = async (address: string, network?: string) => {
     setIsLoading(true);
     try {
       console.log("Fetching token data...", address);
-      const tokenResponse = await fetchTokenData(address, null);
+      const tokenResponse = await fetchTokenData(
+        address,
+        null,
+        String(network),
+      );
       const clankerResponse = await fetch(
         `/api/clanker/ca?address=${address}`,
       ).then((res) => res.json());
 
       const combinedData: MasterToken = {
+        network: network,
         geckoData: tokenResponse,
         clankerData: clankerResponse,
       };
@@ -62,11 +69,12 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       setIsLoading(false);
     }
   };
-
+  // console.log("TokenProvider network:", network);
+  // console.log("TokenData:", tokenData);
   // Loads if defaultTokenData is not provided
   useEffect(() => {
     if (!defaultTokenData) {
-      fetchTokenInfo(contractAddress as Address);
+      fetchTokenInfo(contractAddress as Address, network);
     }
   }, []);
 
