@@ -37,7 +37,7 @@ export async function fetchClankerByAddress(
 
     return json.data as ClankerToken;
   } catch (error) {
-    console.error(
+    console.log(
       "Failed to fetch Clanker data:",
       error instanceof Error ? error.message : error,
     );
