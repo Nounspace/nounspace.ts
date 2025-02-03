@@ -434,7 +434,11 @@ export const createSpaceStoreFunc = (
         const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
 
         // Compare timestamps if local tab exists
-        if (!isUndefined(localTab) && !isUndefined(localTab.timestamp)) {
+        if (
+          !isUndefined(localTab) &&
+          localTab.timestamp &&
+          remoteUpdatableSpaceConfig.timestamp
+        ) {
           const localTimestamp = moment(localTab.timestamp);
           const remoteTimestamp = moment(remoteUpdatableSpaceConfig.timestamp);
 
