@@ -40,8 +40,11 @@ const TokenDataHeader: React.FC = () => {
     }
   };
 
-  const handleOpenBasescan = () => {
-    window.open(`https://${tokenData?.network}scan.org/address/${contractAddress}`, "_blank");
+  const handleOpenNetscan = () => {
+    window.open(
+      `https://${tokenData?.network}scan.org/address/${contractAddress}`,
+      "_blank",
+    );
   };
 
   const handleCopyUrl = () => {
@@ -141,10 +144,11 @@ const TokenDataHeader: React.FC = () => {
             {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
-            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
+            className={`text-sm font-medium ${
+              priceChange && parseFloat(priceChange) > 0
                 ? "text-green-500"
                 : "text-red-500"
-              }`}
+            }`}
           >
             {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
           </div>
@@ -161,7 +165,7 @@ const TokenDataHeader: React.FC = () => {
             src="https://cdn.worldvectorlogo.com/logos/etherscan-1.svg"
             alt="basescan"
             style={{ width: "20px", height: "20px", cursor: "pointer" }}
-            onClick={handleOpenBasescan}
+            onClick={handleOpenNetscan}
           />
           <IoMdShare
             className="text-gray-500 cursor-pointer"

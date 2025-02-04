@@ -10,113 +10,114 @@ import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import Head from "next/head";
 import React, { useEffect } from "react";
 import {
-    MasterToken,
-    TokenProvider,
-    useToken,
+  MasterToken,
+  TokenProvider,
+  useToken,
 } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 export interface ContractSpacePageProps {
-    spaceId: string | null;
-    tabName: string | null;
-    contractAddress: string | null;
-    ownerIdType: OwnerType;
-    pinnedCastId?: string;
-    owningIdentities: string[];
-    ownerId: string | null;
-    tokenData?: MasterToken;
-    network: string; // Add network to props
+  spaceId: string | null;
+  tabName: string | null;
+  contractAddress: string | null;
+  ownerIdType: OwnerType;
+  pinnedCastId?: string;
+  owningIdentities: string[];
+  ownerId: string | null;
+  tokenData?: MasterToken;
+  network: EtherScanChainName;
 }
 
 export const getServerSideProps = (async ({
-    params,
+  params,
 }: GetServerSidePropsContext) => {
-    const contractData = await loadContractData(params);
-    return {
-        props: {
-            ...contractData.props,
-            network: Array.isArray(params?.network) ? params.network[0] : params?.network ?? "", // Ensure network is always a string
-        },
-    };
+  const contractData = await loadContractData(params);
+  const network = params?.network as EtherScanChainName;
+  return {
+    props: {
+      ...contractData.props,
+      network,
+    },
+  };
 }) satisfies GetServerSideProps<ContractSpacePageProps>;
 
 export const ContractPrimarySpace: NextPageWithLayout = ({
-    spaceId,
-    tabName,
-    ownerId,
-    ownerIdType,
-    contractAddress,
-    owningIdentities,
-    network, // Add network to props
+  spaceId,
+  tabName,
+  ownerId,
+  ownerIdType,
+  contractAddress,
+  owningIdentities,
+  network,
 }: ContractSpacePageProps) => {
-    return (
-        <TokenProvider contractAddress={contractAddress as Address} network={network}>
-            <ContractPrimarySpaceContent
-                spaceId={spaceId}
-                tabName={tabName}
-                ownerId={ownerId}
-                ownerIdType={ownerIdType}
-                contractAddress={contractAddress}
-                owningIdentities={owningIdentities}
-                network={network} // Pass network to content
-            />
-        </TokenProvider>
-    );
+  return (
+    <TokenProvider
+      contractAddress={contractAddress as Address}
+      network={network}
+    >
+      <ContractPrimarySpaceContent
+        spaceId={spaceId}
+        tabName={tabName}
+        ownerId={ownerId}
+        ownerIdType={ownerIdType}
+        contractAddress={contractAddress}
+        owningIdentities={owningIdentities}
+        network={network}
+      />
+    </TokenProvider>
+  );
 };
 
 export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
-    spaceId,
-    tabName,
-    ownerId,
-    ownerIdType,
-    contractAddress,
-    owningIdentities,
-    network,
+  spaceId,
+  tabName,
+  ownerId,
+  ownerIdType,
+  contractAddress,
+  owningIdentities,
+  network,
 }) => {
-    const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
-        (state) => ({
-            loadEditableSpaces: state.space.loadEditableSpaces,
-            addContractEditableSpaces: state.space.addContractEditableSpaces,
-        }),
-    );
+  const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
+    (state) => ({
+      loadEditableSpaces: state.space.loadEditableSpaces,
+      addContractEditableSpaces: state.space.addContractEditableSpaces,
+    }),
+  );
 
-    const { tokenData, isLoading } = useToken();
-    console.log("network ContractPrimarySpaceContent", network);
-    useEffect(() => {
-        addContractEditableSpaces(spaceId, owningIdentities);
-    }, [spaceId]);
+  const { tokenData } = useToken();
 
-    useEffect(() => {
-        loadEditableSpaces();
-    }, []);
+  useEffect(() => {
+    addContractEditableSpaces(spaceId, owningIdentities);
+  }, [spaceId]);
 
-    if (!isNil(ownerId) && !isNil(contractAddress)) {
-        if (
-            (isNil(spaceId) &&
-                (tabName?.toLocaleLowerCase() === "profile" || tabName === null)) ||
-            !isNil(spaceId)
-        )
-            return (
-                <>
-                    <Head>
-                        {isLoading ? (
-                            <title>Loading token Page...</title>
-                        ) : (
-                            generateContractMetadataHtml(contractAddress, tokenData)
-                        )}
-                    </Head>
-                    <ContractDefinedSpace
-                        ownerId={ownerId}
-                        ownerIdType={ownerIdType}
-                        spaceId={spaceId}
-                        tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
-                        contractAddress={contractAddress}
-                    />
-                </>
-            );
-    }
+  useEffect(() => {
+    loadEditableSpaces();
+  }, []);
 
-    return <SpaceNotFound />;
+  if (!isNil(ownerId) && !isNil(contractAddress)) {
+    if (
+      (isNil(spaceId) &&
+        (tabName?.toLocaleLowerCase() === "profile" || tabName === null)) ||
+      !isNil(spaceId)
+    )
+      return (
+        <>
+          <Head>
+            {generateContractMetadataHtml(contractAddress, tokenData)}
+          </Head>
+          <ContractDefinedSpace
+            ownerId={ownerId}
+            ownerIdType={ownerIdType}
+            spaceId={spaceId}
+            tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
+            contractAddress={contractAddress}
+          />
+        </>
+      );
+  }
+
+  return <SpaceNotFound />;
 };
 
 export default ContractPrimarySpace;

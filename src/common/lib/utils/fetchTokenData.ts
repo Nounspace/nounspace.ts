@@ -1,3 +1,6 @@
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { getGeckoNetwork } from "./networks";
+
 export interface GeckoTokenAttribute {
   address: string;
   name: string;
@@ -49,15 +52,11 @@ export interface GeckoTokenResponse {
 export async function fetchTokenData(
   tokenAddress: string,
   contractImage: string | null,
-  network: string,
+  networkName: string,
 ): Promise<GeckoTokenAttribute | null> {
   const baseUrl = "https://api.geckoterminal.com/api/v2";
+  const network = getGeckoNetwork(networkName as EtherScanChainName);
 
-  // let priceChange: string | null = null;
-  // if network = polygon make network = polygon_pos
-  if (network === "polygon") {
-    network = "polygon_pos";
-  }
   try {
     const response = await fetch(
       `${baseUrl}/networks/${network}/tokens/${tokenAddress}?include=top_pools`,
@@ -75,15 +74,6 @@ export async function fetchTokenData(
 
     const result: GeckoTokenResponse = await response.json();
     const token = result.data.attributes;
-
-    // if (result.included && result.included.length > 0) {
-    //   for (const pool of result.included) {
-    //     if (pool.attributes && pool.attributes.price_change_percentage) {
-    //       priceChange = pool.attributes.price_change_percentage.h24;
-    //       break;
-    //     }
-    //   }
-    // }
 
     let marketCap = token.market_cap_usd || null;
 
