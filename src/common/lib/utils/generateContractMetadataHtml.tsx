@@ -20,13 +20,13 @@ export const generateContractMetadataHtml = (
   const symbol =
     tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
 
-  const title = `${symbol} ${priceInfo}`;
+  const title = `${symbol}${priceInfo}`;
 
   return (
     <>
       <title>{title}</title>
-      <meta property="og:title" content={`${symbol}${priceInfo}`} />
-      <meta name="twitter:title" content={`${symbol}${priceInfo}`} />
+      <meta property="og:title" content={`${title}`} />
+      <meta name="twitter:title" content={`${title}`} />
       <meta property="twitter:domain" content="https://nounspace.com/" />
       <meta property="og:url" content={spaceUrl} />
       <meta property="twitter:url" content={spaceUrl} />

@@ -1,6 +1,10 @@
 import { SpaceConfig } from "@/common/components/templates/Space";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
+import { getNetworkWithId } from "@/common/lib/utils/networks";
+import { EtherScanChainName } from "./etherscanChainIds";
+import { getGeckoUrl } from "@/common/lib/utils/links";
+import { Address } from "viem";
 
 export const createInitialContractSpaceConfigForAddress = (
   address: string,
@@ -8,16 +12,8 @@ export const createInitialContractSpaceConfigForAddress = (
   casterFid: string | null,
   symbol: string,
   isClankerToken: boolean,
-  network?: string,
+  network: EtherScanChainName = "base",
 ): Omit<SpaceConfig, "isEditable"> => {
-  // console.log(`Creating initial contract space config for address:
-  //   Address: ${address}
-  //   Cast Hash: ${castHash}
-  //   Caster Fid: ${casterFid}
-  //   Symbol: ${symbol}
-  //   Is Clanker Token: ${isClankerToken}
-  //   Network: ${network}`);
-
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 
   config.fidgetInstanceDatums = {
@@ -28,8 +24,8 @@ export const createInitialContractSpaceConfigForAddress = (
         settings: {
           defaultBuyToken: address,
           defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-          fromChain: network === "polygon" ? { id: "137", name: "polygon" } : { id: "8453", name: "base" },
-          toChain: network === "polygon" ? { id: "137", name: "polygon" } : { id: "8453", name: "base" },
+          fromChain: getNetworkWithId(network),
+          toChain: getNetworkWithId(network),
         },
       },
       fidgetType: "Swap",
@@ -39,23 +35,23 @@ export const createInitialContractSpaceConfigForAddress = (
       castHash &&
       casterFid &&
       castHash !== "clank.fun deployment" && {
-      "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
-        config: {
-          data: {},
-          editable: true,
-          settings: {
-            background: "var(--user-theme-fidget-background)",
-            castHash: castHash,
-            casterFid: casterFid,
-            fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-            fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
-            fidgetShadow: "var(--user-theme-fidget-shadow)",
+        "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71": {
+          config: {
+            data: {},
+            editable: true,
+            settings: {
+              background: "var(--user-theme-fidget-background)",
+              castHash: castHash,
+              casterFid: casterFid,
+              fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+              fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
+              fidgetShadow: "var(--user-theme-fidget-shadow)",
+            },
           },
+          fidgetType: "cast",
+          id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
         },
-        fidgetType: "cast",
-        id: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-      },
-    }),
+      }),
     "feed:3de67742-56f2-402c-b751-7e769cdcfc56": {
       config: {
         data: {},
@@ -85,7 +81,7 @@ export const createInitialContractSpaceConfigForAddress = (
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetShadow: "var(--user-theme-fidget-shadow)",
-          chain: network === "polygon" ? { id: "137", name: "polygon_pos" } : { id: "8453", name: "base" },
+          chain: getNetworkWithId(network),
           token: address,
         },
       },
@@ -110,21 +106,21 @@ export const createInitialContractSpaceConfigForAddress = (
           links: [
             ...(isClankerToken
               ? [
-                {
-                  avatar:
-                    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAM1BMVEX////q5PfUxe7o4fbMu+uPadTGs+jKueqJYNHEseiJYtKOZ9PJt+rUx+7MuuvPwOvm3vVnLuiEAAAAXUlEQVR4Ac3QAxaAQAAE0LXR/S+bXdNDWuOvSSGBMsYhCikVRG2MxejcFZoHcXoDQCF9gBiMURC1cfYzpDFSiEnKAHF6w4TuiMscs0bt+69JQyW8VyvkOVeH6p/QAF54BSckEkJ8AAAAAElFTkSuQmCC",
-                  description: "",
-                  text: "Clanker.world",
-                  url: `https://www.clanker.world/clanker/${address}`,
-                },
-              ]
+                  {
+                    avatar:
+                      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAMAAABF0y+mAAAAM1BMVEX////q5PfUxe7o4fbMu+uPadTGs+jKueqJYNHEseiJYtKOZ9PJt+rUx+7MuuvPwOvm3vVnLuiEAAAAXUlEQVR4Ac3QAxaAQAAE0LXR/S+bXdNDWuOvSSGBMsYhCikVRG2MxejcFZoHcXoDQCF9gBiMURC1cfYzpDFSiEnKAHF6w4TuiMscs0bt+69JQyW8VyvkOVeH6p/QAF54BSckEkJ8AAAAAElFTkSuQmCC",
+                    description: "",
+                    text: "Clanker.world",
+                    url: `https://www.clanker.world/clanker/${address}`,
+                  },
+                ]
               : []),
             {
               avatar:
                 "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkIBwgKCgkLDRYPDQwMDRsUFRAWIB0iIiAdHx8kKDQsJCYxJx8fLT0tMTU3Ojo6Iys/RD84QzQ5OjcBCgoKDQwNGg8PGjclHyU3Nzc3Nzc3Ljc3Nzc3Nzg3Nzc3NzctKzc3Nzc3Nzc3Kzc3Nzc3Nzc3ODc3Nzc3Nys3N//AABEIABwAHAMBIgACEQEDEQH/xAAaAAABBQEAAAAAAAAAAAAAAAAHAgQFBggD/8QAKRAAAgEDAgQFBQAAAAAAAAAAAQIDAAURBDEGEiFREyJBccEHFKHR8P/EABgBAAIDAAAAAAAAAAAAAAAAAAIDAQQF/8QAHhEAAQQDAAMAAAAAAAAAAAAAAgABAxEEEiETQVH/2gAMAwEAAhEDEQA/ABZGperdZOBdRcYQ87SpI4ykMcfM2O5HxTbgPQQ6ozayXDNAwCIdgd8n4o4/TZJ5LNNrdVpmgaedhEHGHMa4AJ925j7YrekIYofI7WnuVMs/3zhi4WdpDPEJIY3MbTRMHVG6eV8E8jdR5WwagmBBxR6v3FMV5F5suj0/2ulaR4JplQBpzjDMD+O+3WgHqX8Od05geViMjY0stmBiNqtRfOrvYb3PaNWJYTlT0dDs47H9+lGvhLjKRLa7W9hNC4OI5D1gf+9NjvWeSxpxBrJ4VYRyFQRg4O4qvDliw6SNYoNr46vfGHE6xNJpdFJmRifFlXv6gfJoftJzMSaS7s5yxyaTScnLKcr9Ib+L/9k=",
               description: "",
               text: "GeckoTerminal",
-              url: `https://geckoterminal.com/${network == "polygon" ? "polygon_pos" : network}/pools/${address}`,
+              url: getGeckoUrl(address as Address, network),
             },
             {
               avatar:
@@ -160,167 +156,167 @@ export const createInitialContractSpaceConfigForAddress = (
 
   config.layoutDetails.layoutConfig.layout =
     isClankerToken &&
-      castHash &&
-      casterFid &&
-      castHash !== "clank.fun deployment"
+    castHash &&
+    casterFid &&
+    castHash !== "clank.fun deployment"
       ? [
-        {
-          h: 6,
-          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 4,
-        },
-        {
-          h: 8,
-          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 4,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
-          maxH: 36,
-          maxW: 36,
-          minH: 3,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 5,
-        },
-        {
-          h: 5,
-          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 0,
-        },
-        {
-          h: 2,
-          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 8,
-        },
-        {
-          h: 4,
-          i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
-          maxH: 4,
-          maxW: 12,
-          minH: 1,
-          minW: 3,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 0,
-        },
-      ]
+          {
+            h: 6,
+            i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 4,
+          },
+          {
+            h: 8,
+            i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 4,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+            maxH: 36,
+            maxW: 36,
+            minH: 3,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 5,
+          },
+          {
+            h: 5,
+            i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 0,
+          },
+          {
+            h: 2,
+            i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 8,
+          },
+          {
+            h: 4,
+            i: "cast:9c63b80e-bd46-4c8e-9e4e-c6facc41bf71",
+            maxH: 4,
+            maxW: 12,
+            minH: 1,
+            minW: 3,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 0,
+          },
+        ]
       : [
-        {
-          h: 8,
-          i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 0,
-        },
-        {
-          h: 2,
-          i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 4,
-          y: 8,
-        },
-        {
-          h: 10,
-          i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 4,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 8,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
-          maxH: 36,
-          maxW: 36,
-          minH: 2,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 0,
-        },
-        {
-          h: 5,
-          i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
-          maxH: 36,
-          maxW: 36,
-          minH: 3,
-          minW: 2,
-          moved: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          static: false,
-          w: 4,
-          x: 0,
-          y: 5,
-        },
-      ];
+          {
+            h: 8,
+            i: "Chat:09528872-6659-460e-bb25-0c200cccb0ec",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 0,
+          },
+          {
+            h: 2,
+            i: "links:5b4c8b73-416d-4842-9dc5-12fc186d8f57",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 4,
+            y: 8,
+          },
+          {
+            h: 10,
+            i: "feed:3de67742-56f2-402c-b751-7e769cdcfc56",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 4,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 8,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Market:733222fa-38f8-4343-9fa2-6646bb47dde0",
+            maxH: 36,
+            maxW: 36,
+            minH: 2,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 0,
+          },
+          {
+            h: 5,
+            i: "Swap:f9e0259a-4524-4b37-a261-9f3be26d4af1",
+            maxH: 36,
+            maxW: 36,
+            minH: 3,
+            minW: 2,
+            moved: false,
+            resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+            static: false,
+            w: 4,
+            x: 0,
+            y: 5,
+          },
+        ];
 
   config.theme = {
     id: "default",

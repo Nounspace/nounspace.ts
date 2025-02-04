@@ -47,24 +47,21 @@ type SpaceInfo = SpaceRegistrationBase & {
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
-  console.log("Validating space registration:", maybe);
   if (!isSignable(maybe, "identityPublicKey")) {
-    console.log("Not a valid signable object");
     return false;
   }
   const isValid =
     typeof maybe["spaceName"] === "string" &&
     typeof maybe["timestamp"] === "string";
-  console.log("Space registration validation result:", isValid);
+
   return isValid;
 }
 
 function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
-  console.log("Validating FID space registration:", maybe);
   const isValid =
     isSpaceRegistration(maybe) &&
     (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
-  console.log("FID space registration validation result:", isValid);
+
   return isValid;
 }
 
@@ -76,12 +73,10 @@ export type ModifiableSpacesResponse = NounspaceResponse<{
 }>;
 
 async function identityCanRegisterForFid(identity: string, fid: number) {
-  console.log("identityCanRegisterForFid called with", identity, fid);
   const { data } = await supabaseClient
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
     .eq("fid", fid);
-  // console.log(data);
   return (
     data !== null &&
     findIndex(data, (i) => i.identityPublicKey === identity) !== -1
@@ -94,7 +89,6 @@ export async function fidCanRegisterClanker(
   fid?: number,
   network?: string,
 ) {
-  console.log("fidCanRegisterClanker called with", fid, contractAddress, network);
   if (isNil(contractAddress) || isNil(fid)) return false;
 
   const clankerData = await fetchClankerByAddress(contractAddress as Address);
@@ -107,54 +101,30 @@ async function identityCanRegisterForContract(
   tokenOwnerFid?: number,
   network?: string,
 ) {
-  console.log(
-    "identityCanRegisterForContract called with",
-    identity,
-    contractAddress,
-    tokenOwnerFid,
-    network,
-  );
-
   const canRegisterClanker = await fidCanRegisterClanker(
     contractAddress,
     tokenOwnerFid,
     network,
   );
   if (canRegisterClanker) {
-    console.log("Contract owner is the requester FID, allowing registration");
     return true;
   }
-  console.log("network indentitycanregister:", network);
-  const { ownerId, ownerIdType } =
-    await contractOwnerFromContractAddress(contractAddress, network);
-  console.log("Contract owner info:", { ownerId, ownerIdType });
+  const { ownerId, ownerIdType } = await contractOwnerFromContractAddress(
+    contractAddress,
+    network,
+  );
 
   if (isNil(ownerId)) {
-    console.log("No owner ID found for contract, returning false");
     return false;
   } else if (ownerIdType === "fid") {
-    console.log(
-      "Owner is FID, checking if identity can register for FID:",
-      ownerId,
-    );
     const canRegister = await identityCanRegisterForFid(
       identity,
       parseInt(ownerId),
     );
-    console.log("Can register for FID result:", canRegister);
     return canRegister;
   }
-
-  console.log(
-    "Owner is wallet address, loading owned identities for:",
-    ownerId,
-  );
   const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
-  console.log("Owned identities:", ownedIdentities);
-
-  const result = includes(ownedIdentities, identity);
-  console.log("Is identity included in owned identities?", result);
-  return result;
+  return includes(ownedIdentities, identity);
 }
 
 // Handles the registration of a new space name to requesting identity
@@ -163,9 +133,8 @@ async function registerNewSpace(
   req: NextApiRequest,
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
-  console.log("registerNewSpace called with", req.body);
   const registration = req.body;
-  // console.log(registration);
+
   if (!isSpaceRegistration(registration)) {
     console.error("Invalid space registration:", registration);
     res.status(400).json({
@@ -188,7 +157,6 @@ async function registerNewSpace(
     return;
   }
   if (isSpaceRegistrationFid(registration)) {
-    console.log("Registering new space for FID:", registration);
     if (
       !(await identityCanRegisterForFid(
         registration.identityPublicKey,
@@ -196,7 +164,7 @@ async function registerNewSpace(
       ))
     ) {
       console.error(
-        `[Nounspace] Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
+        `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
       );
       res.status(400).json({
         result: "error",
@@ -216,7 +184,7 @@ async function registerNewSpace(
       ))
     ) {
       console.error(
-        `[Nounspace] Identity ${registration.identityPublicKey} cannot manage spaces for contract ${registration.contractAddress}`,
+        `Identity ${registration.identityPublicKey} cannot manage spaces for contract ${registration.contractAddress}`,
       );
       res.status(400).json({
         result: "error",
@@ -236,6 +204,7 @@ async function registerNewSpace(
     .from("spaceRegistrations")
     .insert([registration])
     .select();
+
   if (error) {
     console.error("Error registering new space:", error.message);
     res.status(500).json({
@@ -246,6 +215,8 @@ async function registerNewSpace(
     });
     return;
   }
+
+  console.log("Registered new space:", first(result));
   res.status(200).json({
     result: "success",
     value: first(result),
@@ -259,8 +230,8 @@ async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
-  console.log("listModifiableSpaces called with", req.query.identityPublicKey);
   const identity = req.query.identityPublicKey;
+
   if (isUndefined(identity) || isArray(identity)) {
     console.error("Invalid identityPublicKey query parameter:", identity);
     res.status(400).json({
@@ -276,6 +247,7 @@ async function listModifiableSpaces(
     .from("spaceRegistrations")
     .select("*, fidRegistrations!inner (fid, identityPublicKey)")
     .filter("fidRegistrations.identityPublicKey", "eq", identity);
+
   if (error) {
     console.error("Error fetching modifiable spaces:", error.message);
     res.status(500).json({
@@ -286,6 +258,7 @@ async function listModifiableSpaces(
     });
     return;
   }
+
   res.status(200).json({
     result: "success",
     value: {
