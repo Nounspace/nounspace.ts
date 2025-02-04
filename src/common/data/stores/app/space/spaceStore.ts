@@ -90,6 +90,7 @@ interface CachedSpace {
     [tabName: string]: UpdatableSpaceConfig;
   };
   order: string[];
+  orderUpdatedAt?: string;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -496,11 +497,11 @@ export const createSpaceStoreFunc = (
       // Compare local and remote timestamps
       const localSpace = get().space.localSpaces[spaceId];
       const remoteTimestamp = moment(tabOrderReq.timestamp);
-      const localTimestamp = localSpace?.updatedAt
-        ? moment(localSpace.updatedAt)
+      const localTimestamp = localSpace?.orderUpdatedAt
+        ? moment(localSpace.orderUpdatedAt)
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
-      console.log("remoteIsNew", remoteIsNew, remoteTimestamp, localTimestamp);
+      console.log({ remoteIsNew, remoteTimestamp, localTimestamp });
 
       if (remoteIsNew) {
         // Remote data is newer, update the store
@@ -529,8 +530,13 @@ export const createSpaceStoreFunc = (
           draft.space.localSpaces[spaceId].order = tabOrderReq.tabOrder;
           draft.space.localSpaces[spaceId].updatedAt =
             remoteTimestamp.toISOString();
+          draft.space.localSpaces[spaceId].orderUpdatedAt =
+            remoteTimestamp.toISOString();
+
           draft.space.remoteSpaces[spaceId].order = tabOrderReq.tabOrder;
           draft.space.remoteSpaces[spaceId].updatedAt =
+            remoteTimestamp.toISOString();
+          draft.space.remoteSpaces[spaceId].orderUpdatedAt =
             remoteTimestamp.toISOString();
         }, "loadSpaceInfo");
       }
