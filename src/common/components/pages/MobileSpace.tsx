@@ -13,6 +13,13 @@ import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 import { useToken } from "@/common/providers/TokenProvider";
 import TokenDataHeader from "../organisms/TokenDataHeader";
+import {
+  getGeckoUrl,
+  getMatchaUrl,
+  getGeckoIframe,
+} from "@/common/lib/utils/links";
+import { Address } from "viem";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
@@ -132,7 +139,10 @@ export const MobileContractDefinedSpace = ({
           )}
         >
           <iframe
-            src={`https://www.geckoterminal.com/${tokenData?.network === "polygon" ? "polygon_pos" : tokenData?.network}/pools/${contractAddress}?embed=1&info=0&swaps=0&grayscale=0&light_chart=1`}
+            src={getGeckoIframe(
+              contractAddress as Address,
+              tokenData?.network as EtherScanChainName,
+            )}
             title="Market Data"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
@@ -145,7 +155,10 @@ export const MobileContractDefinedSpace = ({
           )}
         >
           <iframe
-            src={`https://matcha.xyz/trade?sellAddress=0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee&buyAddress=${contractAddress}&sellChain=${tokenData?.network === "polygon" ? 137 : tokenData?.network}&buyChain=${tokenData?.network === "polygon" ? 137 : 8453}`}
+            src={getMatchaUrl(
+              contractAddress as Address,
+              tokenData?.network as EtherScanChainName,
+            )}
             title="Swap Fidget"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
@@ -176,13 +189,16 @@ export const MobileContractDefinedSpace = ({
             />
           )}
           <LinkItem
-            href={`https://www.geckoterminal.com/${tokenData?.network === "polygon" ? "polygon_pos" : tokenData?.network}/pools/${contractAddress}`}
+            href={getGeckoUrl(
+              contractAddress as Address,
+              tokenData?.network as EtherScanChainName,
+            )}
             imgSrc="https://www.geckoterminal.com/_next/image?url=https%3A%2F%2Fs.geckoterminal.com%2F_next%2Fstatic%2Fmedia%2Flogo_icon.845c1574.png&w=64&q=75"
             alt="CoinGecko"
             label="CoinGecko"
           />
           <LinkItem
-            href={`https://${tokenData?.network}scan.org/address/${contractAddress}`} //lol 
+            href={`https://${tokenData?.network}scan.org/address/${contractAddress}`} //lol
             imgSrc="https://etherscan.io/images/brandassets/etherscan-logo-circle.svg"
             alt="BaseScan"
             label="BaseScan"

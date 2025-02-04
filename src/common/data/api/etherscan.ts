@@ -40,20 +40,15 @@ interface EtherscanResponse {
   result: unknown; // ABI comes as a string that needs to be parsed
 }
 
-//TODO: we might need to create a polygon provider or a multichain provider ?
-export const baseProvider = new AlchemyProvider(
+export const alchemyProvider = new AlchemyProvider(
   "base",
   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
 );
-// export const polygonProvider = new AlchemyProvider(
-//   "polygon",
-//   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY_POLYGON,
-// );
+
 async function getContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<ContractAbi[]> {
-  console.log("network getContractABI", network);
   // Select the appropriate API endpoint based on network
   const baseUrl = "https://api.etherscan.io";
 
@@ -123,7 +118,6 @@ async function getViewOnlyContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<ContractAbi[]> {
-  console.log("network getViewOnlyContract", network);
   const abiUnfiltered = await getContractABI(contractAddress, network);
   return filter(
     abiUnfiltered,
@@ -135,12 +129,9 @@ async function getViewOnlyContractABI(
 export async function loadEthersViewOnlyContract(
   contractAddress: string,
   network?: string,
-  //TODO: we might need to create a polygon provider or a multichain provider ?
-  // that part seems to be working though, it worth a review
-  provider: Provider = baseProvider,
+  provider: Provider = alchemyProvider,
 ) {
   try {
-    console.log("network loadEthersView", network);
     const abi = await getViewOnlyContractABI(contractAddress, network);
     return new Contract(contractAddress, new Interface(abi), provider);
   } catch (e) {
@@ -154,7 +145,6 @@ export async function contractOwnerFromContractAddress(
 ) {
   if (isUndefined(contractAddress))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
-  console.log("network contractOwner", network);
   const contract = await loadEthersViewOnlyContract(contractAddress, network);
   if (isUndefined(contract))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };

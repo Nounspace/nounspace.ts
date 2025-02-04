@@ -11,16 +11,17 @@ import {
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
 import { ClankerToken } from "../data/queries/clanker";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 export interface MasterToken {
   geckoData: GeckoTokenAttribute | null;
   clankerData: ClankerToken | null;
-  network?: string;
+  network: EtherScanChainName;
 }
 
 interface TokenContextProps {
   tokenData: MasterToken | null;
-  fetchTokenInfo: (address: string) => void;
+  fetchTokenInfo: (address: string, network: EtherScanChainName) => void;
   isLoading: boolean;
 }
 
@@ -30,7 +31,7 @@ interface TokenProviderProps {
   children: ReactNode;
   contractAddress?: Address;
   defaultTokenData?: MasterToken;
-  network: string;
+  network: EtherScanChainName;
 }
 
 export const TokenProvider: React.FC<TokenProviderProps> = ({
@@ -43,7 +44,10 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
     defaultTokenData || null,
   );
   const [isLoading, setIsLoading] = useState(false);
-  const fetchTokenInfo = async (address: string, network?: string) => {
+  const fetchTokenInfo = async (
+    address: string,
+    network: EtherScanChainName,
+  ) => {
     setIsLoading(true);
     try {
       console.log("Fetching token data...", address);
@@ -61,7 +65,6 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
         geckoData: tokenResponse,
         clankerData: clankerResponse,
       };
-      console.log("Token data fetched:", combinedData);
       setTokenData(combinedData);
     } catch (error) {
       console.error("Failed to fetch token data:", error);
@@ -69,8 +72,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
       setIsLoading(false);
     }
   };
-  // console.log("TokenProvider network:", network);
-  // console.log("TokenData:", tokenData);
+
   // Loads if defaultTokenData is not provided
   useEffect(() => {
     if (!defaultTokenData) {
