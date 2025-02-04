@@ -496,7 +496,7 @@ export const createSpaceStoreFunc = (
       // Compare local and remote timestamps
       const localSpace = get().space.localSpaces[spaceId];
       const remoteTimestamp = moment(tabOrderReq.timestamp);
-      const localTimestamp = localSpace
+      const localTimestamp = localSpace?.updatedAt
         ? moment(localSpace.updatedAt)
         : moment(0);
 
