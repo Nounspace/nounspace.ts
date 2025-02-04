@@ -115,18 +115,25 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
     if (defaultSellToken) params.append("sellAddress", defaultSellToken);
     if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
     if (fromChain && fromChain.id) {
-      params.append("sellChain", fromChain.id.toLowerCase());
+      params.append("sellChain", fromChain.id);
     }
     if (toChain && toChain.id) {
-      params.append("buyChain", toChain.id.toLowerCase());
+      params.append("buyChain", toChain.id);
     }
-    if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
+    if (optionalFeeRecipient)
+      params.append("feeRecipient", optionalFeeRecipient);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
   React.useEffect(() => {
     setUrl(buildMatchaUrl());
-  }, [defaultSellToken, defaultBuyToken, fromChain, toChain, optionalFeeRecipient]);
+  }, [
+    defaultSellToken,
+    defaultBuyToken,
+    fromChain,
+    toChain,
+    optionalFeeRecipient,
+  ]);
 
   const scaleValue = size;
 

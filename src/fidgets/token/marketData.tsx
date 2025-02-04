@@ -11,6 +11,9 @@ import {
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
+import { getDexScreenerUrl, getGeckoIframe } from "@/common/lib/utils/links";
+import { Address } from "viem";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 export type MarketDataProps = {
   chain: { id: string; name: string } | null;
@@ -83,10 +86,15 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
 
   const buildUrl = () => {
     if (dataSource === "geckoterminal") {
-      const lightChart = theme === "light" ? 1 : 0;
-      return `https://www.geckoterminal.com/${chain?.name}/pools/${token}?embed=1&info=0&swaps=0&grayscale=0&light_chart=${lightChart}`;
+      return getGeckoIframe(
+        token as Address,
+        chain?.name as EtherScanChainName,
+      );
     }
-    return `https://dexscreener.com/${chain?.name}/${token}?embed=1&loadChartSettings=0&trades=0&tabs=1&info=0&chartLeftToolbar=0&chartDefaultOnMobile=1&chartTheme=${theme}&theme=${theme}&chartStyle=1&chartType=usd&interval=60`;
+    return getDexScreenerUrl(
+      token as Address,
+      chain?.name as EtherScanChainName,
+    );
   };
 
   React.useEffect(() => {

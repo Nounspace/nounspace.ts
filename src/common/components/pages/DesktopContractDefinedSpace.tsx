@@ -174,7 +174,7 @@ const DesktopContractDefinedSpace = ({
         toString(tokenData?.clankerData?.requestor_fid) || "",
         tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
         !!tokenData?.clankerData,
-        tokenData?.network,
+        tokenNetwork,
       ),
     [contractAddress, tokenData, tokenData?.network],
   );
