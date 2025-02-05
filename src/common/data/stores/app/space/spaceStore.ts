@@ -343,11 +343,14 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceOrderToDatabase: debounce(
     async (spaceId, network?: EtherScanChainName) => {
+      console.debug("debug", "Commiting space order to database");
+      const timestamp = moment().toISOString();
+
       const unsignedReq: UnsignedUpdateTabOrderRequest = {
         spaceId,
         tabOrder: get().space.localSpaces[spaceId].order,
         publicKey: get().account.currentSpaceIdentityPublicKey!,
-        timestamp: moment().toISOString(),
+        timestamp,
         network,
       };
       const signedRequest = signSignable(
@@ -372,6 +375,9 @@ export const createSpaceStoreFunc = (
           draft.space.remoteSpaces[spaceId].order = cloneDeep(
             get().space.localSpaces[spaceId].order,
           );
+
+          draft.space.remoteSpaces[spaceId].orderUpdatedAt = timestamp;
+          draft.space.localSpaces[spaceId].orderUpdatedAt = timestamp;
         }, "commitSpaceOrderToDatabase");
         analytics.track(AnalyticsEvent.SAVE_SPACE_THEME);
       } catch (e) {
@@ -505,7 +511,15 @@ export const createSpaceStoreFunc = (
         ? moment(localSpace.orderUpdatedAt)
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
-      console.log({ remoteIsNew, remoteTimestamp, localTimestamp });
+      const diff = moment.duration(remoteTimestamp.diff(localTimestamp));
+      console.debug("debug", {
+        remoteIsNew,
+        remote: remoteTimestamp.toISOString(),
+        remoteTabs: tabOrderReq.tabOrder,
+        local: localTimestamp.toISOString(),
+        localTabs: localSpace?.order,
+        diff: diff.asSeconds(),
+      });
 
       if (remoteIsNew) {
         // Remote data is newer, update the store
