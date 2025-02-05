@@ -482,7 +482,11 @@ export const createSpaceStoreFunc = (
       } = await supabase.storage
         .from("spaces")
         .getPublicUrl(`${spaceId}/tabOrder`);
-      const { data } = await axios.get<Blob>(publicUrl, {
+
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
+      const { data } = await axios.get<Blob>(urlWithParam, {
         responseType: "blob",
         headers: {
           "Cache-Control": "no-cache",
