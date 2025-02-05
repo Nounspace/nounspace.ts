@@ -396,8 +396,11 @@ export const createSpaceStoreFunc = (
         .from("spaces")
         .getPublicUrl(`${spaceId}/tabs/${tabName}`);
 
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
       // Download the file content, ensuring no caching
-      const { data } = await axios.get<Blob>(publicUrl, {
+      const { data } = await axios.get<Blob>(urlWithParam, {
         responseType: "blob",
         headers: {
           "Cache-Control": "no-cache",
