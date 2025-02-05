@@ -274,10 +274,10 @@ const DesktopContractDefinedSpace = ({
     }
   }, [spaceId, INITIAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
 
-  async function switchTabTo(tabName: string) {
-    if (spaceId) {
+  async function switchTabTo(tabName: string, shouldSave: boolean = true) {
+    if (spaceId && shouldSave) {
       const resolvedConfig = await config;
-      saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
+      await saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
     }
     if (tabName)
       router.push(`/t/${tokenData?.network}/${contractAddress}/${tabName}`);

@@ -6,9 +6,7 @@ import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
-import {
-  TooltipProvider,
-} from "../atoms/tooltip";
+import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 
@@ -20,9 +18,9 @@ interface TabBarProps {
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
   commitTabOrder: () => void;
-  switchTabTo: (tabName: string) => void;
+  switchTabTo: (tabName: string, switchTabTo?: boolean) => void;
   deleteTab: (tabName: string) => void;
-  createTab: (tabName: string) => void;
+  createTab: (tabName: string) => Promise<void>;
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
@@ -47,13 +45,11 @@ function TabBar({
   isTokenPage,
   contractAddress,
 }: TabBarProps) {
-  const { getIsLoggedIn, getIsInitializing } = useAppStore(
-    (state) => ({
-      setModalOpen: state.setup.setModalOpen,
-      getIsLoggedIn: state.getIsAccountReady,
-      getIsInitializing: state.getIsInitializing,
-    }),
-  );
+  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsLoggedIn: state.getIsAccountReady,
+    getIsInitializing: state.getIsInitializing,
+  }));
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -77,7 +73,7 @@ function TabBar({
   }
 
   function handleDeleteTab(tabName: string) {
-    switchTabTo(nextClosestTab(tabName));
+    switchTabTo(nextClosestTab(tabName), false);
     updateTabOrder(tabList.filter((name) => name !== tabName));
     deleteTab(tabName);
   }
@@ -139,7 +135,7 @@ function TabBar({
                         tabName={tabName}
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
-                        onClick={() => { }}
+                        onClick={() => {}}
                         removeable={
                           tabName !== "Feed" &&
                           tabName !== "Profile" &&
