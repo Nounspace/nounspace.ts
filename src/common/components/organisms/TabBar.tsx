@@ -18,7 +18,7 @@ interface TabBarProps {
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
   commitTabOrder: () => void;
-  switchTabTo: (tabName: string, switchTabTo?: boolean) => void;
+  switchTabTo: (tabName: string, shouldSave?: boolean) => void;
   deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => Promise<void>;
   renameTab: (tabName: string, newName: string) => void;
