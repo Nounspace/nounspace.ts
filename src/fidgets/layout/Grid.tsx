@@ -63,8 +63,6 @@ export interface PlacedGridItem extends GridItem {
 
 const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   items: 0,
-  isDraggable: false,
-  isResizable: false,
   isDroppable: true,
   isBounded: false,
   // This turns off compaction so you can place items wherever.
@@ -399,8 +397,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             maxW: fidgetProps.size.maxWidth,
             maxH: fidgetProps.size.maxHeight,
             resizeHandles: resizeDirections,
-            isDraggable: inEditMode,
-            isResizable: inEditMode,
             isBounded: false,
           };
 
