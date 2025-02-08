@@ -18,12 +18,12 @@ interface TabBarProps {
   currentTab: string;
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
-  commitTabOrder: () => Promise<void>;
-  switchTabTo: (tabName: string) => void;
-  deleteTab: (tabName: string) => Promise<void>;
+  commitTabOrder: () => void;
+  switchTabTo: (tabName: string, shouldSave?: boolean) => void;
+  deleteTab: (tabName: string) => void;
   createTab: (tabName: string) => Promise<void>;
-  renameTab: (tabName: string, newName: string) => Promise<void>;
-  commitTab: (tabName: string) => Promise<void>;
+  renameTab: (tabName: string, newName: string) => void;
+  commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
