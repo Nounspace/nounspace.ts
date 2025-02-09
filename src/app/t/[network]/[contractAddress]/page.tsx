@@ -1,3 +1,5 @@
+'use client'
+
 import ContractDefinedSpace from "@/common/components/pages/ContractDefinedSpace";
 import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
 import { OwnerType } from "@/common/data/api/etherscan";
