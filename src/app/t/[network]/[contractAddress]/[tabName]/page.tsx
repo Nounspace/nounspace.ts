@@ -1,3 +1,6 @@
+
+'use client'
+
 import React from "react";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { ContractPrimarySpaceContent, ContractSpacePageProps } from ".";
