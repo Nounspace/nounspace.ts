@@ -3,6 +3,7 @@ import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader"
 import { NextPageWithLayout } from "@/pages/_app";
 import React from "react";
 import {
+  fetchMasterToken,
   MasterToken,
   TokenProvider,
 } from "@/common/providers/TokenProvider";
@@ -28,7 +29,13 @@ export interface ContractSpacePageProps {
 export async function generateMetadata({
   params: { contractAddress, network },
 }): Promise<Metadata> {
-  const metadata = generateContractMetadataHtml(contractAddress);
+
+  const tokenResponse = await fetchMasterToken(
+    contractAddress,
+    network as EtherScanChainName,
+  );
+
+  const metadata = generateContractMetadataHtml(contractAddress, tokenResponse);
   return metadata;
 }
 
