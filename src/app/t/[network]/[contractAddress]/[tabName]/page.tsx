@@ -2,8 +2,6 @@ export const dynamic = 'force-static';
 export const revalidate = 60;
 
 import React from "react";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import { ContractPrimarySpaceContent, ContractSpacePageProps } from ".";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
 import { MasterToken, TokenProvider } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
@@ -11,6 +9,7 @@ import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { useParams } from 'next/navigation';
+import ContractPrimarySpaceContent from '../../ContractPrimarySpaceContent';
 
 async function loadTokenData(
   contractAddress: Address,
@@ -45,6 +44,13 @@ const WrappedContractPrimarySpace = async () => {
   const network = params?.network as EtherScanChainName;
   const tokenData = await loadTokenData(contractAddress as Address, network);
 
+  const props = {
+    ...contractData.props,
+      contractAddress,
+      tokenData,
+      network,
+  }
+
   return (
     <TokenProvider
       contractAddress={contractAddress as Address}
@@ -52,10 +58,7 @@ const WrappedContractPrimarySpace = async () => {
       network={network}
     >
       <ContractPrimarySpaceContent 
-        contractAddress={contractAddress} 
-        contractData={contractData} 
-        network={network} 
-        tokenData={tokenData} 
+        {...props}
       />
     </TokenProvider>
   );

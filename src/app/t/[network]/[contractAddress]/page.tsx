@@ -10,9 +10,9 @@ import {
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { useParams } from 'next/navigation';
-import { ContractPrimarySpaceContent } from '../ContractPrimarySpaceContent';
 import { Metadata } from 'next/types';
 import { generateContractMetadataHtml } from '@/common/lib/utils/generateContractMetadataHtml';
+import ContractPrimarySpaceContent from '../ContractPrimarySpaceContent';
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
@@ -39,7 +39,7 @@ export async function generateMetadata({
   return metadata;
 }
 
-export const ContractPrimarySpace: NextPageWithLayout = async () => {
+const ContractPrimarySpace = async () => {
   const params = useParams();
   const {props: {
     spaceId,
