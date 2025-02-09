@@ -8,7 +8,7 @@ import { isArray, isNil } from 'lodash';
 import { useEffect } from 'react';
 import { ContractSpacePageProps } from './[contractAddress]/page';
 
-export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
+const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId,
   tabName,
   ownerId,
@@ -53,3 +53,5 @@ export const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
 
   return <SpaceNotFound />;
 };
+
+export default ContractPrimarySpaceContent;
