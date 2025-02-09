@@ -1,5 +1,5 @@
-
-'use client'
+export const dynamic = 'force-static'; 
+export const revalidate = 60;
 
 import React from "react";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
@@ -10,6 +10,7 @@ import { Address } from "viem";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { useParams } from 'next/navigation';
 
 async function loadTokenData(
   contractAddress: Address,
@@ -36,38 +37,28 @@ async function loadTokenData(
   }
 }
 
-export const getServerSideProps: GetServerSideProps<
-  ContractSpacePageProps
-> = async ({ params, res }: GetServerSidePropsContext) => {
-  res.setHeader(
-    "Cache-Control",
-    "public, s-maxage=10, stale-while-revalidate=59",
-  );
+const WrappedContractPrimarySpace = async () => {
+  const params = useParams();
 
   const contractAddress = params?.contractAddress as string;
-  const contractData = await loadContractData(params);
+  const contractData = await loadContractData(params || {});
   const network = params?.network as EtherScanChainName;
-  console.log("network getServerSide", network);
   const tokenData = await loadTokenData(contractAddress as Address, network);
 
-  return {
-    props: {
-      ...contractData.props,
-      contractAddress,
-      tokenData,
-      network,
-    },
-  };
+  return (
+    <TokenProvider
+      contractAddress={contractAddress as Address}
+      defaultTokenData={tokenData}
+      network={network}
+    >
+      <ContractPrimarySpaceContent 
+        contractAddress={contractAddress} 
+        contractData={contractData} 
+        network={network} 
+        tokenData={tokenData} 
+      />
+    </TokenProvider>
+  );
 };
-
-const WrappedContractPrimarySpace = (props: ContractSpacePageProps) => (
-  <TokenProvider
-    contractAddress={props.contractAddress as Address}
-    defaultTokenData={props.tokenData}
-    network={props.network}
-  >
-    <ContractPrimarySpaceContent {...props} />
-  </TokenProvider>
-);
 
 export default WrappedContractPrimarySpace;
