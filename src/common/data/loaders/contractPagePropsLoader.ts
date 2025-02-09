@@ -25,7 +25,7 @@ const defaultContractPageProps = {
 };
 
 export async function loadContractData(
-  params: GetServerSidePropsContext["params"],
+  params:  Record<string, string | string[]>,
 ) {
   if (isUndefined(params)) {
     return {
