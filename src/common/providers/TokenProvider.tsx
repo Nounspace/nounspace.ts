@@ -1,3 +1,5 @@
+"use client"
+
 import React, {
   createContext,
   useContext,
@@ -34,6 +36,28 @@ interface TokenProviderProps {
   network: EtherScanChainName;
 }
 
+export const fetchMasterToken = async (
+  address: string,
+  network: EtherScanChainName,
+) => {
+    console.log("Fetching token data...", address);
+    const tokenResponse = await fetchTokenData(
+      address,
+      null,
+      String(network),
+    );
+
+    const clankerResponse = await fetch(
+      `/api/clanker/ca?address=${address}`,
+    ).then((res) => res.json());
+
+    return {
+      network: network,
+      geckoData: tokenResponse,
+      clankerData: clankerResponse,
+    };
+};
+
 export const TokenProvider: React.FC<TokenProviderProps> = ({
   children,
   contractAddress,
@@ -50,21 +74,7 @@ export const TokenProvider: React.FC<TokenProviderProps> = ({
   ) => {
     setIsLoading(true);
     try {
-      console.log("Fetching token data...", address);
-      const tokenResponse = await fetchTokenData(
-        address,
-        null,
-        String(network),
-      );
-      const clankerResponse = await fetch(
-        `/api/clanker/ca?address=${address}`,
-      ).then((res) => res.json());
-
-      const combinedData: MasterToken = {
-        network: network,
-        geckoData: tokenResponse,
-        clankerData: clankerResponse,
-      };
+      const combinedData = await fetchMasterToken(address, network);
       setTokenData(combinedData);
     } catch (error) {
       console.error("Failed to fetch token data:", error);
