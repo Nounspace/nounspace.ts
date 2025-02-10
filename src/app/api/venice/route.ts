@@ -19,8 +19,22 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek-r1-671b",
-        messages: [{ role: "user", content: prompt }],
+        model: "llama-3.2-3b",
+        messages: [
+          { role: "user", content: prompt },
+          {
+            role: "system",
+            content: `You are a social media expert.
+               Your task is to improve the given tweet while preserving its original meaning and intent.
+               Do not add new context, opinions, or unrelated details.
+               Only enhance clarity, engagement, and style.
+              Respond ** only ** with the improved tweet text, without any introduction, explanation, or formatting.
+               Do not include quotes on the response.`
+          },
+        ],
+        venice_parameters: {
+          include_venice_system_prompt: false
+        },
       }),
     };
 
