@@ -94,7 +94,7 @@ export type ModProtocolCastAddBody = Exclude<
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -375,9 +375,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here
@@ -421,14 +421,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
   };
 
   const handleEnhanceCast = async (text: string) => {
-
     try {
       const response = await fetch("/api/venice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, fid }),
       });
 
       if (!response.ok) {

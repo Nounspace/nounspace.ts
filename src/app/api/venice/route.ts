@@ -1,3 +1,5 @@
+import neynar from "@/common/data/api/neynar";
+
 const VENICE_API_KEY = process.env.VENICE_API_KEY;
 
 export async function POST(request: Request) {
@@ -6,9 +8,28 @@ export async function POST(request: Request) {
   }
 
   const res = await request.json();
-  const prompt = res.prompt;
-  if (!prompt) {
-    return new Response("Prompt is missing", { status: 400 });
+
+  const userCast = res.text;
+  if (!userCast) {
+    return new Response("Text is missing", { status: 400 });
+  }
+
+  const userFid = res.fid;
+  if (!userFid) {
+    return new Response("User fid is missing", { status: 400 });
+  }
+
+  const userCasts = await neynar.fetchPopularCastsByUser(userFid);
+
+  const userBio = userCasts.casts?.[0].author.profile.bio.text || "";
+
+  let exampleCastsText = "";
+  if (userCasts?.casts?.length) {
+    userCasts.casts.forEach((cast: any) => {
+      const likesCount = cast.reactions?.likes?.length || 0;
+      const recastsCount = cast.reactions?.recasts?.length || 0;
+      exampleCastsText += `Text: ${cast.text}\nLikes: ${likesCount}\nRecasts: ${recastsCount}\n\n`;
+    });
   }
 
   try {
@@ -21,22 +42,41 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: "llama-3.2-3b",
         messages: [
-          { role: "user", content: prompt },
           {
             role: "system",
             content: `You are a social media expert.
-               Your task is to improve the given tweet while preserving its original meaning and intent.
-               Do not add new context, opinions, or unrelated details.
-               Only enhance clarity, engagement, and style.
-              Respond ** only ** with the improved tweet text, without any introduction, explanation, or formatting.
-               Do not include quotes on the response.`
+
+              **Task:**
+              Your task is to improve the given tweet while preserving its original meaning and intent.
+              Only enhance clarity, engagement, and style.
+              Respond **only** with the improved tweet text, without any introduction, explanation, or formatting.
+              Use the appended example tweets **strictly** as a reference.
+
+              **Guidelines:**
+              DO **NOT** add new context, opinions, or unrelated details.
+              DO **NOT** include quotes in the response.
+              DO **NOT** use hashtags, mentions, or emojis, unless they are part of the original tweet.`,
+          },
+          {
+            role: "assistant",
+            content: "\n\nUser example tweets:\n" + exampleCastsText,
+          },
+          {
+            role: "assistant",
+            content: "\n\nUser bio:\n" + userBio,
+          },
+          {
+            role: "user",
+            content: `\n\This is my tweet to be improved:\n ${userCast}`,
           },
         ],
         venice_parameters: {
-          include_venice_system_prompt: false
+          include_venice_system_prompt: false,
         },
       }),
     };
+
+    console.log("options", options.body);
 
     const fetchResponse = await fetch(
       "https://api.venice.ai/api/v1/chat/completions",
