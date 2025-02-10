@@ -39,6 +39,7 @@ import {
 } from "../utils";
 import EmojiPicker, { Theme } from 'emoji-picker-react';
 import { GoSmiley } from 'react-icons/go';
+import { HiOutlineSparkles } from "react-icons/hi2";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -418,6 +419,30 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsPickingEmoji(false);
   };
 
+
+  const handleEnhanceCast = async (text: string) => {
+    try {
+      const response = await fetch('/api/venice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to enhance text:", errorText);
+        throw new Error("Failed to enhance text");
+      }
+
+      const result = await response.json();
+      setText(result.text);
+    } catch (error) {
+      console.error("Error enhancing text:", error);
+    }
+  };
+
   return (
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
@@ -476,6 +501,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <PhotoIcon className="mr-1 w-5 h-5" />
             Add
           </Button>
+          <Button
+            className="h-10"
+            type="button"
+            variant="ghost"
+            disabled={isPublishing}
+            onClick={() => handleEnhanceCast(text)}
+          >
+            <HiOutlineSparkles size={20} />
+          </Button>
+
           <Button
             className="h-10"
             type="button"
