@@ -37,8 +37,8 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import EmojiPicker, { Theme } from 'emoji-picker-react';
-import { GoSmiley } from 'react-icons/go';
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 
 // Fixed missing imports and incorrect object types
@@ -94,7 +94,7 @@ export type ModProtocolCastAddBody = Exclude<
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -359,7 +359,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
           message: "Invalid parent cast ID hash length.",
         };
       }
-    } ``
+    }
+    ``;
 
     // Prepare the mentions and their positions
     const mentions = draft.mentionsToFids
@@ -374,9 +375,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here
@@ -419,15 +420,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsPickingEmoji(false);
   };
 
-
   const handleEnhanceCast = async (text: string) => {
+    const prompt = `Enhance the text: ${text}`;
+
     try {
-      const response = await fetch('/api/venice', {
-        method: 'POST',
+      const response = await fetch("/api/venice", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ prompt }),
       });
 
       if (!response.ok) {
@@ -437,7 +439,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }
 
       const result = await response.json();
-      setText(result.text);
+      setText(result.response);
     } catch (error) {
       console.error("Error enhancing text:", error);
     }
@@ -524,11 +526,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             ref={parentRef}
             style={{
               opacity: isPickingEmoji ? 1 : 0,
-              pointerEvents: isPickingEmoji ? 'auto' : 'none',
+              pointerEvents: isPickingEmoji ? "auto" : "none",
               marginTop: 50,
-              transition: 'opacity 1s ease',
+              transition: "opacity 1s ease",
               zIndex: 10,
-              position: 'absolute',
+              position: "absolute",
             }}
           >
             <EmojiPicker
