@@ -2,12 +2,13 @@ import neynar from "@/common/data/api/neynar";
 
 import { SYSTEM_PROMPT, ENHANCE_PROMPT, CREATE_PROMPT } from './prompts'
 import {
+  USERS_CASTS_CHRONOLOGICALLY,
   USE_USER_PAST_TWEETS, MAX_TRENDING_TWEETS,
   VENICE_API_KEY, VENICE_MODEL,
   MODEL_TEMPERATURE_DETERMINISTIC, MODEL_TEMPERATURE_CREATIVE, MODEL_TEMPERATURE_ALUCINATE,
   TODAY_TIME_DATE,
   DEBUG_PROMPTS
-} from './configs'
+} from './config'
 
 //
 // Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
@@ -37,17 +38,27 @@ export async function POST(request: Request) {
   }
 
   // get values
-  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed());
-  const userCasts = await neynar.fetchPopularCastsByUser(userFid);
-  const userBio = userCasts.casts?.[0].author.profile.bio.text || "";
-  const userName = userCasts.casts?.[0].author.username || "";
-  const userCast = res.text || "";
 
-  // if USE_USER_PAST_TWEETS
+    // if USE_USER_PAST_TWEETS
   // get user past casts as examples
   let user_past_tweets;
+  let userCasts: any;
   if (USE_USER_PAST_TWEETS) {
-    const exampleCastsText = userCasts.casts?.length
+    let exampleCastsText;
+    if(USERS_CASTS_CHRONOLOGICALLY) {
+      userCasts = await neynar.fetchAllCastsCreatedByUser(userFid, {
+        viewerFid: userFid,
+        limit: 5}
+      );
+      userCasts = userCasts.result;
+      // exampleCastsText = userCasts.result.casts?.length
+      // ? userCasts.result.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
+      // : "";
+    } else {
+      userCasts = await neynar.fetchPopularCastsByUser(userFid);
+    }
+
+    exampleCastsText = userCasts.casts?.length
       ? userCasts.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
       : "";
 
@@ -57,7 +68,14 @@ export async function POST(request: Request) {
 ${exampleCastsText}
 </USER_PAST_TWEETS>
 `;
-  }
+}
+
+  const currentUser = await neynar.fetchBulkUsers([userFid]);
+  const userName = currentUser.users[0].username || "";
+  const userBio = currentUser.users[0].profile.bio.text || "";
+
+  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed());
+  const userCast = res.text || "";
 
   // generate or enahance casts
   try {
