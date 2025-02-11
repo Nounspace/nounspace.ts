@@ -1,92 +1,87 @@
 import neynar from "@/common/data/api/neynar";
 
-const DEBUG_PROMPTS = false;
-const VENICE_API_KEY = process.env.VENICE_API_KEY;
+import { SYSTEM_PROMPT, ENHANCE_PROMPT, CREATE_PROMPT } from './prompts'
+import {
+  USE_USER_PAST_TWEETS, MAX_TRENDING_TWEETS,
+  VENICE_API_KEY, VENICE_MODEL,
+  MODEL_TEMPERATURE_DETERMINISTIC, MODEL_TEMPERATURE_CREATIVE, MODEL_TEMPERATURE_ALUCINATE,
+  TODAY_TIME_DATE,
+  DEBUG_PROMPTS
+} from './configs'
 
-const VENICE_MODEL = "llama-3.2-3b";
-// var VENICE_MODEL = "deepseek-r1-671b";
+//
+// Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
+//
+function processTrendingCasts(casts: any) {
+  let trendingCasts = casts.casts
+    .map(cast => {
+      const username = cast.author.username;
+      const text = cast.text;
+      return `<trending_tweet>\n@${username}: ${text}\n</trending_tweet>\n\n`;
+    });
 
-const MODEL_TEMPERATURE_DETERMINISTIC = 0.2;
-const MODEL_TEMPERATURE_CREATIVE = 0.6;
-const MODEL_TEMPERATURE_ALUCINATE = 0.9;
-
-const SYSTEM_PROMPT2 = `
-You are a social media expert specializing in crafting highly engaging, concise Twitter posts (“banger tweets”). Review the following information:
-
-User Bio (key points about the user's background, voice, or interests):
-{USER_BIO}
-
-User's last 5 tweets: {USER_TWEETS}
-
-User Input (either the draft tweet to enhance and/or instructions):
-{USER_INPUT}
-
-Using the user's Bio and past tweets to inform style and voice, write a single tweet based on the User Input that:
-
-1. Is at most 280 characters (including spaces).
-2. Reflects the user's unique tone or perspective based on their bio.
-3. Incorporates key ideas from the User Input.
-4. Resonates with a broad audience and is likely to get high engagement (likes, retweets, comments).
-5. Ensure the tweet is polished, powerful, and follows best practices for high-engagement tweets. Do not include any hashtags, usernames, or additional commentary—only the final tweet text as your output.
-
-# Guidelines:
-DO NOT add new context, opinions, or unrelated details.
-DO NOT include quotes in the response.
-`;
-
-const SYSTEM_PROMPT = `You are a social media expert.
-# Task:
-Your task is to generate a new tweet or improve a given tweet preserving its original meaning and intent.
-Match the tone and style of the provided <post_examples> to create a consistent brand voice.
-Respond only with the improved tweet text, without any introduction, explanation, or formatting.
-
-# Guidelines:
-DO NOT add new context, opinions, or unrelated details.
-DO NOT include quotes in the response.
-`;
-
-const ENHANCE_PROMPT = `
-# Task: Enhance this tweet for maximum engagement:
-# INSTRUCTIONS:
-- Make it concise and attention-grabbing.
-- Include a call-to-action.
-- Ensure it resonates with <post_examples> keeping it authentic.
-- Avoid clickbait—focus on delivering value or sparking conversation.
-- DO NOT use hashtags, mentions, or emojis, unless they are part of the original tweet.
-
-# TWEET:`;
-
-const CREATE_PROMPT = `Create a new creative and engaging tweet.
-# Guidelines:
-DO NOT add new context, opinions, or unrelated details.
-DO NOT include quotes in the response.
-
-# TWEET:`;
-
+  trendingCasts = trendingCasts.slice(0, MAX_TRENDING_TWEETS)
+  return trendingCasts.join('');
+}
 
 export async function POST(request: Request) {
+  const res = await request.json();
+  const userFid = res.fid;
+
   if (!VENICE_API_KEY) {
     return new Response("API key is missing", { status: 400 });
   }
-
-  const res = await request.json();
-  const userCast = res.text || "";
-  const userFid = res.fid;
 
   if (!userFid) {
     return new Response("User fid is missing", { status: 400 });
   }
 
+  // get values
+  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed());
   const userCasts = await neynar.fetchPopularCastsByUser(userFid);
   const userBio = userCasts.casts?.[0].author.profile.bio.text || "";
+  const userName = userCasts.casts?.[0].author.username || "";
+  const userCast = res.text || "";
 
-  let exampleCastsText = userCasts.casts?.length
-    ? userCasts.casts.map(cast => `Text: ${cast.text}`).join("\n")
-    : "";
+  // if USE_USER_PAST_TWEETS
+  // get user past casts as examples
+  let user_past_tweets;
+  if (USE_USER_PAST_TWEETS) {
+    const exampleCastsText = userCasts.casts?.length
+      ? userCasts.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
+      : "";
 
+    user_past_tweets = `
+# Users past tweets:
+<USER_PAST_TWEETS>
+${exampleCastsText}
+</USER_PAST_TWEETS>
+`;
+  }
+
+  // generate or enahance casts
   try {
+    // select prompt for enhance or create cast
     const PROMPT = userCast.trim().length === 0 ? CREATE_PROMPT : ENHANCE_PROMPT;
 
+    // setup the system prompt with variables
+    const system_prompt = SYSTEM_PROMPT
+      .replace('{USER_NAME}', userName)
+      .replace('{TODAY_TIME_DATE}', TODAY_TIME_DATE)
+      .replace("{USER_BIO}", userBio);
+    // .replace("{USER_TWEETS}", exampleCastsText);
+
+    // setup the user prompt with variables
+    const user_prompt = PROMPT
+      .replace("{TRENDING_FEED}", trendingCasts)
+      .replace("{USER_TWEETS}", user_past_tweets || "")
+      + userCast;
+
+    // use for debug
+    if (DEBUG_PROMPTS)
+      console.log(`\n\n---------SYSTEM-----------`); console.log(system_prompt);    console.log(`\n\n---------USER-----------`); console.log(user_prompt); console.log(`--------------------`);
+
+    // build the venice model options
     const getOptions = (messages: any) => ({
       method: "POST",
       headers: {
@@ -103,60 +98,24 @@ export async function POST(request: Request) {
       }),
     });
 
-    const messages = [{
-      role: "system",
-      content: SYSTEM_PROMPT + `
-          User bio: ${userBio}
-          <post_examples>
-            ${exampleCastsText}
-          </post_examples>`,
-    },
-    {
-      role: "user",
-      content: PROMPT + userCast,
-    }];
+    // build model system and user prompts
+    const messages = [
+      { role: "system", content: system_prompt },
+      { role: "user", content: user_prompt, }
+    ];
 
-    const fetchResponse = await fetch(
-      "https://api.venice.ai/api/v1/chat/completions",
+    const fetchResponse = await fetch("https://api.venice.ai/api/v1/chat/completions",
       getOptions(messages),
     );
+    const response = await fetchResponse.json();
 
-    const result = await fetchResponse.json();
-    let choice = result.choices[0].message.content;
+    // process model response
+    let result = response.choices[0].message.content;
+    result = result.replace(/<\/think>.*?<\/think>/gs, '')    // remove <think> tags
+      .replace(/^['"]|['"]$/g, '');           // remove quotes marks
 
-    // if (VENICE_MODEL === "deepseek-r1-671b")
-    choice = choice.replace(/<\/think>.*?<\/think>/gs, '');
-
-    if (DEBUG_PROMPTS) {
-      const messages2 = [{
-        role: "system",
-        content: SYSTEM_PROMPT2
-          .replace("{USER_BIO}", userBio)
-          .replace("{USER_INPUT}", userCast)
-          .replace("{USER_TWEETS}", exampleCastsText),
-      },
-      {
-        role: "user",
-        content: PROMPT + userCast,
-      }];
-
-      const fetchResponse2 = await fetch(
-        "https://api.venice.ai/api/v1/chat/completions",
-        getOptions(messages2),
-      );
-
-      const result2 = await fetchResponse2.json();
-      let choice2 = result2.choices[0].message.content;
-
-      // if (VENICE_MODEL === "deepseek-r1-671b")
-      choice2 = choice2.replace(/<\/think>.*?<\/think>/gs, '');
-
-      console.log("\nchoice1: " + choice);
-      console.log("\nchoice2: " + choice2);
-    }
-
-    return Response.json({ response: choice });
-
+    //return to frontend clear response
+    return Response.json({ response: result });
   } catch (error) {
     // console.error("Error fetching data:", error);
     throw new Error("Failed to fetch data: " + error);
