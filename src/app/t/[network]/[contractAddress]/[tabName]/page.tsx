@@ -36,9 +36,7 @@ async function loadTokenData(
   }
 }
 
-const WrappedContractPrimarySpace = async () => {
-  const params = useParams();
-
+export default async function WrappedContractPrimarySpace({ params }) {
   const contractAddress = params?.contractAddress as string;
   const contractData = await loadContractData(params || {});
   const network = params?.network as EtherScanChainName;
@@ -63,5 +61,3 @@ const WrappedContractPrimarySpace = async () => {
     </TokenProvider>
   );
 };
-
-export default WrappedContractPrimarySpace;
