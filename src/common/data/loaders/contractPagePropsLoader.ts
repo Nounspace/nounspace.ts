@@ -1,4 +1,3 @@
-import { GetServerSidePropsContext } from "next";
 import { first, isArray, isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
