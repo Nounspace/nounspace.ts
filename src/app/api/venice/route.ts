@@ -1,17 +1,41 @@
 import neynar from "@/common/data/api/neynar";
 
+const DEBUG_PROMPTS = false;
 const VENICE_API_KEY = process.env.VENICE_API_KEY;
+var VENICE_MODEL = "llama-3.2-3b";
+// var VENICE_MODEL = "deepseek-r1-671b";
+
+const SYSTEM_PROMPT2 = `
+You are a social media expert specializing in crafting highly engaging, concise Twitter posts (“banger tweets”). Review the following information:
+
+User Bio (key points about the user's background, voice, or interests):
+{USER_BIO}
+
+User's last 5 tweets: {USER_TWEETS}
+
+User Input (either the draft tweet to enhance and/or instructions):
+{USER_INPUT}
+
+Using the user's Bio and past tweets to inform style and voice, write a single tweet based on the User Input that:
+
+1. Is at most 280 characters (including spaces).
+2. Reflects the user's unique tone or perspective based on their bio.
+3. Incorporates key ideas from the User Input.
+4. Resonates with a broad audience and is likely to get high engagement (likes, retweets, comments).
+
+Ensure the tweet is polished, powerful, and follows best practices for high-engagement tweets. Do not include any hashtags, usernames, or additional commentary—only the final tweet text as your output.
+`;
 
 const SYSTEM_PROMPT = `You are a social media expert.
 # Task:
 Your task is to generate a new tweet or improve a given tweet preserving its original meaning and intent.
-Consider <post_examples> for voice tone.
+Match the tone and style of the provided <post_examples> to create a consistent brand voice.
 Respond only with the improved tweet text, without any introduction, explanation, or formatting.
 
 # Guidelines:
 DO NOT add new context, opinions, or unrelated details.
 DO NOT include quotes in the response.
-Use the <post_examples> tweets strictly as a reference for voice tone.
+
 `;
 
 const ENHANCE_PROMPT = `
@@ -29,7 +53,6 @@ const CREATE_PROMPT = `Create a new creative and engaging tweet.
 # Guidelines:
 DO NOT add new context, opinions, or unrelated details.
 DO NOT include quotes in the response.
-Use the <post_examples> tweets strictly as a reference for voice tone.
 `;
 
 
@@ -67,7 +90,7 @@ export async function POST(request: Request) {
 
   try {
     let PROMPT = ENHANCE_PROMPT;
-    if(userCast.trim().length === 0) {
+    if (userCast.trim().length === 0) {
       PROMPT = CREATE_PROMPT;
     }
 
@@ -78,22 +101,31 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.2-3b",
-        // model: "deepseek-r1-671b",
+        model: VENICE_MODEL,
         temperature: 0.6,     // close to 0.00 is more deterministic, close to 1.00 is more creative
         messages: [
           {
             role: "system",
-            content: SYSTEM_PROMPT, // system prompt
+
+            content: SYSTEM_PROMPT2
+              .replace("{USER_BIO}", userBio)
+              .replace("{USER_INPUT}", userCast)
+              .replace("{USER_TWEETS}", exampleCastsText),
+
+            //             content: SYSTEM_PROMPT + `
+            // User bio: ${userBio}
+            // <post_examples>
+            //     ${exampleCastsText}
+            // </post_examples>`,                   // system prompt
           },
-          {
-            role: "assistant",      // assistant prompt
-            content: `
-User bio: ${userBio}
-<post_examples>
-${exampleCastsText}
-</post_examples>`,
-          },
+          //           {
+          //             role: "assistant",      // assistant prompt
+          //             content: `
+          // User bio: ${userBio}
+          // <post_examples>
+          // ${exampleCastsText}
+          // </post_examples>`,
+          //           },
           {
             role: "user",
             content: PROMPT + userCast, // user prompt
@@ -105,15 +137,75 @@ ${exampleCastsText}
       }),
     };
 
-    console.log("options", options.body);
+
+    //
+    // debug
+    // ---
+    //
+    if (DEBUG_PROMPTS) {
+
+      const options2 = {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + VENICE_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: VENICE_MODEL,
+          temperature: 0.6,     // close to 0.00 is more deterministic, close to 1.00 is more creative
+          messages: [
+            {
+              role: "system",
+              content: SYSTEM_PROMPT + `
+User bio: ${userBio}
+<post_examples>
+    ${exampleCastsText}
+</post_examples>`,                   // system prompt
+            },
+            {
+              role: "user",
+              content: PROMPT + userCast, // user prompt
+            },
+          ],
+          venice_parameters: {
+            include_venice_system_prompt: false,
+          },
+        }),
+      };
+
+      const fetchResponse2 = await fetch(
+        "https://api.venice.ai/api/v1/chat/completions",
+        options2,
+      );
+      const result2 = await fetchResponse2.json();
+      var choice = result2.choices[0].message.content;
+      if ("deepseek-r1-671b" == VENICE_MODEL)
+        choice = choice.replace(/<think>[\s\S]*?<\/think>\s*\n*/g, '');
+      console.warn("\nchoice2: " + choice);
+
+      //
+      // debug
+      // ---
+      //
+    }
+
+
+    // console.dir("options", options.body);
 
     const fetchResponse = await fetch(
       "https://api.venice.ai/api/v1/chat/completions",
       options,
     );
-    const result = await fetchResponse.json();
 
-    const choice = result.choices[0].message.content;
+    const result = await fetchResponse.json();
+    var choice = result.choices[0].message.content;
+
+    if ("deepseek-r1-671b" == VENICE_MODEL)
+      choice = choice.replace(/<think>[\s\S]*?<\/think>\s*\n*/g, '');
+
+    if(DEBUG_PROMPTS)
+      console.log("\nchoice1: " + choice);
+
     return Response.json({ response: choice });
   } catch (error) {
     console.error("Error fetching data:", error);
