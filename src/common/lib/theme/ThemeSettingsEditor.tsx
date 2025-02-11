@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -36,6 +36,7 @@ import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import { MdMenuBook } from "react-icons/md";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { HiOutlineSparkles } from "react-icons/hi2";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -52,6 +53,8 @@ export function ThemeSettingsEditor({
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
+  const [tabValue, setTabValue] = useState("fonts");
+  const codeTabRef = useRef<HTMLButtonElement>(null);
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -148,7 +151,8 @@ export function ThemeSettingsEditor({
 
             {/* Templates Dropdown */}
             <div className="grid gap-2">
-              <Tabs defaultValue="fonts">
+              <Tabs value={tabValue} onValueChange={setTabValue}>
+                {/* controlled Tabs */}
                 <TabsList className={tabListClasses}>
                   <TabsTrigger value="style" className={tabTriggerClasses}>
                     Style
@@ -156,11 +160,14 @@ export function ThemeSettingsEditor({
                   <TabsTrigger value="fonts" className={tabTriggerClasses}>
                     Fonts
                   </TabsTrigger>
-                  <TabsTrigger value="code" className={tabTriggerClasses}>
+                  <TabsTrigger
+                    value="code"
+                    className={tabTriggerClasses}
+                    ref={codeTabRef}
+                  >
                     Code
                   </TabsTrigger>
                 </TabsList>
-
                 {/* Fonts */}
                 <TabsContent value="fonts" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
@@ -210,7 +217,6 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                 </TabsContent>
-
                 {/* Style */}
                 <TabsContent value="style" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
@@ -280,7 +286,6 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                 </TabsContent>
-
                 {/* Code */}
                 <TabsContent value="code" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
@@ -310,60 +315,75 @@ export function ThemeSettingsEditor({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="shrink-0 flex flex-col gap-3 pb-8">
-          {showConfirmCancel ? (
-            // Back Button and Exit Button (shows second)
-            <>
-              <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
-                If you exit, any changes made will not be saved.
+        <div className="flex flex-col gap-2">
+          {tabValue === "fonts" && (
+            <div
+              className="flex gap-1 items-center border-2 border-[#5865f2] text-[#5865f2] bg-[#D0D9F1] rounded-lg p-2 text-sm font-medium cursor-pointer"
+              onClick={() => setTabValue("code")} // change tab on click
+            >
+              <p>
+                <span className="font-bold">New!</span> Create a custom
+                background with a prompt.
               </p>
-              <div className="flex items-center gap-2 justify-center">
-                <Button
-                  onClick={() => setShowConfirmCancel(false)}
-                  size="icon"
-                  variant="secondary"
-                >
-                  <BackArrowIcon />
-                </Button>
-                <Button
-                  onClick={cancelAndClose}
-                  variant="destructive"
-                  width="auto"
-                  withIcon
-                >
-                  <FaTriangleExclamation
-                    className="h-8l shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span>Exit</span>
-                </Button>
-              </div>
-            </>
-          ) : (
-            // X Button and Save Button (shows first)
-            <>
-              <div className="gap-2 pt-2 flex items-center justify-center">
-                <Button
-                  onClick={() => setShowConfirmCancel(true)}
-                  size="icon"
-                  variant="secondary"
-                >
-                  <FaX aria-hidden="true" />
-                </Button>
-
-                <Button
-                  onClick={saveAndClose}
-                  variant="primary"
-                  width="auto"
-                  withIcon
-                >
-                  <FaFloppyDisk aria-hidden="true" />
-                  <span>Save</span>
-                </Button>
-              </div>
-            </>
+              <HiOutlineSparkles size={32} />
+            </div>
           )}
+
+          {/* Actions */}
+          <div className="shrink-0 flex flex-col gap-3 pb-8">
+            {showConfirmCancel ? (
+              // Back Button and Exit Button (shows second)
+              <>
+                <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
+                  If you exit, any changes made will not be saved.
+                </p>
+                <div className="flex items-center gap-2 justify-center">
+                  <Button
+                    onClick={() => setShowConfirmCancel(false)}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <BackArrowIcon />
+                  </Button>
+                  <Button
+                    onClick={cancelAndClose}
+                    variant="destructive"
+                    width="auto"
+                    withIcon
+                  >
+                    <FaTriangleExclamation
+                      className="h-8l shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span>Exit</span>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              // X Button and Save Button (shows first)
+              <>
+                <div className="gap-2 pt-2 flex items-center justify-center">
+                  <Button
+                    onClick={() => setShowConfirmCancel(true)}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <FaX aria-hidden="true" />
+                  </Button>
+
+                  <Button
+                    onClick={saveAndClose}
+                    variant="primary"
+                    width="auto"
+                    withIcon
+                  >
+                    <FaFloppyDisk aria-hidden="true" />
+                    <span>Save</span>
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>
