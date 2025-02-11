@@ -2,6 +2,37 @@ import neynar from "@/common/data/api/neynar";
 
 const VENICE_API_KEY = process.env.VENICE_API_KEY;
 
+const SYSTEM_PROMPT = `You are a social media expert.
+# Task:
+Your task is to generate a new tweet or improve a given tweet preserving its original meaning and intent.
+Consider <post_examples> for voice tone.
+Respond only with the improved tweet text, without any introduction, explanation, or formatting.
+
+# Guidelines:
+DO NOT add new context, opinions, or unrelated details.
+DO NOT include quotes in the response.
+Use the <post_examples> tweets strictly as a reference for voice tone.
+`;
+
+const ENHANCE_PROMPT = `
+# Task: Enhance this tweet for maximum engagement:
+# INSTRUCTIONS:
+- Make it concise and attention-grabbing.
+- Include a call-to-action.
+- Ensure it resonates with <post_examples> keeping it authentic.
+- Avoid clickbait—focus on delivering value or sparking conversation.
+- DO NOT use hashtags, mentions, or emojis, unless they are part of the original tweet.
+
+# TWEET:`;
+
+const CREATE_PROMPT = `Create a new creative and engaging tweet.
+# Guidelines:
+DO NOT add new context, opinions, or unrelated details.
+DO NOT include quotes in the response.
+Use the <post_examples> tweets strictly as a reference for voice tone.
+`;
+
+
 export async function POST(request: Request) {
   if (!VENICE_API_KEY) {
     return new Response("API key is missing", { status: 400 });
@@ -11,7 +42,8 @@ export async function POST(request: Request) {
 
   const userCast = res.text;
   if (!userCast) {
-    return new Response("Text is missing", { status: 400 });
+    // return new Response("Text is missing", { status: 400 });
+    // if no input, create a new cast from thin air
   }
 
   const userFid = res.fid;
@@ -28,11 +60,17 @@ export async function POST(request: Request) {
     userCasts.casts.forEach((cast: any) => {
       const likesCount = cast.reactions?.likes?.length || 0;
       const recastsCount = cast.reactions?.recasts?.length || 0;
-      exampleCastsText += `Text: ${cast.text}\nLikes: ${likesCount}\nRecasts: ${recastsCount}\n\n`;
+      // exampleCastsText += `Text: ${cast.text}\nLikes: ${likesCount}\nRecasts: ${recastsCount}\n\n`;
+      exampleCastsText += `Text: ${cast.text}`;
     });
   }
 
   try {
+    let PROMPT = ENHANCE_PROMPT;
+    if(userCast.trim().length === 0) {
+      PROMPT = CREATE_PROMPT;
+    }
+
     const options = {
       method: "POST",
       headers: {
@@ -41,33 +79,24 @@ export async function POST(request: Request) {
       },
       body: JSON.stringify({
         model: "llama-3.2-3b",
+        // model: "deepseek-r1-671b",
+        temperature: 0.6,     // close to 0.00 is more deterministic, close to 1.00 is more creative
         messages: [
           {
             role: "system",
-            content: `You are a social media expert.
-
-              **Task:**
-              Your task is to improve the given tweet while preserving its original meaning and intent.
-              Only enhance clarity, engagement, and style.
-              Respond **only** with the improved tweet text, without any introduction, explanation, or formatting.
-              Use the appended example tweets **strictly** as a reference.
-
-              **Guidelines:**
-              DO **NOT** add new context, opinions, or unrelated details.
-              DO **NOT** include quotes in the response.
-              DO **NOT** use hashtags, mentions, or emojis, unless they are part of the original tweet.`,
+            content: SYSTEM_PROMPT, // system prompt
           },
           {
-            role: "assistant",
-            content: "\n\nUser example tweets:\n" + exampleCastsText,
-          },
-          {
-            role: "assistant",
-            content: "\n\nUser bio:\n" + userBio,
+            role: "assistant",      // assistant prompt
+            content: `
+User bio: ${userBio}
+<post_examples>
+${exampleCastsText}
+</post_examples>`,
           },
           {
             role: "user",
-            content: `\n\This is my tweet to be improved:\n ${userCast}`,
+            content: PROMPT + userCast, // user prompt
           },
         ],
         venice_parameters: {
