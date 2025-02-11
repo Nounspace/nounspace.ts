@@ -44,7 +44,6 @@ export async function POST(request: Request) {
   let user_past_tweets;
   let userCasts: any;
   if (USE_USER_PAST_TWEETS) {
-    let exampleCastsText;
     if(USERS_CASTS_CHRONOLOGICALLY) {
       userCasts = await neynar.fetchAllCastsCreatedByUser(userFid, {
         viewerFid: userFid,
@@ -58,7 +57,7 @@ export async function POST(request: Request) {
       userCasts = await neynar.fetchPopularCastsByUser(userFid);
     }
 
-    exampleCastsText = userCasts.casts?.length
+    const exampleCastsText = userCasts.casts?.length
       ? userCasts.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
       : "";
 
