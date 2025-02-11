@@ -1,6 +1,5 @@
 import { OwnerType } from "@/common/data/api/etherscan";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
-import { NextPageWithLayout } from "@/pages/_app";
 import React from "react";
 import {
   fetchMasterToken,
@@ -39,8 +38,7 @@ export async function generateMetadata({
   return metadata;
 }
 
-const ContractPrimarySpace = async () => {
-  const params = useParams();
+export default async function ContractPrimarySpace ({ params }) {
   const {props: {
     spaceId,
     tabName,
@@ -68,5 +66,3 @@ const ContractPrimarySpace = async () => {
     </TokenProvider>
   );
 };
-
-export default ContractPrimarySpace;
