@@ -1,93 +1,141 @@
 import neynar from "@/common/data/api/neynar";
 
-const VENICE_API_KEY = process.env.VENICE_API_KEY;
+import { SYSTEM_PROMPT, ENHANCE_PROMPT, CREATE_PROMPT } from './prompts'
+import {
+  USERS_CASTS_CHRONOLOGICALLY,
+  USE_USER_PAST_TWEETS, MAX_TRENDING_TWEETS,
+  VENICE_API_KEY, VENICE_MODEL,
+  MODEL_TEMPERATURE_DETERMINISTIC, MODEL_TEMPERATURE_CREATIVE, MODEL_TEMPERATURE_ALUCINATE,
+  TODAY_TIME_DATE,
+  DEBUG_PROMPTS
+} from './config'
+
+//
+// Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
+//
+function processTrendingCasts(casts: any) {
+  let trendingCasts = casts.casts
+    .map(cast => {
+      const username = cast.author.username;
+      const text = cast.text;
+      return `<trending_tweet>\n@${username}: ${text}\n</trending_tweet>\n\n`;
+    });
+
+  trendingCasts = trendingCasts.slice(0, MAX_TRENDING_TWEETS)
+  return trendingCasts.join('');
+}
 
 export async function POST(request: Request) {
+  const res = await request.json();
+  const userFid = res.fid;
+
   if (!VENICE_API_KEY) {
     return new Response("API key is missing", { status: 400 });
   }
 
-  const res = await request.json();
-
-  const userCast = res.text;
-  if (!userCast) {
-    return new Response("Text is missing", { status: 400 });
-  }
-
-  const userFid = res.fid;
   if (!userFid) {
     return new Response("User fid is missing", { status: 400 });
   }
 
-  const userCasts = await neynar.fetchPopularCastsByUser(userFid);
+  // get values
 
-  const userBio = userCasts.casts?.[0].author.profile.bio.text || "";
+    // if USE_USER_PAST_TWEETS
+  // get user past casts as examples
+  let user_past_tweets;
+  let userCasts: any;
+  if (USE_USER_PAST_TWEETS) {
+    if(USERS_CASTS_CHRONOLOGICALLY) {
+      userCasts = await neynar.fetchAllCastsCreatedByUser(userFid, {
+        viewerFid: userFid,
+        limit: 5}
+      );
+      userCasts = userCasts.result;
+      // exampleCastsText = userCasts.result.casts?.length
+      // ? userCasts.result.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
+      // : "";
+    } else {
+      userCasts = await neynar.fetchPopularCastsByUser(userFid);
+    }
 
-  let exampleCastsText = "";
-  if (userCasts?.casts?.length) {
-    userCasts.casts.forEach((cast: any) => {
-      const likesCount = cast.reactions?.likes?.length || 0;
-      const recastsCount = cast.reactions?.recasts?.length || 0;
-      exampleCastsText += `Text: ${cast.text}\nLikes: ${likesCount}\nRecasts: ${recastsCount}\n\n`;
-    });
-  }
+    const exampleCastsText = userCasts.casts?.length
+      ? userCasts.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
+      : "";
 
+    user_past_tweets = `
+# Users past tweets:
+<USER_PAST_TWEETS>
+${exampleCastsText}
+</USER_PAST_TWEETS>
+`;
+}
+
+  const currentUser = await neynar.fetchBulkUsers([userFid]);
+  const userName = currentUser.users[0].username || "";
+  const userBio = currentUser.users[0].profile.bio.text || "";
+
+  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed());
+  const userCast = res.text || "";
+
+  // generate or enahance casts
   try {
-    const options = {
+    // select prompt for enhance or create cast
+    const PROMPT = userCast.trim().length === 0 ? CREATE_PROMPT : ENHANCE_PROMPT;
+
+    // setup the system prompt with variables
+    const system_prompt = SYSTEM_PROMPT
+      .replace('{USER_NAME}', userName)
+      .replace('{TODAY_TIME_DATE}', TODAY_TIME_DATE)
+      .replace("{USER_BIO}", userBio);
+    // .replace("{USER_TWEETS}", exampleCastsText);
+
+    // setup the user prompt with variables
+    const user_prompt = PROMPT
+      .replace("{TRENDING_FEED}", trendingCasts)
+      .replace("{USER_TWEETS}", user_past_tweets || "")
+      + userCast;
+
+    // use for debug
+    if (DEBUG_PROMPTS)
+      console.log(`\n\n---------SYSTEM-----------`); console.log(system_prompt);    console.log(`\n\n---------USER-----------`); console.log(user_prompt); console.log(`--------------------`);
+
+    // build the venice model options
+    const getOptions = (messages: any) => ({
       method: "POST",
       headers: {
         Authorization: "Bearer " + VENICE_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "llama-3.2-3b",
-        messages: [
-          {
-            role: "system",
-            content: `You are a social media expert.
 
-              **Task:**
-              Your task is to improve the given tweet while preserving its original meaning and intent.
-              Only enhance clarity, engagement, and style.
-              Respond **only** with the improved tweet text, without any introduction, explanation, or formatting.
-              Use the appended example tweets **strictly** as a reference.
-
-              **Guidelines:**
-              DO **NOT** add new context, opinions, or unrelated details.
-              DO **NOT** include quotes in the response.
-              DO **NOT** use hashtags, mentions, or emojis, unless they are part of the original tweet.`,
-          },
-          {
-            role: "assistant",
-            content: "\n\nUser example tweets:\n" + exampleCastsText,
-          },
-          {
-            role: "assistant",
-            content: "\n\nUser bio:\n" + userBio,
-          },
-          {
-            role: "user",
-            content: `\n\nThis is my tweet to be improved:\n ${userCast}`,
-          },
-        ],
+        model: VENICE_MODEL,
+        temperature: MODEL_TEMPERATURE_CREATIVE,
+        messages,
         venice_parameters: {
           include_venice_system_prompt: false,
         },
       }),
-    };
+    });
 
-    console.log("options", options.body);
+    // build model system and user prompts
+    const messages = [
+      { role: "system", content: system_prompt },
+      { role: "user", content: user_prompt, }
+    ];
 
-    const fetchResponse = await fetch(
-      "https://api.venice.ai/api/v1/chat/completions",
-      options,
+    const fetchResponse = await fetch("https://api.venice.ai/api/v1/chat/completions",
+      getOptions(messages),
     );
-    const result = await fetchResponse.json();
+    const response = await fetchResponse.json();
 
-    const choice = result.choices[0].message.content;
-    return Response.json({ response: choice });
+    // process model response
+    let result = response.choices[0].message.content;
+    result = result.replace(/<\/think>.*?<\/think>/gs, '')    // remove <think> tags
+      .replace(/^['"]|['"]$/g, '');           // remove quotes marks
+
+    //return to frontend clear response
+    return Response.json({ response: result });
   } catch (error) {
-    console.error("Error fetching data:", error);
-    throw new Error("Failed to fetch data");
+    // console.error("Error fetching data:", error);
+    throw new Error("Failed to fetch data: " + error);
   }
 }
