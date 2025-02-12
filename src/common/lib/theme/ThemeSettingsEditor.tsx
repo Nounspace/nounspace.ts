@@ -54,7 +54,9 @@ export function ThemeSettingsEditor({
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("fonts");
-  const codeTabRef = useRef<HTMLButtonElement>(null);
+  const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
+  const [generateText, setGenerateText] = useState("Generate");
+  const timersRef = useRef<number[]>([]);
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -99,6 +101,50 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
+
+  const handleGenerateBackground = async () => {
+    try {
+      console.log("Generating background...", backgroundHTML);
+      const response = await fetch(`/api/venice/background`, {
+        method: "POST",
+        body: JSON.stringify({ text: backgroundHTML }),
+      });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      const data = await response.json();
+      themePropSetter("backgroundHTML")(data.response);
+    } catch (error) {
+      console.error("Error generating background:", error);
+    } finally {
+      timersRef.current.forEach((timer) => clearInterval(timer));
+      timersRef.current = [];
+      setGenerateText("Generate");
+      setIsGeneratingBackground(false);
+    }
+  };
+
+  function handleGenerate() {
+    if (isGeneratingBackground) return;
+    setIsGeneratingBackground(true);
+    const messages = [
+      "Analyzing…",
+      "Imagining…",
+      "Coding…",
+      "Reviewing…",
+      "Improving…",
+      "Finalizing…",
+    ];
+    let index = 0;
+    setGenerateText(messages[index]);
+    const intervalId = window.setInterval(() => {
+      index = (index + 1) % messages.length;
+      setGenerateText(messages[index]);
+    }, 8000);
+    timersRef.current = [intervalId];
+    handleGenerateBackground();
+  }
+
   return (
     <>
       <div className="flex flex-col h-full gap-6">
@@ -160,11 +206,7 @@ export function ThemeSettingsEditor({
                   <TabsTrigger value="fonts" className={tabTriggerClasses}>
                     Fonts
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="code"
-                    className={tabTriggerClasses}
-                    ref={codeTabRef}
-                  >
+                  <TabsTrigger value="code" className={tabTriggerClasses}>
                     Code
                   </TabsTrigger>
                 </TabsList>
@@ -297,6 +339,27 @@ export function ThemeSettingsEditor({
                       value={backgroundHTML}
                       onChange={themePropSetter<string>("backgroundHTML")}
                     />
+                    <Button
+                      onClick={handleGenerate}
+                      variant="primary"
+                      width="auto"
+                      withIcon
+                      disabled={isGeneratingBackground || backgroundHTML === ""}
+                      style={{
+                        backgroundColor: isGeneratingBackground
+                          ? "#91B4FF"
+                          : undefined,
+                      }}
+                    >
+                      {isGeneratingBackground ? (
+                        <AnimatedSpinner />
+                      ) : (
+                        <HiOutlineSparkles aria-hidden={true} />
+                      )}
+                      <span>
+                        {isGeneratingBackground ? generateText : "Generate"}
+                      </span>
+                    </Button>
                   </div>
                 </TabsContent>
               </Tabs>
@@ -319,7 +382,7 @@ export function ThemeSettingsEditor({
           {tabValue === "fonts" && (
             <div
               className="flex gap-1 items-center border-2 border-[#5865f2] text-[#5865f2] bg-[#D0D9F1] rounded-lg p-2 text-sm font-medium cursor-pointer"
-              onClick={() => setTabValue("code")} // change tab on click
+              onClick={() => setTabValue("code")}
             >
               <p>
                 <span className="font-bold">New!</span> Create a custom
@@ -387,6 +450,12 @@ export function ThemeSettingsEditor({
         </div>
       </div>
     </>
+  );
+}
+
+function AnimatedSpinner() {
+  return (
+    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
   );
 }
 
