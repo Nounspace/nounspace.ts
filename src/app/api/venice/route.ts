@@ -106,6 +106,7 @@ ${exampleCastsText}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+
         model: VENICE_MODEL,
         temperature: MODEL_TEMPERATURE_CREATIVE,
         messages,

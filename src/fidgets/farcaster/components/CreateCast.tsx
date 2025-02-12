@@ -40,6 +40,7 @@ import {
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
+import Spinner from "@/common/components/atoms/spinner";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -94,7 +95,7 @@ export type ModProtocolCastAddBody = Exclude<
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => {},
+  afterSubmit = () => { },
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -113,6 +114,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [initialChannels, setInitialChannels] = useState() as any;
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   useEffect(() => {
     const fetchInitialChannels = async () => {
@@ -375,9 +377,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-            fid: draft.parentCastId.fid,
-            hash: draft.parentCastId.hash,
-          }
+          fid: draft.parentCastId.fid,
+          hash: draft.parentCastId.hash,
+        }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here
@@ -419,8 +421,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
-
   const handleEnhanceCast = async (text: string) => {
+    setIsEnhancing(true);
     try {
       const response = await fetch("/api/venice", {
         method: "POST",
@@ -438,6 +440,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       const result = await response.json();
       setText(result.response);
+      setIsEnhancing(false);
     } catch (error) {
       console.error("Error enhancing text:", error);
     }
@@ -508,7 +511,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
             disabled={isPublishing}
             onClick={() => handleEnhanceCast(text)}
           >
-            <HiOutlineSparkles size={20} />
+            {isEnhancing ?
+              <Spinner
+                style={{ width: "30px", height: "30px" }}
+              /> : <HiOutlineSparkles size={20} />}
           </Button>
 
           <Button
