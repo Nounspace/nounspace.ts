@@ -4,6 +4,8 @@ import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
+import { useRouter } from "next/navigation";
+import { SpaceLookupInfo } from "@/common/data/stores/app/space/spaceStore";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
@@ -12,7 +14,6 @@ import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 
 interface TabBarProps {
-  inHome?: boolean;
   inHomebase: boolean;
   inEditMode: boolean;
   currentTab: string;
@@ -33,7 +34,6 @@ const PERMANENT_TABS = ["Feed", "Profile", "Welcome"];
 const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 function TabBar({
-  inHome,
   inHomebase,
   inEditMode,
   currentTab,
@@ -73,6 +73,7 @@ function TabBar({
 
   async function handleCreateTab(tabName: string) {
     await createTab(tabName);
+    await commitTabOrder();
     switchTabTo(tabName);
   }
 
@@ -126,11 +127,7 @@ function TabBar({
             >
               <AnimatePresence initial={false}>
                 {map(
-                  inHome
-                    ? ["Welcome", ...tabList]
-                    : inHomebase
-                      ? ["Feed", ...tabList]
-                      : tabList,
+                  inHomebase ? ["Feed", ...tabList] : tabList,
                   (tabName: string) => {
                     return (
                       <Tab

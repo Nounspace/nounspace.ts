@@ -62,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
-      <div className={editMode ? "hidden" : "flex mx-auto"}>
+      <div className={editMode ? "hidden" : "flex mx-auto h-full"}>
         <Navigation
           isEditable={sidebarEditable}
           enterEditMode={enterEditMode}

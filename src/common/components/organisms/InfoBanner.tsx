@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useState, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
 import * as Toast from "@radix-ui/react-toast";
 import { useAppStore } from "@/common/data/stores/app";
@@ -13,8 +13,8 @@ export default function InfoToast() {
   const [message, setMessage] = useState("");
   const [duration, setDuration] = useState(10000);
   const pathname = usePathname();
-  const queryParams = useSearchParams();
-  const spaceFarcasterName = queryParams?.get("handle");
+  const searchParams = useSearchParams();
+  const spaceFarcasterName = searchParams?.get("handle");
   const { fid } = useFarcasterSigner("navigation");
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);

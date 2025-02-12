@@ -16,6 +16,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (path === "/home") {
+    return NextResponse.redirect(new URL("/home/Welcome", request.url));
+  }
+
   return NextResponse.next();
 }
 

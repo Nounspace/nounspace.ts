@@ -55,11 +55,11 @@ export default async function Explore() {
     <div className="min-h-screen max-w-screen max-h-screen h-screen w-screen p-5 overflow-y-scroll">
       <Tabs defaultValue="tokens" className="max-h-full">
         <TabsList className={tabListClasses}>
-          <TabsTrigger value="tokens" className={tabTriggerClasses}>
-            Tokens
-          </TabsTrigger>
           <TabsTrigger value="spaces" className={tabTriggerClasses}>
             Spaces
+          </TabsTrigger>
+          <TabsTrigger value="tokens" className={tabTriggerClasses}>
+            Tokens
           </TabsTrigger>
         </TabsList>
         <TabsContent value="tokens" className={tabContentClasses}>

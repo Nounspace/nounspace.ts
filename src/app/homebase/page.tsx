@@ -1,18 +1,19 @@
+"use client";
+
 import React, { useEffect } from "react";
-import { NextPageWithLayout } from "../_app";
+import { NextPageWithLayout } from "../../pages/_app";
 import { useAppStore } from "@/common/data/stores/app";
-import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { FeedType } from "@neynar/nodejs-sdk";
 import { noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import TabBar from "@/common/components/organisms/TabBar";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
-const Homebase: NextPageWithLayout = () => {
-  const router = useRouter();
+function Homebase() {
   const {
     homebaseConfig,
     saveConfig,
@@ -42,7 +43,6 @@ const Homebase: NextPageWithLayout = () => {
     getIsInitializing: state.getIsInitializing,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
-
     tabOrdering: state.homebase.tabOrdering,
     loadHomebaseTabOrder: state.homebase.loadTabOrdering,
     updateHomebaseTabOrder: state.homebase.updateTabOrdering,
@@ -51,20 +51,22 @@ const Homebase: NextPageWithLayout = () => {
     deleteHomebaseTab: state.homebase.deleteTab,
     renameHomebaseTab: state.homebase.renameTab,
   }));
+
+  const router = useRouter();
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
   const currentFid = useCurrentFid();
 
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName("Feed"), []);
   useEffect(() => {
     if (isLoggedIn) {
+      setCurrentSpaceId(HOMEBASE_ID);
+      setCurrentTabName("Feed");
       loadConfig();
       if (tabOrdering.local.length === 0) {
         loadHomebaseTabOrder();
       }
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, router]);
 
   function switchTabTo(tabName: string) {
     if (tabName !== "Feed") {
@@ -109,7 +111,7 @@ const Homebase: NextPageWithLayout = () => {
       }
     : !isLoggedIn
       ? {
-          config: USER_NOT_LOGGED_IN_HOMEBASE_CONFIG,
+          config: undefined,
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
@@ -152,6 +154,6 @@ const Homebase: NextPageWithLayout = () => {
   }
 
   return <SpacePage {...args} />;
-};
+}
 
 export default Homebase;
