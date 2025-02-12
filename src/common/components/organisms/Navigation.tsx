@@ -262,35 +262,38 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                 url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL}
               />
             </div>
-            {isLoggedIn && (
-              <div className="pt-3 flex items-center gap-2 justify-center">
-                {!isNotificationsPage && !isExplorerPage && isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
+            { 
+              !isLoggedIn 
+              ? (
+                <Link
+                  href="https://discord.gg/eYQeXU2WuH"
+                  className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full gap-2 text-lg font-medium"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <FaDiscord className="text-[#5865f2] w-6 h-6" />
+                  Join
+                </Link>
+              )
+              : (
+                <div className="pt-3 flex items-center gap-2 justify-center">
+                  {!isNotificationsPage && !isExplorerPage && isEditable && (
+                    <Button
+                      onClick={turnOnEditMode}
+                      size="icon"
+                      variant="secondary"
+                    >
+                      <div className="flex items-center p-1">
+                        <FaPaintbrush />
+                      </div>
+                    </Button>
+                  )}
+                  <Button onClick={openCastModal} variant="primary" width="auto">
+                    Cast
                   </Button>
-                )}
-                <Button onClick={openCastModal} variant="primary" width="auto">
-                  Cast
-                </Button>
-              </div>
-            )}
-            {!isLoggedIn && (
-              <Link
-                href="https://discord.gg/eYQeXU2WuH"
-                className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full gap-2 text-lg font-medium"
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <FaDiscord className="text-[#5865f2] w-6 h-6" />
-                Join
-              </Link>
-            )}
+                </div>
+              )
+            }
           </div>
         </div>
       </div>
