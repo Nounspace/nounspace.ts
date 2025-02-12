@@ -32,13 +32,9 @@ const Home = () => {
   const {
     getIsLoggedIn,
     getIsInitializing,
-    setCurrentSpaceId,
-    setCurrentTabName,
   } = useAppStore((state) => ({
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
-    setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
-    setCurrentTabName: state.currentSpace.setCurrentTabName,
   }));
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
@@ -47,17 +43,14 @@ const Home = () => {
   const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
   const [tabName, setTabName] = useState<string>("Welcome");
 
+  // Remove the conditional update and use a ref to track initial render
   useEffect(() => {
-    setCurrentSpaceId("home");
-
-    if (params && isString(params.tabname)) {
-      setTabName(params.tabname as string);
-    } else {
-      setTabName("Welcome");
-    }
-
-    setCurrentTabName(tabName);
-  }, [params]);
+    const newTabName = params?.tabname ? 
+      decodeURIComponent(params.tabname as string) : 
+      "Welcome";
+    
+    setTabName(newTabName);
+  }, [params?.tabname]); // Remove tabName from dependencies
 
   function switchTabTo(newTabName: string) {
     router.push(`/home/${newTabName}`);
@@ -104,8 +97,8 @@ const Home = () => {
           tabBar: tabBar,
         };
 
-  // Use the unique key directly in the JSX to trigger re-render
-  return <SpacePage key={tabName ?? "Welcome"} {...args} />;
+  // Remove the key prop since we don't need to force re-render
+  return <SpacePage {...args} />;
 };
 
 export default Home;
