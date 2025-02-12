@@ -85,9 +85,9 @@ const HomebaseTab = () => {
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(async () => {
     const tabOrder = tabOrdering.local || [];
-    for (const tabName of tabOrder) {
-      if (tabName !== tabName) {
-        await loadTab(tabName);
+    for (const tab of tabOrder) {
+      if (tabName !== tab) {
+        await loadTab(tab);
       }
     }
   }, [tabOrdering, tabName, loadTab]);
