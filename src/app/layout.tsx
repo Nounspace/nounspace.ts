@@ -1,9 +1,6 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React, { Suspense } from "react";
 import "@/styles/globals.css";
-import type { AppProps } from "next/app";
-import type { NextPage } from "next";
-import Head from "next/head";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
