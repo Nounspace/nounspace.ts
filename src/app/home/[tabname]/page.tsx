@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
-import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import { isString } from "lodash";
 import {
@@ -72,12 +71,12 @@ const Home = () => {
       tabList={tabOrdering}
       switchTabTo={switchTabTo}
       inEditMode={false}
-      updateTabOrder={() => {}}
-      deleteTab={() => {}}
-      createTab={() => {}}
-      renameTab={() => {}}
-      commitTab={() => {}}
-      commitTabOrder={() => {}}
+      updateTabOrder={async () => Promise.resolve()}
+      deleteTab={async () => Promise.resolve()}
+      createTab={async () => Promise.resolve()}
+      renameTab={async () => Promise.resolve()}
+      commitTab={async () => Promise.resolve()}
+      commitTabOrder={async () => Promise.resolve()}
     />
   );
 
@@ -106,7 +105,7 @@ const Home = () => {
         };
 
   // Use the unique key directly in the JSX to trigger re-render
-  return <SpacePage key={tabName ?? "welcome"} {...args} />;
+  return <SpacePage key={tabName ?? "Welcome"} {...args} />;
 };
 
 export default Home;
