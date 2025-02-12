@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           },
           {
             role: "user",
-            content: `\n\This is my tweet to be improved:\n ${userCast}`,
+            content: `\n\nThis is my tweet to be improved:\n ${userCast}`,
           },
         ],
         venice_parameters: {
