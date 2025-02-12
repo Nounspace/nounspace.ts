@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
-import TabBar from "@/common/components/organisms/TabBar";
-import { isString } from "lodash";
+import TabBar from "@/common/components/organisms/TabBar";  
 import {
   WELCOME_TAB_HOMEBASE_CONFIG,
   FIDGETS_TAB_HOMEBASE_CONFIG,
@@ -43,14 +42,13 @@ const Home = () => {
   const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
   const [tabName, setTabName] = useState<string>("Welcome");
 
-  // Remove the conditional update and use a ref to track initial render
   useEffect(() => {
     const newTabName = params?.tabname ? 
       decodeURIComponent(params.tabname as string) : 
       "Welcome";
     
     setTabName(newTabName);
-  }, [params?.tabname]); // Remove tabName from dependencies
+  }, []);
 
   function switchTabTo(newTabName: string) {
     router.push(`/home/${newTabName}`);
