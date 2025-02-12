@@ -227,7 +227,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
-                  openInNewTab
                 />
                 {isLoggedIn && (
                   <NavItem
