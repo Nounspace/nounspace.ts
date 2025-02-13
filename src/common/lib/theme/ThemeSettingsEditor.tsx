@@ -416,6 +416,9 @@ const BackgroundGenerator = ({
 
   const handleGenerateBackground = async () => {
     try {
+      analytics.track(AnalyticsEvent.GENERATE_BACKGROUND, {
+        user_input: backgroundHTML,
+      });
       const response = await fetch(`/api/venice/background`, {
         method: "POST",
         body: JSON.stringify({ text: backgroundHTML }),
