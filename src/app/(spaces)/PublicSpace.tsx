@@ -334,7 +334,7 @@ export default function PublicSpace({
             console.log('Attempting to register user space:', {
               currentUserFid
             });
-            newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
+            newSpaceId = await registerSpaceFid(currentUserFid, "Profile", getSpacePageUrl("Profile"));
             console.log('User space registration result:', {
               success: !!newSpaceId,
               newSpaceId,

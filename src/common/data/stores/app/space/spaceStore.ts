@@ -159,8 +159,8 @@ interface SpaceActions {
   ) => Promise<void> | undefined;
   registerSpaceFid: (
     fid: number,
-    name: string,
-    network?: string,
+    username: string,
+    tabName: string,
   ) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
@@ -671,7 +671,7 @@ export const createSpaceStoreFunc = (
       console.debug("Error loading space tab order:", e);
     }
   },
-  registerSpaceFid: async (fid, name) => {
+  registerSpaceFid: async (fid, name, path) => {
     // First check if a space already exists for this FID
     try {
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -730,6 +730,11 @@ export const createSpaceStoreFunc = (
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "user",
+        spaceId: newSpaceId,
+        path: path,
+      });
 
       return newSpaceId;
     } catch (e) {
@@ -855,7 +860,12 @@ export const createSpaceStoreFunc = (
           network,
         );
 
-        return newSpaceId;
+        analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "token",
+        spaceId: newSpaceId,
+        path: `/t/${network}/${address}/Profile`,
+      });
+      return newSpaceId;
       } catch (e) {
         console.error("Failed to register contract space:", e);
         throw e;
