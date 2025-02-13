@@ -65,7 +65,7 @@ Please adhere to the following requirements and guidelines:
 3. **Visual Quality and Creativity**:
   - The design should be **visually appealing and modern**. 
   - Consider using **gradients**, **patterns**, **subtle animations** (CSS-based only), or **layered effects** to enhance the background. 
-  - You may embed images using **data URLs (Base64)** if needed, but do not link to external files.
+  - You may embed images using **data URLs (Base64)** if needed, or link to existing publicly hosted images.
   - Keep the background from overshadowing typical webpage content (e.g., maintain good contrast for text readability).
 
 4. **Maintainability**:
