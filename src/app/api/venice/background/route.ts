@@ -1,5 +1,7 @@
 const VENICE_API_KEY = process.env.VENICE_API_KEY;
 
+export const maxDuration = 180;
+
 export async function POST(request: Request) {
   if (!VENICE_API_KEY) {
     return new Response("API key is missing", { status: 400 });
