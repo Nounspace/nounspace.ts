@@ -170,8 +170,13 @@ export default function UserDefinedSpace({
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
-    if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "Profile").then((newSpaceId) => {
+    if (
+      isEditable &&
+      isNil(spaceId) &&
+      !isNil(currentUserFid) &&
+      !isNil(username)
+    ) {
+      registerSpace(currentUserFid, username, "Profile").then((newSpaceId) => {
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);

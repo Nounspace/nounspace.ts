@@ -30,6 +30,7 @@ export enum AnalyticsEvent {
   LIKE = "Like",
   PLAY = "Play",
   PAUSE = "Pause",
+  SPACE_REGISTERED = "Space Registered",
 }
 
 export type AnalyticsEventProperties = {
@@ -57,6 +58,11 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.LIKE]: { username: string; castId: string };
   [AnalyticsEvent.PLAY]: { url: string | string[] };
   [AnalyticsEvent.PAUSE]: { url: string | string[] };
+  [AnalyticsEvent.SPACE_REGISTERED]: {
+    type: "user" | "token";
+    spaceId: string;
+    path: string;
+  };
 };
 
 const segment = new AnalyticsBrowser();

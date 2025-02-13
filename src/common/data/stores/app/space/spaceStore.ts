@@ -155,8 +155,8 @@ interface SpaceActions {
   ) => Promise<void> | undefined;
   registerSpaceFid: (
     fid: number,
-    name: string,
-    network?: string,
+    username: string,
+    tabName: string,
   ) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
@@ -579,10 +579,10 @@ export const createSpaceStoreFunc = (
       }, "loadSpaceInfoProfile");
     }
   },
-  registerSpaceFid: async (fid, name) => {
+  registerSpaceFid: async (fid, username, tabName) => {
     const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-      spaceName: name,
+      spaceName: tabName,
       timestamp: moment().toISOString(),
       fid,
     };
@@ -598,14 +598,18 @@ export const createSpaceStoreFunc = (
       );
       const newSpaceId = data.value!.spaceId;
       set((draft) => {
-        draft.space.editableSpaces[newSpaceId] = name;
+        draft.space.editableSpaces[newSpaceId] = tabName;
       }, "registerSpace");
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
-      // console.log("Created space", newSpaceId);
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "user",
+        spaceId: newSpaceId,
+        path: `/s/${username}/Profile`,
+      });
       return newSpaceId;
     } catch (e) {
       null;
@@ -647,6 +651,11 @@ export const createSpaceStoreFunc = (
         initialConfig,
         network,
       );
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "token",
+        spaceId: newSpaceId,
+        path: `/t/${network}/${address}/Profile`,
+      });
       return newSpaceId;
     } catch (e) {
       null;
