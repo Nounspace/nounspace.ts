@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Button } from "@/common/components/atoms/button";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import Spinner from "@/common/components/atoms/spinner";
 import {
   Tabs,
   TabsContent,
@@ -19,6 +20,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { useAppStore } from "@/common/data/stores/app";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -28,7 +30,6 @@ import {
   tabListClasses,
   tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
-import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
 import {
   analytics,
   AnalyticsEvent,
@@ -43,8 +44,6 @@ import { MdMenuBook } from "react-icons/md";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
-import { TooltipArrow } from "@radix-ui/react-tooltip";
-import Spinner from "@/common/components/atoms/spinner";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -62,9 +61,6 @@ export function ThemeSettingsEditor({
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("fonts");
-  const [isGeneratingBackground, setIsGeneratingBackground] = useState(false);
-  const [generateText, setGenerateText] = useState("Generate");
-  const timersRef = useRef<number[]>([]);
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -109,59 +105,6 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
-
-  const { user } = usePrivy();
-  const result = useBalance({
-    address: (user?.wallet?.address as Address) || zeroAddress,
-    token: SPACE_CONTRACT_ADDR,
-    chainId: base.id,
-  });
-  const spaceHoldAmount = result?.data
-    ? parseInt(formatUnits(result.data.value, result.data.decimals))
-    : 0;
-  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
-
-  const handleGenerateBackground = async () => {
-    try {
-      const response = await fetch(`/api/venice/background`, {
-        method: "POST",
-        body: JSON.stringify({ text: backgroundHTML }),
-      });
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
-      const data = await response.json();
-      themePropSetter("backgroundHTML")(data.response);
-    } catch (error) {
-      console.error("Error generating background:", error);
-    } finally {
-      timersRef.current.forEach((timer) => clearInterval(timer));
-      timersRef.current = [];
-      setGenerateText("Generate");
-      setIsGeneratingBackground(false);
-    }
-  };
-
-  function handleGenerate() {
-    if (isGeneratingBackground) return;
-    setIsGeneratingBackground(true);
-    const messages = [
-      "Analyzing…",
-      "Imagining…",
-      "Coding…",
-      "Reviewing…",
-      "Improving…",
-      // "Finalizing…",
-    ];
-    let index = 0;
-    setGenerateText(messages[index]);
-    const intervalId = window.setInterval(() => {
-      index = (index + 1) % messages.length;
-      setGenerateText(messages[index]);
-    }, 8000);
-    timersRef.current = [intervalId];
-    handleGenerateBackground();
-  }
 
   return (
     <>
@@ -348,83 +291,10 @@ export function ThemeSettingsEditor({
                 </TabsContent>
                 {/* Code */}
                 <TabsContent value="code" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">HTML/CSS and/or prompt</h4>
-                      <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
-                    </div>
-                    <HTMLInput
-                      value={backgroundHTML}
-                      onChange={themePropSetter<string>("backgroundHTML")}
-                      placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
-                    />
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger
-                          className={cn(
-                            `w-full`,
-                            userHoldEnoughSpace
-                              ? "cursor-pointer"
-                              : "cursor-not-allowed",
-                          )}
-                        >
-                          <Button
-                            onClick={handleGenerate}
-                            variant="primary"
-                            width="auto"
-                            withIcon
-                            disabled={
-                              !userHoldEnoughSpace ||
-                              isGeneratingBackground ||
-                              backgroundHTML === ""
-                            }
-                            className={"w-full"}
-                          >
-                            {isGeneratingBackground ? (
-                              <Spinner className="size-6" />
-                            ) : (
-                              <HiOutlineSparkles aria-hidden={true} />
-                            )}
-                            <span>
-                              {isGeneratingBackground
-                                ? generateText
-                                : "Generate"}
-                            </span>
-                          </Button>
-                        </TooltipTrigger>
-                        {userHoldEnoughSpace ? (
-                          backgroundHTML === "" && (
-                            <TooltipContent
-                              side="bottom"
-                              className="text-center"
-                            >
-                              <TooltipArrow />
-                              Write a prompt or paste HTML/CSS <br />
-                              to generate a custom background
-                            </TooltipContent>
-                          )
-                        ) : (
-                          <TooltipContent
-                            side="bottom"
-                            aria-disabled="true"
-                            className="bg-red-500 font-medium"
-                          >
-                            <TooltipArrow className="fill-red-500" />
-                            Hold at least 1,111{" "}
-                            <a
-                              target="_blank"
-                              rel="noreferrer"
-                              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
-                              className="font-bold underline"
-                            >
-                              $SPACE
-                            </a>{" "}
-                            to unlock
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
+                  <BackgroundGenerator
+                    backgroundHTML={backgroundHTML}
+                    onChange={themePropSetter<string>("backgroundHTML")}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -516,6 +386,139 @@ export function ThemeSettingsEditor({
     </>
   );
 }
+
+const BackgroundGenerator = ({
+  backgroundHTML,
+  onChange,
+}: {
+  backgroundHTML: string;
+  onChange: (value: string) => void;
+}) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateText, setGenerateText] = useState("Generate");
+  const [showBanner, setShowBanner] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const timersRef = useRef<number[]>([]);
+
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const { hasNogs } = useAppStore((state) => ({
+    hasNogs: state.account.hasNogs,
+  }));
+
+  const handleGenerateBackground = async () => {
+    try {
+      const response = await fetch(`/api/venice/background`, {
+        method: "POST",
+        body: JSON.stringify({ text: backgroundHTML }),
+      });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      const data = await response.json();
+      onChange(data.response);
+    } catch (error) {
+      console.error("Error generating background:", error);
+    } finally {
+      timersRef.current.forEach((timer) => clearInterval(timer));
+      timersRef.current = [];
+      setGenerateText("Generate");
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerate = () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    const messages = [
+      "Analyzing…",
+      "Imagining…",
+      "Coding…",
+      "Reviewing…",
+      "Improving…",
+    ];
+    let index = 0;
+    setGenerateText(messages[index]);
+    const intervalId = window.setInterval(() => {
+      index = (index + 1) % messages.length;
+      setGenerateText(messages[index]);
+    }, 8000);
+    timersRef.current = [intervalId];
+    handleGenerateBackground();
+  };
+
+  const handleGenerateWrapper = () => {
+    // Allow generation if user holds enough SPACE or has nOGs
+    if (!userHoldEnoughSpace && !hasNogs) {
+      setButtonDisabled(true);
+      setShowBanner(true);
+      return;
+    }
+    handleGenerate();
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-row gap-1">
+        <h4 className="text-sm">HTML/CSS and/or prompt</h4>
+        <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
+      </div>
+      <HTMLInput
+        value={backgroundHTML}
+        onChange={onChange}
+        placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
+      />
+      <Button
+        onClick={handleGenerateWrapper}
+        variant="primary"
+        width="auto"
+        withIcon
+        disabled={buttonDisabled || isGenerating || backgroundHTML === ""}
+        className="w-full"
+      >
+        {isGenerating ? (
+          <Spinner className="size-6" />
+        ) : (
+          <HiOutlineSparkles aria-hidden={true} />
+        )}
+        <span>{isGenerating ? generateText : "Generate"}</span>
+      </Button>
+      {showBanner && (
+        <div className="flex gap-1 items-center border-2 border-red-600 text-red-600 bg-red-100 rounded-lg p-2 text-sm font-medium">
+          <p>
+            Hold at least 1,111{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+              className="font-bold underline"
+            >
+              $SPACE
+            </a>{" "}
+            or 1{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
+              className="font-bold underline"
+            >
+              nOGs
+            </a>{" "}
+            to unlock generation
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ThemeSettingsTooltip = ({ text }: { text: string }) => {
   return (
