@@ -44,6 +44,7 @@ import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
 import { TooltipArrow } from "@radix-ui/react-tooltip";
+import Spinner from "@/common/components/atoms/spinner";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -150,7 +151,7 @@ export function ThemeSettingsEditor({
       "Coding…",
       "Reviewing…",
       "Improving…",
-      "Finalizing…",
+      // "Finalizing…",
     ];
     let index = 0;
     setGenerateText(messages[index]);
@@ -380,7 +381,7 @@ export function ThemeSettingsEditor({
                             className={"w-full"}
                           >
                             {isGeneratingBackground ? (
-                              <AnimatedSpinner />
+                              <Spinner className="size-6" />
                             ) : (
                               <HiOutlineSparkles aria-hidden={true} />
                             )}
@@ -513,12 +514,6 @@ export function ThemeSettingsEditor({
         </div>
       </div>
     </>
-  );
-}
-
-function AnimatedSpinner() {
-  return (
-    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-white"></div>
   );
 }
 
