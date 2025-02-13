@@ -1,42 +1,49 @@
-import React, { useState, useRef } from "react";
-import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
-import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
-import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import React, { useRef, useState } from "react";
+import { Button } from "@/common/components/atoms/button";
+import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/common/components/atoms/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/common/components/atoms/tooltip";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
-import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
+import { ThemeCard } from "@/common/lib/theme/ThemeCard";
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
+import {
+  tabContentClasses,
+  tabListClasses,
+  tabTriggerClasses,
+} from "@/common/lib/theme/helpers";
+import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import { Button } from "@/common/components/atoms/button";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/common/components/atoms/tabs";
-import {
-  tabListClasses,
-  tabTriggerClasses,
-  tabContentClasses,
-} from "@/common/lib/theme/helpers";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/common/components/atoms/tooltip";
-import { FaInfoCircle } from "react-icons/fa";
+import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
-import { ThemeCard } from "@/common/lib/theme/ThemeCard";
-import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
-import { MdMenuBook } from "react-icons/md";
-import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { usePrivy } from "@privy-io/react-auth";
+import { FaInfoCircle } from "react-icons/fa";
+import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { HiOutlineSparkles } from "react-icons/hi2";
+import { MdMenuBook } from "react-icons/md";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { base } from "viem/chains";
+import { useBalance } from "wagmi";
+import { TooltipArrow } from "@radix-ui/react-tooltip";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -102,9 +109,19 @@ export function ThemeSettingsEditor({
     setActiveTheme(selectedTheme.id);
   };
 
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+
   const handleGenerateBackground = async () => {
     try {
-      console.log("Generating background...", backgroundHTML);
       const response = await fetch(`/api/venice/background`, {
         method: "POST",
         body: JSON.stringify({ text: backgroundHTML }),
@@ -332,34 +349,80 @@ export function ThemeSettingsEditor({
                 <TabsContent value="code" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Custom styles</h4>
-                      <ThemeSettingsTooltip text="Add HTML/CSS as a single file to customize your background. Pro tip: ask AI for help coding the background of your dreams" />
+                      <h4 className="text-sm">HTML/CSS and/or prompt</h4>
+                      <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
                     </div>
                     <HTMLInput
                       value={backgroundHTML}
                       onChange={themePropSetter<string>("backgroundHTML")}
+                      placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
                     />
-                    <Button
-                      onClick={handleGenerate}
-                      variant="primary"
-                      width="auto"
-                      withIcon
-                      disabled={isGeneratingBackground || backgroundHTML === ""}
-                      style={{
-                        backgroundColor: isGeneratingBackground
-                          ? "#91B4FF"
-                          : undefined,
-                      }}
-                    >
-                      {isGeneratingBackground ? (
-                        <AnimatedSpinner />
-                      ) : (
-                        <HiOutlineSparkles aria-hidden={true} />
-                      )}
-                      <span>
-                        {isGeneratingBackground ? generateText : "Generate"}
-                      </span>
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger
+                          className={cn(
+                            `w-full`,
+                            userHoldEnoughSpace
+                              ? "cursor-pointer"
+                              : "cursor-not-allowed",
+                          )}
+                        >
+                          <Button
+                            onClick={handleGenerate}
+                            variant="primary"
+                            width="auto"
+                            withIcon
+                            disabled={
+                              !userHoldEnoughSpace ||
+                              isGeneratingBackground ||
+                              backgroundHTML === ""
+                            }
+                            className={"w-full"}
+                          >
+                            {isGeneratingBackground ? (
+                              <AnimatedSpinner />
+                            ) : (
+                              <HiOutlineSparkles aria-hidden={true} />
+                            )}
+                            <span>
+                              {isGeneratingBackground
+                                ? generateText
+                                : "Generate"}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        {userHoldEnoughSpace ? (
+                          backgroundHTML === "" && (
+                            <TooltipContent
+                              side="bottom"
+                              className="text-center"
+                            >
+                              <TooltipArrow />
+                              Write a prompt or paste HTML/CSS <br />
+                              to generate a custom background
+                            </TooltipContent>
+                          )
+                        ) : (
+                          <TooltipContent
+                            side="bottom"
+                            aria-disabled="true"
+                            className="bg-red-500 font-medium"
+                          >
+                            <TooltipArrow className="fill-red-500" />
+                            Hold at least 1,111{" "}
+                            <a
+                              target="_blank"
+                              rel="noreferrer"
+                              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+                              className="font-bold underline"
+                            >
+                              $SPACE
+                            </a>{" "}
+                            to unlock
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </TabsContent>
               </Tabs>
