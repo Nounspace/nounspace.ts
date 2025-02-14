@@ -1,6 +1,6 @@
 const VENICE_API_KEY = process.env.VENICE_API_KEY;
 
-export const maxDuration = 180;
+export const maxDuration = 240;
 
 export async function POST(request: Request) {
   if (!VENICE_API_KEY) {
