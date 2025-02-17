@@ -1,15 +1,15 @@
+'use client';
 import React, { useEffect, useState } from "react";
-import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
-import { useRouter } from "next/router";
 import { isNull, isString } from "lodash";
 import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { useParams, useRouter } from 'next/navigation';
 
-const Homebase: NextPageWithLayout = () => {
+const Homebase = () => {
   const {
     tabConfigs,
     loadTab,
@@ -51,19 +51,20 @@ const Homebase: NextPageWithLayout = () => {
   }));
 
   const router = useRouter();
-  const queryTabName = router.query.tabname;
+  const params = useParams();
+  const queryTabName = params?.tabname;
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
   const [tabName, setTabName] = useState<string>("");
 
   // Monitor router changes and update tab name accordingly
   useEffect(() => {
-    if (router.isReady && isString(router.query.tabname)) {
-      const queryTabName = router.query.tabname as string;
+    if (isString(params?.tabname)) {
+      const queryTabName = params?.tabname as string;
       setTabName(queryTabName);
       setCurrentTabName(queryTabName);
     }
-  }, [router.isReady, router.query]);
+  }, [params]);
 
   useEffect(() => {
     if (isLoggedIn && tabName) {

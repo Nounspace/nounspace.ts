@@ -1,5 +1,5 @@
+'use client';
 import React, { useEffect } from "react";
-import { NextPageWithLayout } from "../_app";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
@@ -8,10 +8,10 @@ import { FeedType } from "@neynar/nodejs-sdk";
 import { noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import TabBar from "@/common/components/organisms/TabBar";
-import { useRouter } from "next/router";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { useRouter } from 'next/navigation';
 
-const Homebase: NextPageWithLayout = () => {
+const Homebase = () => {
   const router = useRouter();
   const {
     homebaseConfig,
@@ -55,8 +55,10 @@ const Homebase: NextPageWithLayout = () => {
   const isInitializing = getIsInitializing();
   const currentFid = useCurrentFid();
 
-  useEffect(() => setCurrentSpaceId("homebase"), []);
-  useEffect(() => setCurrentTabName("Feed"), []);
+  useEffect(() => {
+    setCurrentSpaceId("homebase")
+    setCurrentTabName("Feed")
+  });
   useEffect(() => {
     if (isLoggedIn) {
       loadConfig();
