@@ -1,15 +1,16 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { url } = req.query;
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const url = searchParams.get('url');
 
-    if (!url || typeof url !== 'string') {
-        return res.status(400).json({ error: 'Invalid URL' });
+    if (!url) {
+        return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
     const apiKey = process.env.NEXT_PUBLIC_IFRAMELY_API_KEY;
     if (!apiKey) {
-        return res.status(500).json({ error: 'Iframely API key is missing' });
+        return NextResponse.json({ error: 'Iframely API key is missing' }, { status: 500 });
     }
 
     try {
@@ -19,11 +20,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const data = await response.json();
 
         if (data.html) {
-            res.status(200).json({ html: data.html });
+            return NextResponse.json({ html: data.html });
         } else {
-            res.status(400).json({ error: 'Unable to fetch embed HTML' });
+            return NextResponse.json({ error: 'Unable to fetch embed HTML' }, { status: 400 });
         }
     } catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
