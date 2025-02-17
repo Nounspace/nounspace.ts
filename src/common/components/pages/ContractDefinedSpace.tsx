@@ -33,7 +33,7 @@ const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
   return (
     <>
       {isMobile ? (
-        <MobileContractDefinedSpace contractAddress={props.contractAddress} />
+        <MobileContractDefinedSpace {...props} />
       ) : (
         <div className="w-full">
           <DynamicDesktopContractDefinedSpace {...props} />
