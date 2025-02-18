@@ -82,7 +82,7 @@ const Iframely: React.FC<FidgetArgs<IframelyFidgetSettings>> = ({
         return (
             <ErrorWrapper
                 icon="🔒"
-                message={`This URL cannot be displayed due to security restrictions (${url}).`}
+                message={`Loading (${url}).`}
             />
         );
     }
@@ -91,27 +91,8 @@ const Iframely: React.FC<FidgetArgs<IframelyFidgetSettings>> = ({
 
     return (
         <div
-            style={{
-                overflow: "hidden",
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-            }}
-        >
-            <div
-                style={{
-                    width: `${scaleValue * 100}%`,
-                    height: `${scaleValue * 100}%`,
-                    overflow: "hidden",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-                dangerouslySetInnerHTML={{ __html: embedHtml }}
-            />
-        </div>
+            dangerouslySetInnerHTML={{ __html: embedHtml }}
+        />
     );
 };
 
