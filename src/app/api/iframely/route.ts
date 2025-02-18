@@ -14,8 +14,9 @@ export async function GET(req: NextRequest) {
     }
 
     try {
+        console.log(`Fetching embed HTML for ${url}`, encodeURIComponent(url));
         const response = await fetch(
-            `https://iframe.ly/api/iframely?url=${encodeURIComponent(url)}&api_key=${apiKey}&omit_css=true`
+            `https://iframe.ly/api/iframely?url=${encodeURIComponent(url)}&api_key=${apiKey}`
         );
         const data = await response.json();
 
