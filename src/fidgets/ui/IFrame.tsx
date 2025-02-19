@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -11,6 +11,7 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
+
 export type IFrameFidgetSettings = {
   url: string;
   size: number;
@@ -52,9 +53,72 @@ const frameConfig: FidgetProperties = {
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
+  const [useFallback, setUseFallback] = useState(false);
+  const [embedHtml, setEmbedHtml] = useState<string | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
+
+  console.log("Initial URL:", url);
+  console.log("Sanitized URL:", sanitizedUrl);
+  console.log("Transformed URL:", transformedUrl);
+  console.log("Use Fallback:", useFallback);
+
+  // Fetch Iframely response if fallback is triggered
+  useEffect(() => {
+    if (useFallback && isValid) {
+      console.log("Fetching Iframely response for URL:", url);
+      fetch(`/api/iframely?url=${encodeURIComponent(url)}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.html) {
+            console.log("Iframely response received:", data.html);
+            setEmbedHtml(data.html);
+          } else {
+            console.log("Iframely response did not contain HTML.");
+            setEmbedHtml(null);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching Iframely response:", error);
+          setEmbedHtml(null);
+        });
+    }
+  }, [useFallback]);
+
+
+
+
+  const handleIframeError = () => {
+    console.warn("Iframe refused connection. Switching to Iframely.");
+    setUseFallback(true);
+  };
+
+  const handleIframeBlocked = () => {
+    console.warn("Iframe blocked by 'X-Frame-Options'. Switching to Iframely.");
+    setUseFallback(true);
+  };
+
+  useEffect(() => {
+    if (iframeRef.current) {
+      const iframe = iframeRef.current;
+      const checkIframeBlocked = () => {
+        try {
+          if (iframe.contentWindow && iframe.contentWindow.location.href === 'about:blank') {
+            handleIframeBlocked();
+          }
+        } catch (e) {
+          handleIframeBlocked();
+        }
+      };
+      iframe.addEventListener('load', checkIframeBlocked);
+      return () => {
+        iframe.removeEventListener('load', checkIframeBlocked);
+      };
+    }
+  }, [iframeRef]);
+
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
   }
@@ -63,7 +127,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
 
-  if (!transformedUrl) {
+  if (!transformedUrl && !useFallback) {
     return (
       <ErrorWrapper
         icon="🔒"
@@ -76,18 +140,29 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   return (
     <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
-      <iframe
-        src={transformedUrl}
-        title="IFrame Fidget"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-        }}
-        className="size-full"
-      />
+      {!useFallback ? (
+        <iframe
+          ref={iframeRef}
+          src={transformedUrl}
+          title="IFrame Fidget"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            transform: `scale(${scaleValue})`,
+            transformOrigin: "0 0",
+            width: `${100 / scaleValue}%`,
+            height: `${100 / scaleValue}%`,
+          }}
+          className="size-full"
+          onError={handleIframeError} // Detects refusal to embed
+        />
+      ) : embedHtml ? (
+        <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
+      ) : (
+        <ErrorWrapper
+          icon="🔒"
+          message={`This URL cannot be displayed due to security restrictions (${url}).`}
+        />
+      )}
     </div>
   );
 };
