@@ -17,7 +17,7 @@ export type IframelyFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const frameConfig: FidgetProperties = {
-    fidgetName: "Iframely Embed",
+    fidgetName: "Socials Embed",
     icon: 0x1f310, // 🌐
     fields: [
         {
