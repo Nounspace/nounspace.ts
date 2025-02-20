@@ -6,11 +6,11 @@ import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import TabBar from "@/common/components/organisms/TabBar";  
 import {
-  WELCOME_TAB_CONFIG,
   FIDGETS_TAB_CONFIG,
   PRESS_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
-} from "@/constants/initialHomebaseTabsConfig";
+  WELCOME_TAB_CONFIG,
+} from "@/constants/homePageTabsConfig";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
@@ -95,7 +95,6 @@ const Home = () => {
           tabBar: tabBar,
         };
 
-  // Remove the key prop since we don't need to force re-render
   return <SpacePage {...args} />;
 };
 
