@@ -4,7 +4,7 @@ const layoutIDTab1 = "tab1-layout";
 const layoutIDTab2 = "tab2-layout";
 const layoutIDPressTab = "press-tab-layout";
 
-export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
+export const WELCOME_TAB_CONFIG: SpaceConfig = {
   layoutID: layoutIDTab1,
   layoutDetails: {
     layoutConfig: {
@@ -385,7 +385,7 @@ export const TAB1_HOMEBASE_CONFIG: SpaceConfig = {
   fidgetTrayContents: []
 };
 
-export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
+export const FIDGETS_TAB_CONFIG: SpaceConfig = {
   layoutID: layoutIDTab2,
   layoutDetails: {
     layoutConfig: {
@@ -745,7 +745,7 @@ export const FIDGETS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
   fidgetTrayContents: [],
 };
 
-export const PRESS_TAB_HOME_CONFIG: SpaceConfig = {
+export const PRESS_TAB_CONFIG: SpaceConfig = {
   layoutID: layoutIDPressTab,
   layoutDetails: {
     layoutConfig: {
@@ -1050,7 +1050,7 @@ export const PRESS_TAB_HOME_CONFIG: SpaceConfig = {
   fidgetTrayContents: []
 };
 
-export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
+export const NOUNS_TAB_CONFIG: SpaceConfig = {
   layoutID: "nouns-tab-layout",
   layoutDetails: {
     layoutConfig: {
@@ -1269,7 +1269,8 @@ export const NOUNS_TAB_HOMEBASE_CONFIG: SpaceConfig = {
 
 // Export all configurations
 export const HOMEBASE_TABS_CONFIG = {
-  TAB1_HOMEBASE_CONFIG,
-  FIDGETS_TAB_HOMEBASE_CONFIG,
-  NOUNS_TAB_HOMEBASE_CONFIG,
+  WELCOME_TAB_CONFIG,
+  FIDGETS_TAB_CONFIG,
+  PRESS_TAB_CONFIG,
+  NOUNS_TAB_CONFIG,
 };
