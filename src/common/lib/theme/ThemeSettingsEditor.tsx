@@ -471,7 +471,7 @@ const BackgroundGenerator = ({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex flex-row gap-1">
-        <h4 className="text-sm">HTML/CSS and/or prompt</h4>
+        <h4 className="text-sm">Prompt and/or HTML/CSS</h4>
         <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
       </div>
       <HTMLInput
