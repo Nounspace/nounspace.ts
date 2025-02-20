@@ -48,7 +48,7 @@ const nextConfig = {
     return [
       {
         source: "/",
-        destination: "/home",
+        destination: "/home/Welcome",
         permanent: true,
       },
       {
@@ -64,6 +64,15 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/home",
+        destination: "/home/Welcome", 
+      },
+    ];
+  },
+  
   // async headers() {
   //   return [
   //     {
