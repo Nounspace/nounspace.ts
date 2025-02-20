@@ -2,9 +2,15 @@
 
 import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import { useAppStore } from "@/common/data/stores/app";
+<<<<<<< HEAD
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import { useRouter, useParams } from "next/navigation";
 import { isNil } from "lodash";
+=======
+import SpacePage from "@/common/components/pages/SpacePage";
+import { isNull, isString } from "lodash";
+import { SpaceConfigSaveDetails } from "@/common/components/templates/Space";
+>>>>>>> 8af8334a (removing mentions to not logged in homebase)
 import TabBar from "@/common/components/organisms/TabBar";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
