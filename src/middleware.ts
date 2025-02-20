@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   if (device.type === "mobile") {
+
     if (path === "/s/spacetoken") {
       return NextResponse.redirect(new URL("https://space.nounspace.com"));
     }
