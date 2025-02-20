@@ -60,23 +60,15 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
 
-  console.log("Initial URL:", url);
-  console.log("Sanitized URL:", sanitizedUrl);
-  console.log("Transformed URL:", transformedUrl);
-  console.log("Use Fallback:", useFallback);
-
   // Fetch Iframely response if fallback is triggered
   useEffect(() => {
     if (useFallback && isValid) {
-      console.log("Fetching Iframely response for URL:", url);
       fetch(`/api/iframely?url=${encodeURIComponent(url)}`)
         .then((response) => response.json())
         .then((data) => {
           if (data.html) {
-            console.log("Iframely response received:", data.html);
             setEmbedHtml(data.html);
           } else {
-            console.log("Iframely response did not contain HTML.");
             setEmbedHtml(null);
           }
         })
