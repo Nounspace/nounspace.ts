@@ -39,11 +39,11 @@ import { THEMES } from "@/constants/themes";
 import { usePrivy } from "@privy-io/react-auth";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
-import { HiOutlineSparkles } from "react-icons/hi2";
 import { MdMenuBook } from "react-icons/md";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
+import { SparklesIcon } from "@heroicons/react/24/solid";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -315,14 +315,15 @@ export function ThemeSettingsEditor({
         <div className="flex flex-col gap-2">
           {tabValue === "fonts" && (
             <div
-              className="flex gap-1 items-center border-2 border-[#5865f2] text-[#5865f2] bg-[#D0D9F1] rounded-lg p-2 text-sm font-medium cursor-pointer"
+              className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
               onClick={() => setTabValue("code")}
             >
               <p>
                 <span className="font-bold">New!</span> Create a custom
                 background with a prompt.
               </p>
-              <HiOutlineSparkles size={32} />
+              {/* <HiOutlineSparkles size={32} /> */}
+              <SparklesIcon className="size-8" />
             </div>
           )}
 
@@ -490,7 +491,7 @@ const BackgroundGenerator = ({
         {isGenerating ? (
           <Spinner className="size-6" />
         ) : (
-          <HiOutlineSparkles aria-hidden={true} />
+          <SparklesIcon className="size-8" />
         )}
         <span>{isGenerating ? generateText : "Generate"}</span>
       </Button>
