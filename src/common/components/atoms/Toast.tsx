@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import * as Toast from "@radix-ui/react-toast";
 import { FaTimes } from "react-icons/fa";
