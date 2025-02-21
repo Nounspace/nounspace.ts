@@ -27,7 +27,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
             <p className="text-blue-600 ml-2">{message}</p>
           </div>
           <Toast.Action altText="Close" asChild>
-            <button onClick={() => hideToast()} className="bg-transparent">
+            <button onClick={() => hideToast()} className="bg-transparent ml-2">
               <FaTimes className="text-blue-600" />
             </button>
           </Toast.Action>

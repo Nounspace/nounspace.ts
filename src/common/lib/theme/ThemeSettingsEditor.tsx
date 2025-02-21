@@ -433,6 +433,9 @@ const BackgroundGenerator = ({
       onChange(data.response);
       showToast(
         "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
+        10000,
+        "background-generated",
+        true,
       );
     } catch (error) {
       console.error("Error generating background:", error);
@@ -486,12 +489,7 @@ const BackgroundGenerator = ({
         placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
       />
       <Button
-        // onClick={handleGenerateWrapper}
-        onClick={() =>
-          showToast(
-            "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
-          )
-        }
+        onClick={handleGenerateWrapper}
         variant="primary"
         width="auto"
         withIcon
