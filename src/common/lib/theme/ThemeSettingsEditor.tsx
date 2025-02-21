@@ -44,6 +44,7 @@ import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
 import { SparklesIcon } from "@heroicons/react/24/solid";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -400,6 +401,7 @@ const BackgroundGenerator = ({
   const [showBanner, setShowBanner] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const timersRef = useRef<number[]>([]);
+  const { showToast } = useToastStore();
 
   const { user } = usePrivy();
   const result = useBalance({
@@ -429,6 +431,9 @@ const BackgroundGenerator = ({
       }
       const data = await response.json();
       onChange(data.response);
+      showToast(
+        "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
+      );
     } catch (error) {
       console.error("Error generating background:", error);
     } finally {
@@ -481,7 +486,12 @@ const BackgroundGenerator = ({
         placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
       />
       <Button
-        onClick={handleGenerateWrapper}
+        // onClick={handleGenerateWrapper}
+        onClick={() =>
+          showToast(
+            "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
+          )
+        }
         variant="primary"
         width="auto"
         withIcon
@@ -491,7 +501,7 @@ const BackgroundGenerator = ({
         {isGenerating ? (
           <Spinner className="size-6" />
         ) : (
-          <SparklesIcon className="size-8" />
+          <SparklesIcon className="size-5" />
         )}
         <span>{isGenerating ? generateText : "Generate"}</span>
       </Button>
