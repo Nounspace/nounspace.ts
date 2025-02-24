@@ -66,16 +66,15 @@ const HomebaseContent = () => {
 
   async function loadTabConfig() {
     setLoading(true);
-    console.log("Loading tab config");
     await loadTabNames();
-    console.log("Tab names loaded");
+
     if (tabOrdering.local.length === 0) {
       await loadTabOrder();
     }
-    console.log("Tab order loaded");
+
     await loadTab(tabName);
-    console.log("Specific tab loaded");
     setLoading(false);
+    
     await loadRemainingTabs();
   }
 
