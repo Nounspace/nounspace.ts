@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
