@@ -10,7 +10,7 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
-const Homebase = () => {
+const HomebaseTab = () => {
   return (
     <Suspense fallback={<div>Loading homebase tab...</div>}>
       <HomebaseContent />
@@ -74,7 +74,7 @@ const HomebaseContent = () => {
 
     await loadTab(tabName);
     setLoading(false);
-    
+
     await loadRemainingTabs();
   }
 
@@ -197,4 +197,4 @@ const HomebaseContent = () => {
   return <SpacePage key={tabName} {...args} />;
 };
 
-export default Homebase;
+export default HomebaseTab;
