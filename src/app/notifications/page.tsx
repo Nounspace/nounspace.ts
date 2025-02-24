@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
@@ -431,27 +429,28 @@ export default function NotificationsPage() {
         </div>
         <TabsContent value={tab} className="mt-0">
           <div className="">
-            {data?.pages?.map((page, pageIndex) => (
-              <React.Fragment key={pageIndex}>
-                {filterByType(page?.notifications ?? []).map(
-                  (notification, pageItemIndex) => {
-                    const isUnseen = isNotificationUnseen(
-                      notification,
-                      delayedLastSeenNotificationDate,
-                    );
-
-                    return (
-                      <NotificationRow
-                        notification={notification}
-                        onSelect={onSelectNotification}
-                        isUnseen={isUnseen}
-                        key={`${pageIndex}-${pageItemIndex}`}
-                      />
-                    );
-                  },
-                )}
+            <Suspense fallback={<div>Loading...</div>}>
+              {data?.pages?.map((page, pageIndex) => (
+                <React.Fragment key={pageIndex}>
+                  {filterByType(page?.notifications ?? []).map(
+                    (notification, pageItemIndex) => {
+                      const isUnseen = isNotificationUnseen(
+                        notification,
+                        delayedLastSeenNotificationDate,
+                      );
+                      return (
+                        <NotificationRow
+                          notification={notification}
+                          onSelect={onSelectNotification}
+                          isUnseen={isUnseen}
+                          key={`${pageIndex}-${pageItemIndex}`}
+                        />
+                      );
+                    },
+                  )}
               </React.Fragment>
             ))}
+            </Suspense>
           </div>
           {error && (
             <div className="p-4">
