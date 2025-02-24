@@ -1,6 +1,4 @@
-"use client";
-
-import React from "react";
+import React, { Suspense } from "react";
 import {
   Tabs,
   TabsContent,
@@ -80,10 +78,12 @@ export default async function Explore() {
                 title="Explore Featured Spaces"
                 image="/images/rainforest.png"
               />
-              <CategoriesGrid
-                categories={categories}
-                groupedPosts={groupedPosts}
-              />
+              <Suspense fallback={<div>Loading...</div>}>
+                <CategoriesGrid
+                  categories={categories}
+                  groupedPosts={groupedPosts}
+                />
+              </Suspense>
             </div>
           </div>
         </TabsContent>
