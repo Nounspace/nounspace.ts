@@ -55,9 +55,7 @@ export default function RootLayout({
       <body>
         <SpeedInsights />
         <Providers>
-          <Suspense>
-            {sidebarLayout(children)}
-          </Suspense>
+          {sidebarLayout(children)}
         </Providers>
       </body>
     </html>
@@ -72,7 +70,9 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          {page}
+          <Suspense>
+            {page}
+          </Suspense>
         </div>
       </div>
     </>
