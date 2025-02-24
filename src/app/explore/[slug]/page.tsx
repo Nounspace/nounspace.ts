@@ -1,5 +1,3 @@
-"use client";
-
 import React, { Suspense } from "react";
 import { remark } from "remark";
 import html from "remark-html";
