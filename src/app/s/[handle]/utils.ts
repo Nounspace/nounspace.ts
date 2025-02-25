@@ -31,10 +31,10 @@ export const getUserMetadata = cache(
 
 export const getTabList = cache(async (fid: number): Promise<Tab[]> => {
   try {
-    const { data } = await supabaseClient
-      .from("spaceRegistrations")
-      .select("spaceId, spaceName")
-      .eq("fid", fid);
+    const { data, error } = await supabaseClient
+    .from("spaceRegistrations")
+    .select("spaceId")
+    .eq("fid", fid);
 
     if (isEmpty(data)) {
       return [];
