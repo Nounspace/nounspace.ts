@@ -53,24 +53,15 @@ export default async function Explore() {
 
   return (
     <div className="min-h-screen max-w-screen max-h-screen h-screen w-screen p-5 overflow-y-scroll">
-      <Tabs defaultValue="tokens" className="max-h-full">
+      <Tabs defaultValue="spaces" className="max-h-full">
         <TabsList className={tabListClasses}>
-          <TabsTrigger value="tokens" className={tabTriggerClasses}>
-            Tokens
-          </TabsTrigger>
           <TabsTrigger value="spaces" className={tabTriggerClasses}>
             Spaces
           </TabsTrigger>
+          <TabsTrigger value="tokens" className={tabTriggerClasses}>
+            Tokens
+          </TabsTrigger>
         </TabsList>
-        <TabsContent value="tokens" className={tabContentClasses}>
-          <div className="transition-all duration-100 ease-out max-h-full overflow-y-scroll grid grid-rows-[auto_1fr]">
-            <ExploreHeader
-              title="Explore Clanker Tokens"
-              image="/images/clanker_galaxy.png"
-            />
-            <TokensGrid tokens={tokens} />
-          </div>
-        </TabsContent>
         <TabsContent value="spaces" className={tabContentClasses}>
           <div className="flex w-full h-full">
             <div className="w-full transition-all duration-100 ease-out h-full grid grid-rows-[auto_1fr]">
@@ -85,6 +76,15 @@ export default async function Explore() {
                 />
               </Suspense>
             </div>
+          </div>
+        </TabsContent>
+        <TabsContent value="tokens" className={tabContentClasses}>
+          <div className="transition-all duration-100 ease-out max-h-full overflow-y-scroll grid grid-rows-[auto_1fr]">
+            <ExploreHeader
+              title="Explore Clanker Tokens"
+              image="/images/clanker_galaxy.png"
+            />
+            <TokensGrid tokens={tokens} />
           </div>
         </TabsContent>
       </Tabs>
