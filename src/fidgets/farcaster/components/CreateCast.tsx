@@ -41,6 +41,7 @@ import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
+import { XCircle } from "lucide-react";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -95,7 +96,7 @@ export type ModProtocolCastAddBody = Exclude<
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -377,9 +378,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here
@@ -477,6 +478,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
+        <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2 mb-1">
+          <p>
+            New! Click the sparkles to enhance a draft cast or generate one from
+            scratch.
+          </p>
+          <XCircle size={14} />
+        </div>
+
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
             <div className="opacity-80">
@@ -511,10 +520,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             disabled={isPublishing}
             onClick={() => handleEnhanceCast(text)}
           >
-            {isEnhancing ?
-              <Spinner
-                style={{ width: "30px", height: "30px" }}
-              /> : <HiOutlineSparkles size={20} />}
+            {isEnhancing ? (
+              <Spinner style={{ width: "30px", height: "30px" }} />
+            ) : (
+              <HiOutlineSparkles size={20} />
+            )}
           </Button>
 
           <Button
