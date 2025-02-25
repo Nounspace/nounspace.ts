@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage from "@/common/components/pages/SpacePage";
@@ -10,6 +10,14 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { useParams, useRouter } from 'next/navigation';
 
 const Homebase = () => {
+  return (
+    <Suspense fallback={<div>Loading homebase tab...</div>}>
+      <HomebaseContent />
+    </Suspense>
+  );
+};
+
+const HomebaseContent = () => {
   const {
     tabConfigs,
     loadTab,
@@ -172,7 +180,7 @@ const Homebase = () => {
           tabBar: tabBar,
         };
 
-  return <SpacePage {...args} />;
+  return <SpacePage key={tabName} {...args} />;
 };
 
 export default Homebase;

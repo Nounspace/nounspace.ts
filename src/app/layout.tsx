@@ -70,7 +70,7 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          <Suspense>
+          <Suspense fallback={<div className="flex items-center justify-center w-full h-full">Loading...</div>}>
             {page}
           </Suspense>
         </div>

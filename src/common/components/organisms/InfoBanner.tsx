@@ -7,8 +7,17 @@ import { useAppStore } from "@/common/data/stores/app";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
+import { Suspense } from "react";
 
 export default function InfoToast() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InfoToastContent />
+    </Suspense>
+  );
+}
+
+function InfoToastContent() {
   const [isDisplayed, setIsDisplayed] = useState(false);
   const [message, setMessage] = useState("");
   const [duration, setDuration] = useState(10000);

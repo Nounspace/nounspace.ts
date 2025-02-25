@@ -1,6 +1,6 @@
 "use client";
 import { indexOf, isNil, mapValues, noop, first } from "lodash";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
@@ -15,6 +15,26 @@ import { useRouter } from "next/navigation";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export default function UserDefinedSpace({
+  spaceId: providedSpaceId,
+  tabName: providedTabName,
+  fid,
+}: {
+  spaceId: string | null;
+  tabName: string;
+  fid: number;
+}) {
+  return (
+    <Suspense fallback={<div>Loading space...</div>}>
+      <UserDefinedSpaceContent 
+        spaceId={providedSpaceId}
+        tabName={providedTabName}
+        fid={fid}
+      />
+    </Suspense>
+  );
+}
+
+function UserDefinedSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   fid,

@@ -320,6 +320,14 @@ const isNotificationUnseen = (
 };
 
 export default function NotificationsPage() {
+  return (
+    <Suspense fallback={<div>Loading notifications...</div>}>
+      <NotificationsPageContent />
+    </Suspense>
+  );
+}
+
+function NotificationsPageContent() {
   const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL);
   const fid = useCurrentFid();
   const identityPublicKey = useCurrentSpaceIdentityPublicKey();
