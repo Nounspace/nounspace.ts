@@ -18,7 +18,7 @@ const BrandHeader = () => {
       <TooltipProvider>
         <Tooltip>
           <Link
-            href="/home/Nouns"
+            href="/home/Welcome"
             className="flex items-center ps-2.5"
             rel="noopener noreferrer"
           >
