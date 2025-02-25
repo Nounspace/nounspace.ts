@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
@@ -89,6 +89,16 @@ export const analytics = {
 };
 
 export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  return (
+    <Suspense fallback={null}>
+      <AnalyticsProviderContent>{children}</AnalyticsProviderContent>
+    </Suspense>
+  );
+};
+
+const AnalyticsProviderContent: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const fid = useCurrentFid();
