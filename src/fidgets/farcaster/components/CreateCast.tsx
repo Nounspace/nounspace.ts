@@ -42,6 +42,7 @@ import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
 import { XCircle } from "lucide-react";
+import { useBannerStore } from "@/stores/bannerStore";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -94,6 +95,8 @@ export type ModProtocolCastAddBody = Exclude<
   type: CastType;
 };
 
+const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
+
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
   afterSubmit = () => {},
@@ -116,6 +119,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const { isBannerClosed, closeBanner } = useBannerStore();
+  const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
+
+  const handleCloseBanner = () => {
+    closeBanner(SPARKLES_BANNER_KEY);
+  };
 
   useEffect(() => {
     const fetchInitialChannels = async () => {
@@ -478,13 +487,18 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2 mb-1">
-          <p>
-            New! Click the sparkles to enhance a draft cast or generate one from
-            scratch.
-          </p>
-          <XCircle size={14} />
-        </div>
+        {/* Sparkles Banner */}
+        {!sparklesBannerClosed && (
+          <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2 mb-1">
+            <p>
+              New! Click the sparkles to enhance a draft cast or generate one
+              from scratch.
+            </p>
+            <button onClick={handleCloseBanner}>
+              <XCircle size={14} />
+            </button>
+          </div>
+        )}
 
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
