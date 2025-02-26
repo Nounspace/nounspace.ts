@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -53,63 +53,49 @@ const frameConfig: FidgetProperties = {
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
-  const [useFallback, setUseFallback] = useState(false);
-  const [embedHtml, setEmbedHtml] = useState<string | null>(null);
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [embedInfo, setEmbedInfo] = useState<{
+    directEmbed: boolean;
+    url?: string;
+    iframelyHtml?: string | null;
+  } | null>(null);
+
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
-
-  // Fetch Iframely response if fallback is triggered
-  useEffect(() => {
-    if (useFallback && isValid) {
-      fetch(`/api/iframely?url=${encodeURIComponent(url)}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.html) {
-            setEmbedHtml(data.html);
-          } else {
-            setEmbedHtml(null);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching Iframely response:", error);
-          setEmbedHtml(null);
-        });
-    }
-  }, [useFallback]);
-
-
-
-
-  const handleIframeError = () => {
-    console.warn("Iframe refused connection. Switching to Iframely.");
-    setUseFallback(true);
-  };
-
-  const handleIframeBlocked = () => {
-    console.warn("Iframe blocked by 'X-Frame-Options'. Switching to Iframely.");
-    setUseFallback(true);
-  };
+  const scaleValue = size;
 
   useEffect(() => {
-    if (iframeRef.current) {
-      const iframe = iframeRef.current;
-      const checkIframeBlocked = () => {
-        try {
-          if (iframe.contentWindow && iframe.contentWindow.location.href === 'about:blank') {
-            handleIframeBlocked();
-          }
-        } catch (e) {
-          handleIframeBlocked();
+    async function checkEmbedInfo() {
+      if (!isValid || !url) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `/api/iframely?url=${encodeURIComponent(url)}`,
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Failed to get embed information",
+          );
         }
-      };
-      iframe.addEventListener('load', checkIframeBlocked);
-      return () => {
-        iframe.removeEventListener('load', checkIframeBlocked);
-      };
+
+        const data = await response.json();
+        setEmbedInfo(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        console.error("Error fetching embed info:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [iframeRef]);
+
+    checkEmbedInfo();
+  }, [url, isValid]);
 
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
@@ -119,22 +105,22 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
 
-  if (!transformedUrl && !useFallback) {
-    return (
-      <ErrorWrapper
-        icon="🔒"
-        message={`This URL cannot be displayed due to security restrictions (${url}).`}
-      />
-    );
+  if (loading) {
+    return <ErrorWrapper icon="⏳" message="Loading embed..." />;
   }
 
-  const scaleValue = size;
+  if (error) {
+    return <ErrorWrapper icon="⚠️" message={error} />;
+  }
 
-  return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
-      {!useFallback ? (
+  if (!embedInfo) {
+    return <ErrorWrapper icon="🔍" message="Checking embeddability..." />;
+  }
+
+  if (embedInfo.directEmbed && transformedUrl) {
+    return (
+      <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
         <iframe
-          ref={iframeRef}
           src={transformedUrl}
           title="IFrame Fidget"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -145,17 +131,25 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             height: `${100 / scaleValue}%`,
           }}
           className="size-full"
-          onError={handleIframeError} // Detects refusal to embed
         />
-      ) : embedHtml ? (
-        <div dangerouslySetInnerHTML={{ __html: embedHtml }} />
-      ) : (
-        <ErrorWrapper
-          icon="🔒"
-          message={`This URL cannot be displayed due to security restrictions (${url}).`}
-        />
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  if (!embedInfo.directEmbed && embedInfo.iframelyHtml) {
+    return (
+      <div
+        style={{ overflow: "hidden", width: "100%", height: "100%" }}
+        dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
+      />
+    );
+  }
+
+  return (
+    <ErrorWrapper
+      icon="🔒"
+      message={`This URL cannot be displayed due to security restrictions (${url}).`}
+    />
   );
 };
 
