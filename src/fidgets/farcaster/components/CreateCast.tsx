@@ -487,19 +487,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        {/* Sparkles Banner */}
-        {!sparklesBannerClosed && (
-          <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2 mb-1">
-            <p>
-              New! Click the sparkles to enhance a draft cast or generate one
-              from scratch.
-            </p>
-            <button onClick={handleCloseBanner}>
-              <XCircle size={14} />
-            </button>
-          </div>
-        )}
-
         <div className="flex flex-row pt-2 gap-1">
           {!isReply && (
             <div className="opacity-80">
@@ -607,6 +594,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         </div>
       </form>
+
+      {!sparklesBannerClosed && (
+        <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2">
+          <p>
+            Click the <b>sparkles</b> to enhance a draft cast or generate one
+            from scratch.
+          </p>
+          <button onClick={handleCloseBanner}>
+            <XCircle size={20} />
+          </button>
+        </div>
+      )}
+
       {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (
