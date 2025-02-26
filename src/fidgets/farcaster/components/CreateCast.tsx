@@ -43,6 +43,13 @@ import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
 import { XCircle } from "lucide-react";
 import { useBannerStore } from "@/stores/bannerStore";
+import { usePrivy } from "@privy-io/react-auth";
+import { useBalance } from "wagmi";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { useAppStore } from "@/common/data/stores/app";
+import { base } from "viem/chains";
+
+const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -119,8 +126,24 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+
   const { isBannerClosed, closeBanner } = useBannerStore();
   const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
+
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const { hasNogs } = useAppStore((state) => ({
+    hasNogs: state.account.hasNogs,
+  }));
+  const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
 
   const handleCloseBanner = () => {
     closeBanner(SPARKLES_BANNER_KEY);
@@ -431,7 +454,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
+
   const handleEnhanceCast = async (text: string) => {
+    if (!userHoldEnoughSpace && !hasNogs) {
+      setShowEnhanceBanner(true);
+      return;
+    }
+
     setIsEnhancing(true);
     try {
       const response = await fetch("/api/venice", {
@@ -595,8 +624,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
         </div>
       </form>
 
-      {!sparklesBannerClosed && (
-        <div className="flex items-center w-full gap-1 justify-between border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium mt-2">
+      {!sparklesBannerClosed && !showEnhanceBanner && (
+        <div className="flex justify-between items-center w-full gap-1 text-orange-600 bg-orange-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
           <p>
             Click the <b>sparkles</b> to enhance a draft cast or generate one
             from scratch.
@@ -604,6 +633,32 @@ const CreateCast: React.FC<CreateCastProps> = ({
           <button onClick={handleCloseBanner}>
             <XCircle size={20} />
           </button>
+        </div>
+      )}
+
+      {showEnhanceBanner && (
+        <div className="flex justify-center gap-1 w-full items-center text-red-600 bg-red-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
+          <p>
+            Hold at least 1,111{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+              className="font-bold underline"
+            >
+              $SPACE
+            </a>{" "}
+            or 1{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
+              className="font-bold underline"
+            >
+              nOGs
+            </a>{" "}
+            to unlock generation
+          </p>
         </div>
       )}
 
