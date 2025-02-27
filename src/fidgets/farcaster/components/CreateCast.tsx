@@ -145,10 +145,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
   }));
   const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
 
-  const handleCloseBanner = () => {
-    closeBanner(SPARKLES_BANNER_KEY);
-  };
-
   useEffect(() => {
     const fetchInitialChannels = async () => {
       const initial_channels = await fetchChannelsForUser(fid);
@@ -456,6 +452,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
   };
 
   const handleEnhanceCast = async (text: string) => {
+    if (isEnhancing) return;
+
+    if (!sparklesBannerClosed) {
+      closeBanner(SPARKLES_BANNER_KEY);
+    }
+
     if (!userHoldEnoughSpace && !hasNogs) {
       setShowEnhanceBanner(true);
       return;
@@ -479,9 +481,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       const result = await response.json();
       setText(result.response);
-      setIsEnhancing(false);
     } catch (error) {
       console.error("Error enhancing text:", error);
+    } finally {
+      setIsEnhancing(false);
     }
   };
 
@@ -625,14 +628,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
       </form>
 
       {!sparklesBannerClosed && !showEnhanceBanner && (
-        <div className="flex justify-between items-center w-full gap-1 text-orange-600 bg-orange-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
+        <div className="flex justify-center items-center w-full gap-1 text-orange-600 bg-orange-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
           <p>
             Click the <b>sparkles</b> to enhance a draft cast or generate one
             from scratch.
           </p>
-          <button onClick={handleCloseBanner}>
-            <XCircle size={20} />
-          </button>
         </div>
       )}
 
