@@ -21,6 +21,10 @@ import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { Address } from "viem";
 import ScanAddress from "../molecules/ScanAddress";
 import { AlchemyNetwork } from "@/fidgets/ui/gallery";
+import {
+  NOUNISH_LOWFI_META,
+  NOUNISH_LOWFI_URL,
+} from "@/constants/nounishLowfi";
 
 type ContentMetadata = {
   title?: string | null;
@@ -59,6 +63,12 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     // Handle array of URLs by taking the first one
     const videoUrl = Array.isArray(_url) ? _url[0] : _url;
 
+    // Use default value to avoid request the same data every time
+    if (videoUrl == NOUNISH_LOWFI_URL) {
+      setMetadata(NOUNISH_LOWFI_META);
+      return;
+    }
+
     if (videoUrl.includes("ipfs") || videoUrl.includes("arweave")) {
       // Parse URL parameters for IPFS content
       const url = new URL(videoUrl);
@@ -80,6 +90,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     // Default to YouTube metadata
     const response = await fetch(`/api/metadata/youtube?url=${videoUrl}`);
     const data = await response.json();
+    console.log("youtube", data);
     const snippet = data?.value?.snippet;
 
     if (!snippet) return;
