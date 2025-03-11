@@ -177,11 +177,10 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={
-                          FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config
-                            ?.style.fontFamily
-                        }
-                        onChange={themePropSetter<FontFamily>("headingsFont")}
+                        value={(headingsFont as string)}
+                        onChange={(fontName) => {
+                          themePropSetter<FontFamily>("headingsFont")(fontName);
+                        }}
                         hideGlobalSettings
                       />
                     </div>
@@ -200,11 +199,10 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={
-                          FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style
-                            .fontFamily
-                        }
-                        onChange={themePropSetter<FontFamily>("font")}
+                        value={(font as string)}
+                        onChange={(fontName) => {
+                          themePropSetter<FontFamily>("font")(fontName);
+                        }}
                         hideGlobalSettings
                       />
                     </div>

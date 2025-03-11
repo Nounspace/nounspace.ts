@@ -137,7 +137,7 @@ export const createHomeBaseStoreFunc = (
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
     });
-    localCopy.timestamp = moment().toISOString();
+    localCopy.timestamp = moment().format(); // ISO8601 string);
     set(
       (draft) => {
         draft.homebase.homebaseConfig = localCopy;
