@@ -2,16 +2,33 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/common/components/templates/Space";
-import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
-import { StoreGet, StoreSet } from "../../createStore";
-import axiosBackend from "../../../api/backend";
+import { SignedFile, signSignable } from "@/common/lib/signedFiles";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import createIntialPersonSpaceConfigForFid, {
+  INITIAL_SPACE_CONFIG_EMPTY,
+} from "@/constants/initialPersonSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
   SpaceRegistrationContract,
   SpaceRegistrationFid,
 } from "@/pages/api/space/registry";
+import {
+  UnsignedUpdateTabOrderRequest,
+  UpdateTabOrderRequest,
+} from "@/pages/api/space/registry/[spaceId]";
+import {
+  RegisterNewSpaceTabResponse,
+  UnsignedSpaceTabRegistration,
+} from "@/pages/api/space/registry/[spaceId]/tabs";
+import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
+import axios from "axios";
+import stringify from "fast-json-stable-stringify";
 import {
   cloneDeep,
   debounce,
@@ -25,27 +42,10 @@ import {
   mergeWith,
 } from "lodash";
 import moment from "moment";
-import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import stringify from "fast-json-stable-stringify";
+import { AppStore } from "..";
+import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
-import axios from "axios";
-import createIntialPersonSpaceConfigForFid, {
-  INITIAL_SPACE_CONFIG_EMPTY,
-} from "@/constants/initialPersonSpace";
-import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
-import {
-  RegisterNewSpaceTabResponse,
-  UnsignedSpaceTabRegistration,
-} from "@/pages/api/space/registry/[spaceId]/tabs";
-import {
-  UnsignedUpdateTabOrderRequest,
-  UpdateTabOrderRequest,
-} from "@/pages/api/space/registry/[spaceId]";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { StoreGet, StoreSet } from "../../createStore";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -225,6 +225,38 @@ export const createSpaceStoreFunc = (
     1000,
   ),
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
+    // Check if the new name contains special characters
+    if (/[^a-zA-Z0-9-_ ]/.test(newName as string)) {
+      // Show error message with Tailwind CSS
+      const errorMessage = document.createElement('div');
+      errorMessage.classList.add(
+        'bg-red-500',
+        'text-white',
+        'p-4',
+        'rounded-md',
+        'fixed',
+        'top-4',
+        'right-4',
+        'z-[9999]',
+        'shadow-lg'
+      );
+      errorMessage.innerHTML = "The tab name contains invalid characters. Only letters, numbers, hyphens, and underscores are allowed.";
+
+      // Append to the body or a specific container
+      document.body.appendChild(errorMessage);
+
+      // Remove the error message after 4 seconds
+      setTimeout(() => {
+        errorMessage.remove();
+      }, 4000);
+
+      // Create an error and stop execution
+      const error = new Error(
+        "The tab name contains invalid characters. Only letters, numbers and spaces are allowed."
+      );
+      (error as any).status = 404;
+      throw error; // Stops the execution of the function
+    }
     const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
@@ -287,6 +319,36 @@ export const createSpaceStoreFunc = (
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY,
       network,
     ) => {
+      // Check if the tab name contains special characters
+      if(/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+        // Create an error message with Tailwind CSS
+        const errorMessage = document.createElement('div');
+        errorMessage.classList.add(
+          'bg-red-500',
+          'text-white',
+          'p-4',
+          'rounded-md',
+          'fixed',
+          'top-4',
+          'right-4',
+          'z-[9999]',
+          'shadow-lg',
+          'w-96',
+          'text-center'
+        );
+        errorMessage.innerHTML = "The tab name contains invalid characters. Only letters, numbers, hyphens, and underscores are allowed.";
+
+        // Append to the body or a specific container
+        document.body.appendChild(errorMessage);
+
+        // Remove the error message after 4 seconds
+        setTimeout(() => {
+          errorMessage.remove();
+        }, 4000);
+
+        // Stop execution and do not allow saving the tab
+        return; // Immediate exit without continuing the flow
+      }
       const unsignedRequest: UnsignedSpaceTabRegistration = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
@@ -331,8 +393,43 @@ export const createSpaceStoreFunc = (
 
         return get().space.commitSpaceOrderToDatabase(spaceId, network);
       } catch (e) {
-        console.error("Fail creating space:", e);
+        console.error(e);
+
+        let errorMessage = "Fail creating space:";
+
+        if (e instanceof Error) {
+          errorMessage = e.message;
+        }
+
+        // Create an error message with Tailwind CSS
+        const errorDiv = document.createElement('div');
+        errorDiv.classList.add(
+          'bg-red-500',
+          'text-white',
+          'p-4',
+          'rounded-md',
+          'fixed',
+          'top-4',
+          'right-4',
+          'z-[9999]',
+          'shadow-lg',
+          'w-96',
+          'text-center'
+        );
+        errorDiv.innerHTML = errorMessage;
+
+        // Append to the body or a specific container
+        document.body.appendChild(errorDiv);
+
+        // Remove the error message after 4 seconds
+        setTimeout(() => {
+          errorDiv.remove();
+        }, 4000);
+
+        // Throw an error
+        throw new Error(errorMessage);
       }
+
     },
     1000,
   ),
