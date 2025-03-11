@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import { useAppStore } from "@/common/data/stores/app";
-import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import { useRouter, useParams } from "next/navigation";
 import { isNil } from "lodash";
 import TabBar from "@/common/components/organisms/TabBar";

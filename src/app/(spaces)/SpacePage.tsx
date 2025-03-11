@@ -1,14 +1,14 @@
-import React, { ReactNode } from "react";
-import Space, { SpaceConfig, SpaceConfigSaveDetails } from "../templates/Space";
+import React, { ReactNode, Suspense } from "react";
+import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { isUndefined } from "lodash";
-import SpaceLoading from "@/common/components/templates/SpaceLoading";
+import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export type SpacePageArgs = {
-  config?: SpaceConfig;
-  saveConfig?: (config: SpaceConfigSaveDetails) => Promise<void>;
-  commitConfig?: () => Promise<void>;
-  resetConfig?: () => Promise<void>;
+  config: SpaceConfig;
+  saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
+  commitConfig: () => Promise<void>;
+  resetConfig: () => Promise<void>;
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
@@ -30,13 +30,7 @@ export default function SpacePage({
 
   return (
     <>
-      {isUndefined(config) ||
-      isUndefined(saveConfig) ||
-      isUndefined(commitConfig) ||
-      isUndefined(resetConfig) ||
-      loading ? (
-        <SpaceLoading profile={profile} tabBar={tabBar} inEditMode={editMode} />
-      ) : (
+      <Suspense fallback={<SpaceLoading hasProfile={!isUndefined(profile)} />}>
         <Space
           config={config}
           saveConfig={saveConfig}
@@ -50,7 +44,7 @@ export default function SpacePage({
           setSidebarEditable={setSidebarEditable}
           portalRef={portalRef}
         />
-      )}
+      </Suspense>
     </>
   );
 }

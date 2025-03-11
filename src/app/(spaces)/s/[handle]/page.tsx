@@ -3,7 +3,7 @@ import { getTabList, getUserMetadata, type Tab } from "./utils";
 import UserPrimarySpace, {
   UserDefinedSpacePageProps,
 } from "./UserPrimarySpace";
-import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
+import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 

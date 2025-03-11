@@ -3,8 +3,8 @@ import React from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { isArray, isNil } from "lodash";
 import { useEffect } from "react";
-import UserDefinedSpace from "@/common/components/pages/UserDefinedSpace";
-import SpaceNotFound from "@/common/components/pages/SpaceNotFound";
+import UserDefinedSpace from "@/app/(spaces)/UserDefinedSpace";
+import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 
 export type UserDefinedSpacePageProps = {
   fid: number | null;
