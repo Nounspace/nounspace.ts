@@ -1,7 +1,7 @@
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import {

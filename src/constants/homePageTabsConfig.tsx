@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
 const layoutIDTab1 = "tab1-layout";
 const layoutIDTab2 = "tab2-layout";

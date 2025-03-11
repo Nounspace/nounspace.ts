@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
-import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import TabBar from "@/common/components/organisms/TabBar";  
 import {
   FIDGETS_TAB_CONFIG,
