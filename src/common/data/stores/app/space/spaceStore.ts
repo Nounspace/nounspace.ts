@@ -1,7 +1,7 @@
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../../createStore";

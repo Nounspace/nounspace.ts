@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import { contractOwnerFromContractAddress } from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,

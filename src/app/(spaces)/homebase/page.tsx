@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useAppStore } from "@/common/data/stores/app";
-import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { FeedType } from "@neynar/nodejs-sdk";
 import { noop } from "lodash";
