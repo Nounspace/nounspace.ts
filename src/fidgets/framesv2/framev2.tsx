@@ -68,7 +68,7 @@ import { FrameAppDebugger } from "./components/frame-app-debugger";
 const FALLBACK_URL =
   process.env.NEXT_PUBLIC_DEBUGGER_DEFAULT_URL || "https://f.bracket.game";
 
-export default function FrameV2Page({
+export default function FrameV2Fidget({
   searchParams,
   examples,
 }: {
@@ -141,7 +141,7 @@ export default function FrameV2Page({
   //   // }
 
   //   console.log(
-  //     ` ,---.                                             ,--.        \n/  .-',--.--. ,--,--.,--,--,--. ,---.  ,---.       \`--' ,---.  \n|  \`-,|  .--'' ,-.  ||        || .-. :(  .-'       ,--.(  .-'  \n|  .-'|  |    '-'  ||  |  |  |   --..-'  \`).--.  |  |.-'  \`) \n\`--'  \`--'    \`--\`--'\`--\`--\`--' \`----'\`----' '--'.-'  /\`----'  \n                                                 '---'         \npkg.name, Version pkg.version`
+  //     ` pkg.name, Version pkg.version`
   //   );
   //   console.log(
   //     "%c" +
