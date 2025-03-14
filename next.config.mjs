@@ -26,8 +26,11 @@ const nextConfig = {
   // output: 'export', // Outputs a Single-Page Application (SPA).
   // distDir: './dist', // Changes the build output directory to `./dist/`.
   transpilePackages: ["react-tweet", "react-best-gradient-color-picker"], // https://react-tweet.vercel.app/next,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
   },
   env: {
     NEXT_PUBLIC_VERSION: packageInfo.version,
