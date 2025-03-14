@@ -22,7 +22,7 @@ import {
   FrameDebugger,
   FrameLaunchedInContext,
   type FrameDebuggerRef,
-} from "./frame-debugger";
+} from "./frame-v2";
 import { LOCAL_STORAGE_KEYS } from "./constants";
 import type { MockHubActionContext } from "./lib/mock-hub-utils";
 import {
@@ -68,7 +68,7 @@ import { FrameAppDebugger } from "./components/frame-app-debugger";
 const FALLBACK_URL =
   process.env.NEXT_PUBLIC_DEBUGGER_DEFAULT_URL || "https://f.bracket.game";
 
-export default function DebuggerPage({
+export default function FrameV2Page({
   searchParams,
   examples,
 }: {

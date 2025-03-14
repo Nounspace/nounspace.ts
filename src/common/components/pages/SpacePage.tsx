@@ -4,6 +4,8 @@ import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
+import FrameV2Fidget from "@/fidgets/framesv2/framev2";
+
 export type SpacePageArgs = {
   config?: SpaceConfig;
   saveConfig?: (config: SpaceConfigSaveDetails) => Promise<void>;
@@ -37,19 +39,25 @@ export default function SpacePage({
       loading ? (
         <SpaceLoading profile={profile} tabBar={tabBar} inEditMode={editMode} />
       ) : (
-        <Space
-          config={config}
-          saveConfig={saveConfig}
-          commitConfig={commitConfig}
-          resetConfig={resetConfig}
-          tabBar={tabBar}
-          profile={profile}
-          feed={feed}
-          setEditMode={setEditMode}
-          editMode={editMode}
-          setSidebarEditable={setSidebarEditable}
-          portalRef={portalRef}
-        />
+        <FrameV2Fidget searchParams={{ 
+          url: "https://f.bracket.game/", 
+          specification:"farcaster_v2", 
+          actions:"true" 
+          }} />
+        
+        // <Space
+        //   config={config}
+        //   saveConfig={saveConfig}
+        //   commitConfig={commitConfig}
+        //   resetConfig={resetConfig}
+        //   tabBar={tabBar}
+        //   profile={profile}
+        //   feed={feed}
+        //   setEditMode={setEditMode}
+        //   editMode={editMode}
+        //   setSidebarEditable={setSidebarEditable}
+        //   portalRef={portalRef}
+        // />
       )}
     </>
   );
