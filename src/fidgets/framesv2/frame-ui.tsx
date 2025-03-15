@@ -32,7 +32,7 @@ const components: Props["components"] = {
         {frameButton.action === "mint" ? `⬗ ` : ""}
         {frameButton.label}
         {frameButton.action === "tx" ? (
-          "ZapIcon"
+          "tx"
           // <ZapIcon
           //   className="ml-1 mb-[2px] text-gray-400 inline-block select-none align-text-middle overflow-visible"
           //   fill="currentColor"

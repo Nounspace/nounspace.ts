@@ -1,6 +1,7 @@
 "use client";
 /** requires client because signer is stored in local storage */
 
+// import { Framev2Modal } from "./framev2Modal";
 import { Button } from "@/common/components/atoms/button";
 // import { Button } from "@/components/ui/button";`
 // import { Input } from "@/components/ui/input";
@@ -288,8 +289,8 @@ export default function FrameV2Fidget({
       <FrameContextProvider value={frameContextValue}>
         <DebuggerConsoleContextProvider value={debuggerConsole}>
           <div className="bg-slate-50 min-h-lvh grid grid-rows-[auto_1fr]">
-            <div className="flex flex-row gap-4 border-b p-2 px-4 items-center h-full bg-white">
-              <form
+            {/* <div className="flex flex-row gap-4 border-b p-2 px-4 items-center h-full bg-white">
+               <form
                 className="flex flex-row"
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -394,10 +395,10 @@ export default function FrameV2Fidget({
                 >
                   {/* {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )} */}
+                  )} * /}
                   Load
                 </Button>
-              </form>
+              </form> */}
 
               {/* <ProtocolConfigurationButton
                 onChange={(spec) => {
@@ -412,12 +413,12 @@ export default function FrameV2Fidget({
                 ref={selectProtocolButtonRef}
                 lensFrameContext={lensFrameContext}
                 lensSignerState={lensSignerState}
-              ></ProtocolConfigurationButton> */}
+              ></ProtocolConfigurationButton> 
 
               <div className="ml-auto">
-                {/* <ConnectButton showBalance={false}></ConnectButton> */}
+                {/* <ConnectButton showBalance={false}></ConnectButton> * /}
               </div>
-            </div>
+            </div> */}
             {url ? (
               <>
                 {initialAction && (
