@@ -33,31 +33,31 @@ export default function SpacePage({
   return (
     <>
       {isUndefined(config) ||
-      isUndefined(saveConfig) ||
-      isUndefined(commitConfig) ||
-      isUndefined(resetConfig) ||
-      loading ? (
+        isUndefined(saveConfig) ||
+        isUndefined(commitConfig) ||
+        isUndefined(resetConfig) ||
+        loading ? (
         <SpaceLoading profile={profile} tabBar={tabBar} inEditMode={editMode} />
       ) : (
-        <FrameV2Fidget searchParams={{ 
-          url: "https://f.bracket.game/", 
-          specification:"farcaster_v2", 
-          actions:"true" 
-          }} />
-        
-        // <Space
-        //   config={config}
-        //   saveConfig={saveConfig}
-        //   commitConfig={commitConfig}
-        //   resetConfig={resetConfig}
-        //   tabBar={tabBar}
-        //   profile={profile}
-        //   feed={feed}
-        //   setEditMode={setEditMode}
-        //   editMode={editMode}
-        //   setSidebarEditable={setSidebarEditable}
-        //   portalRef={portalRef}
-        // />
+        // <FrameV2Fidget searchParams={{ 
+        //   url: "https://f.bracket.game/", 
+        //   specification:"farcaster_v2", 
+        //   actions:"true" 
+        //   }} />
+
+        <Space
+          config={config}
+          saveConfig={saveConfig}
+          commitConfig={commitConfig}
+          resetConfig={resetConfig}
+          tabBar={tabBar}
+          profile={profile}
+          feed={feed}
+          setEditMode={setEditMode}
+          editMode={editMode}
+          setSidebarEditable={setSidebarEditable}
+          portalRef={portalRef}
+        />
       )}
     </>
   );
