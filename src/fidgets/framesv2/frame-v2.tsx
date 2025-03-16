@@ -401,7 +401,8 @@ export const FrameDebugger = React.forwardRef<
               enableImageDebugging={imageDebuggingEnabled}
               onError={handleFrameError}
             />
-            <div className="ml-auto text-sm text-slate-500">{url}</div>
+            {/* display frame url bellow frame */}
+            {/* <div className="ml-auto text-sm text-slate-500">{url}</div> */}
 
             {!isLoading && protocol.specification !== "farcaster_v2" && (
               <>
