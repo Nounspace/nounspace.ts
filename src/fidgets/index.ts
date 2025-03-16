@@ -17,7 +17,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
-
+import Framesv2 from "./framesv2/fidgetv2Index";
 export const CompleteFidgets = {
   //
   example:
@@ -43,6 +43,7 @@ export const CompleteFidgets = {
   Video: VideoFidget,
   Market: marketData,
   Chat: chat,
+  FrameV2: Framesv2,
 };
 
 export const LayoutFidgets = {
