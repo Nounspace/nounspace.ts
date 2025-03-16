@@ -101,3 +101,4 @@ dist/
 
 # Visual Studio settings
 .vscode
+!.vscode/launch.json
