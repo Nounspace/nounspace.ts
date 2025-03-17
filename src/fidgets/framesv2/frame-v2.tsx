@@ -283,9 +283,9 @@ export const FrameDebugger = React.forwardRef<
 
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[300px_500px_1fr] p-4 gap-4 bg-slate-50 max-w-full w-full">
-        <div className="flex flex-col gap-4 order-1 lg:order-0">
-          <div className="flex flex-row gap-2">
+      <div className="">
+        <div className="order-1 lg:order-0">
+          <div className="">
             {/* <WithTooltip tooltip={<p>Fetch home frame</p>}>
               <Button
                 className="flex flex-row gap-3 items-center shadow-sm border"
@@ -393,8 +393,8 @@ export const FrameDebugger = React.forwardRef<
           </div> */}
           {/* <FrameDebuggerLinksSidebarSection hasExamples={hasExamples} /> */}
         </div>
-        <div className="flex flex-col gap-4 order-0 lg:order-1">
-          <div className="w-full flex flex-col gap-1" id="frame-preview">
+        <div className="">
+          <div className="" id="frame-preview">
             <FrameUI
               frameState={frameState}
               allowPartialFrame={true}
