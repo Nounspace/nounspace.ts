@@ -39,25 +39,25 @@ export default function SpacePage({
         loading ? (
         <SpaceLoading profile={profile} tabBar={tabBar} inEditMode={editMode} />
       ) : (
-        // <FrameV2Fidget searchParams={{ 
-        //   url: "https://f.bracket.game/", 
-        //   specification:"farcaster_v2", 
-        //   actions:"true" 
-        //   }} />
+        <FrameV2Fidget searchParams={{ 
+          url: "https://f.bracket.game/", 
+          specification:"farcaster_v2", 
+          actions:"true" 
+          }} />
 
-        <Space
-          config={config}
-          saveConfig={saveConfig}
-          commitConfig={commitConfig}
-          resetConfig={resetConfig}
-          tabBar={tabBar}
-          profile={profile}
-          feed={feed}
-          setEditMode={setEditMode}
-          editMode={editMode}
-          setSidebarEditable={setSidebarEditable}
-          portalRef={portalRef}
-        />
+        // <Space
+        //   config={config}
+        //   saveConfig={saveConfig}
+        //   commitConfig={commitConfig}
+        //   resetConfig={resetConfig}
+        //   tabBar={tabBar}
+        //   profile={profile}
+        //   feed={feed}
+        //   setEditMode={setEditMode}
+        //   editMode={editMode}
+        //   setSidebarEditable={setSidebarEditable}
+        //   portalRef={portalRef}
+        // />
       )}
     </>
   );

@@ -464,14 +464,14 @@ export function FrameApp({
         </Dialog>
       )}
 
-      {/* <Modal
+       <Modal
         open={isModalOpen}
-        focusMode
-        showClose
+        // focusMode
+        // showClose
         // title={`Frame v2`}
         setOpen={setIsModalOpen}
-      > */}
-        {/* Title bar 
+      > 
+        {/* Title bar  */}
         <div className="bg-blue-600 text-white px-4 py-2 flex justify-between items-center rounded-t-lg">
           <h2 className="text-lg font-semibold">Frame Preview</h2>
           <button
@@ -480,7 +480,7 @@ export function FrameApp({
           >
             <Cross2Icon />
           </button>
-        </div>*/}
+        </div>
 
         <div className="flex flex-col gap-1 w-[424px] h-[695px] relative overflow-auto"
           id="frame-app-preview">
@@ -544,7 +544,7 @@ export function FrameApp({
           )}
         </div>
 
-      {/* </Modal> */}
+      </Modal>
     </>
   );
 }
