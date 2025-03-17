@@ -1,6 +1,6 @@
 // import type { UseFrameAppNotificationsManagerResult } from "./providers/FrameAppNotificationsManagerProvider";
 // import { cn } from "@/lib/utils";
-// import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 // import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/common/components/atoms/dialog";
 // import { useCopyToClipboard } from "../hooks/useCopyToClipboad";
@@ -464,13 +464,13 @@ export function FrameApp({
         </Dialog>
       )}
 
-      <Modal
+      {/* <Modal
         open={isModalOpen}
         focusMode
         showClose
         // title={`Frame v2`}
         setOpen={setIsModalOpen}
-      >
+      > */}
         {/* Title bar 
         <div className="bg-blue-600 text-white px-4 py-2 flex justify-between items-center rounded-t-lg">
           <h2 className="text-lg font-semibold">Frame Preview</h2>
@@ -544,7 +544,7 @@ export function FrameApp({
           )}
         </div>
 
-      </Modal>
+      {/* </Modal> */}
     </>
   );
 }
