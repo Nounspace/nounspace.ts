@@ -55,7 +55,7 @@ const frameConfig: FidgetProperties = {
       inputSelector: MarketDataSelector,
       required: true,
       group: "settings",
-      default: "geckoterminal",
+      default: "dexscreener",
     },
     ...defaultStyleFields,
     {
