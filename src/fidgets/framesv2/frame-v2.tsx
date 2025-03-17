@@ -393,8 +393,8 @@ export const FrameDebugger = React.forwardRef<
           </div> */}
           {/* <FrameDebuggerLinksSidebarSection hasExamples={hasExamples} /> */}
         </div>
-        <div className="">
-          <div className="" id="frame-preview">
+        <div className="flex flex-col gap-4 order-0 lg:order-1">
+          <div className="w-full flex flex-col gap-1" id="frame-preview">
             <FrameUI
               frameState={frameState}
               allowPartialFrame={true}
