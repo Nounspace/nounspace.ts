@@ -1,6 +1,6 @@
 // import type { UseFrameAppNotificationsManagerResult } from "./providers/FrameAppNotificationsManagerProvider";
 // import { cn } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+// import { Dialog, DialogContent } from "@/components/ui/dialog";
 // import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/common/components/atoms/dialog";
 // import { useCopyToClipboard } from "../hooks/useCopyToClipboad";
