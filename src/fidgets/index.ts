@@ -6,6 +6,7 @@ import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
 import Profile from "./ui/profile";
 import Grid from "./layout/Grid";
+import TabFullScreen from "./layout/TabFullScreen";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
@@ -47,4 +48,5 @@ export const CompleteFidgets = {
 
 export const LayoutFidgets = {
   grid: Grid,
+  tabFullScreen: TabFullScreen,
 };
