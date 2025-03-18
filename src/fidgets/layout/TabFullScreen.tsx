@@ -29,7 +29,7 @@ type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
  * with the ability to switch between them.
  * 
  * Key features:
- * - Tab navigation at the top to switch between fidgets
+ * - Tab navigation fixed at the bottom of the screen
  * - Responsive design with mobile-specific styles
  * - Animated transitions between fidgets
  * - Support for custom tab names
@@ -95,80 +95,92 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return customName || fidgetModule.properties.fidgetName;
   };
 
-  return (
-    <div className="flex flex-col h-full">
-      <Tabs 
-        defaultValue={selectedTab} 
-        className="w-full h-full flex flex-col"
-        onValueChange={setSelectedTab}
-      >
-        {/* Adding z-index and background to make tabs visible above background */}
-        <div className="relative z-50 bg-white bg-opacity-90 shadow-md rounded-t-lg">
-          <TabsList className={`mb-2 ${isMobile ? 'overflow-x-auto flex-wrap justify-start p-1' : ''}`}>
-            {map(validFidgetIds, (fidgetId) => {
-              return (
-                <TabsTrigger 
-                  key={fidgetId} 
-                  value={fidgetId}
-                  className={`
-                    px-4 py-2 font-medium
-                    ${isMobile ? 'text-sm whitespace-nowrap' : ''}
-                  `}
-                >
-                  {getFidgetName(fidgetId)}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </div>
+  // Height of the tab bar for padding the content
+  const TAB_HEIGHT = 56; // px
 
-        <div className="flex-1 overflow-hidden relative z-40">
-          <AnimatePresence mode="wait">
-            {map(validFidgetIds, (fidgetId) => {
-              const fidgetDatum = fidgetInstanceDatums[fidgetId];
-              if (!fidgetDatum) return null;
-              
-              const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-              if (!fidgetModule) return null;
-              
-              const bundle: FidgetBundle = {
-                ...fidgetDatum,
-                properties: fidgetModule.properties,
-                config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
-              };
-              
-              return (
-                <TabsContent 
-                  key={fidgetId} 
-                  value={fidgetId}
-                  className="flex-1 h-full w-full"
-                >
-                  <motion.div
-                    key={fidgetId}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
+  return (
+    <div className="flex flex-col h-full relative">
+      {/* Main content area with padding-bottom to make space for fixed tabs */}
+      <div 
+        className="w-full h-full overflow-hidden" 
+        style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+      >
+        <Tabs 
+          defaultValue={selectedTab} 
+          className="w-full h-full"
+          onValueChange={setSelectedTab}
+        >
+          <div className="relative z-40 h-full">
+            <AnimatePresence mode="wait">
+              {map(validFidgetIds, (fidgetId) => {
+                const fidgetDatum = fidgetInstanceDatums[fidgetId];
+                if (!fidgetDatum) return null;
+                
+                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+                if (!fidgetModule) return null;
+                
+                const bundle: FidgetBundle = {
+                  ...fidgetDatum,
+                  properties: fidgetModule.properties,
+                  config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
+                };
+                
+                return (
+                  <TabsContent 
+                    key={fidgetId} 
+                    value={fidgetId}
                     className="h-full w-full"
                   >
-                    <FidgetWrapper
-                      fidget={fidgetModule.fidget}
-                      context={{ theme }}
-                      bundle={bundle}
-                      saveConfig={saveFidgetConfig(fidgetId)}
-                      setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
-                      setSelectedFidgetID={dummySetSelectedFidgetID}
-                      selectedFidgetID=""
-                      removeFidget={dummyRemoveFidget}
-                      minimizeFidget={dummyMinimizeFidget}
-                    />
-                  </motion.div>
-                </TabsContent>
-              );
-            })}
-          </AnimatePresence>
-        </div>
-      </Tabs>
+                    <motion.div
+                      key={fidgetId}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-full w-full"
+                    >
+                      <FidgetWrapper
+                        fidget={fidgetModule.fidget}
+                        context={{ theme }}
+                        bundle={bundle}
+                        saveConfig={saveFidgetConfig(fidgetId)}
+                        setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
+                        setSelectedFidgetID={dummySetSelectedFidgetID}
+                        selectedFidgetID=""
+                        removeFidget={dummyRemoveFidget}
+                        minimizeFidget={dummyMinimizeFidget}
+                      />
+                    </motion.div>
+                  </TabsContent>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+          
+          {/* Tabs fixed to bottom of screen */}
+          <div 
+            className="fixed bottom-0 left-0 right-0 z-50 bg-white bg-opacity-95 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+            style={{ height: `${TAB_HEIGHT}px` }}
+          >
+            <TabsList className={`w-full h-full ${isMobile ? 'overflow-x-auto flex-wrap justify-start' : 'justify-center'}`}>
+              {map(validFidgetIds, (fidgetId) => {
+                return (
+                  <TabsTrigger 
+                    key={fidgetId} 
+                    value={fidgetId}
+                    className={`
+                      px-4 py-2 font-medium h-full
+                      ${isMobile ? 'text-sm whitespace-nowrap' : ''}
+                    `}
+                  >
+                    {getFidgetName(fidgetId)}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 };
