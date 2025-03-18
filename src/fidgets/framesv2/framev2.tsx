@@ -84,8 +84,8 @@ export default function FrameV2Fidget({
   const selectProtocolButtonRef = useRef<HTMLButtonElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  // const [protocolConfiguration, setProtocolConfiguration] =
-  //   useState<ProtocolConfiguration | null>(null);
+  const [protocolConfiguration, setProtocolConfiguration] =
+    useState<ProtocolConfiguration | null>(null);
   const [frameV2LaunchContext, setFrameV2LaunchContext] =
     useState<FrameLaunchedInContext | null>(null);
   /**
@@ -126,30 +126,29 @@ export default function FrameV2Fidget({
   );
 
   const selectedProtocol = "farcaster_v2";
-  const protocolConfiguration = protocolConfigurationMap[selectedProtocol];
+  // const protocolConfiguration = protocolConfigurationMap[selectedProtocol];
 
-  // useEffect(() => {
-  //   const selectedProtocol = "farcaster_v2";
-  //   // localStorage.getItem(
-  //     // LOCAL_STORAGE_KEYS.SELECTED_PROTOCOL
-      
-  //   // );
+  useEffect(() => {
+    const selectedProtocol = "farcaster_v2";
+    // localStorage.getItem(
+      // LOCAL_STORAGE_KEYS.SELECTED_PROTOCOL  
+  // });
 
-  //   // if (selectedProtocol) {
-  //     setProtocolConfiguration(
-  //       protocolConfigurationMap[selectedProtocol]
-  //     );
-  //   // }
+    if (selectedProtocol) {
+      setProtocolConfiguration(
+        protocolConfigurationMap[selectedProtocol]
+      );
+    }
 
-  //   console.log(
-  //     ` pkg.name, Version pkg.version`
-  //   );
-  //   console.log(
-  //     "%c" +
-  //       "*You'll find console.log statements from your frames in the server logs in your terminal, not here.*",
-  //     "font-weight:bold;"
-  //   );
-  // }, []);
+    console.log(
+      ` pkg.name, Version pkg.version`
+    );
+    console.log(
+      "%c" +
+        "*You'll find console.log statements from your frames in the server logs in your terminal, not here.*",
+      "font-weight:bold;"
+    );
+  }, []);
 
   // useEffect(() => {
   //   if (protocolConfiguration)

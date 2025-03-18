@@ -19,7 +19,7 @@ export function useFarcasterIdentity(options: Options = {}) {
     ...(options ?? {}),
     storage: sharedStorage,
     onMissingIdentity() {
-      console.log("onMissingIdentity")
+      console.log("onMissingIdentity: In order to test the buttons you need to select an identity first")
       // toast({
       //   title: "Please select an identity",
       //   description:

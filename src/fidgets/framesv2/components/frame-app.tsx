@@ -3,7 +3,7 @@
 // import { Dialog, DialogContent } from "@/components/ui/dialog";
 // import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/common/components/atoms/dialog";
-// import { useCopyToClipboard } from "../hooks/useCopyToClipboad";
+import { useCopyToClipboard } from "../hooks/useCopyToClipboad";
 // import { useAppStore } from "@/common/data/stores/app";
 // import * as Dialog from "@radix-ui/react-dialog";
 // import { mergeClasses } from "@/common/lib/utils/mergeClasses";
@@ -93,7 +93,7 @@ export function FrameApp({
     debug: true,
   });
 
-  // const copyFarcasterSignInLink = useCopyToClipboard();
+  const copyFarcasterSignInLink = useCopyToClipboard();
   // const { toast } = useToast();
 
   /**
@@ -447,17 +447,16 @@ export function FrameApp({
               <span className="text-muted-foreground text-sm">or</span>
               <Button
                 onClick={() => {
-                  // copyFarcasterSignInLink.copyToClipboard(
-                  //   farcasterSignInAbortControllerAndURL.url.toString()
-                  // );
+                  copyFarcasterSignInLink.copyToClipboard(
+                    farcasterSignInAbortControllerAndURL.url.toString()
+                  );
                 }}
                 variant="ghost"
               >
-                {/* {copyFarcasterSignInLink.copyState === "copied" && "Copied"}
+                {copyFarcasterSignInLink.copyState === "copied" && "Copied"}
                 {copyFarcasterSignInLink.copyState === "idle" && "Copy link"}
-                {copyFarcasterSignInLink.copyState === "failed" && */}
-                Copy failed
-                {/* } */}
+                {copyFarcasterSignInLink.copyState === "failed" &&
+                  "Copy failed"}
               </Button>
             </div>
           </DialogContent>
