@@ -192,7 +192,7 @@ export default function Space({
             </div>
           ) : null}
           {/* [SPACE] Rendering tab bar */}
-          {!isMobile && tabBar}
+          {tabBar}
           <div className="flex h-full">
             {!isMobile && !isUndefined(feed) ? (
               <div className="w-6/12 h-[calc(100vh-64px)]">
