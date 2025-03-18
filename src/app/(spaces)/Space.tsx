@@ -8,14 +8,13 @@ import {
   LayoutFidgetDetails,
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
+import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "./SpaceLoading";
-// Import the LayoutFidgets directly
-import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 
 export type SpaceFidgetConfig = {
@@ -233,5 +232,5 @@ export default function Space({
         </div>
       </div>
     </div>
-  )
+  );
 }
