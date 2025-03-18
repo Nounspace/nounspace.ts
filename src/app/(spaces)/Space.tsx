@@ -19,10 +19,10 @@ import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 
 export type SpaceFidgetConfig = {
-  instanceConfig: FidgetConfig<FidgetSettings>;
-  fidgetType: string;
-  id: string;
-};
+  instanceConfig: FidgetConfig<FidgetSettings>
+  fidgetType: string
+  id: string
+}
 
 export type SpaceConfig = {
   fidgetInstanceDatums: {
@@ -41,22 +41,22 @@ export type SpaceConfig = {
 export type SpaceConfigSaveDetails = Partial<
   Omit<SpaceConfig, "layoutDetails">
 > & {
-  layoutDetails?: Partial<LayoutFidgetDetails<LayoutFidgetConfig<any>>>;
-};
+  layoutDetails?: Partial<LayoutFidgetDetails<LayoutFidgetConfig<any>>>
+}
 
 type SpaceArgs = {
-  config: SpaceConfig;
-  saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
-  commitConfig: () => Promise<void>;
-  resetConfig: () => Promise<void>;
-  tabBar: ReactNode;
-  profile?: ReactNode;
-  feed?: ReactNode;
-  setEditMode: (v: boolean) => void;
-  editMode: boolean;
-  setSidebarEditable: (v: boolean) => void;
-  portalRef: React.RefObject<HTMLDivElement>;
-};
+  config: SpaceConfig
+  saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>
+  commitConfig: () => Promise<void>
+  resetConfig: () => Promise<void>
+  tabBar: ReactNode
+  profile?: ReactNode
+  feed?: ReactNode
+  setEditMode: (v: boolean) => void
+  editMode: boolean
+  setSidebarEditable: (v: boolean) => void
+  portalRef: React.RefObject<HTMLDivElement>
+}
 
 export default function Space({
   config,
@@ -75,17 +75,20 @@ export default function Space({
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    setSidebarEditable(config.isEditable);
-  }, [config.isEditable]);
+    console.log("[SPACE] Setting sidebar editable:", config.isEditable)
+    setSidebarEditable(config.isEditable)
+  }, [config.isEditable])
 
   function saveExitEditMode() {
-    commitConfig();
-    setEditMode(false);
+    console.log("[SPACE] Saving and exiting edit mode")
+    commitConfig()
+    setEditMode(false)
   }
 
   function cancelExitEditMode() {
-    resetConfig();
-    setEditMode(false);
+    console.log("[SPACE] Canceling and exiting edit mode")
+    resetConfig()
+    setEditMode(false)
   }
 
   async function saveLocalConfig({
@@ -94,6 +97,18 @@ export default function Space({
     fidgetInstanceDatums,
     fidgetTrayContents,
   }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) {
+    console.log("[SPACE] Saving local config")
+    console.log("[SPACE] Theme updates:", theme ? "Yes" : "No")
+    console.log("[SPACE] Layout config updates:", layoutConfig ? "Yes" : "No")
+    console.log(
+      "[SPACE] Fidget data updates:",
+      fidgetInstanceDatums ? "Yes" : "No"
+    )
+    console.log(
+      "[SPACE] Fidget tray updates:",
+      fidgetTrayContents ? "Yes" : "No"
+    )
+
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
@@ -103,7 +118,7 @@ export default function Space({
       theme,
       fidgetInstanceDatums,
       fidgetTrayContents,
-    });
+    })
   }
 
   // Memoize the LayoutFidget component selection based on mobile state
@@ -169,6 +184,7 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
+      {/* [SPACE] Rendering component structure */}
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
@@ -217,5 +233,5 @@ export default function Space({
         </div>
       </div>
     </div>
-  );
+  )
 }
