@@ -71,9 +71,7 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          <Suspense fallback={<SpaceLoading hasProfile={false} />}>
             {page}
-          </Suspense>
         </div>
       </div>
     </>

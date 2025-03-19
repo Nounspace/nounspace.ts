@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, Suspense, lazy } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -8,11 +8,21 @@ import {
   LayoutFidgetDetails,
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
-import { LayoutFidgets } from "@/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+
+import SpaceLoading from "./SpaceLoading";
+// Function to dynamically import the correct fidget component
+const loadFidgetComponent = (fidgetName: string) => {
+  return lazy(() =>
+    import("@/fidgets").then((module) => ({
+      default: module.LayoutFidgets[fidgetName] || module.LayoutFidgets.grid,
+    }))
+  );
+};
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -97,10 +107,9 @@ export default function Space({
     });
   }
 
-  const LayoutFidget =
-    config && config.layoutDetails && config.layoutDetails.layoutFidget
-      ? LayoutFidgets[config.layoutDetails.layoutFidget]
-      : LayoutFidgets["grid"];
+  const LayoutFidget = loadFidgetComponent(
+    config?.layoutDetails?.layoutFidget || "grid"
+  );
 
   const layoutConfig = config?.layoutDetails?.layoutConfig ?? {
     layout: [],
@@ -118,25 +127,29 @@ export default function Space({
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">{profile}</div>
           ) : null}
-          {tabBar}
+          <Suspense fallback={<TabBarSkeleton />}>
+            {tabBar}
+          </Suspense>
           <div className="flex h-full">
             {!isUndefined(feed) ? (
               <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
             ) : null}
             <div className={"grow"}>
-              <LayoutFidget
-                layoutConfig={{ ...layoutConfig }}
-                fidgetInstanceDatums={config.fidgetInstanceDatums}
-                theme={config.theme}
-                fidgetTrayContents={config.fidgetTrayContents}
-                inEditMode={editMode}
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                portalRef={portalRef}
-                saveConfig={saveLocalConfig}
-                hasProfile={!isNil(profile)}
-                hasFeed={!isNil(feed)}
-              />
+              <Suspense fallback={<SpaceLoading hasProfile={!isNil(profile)} hasFeed={!isNil(feed)} />}>
+                <LayoutFidget
+                  layoutConfig={{ ...layoutConfig }}
+                  fidgetInstanceDatums={config.fidgetInstanceDatums}
+                  theme={config.theme}
+                  fidgetTrayContents={config.fidgetTrayContents}
+                  inEditMode={editMode}
+                  saveExitEditMode={saveExitEditMode}
+                  cancelExitEditMode={cancelExitEditMode}
+                  portalRef={portalRef}
+                  saveConfig={saveLocalConfig}
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
+                />
+              </Suspense>
             </div>
           </div>
         </div>

@@ -277,6 +277,19 @@
   --tweet-container-margin: 0px !important;
 }
 
+.ripple-square {
+  opacity: 0;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Color picker. Because the `disableDarkMode` prop does not work currently */
 @media (prefers-color-scheme: dark) {
   div[class*="core_rbgcpControlBtnWrapper"] {
