@@ -23,26 +23,6 @@ export default function UserDefinedSpace({
   tabName: string;
   fid: number;
 }) {
-  return (
-    <Suspense fallback={<div>Loading space...</div>}>
-      <UserDefinedSpaceContent 
-        spaceId={providedSpaceId}
-        tabName={providedTabName}
-        fid={fid}
-      />
-    </Suspense>
-  );
-}
-
-function UserDefinedSpaceContent({
-  spaceId: providedSpaceId,
-  tabName: providedTabName,
-  fid,
-}: {
-  spaceId: string | null;
-  tabName: string;
-  fid: number;
-}) {
   const router = useRouter();
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -224,6 +204,8 @@ function UserDefinedSpaceContent({
         isPrivate: false,
       };
       // Save the configuration locally
+
+      console.log("saveGeneratedConfig", spaceId, providedTabName, saveableConfig);
       return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
     [currentUserFid, spaceId, providedTabName],

@@ -1,8 +1,8 @@
 import React from "react";
-import HomebaseContent from "./HomebaseContent";
+import PrivateSpace from "./PrivateSpace";
 
 const HomebaseFeedPage = () => {
-  return <HomebaseContent />;
+  return <PrivateSpace tabName="Feed" />;
 };
 
 export default HomebaseFeedPage;
