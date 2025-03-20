@@ -188,7 +188,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
       commitTabOrder={commitTabOrder}
       commitTab={commitTab}
     />
-  ), [tabName, tabOrdering.local]);
+  ), [tabName, tabOrdering.local, editMode]);
 
   // Define the arguments for the SpacePage component
   const args: SpacePageArgs = useMemo(() => ({

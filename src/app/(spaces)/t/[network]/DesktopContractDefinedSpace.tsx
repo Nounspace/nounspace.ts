@@ -10,11 +10,11 @@ import { find, indexOf, isNil, mapValues, toString } from "lodash";
 import router from "next/router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Address } from "viem";
-import { useSidebarContext } from "../organisms/Sidebar";
-import TabBar from "../organisms/TabBar";
-import { SpaceConfigSaveDetails } from "../templates/Space";
-import SpacePage from "../../../app/(spaces)/SpacePage";
-import { ContractDefinedSpaceProps } from "../../../app/(spaces)/t/[network]/ContractDefinedSpace";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import TabBar from "@/common/components/organisms/TabBar";
+import { SpaceConfigSaveDetails } from "@/app/(spaces)/Space";
+import SpacePage from "@/app/(spaces)/SpacePage";
+import { ContractDefinedSpaceProps } from "@/app/(spaces)/t/[network]/ContractDefinedSpace";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
