@@ -1,3 +1,3 @@
-import UserPrimarySpacePage from "@/app/(spaces)/s/[handle]/UserPrimarySpace";
+import ProfileSpacePage from "@/app/(spaces)/s/[handle]/ProfileSpace";
 
-export default UserPrimarySpacePage;
+export default ProfileSpacePage;

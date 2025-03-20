@@ -1,8 +1,8 @@
 import React from "react";
 import { getTabList, getUserMetadata, type Tab } from "./utils";
-import UserPrimarySpace, {
+import ProfileSpace, {
   UserDefinedSpacePageProps,
-} from "./UserPrimarySpace";
+} from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
@@ -46,7 +46,7 @@ export async function generateMetadata({
   return getUserMetadataStructure(userMetadata);
 }
 
-const UserPrimarySpacePage = async ({
+const ProfileSpacePage = async ({
   params: { handle, tabName: tabNameParam },
 }) => {
   if (!handle) {
@@ -62,7 +62,7 @@ const UserPrimarySpacePage = async ({
     tabNameParam,
   );
 
-  return <UserPrimarySpace fid={fid} spaceId={spaceId} tabName={tabName} />;
+  return <ProfileSpace fid={fid} spaceId={spaceId} tabName={tabName} />;
 };
 
-export default UserPrimarySpacePage;
+export default ProfileSpacePage;

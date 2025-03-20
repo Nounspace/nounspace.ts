@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, lazy, Suspense } from "react";
+import React, { useEffect, useMemo, useState, lazy, Suspense, useCallback } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -11,21 +11,13 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import { createResource } from "./utils";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 
-interface HomebaseContentProps {
-  tabName?: string;
-}
-
-// Define a type for the resource
-type Resource<T> = {
-  read: () => T;
-};
-
+// Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
-function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
+// Main component for the private space
+function PrivateSpace({ tabName }: { tabName: string }) {
+  // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
     homebaseConfig,
@@ -34,7 +26,7 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     commitTab,
     resetTab,
     saveConfig,
-    loadConfig,
+    loadFeedConfig,
     commitConfig,
     resetConfig,
     setCurrentSpaceId,
@@ -56,7 +48,7 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     commitTab: state.homebase.commitHomebaseTabToDatabase,
     resetTab: state.homebase.resetHomebaseTabConfig,
     saveConfig: state.homebase.saveHomebaseConfig,
-    loadConfig: state.homebase.loadHomebase,
+    loadFeedConfig: state.homebase.loadHomebase,
     commitConfig: state.homebase.commitHomebaseToDatabase,
     resetConfig: state.homebase.resetHomebaseConfig,
     getIsLoggedIn: state.getIsAccountReady,
@@ -72,69 +64,68 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     renameTab: state.homebase.renameTab,
   }));
 
-  const router = useRouter();
-  const isLoggedIn = getIsLoggedIn();
-  const currentFid = useCurrentFid();
-  const isFeedTab = tabName === "Feed";
-  
-  // Use the Resource type in useState
-  const [configResource, setConfigResource] = useState<Resource<any> | null>(null);
+  const router = useRouter(); // Hook for navigation
+  const isLoggedIn = getIsLoggedIn(); // Check if the user is logged in
+  const currentFid = useCurrentFid(); // Get the current FID
+  const isFeedTab = tabName === "Feed"; // Check if the current tab is the "Feed" tab
 
+  const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
+
+  // Memoize the TabBar component to prevent unnecessary re-renders
+  const tabBar = useMemo(() => (
+    <TabBar
+      getSpacePageUrl={getSpacePageUrl}
+      inHomebase={true}
+      currentTab={tabName}
+      tabList={tabOrdering.local}
+      switchTabTo={switchTabTo}
+      updateTabOrder={updateTabOrder}
+      inEditMode={editMode}
+      deleteTab={deleteTab}
+      createTab={createTab}
+      renameTab={renameTab}
+      commitTabOrder={commitTabOrder}
+      commitTab={commitTab}
+    />
+  ), [tabName, tabOrdering.local]);
+
+  // Effect to set the current space and tab name, and load the tab configuration
   useEffect(() => {
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
-    
-    if (isLoggedIn) {
-      const loadData = async () => {
-        await loadTabNames();
-        
-        if (tabOrdering.local.length === 0) {
-          await loadTabOrder();
-        }
-        
-        let config;
-        
-        if (isFeedTab) {
-          config = await loadConfig();
-        } else if (!isNil(tabName)) {
-          config = await loadTab(tabName);
-          
-          const tabOrder = tabOrdering.local || [];
-          for (const tab of tabOrder) {
-            if (tabName !== tab && tab !== "Feed") {
-              loadTab(tab);
-            }
-          }
-        }
-        
-        return config;
-      };
-      
-      setConfigResource(createResource(loadData()));
+    if (!isNil(tabName)) {
+      loadTabConfig();
     }
-  }, [isLoggedIn, tabName]);
+  }, []);
 
-  const config = configResource ? configResource.read() : null;
+  // Function to load the configuration for the current tab
+  async function loadTabConfig() {
+    await loadTabNames();
 
-  const memoizedConfig = useMemo(() => {
-    if (!config) return INITIAL_SPACE_CONFIG_EMPTY;
-    
-    if (!isFeedTab) {
-      const { timestamp, ...restConfig } = config;
-      return restConfig;
+    if (tabOrdering.local.length === 0) {
+      await loadTabOrder();
     }
-    
-    return config;
-  }, [
-    config?.fidgetInstanceDatums,
-    config?.layoutID,
-    config?.layoutDetails,
-    config?.isEditable,
-    config?.fidgetTrayContents,
-    config?.theme,
-    isFeedTab,
-  ]);
 
+    if (isFeedTab) {
+      await loadFeedConfig();
+    } else {
+      await loadTab(tabName);
+    }
+
+    await loadRemainingTabs();
+  }
+
+  // Callback to load configurations for all tabs except the current one
+  const loadRemainingTabs = useCallback(async () => {
+    const tabOrder = tabOrdering.local || [];
+    for (const tab of tabOrder) {
+      if (tabName !== tab) {
+        await loadTab(tab);
+      }
+    }
+  }, [tabOrdering, tabName, loadTab]);
+
+  // Function to switch to a different tab
   function switchTabTo(newTabName: string) {
     if (newTabName === "Feed") {
       router.push(`/homebase`);
@@ -143,6 +134,7 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     }
   }
 
+  // Function to get the URL for a given tab
   function getSpacePageUrl(tabName: string) {
     if (tabName === "Feed") {
       return `/homebase`;
@@ -150,36 +142,16 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     return `/homebase/${tabName}`;
   }
 
-  const { editMode } = useSidebarContext();
-
-  const tabBar = (
-    <Suspense fallback={<TabBarSkeleton />}>
-      <TabBar
-        getSpacePageUrl={getSpacePageUrl}
-        inHomebase={true}
-        currentTab={tabName}
-        tabList={tabOrdering.local}
-        switchTabTo={switchTabTo}
-        updateTabOrder={updateTabOrder}
-        inEditMode={editMode}
-        deleteTab={deleteTab}
-        createTab={createTab}
-        renameTab={renameTab}
-        commitTabOrder={commitTabOrder}
-        commitTab={commitTab}
-      />
-    </Suspense>
-  );
-
+  // Handler to reset the configuration for the current tab
   const resetConfigHandler = async () => {
     if (isFeedTab) {
-      resetConfig();
+      return resetConfig();
     } else {
-      resetTab(tabName);
+      return resetTab(tabName);
     }
-    return Promise.resolve();
   };
 
+  // Handler to commit the configuration for the current tab
   const commitConfigHandler = async () => {
     if (isFeedTab) {
       await commitConfig();
@@ -195,6 +167,7 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     }
   };
 
+  // Handler to save the configuration for the current tab
   const saveConfigHandler = async (configToSave) => {
     if (isFeedTab) {
       await saveConfig(configToSave);
@@ -204,22 +177,34 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     return commitConfigHandler();
   };
 
-  const args: SpacePageArgs = !isLoggedIn
-    ? {
-        config: memoizedConfig ?? undefined,
-        saveConfig: async () => {},
-        commitConfig: async () => {},
-        resetConfig: async () => Promise.resolve(),
-        tabBar: tabBar,
-      }
-    : {
-        config: memoizedConfig,
-        saveConfig: saveConfigHandler,
-        commitConfig: commitConfigHandler,
-        resetConfig: resetConfigHandler,
-        tabBar: tabBar,
+  // Define the arguments for the SpacePage component
+  const args: SpacePageArgs = {
+    config: useMemo(() => {
+      const { timestamp, ...restConfig } = {
+        ...((isFeedTab 
+            ? homebaseConfig 
+            : tabConfigs[tabName]?.config)
+            ?? INITIAL_SPACE_CONFIG_EMPTY),
+        isEditable: true,
       };
+      return restConfig;
+    }, [
+      isFeedTab,
+      homebaseConfig,
+      tabConfigs,
+      tabName,
+      // Only include the specific properties that should trigger a re-render
+      isFeedTab ? homebaseConfig?.layoutID : tabConfigs[tabName]?.config?.layoutID,
+      isFeedTab ? homebaseConfig?.theme : tabConfigs[tabName]?.config?.theme,
+      // Don't include fidgetInstanceDatums in the dependency array
+    ]),
+    saveConfig: saveConfigHandler,
+    commitConfig: commitConfigHandler,
+    resetConfig: resetConfigHandler,
+    tabBar: tabBar,
+  };
 
+  // If the current tab is "Feed" and there's a current FID, add a feed to the arguments
   if (isFeedTab && currentFid) {
     args.feed = (
       <FeedModule.fidget
@@ -239,9 +224,10 @@ function HomebaseContentComponent({ tabName = "Feed" }: HomebaseContentProps) {
     );
   }
 
+  // Render the SpacePage component with the defined arguments
   return (
     <SpacePage key={tabName} {...args} />
   );
 }
 
-export default HomebaseContentComponent; 
+export default PrivateSpace; 

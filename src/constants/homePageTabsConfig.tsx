@@ -310,7 +310,7 @@ export const WELCOME_TAB_CONFIG: SpaceConfig = {
       id: "iframe:8fa2c65f-6224-4b75-afcc-d5cad0c2e7e5",
     },
   },
-  isEditable: true,
+  isEditable: false,
   fidgetTrayContents: [],
 };
 
@@ -670,7 +670,7 @@ export const FIDGETS_TAB_CONFIG: SpaceConfig = {
       id: "links:9cb3dac9-5458-4b0a-9f5d-5517b3e9f06f",
     },
   },
-  isEditable: true,
+  isEditable: false,
   fidgetTrayContents: [],
 };
 
@@ -975,7 +975,7 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
       id: "text:e95ddfc6-1294-488d-b3ec-f6cfe26d7ab7",
     },
   },
-  isEditable: true,
+  isEditable: false,
   fidgetTrayContents: []
 };
 
@@ -1192,7 +1192,7 @@ export const NOUNS_TAB_CONFIG: SpaceConfig = {
       id: "iframe:ede8bb6b-7f84-41fe-97ce-51aa96711f15",
     },
   },
-  isEditable: true,
+  isEditable: false,
   fidgetTrayContents: [],
 };
 
