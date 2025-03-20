@@ -12,7 +12,7 @@ export type UserDefinedSpacePageProps = {
   tabName: string | string[] | null | undefined;
 };
 
-export const UserPrimarySpace = ({
+export const ProfileSpace = ({
   fid,
   spaceId,
   tabName,
@@ -38,4 +38,4 @@ export const UserPrimarySpace = ({
   );
 };
 
-export default UserPrimarySpace;
+export default ProfileSpace;

@@ -13,6 +13,6 @@ const HomebaseTab = () => {
 
 // This component will be imported dynamically to trigger suspense
 import { lazy } from "react";
-const HomebaseContent = lazy(() => import("../HomebaseContent"));
+const HomebaseContent = lazy(() => import("../PrivateSpace"));
 
 export default HomebaseTab;
