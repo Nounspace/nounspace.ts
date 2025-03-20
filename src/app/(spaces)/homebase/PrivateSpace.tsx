@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, lazy, Suspense, useCallback } from "react";
+import React, { useEffect, useMemo, useState, lazy, useCallback } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -11,6 +11,9 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+import SpaceLoading from "@/app/(spaces)/SpaceLoading";
+import { LoginModal } from "@privy-io/react-auth";
 
 // Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
@@ -40,6 +43,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     deleteTab,
     renameTab,
     commitTabOrder,
+    setModalOpen,
   } = useAppStore((state) => ({
     tabConfigs: state.homebase.tabs,
     homebaseConfig: state.homebase.homebaseConfig,
@@ -62,6 +66,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     createTab: state.homebase.createTab,
     deleteTab: state.homebase.deleteTab,
     renameTab: state.homebase.renameTab,
+    setModalOpen: state.setup.setModalOpen,
   }));
 
   const router = useRouter(); // Hook for navigation
@@ -71,23 +76,13 @@ function PrivateSpace({ tabName }: { tabName: string }) {
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
-  // Memoize the TabBar component to prevent unnecessary re-renders
-  const tabBar = useMemo(() => (
-    <TabBar
-      getSpacePageUrl={getSpacePageUrl}
-      inHomebase={true}
-      currentTab={tabName}
-      tabList={tabOrdering.local}
-      switchTabTo={switchTabTo}
-      updateTabOrder={updateTabOrder}
-      inEditMode={editMode}
-      deleteTab={deleteTab}
-      createTab={createTab}
-      renameTab={renameTab}
-      commitTabOrder={commitTabOrder}
-      commitTab={commitTab}
-    />
-  ), [tabName, tabOrdering.local]);
+  // Effect to handle login modal when user is not logged in
+  useEffect(() => {
+    if (!isLoggedIn) {
+      // Open the login modal if user is not logged in
+      setModalOpen(true);
+    }
+  }, [isLoggedIn, setModalOpen]);
 
   // Effect to set the current space and tab name, and load the tab configuration
   useEffect(() => {
@@ -177,9 +172,27 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     return commitConfigHandler();
   };
 
+  // Memoize the TabBar component to prevent unnecessary re-renders
+  const tabBar = useMemo(() => (
+    <TabBar
+      getSpacePageUrl={getSpacePageUrl}
+      inHomebase={true}
+      currentTab={tabName}
+      tabList={tabOrdering.local}
+      switchTabTo={switchTabTo}
+      updateTabOrder={updateTabOrder}
+      inEditMode={editMode}
+      deleteTab={deleteTab}
+      createTab={createTab}
+      renameTab={renameTab}
+      commitTabOrder={commitTabOrder}
+      commitTab={commitTab}
+    />
+  ), [tabName, tabOrdering.local]);
+
   // Define the arguments for the SpacePage component
-  const args: SpacePageArgs = {
-    config: useMemo(() => {
+  const args: SpacePageArgs = useMemo(() => ({
+    config: (() => {
       const { timestamp, ...restConfig } = {
         ...((isFeedTab 
             ? homebaseConfig 
@@ -188,25 +201,12 @@ function PrivateSpace({ tabName }: { tabName: string }) {
         isEditable: true,
       };
       return restConfig;
-    }, [
-      isFeedTab,
-      homebaseConfig,
-      tabConfigs,
-      tabName,
-      // Only include the specific properties that should trigger a re-render
-      isFeedTab ? homebaseConfig?.layoutID : tabConfigs[tabName]?.config?.layoutID,
-      isFeedTab ? homebaseConfig?.theme : tabConfigs[tabName]?.config?.theme,
-      // Don't include fidgetInstanceDatums in the dependency array
-    ]),
+    })(),
     saveConfig: saveConfigHandler,
     commitConfig: commitConfigHandler,
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
-  };
-
-  // If the current tab is "Feed" and there's a current FID, add a feed to the arguments
-  if (isFeedTab && currentFid) {
-    args.feed = (
+    feed: isFeedTab && currentFid ? (
       <FeedModule.fidget
         settings={{
           feedType: FeedType.Following,
@@ -221,6 +221,36 @@ function PrivateSpace({ tabName }: { tabName: string }) {
         saveData={async () => noop()}
         data={{}}
       />
+    ) : undefined,
+  }), [
+    isFeedTab,
+    homebaseConfig,
+    tabConfigs,
+    tabName,
+    // Only include the specific properties that should trigger a re-render
+    isFeedTab ? homebaseConfig?.layoutID : tabConfigs[tabName]?.config?.layoutID,
+    isFeedTab ? homebaseConfig?.theme : tabConfigs[tabName]?.config?.theme,
+    // Don't include fidgetInstanceDatums in the dependency array
+    tabBar,
+    currentFid,
+  ]);
+
+  // If not logged in, show a loading state with the login modal
+  if (!isLoggedIn) {
+    return (
+      <div className="user-theme-background w-full h-full relative flex-col">
+        <div className="w-full transition-all duration-100 ease-out">
+          <div className="flex flex-col h-full">
+            <TabBarSkeleton />
+            <div className="flex h-full">
+              <div className={"grow"}>
+                <SpaceLoading hasProfile={false} hasFeed={isFeedTab} />
+                <LoginModal open={true} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
