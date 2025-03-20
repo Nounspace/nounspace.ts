@@ -6,15 +6,35 @@ import { useAppStore } from "@/common/data/stores/app";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import { SpaceConfigSaveDetails } from "./Space";
 import Profile from "@/fidgets/ui/profile";
-import TabBar from "../../common/components/organisms/TabBar";
+import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { useSidebarContext } from "../../common/components/organisms/Sidebar";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { useRouter } from "next/navigation";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export default function UserDefinedSpace({
+  spaceId: providedSpaceId,
+  tabName: providedTabName,
+  fid,
+}: {
+  spaceId: string | null;
+  tabName: string;
+  fid: number;
+}) {
+  return (
+    <Suspense fallback={<div>Loading space...</div>}>
+      <UserDefinedSpaceContent 
+        spaceId={providedSpaceId}
+        tabName={providedTabName}
+        fid={fid}
+      />
+    </Suspense>
+  );
+}
+
+function UserDefinedSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   fid,
@@ -204,8 +224,6 @@ export default function UserDefinedSpace({
         isPrivate: false,
       };
       // Save the configuration locally
-
-      console.log("saveGeneratedConfig", spaceId, providedTabName, saveableConfig);
       return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
     [currentUserFid, spaceId, providedTabName],
