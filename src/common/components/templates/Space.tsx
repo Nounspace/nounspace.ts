@@ -185,7 +185,7 @@ export default function Space({
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
           </div>
-          {!isMobile && !isUndefined(profile) ? (
+          {!isUndefined(profile) ? (
             <div className="z-50 bg-white h-40">
               {/* [SPACE] Rendering profile section (desktop only) */}
               {profile}
