@@ -186,8 +186,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           >
             <TabsList className={`
               w-full h-full 
-              ${isMobile ? 'overflow-x-auto flex-wrap justify-start' : 'justify-center'} 
+              overflow-x-auto
               gap-4 px-4
+              flex whitespace-nowrap
+              scrollbar-none
+              justify-start
             `}>
               {map(validFidgetIds, (fidgetId) => {
                 const fidgetName = getFidgetName(fidgetId);
