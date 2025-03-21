@@ -125,7 +125,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       {/* Main content area with padding-bottom to make space for fixed tabs */}
       <div 
         className="w-full h-full overflow-hidden" 
-        style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+        style={{ paddingBottom: validFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0' }}
       >
         <Tabs 
           defaultValue={selectedTab} 
@@ -180,45 +180,46 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           </div>
           
           {/* Tabs fixed to bottom of screen */}
-          <div 
-            className="fixed bottom-0 left-0 right-0 z-50 bg-white bg-opacity-95 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
-            style={{ height: `${TAB_HEIGHT}px` }}
-          >
-            <TabsList className={`
-              w-full h-full 
-              overflow-x-auto
-              gap-4 px-4
-              flex whitespace-nowrap
-              scrollbar-none
-              justify-start
-            `}>
-              {map(validFidgetIds, (fidgetId) => {
-                const fidgetName = getFidgetName(fidgetId);
-                // Get icon based on fidget name or fallback to default
-                const IconComponent = iconMap[fidgetName.toLowerCase()] || MdGridView;
-                
-                return (
-                  <TabsTrigger 
-                    key={fidgetId} 
-                    value={fidgetId}
-                    className={`
-                      flex flex-col items-center justify-center
-                      min-w-[72px] h-full py-1.5
-                      font-medium
-                      ${isMobile ? 'text-xs' : 'text-sm'}
-                      hover:bg-gray-50 transition-colors
-                      data-[state=active]:bg-primary/10
-                      data-[state=active]:text-primary
-                      rounded-lg
-                    `}
-                  >
-                    <IconComponent className="w-5 h-5 mb-0.5" />
-                    <span className="truncate max-w-[80px]">{fidgetName}</span>
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </div>
+          {validFidgetIds.length > 1 && (
+            <div 
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white bg-opacity-95 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+              style={{ height: `${TAB_HEIGHT}px` }}
+            >
+              <TabsList className={`
+                w-full h-full 
+                overflow-x-auto
+                gap-4 px-4
+                flex whitespace-nowrap
+                scrollbar-none
+                justify-start
+              `}>
+                {validFidgetIds.map((fidgetId) => {
+                  const fidgetName = getFidgetName(fidgetId);
+                  const IconComponent = iconMap[fidgetName.toLowerCase()] || MdGridView;
+                  
+                  return (
+                    <TabsTrigger 
+                      key={fidgetId} 
+                      value={fidgetId}
+                      className={`
+                        flex flex-col items-center justify-center
+                        min-w-[72px] h-full py-1.5
+                        font-medium
+                        ${isMobile ? 'text-xs' : 'text-sm'}
+                        hover:bg-gray-50 transition-colors
+                        data-[state=active]:bg-primary/10
+                        data-[state=active]:text-primary
+                        rounded-lg
+                      `}
+                    >
+                      <IconComponent className="w-5 h-5 mb-0.5" />
+                      <span className="truncate max-w-[80px]">{fidgetName}</span>
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </div>
+          )}
         </Tabs>
       </div>
     </div>
