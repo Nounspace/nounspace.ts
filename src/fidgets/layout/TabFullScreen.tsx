@@ -51,7 +51,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   saveConfig,
   tabNames,
 }) => {
-  const [selectedTab, setSelectedTab] = useState(layoutConfig.layout[0] || "");
+  // Filter out any fidget IDs that don't exist in fidgetInstanceDatums
+  const validFidgetIds = layoutConfig.layout.filter(id => fidgetInstanceDatums[id]);
+  
+  // Initialize with the first valid fidget ID
+  const [selectedTab, setSelectedTab] = useState(validFidgetIds.length > 0 ? validFidgetIds[0] : "");
   const { width } = useWindowSize();
   const isMobile = width ? width < 768 : false;
 
@@ -73,9 +77,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const dummyRemoveFidget = () => {};
   const dummyMinimizeFidget = () => {};
 
-  // Filter out any fidget IDs that don't exist in fidgetInstanceDatums
-  const validFidgetIds = layoutConfig.layout.filter(id => fidgetInstanceDatums[id]);
-
   // If no valid fidgets, show empty state
   if (validFidgetIds.length === 0) {
     return (
@@ -92,6 +93,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   if (!validFidgetIds.includes(selectedTab)) {
     setSelectedTab(validFidgetIds[0]);
   }
+
+  // Debug log to see which tab is selected
+  console.log('Selected tab:', selectedTab, 'Valid tabs:', validFidgetIds);
 
   const getFidgetName = (fidgetId: string) => {
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
@@ -128,55 +132,48 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
         style={{ paddingBottom: validFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0' }}
       >
         <Tabs 
-          defaultValue={selectedTab} 
+          value={selectedTab}
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
           <div className="relative z-40 h-full">
-            <AnimatePresence mode="wait">
-              {map(validFidgetIds, (fidgetId) => {
-                const fidgetDatum = fidgetInstanceDatums[fidgetId];
-                if (!fidgetDatum) return null;
-                
-                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-                if (!fidgetModule) return null;
-                
-                const bundle: FidgetBundle = {
-                  ...fidgetDatum,
-                  properties: fidgetModule.properties,
-                  config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
-                };
-                
-                return (
-                  <TabsContent 
-                    key={fidgetId} 
-                    value={fidgetId}
-                    className="h-full w-full"
-                  >
-                    <motion.div
-                      key={fidgetId}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="h-full w-full"
-                    >
-                      <FidgetWrapper
-                        fidget={fidgetModule.fidget}
-                        context={{ theme }}
-                        bundle={bundle}
-                        saveConfig={saveFidgetConfig(fidgetId)}
-                        setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
-                        setSelectedFidgetID={dummySetSelectedFidgetID}
-                        selectedFidgetID=""
-                        removeFidget={dummyRemoveFidget}
-                        minimizeFidget={dummyMinimizeFidget}
-                      />
-                    </motion.div>
-                  </TabsContent>
-                );
-              })}
-            </AnimatePresence>
+            {validFidgetIds.map((fidgetId) => {
+              const fidgetDatum = fidgetInstanceDatums[fidgetId];
+              if (!fidgetDatum) return null;
+              
+              const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+              if (!fidgetModule) return null;
+              
+              const bundle: FidgetBundle = {
+                ...fidgetDatum,
+                properties: fidgetModule.properties,
+                config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
+              };
+              
+              // Only render the content for the selected tab
+              return (
+                <TabsContent 
+                  key={fidgetId} 
+                  value={fidgetId}
+                  className="h-full w-full block"
+                  style={{ visibility: 'visible', display: 'block' }}
+                >
+                  <div className="h-full w-full">
+                    <FidgetWrapper
+                      fidget={fidgetModule.fidget}
+                      context={{ theme }}
+                      bundle={bundle}
+                      saveConfig={saveFidgetConfig(fidgetId)}
+                      setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
+                      setSelectedFidgetID={dummySetSelectedFidgetID}
+                      selectedFidgetID=""
+                      removeFidget={dummyRemoveFidget}
+                      minimizeFidget={dummyMinimizeFidget}
+                    />
+                  </div>
+                </TabsContent>
+              );
+            })}
           </div>
           
           {/* Tabs fixed to bottom of screen */}
