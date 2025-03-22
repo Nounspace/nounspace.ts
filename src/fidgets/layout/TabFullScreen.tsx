@@ -1,29 +1,25 @@
-import React, { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import {
-  LayoutFidget,
-  LayoutFidgetProps,
-  LayoutFidgetConfig,
   FidgetBundle,
   FidgetConfig,
-  FidgetSettings,
-  FidgetData,
+  LayoutFidget,
+  LayoutFidgetConfig,
+  LayoutFidgetProps
 } from "@/common/fidgets";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import { CompleteFidgets } from "..";
-import { map } from "lodash";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
-import { motion, AnimatePresence } from "framer-motion";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
-import { 
-  MdDashboard, 
-  MdInsights, 
-  MdSettings, 
-  MdList,
+import React, { useState } from "react";
+import {
   MdBarChart,
+  MdDashboard,
+  MdGridView,
+  MdInsights,
+  MdList,
   MdPieChart,
-  MdTimeline,
-  MdGridView 
+  MdSettings,
+  MdTimeline
 } from "react-icons/md";
+import { CompleteFidgets } from "..";
 
 // TabFullScreen layout configuration
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
