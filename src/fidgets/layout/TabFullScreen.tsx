@@ -43,6 +43,7 @@ type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
  * - Responsive design with mobile-specific styles
  * - Animated transitions between fidgets
  * - Support for custom tab names
+ * - Mobile-specific padding around fidgets for better display
  */
 const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   fidgetInstanceDatums,
@@ -111,6 +112,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
   // Height of the tab bar for padding the content
   const TAB_HEIGHT = 56; // px
+  
+  // Mobile padding values for fidgets
+  const MOBILE_PADDING = 12; // px
 
   // Add iconMap inside the component but before the return statement
   const iconMap: { [key: string]: React.ElementType } = {
@@ -129,7 +133,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       {/* Main content area with padding-bottom to make space for fixed tabs */}
       <div 
         className="w-full h-full overflow-hidden" 
-        style={{ paddingBottom: validFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0' }}
+        style={{ 
+          paddingBottom: validFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+        }}
       >
         <Tabs 
           value={selectedTab}
@@ -158,7 +164,12 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   className="h-full w-full block"
                   style={{ visibility: 'visible', display: 'block' }}
                 >
-                  <div className="h-full w-full">
+                  <div 
+                    className="h-full w-full"
+                    style={isMobile ? { 
+                      padding: `${MOBILE_PADDING}px`,
+                    } : {}}
+                  >
                     <FidgetWrapper
                       fidget={fidgetModule.fidget}
                       context={{ theme }}
@@ -223,4 +234,4 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   );
 };
 
-export default TabFullScreen; 
+export default TabFullScreen;
