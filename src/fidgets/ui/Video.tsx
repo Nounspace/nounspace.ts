@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -68,6 +68,25 @@ const ErrorWrapper: React.FC<{
 const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
+  // Add mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    // Check if device is mobile based on screen width
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Check on initial render
+    checkMobile();
+    
+    // Add listener for window resize
+    window.addEventListener('resize', checkMobile);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
@@ -97,17 +116,27 @@ const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   const scaleValue = size;
 
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ 
+      overflow: "hidden", 
+      width: "100%", 
+      height: "100%",
+      position: "relative"
+    }}>
       <iframe
         src={transformedUrl}
         title="IFrame Fidget"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
         allowFullScreen
         style={{
-          transform: `scale(${scaleValue})`,
+          transform: isMobile ? 'none' : `scale(${scaleValue})`,
           transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
+          width: isMobile ? "100%" : `${100 / scaleValue}%`,
+          height: isMobile ? "100%" : `${100 / scaleValue}%`,
+          // Removed absolute positioning which was causing issues
+          position: "relative",
+          top: 0,
+          left: 0,
+          border: "none"
         }}
         className="size-full"
       />
