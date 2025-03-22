@@ -167,7 +167,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   <div 
                     className="h-full w-full"
                     style={isMobile ? { 
-                      padding: `${MOBILE_PADDING}px`,
+                      paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
                     } : {}}
                   >
                     <FidgetWrapper
@@ -196,7 +196,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               <TabsList className={`
                 w-full h-full 
                 overflow-x-auto
-                gap-4 px-4
+                gap-4
                 flex whitespace-nowrap
                 scrollbar-none
                 justify-start
