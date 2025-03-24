@@ -9,21 +9,11 @@ import {
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import React, { useState } from "react";
-import {
-  MdBarChart,
-  MdDashboard,
-  MdGridView,
-  MdInsights,
-  MdList,
-  MdPieChart,
-  MdSettings,
-  MdTimeline
-} from "react-icons/md";
+import { MdGridView } from "react-icons/md";
 import { CompleteFidgets } from "..";
 
-// TabFullScreen layout configuration
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
-  layout: string[]; // Array of fidget IDs in the order they should appear in tabs
+  layout: string[];
 }
 
 type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
@@ -106,22 +96,26 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return customName || fidgetModule.properties.fidgetName;
   };
 
-  // Height of the tab bar for padding the content
-  const TAB_HEIGHT = 56; // px
+  // Height of the tab bar for padding the content - increased from 56px to 72px
+  const TAB_HEIGHT = 72; // px
   
   // Mobile padding values for fidgets
   const MOBILE_PADDING = 12; // px
 
-  // Add iconMap inside the component but before the return statement
-  const iconMap: { [key: string]: React.ElementType } = {
-    'dashboard': MdDashboard,
-    'insights': MdInsights,
-    'settings': MdSettings,
-    'list': MdList,
-    'bar': MdBarChart,
-    'pie': MdPieChart,
-    'timeline': MdTimeline,
-    'grid': MdGridView,
+  // Function to get icon component for a fidget
+  const getFidgetIcon = (fidgetId: string) => {
+    const fidgetDatum = fidgetInstanceDatums[fidgetId];
+    if (!fidgetDatum) return <MdGridView className="text-xl" />;  // Default icon
+    
+    const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+    if (!fidgetModule || !fidgetModule.properties.icon) return <MdGridView className="text-xl" />;  // Default icon
+    
+    // Return the emoji icon from the fidget properties
+    return (
+      <span className="text-lg" role="img" aria-label={fidgetModule.properties.fidgetName}>
+        {String.fromCodePoint(fidgetModule.properties.icon)}
+      </span>
+    );
   };
 
   return (
@@ -160,7 +154,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   className="h-full w-full block"
                   style={{ visibility: 'visible', display: 'block' }}
                 >
-                  <div 
+                  <div
                     className="h-full w-full"
                     style={isMobile ? { 
                       paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
@@ -199,7 +193,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               `}>
                 {validFidgetIds.map((fidgetId) => {
                   const fidgetName = getFidgetName(fidgetId);
-                  const IconComponent = iconMap[fidgetName.toLowerCase()] || MdGridView;
                   
                   return (
                     <TabsTrigger 
@@ -207,7 +200,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                       value={fidgetId}
                       className={`
                         flex flex-col items-center justify-center
-                        min-w-[72px] h-full py-1.5
+                        min-w-[80px] h-full py-2
                         font-medium
                         ${isMobile ? 'text-xs' : 'text-sm'}
                         hover:bg-gray-50 transition-colors
@@ -216,8 +209,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                         rounded-lg
                       `}
                     >
-                      <IconComponent className="w-5 h-5 mb-0.5" />
-                      <span className="truncate max-w-[80px]">{fidgetName}</span>
+                      {getFidgetIcon(fidgetId)}
+                      <span className="truncate max-w-[80px] line-clamp-1">{fidgetName}</span>
                     </TabsTrigger>
                   );
                 })}
