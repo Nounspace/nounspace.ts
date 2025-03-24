@@ -91,9 +91,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
     if (!fidgetModule) return "Unknown";
     
-    // Use custom tab name if available, otherwise use fidget name
+    // Use custom tab name if available, otherwise use mobile name for mobile devices or fidget name
     const customName = tabNames && tabNames[validFidgetIds.indexOf(fidgetId)];
-    return customName || fidgetModule.properties.fidgetName;
+    
+    if (customName) return customName;
+    
+    // Use mobileFidgetName on mobile devices if available, otherwise use fidgetName
+    if (isMobile && fidgetModule.properties.mobileFidgetName) {
+      return fidgetModule.properties.mobileFidgetName;
+    }
+    
+    return fidgetModule.properties.fidgetName;
   };
 
   // Height of the tab bar for padding the content - increased from 56px to 72px

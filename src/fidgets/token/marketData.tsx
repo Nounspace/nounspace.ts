@@ -25,6 +25,7 @@ export type MarketDataProps = {
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Market Data",
+  mobileFidgetName: "Chart",
   icon: 0x1f4c8,
   fields: [
     {

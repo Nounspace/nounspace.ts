@@ -20,6 +20,7 @@ export type snapShotSettings = {
 
 export const snapshotConfig: FidgetProperties = {
   fidgetName: "SnapShot Governance",
+  mobileFidgetName: "Gov",
   icon: 0x26a1,
   fields: [
     {

@@ -19,6 +19,7 @@ export type FrameFidgetSettings = {
 
 const frameProperties: FidgetProperties = {
   fidgetName: "Farcaster Frame",
+  mobileFidgetName: "Frame",
   fields: [
     {
       fieldName: "url",
