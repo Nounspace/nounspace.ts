@@ -25,6 +25,7 @@ const DISALLOW_URL_PATTERNS = [
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
+  mobileFidgetName: "Site",
   icon: 0x1f310, // 🌐
   fields: [
     {

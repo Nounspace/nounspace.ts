@@ -65,6 +65,7 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
 // Properties are developer defined variables (they are inaccessible to the user)
 export type FidgetProperties<S extends FidgetSettings = FidgetSettings> = {
   fidgetName: string;
+  mobileFidgetName?: string;
   icon: number;
   fields: FidgetFieldConfig<S>[];
   size: {
