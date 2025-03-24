@@ -186,7 +186,7 @@ export default function Space({
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (
-            <div className="z-50 bg-white h-40">
+            <div className="z-50 bg-white md:h-40">
               {/* [SPACE] Rendering profile section (desktop only) */}
               {profile}
             </div>

@@ -115,8 +115,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
     );
   }
   return (
-    <div className="flex flex-row h-full overflow-auto p-6">
-      <div className="h-full max-h-24 max-w-24">
+    <div className="flex flex-row h-full overflow-auto p-4 pb-0 md:p-6">
+      <div className="h-full max-h-14 max-w-14 md:max-h-24 md:max-w-24">
         {user.pfp_url ? (
           <img
             className="aspect-square rounded-full max-h-full object-cover"
@@ -126,15 +126,15 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           <CgProfile className="text-gray-200 dark:text-gray-700 me-4 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>
         )}
       </div>
-      <div className="w-4/6 flex flex-col pl-6">
-        <div className="flex flex-row">
-          <div className="w-4/6 flex flex-col">
+      <div className="flex flex-col pl-4 w-full md:w-4/6 gap-2">
+        <div className="flex flex-row justify-between">
+          <div className="flex flex-col">
             <span className="w-full text-xl">
               {user.display_name || user.username}
             </span>
             <small className="text-slate-500">@{user.username}</small>
           </div>
-          <div className="ml-4 flex w-full h-full items-center">
+          <div className="ml-4 flex h-full items-center">
             {user.viewer_context && fid !== viewerFid && (
               <>
                 <Button
@@ -161,7 +161,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           <p className="mr-6">{user.following_count} Following</p>
           <p>{user.follower_count} Followers</p>
         </div>
-        <p className="text-sm mt-4">
+        <p className="text-sm md:mt-4">
           <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
         </p>
       </div>
