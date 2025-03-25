@@ -58,25 +58,25 @@ import { PartialFrameV2 } from "@frames.js/render/unstable-types";
 
 export type ProtocolConfiguration =
   | {
-      protocol: "farcaster";
-      specification: "farcaster";
-    }
+    protocol: "farcaster";
+    specification: "farcaster";
+  }
   | {
-      protocol: "farcaster_v2";
-      specification: "farcaster_v2";
-    }
+    protocol: "farcaster_v2";
+    specification: "farcaster_v2";
+  }
   | {
-      protocol: "lens";
-      specification: "openframes";
-    }
+    protocol: "lens";
+    specification: "openframes";
+  }
   | {
-      protocol: "xmtp";
-      specification: "openframes";
-    }
+    protocol: "xmtp";
+    specification: "openframes";
+  }
   | {
-      protocol: "anonymous";
-      specification: "openframes";
-    };
+    protocol: "anonymous";
+    specification: "openframes";
+  };
 
 // @todo uncomment once triggers are implemented upstream
 export type FrameLaunchedInContext =
@@ -125,7 +125,7 @@ export const FrameDebugger = React.forwardRef<
     ref
   ) => {
 
-    
+
 
     // const { toast } = useToast();
     const farcasterSignerState = useFarcasterIdentity();
@@ -147,19 +147,19 @@ export const FrameDebugger = React.forwardRef<
       extraButtonRequestPayload: { mockData: mockHubContext },
       transactionDataSuffix:
         process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID &&
-        (protocol.protocol === "farcaster" ||
-          protocol.protocol === "farcaster_v2")
+          (protocol.protocol === "farcaster" ||
+            protocol.protocol === "farcaster_v2")
           ? attribution(
-              parseInt(process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID)
-            )
+            parseInt(process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID)
+          )
           : undefined,
       resolveSigner() {
         // switch (protocol.protocol) {
         //   case "farcaster":
         //   case "farcaster_v2":
-            return farcasterSignerState.withContext(frameContext.farcaster, {
-              specification: protocol.specification,
-            });
+        return farcasterSignerState.withContext(frameContext.farcaster, {
+          specification: protocol.specification,
+        });
         //   case "xmtp":
         //     return xmtpSignerState.withContext(frameContext.xmtp);
         //   case "lens":
@@ -277,16 +277,15 @@ export const FrameDebugger = React.forwardRef<
     );
 
     const isImageDebuggingAvailable = false;
-      // currentFrameStackItem &&
-      // "frameResult" in currentFrameStackItem &&
-      // !!currentFrameStackItem.frameResult.framesDebugInfo?.image;
+    // currentFrameStackItem &&
+    // "frameResult" in currentFrameStackItem &&
+    // !!currentFrameStackItem.frameResult.framesDebugInfo?.image;
 
 
     return (
       <div className="">
         <div className="order-1 lg:order-0">
-          <div className="">
-            {/* <WithTooltip tooltip={<p>Fetch home frame</p>}>
+          {/* <WithTooltip tooltip={<p>Fetch home frame</p>}>
               <Button
                 className="flex flex-row gap-3 items-center shadow-sm border"
                 variant={"outline"}
@@ -334,7 +333,6 @@ export const FrameDebugger = React.forwardRef<
                 <RefreshCwIcon size={20} />
               </Button>
             </WithTooltip> */}
-          </div>
           {/* <div className="max-h-[400px] overflow-y-auto">
             <div className="p-0">
               <FrameDebuggerRequestCardContent
@@ -402,12 +400,11 @@ export const FrameDebugger = React.forwardRef<
               onError={handleFrameError}
             />
             {/* display frame url bellow frame */}
-            <div className="ml-auto text-sm text-slate-500">{url}</div>
 
             {!isLoading && protocol.specification !== "farcaster_v2" && (
               <>
                 {currentFrameStackItem?.request.method === "GET" && (
-                
+
                   <div className="my-5">
                     <h3 className="font-bold">Preview</h3>
                     <div className="border rounded mt-2">
@@ -425,7 +422,7 @@ export const FrameDebugger = React.forwardRef<
                     (currentFrameStackItem.frameResult.specification ===
                       "farcaster" ||
                       currentFrameStackItem.frameResult.specification ===
-                        "openframes") &&
+                      "openframes") &&
                     currentFrameStackItem.frameResult.frame.buttons
                       ?.filter(
                         (button) =>
@@ -610,7 +607,7 @@ function toast(arg0: { title: string; description: any; variant: any; action: an
   // Create an alert with the title and description 
   console.log(`Toast: ${arg0.title}`);
   console.log(`Description: `, arg0.description);
-  
+
   // In a real implementation this would show a toast notification UI component
   // For now we'll just log to console since the UI components are commented out
   // This maintains the error reporting functionality in a basic way
