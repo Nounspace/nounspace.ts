@@ -163,6 +163,18 @@ export const createHomeBaseTabStoreFunc = (
   async createTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
+
+    // Check if tab already exists
+    if (get().homebase.tabs[tabName]) {
+      // If tab exists, just add it back to the tab order if it's not already there
+      set((draft) => {
+        if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+          draft.homebase.tabOrdering.local.push(tabName);
+        }
+      }, "addExistingTabToOrder");
+      return get().homebase.commitTabOrderingToDatabase();
+    }
+
     const req: UnsignedManageHomebaseTabsRequest = {
       publicKey,
       type: "create",

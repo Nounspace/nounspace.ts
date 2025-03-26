@@ -109,8 +109,10 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   }
 
   // Function to switch to a different tab
-  function switchTabTo(newTabName: string) {
-    commitConfigHandler();
+  function switchTabTo(newTabName: string, shouldSave: boolean = true) {
+    if (shouldSave) {
+      commitConfigHandler();
+    }
 
     if (newTabName === "Feed") {
       router.push(`/homebase`);
