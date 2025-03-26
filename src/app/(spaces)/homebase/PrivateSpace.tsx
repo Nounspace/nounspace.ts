@@ -175,7 +175,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
       renameTab={renameTab}
       commitTabOrder={commitTabOrder}
       commitTab={commitTab}
-      loadTabNames={loadTabNames}
     />
   ), [tabName, tabOrdering.local, editMode]);
 

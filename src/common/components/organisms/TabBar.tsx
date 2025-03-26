@@ -27,7 +27,6 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
-  loadTabNames: () => Promise<string[]>;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -49,7 +48,6 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
-  loadTabNames,
 }: TabBarProps) {
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
