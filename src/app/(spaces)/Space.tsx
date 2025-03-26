@@ -158,7 +158,15 @@ export default function Space({
                 <LayoutFidget
                   layoutConfig={{ ...layoutConfig }}
                   fidgetInstanceDatums={config.fidgetInstanceDatums}
-                  {...layoutFidgetProps}
+                  theme={config.theme}
+                  fidgetTrayContents={config.fidgetTrayContents}
+                  inEditMode={editMode}
+                  saveExitEditMode={saveExitEditMode}
+                  cancelExitEditMode={cancelExitEditMode}
+                  portalRef={portalRef}
+                  saveConfig={saveLocalConfig}
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
                 />
               </Suspense>
             </div>
