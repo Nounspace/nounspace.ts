@@ -7,9 +7,9 @@ import {
   LayoutFidgetProps
 } from "@/common/fidgets";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
-import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
-import React, { useState } from "react";
+import { useState } from "react";
 import { MdGridView } from "react-icons/md";
 import { CompleteFidgets } from "..";
 
@@ -40,13 +40,26 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   tabNames,
 }) => {
   // Filter out any fidget IDs that don't exist in fidgetInstanceDatums
-  const validFidgetIds = layoutConfig.layout.filter(id => fidgetInstanceDatums[id]);
+  // and filter out fidgets that should be hidden on mobile
+  const isMobile = useIsMobile();
+  
+  const validFidgetIds = layoutConfig.layout.filter(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    if (!fidgetData) return false;
+    
+    // On mobile, check showOnMobile setting
+    if (isMobile) {
+      const showOnMobile = fidgetData.config.settings.showOnMobile;
+      // If showOnMobile is explicitly false, hide the fidget
+      if (showOnMobile === false) return false;
+    }
+    
+    return true;
+  });
   
   // Initialize with the first valid fidget ID
   const [selectedTab, setSelectedTab] = useState(validFidgetIds.length > 0 ? validFidgetIds[0] : "");
-  const { width } = useWindowSize();
-  const isMobile = width ? width < 768 : false;
-
+  
   const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {
     return saveConfig({
       fidgetInstanceDatums: {
