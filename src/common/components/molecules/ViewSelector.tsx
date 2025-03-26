@@ -1,35 +1,25 @@
 import React from "react";
-import { Button } from "@/common/components/atoms/button";
-import { FaList, FaThLarge } from "react-icons/fa";
+import { Switch } from "@/common/components/atoms/switch";
+import { Label } from "@/common/components/atoms/label";
 
 export type ViewMode = "list" | "grid";
 
-export type SwitchButtonProps = {
-  value: ViewMode;
-  onChange: (value: ViewMode) => void;
-};
+export interface SwitchButtonProps {
+  value: boolean;
+  onChange: (value: boolean) => void;
+  label?: string;
+}
 
-const SwitchButton: React.FC<SwitchButtonProps> = ({ value, onChange }) => {
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    const newValue = value === "list" ? "grid" : "list";
-    onChange(newValue);
-  };
-
+const SwitchButton: React.FC<SwitchButtonProps> = ({ value, onChange, label }) => {
   return (
-    <Button onClick={handleClick} className="flex items-center">
-      {value === "list" ? (
-        <>
-          <FaList className="mr-2" />
-          List View
-        </>
-      ) : (
-        <>
-          <FaThLarge className="mr-2" />
-          Grid View
-        </>
-      )}
-    </Button>
+    <div className="flex items-center space-x-2">
+      <Switch
+        checked={value}
+        onCheckedChange={onChange}
+        id="toggle-switch"
+      />
+      {label && <Label htmlFor="toggle-switch">{label}</Label>}
+    </div>
   );
 };
 
