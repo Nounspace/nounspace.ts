@@ -33,7 +33,7 @@ const LoginModal = ({
         }
       }
       setCurrentStep(SetupStep.SIGNED_IN);
-      router.push("/homebase");
+      // router.push("/homebase");
     },
     onError: () => {
       setOpen(false);
