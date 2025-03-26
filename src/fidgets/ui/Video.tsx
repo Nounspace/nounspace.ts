@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -11,6 +11,8 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import { transformUrl } from "@/fidgets/helpers";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { ErrorWrapper } from "@/fidgets/helpers";
 
 export type VideoFidgetSettings = {
   url: string;
@@ -51,42 +53,11 @@ const frameConfig: FidgetProperties = {
   },
 };
 
-const ErrorWrapper: React.FC<{
-  message: React.ReactNode;
-  icon?: React.ReactNode;
-}> = ({ message, icon }) => {
-  return (
-    <div className="flex flex-col gap-1 size-full items-center justify-center text-center p-4 absolute top-0 right-0 bottom-0 left-0">
-      {icon && <div className="text-[20px]">{icon}</div>}
-      <p className="text-gray-400 font-semibold text-sm leading-tight max-w-[60ch]">
-        {message}
-      </p>
-    </div>
-  );
-};
-
 const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
-  // Add mobile detection
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useIsMobile();
   
-  useEffect(() => {
-    // Check if device is mobile based on screen width
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    // Check on initial render
-    checkMobile();
-    
-    // Add listener for window resize
-    window.addEventListener('resize', checkMobile);
-    
-    // Clean up
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");

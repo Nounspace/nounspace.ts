@@ -13,7 +13,7 @@ import { UserTheme } from "@/common/lib/theme"
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground"
 import { isNil, isUndefined } from "lodash"
 import InfoToast from "../organisms/InfoBanner"
-import useWindowSize from "@/common/lib/hooks/useWindowSize"
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile"
 
 // Mobile breakpoint (in pixels)
 const MOBILE_BREAKPOINT = 768
@@ -76,9 +76,8 @@ export default function Space({
   console.log("[SPACE] Has profile:", !isUndefined(profile))
   console.log("[SPACE] Has feed:", !isUndefined(feed))
   
-  // Get window size for responsive layout switching
-  const { width } = useWindowSize()
-  const isMobile = width ? width < MOBILE_BREAKPOINT : false
+  // Use the useIsMobile hook instead of duplicating logic
+  const isMobile = useIsMobile()
   
   useEffect(() => {
     console.log("[SPACE] Setting sidebar editable:", config.isEditable)
