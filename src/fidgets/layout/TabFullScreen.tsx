@@ -192,7 +192,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 gap-4
                 flex whitespace-nowrap
                 scrollbar-none
-                justify-start
+                ${validFidgetIds.length === 4 ? 'justify-evenly' : 'justify-start'}
               `}>
                 {validFidgetIds.map((fidgetId) => {
                   const fidgetName = getFidgetName(fidgetId);
@@ -203,7 +203,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                       value={fidgetId}
                       className={`
                         flex flex-col items-center justify-center
-                        min-w-[80px] h-full py-2
+                        min-w-[72px] h-full py-2 px-0
                         font-medium
                         ${isMobile ? 'text-xs' : 'text-sm'}
                         hover:bg-gray-50 transition-colors
