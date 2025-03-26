@@ -27,6 +27,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
+  loadTabNames: () => Promise<string[]>;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile", "Welcome"];
@@ -48,6 +49,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
+  loadTabNames,
 }: TabBarProps) {
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
@@ -77,10 +79,23 @@ function TabBar({
     switchTabTo(tabName);
   }
 
-  function handleDeleteTab(tabName: string) {
-    switchTabTo(nextClosestTab(tabName), false);
-    updateTabOrder(tabList.filter((name) => name !== tabName));
-    deleteTab(tabName);
+  async function handleDeleteTab(tabName: string) {
+    // Get the next tab before any state changes
+    const nextTab = nextClosestTab(tabName);
+    
+    // Delete the tab first and wait for it to complete
+    await deleteTab(tabName);
+    
+    // Then update the tab order and commit it
+    const newOrder = tabList.filter((name) => name !== tabName);
+    updateTabOrder(newOrder);
+    await commitTabOrder();
+    
+    // Finally, navigate to the next tab
+    // Use a small delay to ensure state updates have propagated
+    requestAnimationFrame(() => {
+        switchTabTo(nextTab, false);
+    });
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
@@ -96,13 +111,20 @@ function TabBar({
   }
 
   function nextClosestTab(tabName: string) {
-    const index = tabList.indexOf(tabName) - 1;
-    if (index >= 0) {
-      return tabList[index];
+    const index = tabList.indexOf(tabName);
+    // For middle tabs, prefer the next tab instead of previous
+    if (index >= 0 && index < tabList.length - 1) {
+        // If there's a next tab, use it
+        return tabList[index + 1];
+    } else if (index > 0) {
+        // If we're at the end, go to previous tab
+        return tabList[index - 1];
     } else if (inHomebase) {
-      return "Feed";
+        // If no other tabs, go to Feed
+        return "Feed";
     } else {
-      return tabList[0];
+        // Fallback
+        return tabList[0];
     }
   }
 
