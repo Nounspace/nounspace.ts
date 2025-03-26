@@ -2,10 +2,19 @@ import React from "react";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import SwitchButton from "@/common/components/molecules/ViewSelector";
 
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
 export const defaultStyleFields: FidgetFieldConfig[] = [
+  {
+    fieldName: "showOnMobile",
+    displayName: "Show on Mobile",
+    default: true,
+    required: false,
+    inputSelector: SwitchButton,
+    group: "style",
+  },
   {
     fieldName: "background",
     default: "var(--user-theme-fidget-background)",

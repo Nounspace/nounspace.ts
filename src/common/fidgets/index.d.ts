@@ -14,6 +14,7 @@ import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
 
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
+  showOnMobile?: boolean;
   background?: Color;
   fontFamily?: FontFamily;
   fontColor?: Color;
