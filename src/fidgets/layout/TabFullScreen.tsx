@@ -8,6 +8,7 @@ import {
 } from "@/common/fidgets";
 import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import React, { useState } from "react";
 import { MdGridView } from "react-icons/md";
 import { CompleteFidgets } from "..";
@@ -103,12 +104,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     
     return fidgetModule.properties.fidgetName;
   };
-
-  // Height of the tab bar for padding the content - increased from 56px to 72px
-  const TAB_HEIGHT = 72; // px
-  
-  // Mobile padding values for fidgets
-  const MOBILE_PADDING = 12; // px
 
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
