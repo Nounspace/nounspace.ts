@@ -230,7 +230,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
             <div className="flex h-full">
               <div className={"grow"}>
                 <SpaceLoading hasProfile={false} hasFeed={isFeedTab} />
-                <LoginModal open={true} />
               </div>
             </div>
           </div>
