@@ -161,7 +161,6 @@ export default function UserDefinedSpace({
     config.fidgetInstanceDatums,
     config.layoutID,
     config.layoutDetails,
-    config.isEditable,
     config.fidgetTrayContents,
     config.theme,
   ]);

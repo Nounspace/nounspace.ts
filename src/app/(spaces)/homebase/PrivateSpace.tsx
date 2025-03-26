@@ -106,19 +106,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     } else {
       await loadTab(tabName);
     }
-
-    await loadRemainingTabs();
   }
-
-  // Callback to load configurations for all tabs except the current one
-  const loadRemainingTabs = useCallback(async () => {
-    const tabOrder = tabOrdering.local || [];
-    for (const tab of tabOrder) {
-      if (tabName !== tab) {
-        await loadTab(tab);
-      }
-    }
-  }, [tabOrdering, tabName, loadTab]);
 
   // Function to switch to a different tab
   function switchTabTo(newTabName: string) {
@@ -223,16 +211,11 @@ function PrivateSpace({ tabName }: { tabName: string }) {
       />
     ) : undefined,
   }), [
-    isFeedTab,
-    homebaseConfig,
-    tabConfigs,
     tabName,
-    // Only include the specific properties that should trigger a re-render
-    isFeedTab ? homebaseConfig?.layoutID : tabConfigs[tabName]?.config?.layoutID,
-    isFeedTab ? homebaseConfig?.theme : tabConfigs[tabName]?.config?.theme,
-    // Don't include fidgetInstanceDatums in the dependency array
-    tabBar,
-    currentFid,
+    isFeedTab 
+      ? homebaseConfig 
+      : tabConfigs[tabName]?.config,
+    editMode
   ]);
 
   // If not logged in, show a loading state with the login modal
