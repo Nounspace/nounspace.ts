@@ -1,3 +1,4 @@
+import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import {
   FidgetBundle,
