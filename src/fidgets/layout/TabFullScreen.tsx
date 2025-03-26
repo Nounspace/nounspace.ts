@@ -183,7 +183,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           {/* Tabs fixed to bottom of screen */}
           {validFidgetIds.length > 1 && (
             <div 
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white bg-opacity-95 shadow-[0_-2px_10px_rgba(0,0,0,0.1)]"
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white"
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabsList className={`
@@ -193,6 +193,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 flex whitespace-nowrap
                 scrollbar-none
                 ${validFidgetIds.length === 4 ? 'justify-evenly' : 'justify-start'}
+                rounded-none
               `}>
                 {validFidgetIds.map((fidgetId) => {
                   const fidgetName = getFidgetName(fidgetId);
@@ -207,7 +208,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                         font-medium
                         ${isMobile ? 'text-xs' : 'text-sm'}
                         hover:bg-gray-50 transition-colors
-                        data-[state=active]:bg-primary/10
                         data-[state=active]:text-primary
                         rounded-lg
                       `}
