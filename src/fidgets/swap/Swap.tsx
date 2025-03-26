@@ -164,7 +164,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   }, []);
 
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
       <iframe
         src={url}
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
