@@ -75,19 +75,20 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   const scaleValue = size;
 
+  // 136px
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-156px)] md:h-full">
       <iframe
-        src={transformedUrl}
-        title="IFrame Fidget"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-        }}
-        className="size-full"
+      src={transformedUrl}
+      title="IFrame Fidget"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+      style={{
+        transform: `scale(${scaleValue})`,
+        transformOrigin: "0 0",
+        width: `${100 / scaleValue}%`,
+        height: `${100 / scaleValue}%`,
+      }}
+      className="size-full"
       />
     </div>
   );
