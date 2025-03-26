@@ -133,108 +133,131 @@ export const createHomeBaseTabStoreFunc = (
   }, 1000),
   async loadTabNames() {
     try {
-      const { data } = await axiosBackend.get<ManageHomebaseTabsResponse>(
-        "/api/space/homebase/tabs",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-          },
-        },
-      );
-      if (data.result === "error") {
-        return [];
-      } else {
-        const currentTabs = get().homebase.tabs;
-        set((draft) => {
-          // Reset all tabs, this removes all ones that no longer exist
-          draft.homebase.tabs = {};
-          forEach(data.value || [], (tabName) => {
-            // Set the tabs that we have and add the missing ones
-            draft.homebase.tabs[tabName] = currentTabs[tabName] || {};
-          });
-        }, "loadTabNames");
-        return data.value || [];
-      }
+        const { data } = await axiosBackend.get<ManageHomebaseTabsResponse>(
+            "/api/space/homebase/tabs",
+            {
+                params: {
+                    identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+                },
+            },
+        );
+        if (data.result === "error") {
+            return [];
+        } else {
+            const currentTabs = get().homebase.tabs;
+            const tabNames = data.value || [];
+            
+            // Ensure tab ordering matches database state
+            set((draft) => {
+                // Reset all tabs, this removes all ones that no longer exist
+                draft.homebase.tabs = {};
+                forEach(tabNames, (tabName) => {
+                    // Set the tabs that we have and add the missing ones
+                    draft.homebase.tabs[tabName] = currentTabs[tabName] || {};
+                });
+
+                // Update local tab ordering to match database state
+                // Only include tabs that exist in both places
+                draft.homebase.tabOrdering.local = draft.homebase.tabOrdering.local
+                    .filter(tab => tabNames.includes(tab));
+                
+                // Add any missing tabs from the database
+                tabNames.forEach(tab => {
+                    if (!draft.homebase.tabOrdering.local.includes(tab)) {
+                        draft.homebase.tabOrdering.local.push(tab);
+                    }
+                });
+            }, "loadTabNames");
+            return tabNames;
+        }
     } catch (e) {
-      console.debug("failed to load tab names", e);
-      return [];
+        console.debug("failed to load tab names", e);
+        return [];
     }
   },
   async createTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
+    
     const req: UnsignedManageHomebaseTabsRequest = {
-      publicKey,
-      type: "create",
-      tabName,
+        publicKey,
+        type: "create",
+        tabName,
     };
     const signedReq = await signSignable(
-      req,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+        req,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     const initialConfig = {
-      ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
-      theme: {
-        ...cloneDeep(INITIAL_HOMEBASE_CONFIG.theme),
-        id: `Homebase-${tabName}-Theme`,
-        name: `Homebase-${tabName}-Theme`,
-      },
+        ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
+        theme: {
+            ...cloneDeep(INITIAL_HOMEBASE_CONFIG.theme),
+            id: `Homebase-${tabName}-Theme`,
+            name: `Homebase-${tabName}-Theme`,
+        },
     };
     const file = await get().account.createEncryptedSignedFile(
-      stringify(initialConfig),
-      "json",
-      { useRootKey: true },
+        stringify(initialConfig),
+        "json",
+        { useRootKey: true },
     );
     try {
-      const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
-        "/api/space/homebase/tabs",
-        { request: signedReq, file },
-      );
-      if (data.result === "success") {
-        set((draft) => {
-          // Add the new tab to the tabs object
-          draft.homebase.tabs[tabName] = {
-            config: cloneDeep(initialConfig),
-            remoteConfig: cloneDeep(initialConfig),
-          };
+        const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
+            "/api/space/homebase/tabs",
+            { request: signedReq, file },
+        );
+        if (data.result === "success") {
+            set((draft) => {
+                // Add the new tab to the tabs object
+                draft.homebase.tabs[tabName] = {
+                    config: cloneDeep(initialConfig),
+                    remoteConfig: cloneDeep(initialConfig),
+                };
 
-          // Add the new tab to the local tab order
-          if (!draft.homebase.tabOrdering.local.includes(tabName)) {
-            draft.homebase.tabOrdering.local.push(tabName);
-          }
-        }, "createHomebaseTab");
+                // Add the new tab to the local tab order
+                if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+                    draft.homebase.tabOrdering.local.push(tabName);
+                }
+            }, "createHomebaseTab");
 
-        // Commit the new tab order to the database
-        return get().homebase.commitTabOrderingToDatabase();
-      }
+            // Commit the new tab order to the database
+            return get().homebase.commitTabOrderingToDatabase();
+        }
     } catch (e) {
-      console.debug("failed to create homebase tab", e);
+        console.debug("failed to create homebase tab", e);
     }
   },
   async deleteTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
     const req: UnsignedManageHomebaseTabsRequest = {
-      publicKey,
-      type: "delete",
-      tabName,
+        publicKey,
+        type: "delete",
+        tabName,
     };
     const signedReq = await signSignable(
-      req,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+        req,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
-      const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
-        "/api/space/homebase/tabs",
-        { request: signedReq },
-      );
-      if (data.result === "success") {
-        set((draft) => {
-          delete draft.homebase.tabs[tabName];
-        }, "deleteHomebaseTab");
-      }
+        const { data } = await axiosBackend.post<ManageHomebaseTabsResponse>(
+            "/api/space/homebase/tabs",
+            { request: signedReq },
+        );
+        if (data.result === "success") {
+            // Update both the tabs and ordering atomically
+            set((draft) => {
+                // Remove from tabs object
+                delete draft.homebase.tabs[tabName];
+                
+                // Remove from tab ordering and ensure it's a new array
+                draft.homebase.tabOrdering.local = [...draft.homebase.tabOrdering.local]
+                    .filter(name => name !== tabName);
+            }, "deleteHomebaseTab");
+        }
     } catch (e) {
-      console.debug("failed to delete homebase tab", e);
+        console.debug("failed to delete homebase tab", e);
+        throw e; // Propagate error to handler
     }
   },
   async renameTab(tabName, newName) {
@@ -311,36 +334,47 @@ export const createHomeBaseTabStoreFunc = (
   commitHomebaseTabToDatabase: debounce(async (tabname) => {
     const tab = get().homebase.tabs[tabname];
     if (tab && tab.config) {
-      const localCopy = cloneDeep(tab.config);
-      const file = await get().account.createEncryptedSignedFile(
-        stringify(localCopy),
-        "json",
-        { useRootKey: true, fileName: tabname },
-      );
-      try {
-        await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
-        set((draft) => {
-          draft.homebase.tabs[tabname].remoteConfig = localCopy;
-        }, "commitHomebaseToDatabase");
-      } catch (e) {
-        console.error(e);
-        throw e;
-      }
+        const localCopy = cloneDeep(tab.config);
+        const file = await get().account.createEncryptedSignedFile(
+            stringify(localCopy),
+            "json",
+            { useRootKey: true, fileName: tabname },
+        );
+        try {
+            await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
+            
+            // Check again if the tab still exists before updating
+            set((draft) => {
+                if (draft.homebase.tabs[tabname]) {
+                    draft.homebase.tabs[tabname].remoteConfig = localCopy;
+                } else {
+                    console.warn(`Tab ${tabname} was deleted during commit operation`);
+                }
+            }, "commitHomebaseToDatabase");
+        } catch (e) {
+            console.error(e);
+            throw e;
+        }
     }
   }, 1000),
   async saveHomebaseTabConfig(tabName, config) {
-    const localCopy = cloneDeep(
-      get().homebase.tabs[tabName].config,
-    ) as SpaceConfig;
+    // Check if the tab exists first
+    const tab = get().homebase.tabs[tabName];
+    if (!tab) {
+        console.warn(`Attempted to save config for non-existent tab: ${tabName}`);
+        return;
+    }
+
+    const localCopy = cloneDeep(tab.config) as SpaceConfig;
     mergeWith(localCopy, config, (_, newItem) => {
-      if (isArray(newItem)) return newItem;
+        if (isArray(newItem)) return newItem;
     });
     set(
-      (draft) => {
-        draft.homebase.tabs[tabName].config = localCopy;
-      },
-      `saveHomebaseTab:${tabName}`,
-      false,
+        (draft) => {
+            draft.homebase.tabs[tabName].config = localCopy;
+        },
+        `saveHomebaseTab:${tabName}`,
+        false,
     );
   },
   async resetHomebaseTabConfig(tabName) {
