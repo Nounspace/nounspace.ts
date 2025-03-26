@@ -181,9 +181,6 @@ export default function UserDefinedSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      if (isNil(currentUserFid)) {
-        throw new Error("Attempted to save config when user is not signed in!");
-      }
       if (isNil(spaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
@@ -204,7 +201,7 @@ export default function UserDefinedSpace({
       // Save the configuration locally
       return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
-    [currentUserFid, spaceId, providedTabName],
+    [spaceId, providedTabName],
   );
 
   const commitConfig = useCallback(async () => {
