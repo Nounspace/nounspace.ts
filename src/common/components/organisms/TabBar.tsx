@@ -84,14 +84,11 @@ function TabBar({
     try {
         // First update the tab order and delete the tab
         const newOrder = tabList.filter((name) => name !== tabName);
-        updateTabOrder(newOrder);
+        await updateTabOrder(newOrder);
         await deleteTab(tabName);
         await commitTabOrder();
         
-        // Then navigate to the next tab
-        requestAnimationFrame(() => {
-            switchTabTo(nextTab, false);
-        });
+        switchTabTo(nextTab, false);
     } catch (error) {
         console.error("Failed to delete tab:", error);
         // Optionally add error handling UI here
