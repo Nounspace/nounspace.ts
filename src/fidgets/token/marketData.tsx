@@ -105,7 +105,7 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
   const scaleValue = size;
 
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
       <iframe
         src={url}
         title="Market Data"
