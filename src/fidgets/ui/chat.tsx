@@ -53,7 +53,7 @@ const Chat: React.FC<
     const url = `https://chat-fidget.vercel.app/?room=${roomName}`;
 
     return (
-      <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+      <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
         <iframe
           key={roomName} // Add key to force re-render
           src={url}
