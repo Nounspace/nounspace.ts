@@ -30,7 +30,7 @@ interface TabBarProps {
   loadTabNames: () => Promise<string[]>;
 }
 
-const PERMANENT_TABS = ["Feed", "Profile", "Welcome"];
+const PERMANENT_TABS = ["Feed", "Profile"];
 const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 function TabBar({
@@ -83,19 +83,21 @@ function TabBar({
     // Get the next tab before any state changes
     const nextTab = nextClosestTab(tabName);
     
-    // Delete the tab first and wait for it to complete
-    await deleteTab(tabName);
-    
-    // Then update the tab order and commit it
-    const newOrder = tabList.filter((name) => name !== tabName);
-    updateTabOrder(newOrder);
-    await commitTabOrder();
-    
-    // Finally, navigate to the next tab
-    // Use a small delay to ensure state updates have propagated
-    requestAnimationFrame(() => {
-        switchTabTo(nextTab, false);
-    });
+    try {
+        // First update the tab order and delete the tab
+        const newOrder = tabList.filter((name) => name !== tabName);
+        updateTabOrder(newOrder);
+        await deleteTab(tabName);
+        await commitTabOrder();
+        
+        // Then navigate to the next tab
+        requestAnimationFrame(() => {
+            switchTabTo(nextTab, false);
+        });
+    } catch (error) {
+        console.error("Failed to delete tab:", error);
+        // Optionally add error handling UI here
+    }
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
@@ -112,7 +114,7 @@ function TabBar({
 
   function nextClosestTab(tabName: string) {
     const index = tabList.indexOf(tabName);
-    // For middle tabs, prefer the next tab instead of previous
+    // For middle tabs, prefer the next tab
     if (index >= 0 && index < tabList.length - 1) {
         // If there's a next tab, use it
         return tabList[index + 1];
@@ -123,8 +125,8 @@ function TabBar({
         // If no other tabs, go to Feed
         return "Feed";
     } else {
-        // Fallback
-        return tabList[0];
+        // If no other tabs in profile space, go to Profile
+        return "Profile";
     }
   }
 
