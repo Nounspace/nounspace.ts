@@ -9,11 +9,13 @@ import {
   mentionPlugin,
   cashtagPlugin,
   channelPlugin,
+  hashtagPlugin,
 } from "@/common/lib/utils/linkify";
 
 registerPlugin("mention", mentionPlugin);
 registerPlugin("cashtag", cashtagPlugin);
 registerPlugin("channel", channelPlugin);
+registerPlugin("hashtag", hashtagPlugin);
 
 type RenderFunctionArgs = {
   content: string;
@@ -83,12 +85,26 @@ const renderCashtag = ({ content }: RenderFunctionArgs) => {
   );
 };
 
+const renderHashtag = ({ content }: RenderFunctionArgs) => {
+  return (
+    <span
+      className="font-medium"
+      onClick={(event) => {
+        event.stopPropagation();
+      }}
+    >
+      {content}
+    </span>
+  );
+};
+
 const linkifyOptions = {
   render: {
     url: renderLink,
     mention: renderMention,
     cashtag: renderCashtag,
     channel: renderChannel,
+    hashtag: renderHashtag,
   },
   truncate: 42,
 };
