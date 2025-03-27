@@ -61,8 +61,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     }
     
     // For mobile, process and potentially consolidate media fidgets
-    let mediaFidgetIds: string[] = [];
-    let nonMediaFidgetIds: string[] = [];
+    const mediaFidgetIds: string[] = [];
+    const nonMediaFidgetIds: string[] = [];
     
     // First separate media and non-media fidgets
     layoutConfig.layout.forEach(id => {
