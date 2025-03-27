@@ -11,6 +11,8 @@ import { followUser, unfollowUser } from "../farcaster/utils";
 import { Button } from "@/common/components/atoms/button";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { LocateIcon, Pin, PinIcon } from "lucide-react";
+import { IoLocationOutline } from "react-icons/io5";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -57,6 +59,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
     }
     return first(userData.users);
   }, [userData]);
+
+  console.log("user", user);
 
   const toggleFollowing = async () => {
     if (user && signer && viewerFid > 0) {
@@ -118,8 +122,9 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   }
   
   // Extract location if available
-  // const location = user.profile?.location?.address?.city || '';
-  const location = 'teste';
+  // @ts-ignore > maybe update the neynar package solves this
+  const location = user.profile?.location?.address?.city || '';
+  // const location = 'teste';
   const hasLocation = location.length > 0;
 
   // For mobile view, we need a different layout
@@ -169,15 +174,18 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
         </p>
         
         {/* Followers/Following count - underneath bio */}
-        <div className="flex flex-row text-sm items-center">
-          <p className="mr-6">
+        <div className="flex flex-row text-sm items-center gap-3">
+          <p>
             <span className="font-bold">{user.following_count}</span> Following
           </p>
-          <p className="mr-6">
+          <p>
             <span className="font-bold">{user.follower_count}</span> Followers
           </p>
           {hasLocation && (
-            <p className="text-slate-500">{location}</p>
+            <div className="flex gap-0 items-center">
+              <IoLocationOutline className="h-4 w-4 text-slate-500 inline-block mr-1" />
+              <p className="text-slate-500">{location}</p>
+            </div>
           )}
         </div>
       </div>
