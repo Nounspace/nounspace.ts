@@ -32,6 +32,7 @@ type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
  * - Animated transitions between fidgets
  * - Support for custom tab names
  * - Mobile-specific padding around fidgets for better display
+ * - Media consolidation on mobile devices (combines text, image, video, and cast fidgets)
  */
 const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   fidgetInstanceDatums,
@@ -44,6 +45,50 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   // and filter out fidgets that should be hidden on mobile
   const isMobile = useIsMobile();
   
+  // Create a structure to identify media fidgets for consolidation
+  const isMediaFidget = (fidgetType: string): boolean => {
+    return ['text', 'gallery', 'Video', 'cast'].includes(fidgetType);
+  };
+  
+  // Pre-process fidgets for mobile - group media types if on mobile
+  const processedFidgetIds = (() => {
+    if (!isMobile) {
+      // On desktop, use all fidgets as is
+      return layoutConfig.layout.filter(id => {
+        const fidgetData = fidgetInstanceDatums[id];
+        return !!fidgetData;
+      });
+    }
+    
+    // For mobile, process and potentially consolidate media fidgets
+    let mediaFidgetIds: string[] = [];
+    let nonMediaFidgetIds: string[] = [];
+    
+    // First separate media and non-media fidgets
+    layoutConfig.layout.forEach(id => {
+      const fidgetData = fidgetInstanceDatums[id];
+      if (!fidgetData) return;
+      
+      // Skip fidgets that should be hidden on mobile
+      if (fidgetData.config.settings.showOnMobile === false) return;
+      
+      if (isMediaFidget(fidgetData.fidgetType)) {
+        mediaFidgetIds.push(id);
+      } else {
+        nonMediaFidgetIds.push(id);
+      }
+    });
+    
+    // If we have multiple media fidgets, return them under a special id
+    if (mediaFidgetIds.length > 1) {
+      return ['consolidated-media', ...nonMediaFidgetIds];
+    } else {
+      // If we have 0 or 1 media fidget, no need to consolidate
+      return [...mediaFidgetIds, ...nonMediaFidgetIds];
+    }
+  })();
+  
+  // Original valid fidget IDs (without consolidation)
   const validFidgetIds = layoutConfig.layout.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return false;
@@ -58,8 +103,14 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return true;
   });
   
+  // Get all media fidgets to be consolidated
+  const mediaFidgetIds = validFidgetIds.filter(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    return isMediaFidget(fidgetData.fidgetType);
+  });
+  
   // Initialize with the first valid fidget ID
-  const [selectedTab, setSelectedTab] = useState(validFidgetIds.length > 0 ? validFidgetIds[0] : "");
+  const [selectedTab, setSelectedTab] = useState(processedFidgetIds.length > 0 ? processedFidgetIds[0] : "");
   
   const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {
     return saveConfig({
@@ -80,7 +131,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const dummyMinimizeFidget = () => {};
 
   // If no valid fidgets, show empty state
-  if (validFidgetIds.length === 0) {
+  if (processedFidgetIds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-500">
         <div className="text-center p-4">
@@ -92,14 +143,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   }
 
   // If selected tab is no longer valid, select the first valid one
-  if (!validFidgetIds.includes(selectedTab)) {
-    setSelectedTab(validFidgetIds[0]);
+  if (!processedFidgetIds.includes(selectedTab)) {
+    setSelectedTab(processedFidgetIds[0]);
   }
 
-  // Debug log to see which tab is selected
-  console.log('Selected tab:', selectedTab, 'Valid tabs:', validFidgetIds);
-
+  // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
+    // Special case for consolidated media
+    if (fidgetId === 'consolidated-media') {
+      return "Media";
+    }
+    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
     
@@ -107,7 +161,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     if (!fidgetModule) return "Unknown";
     
     // Use custom tab name if available, otherwise use mobile name for mobile devices or fidget name
-    const customName = tabNames && tabNames[validFidgetIds.indexOf(fidgetId)];
+    const tabIndex = validFidgetIds.indexOf(fidgetId);
+    const customName = tabNames && tabNames[tabIndex];
     
     if (customName) return customName;
     
@@ -121,6 +176,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
+    // Special case for consolidated media
+    if (fidgetId === 'consolidated-media') {
+      return <span className="text-lg" role="img" aria-label="Media">📱</span>;
+    }
+    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return <MdGridView className="text-xl" />;  // Default icon
     
@@ -135,13 +195,62 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     );
   };
 
+  // Render a consolidated media tab content with multiple fidgets
+  const renderConsolidatedMediaContent = () => {
+    if (mediaFidgetIds.length === 0) return null;
+    
+    return (
+      <div className="flex flex-col gap-4 h-full overflow-y-auto pb-16">
+        {mediaFidgetIds.map((fidgetId) => {
+          const fidgetDatum = fidgetInstanceDatums[fidgetId];
+          if (!fidgetDatum) return null;
+          
+          const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+          if (!fidgetModule) return null;
+          
+          const bundle: FidgetBundle = {
+            ...fidgetDatum,
+            properties: fidgetModule.properties,
+            config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
+          };
+
+          const aspectRatioClass = 
+            fidgetModule.properties.fidgetName === "Image" ? 
+            "aspect-[4/3] w-full overflow-hidden" : 
+            "aspect-square w-full overflow-hidden";
+          
+          return (
+            <div 
+              key={fidgetId} 
+              className={`${aspectRatioClass} relative rounded-lg`}
+            >
+              <div className="absolute inset-0">
+                <FidgetWrapper
+                  fidget={fidgetModule.fidget}
+                  context={{ theme }}
+                  bundle={bundle}
+                  saveConfig={saveFidgetConfig(fidgetId)}
+                  setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
+                  setSelectedFidgetID={dummySetSelectedFidgetID}
+                  selectedFidgetID=""
+                  removeFidget={dummyRemoveFidget}
+                  minimizeFidget={dummyMinimizeFidget}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       {/* Main content area with padding-bottom to make space for fixed tabs */}
       <div 
         className="w-full h-full overflow-hidden" 
         style={{ 
-          paddingBottom: validFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
         }}
       >
         <Tabs 
@@ -150,52 +259,74 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           onValueChange={setSelectedTab}
         >
           <div className="relative z-40 h-full">
-            {validFidgetIds.map((fidgetId) => {
-              const fidgetDatum = fidgetInstanceDatums[fidgetId];
-              if (!fidgetDatum) return null;
-              
-              const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-              if (!fidgetModule) return null;
-              
-              const bundle: FidgetBundle = {
-                ...fidgetDatum,
-                properties: fidgetModule.properties,
-                config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
-              };
-              
-              // Only render the content for the selected tab
-              return (
-                <TabsContent 
-                  key={fidgetId} 
-                  value={fidgetId}
-                  className="h-full w-full block"
-                  style={{ visibility: 'visible', display: 'block' }}
+            {/* Special case for consolidated media tab */}
+            {isMobile && mediaFidgetIds.length > 1 && (
+              <TabsContent 
+                key="consolidated-media" 
+                value="consolidated-media"
+                className="h-full w-full block"
+                style={{ visibility: 'visible', display: 'block' }}
+              >
+                <div
+                  className="h-full w-full"
+                  style={{ 
+                    paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
+                  }}
                 >
-                  <div
-                    className="h-full w-full"
-                    style={isMobile ? { 
-                      paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
-                    } : {}}
+                  {renderConsolidatedMediaContent()}
+                </div>
+              </TabsContent>
+            )}
+            
+            {/* Regular non-consolidated tabs */}
+            {processedFidgetIds
+              .filter(id => id !== 'consolidated-media')
+              .map((fidgetId) => {
+                const fidgetDatum = fidgetInstanceDatums[fidgetId];
+                if (!fidgetDatum) return null;
+                
+                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+                if (!fidgetModule) return null;
+                
+                const bundle: FidgetBundle = {
+                  ...fidgetDatum,
+                  properties: fidgetModule.properties,
+                  config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
+                };
+                
+                // Only render the content for the selected tab
+                return (
+                  <TabsContent 
+                    key={fidgetId} 
+                    value={fidgetId}
+                    className="h-full w-full block"
+                    style={{ visibility: 'visible', display: 'block' }}
                   >
-                    <FidgetWrapper
-                      fidget={fidgetModule.fidget}
-                      context={{ theme }}
-                      bundle={bundle}
-                      saveConfig={saveFidgetConfig(fidgetId)}
-                      setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
-                      setSelectedFidgetID={dummySetSelectedFidgetID}
-                      selectedFidgetID=""
-                      removeFidget={dummyRemoveFidget}
-                      minimizeFidget={dummyMinimizeFidget}
-                    />
-                  </div>
-                </TabsContent>
-              );
+                    <div
+                      className="h-full w-full"
+                      style={isMobile ? { 
+                        paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
+                      } : {}}
+                    >
+                      <FidgetWrapper
+                        fidget={fidgetModule.fidget}
+                        context={{ theme }}
+                        bundle={bundle}
+                        saveConfig={saveFidgetConfig(fidgetId)}
+                        setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
+                        setSelectedFidgetID={dummySetSelectedFidgetID}
+                        selectedFidgetID=""
+                        removeFidget={dummyRemoveFidget}
+                        minimizeFidget={dummyMinimizeFidget}
+                      />
+                    </div>
+                  </TabsContent>
+                );
             })}
           </div>
           
           {/* Tabs fixed to bottom of screen */}
-          {validFidgetIds.length > 1 && (
+          {processedFidgetIds.length > 1 && (
             <div 
               className="fixed bottom-0 left-0 right-0 z-50 bg-white"
               style={{ height: `${TAB_HEIGHT}px` }}
@@ -206,10 +337,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 gap-4
                 flex whitespace-nowrap
                 scrollbar-none
-                ${validFidgetIds.length === 4 ? 'justify-evenly' : 'justify-start'}
+                ${processedFidgetIds.length === 4 ? 'justify-evenly' : 'justify-start'}
                 rounded-none
               `}>
-                {validFidgetIds.map((fidgetId) => {
+                {processedFidgetIds.map((fidgetId) => {
                   const fidgetName = getFidgetName(fidgetId);
                   
                   return (
