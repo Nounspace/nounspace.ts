@@ -14,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import RSSParser from "rss-parser";
 import { defaultStyleFields } from "../helpers";
+import { BsRss, BsRssFill } from "react-icons/bs";
 
 export type TextFidgetSettings = {
   title?: string;

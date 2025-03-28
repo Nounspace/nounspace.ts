@@ -15,6 +15,7 @@ import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
 import { getBlock } from "wagmi/actions";
 import { wagmiConfig } from "@/common/providers/Wagmi";
+import Text from "@/fidgets/ui/Text";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
