@@ -122,7 +122,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   }
   
   // Extract location if available
-  // @ts-ignore > maybe update the neynar package solves this
+  // @ts-expect-error > maybe update the neynar package solves this
   const location = user.profile?.location?.address?.city || '';
   // const location = 'teste';
   const hasLocation = location.length > 0;
