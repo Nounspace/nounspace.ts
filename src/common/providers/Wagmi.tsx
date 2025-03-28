@@ -1,9 +1,14 @@
+"use client";
 import React from "react";
 import { Chain, Transport } from "viem";
 import { createConfig } from "wagmi";
 import { WagmiProvider } from "@privy-io/wagmi";
 import type { CreateConfigParameters } from "wagmi";
-import { baseHttp, mainnetHttp, optimismHttp } from "@/constants/chains";
+import {
+  baseHttp,
+  mainnetHttp,
+  optimismHttp,
+} from "@/constants/alchemyChainUrls";
 import { base, mainnet, optimism } from "viem/chains";
 
 const wagmiParams: CreateConfigParameters<

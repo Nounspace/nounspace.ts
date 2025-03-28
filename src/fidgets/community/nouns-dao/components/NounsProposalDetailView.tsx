@@ -3,15 +3,19 @@ import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import type { ProposalData } from "@/fidgets/community/nouns-dao";
+import type { NounsProposalData } from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
-import { estimateBlockTime } from "./ProposalListRowItem";
+import { estimateBlockTime, getProposalState } from "./ProposalListRowItem";
 import ReactMarkdown from "react-markdown";
+import { Address } from "viem";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
@@ -25,7 +29,9 @@ const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
       <div className="text-xs/[1.25]" style={{ color: labelColor }}>
         {label}
       </div>
-      <div className="text-sm/[1.25] text-gray-800 font-medium">{value}</div>
+      <div className="text-sm/[1.25] text-gray-800 font-medium">
+        {String(value)}
+      </div>
       <Progress
         className="h-[6px] rounded-[2px] mt-[2px]"
         value={percentage}
@@ -93,10 +99,10 @@ export const NounsProposalDetailView = ({
   currentBlock,
   loading,
 }: {
-  proposal: ProposalData;
+  proposal: NounsProposalData;
   versions: any[];
   goBack: () => void;
-  currentBlock: any;
+  currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
   const proposer = proposal?.proposer?.id;
@@ -106,12 +112,12 @@ export const NounsProposalDetailView = ({
   const version = versions?.length;
 
   const { data: proposerEnsName } = useEnsName({
-    address: proposer,
+    address: proposer as Address,
     chainId: mainnet.id,
   });
 
   const { data: sponsorEnsName } = useEnsName({
-    address: sponsor,
+    address: sponsor as Address,
     chainId: mainnet.id,
   });
 
@@ -154,7 +160,7 @@ export const NounsProposalDetailView = ({
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
-
+  console.log(proposal);
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">
@@ -192,7 +198,7 @@ export const NounsProposalDetailView = ({
                   Proposal {proposal.id}
                 </span>
                 <StatusBadge
-                  status={proposal.status}
+                  status={getProposalState(proposal, currentBlock)}
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
@@ -265,7 +271,13 @@ export const NounsProposalDetailView = ({
                 value={proposal.voteSnapshotBlock}
               />
             </div>
-            <ReactMarkdown className="prose">
+
+            <ReactMarkdown
+              className="prose"
+              components={MarkdownRenderers()}
+              rehypePlugins={[rehypeRaw]}
+              remarkPlugins={[remarkGfm]}
+            >
               {proposal.description}
             </ReactMarkdown>
           </div>

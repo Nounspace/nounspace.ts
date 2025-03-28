@@ -23,6 +23,8 @@ export type UnsignedSpaceTabRegistration = {
   timestamp: string;
   spaceId: string;
   tabName: string;
+  initialConfig?: any;
+  network?: string;
 };
 
 export type SpaceTabRegistration = UnsignedSpaceTabRegistration & Signable;
@@ -44,6 +46,7 @@ async function registerNewSpaceTab(
 ) {
   const registration = req.body;
   if (!isSpaceTabRegistration(registration)) {
+    console.error("Invalid registration:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -54,6 +57,11 @@ async function registerNewSpaceTab(
     return;
   }
   if (registration.spaceId !== req.query.spaceId) {
+    console.error(
+      "Space ID mismatch:",
+      registration.spaceId,
+      req.query.spaceId,
+    );
     res.status(400).json({
       result: "error",
       error: {
@@ -64,6 +72,7 @@ async function registerNewSpaceTab(
   }
   // TODO: check that timestamp is recent (1 minute? 5 minutes?)
   if (!validateSignable(registration, "identityPublicKey")) {
+    console.error("Invalid signature:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -76,8 +85,14 @@ async function registerNewSpaceTab(
     !(await identityCanModifySpace(
       registration.identityPublicKey,
       registration.spaceId,
+      registration.network,
     ))
   ) {
+    console.error(
+      "Identity cannot manage space:",
+      registration.identityPublicKey,
+      registration.spaceId,
+    );
     res.status(400).json({
       result: "error",
       error: {
@@ -89,25 +104,33 @@ async function registerNewSpaceTab(
   // TO DO: Check that the user can register more tabs
   // Currently we are allowing unlimited files on server side
 
-  const uploadedFile: SignedFile = {
-    fileData: stringify(INITIAL_SPACE_CONFIG_EMPTY),
-    fileType: "json",
-    isEncrypted: false,
-    timestamp: moment().toISOString(),
-    // TO DO: Create a Nounspace signer and use it verify our files
-    // This will allow us to do client side validation better
-    // Current this is insecure to a man in the middle attack
-    publicKey: "nounspace",
-    signature: "not applicable, machine generated file",
-  };
+  console.log(
+    "registerNewSpaceTab called on registry/[spaceId]/tabs with",
+    registration,
+  );
+
+  const uploadedFile: SignedFile = registration?.initialConfig
+    ? (registration as any)
+    : {
+      fileData: stringify(INITIAL_SPACE_CONFIG_EMPTY),
+      fileType: "json",
+      isEncrypted: false,
+      timestamp: moment().toISOString(),
+      // TO DO: Create a Nounspace signer and use it verify our files
+      // This will allow us to do client side validation better
+      // Current this is insecure to a man in the middle attack
+      publicKey: "nounspace",
+      signature: "not applicable, machine generated file",
+    };
   const { error } = await supabase.storage
     .from("spaces")
     .upload(
       `${registration.spaceId}/tabs/${registration.tabName}`,
       new Blob([stringify(uploadedFile)], { type: "application/json" }),
+      { upsert: true },
     );
   if (!isNull(error)) {
-    console.error(error);
+    console.error("Error uploading file:", error);
     res.status(500).json({
       result: "error",
       error: {

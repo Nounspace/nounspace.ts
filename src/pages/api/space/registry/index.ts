@@ -1,32 +1,68 @@
+import { SpaceConfig } from "@/app/(spaces)/Space";
+import { contractOwnerFromContractAddress } from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
+import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
+import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
-import { findIndex, first, isArray, isUndefined } from "lodash";
+import {
+  findIndex,
+  first,
+  includes,
+  isArray,
+  isNil,
+  isUndefined,
+} from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
+import { Address } from "viem";
 
-export type SpaceRegistration = {
+interface SpaceRegistrationBase {
   spaceName: string;
   identityPublicKey: string;
-  fid: number;
   signature: string;
   timestamp: string;
-};
+}
 
-type SpaceInfo = SpaceRegistration & {
+export interface SpaceRegistrationContract extends SpaceRegistrationBase {
+  contractAddress: string;
+  tokenOwnerFid?: number;
+  initialConfig?: Omit<SpaceConfig, "isEditable">;
+  network?: string;
+}
+
+export interface SpaceRegistrationFid extends SpaceRegistrationBase {
+  fid: number;
+}
+
+export type SpaceRegistration =
+  | SpaceRegistrationContract
+  | SpaceRegistrationFid;
+
+type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
+  fid: number | null;
+  contractAddress: string | null;
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
   if (!isSignable(maybe, "identityPublicKey")) {
     return false;
   }
-  return (
+  const isValid =
     typeof maybe["spaceName"] === "string" &&
-    typeof maybe["fid"] === "number" &&
-    typeof maybe["timestamp"] === "string"
-  );
+    typeof maybe["timestamp"] === "string";
+
+  return isValid;
+}
+
+function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
+  const isValid =
+    isSpaceRegistration(maybe) &&
+    (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
+
+  return isValid;
 }
 
 export type RegisterNewSpaceResponse = NounspaceResponse<SpaceInfo>;
@@ -41,11 +77,54 @@ async function identityCanRegisterForFid(identity: string, fid: number) {
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
     .eq("fid", fid);
-  console.log(data);
   return (
     data !== null &&
     findIndex(data, (i) => i.identityPublicKey === identity) !== -1
   );
+}
+
+// Create a validation for fid on clanker
+export async function fidCanRegisterClanker(
+  contractAddress?: string,
+  fid?: number,
+  network?: string,
+) {
+  if (isNil(contractAddress) || isNil(fid)) return false;
+
+  const clankerData = await fetchClankerByAddress(contractAddress as Address);
+  return clankerData && clankerData.requestor_fid === fid;
+}
+
+async function identityCanRegisterForContract(
+  identity: string,
+  contractAddress: string,
+  tokenOwnerFid?: number,
+  network?: string,
+) {
+  const canRegisterClanker = await fidCanRegisterClanker(
+    contractAddress,
+    tokenOwnerFid,
+    network,
+  );
+  if (canRegisterClanker) {
+    return true;
+  }
+  const { ownerId, ownerIdType } = await contractOwnerFromContractAddress(
+    contractAddress,
+    network,
+  );
+
+  if (isNil(ownerId)) {
+    return false;
+  } else if (ownerIdType === "fid") {
+    const canRegister = await identityCanRegisterForFid(
+      identity,
+      parseInt(ownerId),
+    );
+    return canRegister;
+  }
+  const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
+  return includes(ownedIdentities, identity);
 }
 
 // Handles the registration of a new space name to requesting identity
@@ -55,8 +134,9 @@ async function registerNewSpace(
   res: NextApiResponse<RegisterNewSpaceResponse>,
 ) {
   const registration = req.body;
-  console.log(registration);
+
   if (!isSpaceRegistration(registration)) {
+    console.error("Invalid space registration:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -67,6 +147,7 @@ async function registerNewSpace(
     return;
   }
   if (!validateSignable(registration, "identityPublicKey")) {
+    console.error("Invalid signature:", registration);
     res.status(400).json({
       result: "error",
       error: {
@@ -75,38 +156,57 @@ async function registerNewSpace(
     });
     return;
   }
-  if (
-    !(await identityCanRegisterForFid(
-      registration.identityPublicKey,
-      registration.fid,
-    ))
-  ) {
-    res.status(400).json({
-      result: "error",
-      error: {
-        message: `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
-      },
-    });
-    return;
+  if (isSpaceRegistrationFid(registration)) {
+    if (
+      !(await identityCanRegisterForFid(
+        registration.identityPublicKey,
+        registration.fid,
+      ))
+    ) {
+      console.error(
+        `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
+      );
+      res.status(400).json({
+        result: "error",
+        error: {
+          message: `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
+        },
+      });
+      return;
+    }
+  } else {
+    if (
+      !(await identityCanRegisterForContract(
+        registration.identityPublicKey,
+        registration.contractAddress,
+        registration.tokenOwnerFid,
+        registration.network,
+      ))
+    ) {
+      console.error(
+        `Identity ${registration.identityPublicKey} cannot manage spaces for contract ${registration.contractAddress}`,
+      );
+      res.status(400).json({
+        result: "error",
+        error: {
+          message: `Identity ${registration.identityPublicKey} cannot manage spaces for contract ${registration.contractAddress}`,
+        },
+      });
+      return;
+    }
   }
-  const { data } = await supabaseClient
-    .from("spaceRegistrations")
-    .select("spaceId")
-    .eq("fid", registration.fid)
-    .eq("spaceName", registration.spaceName);
-  if (data && data.length > 0) {
-    res.status(400).json({
-      result: "error",
-      error: {
-        message: `fid ${registration.fid} already has a space named ${registration.spaceName}`,
-      },
-    });
+
+  if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {
+    delete registration.tokenOwnerFid;
   }
+
   const { data: result, error } = await supabaseClient
     .from("spaceRegistrations")
     .insert([registration])
     .select();
+
   if (error) {
+    console.error("Error registering new space:", error.message);
     res.status(500).json({
       result: "error",
       error: {
@@ -115,6 +215,8 @@ async function registerNewSpace(
     });
     return;
   }
+
+  console.log("Registered new space:", first(result));
   res.status(200).json({
     result: "success",
     value: first(result),
@@ -123,12 +225,15 @@ async function registerNewSpace(
 
 // Returns a list of the spaces that the requesting identity
 // owns and can modify, including updates and renaming
+// Does not check for spaces that are for contracts, as that ownership changes easily
 async function listModifiableSpaces(
   req: NextApiRequest,
   res: NextApiResponse<ModifiableSpacesResponse>,
 ) {
   const identity = req.query.identityPublicKey;
+
   if (isUndefined(identity) || isArray(identity)) {
+    console.error("Invalid identityPublicKey query parameter:", identity);
     res.status(400).json({
       result: "error",
       error: {
@@ -142,7 +247,9 @@ async function listModifiableSpaces(
     .from("spaceRegistrations")
     .select("*, fidRegistrations!inner (fid, identityPublicKey)")
     .filter("fidRegistrations.identityPublicKey", "eq", identity);
+
   if (error) {
+    console.error("Error fetching modifiable spaces:", error.message);
     res.status(500).json({
       result: "error",
       error: {
@@ -151,6 +258,7 @@ async function listModifiableSpaces(
     });
     return;
   }
+
   res.status(200).json({
     result: "success",
     value: {

@@ -1,3 +1,4 @@
+"use client";
 import { Draft, create as mutativeCreate } from "mutative";
 import { StoreApi, create, useStore } from "zustand";
 import { PersistOptions, persist, devtools } from "zustand/middleware";

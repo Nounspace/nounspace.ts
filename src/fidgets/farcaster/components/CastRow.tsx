@@ -20,13 +20,13 @@ import {
 } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { bytesToHexString, ReactionType } from "@farcaster/core";
+import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
 import CreateCast, { DraftType } from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import FarcasterLinkify from "./linkify";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
@@ -113,7 +113,7 @@ export const CastAvatar = ({
         )}
       >
         <AvatarImage
-          src={`https://res.cloudinary.com/merkle-manufactory/image/fetch/c_fill,f_png,w_144/${user.pfp_url}`}
+          src={`${user.pfp_url}`}
           alt={user?.display_name}
           className="object-cover"
         />
@@ -154,7 +154,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
               }
             }}
           >
-            {renderEmbedForUrl(embedData)}
+            {renderEmbedForUrl(embedData, false)}
           </div>
         );
       })}

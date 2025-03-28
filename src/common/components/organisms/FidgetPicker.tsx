@@ -6,7 +6,7 @@ import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export interface FidgetPickerProps {
-  addFidgetToTray: (fidgetId: string, fidget: FidgetModule<any>) => void;
+  addFidget: (fidgetId: string, fidget: FidgetModule<any>) => void;
   setExternalDraggedItem: Dispatch<
     SetStateAction<{ i: string; w: number; h: number } | undefined>
   >;
@@ -19,7 +19,7 @@ export interface FidgetPickerProps {
 }
 
 export const FidgetPicker: React.FC<FidgetPickerProps> = ({
-  addFidgetToTray,
+  addFidget,
   setExternalDraggedItem,
   setCurrentlyDragging,
   generateFidgetInstance,
@@ -54,7 +54,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
             <button
               key={fidgetId}
               className="w-32 h-32 flex flex-col items-center justify-center p-2"
-              onClick={() => addFidgetToTray(fidgetId, fidgetModule)}
+              onClick={() => addFidget(fidgetId, fidgetModule)}
               style={{ transform: "scale(1)", transition: "transform 0.3s" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "scale(1.05)";
@@ -63,9 +63,9 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              <Card className="w-full h-full bg-[#F3F4F6] flex flex-col items-center justify-center p-2">
-                <CardContent className="overflow-hidden flex flex-col items-center justify-center p-2">
-                  <div className="flex items-center justify-center w-16 h-16 mb-2">
+              <Card className="w-full h-full bg-[#F3F4F6] flex flex-col items-center justify-center p-1">
+                <CardContent className="overflow-hidden flex flex-col items-center justify-center p-1">
+                  <div className="flex items-center justify-center w-14 h-12 mb-2">
                     {" "}
                     {/* Icon Container */}
                     <span
