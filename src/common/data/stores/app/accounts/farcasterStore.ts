@@ -49,7 +49,7 @@ export const farcasterStore = (
   },
   getFidsForCurrentIdentity: async () => {
     const { data } = await axiosBackend.get<FidsLinkedToIdentityResponse>(
-      "/api/fid-link/",
+      "/api/fid-link",
       {
         params: {
           identityPublicKey: get().account.currentSpaceIdentityPublicKey,
@@ -72,7 +72,7 @@ export const farcasterStore = (
       signature: bytesToHex(await signMessage(hashObject(request))),
     };
     const { data } = await axiosBackend.post<FidLinkToIdentityResponse>(
-      "/api/fid-link/",
+      "/api/fid-link",
       signedRequest,
     );
     if (!isUndefined(data.value)) {

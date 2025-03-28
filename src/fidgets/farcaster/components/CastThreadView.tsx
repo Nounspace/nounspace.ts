@@ -1,113 +1,105 @@
-import React, { useMemo } from "react";
+import React from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { CastRow } from "./CastRow";
-import { CastList } from "./CastList";
-import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import { ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { IoArrowBack } from "react-icons/io5";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Button } from "@/common/components/atoms/button";
 import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
-import { concat } from "lodash";
+import { CardHeader, CardTitle } from "@/common/components/atoms/card";
+import ScrollToIndex from "@/common/components/molecules/ScrollToIndex";
 
 type CastThreadViewProps = {
-  cast: { hash: string; author: { fid: number } };
+  cast: { hash: string; author?: { fid: number } };
   onBack?: () => void;
-  isActive?: boolean;
-  setSelectedCastHash: React.Dispatch<React.SetStateAction<string>>;
+  onSelect?: (hash: string) => void;
   viewerFid?: number;
 };
 
 export const CastThreadView = ({
   cast,
   onBack,
-  isActive,
-  setSelectedCastHash,
+  onSelect,
   viewerFid,
 }: CastThreadViewProps) => {
   const { data, isLoading } = useLoadFarcasterConversation(
     cast.hash,
     viewerFid,
   );
-  const casts = useMemo(
-    () =>
-      data
-        ? concat(
-            [data.conversation.cast],
-            data.conversation.cast.direct_replies || [],
-          )
-        : [],
-    [data],
-  );
 
-  const renderGoBackButton = () => (
-    <Button
-      variant="outline"
-      onClick={() => onBack && onBack()}
-      className="w-20 group m-2 flex items-center px-2 py-1 shadow-sm text-sm font-medium rounded-md text-foreground/80 bg-background focus:outline-none"
-    >
-      <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
-        <>
-          <ArrowLeftIcon
-            className="mr-1 h-4 w-4 text-foreground/70 group-hover:text-foreground/80"
-            aria-hidden="true"
-          />
-          Back
-        </>
-      </Tooltip.Provider>
-    </Button>
-  );
+  const parentCasts: CastWithInteractions[] =
+    data?.conversation?.chronological_parent_casts || [];
+  const focusedCast: CastWithInteractions | null =
+    data?.conversation?.cast || null;
+  const replyCasts: CastWithInteractions[] =
+    data?.conversation?.cast?.direct_replies || [];
 
-  const renderRow = (cast: CastWithInteractions, idx: number) => {
-    return (
-      <li key={`cast-thread-${cast.hash}`}>
-        <div className="relative pl-4">
-          {/* this is the left line */}
-          <div
-            className={classNames(
-              idx === 0 ? "-ml-[31px]" : "border-l-2",
-              "relative flex items-start border-muted",
-            )}
-          >
-            <div
-              className={classNames(
-                idx === 0 ? "bg-foreground/10" : "",
-                "min-w-0 flex-1",
-              )}
-            >
-              {idx === 0 && (
-                <div
-                  className={classNames(
-                    idx === 0 ? "bg-muted-foreground/50" : "bg-foreground/10",
-                    "absolute top-8 left-[31px] h-[calc(100%-32px)] w-0.5",
-                  )}
-                />
-              )}
-              <CastRow cast={cast} showChannel isThreadView={idx > 0} />
-            </div>
-          </div>
-        </div>
-      </li>
-    );
-  };
-
-  const renderFeed = () => (
-    <CastList
-      data={casts}
-      renderRow={(item: CastWithInteractions, idx: number) =>
-        renderRow(item, idx)
-      }
-    />
-  );
+  const allCasts: any[] = [
+    ...parentCasts.map((cast, idx) => ({
+      cast: cast,
+      key: cast.hash,
+      showChannel: true,
+      isFocused: false,
+      isReply: idx !== 0,
+      hasReplies: true,
+      onSelect: onSelect,
+    })),
+    focusedCast && {
+      cast: focusedCast,
+      key: focusedCast.hash,
+      showChannel: true,
+      isFocused: true,
+      isReply: parentCasts.length > 0,
+      hasReplies: replyCasts.length > 0,
+      onSelect: onSelect,
+    },
+    ...replyCasts.map((cast, idx) => ({
+      cast: cast,
+      key: cast.hash,
+      showChannel: true,
+      isFocused: false,
+      isReply: false,
+      hasReplies: false,
+      onSelect: onSelect,
+    })),
+  ].filter((c) => c);
 
   return (
-    <div className="flex flex-col text-foreground/80 text-lg">
-      {!isLoading && onBack && renderGoBackButton()}
-      {isLoading ? (
-        <Loading />
-      ) : (
-        <div className="flow-root ml-4">{renderFeed()}</div>
+    <div className="flex flex-col relative h-full">
+      <StickyHeader onBack={onBack} />
+      {isLoading && <Loading />}
+      {!isLoading && !focusedCast && "Cast not found"}
+      {!isLoading && focusedCast && (
+        <ScrollToIndex scrollToIndex={parentCasts.length} extraHeight={500}>
+          {allCasts.map((castProps) => (
+            <CastRow {...castProps} key={castProps.key} />
+          ))}
+        </ScrollToIndex>
       )}
     </div>
   );
 };
+
+const StickyHeader = ({ onBack }: { onBack?: () => void }) => {
+  return onBack ? (
+    <CardHeader className="bg-background/75 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-10">
+      <Button
+        variant="ghost"
+        onClick={() => onBack && onBack()}
+        className="flex items-center focus:outline-none size-9 p-0 hover:bg-foreground/5 ml-1 rounded-full"
+      >
+        <Tooltip.Provider delayDuration={50} skipDelayDuration={0}>
+          <>
+            <IoArrowBack
+              className="size-5 group-hover:opacity-80 stroke-2"
+              aria-hidden="true"
+            />
+          </>
+        </Tooltip.Provider>
+      </Button>
+      <CardTitle className="!mt-0 text-xl">Conversation</CardTitle>
+    </CardHeader>
+  ) : null;
+};
+
+export default CastThreadView;

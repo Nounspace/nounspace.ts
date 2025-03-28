@@ -9,8 +9,15 @@ import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
-import CreateCast from "./farcaster/CreateCast";
-import zoraEmbed from "./zora/zoraEmbed";
+// import CreateCast from "./farcaster/CreateCast";
+import Links from "./ui/Links";
+import snapShot from "./snapshot/SnapShot";
+import Swap from "./swap/Swap";
+import rss from "./ui/rss";
+import VideoFidget from "./ui/Video";
+import marketData from "./token/marketData";
+import chat from "./ui/chat";
+// import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
   //
@@ -20,16 +27,24 @@ export const CompleteFidgets = {
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
   frame: Frame,
-  cast: Cast,
+  // iframely: iframely,
   feed: Feed,
-  createCast: CreateCast,
+  cast: Cast,
+  // createCast: CreateCast,
   // Basic UI elements
   gallery: Gallery,
   text: TextFidget,
   iframe: IFrame,
   // Nouns
   governance: NounishGovernance,
-  zora: zoraEmbed,
+  links: Links,
+  // zora: zoraEmbed, -> 500 server error -Frame ancestors block
+  SnapShot: snapShot,
+  Swap: Swap,
+  Rss: rss,
+  Video: VideoFidget,
+  Market: marketData,
+  Chat: chat,
 };
 
 export const LayoutFidgets = {

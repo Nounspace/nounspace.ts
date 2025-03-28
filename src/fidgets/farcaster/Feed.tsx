@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useCallback } from "react";
 import { isNil } from "lodash";
 import {
   FidgetArgs,
@@ -15,24 +15,40 @@ import { CastThreadView } from "./components/CastThreadView";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import TextInput from "@/common/components/molecules/TextInput";
-import { useGetCasts } from "@/common/data/queries/farcaster";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import {
+  useGetCasts,
+  useGetCastsByKeyword,
+} from "@/common/data/queries/farcaster"; // Import new hook
+import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
+import PlatformSelector from "@/common/components/molecules/PlatformSelector";
+import { Platform } from "@/common/components/molecules/PlatformSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 
-enum FilterType {
+export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
+  Keyword = "keyword", // Add new filter type
 }
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users: string; // this should be a number array, but that requires special inputs to build later
-  channel: string;
+  users?: string; // this should be a number array, but that requires special inputs to build later
+  channel?: string;
+  keyword?: string; // Add keyword field
+  selectPlatform: Platform;
+  Xhandle: string;
+  style: string;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
   { name: "Channel", value: FilterType.Channel },
   { name: "Users", value: FilterType.Users },
+  { name: "Keyword", value: FilterType.Keyword }, // Add new filter type
 ];
 
 export const FilterTypeSelector: React.FC<{
@@ -51,31 +67,51 @@ export const FilterTypeSelector: React.FC<{
 };
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
-  fidgetName: "feed",
+  fidgetName: "Feed",
   fields: [
+    {
+      fieldName: "selectPlatform",
+      displayName: "Select App",
+      inputSelector: PlatformSelector,
+      required: false,
+      default: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+    },
     {
       fieldName: "feedType",
       displayName: "Feed Type",
       inputSelector: FeedTypeSelector,
       required: false,
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
       default: FeedType.Following,
+    },
+    {
+      fieldName: "Xhandle",
+      displayName: "Username",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) => settings?.selectPlatform?.name === "Farcaster",
+      default: "thenounspace",
     },
     {
       fieldName: "filterType",
       displayName: "Filter Type",
       inputSelector: FilterTypeSelector,
       required: false,
-      disabledIf: (settings) => settings.feedType !== FeedType.Filter,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings?.selectPlatform?.name === "The other app",
       default: FilterType.Users,
     },
     {
       fieldName: "users",
-      displayName: "Users",
+      displayName: "FID",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
-        settings.filterType !== FilterType.Users,
+        settings.filterType !== FilterType.Users ||
+        settings?.selectPlatform?.name === "The other app",
       default: "",
     },
     {
@@ -85,10 +121,81 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
-        settings.filterType !== FilterType.Channel,
+        settings.filterType !== FilterType.Channel ||
+        settings.selectPlatform?.name === "The other app",
       default: "",
     },
-    ...defaultStyleFields,
+    {
+      fieldName: "keyword",
+      displayName: "Keyword",
+      inputSelector: TextInput,
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Keyword ||
+        settings?.selectPlatform?.name === "The other app",
+      default: "",
+    },
+    {
+      fieldName: "style",
+      displayName: "Feed Style",
+      inputSelector: ThemeSelector,
+      required: false,
+      group: "style",
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name !== "The other app",
+      default: "light",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "var(--user-theme-font)",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "background",
+      default: "var(--user-theme-fidget-background)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
+    },
+    {
+      fieldName: "fidgetBorderWidth",
+      default: "var(--user-theme-fidget-border-width)",
+      required: false,
+      inputSelector: BorderSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
+    },
+    {
+      fieldName: "fidgetBorderColor",
+      default: "var(--user-theme-fidget-border-color)",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
+    },
+    {
+      fieldName: "fidgetShadow",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: ShadowSelector,
+      group: "style",
+      disabledIf: (settings) =>
+        settings?.selectPlatform?.name === "The other app",
+    },
   ],
   size: {
     minHeight: 2,
@@ -105,8 +212,14 @@ export const FEED_TYPES = [
 ];
 
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
-  const { feedType, users, channel, filterType } = settings;
+  const {
+    selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+    Xhandle,
+    style,
+  } = settings;
+  const { feedType, users, channel, filterType, keyword } = settings;
   const { fid } = useFarcasterSigner("feed");
+
   const {
     data,
     isFetchingNextPage,
@@ -114,16 +227,18 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     hasNextPage,
     isError,
     isPending,
-  } = useGetCasts({
-    feedType,
-    fid,
-    filterType,
-    fids: users,
-    channel,
-  });
+  } =
+    filterType === FilterType.Keyword
+      ? useGetCastsByKeyword({ keyword: keyword || "" })
+      : useGetCasts({
+        feedType,
+        fid,
+        filterType,
+        fids: users,
+        channel,
+      });
 
-  const [showCastThreadView, setShowCastThreadView] = useState(false);
-  const [selectedCastHash, setSelectedCastHash] = useState("");
+  const threadStack = useLifoQueue<string>();
   const [ref, inView] = useInView();
 
   useEffect(() => {
@@ -133,26 +248,46 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   }, [inView]);
 
   useEffect(() => {
-    setShowCastThreadView(false);
+    threadStack.clear();
   }, [settings]);
 
-  const onSelectCast = (hash: string) => {
-    setSelectedCastHash(hash);
-    setShowCastThreadView(true);
-  };
+  const onSelectCast = useCallback((hash: string) => {
+    threadStack.push(hash);
+  }, []);
 
   const renderThread = () => (
     <CastThreadView
       cast={{
-        hash: selectedCastHash,
+        hash: threadStack.last || "",
         author: {
           fid: fid,
         },
       }}
-      onBack={() => setShowCastThreadView(false)}
-      setSelectedCastHash={setSelectedCastHash}
+      onBack={threadStack.pop}
+      onSelect={onSelectCast}
     />
   );
+
+  const renderXFeed = () => {
+    const theme = style || "light";
+    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=false&hideHeader=false&hideScrollBar=true&lang=en&origin=https%3A%2F%2Fpublish.twitter.com%2F%23&theme=${theme}&widgetsVersion=2615f7e52b7e0%3A1702314776716`;
+
+    return (
+      <iframe
+        src={url}
+        style={{ border: "none", width: "100%", height: "100%" }}
+        title="Twitter Feed"
+        frameBorder="0"
+      />
+    );
+  };
+
+  const renderFeedContent = () => {
+    if (selectPlatform.name === "The other app") {
+      return renderXFeed();
+    }
+    return renderFeed();
+  };
 
   const renderFeed = () => {
     return (
@@ -164,13 +299,31 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
             ) : !isNil(data) ? (
               data.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
-                  {page.casts.map((cast, index) => (
-                    <CastRow
-                      cast={cast}
-                      key={index}
-                      onSelect={() => onSelectCast(cast.hash)}
-                    />
-                  ))}
+                  {filterType === FilterType.Keyword
+                    ? page.result.casts?.map(
+                      (
+                        cast,
+                        index, // Ensure casts array is accessed correctly for keyword filter
+                      ) => (
+                        <CastRow
+                          cast={cast}
+                          key={index}
+                          onSelect={onSelectCast}
+                        />
+                      ),
+                    )
+                    : page.casts?.map(
+                      (
+                        cast,
+                        index, // Ensure casts array is accessed correctly for other filters
+                      ) => (
+                        <CastRow
+                          cast={cast}
+                          key={index}
+                          onSelect={onSelectCast}
+                        />
+                      ),
+                    )}
                 </React.Fragment>
               ))
             ) : (
@@ -179,7 +332,14 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           </div>
         )}
         {!isError && (
-          <div ref={ref} className="h-3/6">
+          <div
+            ref={ref}
+            className="h-3/6"
+            style={{
+              fontFamily: settings.fontFamily,
+              color: settings.fontColor,
+            }}
+          >
             {isFetchingNextPage ? (
               <div className="h-full w-full bg-[#E6E6E6] flex flex-col justify-center items-center">
                 <Loading />
@@ -197,9 +357,24 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     );
   };
 
+  const isThreadView = threadStack.last !== undefined;
+
   return (
-    <div className="h-full overflow-y-scroll justify-center items-center">
-      {showCastThreadView ? renderThread() : renderFeed()}
+    <div
+      className="h-full"
+      style={{
+        fontFamily: settings.fontFamily,
+        color: settings.fontColor,
+      }}
+    >
+      {isThreadView && (
+        <div className="h-full overflow-y-scroll justify-center items-center">
+          {renderThread()}
+        </div>
+      )}
+      <div className="h-full overflow-y-scroll justify-center items-center">
+        {renderFeedContent()}
+      </div>
     </div>
   );
 };

@@ -1,11 +1,9 @@
+"use client";
 import React, { useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore, useLogout } from "@/common/data/stores/app";
 import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
-import {
-  RECHECK_BACKOFF_FACTOR,
-  SetupStep,
-} from "@/common/data/stores/app/setup";
+import { SetupStep } from "@/common/data/stores/app/setup";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { isEqual, isUndefined } from "lodash";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
@@ -42,17 +40,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     setModalOpen,
     keepModalOpen,
     // nogs
-    setNogsIsChecking,
-    nogsTimeoutTimer,
-    nogsRecheckCountDownTimer,
-    setNogsRecheckCountDown,
-    setNogsShouldRecheck,
-    setNogsRecheckTimerLength,
-    nogsRecheckTimerLength,
-    setNogsTimeoutTimer,
-    nogsRecheckCountDown,
-    setNogsRecheckCountDownTimer,
-    nogsShouldRecheck,
+    setHasNogs,
     // wallet signatures
     isRequestingWalletSignature,
     setIsRequestingWalletSignature,
@@ -78,17 +66,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
     setModalOpen: state.setup.setModalOpen,
     keepModalOpen: state.setup.keepModalOpen,
     // nogs
-    setNogsIsChecking: state.setup.setNogsIsChecking,
-    nogsTimeoutTimer: state.setup.nogsTimeoutTimer,
-    nogsRecheckCountDownTimer: state.setup.nogsRecheckCountDownTimer,
-    setNogsRecheckCountDown: state.setup.setNogsRecheckCountDown,
-    setNogsShouldRecheck: state.setup.setNogsShouldRecheck,
-    setNogsRecheckTimerLength: state.setup.setNogsRecheckTimerLength,
-    nogsRecheckTimerLength: state.setup.nogsRecheckTimerLength,
-    setNogsTimeoutTimer: state.setup.setNogsTimeoutTimer,
-    nogsRecheckCountDown: state.setup.nogsRecheckCountDown,
-    setNogsRecheckCountDownTimer: state.setup.setNogsRecheckCountDownTimer,
-    nogsShouldRecheck: state.setup.nogsShouldRecheck,
+    setHasNogs: state.account.setHasNogs,
     // wallet signatures
     isRequestingWalletSignature: state.setup.isRequestingWalletSignature,
     setIsRequestingWalletSignature: state.setup.setIsRequestingWalletSignature,
@@ -282,9 +260,7 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
   }, [currentStep, walletsReady, ready, authenticated]);
 
   async function isHoldingNogs(address): Promise<boolean> {
-    setNogsIsChecking(true);
     if (process.env.NODE_ENV === "development") {
-      setNogsIsChecking(false);
       return true;
     }
     try {
@@ -300,45 +276,15 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
       return data.isHolderOfContract;
     } catch {
       return false;
-    } finally {
-      setNogsIsChecking(false);
     }
   }
 
   async function checkForNogs() {
-    clearTimeout(nogsTimeoutTimer);
-    clearTimeout(nogsRecheckCountDownTimer);
-    setNogsRecheckCountDown(0);
-    setNogsShouldRecheck(false);
     if (user && user.wallet) {
-      if (await isHoldingNogs(user.wallet.address))
-        setCurrentStep(SetupStep.TOKENS_FOUND);
-      else {
-        setNogsRecheckTimerLength(
-          nogsRecheckTimerLength * RECHECK_BACKOFF_FACTOR,
-        );
-        setNogsTimeoutTimer(
-          setTimeout(() => setNogsShouldRecheck(true), nogsRecheckTimerLength),
-        );
-        setNogsRecheckCountDown(nogsRecheckTimerLength / 1000);
-      }
+      setHasNogs(await isHoldingNogs(user.wallet.address));
+      setCurrentStep(SetupStep.TOKENS_FOUND);
     }
   }
-
-  useEffect(() => {
-    if (nogsRecheckCountDown > 0) {
-      setNogsRecheckCountDownTimer(
-        setTimeout(
-          () => setNogsRecheckCountDown(nogsRecheckCountDown - 1),
-          1000,
-        ),
-      );
-    }
-  }, [nogsRecheckCountDown]);
-
-  useEffect(() => {
-    nogsShouldRecheck && checkForNogs();
-  }, [nogsShouldRecheck]);
 
   return (
     <>

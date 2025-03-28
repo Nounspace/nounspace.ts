@@ -14,7 +14,7 @@ type RendererProps = MarkdownProps & {
   href?: any;
 };
 
-export const MarkdownRenderers = {
+export const MarkdownRenderers = (linkColor?: string) => ({
   img: ({ alt, src, title, ...props }: RendererProps) => (
     <span
       style={{
@@ -45,15 +45,30 @@ export const MarkdownRenderers = {
       {children}
     </div>
   ),
-  a: ({ href, children, ...props }: RendererProps) => (
-    <a
-      style={{ color: "blue", textWrap: "wrap", wordBreak: "break-all" }}
-      href={href}
-      {...props}
-    >
-      {children}
-    </a>
-  ),
+  a: ({ href, children, ...props }: RendererProps) => {
+    const isPrettyLink = href !== children;
+
+    const style: React.CSSProperties = isPrettyLink
+      ? { color: linkColor, wordBreak: "keep-all", overflowWrap: "normal" }
+      : {
+          color: linkColor,
+          wordBreak: "break-all",
+          overflowWrap: "break-word",
+        };
+
+    return (
+      <a
+        href={href}
+        style={style}
+        {...props}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {children}
+      </a>
+    );
+  },
+
   h1: ({ children, ...props }: RendererProps) => (
     <h1
       {...props}
@@ -109,18 +124,16 @@ export const MarkdownRenderers = {
   ol: ({ ordered, children, ...props }: RendererProps) => {
     const listType = ordered ? "1" : "decimal";
     return (
-      <ol {...props} style={{ listStyleType: listType, paddingLeft: "10%" }}>
+      <ol {...props} style={{ listStyleType: listType, paddingLeft: "30px" }}>
         {children}
       </ol>
     );
   },
   ul: ({ ordered, children, ...props }: RendererProps) => {
-    const listType = ordered ? "1" : "decimal";
     return (
       <ul
         {...props}
-        data-ordered={listType}
-        style={{ padding: "5%", paddingLeft: "10%", color: "white" }}
+        style={{ padding: "5px", paddingLeft: "30px", color: "black" }}
       >
         {children}
       </ul>
@@ -250,4 +263,4 @@ export const MarkdownRenderers = {
       {children}
     </code>
   ),
-};
+});

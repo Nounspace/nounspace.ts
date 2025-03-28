@@ -4,6 +4,13 @@ import HTMLInput from "@/common/ui/molecules/HTMLInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import type { ThemeSettings, FontFamily, Color } from "@/common/lib/theme";
+import SwitchButton from "../components/molecules/ViewSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import { FilterTypeSelector } from "@/fidgets/farcaster/Feed";
+import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
+import PlatformSelector from "../components/molecules/PlatformSelector";
+import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
+import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
 
 export type FidgetSettings = Record<string, any>;
 export type FidgetSettingsStyle = {
@@ -15,6 +22,9 @@ export type FidgetSettingsStyle = {
   fidgetBorderWidth?: string;
   fidgetBorderColor?: Color;
   fidgetShadow?: string;
+  itemBorderWidth?: string;
+  itemBorderColor?: Color;
+  itemBackground?: Color;
 };
 export type FidgetData = Record<string, any>;
 
@@ -38,7 +48,14 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
     | typeof ColorSelector
     | typeof FontSelector
     | typeof CSSInput
-    | typeof HTMLInput;
+    | typeof HTMLInput
+    | typeof ImageScaleSlider
+    | typeof SwitchButton
+    | typeof FeedTypeSelector
+    | typeof FilterTypeSelector
+    | typeof PlatformSelector
+    | typeof AlchemyChainSelector
+    | typeof AlchemyNftSelector;
   readonly default?: any;
   readonly required: boolean;
   readonly group?: FidgetGroup;
@@ -123,6 +140,9 @@ interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
   portalRef: React.RefObject<HTMLDivElement>;
 
   hasProfile: boolean;
+  tabNames: string[];
+  hasFeed: boolean;
+  fid: number;
 }
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;

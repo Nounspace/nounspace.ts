@@ -71,29 +71,26 @@ export const useGetCasts = ({
   feedType: FeedType;
   fid: number;
   filterType: FilterType;
-  fids: string;
-  channel: string;
+  fids?: string;
+  channel?: string;
 }) => {
   return useInfiniteQuery({
     queryKey: ["channelCasts", feedType, fid, filterType, fids, channel],
     staleTime: 1000 * 60 * 1,
-
     queryFn: async ({ pageParam: cursor }) => {
+      const params: any = {
+        fid: fid === -1 ? 456830 : fid,
+        viewer_fid: fid === -1 ? 456830 : fid,
+        feedType,
+        cursor,
+        channel_id: channel,
+        fids,
+        filter_type: filterType,
+      };
       const { data } = await axiosBackend.get<FeedResponse>(
         "/api/farcaster/neynar/feed",
-        {
-          params: {
-            fid: fid === -1 ? 456830 : fid,
-            viewer_fid: fid === -1 ? 456830 : fid,
-            feedType,
-            cursor,
-            channel_id: channel,
-            fids,
-            filter_type: filterType, // Add underscore as neynar wants it for the query
-          },
-        },
+        { params },
       );
-
       return data;
     },
     initialPageParam: undefined as string | undefined,
@@ -101,5 +98,27 @@ export const useGetCasts = ({
       !isUndefined(lastPage) && !isUndefined(lastPage.next)
         ? lastPage.next.cursor
         : undefined,
+  });
+};
+
+export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
+  return useInfiniteQuery({
+    queryKey: ["keywordCasts", keyword],
+    staleTime: 1000 * 60 * 1,
+    queryFn: async ({ pageParam: cursor }) => {
+      const params: any = {
+        q: keyword,
+        priority_mode: false,
+        limit: 25,
+        cursor,
+      };
+      const { data } = await axiosBackend.get(
+        "/api/farcaster/neynar/searchByKeyword",
+        { params: { ...params, keyword } },
+      );
+      return data;
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage?.next?.cursor ?? undefined,
   });
 };

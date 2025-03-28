@@ -3,8 +3,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import { APP_FID } from "@/constants/app";
 import { AppSigner } from "@/constants/appServerSide";
-import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
-import { ALCHEMY_API, WARPCAST_API } from "@/constants/urls";
+import { WARPCAST_API } from "@/constants/urls";
 import {
   SIGNED_KEY_REQUEST_TYPE,
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
@@ -76,7 +75,7 @@ async function handlePost(
   req: NextApiRequest,
   res: NextApiResponse<SignerResponse<SignedKeyRequestResponse>>,
 ) {
-  const { publicKey, requestingWallet } = req.body as CreateSignerRequest;
+  const { publicKey } = req.body as CreateSignerRequest;
 
   if (isUndefined(publicKey)) {
     return res.status(400).json({
@@ -101,24 +100,24 @@ async function handlePost(
     },
   });
 
-  // TO DO: Change who get's sponsorship as we leave Alpha and move forward
-  let shouldSponsor = false;
-  if (!isUndefined(requestingWallet)) {
-    try {
-      const { data } = await axios.get<AlchemyIsHolderOfContract>(
-        `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
-        {
-          params: {
-            wallet: requestingWallet,
-            contractAddress: NOGS_CONTRACT_ADDR,
-          },
-        },
-      );
-      shouldSponsor = data.isHolderOfContract;
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  // We are sponsoring everything for now, set to false and uncomment below to token Gate
+  const shouldSponsor = true; // let shouldSponsor = false;
+  // if (!isUndefined(requestingWallet)) {
+  //   try {
+  //     const { data } = await axios.get<AlchemyIsHolderOfContract>(
+  //       `${ALCHEMY_API("base")}nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/isHolderOfContract`,
+  //       {
+  //         params: {
+  //           wallet: requestingWallet,
+  //           contractAddress: NOGS_CONTRACT_ADDR,
+  //         },
+  //       },
+  //     );
+  //     shouldSponsor = data.isHolderOfContract
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // }
 
   let sponsorship: SignedKeyRequestSponsorship | undefined = undefined;
   if (shouldSponsor) {
@@ -190,14 +189,7 @@ async function handleGet(
       },
     );
 
-    const value: SignedKeyRequestResponse =
-      process.env.NEXT_PUBLIC_VERCEL_ENV === "development"
-        ? {
-            ...data.result.signedKeyRequest,
-            state: "completed",
-            userFid: 1,
-          }
-        : data.result.signedKeyRequest;
+    const value: SignedKeyRequestResponse = data.result.signedKeyRequest;
 
     return res.status(200).json({
       result: "success",

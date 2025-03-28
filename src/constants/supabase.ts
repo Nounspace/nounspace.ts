@@ -13,3 +13,11 @@ export function authenticatorsPath(identityPublicKey: string) {
 export function homebasePath(identityPublicKey: string) {
   return `${identityPublicKey}/homebase`;
 }
+
+export function homebaseTabsPath(identityPublicKey: string, tabName: string) {
+  return `${identityPublicKey}/tabs/${tabName}`;
+}
+
+export function homebaseTabOrderPath(key: string) {
+  return `${homebasePath(key)}TabOrder`;
+}

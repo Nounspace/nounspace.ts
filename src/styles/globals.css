@@ -67,6 +67,14 @@
   html {
     -webkit-font-smoothing: antialiased;
   }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for Firefox */
+  * {
+    scrollbar-width: none;
+  }
 }
 
 /*  
@@ -78,6 +86,31 @@
     @apply bg-background text-foreground;
   }
 } */
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.tabs li button {
+  width: 20px;
+  height: 20px;
+  border: 0;
+  background: #fff;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  stroke: #000;
+  margin-left: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
 
 .grabbable {
   cursor: move; /* fallback if grab cursor is unsupported */
@@ -242,6 +275,19 @@
 
 .react-tweet-theme {
   --tweet-container-margin: 0px !important;
+}
+
+.ripple-square {
+  opacity: 0;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Color picker. Because the `disableDarkMode` prop does not work currently */

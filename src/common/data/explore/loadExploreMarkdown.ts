@@ -1,15 +1,21 @@
 import matter from "gray-matter";
 import supabaseClient from "../database/supabase/clients/server";
-import { isNull, map } from "lodash";
+import { endsWith, filter, isNull, map, startsWith } from "lodash";
+import { type FileObject } from "@supabase/storage-js";
+
+export type PostData = {
+  slug: string;
+} & MatterResultData;
 
 type MatterResultData = {
+  category: string;
   title: string;
   bio: string;
   image: string;
   [key: string]: string;
 };
 
-export async function getAllMarkdownFiles() {
+export async function getAllMarkdownFiles(): Promise<PostData[]> {
   const { data, error } = await supabaseClient.storage.from("explore").list();
   if (error) {
     throw error;
@@ -17,13 +23,19 @@ export async function getAllMarkdownFiles() {
     if (isNull(data)) {
       return [];
     }
-    return Promise.all(
-      map(data, (d) => getMarkdownFileBySlug(d.name.replace(/\.md$/, ""))),
-    );
+    return (
+      await Promise.all(
+        map(data, (d: FileObject) =>
+          getMarkdownFileBySlug(d.name.replace(/\.md$/, "")),
+        ),
+      )
+    ).filter((d) => !isNull(d));
   }
 }
 
-export async function getMarkdownFileBySlug(slug: string) {
+export async function getMarkdownFileBySlug(
+  slug: string,
+): Promise<PostData | null> {
   const { data, error } = await supabaseClient.storage
     .from("explore")
     .download(`${slug}.md`);
@@ -50,6 +62,12 @@ export async function getAllSlugs() {
     if (isNull(data)) {
       return [];
     }
-    return map(data, (d) => d.name.replace(/\.md$/, ""));
+    return map(
+      filter(
+        data,
+        (d: FileObject) => endsWith(d.name, ".md") && !startsWith(d.name, "."),
+      ),
+      (d) => d.name.replace(/\.md$/, ""),
+    );
   }
 }

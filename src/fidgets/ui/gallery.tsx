@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -7,46 +7,272 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import MediaSourceSelector, {
+  MediaSource,
+  MediaSourceTypes,
+} from "@/common/components/molecules/MediaSourceSelector";
+import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
+import AlchemyNftSelector, {
+  AlchemyNftSelectorValue,
+} from "@/common/components/molecules/AlchemyNFTSelector";
+import VerifiedNft from "@/common/components/atoms/icons/VerifiedNft";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/common/components/atoms/tooltip";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
+import { Color } from "@/common/lib/theme";
+import { ErrorWrapper } from "@/fidgets/helpers";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
+  RedirectionURL: string;
+  Scale: number;
+  selectMediaSource: MediaSource;
+  nftAddress: string;
+  nftTokenId: string;
+  network: AlchemyNetwork;
+  nftSelector: AlchemyNftSelectorValue;
+  badgeColor: Color;
 } & FidgetSettingsStyle;
 
 const galleryConfig: FidgetProperties = {
-  fidgetName: "gallery",
+  fidgetName: "Image",
   icon: 0x1f5bc,
   fields: [
     {
+      fieldName: "selectMediaSource",
+      displayName: "Source",
+      inputSelector: MediaSourceSelector,
+      required: false,
+      default: { name: MediaSourceTypes.URL },
+      group: "settings",
+    },
+    {
       fieldName: "imageUrl",
+      displayName: "Image URL",
       required: true,
       inputSelector: TextInput,
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.URL,
+    },
+    {
+      fieldName: "network",
+      displayName: "Network",
+      inputSelector: AlchemyChainSelector,
+      required: true,
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
+    },
+    {
+      fieldName: "nftSelector",
+      displayName: "NFT",
+      inputSelector: AlchemyNftSelector,
+      required: true,
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
+    },
+    {
+      fieldName: "nftAddress",
+      displayName: "Collection Address",
+      required: true,
+      inputSelector: TextInput,
+      default: "",
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
+    },
+    {
+      fieldName: "nftTokenId",
+      displayName: "Token ID",
+      required: true,
+      inputSelector: TextInput,
+      default: "",
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.EXTERNAL,
+    },
+    {
+      fieldName: "Scale",
+      required: false,
+      inputSelector: ImageScaleSlider,
+      default: 1,
+      group: "style",
+    },
+    {
+      fieldName: "Link",
+      displayName: "Links To",
+      required: false,
+      inputSelector: TextInput,
+      default: "",
+      group: "settings",
+    },
+    {
+      fieldName: "badgeColor",
+      displayName: "Badge Color",
+      required: false,
+      inputSelector: ColorSelector,
+      group: "style",
+      default: "rgb(55, 114, 249)",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
     },
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 2,
+    minHeight: 1,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 1,
     maxWidth: 36,
   },
 };
 
-const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({
-  settings: { imageUrl },
-}) => {
-  const imageUrlStyle = {
-    "--image-url": `url(${imageUrl})`,
+export type AlchemyNetwork =
+  | "eth"
+  | "polygon"
+  | "opt"
+  | "arb"
+  | "base"
+  | "starknet"
+  | "astar"
+  | "frax"
+  | "zora";
+
+export const getAlchemyChainUrlV3 = (network: AlchemyNetwork) => {
+  return `https://${network}-mainnet.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`;
+};
+
+const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
+  const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [badgeColor, setBadgeColor] = useState<Color>(settings.badgeColor);
+
+  useEffect(() => {
+    if (settings.selectMediaSource?.name === MediaSourceTypes.EXTERNAL) {
+      const fetchNFTData = async () => {
+        const { nftAddress, nftTokenId, network } = settings;
+        const base_url = getAlchemyChainUrlV3(network);
+        const url = `${base_url}/getNFTMetadata?contractAddress=${nftAddress}&tokenId=${nftTokenId}&refreshCache=false`;
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            headers: { accept: "application/json" },
+          });
+          const data = await response.json();
+          if (data.image && data.image.cachedUrl) {
+            setNftImageUrl(data.image.cachedUrl);
+            setError(null);
+          } else {
+            setError(
+              "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct.",
+            );
+          }
+        } catch (err) {
+          setError(
+            "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct.",
+          );
+        }
+      };
+
+      fetchNFTData();
+    } else if (settings.selectMediaSource?.name === MediaSourceTypes.URL) {
+      setNftImageUrl(settings.imageUrl);
+      setError(null);
+    } else if (settings.selectMediaSource?.name === MediaSourceTypes.WALLET) {
+      setNftImageUrl(settings.nftSelector?.imageUrl || "");
+      setError(null);
+    } else {
+      setNftImageUrl(null);
+      setError("Please select a media source.");
+    }
+  }, [
+    settings.selectMediaSource,
+    settings.nftAddress,
+    settings.nftTokenId,
+    settings.network,
+  ]);
+
+  useEffect(() => {
+    setBadgeColor(settings.badgeColor);
+  }, [settings.badgeColor]);
+
+  const contentStyle = {
+    backgroundImage: `url(${nftImageUrl})`,
+    display: error ? "none" : "block",
+    transform: `scale(${settings.Scale})`,
+    transition: "transform 0.3s ease",
   } as CSSProperties;
 
-  return (
-    <div className="rounded-md flex-1 items-center justify-center overflow-hidden relative size-full bg-cover">
+  const errorStyle = {
+    color: "red",
+    textAlign: "center",
+    marginTop: "10px",
+  } as CSSProperties;
+
+  const wrapperStyle = {
+    overflow: "hidden",
+  } as CSSProperties;
+
+  return settings.RedirectionURL ? (
+    <a
+      href={settings.RedirectionURL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="absolute inset-0"
+    >
       <div
-        className="bg-[image:var(--image-url)] bg-cover size-full overflow-hidden"
-        style={imageUrlStyle}
+        className="rounded-md flex-1 items-center justify-center relative size-full"
+        style={wrapperStyle}
+      >
+        <div
+          className="bg-cover bg-center w-full h-full"
+          style={contentStyle}
+        ></div>
+        {settings.selectMediaSource?.name === MediaSourceTypes.WALLET ? (
+          <div className="absolute bottom-2 right-2 flex h-fit w-fit">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <VerifiedNft color={badgeColor} />
+                </TooltipTrigger>
+                <TooltipContent side="left">Verified Owner</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        ) : null}
+        {error && <div style={errorStyle}>{error}</div>}
+      </div>
+    </a>
+  ) : (
+    <div
+      className="rounded-md flex-1 items-center justify-center relative size-full"
+      style={wrapperStyle}
+    >
+      <div
+        className="bg-cover bg-center w-full h-full"
+        style={contentStyle}
       ></div>
+      {settings.selectMediaSource?.name === MediaSourceTypes.WALLET ? (
+        <div className="absolute bottom-2 right-2 flex h-fit w-fit">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <VerifiedNft color={badgeColor} />
+              </TooltipTrigger>
+              <TooltipContent side="left">Verified Owner</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      ) : null}
+      {error && <ErrorWrapper icon="⚠️" message={error} />}
     </div>
   );
 };

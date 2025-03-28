@@ -28,6 +28,7 @@ import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 import { ModProtocolCastAddBody } from "./components/CreateCast";
+import { type Channel } from "@mod-protocol/farcaster";
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
@@ -136,15 +137,37 @@ export const submitCast = async (
   fid: number,
   signer: Signer,
 ) => {
-  const castAddMessageResp = await makeCastAdd(
-    unsignedCastBody,
-    { fid, network: FarcasterNetwork.MAINNET },
-    signer,
-  );
-  if (castAddMessageResp.isOk()) {
-    return await submitMessageToBackend(castAddMessageResp.value);
+  try {
+    const castAddMessageResp = await makeCastAdd(
+      unsignedCastBody,
+      { fid, network: FarcasterNetwork.MAINNET }, // Ensure the network and fid are correct
+      signer,
+    );
+
+    // Check if cast creation was successful
+    if (!castAddMessageResp.isOk()) {
+      console.error("makeCastAdd failed with error:", castAddMessageResp.error); // Log the error returned
+      return false;
+    }
+
+    // Submit the created message to the backend
+    const backendResponse = await submitMessageToBackend(
+      castAddMessageResp.value,
+    );
+
+    if (!backendResponse) {
+      console.error(
+        "submitMessageToBackend failed, response:",
+        backendResponse,
+      );
+      return false;
+    }
+
+    return backendResponse;
+  } catch (error) {
+    console.error("Error in submitCast:", error);
+    return false;
   }
-  return false;
 };
 
 export const getDeadline = (): bigint => {
@@ -404,3 +427,31 @@ export const getSignatureForUsernameProof = async (
   });
   return signature;
 };
+
+export async function fetchChannelsForUser(
+  fid: number,
+  limit: number = 20,
+): Promise<Channel[]> {
+  try {
+    const channelsResponse = await axiosBackend.get(
+      `/api/farcaster/neynar/active-channels/?limit=${limit}&fid=${fid}`,
+    );
+    return channelsResponse.data.channels as Channel[];
+  } catch (e) {
+    return [] as Channel[];
+  }
+}
+
+export async function fetchChannelsByName(
+  query: string,
+  limit: number = 20,
+): Promise<Channel[]> {
+  try {
+    const channelsResponse = await axiosBackend.get(
+      `/api/farcaster/neynar/search-channels?limit=${limit}&q=${query}`,
+    );
+    return channelsResponse.data.channels as Channel[];
+  } catch (e) {
+    return [] as Channel[];
+  }
+}

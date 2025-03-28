@@ -1,7 +1,7 @@
 import { useAppStore } from "@/common/data/stores/app";
 import { RECHECK_INITIAL_TIME } from "@/common/data/stores/app/setup";
 import React from "react";
-import { Button } from "../atoms/button";
+import { Button } from "@/common/components/atoms/button";
 
 export default function NogsChecker() {
   const { setRecheckTimerLength, setShouldRecheck, isChecking } = useAppStore(
@@ -18,11 +18,12 @@ export default function NogsChecker() {
     setShouldRecheck(true);
   }
 
-  // TO DO: Add place to mint nOGs here
   return (
     <>
       <p className="mb-2">
-        To customize a Space and Homebase, you must hold a nOGs NFT. Mint a pair{" "}
+        For now Tabs are only for early supporters holding a nounspace OG NFT (nOGs){" "}
+        <br />
+        Mint a pair{" "}
         <a
           href="https://highlight.xyz/mint/663d2717dffb7b3a490f398f"
           rel="noopener noreferrer"
@@ -31,22 +32,11 @@ export default function NogsChecker() {
         >
           here
         </a>
-        , then try again.
+        , then try again!
       </p>
       <Button disabled={isChecking} onClick={userTriggeredRecheck}>
-        {isChecking ? "Checking if you have nOGs" : "Check now?"}
+        {isChecking ? "Checking if you have nOGs" : "Check my nOGs!"}
       </Button>
-
-      <div
-        className="mt-2"
-        dangerouslySetInnerHTML={{
-          __html: `
-        <link rel="stylesheet" href="https://mint.highlight.xyz/assets/embed.css" />
-        <div data-widget="highlight-mint-card" data-mint-collection-id="663d2717dffb7b3a490f398f"></div>
-        <script type="module" crossorigin="true" src="https://mint.highlight.xyz/assets/embed.js?v=1"></script>
-      `,
-        }}
-      />
     </>
   );
 }

@@ -3,8 +3,6 @@ import TextInput from "@/common/components/molecules/TextInput";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -17,16 +15,16 @@ import {
   CardTitle,
   CardDescription,
 } from "@/common/components/atoms/card";
-import { FontFamily, Color } from "@/common/lib/theme";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
   title?: string;
   text: string;
+  urlColor: string;
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
-  fidgetName: "text",
+  fidgetName: "Text",
   icon: 0x1f4c4,
   fields: [
     {
@@ -55,6 +53,13 @@ export const textConfig: FidgetProperties = {
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: ColorSelector,
+      group: "style",
+    },
+    {
+      fieldName: "urlColor",
+      required: false,
+      inputSelector: ColorSelector,
+      default: "blue",
       group: "style",
     },
     {
@@ -129,7 +134,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
             <ReactMarkdown
               rehypePlugins={[rehypeRaw]}
               remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers}
+              components={MarkdownRenderers(settings.urlColor)}
             >
               {settings.text}
             </ReactMarkdown>

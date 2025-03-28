@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 
 const ReactHlsPlayer = dynamic(() => import("@gumlet/react-hls-player"), {
@@ -6,20 +6,45 @@ const ReactHlsPlayer = dynamic(() => import("@gumlet/react-hls-player"), {
 });
 
 const VideoEmbed = ({ url }: { url: string }) => {
+  const [muted, setMuted] = useState(true);
+  const [didUnmute, setDidUnmute] = useState(false);
   const playerRef = React.useRef<HTMLVideoElement | null>(null);
 
+  const togglePlay = useCallback(() => {
+    if (!playerRef.current) return;
+    if (playerRef?.current.paused) {
+      playerRef?.current?.play();
+    } else {
+      playerRef?.current?.pause();
+    }
+  }, [playerRef?.current]);
+
+  const onClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+
+      if (didUnmute) {
+        togglePlay();
+      } else {
+        setMuted(false);
+        setDidUnmute(true);
+      }
+    },
+    [didUnmute, togglePlay],
+  );
+
   return (
-    <div key={`video-embed-${url}`} className="">
-      <ReactHlsPlayer
-        src={url}
-        autoPlay={false}
-        controls={true}
-        width="80%"
-        height="auto"
-        playerRef={playerRef}
-        className="rounded-md max-w-min max-h-72 object-left"
-      />
-    </div>
+    <ReactHlsPlayer
+      src={url}
+      muted={muted}
+      autoPlay={true}
+      controls={true}
+      width="100%"
+      height="auto"
+      playerRef={playerRef}
+      onClick={onClick}
+      className="object-contain size-full"
+    />
   );
 };
 

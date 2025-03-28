@@ -45,12 +45,12 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
     };
 
     getData();
-  }, []);
+  }, [url, castId]);
 
   if ((!url && !castId) || isEmpty(cast)) return null;
 
   return (
-    <div key={`cast-embed-${url}`} className="bg-white flex-1 overflow-hidden">
+    <div key={`cast-embed-${url}`} className=" flex-1 overflow-hidden">
       <CastRow cast={cast} showChannel isEmbed hideReactions />
     </div>
   );

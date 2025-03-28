@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -14,17 +15,23 @@ import {
   FidgetSettings,
   LayoutFidgetProps,
   LayoutFidgetConfig,
+  FidgetBundle,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
-import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import {
+  FidgetWrapper,
+  getSettingsWithDefaults,
+} from "@/common/fidgets/FidgetWrapper";
 import { map, reject } from "lodash";
-import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
+import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -54,17 +61,15 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (hasProfile: boolean) => ({
+const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   items: 0,
-  isDraggable: false,
-  isResizable: false,
   isDroppable: true,
   isBounded: false,
   // This turns off compaction so you can place items wherever.
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
-  cols: 12,
+  cols: hasFeed ? 6 : 12,
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
@@ -96,7 +101,7 @@ const Gridlines: React.FC<GridDetails> = ({
         gridGap: `${margin[0]}px`,
         rowGap: `${margin[1]}px`,
         padding: `${containerPadding[0]}px`,
-        background: "rgba(200, 227, 248, 0.3)",
+        background: "rgba(200, 227, 248, 0.011)",
       }}
     >
       {[...Array(cols * maxRows)].map((_, i) => (
@@ -105,7 +110,7 @@ const Gridlines: React.FC<GridDetails> = ({
           key={i}
           style={{
             backgroundColor: "rgba(200, 227, 248, 0.5)",
-            outline: "1px dashed rgba(200, 227, 248, 0.8)",
+            outline: "2px dashed rgba(200, 227, 248, 0.3)",
           }}
         />
       ))}
@@ -126,6 +131,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   cancelExitEditMode,
   portalRef,
   hasProfile,
+  hasFeed,
+  fid,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
@@ -145,7 +152,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  const gridDetails = useMemo(() => makeGridDetails(hasProfile), [hasProfile]);
+  const gridDetails = useMemo(
+    () => makeGridDetails(hasProfile, hasFeed),
+    [hasProfile, hasFeed],
+  );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
     return await saveConfig({
@@ -175,6 +185,19 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
+  const saveFidgetConfig = useCallback(
+    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+      return await saveFidgetInstanceDatums({
+        ...fidgetInstanceDatums,
+        [id]: {
+          ...fidgetInstanceDatums[id],
+          config: newInstanceConfig,
+        },
+      });
+    },
+    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+  );
+
   function unselectFidget() {
     setSelectedFidgetID("");
     setCurrentFidgetSettings(<></>);
@@ -183,6 +206,42 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   function openFidgetPicker() {
     setIsPickingFidget(true);
     unselectFidget();
+  }
+
+  function selectFidget(bundle: FidgetBundle) {
+    const settingsWithDefaults = getSettingsWithDefaults(
+      bundle.config.settings,
+      bundle.properties,
+    );
+    const onSave = async (
+      newSettings: FidgetSettings,
+      shouldUnselect?: boolean,
+    ) => {
+      try {
+        await saveFidgetConfig(bundle.id)({
+          ...bundle.config,
+          settings: newSettings,
+        });
+      } catch (e) {
+        toast.error("Failed to save fidget settings", { duration: 1000 });
+      }
+
+      if (shouldUnselect) {
+        unselectFidget();
+      }
+    };
+
+    setSelectedFidgetID(bundle.id);
+    setCurrentFidgetSettings(
+      <FidgetSettingsEditor
+        fidgetId={bundle.id}
+        properties={bundle.properties}
+        settings={settingsWithDefaults}
+        onSave={onSave}
+        unselect={unselectFidget}
+        removeFidget={removeFidget}
+      />,
+    );
   }
 
   const { height } = useWindowSize();
@@ -232,6 +291,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       fidgetType: fidgetData.fidgetType,
     });
     setCurrentlyDragging(false);
+
+    const fidgetBundle = {
+      ...fidgetData,
+      properties: CompleteFidgets[fidgetData.fidgetType].properties,
+      config: { ...fidgetData.config, editable: true },
+    };
+
+    selectFidget(fidgetBundle);
   }
 
   function removeFidgetFromTray(fidgetId: string) {
@@ -243,17 +310,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     saveTrayContents(newFidgetTrayContents);
   }
 
-  function moveFidgetFromGridToTray(fidgetId: string) {
-    const newFidgetTrayContents = [
-      ...fidgetTrayContents,
-      fidgetInstanceDatums[fidgetId],
-    ];
-    saveTrayContents(newFidgetTrayContents);
-
-    removeFidget(fidgetId);
-  }
-
-  function removeFidget(fidgetId: string) {
+  function removeFidgetFromGrid(fidgetId: string) {
     // New set of instances
     const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
     delete newFidgetInstanceDatums[fidgetId];
@@ -266,6 +323,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     saveLayout(newLayout);
     saveFidgetInstanceDatums(newFidgetInstanceDatums);
+  }
+
+  function removeFidget(fidgetId: string) {
+    removeFidgetFromGrid(fidgetId);
+    removeFidgetFromTray(fidgetId);
+  }
+
+  function moveFidgetFromGridToTray(fidgetId: string) {
+    const newFidgetTrayContents = [
+      ...fidgetTrayContents,
+      fidgetInstanceDatums[fidgetId],
+    ];
+    saveTrayContents(newFidgetTrayContents);
+    removeFidgetFromGrid(fidgetId);
   }
 
   function saveLayoutConditional(newLayout: PlacedGridItem[]) {
@@ -281,6 +352,66 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       saveLayout(newLayout);
     }
   }
+
+  /**
+   * Adds a given fidget to the grid by finding the first available space based on its minimum size.
+   * If no space is available, returns false. Otherwise, returns true.
+   */
+  const addFidgetToGrid = (fidget: FidgetBundle): boolean => {
+    const { fidgetType, id } = fidget;
+    const fidgetProps = CompleteFidgets[fidgetType].properties;
+    const minW = fidgetProps.size.minWidth;
+    const minH = fidgetProps.size.minHeight;
+
+    const isSpaceAvailable = (
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+    ): boolean => {
+      for (const item of layoutConfig.layout) {
+        if (
+          x < item.x + item.w &&
+          x + w > item.x &&
+          y < item.y + item.h &&
+          y + h > item.y
+        ) {
+          return false;
+        }
+      }
+      return true;
+    };
+
+    // Search for available space
+    for (let x = 0; x <= gridDetails.cols - minW; x++) {
+      for (let y = 0; y <= gridDetails.maxRows - minH; y++) {
+        if (isSpaceAvailable(x, y, minW, minH)) {
+          const newItem: PlacedGridItem = {
+            i: id,
+            x,
+            y,
+            w: minW,
+            h: minH,
+            minW,
+            minH,
+            maxW: fidgetProps.size.maxWidth,
+            maxH: fidgetProps.size.maxHeight,
+            resizeHandles: resizeDirections,
+            isBounded: false,
+          };
+
+          saveFidgetInstanceDatums({ ...fidgetInstanceDatums, [id]: fidget });
+          saveLayout([...layoutConfig.layout, newItem]);
+          analytics.track(AnalyticsEvent.ADD_FIDGET, {
+            fidgetType: fidget.fidgetType,
+          });
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
 
   function editorPanelPortal(portalNode: HTMLDivElement | null) {
     return inEditMode && portalNode ? (
@@ -303,6 +434,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           isPickingFidget={isPickingFidget}
           setIsPickingFidget={setIsPickingFidget}
           openFidgetPicker={openFidgetPicker}
+          selectFidget={selectFidget}
+          addFidgetToGrid={addFidgetToGrid}
         />,
         portalNode,
       )
@@ -311,42 +444,36 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   }
 
-  const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
-          config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
-  );
+  const [itemsVisible, setItemsVisible] = useState(false);
+  const initialRenderRef = useRef(true);
+
+  useEffect(() => {
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      setTimeout(() => setItemsVisible(true), 100);
+    }
+  }, []);
 
   return (
     <>
       {editorPanelPortal(element)}
 
       <div className="flex flex-col z-10">
-        <div
-          className={
-            inEditMode
-              ? "bg-[#c8e3f84d] flex-row justify-center h-16"
-              : "flex-row justify-center h-16"
-          }
-        >
-          {inEditMode ? (
-            <button
-              onClick={openFidgetPicker}
-              className="flex float-right rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
+        {inEditMode && (
+          <button
+            onClick={openFidgetPicker}
+            className={
+              hasProfile
+                ? "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-40 right-0"
+                : "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
+            }
+          >
+            <div className="ml-2 ">
               <AddFidgetIcon />
-              <span className="ml-2">Fidget</span>
-            </button>
-          ) : null}
-        </div>
-
+            </div>
+            <span className="ml-4 mr-2">Fidget</span>
+          </button>
+        )}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
 
@@ -362,8 +489,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             droppingItem={externalDraggedItem}
             onDrop={handleDrop}
             onLayoutChange={saveLayoutConditional}
-            className="grid-overlap"
-            style={{ height: rowHeight * gridDetails.maxRows + "px" }}
+            className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
+            style={{
+              height: rowHeight * gridDetails.maxRows + "px",
+              // Add transition for opacity
+              transition: "opacity 0.2s ease-in",
+              opacity: itemsVisible ? 1 : 0,
+            }}
           >
             {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
               const fidgetDatum = fidgetInstanceDatums[gridItem.i];
@@ -373,7 +505,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               if (!fidgetModule) return null;
 
               return (
-                <div key={gridItem.i}>
+                <div
+                  key={gridItem.i}
+                  className={`grid-item ${
+                    selectedFidgetID === gridItem.i
+                      ? "outline outline-4 outline-offset-1 rounded-2xl outline-sky-600"
+                      : ""
+                  }`}
+                >
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}

@@ -67,29 +67,144 @@ export type Database = {
         };
         Relationships: [];
       };
-      spaceRegistrations: {
+      lastSeenNotificationCursors: {
+        Row: {
+          created: string;
+          fid: number;
+          id: number;
+          identityPublicKey: string;
+          lastSeenTimestamp: string;
+        };
+        Insert: {
+          created?: string;
+          fid: number;
+          id?: number;
+          identityPublicKey: string;
+          lastSeenTimestamp: string;
+        };
+        Update: {
+          created?: string;
+          fid?: number;
+          id?: number;
+          identityPublicKey?: string;
+          lastSeenTimestamp?: string;
+        };
+        Relationships: [];
+      };
+      sharedContentAccessRequests: {
+        Row: {
+          cid: string;
+          created_at: string;
+          id: number;
+          publicKey: string;
+          signature: string;
+        };
+        Insert: {
+          cid: string;
+          created_at?: string;
+          id?: number;
+          publicKey: string;
+          signature: string;
+        };
+        Update: {
+          cid?: string;
+          created_at?: string;
+          id?: number;
+          publicKey?: string;
+          signature?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_sharedContentAccessRequests_cid_fkey";
+            columns: ["cid"];
+            isOneToOne: false;
+            referencedRelation: "sharedContentRegistrations";
+            referencedColumns: ["cid"];
+          },
+        ];
+      };
+      sharedContentRegistrations: {
+        Row: {
+          cid: string;
+          name: string | null;
+          publicKey: string;
+          signature: string;
+          timestamp: string;
+        };
+        Insert: {
+          cid: string;
+          name?: string | null;
+          publicKey: string;
+          signature: string;
+          timestamp: string;
+        };
+        Update: {
+          cid?: string;
+          name?: string | null;
+          publicKey?: string;
+          signature?: string;
+          timestamp?: string;
+        };
+        Relationships: [];
+      };
+      spaceOrderings: {
         Row: {
           fid: number;
+          id: number;
           identityPublicKey: string;
-          isDefault: boolean;
+          ordering: string[];
+          signature: string;
+          timestamp: string;
+        };
+        Insert: {
+          fid: number;
+          id?: number;
+          identityPublicKey: string;
+          ordering: string[];
+          signature: string;
+          timestamp: string;
+        };
+        Update: {
+          fid?: number;
+          id?: number;
+          identityPublicKey?: string;
+          ordering?: string[];
+          signature?: string;
+          timestamp?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "public_spaceOrderings_fid_fkey";
+            columns: ["fid"];
+            isOneToOne: true;
+            referencedRelation: "fidRegistrations";
+            referencedColumns: ["fid"];
+          },
+        ];
+      };
+      spaceRegistrations: {
+        Row: {
+          contractAddress: string | null;
+          fid: number | null;
+          identityPublicKey: string;
           signature: string;
           spaceId: string;
           spaceName: string;
           timestamp: string;
         };
         Insert: {
-          fid: number;
+          contractAddress?: string | null;
+          fid?: number | null;
           identityPublicKey: string;
-          isDefault: boolean;
           signature: string;
           spaceId?: string;
           spaceName: string;
           timestamp: string;
         };
         Update: {
-          fid?: number;
+          contractAddress?: string | null;
+          fid?: number | null;
           identityPublicKey?: string;
-          isDefault?: boolean;
           signature?: string;
           spaceId?: string;
           spaceName?: string;
@@ -223,6 +338,7 @@ export type Database = {
           owner_id: string | null;
           path_tokens: string[] | null;
           updated_at: string | null;
+          user_metadata: Json | null;
           version: string | null;
         };
         Insert: {
@@ -236,6 +352,7 @@ export type Database = {
           owner_id?: string | null;
           path_tokens?: string[] | null;
           updated_at?: string | null;
+          user_metadata?: Json | null;
           version?: string | null;
         };
         Update: {
@@ -249,6 +366,7 @@ export type Database = {
           owner_id?: string | null;
           path_tokens?: string[] | null;
           updated_at?: string | null;
+          user_metadata?: Json | null;
           version?: string | null;
         };
         Relationships: [
@@ -270,6 +388,7 @@ export type Database = {
           key: string;
           owner_id: string | null;
           upload_signature: string;
+          user_metadata: Json | null;
           version: string;
         };
         Insert: {
@@ -280,6 +399,7 @@ export type Database = {
           key: string;
           owner_id?: string | null;
           upload_signature: string;
+          user_metadata?: Json | null;
           version: string;
         };
         Update: {
@@ -290,6 +410,7 @@ export type Database = {
           key?: string;
           owner_id?: string | null;
           upload_signature?: string;
+          user_metadata?: Json | null;
           version?: string;
         };
         Relationships: [
@@ -425,6 +546,10 @@ export type Database = {
           metadata: Json;
           updated_at: string;
         }[];
+      };
+      operation: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
       };
       search: {
         Args: {

@@ -5,7 +5,7 @@ import {
   FidgetFieldConfig,
 } from "@/common/fidgets";
 import BackArrowIcon from "../atoms/icons/BackArrow";
-import { FaTrashCan, FaTriangleExclamation } from "react-icons/fa6";
+import { FaTrashCan } from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
@@ -28,7 +28,7 @@ export type FidgetSettingsEditorProps = {
   fidgetId: string;
   readonly properties: FidgetProperties;
   settings: FidgetSettings;
-  onSave: (settings: FidgetSettings) => void;
+  onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
 };
@@ -41,7 +41,7 @@ type FidgetSettingsRowProps = {
   id: string;
 };
 
-const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
+export const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
   return fields.reduce(
     (acc, field) => {
       if (field.group) {
@@ -58,7 +58,7 @@ const fieldsByGroup = (fields: FidgetFieldConfig[]) => {
   );
 };
 
-const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
+export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   field,
   value,
   onChange,
@@ -75,7 +75,7 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
       )}
       id={id}
     >
-      <div className="md:mb-0 md:w-1/3">
+      <div className="md:mb-0 md:w-2/3">
         <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
           {field.displayName || field.fieldName}
         </label>
@@ -92,29 +92,37 @@ const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   );
 };
 
-const FidgetSettingsGroup: React.FC<{
+export const FidgetSettingsGroup: React.FC<{
   fidgetId: string;
   fields: FidgetFieldConfig[];
   state: FidgetSettings;
   setState: (state: FidgetSettings) => void;
-}> = ({ fields, state, setState, fidgetId }) => {
+  onSave: (state: FidgetSettings) => void;
+}> = ({ fields, state, setState, onSave, fidgetId }) => {
   return (
     <>
-      {fields.map((field, i) => (
-        <FidgetSettingsRow
-          field={field}
-          key={`${fidgetId}-${i}-${field.fieldName}`}
-          id={`${fidgetId}-${i}-${field.fieldName}`}
-          value={state[field.fieldName]}
-          onChange={(val) => {
-            setState({
-              ...state,
-              [field.fieldName]: val,
-            });
-          }}
-          hide={field.disabledIf && field.disabledIf(state)}
-        />
-      ))}
+      {fields.map((field, i) => {
+        const value =
+          (field.fieldName in state && state[field.fieldName]) || "";
+        return (
+          <FidgetSettingsRow
+            field={field}
+            key={`${fidgetId}-${i}-${field.fieldName}`}
+            id={`${fidgetId}-${i}-${field.fieldName}`}
+            value={value}
+            onChange={(val) => {
+              const data = {
+                ...state,
+                [field.fieldName]: val,
+              };
+
+              setState(data);
+              onSave(data);
+            }}
+            hide={field.disabledIf && field.disabledIf(state)}
+          />
+        );
+      })}
     </>
   );
 };
@@ -127,7 +135,6 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   unselect,
   removeFidget,
 }) => {
-  const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [state, setState] = useState<FidgetSettings>(settings);
 
   useEffect(() => {
@@ -136,7 +143,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   const _onSave = (e) => {
     e.preventDefault();
-    onSave(state);
+    onSave(state, true);
     analytics.track(AnalyticsEvent.EDIT_FIDGET, {
       fidgetType: properties.fidgetName,
     });
@@ -194,6 +201,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                 fields={groupedFields.settings}
                 state={state}
                 setState={setState}
+                onSave={onSave}
               />
             </TabsContent>
             {groupedFields.style.length > 0 && (
@@ -203,6 +211,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                   fields={groupedFields.style}
                   state={state}
                   setState={setState}
+                  onSave={onSave}
                 />
               </TabsContent>
             )}
@@ -213,6 +222,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
                   fields={groupedFields.code}
                   state={state}
                   setState={setState}
+                  onSave={onSave}
                 />
               </TabsContent>
             )}
@@ -221,51 +231,20 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
       </div>
 
       <div className="shrink-0 flex flex-col gap-3 pb-8">
-        {showConfirmCancel ? (
-          // Back Button and Exit Button (shows second)
-          <>
-            <div className="pt-2 flex gap-2 items-center justify-center">
-              <Button
-                type="button"
-                onClick={() => setShowConfirmCancel(false)}
-                size="icon"
-                variant="secondary"
-              >
-                <BackArrowIcon />
-              </Button>
-              <Button
-                type="button"
-                onClick={() => {
-                  removeFidget(fidgetId);
-                }}
-                variant="destructive"
-                width="auto"
-              >
-                <FaTriangleExclamation
-                  className="h-8l shrink-0"
-                  aria-hidden="true"
-                />
-                <span className="ml-4 mr-4">Delete</span>
-              </Button>
-            </div>
-          </>
-        ) : (
-          // X Button and Save Button (shows first)
-          <div className="pt-2 gap-2 flex items-center justify-center">
-            <Button
-              type="button"
-              onClick={() => setShowConfirmCancel(true)}
-              size="icon"
-              variant="secondary"
-            >
-              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
-            </Button>
+        <div className="pt-2 gap-2 flex items-center justify-center">
+          <Button
+            type="button"
+            onClick={() => removeFidget(fidgetId)}
+            size="icon"
+            variant="secondary"
+          >
+            <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
+          </Button>
 
-            <Button type="submit" variant="primary" width="auto">
-              <div className="flex items-center">Done</div>
-            </Button>
-          </div>
-        )}
+          <Button type="submit" variant="primary" width="auto">
+            <div className="flex items-center">Done</div>
+          </Button>
+        </div>
       </div>
     </form>
   );

@@ -23,7 +23,9 @@ import {
 } from "@/pages/api/signerRequests";
 import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
-import Link from "next/link";
+import { FaRegCopy } from "react-icons/fa6";
+import { FaRedo } from "react-icons/fa";
+import TextInput from "@/common/components/molecules/TextInput";
 
 export type NounspaceDeveloperManagedSignerData =
   FarcasterSignerAuthenticatorData & {
@@ -194,6 +196,7 @@ const initializer: AuthenticatorInitializer<
   const [loading, setLoading] = useState(false);
   const pollInterval = useRef<NodeJS.Timeout | undefined>();
   const doneInterval = useRef<NodeJS.Timeout | undefined>();
+  const [devFid, setDevFid] = useState("");
 
   function createSigner() {
     self.createNewSigner();
@@ -223,29 +226,109 @@ const initializer: AuthenticatorInitializer<
     };
   });
 
+  function devSignin() {
+    saveData({
+      ...data,
+      status: "completed",
+      accountFid: Number(devFid),
+    });
+  }
+
   const warpcastSignerUrl = data.signerUrl
     ? replace(data.signerUrl, "farcaster://", "https://warpcast.com/")
     : undefined;
 
   return (
     <div className="flex flex-col justify-center items-center align-center">
-      <h1 className="text-4xl font-extrabold">Connect Farcaster</h1>
+      <h1 className="text-4xl font-extrabold justify-start">
+        Connect Farcaster
+      </h1>
       {isUndefined(data.status) ||
       !isDataInitialized(data) ||
       data.status === "revoked" ? (
-        <Button onClick={createSigner}>Link Warpcast Account</Button>
-      ) : loading && warpcastSignerUrl ? (
         <>
-          <QRCode value={warpcastSignerUrl} maxWidth={256} />
-          <Link href={warpcastSignerUrl} passHref target="_blank">
-            <Button>On mobile? Click here</Button>
-          </Link>
-          <Button variant="link" size="sm" onClick={createSigner}>
-            Still having trouble? Reset the QR
+          <p className="text-lg text-gray-500 mt-4">
+            Use of Nounspace requires a Farcaster account. Click the button
+            below to connect your Farcaster account via Warpcast.
+          </p>
+          <Button
+            style={{
+              backgroundColor: "#7a5fbb",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginTop: "2em",
+            }}
+            className="px-10"
+            onClick={createSigner}
+          >
+            <span>Sign in with</span>
+            <img
+              src="/images/farcaster_nude.png"
+              alt="Icon"
+              style={{ width: "22px", height: "22px" }}
+            />
           </Button>
         </>
+      ) : loading && warpcastSignerUrl ? (
+        <>
+          <div className="text-center mt-4">
+            {process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? (
+              <>
+                <TextInput value={devFid} onChange={setDevFid}></TextInput>
+                <Button withIcon variant="outline" onClick={devSignin}>
+                  <p className="font-bold text-lg text-gray-500">
+                    Skip Check and add use FID
+                  </p>
+                </Button>
+              </>
+            ) : null}
+            <div className="m-20 mt-5 mb-5 border border-gray-200 p-1 rounded-sm">
+              <QRCode
+                value={String(warpcastSignerUrl) || "https://x.com"}
+                size={256}
+                bgColor="#ffffff"
+                fgColor="#000000"
+                level="Q"
+                className="rounded-sm"
+              />
+            </div>
+            <p className="text-xl text-gray-500 m-5">
+              Scan the QR code with your phone camera <br /> or enter the link
+              on a mobile browser
+            </p>
+          </div>
+          <div className="flex flex-col text-center mt-4">
+            <center>
+              <Button
+                withIcon
+                variant="outline"
+                size="sm"
+                className="border-gray-500 text-black bg-gray-200 border-none hover:bg-gray-300 hover:text-black rounded-full"
+                style={{ width: "150px" }}
+                onClick={() => {
+                  navigator.clipboard.writeText(warpcastSignerUrl);
+                }}
+              >
+                <FaRegCopy size={18} color="grey.500" />
+                <p className="font-bold text-lg text-gray-500">Copy URL</p>
+              </Button>
+            </center>
+            <Button
+              withIcon
+              size="md"
+              className="border-none text-gray-400 bg-white hover:bg-white hover:text-purple-500 mt-20"
+              onClick={createSigner}
+            >
+              <FaRedo color="gray.400" />
+              Still having trouble? Reset the QR
+            </Button>
+          </div>
+        </>
       ) : (
-        <Spinner />
+        <center>
+          <Spinner />
+        </center>
       )}
     </div>
   );

@@ -53,11 +53,20 @@ export type PreSpaceKeys = SpaceKeys & {
 };
 
 interface PreKeyActions {
-  createSignedFile: (data: string, fileType: string) => Promise<SignedFile>;
+  createSignedFile: (
+    data: string,
+    fileType: string,
+    options?: {
+      fileName?: string;
+    },
+  ) => Promise<SignedFile>;
   createEncryptedSignedFile: (
     data: string,
     fileType: string,
-    useRootKey?: boolean,
+    options?: {
+      useRootKey?: boolean;
+      fileName?: string;
+    },
   ) => Promise<SignedFile>;
   decryptEncryptedSignedFile: (file: SignedFile) => Promise<string>;
   generatePreKey: () => Promise<PreSpaceKeys>;
@@ -72,7 +81,7 @@ export const prekeyStore = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
 ): PreKeyStore => ({
-  createSignedFile: async (data, fileType) => {
+  createSignedFile: async (data, fileType, options) => {
     const currentIdentity = get().account.getCurrentIdentity();
     if (isUndefined(currentIdentity)) {
       throw new NoCurrentIdentity();
@@ -84,11 +93,13 @@ export const prekeyStore = (
         publicKey: currentIdentity.rootKeys.publicKey,
         isEncrypted: false,
         timestamp: moment().toISOString(),
+        fileName: options?.fileName,
       },
       currentIdentity.rootKeys.privateKey,
     );
   },
-  createEncryptedSignedFile: async (data, fileType, useRootKey = false) => {
+  createEncryptedSignedFile: async (data, fileType, options) => {
+    const useRootKey = options?.useRootKey || false;
     const key = useRootKey
       ? get().account.getCurrentIdentity()!.rootKeys
       : get().account.getCurrentPrekey() ||
@@ -102,6 +113,7 @@ export const prekeyStore = (
       publicKey: key.publicKey,
       isEncrypted: true,
       timestamp: moment().toISOString(),
+      fileName: options?.fileName,
     };
     return signSignable(file, key.privateKey);
   },
@@ -145,7 +157,7 @@ export const prekeyStore = (
     const keyFile = await get().account.createEncryptedSignedFile(
       stringify(prekey),
       "json",
-      true,
+      { useRootKey: true },
     );
     const postData: PreKeyRequest = {
       file: keyFile,
@@ -154,7 +166,7 @@ export const prekeyStore = (
     };
 
     // TO DO: Error handling
-    await axiosBackend.post("/api/space/prekeys/", postData, {
+    await axiosBackend.post("/api/space/prekeys", postData, {
       headers: { "Content-Type": "application/json" },
     });
 

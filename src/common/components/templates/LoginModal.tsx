@@ -1,13 +1,13 @@
+"use client";
 import { useAppStore } from "@/common/data/stores/app";
 import { useLogin, usePrivy } from "@privy-io/react-auth";
 import React, { useEffect, useState } from "react";
 import { SetupStep } from "@/common/data/stores/app/setup";
 import LoadingScreen from "../organisms/LoadingScreen";
-import NogsChecker from "../organisms/NogsChecker";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
-
+import { useRouter } from "next/navigation";
 const LoginModal = ({
   open,
   setOpen,
@@ -17,6 +17,7 @@ const LoginModal = ({
   setOpen: (v: boolean) => void;
   showClose: boolean;
 }) => {
+  const router = useRouter();
   const { currentStep, setCurrentStep } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -76,8 +77,6 @@ const LoginModal = ({
         </>
       ) : null;
     }
-
-    if (currentStep === SetupStep.WALLET_CONNECTED) return <NogsChecker />;
 
     if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED)
       return CurrentInitializerComponent ? (
