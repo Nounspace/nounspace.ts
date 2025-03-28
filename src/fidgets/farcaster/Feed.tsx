@@ -27,6 +27,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
+import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -204,6 +205,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     maxWidth: 36,
   },
   icon: 0x1f4f0,
+  mobileIcon: <BsChatRightHeart size={20} />,
+  mobileIconSelected: <BsChatRightHeartFill size={20} />,
 };
 
 export const FEED_TYPES = [
