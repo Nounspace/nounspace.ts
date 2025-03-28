@@ -28,6 +28,7 @@ import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
+import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 
 export enum FilterType {
   Channel = "channel_id",
