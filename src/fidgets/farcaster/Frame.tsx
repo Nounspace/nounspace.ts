@@ -12,6 +12,7 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
 
 export type FrameFidgetSettings = {
   url: string;
@@ -20,6 +21,8 @@ export type FrameFidgetSettings = {
 const frameProperties: FidgetProperties = {
   fidgetName: "Farcaster Frame",
   mobileFidgetName: "Frame",
+  mobileIcon: <BsAspectRatio size={22} />,
+  mobileIconSelected: <BsAspectRatioFill size={22} />,
   fields: [
     {
       fieldName: "url",

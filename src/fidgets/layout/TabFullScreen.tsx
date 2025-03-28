@@ -1,5 +1,6 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
+import { BsImage, BsImageFill } from "react-icons/bs";
 import {
   FidgetBundle,
   FidgetConfig,
@@ -178,18 +179,34 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const getFidgetIcon = (fidgetId: string) => {
     // Special case for consolidated media
     if (fidgetId === 'consolidated-media') {
-      return <span className="text-lg" role="img" aria-label="Media">📱</span>;
+      return selectedTab === fidgetId ? 
+        <BsImageFill className="text-xl" /> : 
+        <BsImage className="text-xl" />;
     }
     
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return <MdGridView className="text-xl" />;  // Default icon
     
     const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-    if (!fidgetModule || !fidgetModule.properties.icon) return <MdGridView className="text-xl" />;  // Default icon
+    if (!fidgetModule) return <MdGridView className="text-xl" />;  // Default icon
+
+    // On mobile, use custom mobile icons if available
+    if (isMobile) {
+      const isSelected = selectedTab === fidgetId;
+      if (isSelected && fidgetModule.properties.mobileIconSelected) {
+        return fidgetModule.properties.mobileIconSelected;
+      } else if (fidgetModule.properties.mobileIcon) {
+        return fidgetModule.properties.mobileIcon;
+      }
+    }
     
-    // Return the emoji icon from the fidget properties
+    // Fallback to emoji icon
     return (
-      <span className="text-lg" role="img" aria-label={fidgetModule.properties.fidgetName}>
+      <span 
+        className={`text-lg ${selectedTab === fidgetId ? 'text-black fill-black' : 'text-red-500 fill-red-500'}`} 
+        role="img" 
+        aria-label={fidgetModule.properties.fidgetName}
+      >
         {String.fromCodePoint(fidgetModule.properties.icon)}
       </span>
     );
@@ -337,7 +354,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 gap-4
                 flex whitespace-nowrap
                 scrollbar-none
-                ${processedFidgetIds.length === 4 ? 'justify-evenly' : 'justify-start'}
+                ${processedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
                 rounded-none
               `}>
                 {processedFidgetIds.map((fidgetId) => {

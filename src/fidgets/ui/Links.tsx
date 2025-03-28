@@ -22,6 +22,7 @@ import SwitchButton, {
 } from "@/common/components/molecules/ViewSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { BsLink45Deg } from "react-icons/bs";
 
 export type Link = {
   text: string;
@@ -43,6 +44,7 @@ export type LinkFidgetSettings = {
 export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
   icon: 0x26d3,
+  mobileIcon: <BsLink45Deg size={26} />,
   fields: [
     {
       fieldName: "title",

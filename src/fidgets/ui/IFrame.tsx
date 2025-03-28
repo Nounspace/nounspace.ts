@@ -11,6 +11,7 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
+import { BsCloud, BsCloudFill } from "react-icons/bs";
 export type IFrameFidgetSettings = {
   url: string;
   size: number;
@@ -27,6 +28,8 @@ const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
   mobileFidgetName: "Site",
   icon: 0x1f310, // 🌐
+  mobileIcon: <BsCloud size={24} />,
+  mobileIconSelected: <BsCloudFill size={24} />,
   fields: [
     {
       fieldName: "url",
