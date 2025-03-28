@@ -212,6 +212,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     tabName === "Feed" 
       ? homebaseConfig 
       : tabConfigs[tabName]?.config,
+    tabOrdering.local,
     editMode
   ]);
 
