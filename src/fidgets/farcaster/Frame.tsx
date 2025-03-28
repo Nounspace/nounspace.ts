@@ -14,6 +14,7 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import React from "react";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
+import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
 
 export type FrameFidgetSettings = {
   url: string;
