@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/common/components/atoms/card";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import { BsRss, BsRssFill } from "react-icons/bs";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -23,6 +24,8 @@ export type TextFidgetSettings = {
 export const textConfig: FidgetProperties = {
   fidgetName: "RSS",
   icon: 0x1f6f0,
+  mobileIcon: <BsRss size={20} />,
+  mobileIconSelected: <BsRssFill size={20} />,
   fields: [
     {
       fieldName: "rssUrl",

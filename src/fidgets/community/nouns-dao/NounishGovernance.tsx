@@ -14,6 +14,7 @@ import { defaultStyleFields } from "@/fidgets/helpers";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
 import axios from "axios";
+import Text from "@/fidgets/ui/Text";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -29,6 +30,7 @@ export type NounishGovernanceSettings = {
 export const nounishGovernanceConfig: FidgetProperties = {
   fidgetName: "Nounish Governance",
   mobileFidgetName: "Gov",
+  mobileIcon: <span className="text-base">⌐◨-◨</span>,
   icon: 0x1f3db,
   fields: [
     {

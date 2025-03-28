@@ -68,6 +68,8 @@ export type FidgetProperties<S extends FidgetSettings = FidgetSettings> = {
   fidgetName: string;
   mobileFidgetName?: string;
   icon: number;
+  mobileIcon?: React.ReactNode;
+  mobileIconSelected?: React.ReactNode;
   fields: FidgetFieldConfig<S>[];
   size: {
     minHeight: NumericRange<1, 36>;

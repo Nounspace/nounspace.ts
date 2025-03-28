@@ -7,6 +7,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
 
 export type ChatFidgetSettings = {
   roomName: string;
@@ -16,6 +17,8 @@ export type ChatFidgetSettings = {
 const frameConfig: FidgetProperties = {
   fidgetName: "Chat",
   icon: 0x1f4ac, // 💬
+  mobileIcon: <BsChatDots size={20} />,
+  mobileIconSelected: <BsChatDotsFill size={20} />,
   fields: [
     {
       fieldName: "roomName",

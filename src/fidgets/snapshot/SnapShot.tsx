@@ -10,6 +10,7 @@ import ProposalItem from "./components/ProposalItem";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
 import { Button } from "@/common/components/atoms/button";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import { BsFillLightningChargeFill } from "react-icons/bs";
 
 export type snapShotSettings = {
   subgraphUrl: string;
@@ -21,6 +22,7 @@ export type snapShotSettings = {
 export const snapshotConfig: FidgetProperties = {
   fidgetName: "SnapShot Governance",
   mobileFidgetName: "Gov",
+  mobileIcon: <BsFillLightningChargeFill size={22} />,
   icon: 0x26a1,
   fields: [
     {
