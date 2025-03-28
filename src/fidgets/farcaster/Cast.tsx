@@ -9,6 +9,7 @@ import EmbededCast from "./components/Embeds/EmbededCast";
 import { isUndefined } from "lodash";
 import TextInput from "@/common/components/molecules/TextInput";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import { BsFillPinFill, BsPin } from "react-icons/bs";
 
 type CastFidgetSettings = {
   castHash?: string;
@@ -18,7 +19,10 @@ type CastFidgetSettings = {
 
 const castFidgetProperties: FidgetProperties = {
   fidgetName: "Pinned Cast",
+  mobileFidgetName: "Pinned",
   icon: 0x1f4ac, // 💬
+  mobileIcon: <BsPin size={22} />,
+  mobileIconSelected: <BsFillPinFill size={22} />,
   fields: [
     {
       fieldName: "castHash",
