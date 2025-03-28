@@ -72,7 +72,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   const router = useRouter(); // Hook for navigation
   const isLoggedIn = getIsLoggedIn(); // Check if the user is logged in
   const currentFid = useCurrentFid(); // Get the current FID
-  const isFeedTab = tabName === "Feed"; // Check if the current tab is the "Feed" tab
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
@@ -101,7 +100,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
       await loadTabOrder();
     }
 
-    if (isFeedTab) {
+    if (tabName === "Feed") {
       await loadFeedConfig();
     } else {
       await loadTab(tabName);
@@ -109,9 +108,9 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   }
 
   // Function to switch to a different tab
-  function switchTabTo(newTabName: string, shouldSave: boolean = true) {
+  async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
     if (shouldSave) {
-      commitConfigHandler();
+      await commitConfigHandler();
     }
 
     if (newTabName === "Feed") {
@@ -131,7 +130,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
 
   // Handler to reset the configuration for the current tab
   const resetConfigHandler = async () => {
-    if (isFeedTab) {
+    if (tabName === "Feed") {
       return resetConfig();
     } else {
       return resetTab(tabName);
@@ -140,28 +139,22 @@ function PrivateSpace({ tabName }: { tabName: string }) {
 
   // Handler to commit the configuration for the current tab
   const commitConfigHandler = async () => {
-    if (isFeedTab) {
-      await commitConfig();
+    if (tabName === "Feed") {
+      return commitConfig();
     } else {
-      await commitTab(tabName);
-    }
-    
-    await commitTabOrder();
-    for (const tab of tabOrdering.local) {
-      if (tab !== tabName && tab !== "Feed") {
-        await commitTab(tab);
-      }
+      return commitTab(tabName);
     }
   };
 
   // Handler to save the configuration for the current tab
   const saveConfigHandler = async (configToSave) => {
-    if (isFeedTab) {
+    if (tabName === "Feed") {
       await saveConfig(configToSave);
     } else {
       await saveTab(tabName, configToSave);
     }
-    return commitConfigHandler();
+
+    commitConfigHandler();
   };
 
   // Memoize the TabBar component to prevent unnecessary re-renders
@@ -186,7 +179,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
       const { timestamp, ...restConfig } = {
-        ...((isFeedTab 
+        ...((tabName === "Feed" 
             ? homebaseConfig 
             : tabConfigs[tabName]?.config)
             ?? INITIAL_SPACE_CONFIG_EMPTY),
@@ -198,7 +191,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     commitConfig: commitConfigHandler,
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
-    feed: isFeedTab && currentFid ? (
+    feed: tabName === "Feed" && currentFid ? (
       <FeedModule.fidget
         settings={{
           feedType: FeedType.Following,
@@ -216,7 +209,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     ) : undefined,
   }), [
     tabName,
-    isFeedTab 
+    tabName === "Feed" 
       ? homebaseConfig 
       : tabConfigs[tabName]?.config,
     editMode
@@ -231,7 +224,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
             <TabBarSkeleton />
             <div className="flex h-full">
               <div className={"grow"}>
-                <SpaceLoading hasProfile={false} hasFeed={isFeedTab} />
+                <SpaceLoading hasProfile={false} hasFeed={tabName === "Feed"} />
               </div>
             </div>
           </div>
