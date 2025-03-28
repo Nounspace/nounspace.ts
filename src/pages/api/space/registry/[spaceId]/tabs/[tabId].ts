@@ -20,6 +20,7 @@ export type UnsignedDeleteSpaceTabRequest = {
   timestamp: string;
   spaceId: string;
   tabName: string;
+  network?: string;
 };
 
 export type DeleteSpaceTabRequest = UnsignedDeleteSpaceTabRequest & Signable;
@@ -45,8 +46,10 @@ export type UpdateSpaceTabRequest = SignedFile & {
 export async function identityCanModifySpace(
   identity: string,
   spaceId: string,
+  network?: string,
 ) {
-  const data = await identitiesCanModifySpace(spaceId);
+  console.log("identityCanModifySpace", identity, spaceId, network);
+  const data = await identitiesCanModifySpace(spaceId, network);
   return findIndex(data, (i) => i === identity) !== -1;
 }
 
@@ -57,6 +60,9 @@ async function updateSpace(
   const req = incReq.body;
   const spaceId = incReq.query.spaceId as string;
   const tabName = incReq.query.tabId as string;
+  const network = req.network ? (req.network as string) : undefined;
+  if (network) delete req.network;
+
   if (!isSignedFile(req)) {
     res.status(400).json({
       result: "error",
@@ -76,7 +82,7 @@ async function updateSpace(
     });
     return;
   }
-  if (!(await identityCanModifySpace(req.publicKey, spaceId))) {
+  if (!(await identityCanModifySpace(req.publicKey, spaceId, network))) {
     res.status(400).json({
       result: "error",
       error: {
@@ -122,6 +128,7 @@ async function updateSpace(
 
 async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
   const deleteReq = req.body;
+  console.log("deleteReq", deleteReq);
   const spaceId = req.query.spaceId as string;
   const tabId = req.query.tabId as string;
   if (!isDeleteSpaceTabRequest(deleteReq)) {
@@ -134,7 +141,13 @@ async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
     });
     return;
   }
-  if (!(await identityCanModifySpace(deleteReq.publicKey, spaceId))) {
+  if (
+    !(await identityCanModifySpace(
+      deleteReq.publicKey,
+      spaceId,
+      deleteReq.network,
+    ))
+  ) {
     res.status(400).json({
       result: "error",
       error: {

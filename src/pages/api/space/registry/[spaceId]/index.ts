@@ -7,10 +7,15 @@ import {
   Signable,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { isArray, isString, map, isNull } from "lodash";
+import { isArray, isString, isNull, first } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./tabs/[tabId]";
 import stringify from "fast-json-stable-stringify";
+import {
+  loadIdentitiesOwningContractSpace,
+  loadOwnedItentitiesForSpaceByFid,
+} from "@/common/data/database/supabase/serverHelpers";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 type TabInfo = string[];
 
@@ -19,6 +24,7 @@ export type UnsignedUpdateTabOrderRequest = {
   timestamp: string;
   tabOrder: TabInfo;
   publicKey: string;
+  network?: EtherScanChainName;
 };
 
 export type UpdateTabOrderRequest = UnsignedUpdateTabOrderRequest & Signable;
@@ -76,6 +82,7 @@ async function updateSpaceTabOrder(
     !(await identityCanModifySpace(
       updateOrderRequest.publicKey,
       updateOrderRequest.spaceId,
+      updateOrderRequest?.network,
     ))
   ) {
     res.status(400).json({
@@ -86,13 +93,23 @@ async function updateSpaceTabOrder(
     });
     return;
   }
-  const { error } = await supabase.storage
+
+  console.log(
+    "[registry space] Updating tab order",
+    stringify(updateOrderRequest),
+  );
+
+  const { data, error } = await supabase.storage
     .from("spaces")
     .upload(
       `${updateOrderRequest.spaceId}/tabOrder`,
       new Blob([stringify(updateOrderRequest)], { type: "application/json" }),
       { upsert: true },
     );
+
+  console.log("[registry space] Supabase Data", data);
+  console.log("[registry space] Supabase Error", error);
+
   if (!isNull(error)) {
     console.error(error);
     res.status(500).json({
@@ -107,21 +124,34 @@ async function updateSpaceTabOrder(
     result: "success",
     value: updateOrderRequest.tabOrder,
   });
+  console.log("[registry space] Supabase Response", res.status);
 }
 
-export async function identitiesCanModifySpace(spaceId: string) {
-  const { data } = await supabase
-    .from("fidRegistrations")
-    .select(
-      `
-    fid,
-    identityPublicKey,
-    spaceRegistrations!inner (
-      fid
-    )`,
-    )
-    .eq("spaceRegistrations.spaceId", spaceId);
-  return data === null ? [] : map(data, (d) => d.identityPublicKey);
+export async function identitiesCanModifySpace(
+  spaceId: string,
+  network?: string,
+) {
+  console.log(
+    "Checking identities that can modify space",
+    stringify(spaceId),
+    network,
+    "network",
+  );
+  const { data: spaceRegistrationData } = await supabase
+    .from("spaceRegistrations")
+    .select("contractAddress")
+    .eq("spaceId", spaceId);
+  if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
+    return [];
+  const contractAddress = first(spaceRegistrationData)!.contractAddress;
+  if (!isNull(contractAddress)) {
+    return await loadIdentitiesOwningContractSpace(
+      contractAddress,
+      String(network),
+    );
+  } else {
+    return await loadOwnedItentitiesForSpaceByFid(spaceId);
+  }
 }
 
 async function spacePublicKeys(req: NextApiRequest, res: NextApiResponse) {

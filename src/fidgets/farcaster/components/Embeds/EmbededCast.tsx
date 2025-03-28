@@ -45,7 +45,7 @@ const EmbededCast = ({ url, castId }: CastEmbed) => {
     };
 
     getData();
-  }, []);
+  }, [url, castId]);
 
   if ((!url && !castId) || isEmpty(cast)) return null;
 

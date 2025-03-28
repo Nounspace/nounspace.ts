@@ -10,7 +10,7 @@ import axiosBackend from "@/common/data/api/backend";
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
   analytics,
@@ -92,10 +92,22 @@ export const createHomeBaseStoreFunc = (
       return spaceConfig;
     } catch (e) {
       set((draft) => {
-        draft.homebase.homebaseConfig = cloneDeep(INITIAL_HOMEBASE_CONFIG);
-        draft.homebase.remoteHomebaseConfig = cloneDeep(
-          INITIAL_HOMEBASE_CONFIG,
-        );
+        draft.homebase.homebaseConfig = {
+          ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
+          theme: {
+            ...cloneDeep(INITIAL_HOMEBASE_CONFIG.theme),
+            id: `Homebase-Feed-Theme`,
+            name: `Homebase-Feed-Theme`,
+          },
+        };
+        draft.homebase.remoteHomebaseConfig = {
+          ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
+          theme: {
+            ...cloneDeep(INITIAL_HOMEBASE_CONFIG.theme),
+            id: `Homebase-Feed-Theme`,
+            name: `Homebase-Feed-Theme`,
+          },
+        };
       }, "loadHomebase-default");
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }

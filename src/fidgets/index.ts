@@ -12,9 +12,12 @@ import Feed from "./farcaster/Feed";
 // import CreateCast from "./farcaster/CreateCast";
 import Links from "./ui/Links";
 import snapShot from "./snapshot/SnapShot";
-// import Swap from "./swap/Swap";
+import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
+import marketData from "./token/marketData";
+import chat from "./ui/chat";
+// import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
   //
@@ -24,6 +27,7 @@ export const CompleteFidgets = {
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
   frame: Frame,
+  // iframely: iframely,
   feed: Feed,
   cast: Cast,
   // createCast: CreateCast,
@@ -36,9 +40,11 @@ export const CompleteFidgets = {
   links: Links,
   // zora: zoraEmbed, -> 500 server error -Frame ancestors block
   SnapShot: snapShot,
-  // Swap: Swap,
+  Swap: Swap,
   Rss: rss,
   Video: VideoFidget,
+  Market: marketData,
+  Chat: chat,
 };
 
 export const LayoutFidgets = {

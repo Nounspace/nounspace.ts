@@ -1,3 +1,5 @@
+"use client";
+
 import React, {
   createContext,
   useContext,
@@ -6,7 +8,6 @@ import React, {
   useMemo,
 } from "react";
 import Navigation from "./Navigation";
-
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };
@@ -61,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
-      <div className={editMode ? "hidden" : "flex mx-auto"}>
+      <div className={editMode ? "hidden" : "flex mx-auto h-full"}>
         <Navigation
           isEditable={sidebarEditable}
           enterEditMode={enterEditMode}

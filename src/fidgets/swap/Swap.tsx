@@ -1,116 +1,91 @@
 import React from "react";
+import ChainSelector from "@/common/components/molecules/ChainSelector";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { Widget } from "./Widget";
-import SimpleColorSelector from "@/common/components/molecules/SimpleColorSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import ThemeSelector from "@/common/components/molecules/ThemeSelector";
-import { WidgetTheme } from "@lifi/widget";
-import { resolveCssVariable } from "./utils/cssUtils";
-import ChainSelector from "@/common/components/molecules/ChainSelector";
-import WidthSlider from "@/common/components/molecules/ScaleSliderSelector";
 
-export type LifiFidgetSettings = {
-  text: string;
-  background: string;
-  components: string;
-  fontFamily: string;
-  fontColor: string;
-  secondaryColor: string;
-  headerColor: string;
-  message: string;
-  themes?: WidgetTheme;
+type MatchaFidgetSettings = {
   defaultSellToken: string;
   defaultBuyToken: string;
-  fromChain: number;
-  toChain: number;
+  fromChain: { id: string; name: string } | null;
+  toChain: { id: string; name: string } | null;
+  background: string;
+  fontFamily: string;
+  fontColor: string;
   swapScale: number;
+  optionalFeeRecipient?: string;
+  size: number;
 } & FidgetSettingsStyle;
 
-const lifiProperties: FidgetProperties = {
+const matchaProperties: FidgetProperties = {
   fidgetName: "Swap",
   icon: 0x1f501,
   fields: [
     {
       fieldName: "defaultSellToken",
-      default: "",
+      default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "defaultBuyToken",
-      default: "0x0a93a7BE7e7e426fC046e204C44d6b03A302b631",
+      default: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       required: true,
       inputSelector: TextInput,
       group: "settings",
     },
     {
       fieldName: "fromChain",
-      default: 8453,
+      default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
     {
       fieldName: "toChain",
-      default: 8453,
+      default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: ChainSelector,
       group: "settings",
     },
+    // {
+    //   fieldName: "optionalFeeRecipient",
+    //   default: "",
+    //   required: false,
+    //   inputSelector: TextInput,
+    //   group: "settings",
+    // },
+    // {
+    //   fieldName: "background",
+    //   default: "",
+    //   required: false,
+    //   inputSelector: SimpleColorSelector,
+    //   group: "style",
+    // },
+    // {
+    //   fieldName: "fontFamily",
+    //   default: "Londrina Solid",
+    //   required: false,
+    //   inputSelector: FontSelector,
+    //   group: "style",
+    // },
+    // {
+    //   fieldName: "fontColor",
+    //   default: "",
+    //   required: false,
+    //   inputSelector: SimpleColorSelector,
+    //   group: "style",
+    // },
     {
-      fieldName: "themes",
-      default: "Custom",
+      fieldName: "size",
       required: false,
-      inputSelector: ThemeSelector,
-      group: "style",
-    },
-    {
-      fieldName: "background",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "components",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fontFamily",
-      default: "Londrina Solid",
-      required: false,
-      inputSelector: FontSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fontColor",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "secondaryColor",
-      default: "",
-      required: false,
-      inputSelector: SimpleColorSelector,
-      group: "style",
-    },
-    {
-      fieldName: "swapScale",
-      default: 1,
-      required: false,
-      inputSelector: WidthSlider,
+      inputSelector: IFrameWidthSlider,
       group: "style",
     },
   ],
@@ -122,51 +97,85 @@ const lifiProperties: FidgetProperties = {
   },
 };
 
-const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
-  const background = settings.background?.startsWith("var")
-    ? resolveCssVariable(settings.background)
-    : settings.background || resolveCssVariable("");
+const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
+  settings: {
+    defaultSellToken,
+    defaultBuyToken,
+    fromChain = { id: "8453", name: "Base" },
+    toChain = { id: "8453", name: "Base" },
+    optionalFeeRecipient,
+    size = 1,
+  },
+}) => {
+  const matchaBaseUrl = "https://matcha.xyz/trade";
+  const [url, setUrl] = React.useState("");
 
-  const components = settings.components?.startsWith("var")
-    ? resolveCssVariable(settings.components)
-    : settings.components || resolveCssVariable("");
+  const buildMatchaUrl = () => {
+    const params = new URLSearchParams();
+    if (defaultSellToken) params.append("sellAddress", defaultSellToken);
+    if (defaultBuyToken) params.append("buyAddress", defaultBuyToken);
+    if (fromChain && fromChain.id) {
+      params.append("sellChain", fromChain.id);
+    }
+    if (toChain && toChain.id) {
+      params.append("buyChain", toChain.id);
+    }
+    if (optionalFeeRecipient)
+      params.append("feeRecipient", optionalFeeRecipient);
+    return `${matchaBaseUrl}?${params.toString()}`;
+  };
 
-  const fontFamily = settings.fontFamily || "Londrina Solid";
+  React.useEffect(() => {
+    setUrl(buildMatchaUrl());
+  }, [
+    defaultSellToken,
+    defaultBuyToken,
+    fromChain,
+    toChain,
+    optionalFeeRecipient,
+  ]);
 
-  const fontColor =
-    settings.fontColor || resolveCssVariable("--user-theme-font-color");
+  const scaleValue = size;
 
-  const secondaryColor =
-    settings.secondaryColor ||
-    resolveCssVariable("--user-theme-secondary-color");
+  React.useEffect(() => {
+    let currentScrollY = window.scrollY;
+    let preventScroll = false;
 
-  function calculateHeight(value: number) {
-    const translation = (value - 1) * 30;
-    console.log("calculateHeight", translation);
-    console.log("calculateHeight", `${translation}%`);
-    return `${translation}%`;
-  }
+    const handleScroll = () => {
+      if (preventScroll && window.scrollY !== currentScrollY) {
+        window.scrollTo(0, currentScrollY);
+      }
+    };
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.action === "connectWallet") {
+        preventScroll = true;
+        currentScrollY = window.scrollY;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("message", handleMessage);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("message", handleMessage);
+    };
+  }, []);
 
   return (
-    <div
-      style={{
-        overflow: "auto",
-        width: "100%",
-        marginTop: calculateHeight(settings.swapScale),
-        transform: `scale(${settings.swapScale})`,
-      }}
-    >
-      <Widget
-        background={background}
-        fontFamily={fontFamily}
-        components={components}
-        fontColor={fontColor}
-        secondaryColor={secondaryColor}
-        themes={settings.themes || {}}
-        sellToken={settings.defaultSellToken}
-        buyToken={settings.defaultBuyToken}
-        fromChain={settings.fromChain || 8453}
-        toChain={settings.toChain | 8453}
+    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+      <iframe
+        src={url}
+        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+        style={{
+          transform: `scale(${scaleValue})`,
+          transformOrigin: "0 0",
+          width: `${100 / scaleValue}%`,
+          height: `${100 / scaleValue}%`,
+          overflow: "hidden",
+        }}
+        className="size-full"
       />
     </div>
   );
@@ -174,5 +183,5 @@ const Swap: React.FC<FidgetArgs<LifiFidgetSettings>> = ({ settings }) => {
 
 export default {
   fidget: Swap,
-  properties: lifiProperties,
-} as FidgetModule<FidgetArgs<LifiFidgetSettings>>;
+  properties: matchaProperties,
+} as FidgetModule<FidgetArgs<MatchaFidgetSettings>>;

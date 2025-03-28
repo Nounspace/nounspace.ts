@@ -1,6 +1,6 @@
 import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import { isNil, isUndefined, mapValues, pickBy } from "lodash";
 
 interface CurrentSpaceStoreState {
@@ -10,6 +10,7 @@ interface CurrentSpaceStoreState {
 
 interface CurrentSpaceStoreActions {
   setCurrentSpaceId: SetterFunction<string | null>;
+  getCurrentSpaceId: () => string | null;
   setCurrentTabName: SetterFunction<string | null>;
   getCurrentTabName: () => string | null;
   getCurrentSpaceConfig: () =>
@@ -21,7 +22,7 @@ interface CurrentSpaceStoreActions {
     | undefined;
 }
 
-const HOMEBASE_ID = "homebase";
+export const HOMEBASE_ID = "homebase";
 
 export type CurrentSpaceStore = CurrentSpaceStoreState &
   CurrentSpaceStoreActions;
@@ -36,6 +37,9 @@ export const createCurrentSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): CurrentSpaceStore => ({
   ...currentSpaceStoreDefaults,
+  getCurrentSpaceId: () => {
+    return get().currentSpace.currentSpaceId;
+  },
   setCurrentSpaceId(id) {
     set((draft) => {
       draft.currentSpace.currentSpaceId = id;

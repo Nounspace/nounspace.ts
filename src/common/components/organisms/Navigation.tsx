@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState, useRef } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
@@ -21,6 +21,7 @@ import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { Badge } from "@/common/components/atoms/badge";
+import { usePathname } from "next/navigation";
 
 type NavItemProps = {
   label: string;
@@ -61,8 +62,17 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     }),
   );
   const userTheme: UserTheme = useUserTheme();
+
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
+  const pathname = usePathname();
+  const isNotificationsPage = pathname === "/notifications";
+  const isExplorerPage = pathname === "/explore";
+
+  function handleLogout() {
+    router.push("/home");
+    logout();
+  }
 
   function turnOnEditMode() {
     enterEditMode();
@@ -111,14 +121,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           href={disable ? "#" : href}
           className={mergeClasses(
             "flex relative items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group w-full",
-            href === router.asPath ? "bg-gray-100" : "",
+            href === pathname ? "bg-gray-100" : "",
           )}
           onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
-          <Icon aria-hidden="true" />
+          <Icon />
           <span className="ms-3">{label}</span>
         </Link>
       </li>
@@ -176,9 +186,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             <div className="flex-auto">
               <ul className="space-y-2">
                 <NavItem
-                  label="Homebase"
+                  label={isLoggedIn ? "Homebase" : "Home"}
                   Icon={HomeIcon}
-                  href="/homebase"
+                  href={isLoggedIn ? "/homebase" : "/home"}
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
                   }
@@ -211,9 +221,9 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   }
                 />
                 <NavItem
-                  label="Fair Launch"
+                  label="$SPACE"
                   Icon={RocketIcon}
-                  href="https://space.nounspace.com/"
+                  href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
                   onClick={() =>
                     trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
                   }
@@ -233,7 +243,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   <NavButton
                     label={"Logout"}
                     Icon={LogoutIcon}
-                    onClick={logout}
+                    onClick={handleLogout}
                   />
                 )}
                 {!isLoggedIn && (
@@ -254,7 +264,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             </div>
             {isLoggedIn && (
               <div className="pt-3 flex items-center gap-2 justify-center">
-                {isEditable && (
+                {!isNotificationsPage && !isExplorerPage && isEditable && (
                   <Button
                     onClick={turnOnEditMode}
                     size="icon"

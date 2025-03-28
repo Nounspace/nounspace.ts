@@ -1,28 +1,59 @@
+"use client";
 import { useEffect } from "react";
 import defaultTheme from "@/common/lib/theme/defaultTheme";
 import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
 import { UserTheme } from "@/common/lib/theme";
 import { useAppStore } from "@/common/data/stores/app";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
+import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 
 export interface UserThemeContextValue {
   userTheme: UserTheme;
 }
 
 export const useUserTheme = () => {
+  const { getCurrentSpaceId } = useAppStore((state) => ({
+    getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
+  }));
+
   const { getCurrentSpace } = useAppStore((state) => ({
     getCurrentSpace: state.currentSpace.getCurrentSpaceConfig,
   }));
 
-  const { getCurrentTab } = useAppStore((state) => ({
-    getCurrentTab: state.currentSpace.getCurrentTabName,
+  const { getCurrentSpaceTabName } = useAppStore((state) => ({
+    getCurrentSpaceTabName: state.currentSpace.getCurrentTabName,
   }));
 
+  const { homebaseTabs } = useAppStore((state) => ({
+    homebaseTabs: state.homebase.tabs,
+  }));
+
+  const { homebaseConfig } = useAppStore((state) => ({
+    homebaseConfig: state.homebase.homebaseConfig,
+  }));
+
+  const currentSpaceId = getCurrentSpaceId();
   const currentSpace = getCurrentSpace();
-  const currentTab = getCurrentTab();
-  return currentSpace && currentTab && currentSpace[currentTab]
-    ? currentSpace[currentTab].theme
-    : defaultTheme;
+  const currentTabName = getCurrentSpaceTabName();
+
+  if (currentSpaceId === HOMEBASE_ID) {
+    if (currentTabName === "Feed" || !currentTabName) {
+      // console.log("Tab Name:", currentTabName);
+      // console.log("Theme selected: Homebase Feed or default");
+      // console.log("Theme:", homebaseConfig?.theme);
+      return homebaseConfig?.theme ?? defaultTheme;
+    } else {
+      // console.log(`Theme selected: Homebase tab - ${currentTabName}`);
+      // console.log("Theme:", homebaseTabs[currentTabName]?.config?.theme);
+      return homebaseTabs[currentTabName]?.config?.theme ?? defaultTheme;
+    }
+  } else {
+    // console.log( `Theme selected: Space tab - ${currentSpaceId}, ${currentTabName ?? "Profile"}`, );
+    // console.log("Theme:",currentSpace?.tabs[currentTabName ?? "Profile"]?.theme,);
+    return (
+      currentSpace?.tabs[currentTabName ?? "Profile"]?.theme ?? defaultTheme
+    );
+  }
 };
 
 export const UserThemeProvider = ({ children }) => {
