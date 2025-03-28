@@ -1,9 +1,11 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill } from "react-icons/bs";
+import { BsFillPinFill, BsPin } from "react-icons/bs";
 import {
   FidgetBundle,
   FidgetConfig,
+  FidgetInstanceData,
   LayoutFidget,
   LayoutFidgetConfig,
   LayoutFidgetProps
@@ -46,12 +48,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   // and filter out fidgets that should be hidden on mobile
   const isMobile = useIsMobile();
   
-  // Create a structure to identify media fidgets for consolidation
+  // Create a structure to identify media fidgets and pinned casts for consolidation
   const isMediaFidget = (fidgetType: string): boolean => {
-    return ['text', 'gallery', 'Video', 'cast'].includes(fidgetType);
+    return ['text', 'gallery', 'Video'].includes(fidgetType);
   };
-  
-  // Pre-process fidgets for mobile - group media types if on mobile
+
+  const isPinnedCast = (fidgetId: string, fidgetInstanceDatums: { [key: string]: FidgetInstanceData }): boolean => {
+    const fidgetData = fidgetInstanceDatums[fidgetId];
+    return fidgetData?.fidgetType === 'cast';
+  };
+
+  // Pre-process fidgets for mobile - group media types and pinned casts if on mobile
   const processedFidgetIds = (() => {
     if (!isMobile) {
       // On desktop, use all fidgets as is
@@ -63,9 +70,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     
     // For mobile, process and potentially consolidate media fidgets
     const mediaFidgetIds: string[] = [];
+    const pinnedCastIds: string[] = [];
     const nonMediaFidgetIds: string[] = [];
     
-    // First separate media and non-media fidgets
+    // First separate media, pinned casts, and non-media fidgets
     layoutConfig.layout.forEach(id => {
       const fidgetData = fidgetInstanceDatums[id];
       if (!fidgetData) return;
@@ -73,20 +81,32 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       // Skip fidgets that should be hidden on mobile
       if (fidgetData.config.settings.showOnMobile === false) return;
       
-      if (isMediaFidget(fidgetData.fidgetType)) {
+      if (isPinnedCast(id, fidgetInstanceDatums)) {
+        pinnedCastIds.push(id);
+      } else if (isMediaFidget(fidgetData.fidgetType)) {
         mediaFidgetIds.push(id);
       } else {
         nonMediaFidgetIds.push(id);
       }
     });
     
-    // If we have multiple media fidgets, return them under a special id
-    if (mediaFidgetIds.length > 1) {
-      return ['consolidated-media', ...nonMediaFidgetIds];
+    const consolidatedIds: string[] = [];
+    
+    // If we have multiple pinned casts, return them under a special id
+    if (pinnedCastIds.length > 1) {
+      consolidatedIds.push('consolidated-pinned');
     } else {
-      // If we have 0 or 1 media fidget, no need to consolidate
-      return [...mediaFidgetIds, ...nonMediaFidgetIds];
+      consolidatedIds.push(...pinnedCastIds);
     }
+    
+    // If we have multiple media fidgets, add them under a special id
+    if (mediaFidgetIds.length > 1) {
+      consolidatedIds.push('consolidated-media');
+    } else {
+      consolidatedIds.push(...mediaFidgetIds);
+    }
+    
+    return [...consolidatedIds, ...nonMediaFidgetIds];
   })();
   
   // Original valid fidget IDs (without consolidation)
@@ -104,11 +124,13 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return true;
   });
   
-  // Get all media fidgets to be consolidated
+  // Get all media fidgets and pinned casts to be consolidated
   const mediaFidgetIds = validFidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
     return isMediaFidget(fidgetData.fidgetType);
   });
+
+  const pinnedCastIds = validFidgetIds.filter(id => isPinnedCast(id, fidgetInstanceDatums));
   
   // Initialize with the first valid fidget ID
   const [selectedTab, setSelectedTab] = useState(processedFidgetIds.length > 0 ? processedFidgetIds[0] : "");
@@ -155,6 +177,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       return "Media";
     }
     
+    // Special case for consolidated pinned casts
+    if (fidgetId === 'consolidated-pinned') {
+      return "Pinned";
+    }
+    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
     
@@ -182,6 +209,13 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       return selectedTab === fidgetId ? 
         <BsImageFill className="text-xl" /> : 
         <BsImage className="text-xl" />;
+    }
+
+    // Special case for consolidated pinned casts
+    if (fidgetId === 'consolidated-pinned') {
+      return selectedTab === fidgetId ? 
+        <BsFillPinFill size={22} /> : 
+        <BsPin size={22} />;
     }
     
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
@@ -261,6 +295,48 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     );
   };
 
+  // Render a consolidated pinned tab content with multiple fidgets
+  const renderConsolidatedPinnedContent = () => {
+    if (pinnedCastIds.length === 0) return null;
+    
+    return (
+      <div className="flex flex-col gap-4 h-full overflow-y-auto pb-16">
+        {pinnedCastIds.map((fidgetId) => {
+          const fidgetDatum = fidgetInstanceDatums[fidgetId];
+          if (!fidgetDatum) return null;
+          
+          const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+          if (!fidgetModule) return null;
+          
+          const bundle: FidgetBundle = {
+            ...fidgetDatum,
+            properties: fidgetModule.properties,
+            config: { ...fidgetDatum.config, editable: false }, // Ensure fidgets are not editable
+          };
+
+          return (
+            <div 
+              key={fidgetId} 
+              className="w-full h-fit"
+            >
+              <FidgetWrapper
+                fidget={fidgetModule.fidget}
+                context={{ theme }}
+                bundle={bundle}
+                saveConfig={saveFidgetConfig(fidgetId)}
+                setCurrentFidgetSettings={dummySetCurrentFidgetSettings}
+                setSelectedFidgetID={dummySetSelectedFidgetID}
+                selectedFidgetID=""
+                removeFidget={dummyRemoveFidget}
+                minimizeFidget={dummyMinimizeFidget}
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       {/* Main content area with padding-bottom to make space for fixed tabs */}
@@ -294,10 +370,29 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 </div>
               </TabsContent>
             )}
+
+            {/* Special case for consolidated pinned tab */}
+            {isMobile && pinnedCastIds.length > 1 && (
+              <TabsContent 
+                key="consolidated-pinned" 
+                value="consolidated-pinned"
+                className="h-full w-full block"
+                style={{ visibility: 'visible', display: 'block' }}
+              >
+                <div
+                  className="h-full w-full"
+                  style={{ 
+                    paddingInline: `${MOBILE_PADDING}px`, paddingTop: `${MOBILE_PADDING - 16}px`,
+                  }}
+                >
+                  {renderConsolidatedPinnedContent()}
+                </div>
+              </TabsContent>
+            )}
             
             {/* Regular non-consolidated tabs */}
             {processedFidgetIds
-              .filter(id => id !== 'consolidated-media')
+              .filter(id => id !== 'consolidated-media' && id !== 'consolidated-pinned')
               .map((fidgetId) => {
                 const fidgetDatum = fidgetInstanceDatums[fidgetId];
                 if (!fidgetDatum) return null;
