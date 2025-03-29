@@ -443,38 +443,49 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               className="fixed bottom-0 left-0 right-0 z-50 bg-white"
               style={{ height: `${TAB_HEIGHT}px` }}
             >
-              <TabsList className={`
-                w-full h-full 
-                overflow-x-auto
-                gap-4
-                flex whitespace-nowrap
-                scrollbar-none
-                ${processedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
-                rounded-none
-              `}>
-                {processedFidgetIds.map((fidgetId) => {
-                  const fidgetName = getFidgetName(fidgetId);
-                  
-                  return (
-                    <TabsTrigger 
-                      key={fidgetId} 
-                      value={fidgetId}
-                      className={`
-                        flex flex-col items-center justify-center
-                        min-w-[72px] h-full py-2 px-0
-                        font-medium
-                        ${isMobile ? 'text-xs' : 'text-sm'}
-                        hover:bg-gray-50 transition-colors
-                        data-[state=active]:text-primary
-                        rounded-lg
-                      `}
-                    >
-                      {getFidgetIcon(fidgetId)}
-                      <span className="truncate max-w-[80px] line-clamp-1">{fidgetName}</span>
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
+              <div className="relative w-full h-full">
+                <TabsList className={`
+                  w-full h-full 
+                  overflow-x-auto
+                  gap-4
+                  flex whitespace-nowrap
+                  scrollbar-none
+                  ${processedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
+                  rounded-none
+                `}>
+                  {processedFidgetIds.map((fidgetId) => {
+                    const fidgetName = getFidgetName(fidgetId);
+                    
+                    return (
+                      <TabsTrigger 
+                        key={fidgetId} 
+                        value={fidgetId}
+                        className={`
+                          flex flex-col items-center justify-center
+                          min-w-[72px] h-full py-2 px-0
+                          font-medium
+                          ${isMobile ? 'text-xs' : 'text-sm'}
+                          hover:bg-gray-50 transition-colors
+                          data-[state=active]:text-primary
+                          rounded-lg
+                        `}
+                      >
+                        {getFidgetIcon(fidgetId)}
+                        <span className="truncate max-w-[80px] line-clamp-1">{fidgetName}</span>
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+                {/* Gradient overlay */}
+                {processedFidgetIds.length > 4 && (
+                  <div 
+                    className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90"
+                    style={{
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)'
+                    }}
+                  />
+                )}
+              </div>
             </div>
           )}
         </Tabs>
