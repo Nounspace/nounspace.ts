@@ -191,7 +191,18 @@ export default function Space({
             </div>
           ) : null}
           {/* [SPACE] Rendering tab bar */}
-          {tabBar}
+          <div className="relative">
+            {tabBar}
+            {/* Gradient overlay for tabs on mobile */}
+            {isMobile && (
+              <div 
+                className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
+                style={{
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)'
+                }}
+              />
+            )}
+          </div>
           <div className="flex h-full">
             {!isMobile && !isUndefined(feed) ? (
               <div className="w-6/12 h-[calc(100vh-64px)]">
