@@ -113,19 +113,19 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-center md:h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
+        <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-70 bg-white">
           {tabList && (
             <Reorder.Group
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
-              className="flex flex-row gap-4 grow items-start m-4 tabs"
+              className="flex flex-row gap-5 md:gap-4 grow items-start m-4 tabs"
               values={tabList}
             >
               <AnimatePresence initial={false}>
