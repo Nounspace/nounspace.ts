@@ -21,6 +21,7 @@ const EditableText = ({ initialText, updateMethod }) => {
     <input
       value={text}
       className="bg-transparent border-none"
+      maxLength={22}
       onKeyDown={(event) => {
         if (isEnterOrEscapeKeyEvent(event)) {
           event.preventDefault();
