@@ -1,5 +1,6 @@
 "use client"
-import React, { ReactNode, useEffect, useState } from "react"
+
+import React, { ReactNode, useEffect } from "react"
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -14,9 +15,6 @@ import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackgr
 import { isNil, isUndefined } from "lodash"
 import InfoToast from "../organisms/InfoBanner"
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile"
-
-// Mobile breakpoint (in pixels)
-const MOBILE_BREAKPOINT = 768
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>
@@ -71,27 +69,19 @@ export default function Space({
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
-  console.log("[SPACE] Component rendering with config:", config)
-  console.log("[SPACE] Edit mode:", editMode)
-  console.log("[SPACE] Has profile:", !isUndefined(profile))
-  console.log("[SPACE] Has feed:", !isUndefined(feed))
-  
   // Use the useIsMobile hook instead of duplicating logic
   const isMobile = useIsMobile()
   
   useEffect(() => {
-    console.log("[SPACE] Setting sidebar editable:", config.isEditable)
     setSidebarEditable(config.isEditable)
   }, [config.isEditable])
 
   function saveExitEditMode() {
-    console.log("[SPACE] Saving and exiting edit mode")
     commitConfig()
     setEditMode(false)
   }
 
   function cancelExitEditMode() {
-    console.log("[SPACE] Canceling and exiting edit mode")
     resetConfig()
     setEditMode(false)
   }
@@ -102,18 +92,6 @@ export default function Space({
     fidgetInstanceDatums,
     fidgetTrayContents,
   }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) {
-    console.log("[SPACE] Saving local config")
-    console.log("[SPACE] Theme updates:", theme ? "Yes" : "No")
-    console.log("[SPACE] Layout config updates:", layoutConfig ? "Yes" : "No")
-    console.log(
-      "[SPACE] Fidget data updates:",
-      fidgetInstanceDatums ? "Yes" : "No"
-    )
-    console.log(
-      "[SPACE] Fidget tray updates:",
-      fidgetTrayContents ? "Yes" : "No"
-    )
-
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
@@ -142,8 +120,6 @@ export default function Space({
     finalLayoutConfig = {
       layout: fidgetIds,
     }
-    
-    console.log("[SPACE] Using mobile TabFullScreen layout with", fidgetIds.length, "fidgets")
   } else {
     // Use the configured layout for desktop
     LayoutFidget =
@@ -154,30 +130,10 @@ export default function Space({
     finalLayoutConfig = config?.layoutDetails?.layoutConfig ?? {
       layout: [],
     }
-    
-    console.log(
-      "[SPACE] Using desktop layout:",
-      config?.layoutDetails?.layoutFidget || "grid"
-    )
-  }
-
-  console.log("[SPACE] Available layout fidgets:", Object.keys(LayoutFidgets))
-  console.log("[SPACE] Layout config:", finalLayoutConfig)
-  console.log(
-    "[SPACE] Number of fidget instances:",
-    Object.keys(config.fidgetInstanceDatums || {}).length
-  )
-
-  if (config.fidgetInstanceDatums) {
-    console.log(
-      "[SPACE] Fidget types:",
-      Object.values(config.fidgetInstanceDatums).map((f) => f.fidgetType)
-    )
   }
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      {/* [SPACE] Rendering component structure */}
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
@@ -186,11 +142,9 @@ export default function Space({
           </div>
           {!isUndefined(profile) ? (
             <div className="z-50 bg-white md:h-40">
-              {/* [SPACE] Rendering profile section (desktop only) */}
               {profile}
             </div>
           ) : null}
-          {/* [SPACE] Rendering tab bar */}
           <div className="relative">
             {tabBar}
             {/* Gradient overlay for tabs on mobile */}
@@ -206,12 +160,10 @@ export default function Space({
           <div className="flex h-full">
             {!isMobile && !isUndefined(feed) ? (
               <div className="w-6/12 h-[calc(100vh-64px)]">
-                {/* [SPACE] Rendering feed section (desktop only) */}
                 {feed}
               </div>
             ) : null}
             <div className={isMobile ? "w-full h-full" : "grow"}>
-              {/* [SPACE] Rendering layout fidget */}
               <LayoutFidget
                 layoutConfig={finalLayoutConfig}
                 fidgetInstanceDatums={config.fidgetInstanceDatums}
@@ -227,7 +179,6 @@ export default function Space({
                 tabNames={config.tabNames}
                 fid={config.fid}
               />
-              {/* [SPACE] Layout fidget rendered */}
             </div>
           </div>
         </div>
