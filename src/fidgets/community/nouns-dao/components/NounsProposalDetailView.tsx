@@ -163,14 +163,6 @@ export const NounsProposalDetailView = ({
   const isFirstVersion = proposal.createdTimestamp === proposal.lastUpdatedTimestamp;
   const lastUpdatedText = isFirstVersion ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
 
-  console.log("DEBUG - lastUpdatedText logic:", {
-    version,
-    isFirstVersion,
-    createdTimestamp: proposal.createdTimestamp,
-    lastUpdatedTimestamp: proposal.lastUpdatedTimestamp,
-    result: lastUpdatedText
-  });
-
   const endDate = currentBlock
     ? estimateBlockTime(
       Number(proposal.endBlock),
