@@ -1,27 +1,26 @@
-import React from "react";
-import TextInput from "@/common/components/molecules/TextInput";
-import CSSInput from "@/common/components/molecules/CSSInput";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import {
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/common/components/atoms/card";
-import LinksInput from "@/common/components/molecules/LinksInput";
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback,
+  AvatarImage,
 } from "@/common/components/atoms/avatar";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/atoms/card";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
+import CSSInput from "@/common/components/molecules/CSSInput";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import LinksInput from "@/common/components/molecules/LinksInput";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import React from "react";
 
 export type Link = {
   text: string;
@@ -83,28 +82,56 @@ export const linkConfig: FidgetProperties = {
       fieldName: "HeaderColor",
       default: "black",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-Header-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "DescriptionColor",
       default: "black",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-description-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "itemBackground",
       default: "#e0eeff",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-item-backGround-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "background",
       default: "var(--user-theme-fidget-background)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-background-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
@@ -118,7 +145,14 @@ export const linkConfig: FidgetProperties = {
       fieldName: "fidgetBorderColor",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {

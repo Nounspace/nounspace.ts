@@ -1,17 +1,17 @@
-import React from "react";
-import TextInput from "@/common/components/molecules/TextInput";
-import {
-  FidgetArgs,
-  FidgetProperties,
-  FidgetModule,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
-import FrameEmbed from "./components/Embeds/FrameEmbed";
-import { isValidUrl } from "@/common/lib/utils/url";
-import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
+import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { isValidUrl } from "@/common/lib/utils/url";
+import React from "react";
+import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
   url: string;
@@ -27,10 +27,18 @@ const frameProperties: FidgetProperties = {
     },
     {
       fieldName: "background",
-      default: "transparent",
+      displayName: "Background",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-background-color)"
+          defaultColor="#FFFFFF"
+          colorType="background"
+        />
+      ),
       group: "style",
+      default: "var(--user-theme-fidget-background)",
     },
     {
       fieldName: "fidgetBorderWidth",
@@ -41,10 +49,18 @@ const frameProperties: FidgetProperties = {
     },
     {
       fieldName: "fidgetBorderColor",
-      default: "transparent",
+      displayName: "Border Color",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
+      default: "var(--user-theme-fidget-border-color)",
     },
     {
       fieldName: "fidgetShadow",

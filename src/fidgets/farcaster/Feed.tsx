@@ -1,6 +1,4 @@
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import Loading from "@/common/components/molecules/Loading";
@@ -8,11 +6,12 @@ import PlatformSelector, { Platform } from "@/common/components/molecules/Platfo
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import {
   useGetCasts,
   useGetCastsByKeyword,
-} from "@/common/data/queries/farcaster"; // Import new hook
+} from "@/common/data/queries/farcaster";
 import {
   FidgetArgs,
   FidgetModule,
@@ -20,37 +19,36 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { Color } from "@/common/lib/theme";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect } from "react";
-import { FaPaintbrush } from "react-icons/fa6";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
+
 export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
-  Keyword = "keyword", // Add new filter type
+  Keyword = "keyword", 
 }
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users?: string; // this should be a number array, but that requires special inputs to build later
+  users?: string; 
   channel?: string;
-  keyword?: string; // Add keyword field
+  keyword?: string; 
   selectPlatform: Platform;
   Xhandle: string;
   style: string;
-  useDefaultColors?: boolean; // Adicione esta linha
+  useDefaultColors?: boolean; 
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
   { name: "Channel", value: FilterType.Channel },
   { name: "Users", value: FilterType.Users },
-  { name: "Keyword", value: FilterType.Keyword }, // Add new filter type
+  { name: "Keyword", value: FilterType.Keyword },
 ];
 
 export const FilterTypeSelector: React.FC<{
@@ -65,41 +63,6 @@ export const FilterTypeSelector: React.FC<{
       settings={FILTER_TYPES}
       className={className}
     />
-  );
-};
-
-const ThemeColorSelector: React.FC<{
-  value: Color;
-  onChange: (value: Color) => void;
-  themeVariable: string;
-  defaultColor: Color;
-  colorType: string;
-}> = ({ value, onChange, themeVariable, defaultColor, colorType }) => {
-  const isUsingTheme = value === themeVariable;
-
-  return (
-    <div className="flex items-center gap-2">
-    <ColorSelector value={value} onChange={onChange} />
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div
-            className="cursor-pointer"
-            onClick={() => onChange(isUsingTheme ? defaultColor : themeVariable as Color)}
-          >
-            <FaPaintbrush
-              className={`w-4 h-4 transition-colors ${
-                isUsingTheme ? 'text-blue-500' : 'text-gray-400'
-              } hover:text-blue-600`}
-            />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <span>Inherit {colorType} from Theme</span>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  </div>
   );
 };
 
@@ -203,6 +166,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         />
       ),
       group: "style",
+      default: "var(--user-theme-font-color)",
     },
     {
       fieldName: "background",
@@ -217,6 +181,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         />
       ),
       group: "style",
+      default: "var(--user-theme-fidget-background)",
       disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
     },
     {
@@ -241,6 +206,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         />
       ),
       group: "style",
+      default: "var(--user-theme-fidget-border-color)",
       disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
     },
     {
@@ -360,7 +326,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     ? page.result.casts?.map(
                       (
                         cast,
-                        index, // Ensure casts array is accessed correctly for keyword filter
+                        index, 
                       ) => (
                         <CastRow
                           cast={cast}
@@ -372,7 +338,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     : page.casts?.map(
                       (
                         cast,
-                        index, // Ensure casts array is accessed correctly for other filters
+                        index, 
                       ) => (
                         <CastRow
                           cast={cast}
