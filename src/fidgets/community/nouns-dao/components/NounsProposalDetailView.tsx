@@ -111,7 +111,6 @@ export const NounsProposalDetailView = ({
     ? proposal.signers[0].id
     : undefined;
 
-  // Fix: Use a default version of 1 if versions is not an array or length is undefined
   const isVersionsArray = Array.isArray(versions);
   const version = isVersionsArray ? versions.length : 1;
 
@@ -182,11 +181,16 @@ export const NounsProposalDetailView = ({
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
 
-  console.log("Version number:", version);
-  console.log("Last updated:", lastUpdated);
-  console.log("Last updated text:", lastUpdatedText);
+  const processDescription = (description: string): string => {
+    const lines = description.split('\n');
+    if (lines.length > 0 && lines[0].trim().startsWith('#')) {
+      return lines.slice(1).join('\n').trim();
+    }
+    return description;
+  };
 
-  console.log(proposal);
+  const processedDescription = processDescription(proposal.description);
+
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">
@@ -228,7 +232,7 @@ export const NounsProposalDetailView = ({
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
-              <p className="font-medium text-base/[1.25]">{proposal.title}</p>
+              <p className="font-medium text-2xl/[1.25]">{proposal.title}</p>
               {(proposer || sponsor) && (
                 <div className="flex gap-4">
                   <AddressInfo
@@ -304,7 +308,7 @@ export const NounsProposalDetailView = ({
               rehypePlugins={[rehypeRaw]}
               remarkPlugins={[remarkGfm]}
             >
-              {proposal.description}
+              {processedDescription}
             </ReactMarkdown>
           </div>
         </div>
