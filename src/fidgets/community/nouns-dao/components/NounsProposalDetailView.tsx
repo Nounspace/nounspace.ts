@@ -153,10 +153,10 @@ export const NounsProposalDetailView = ({
 
   const endDate = currentBlock
     ? estimateBlockTime(
-        Number(proposal.endBlock),
-        currentBlock.number,
-        currentBlock.timestamp,
-      )
+      Number(proposal.endBlock),
+      currentBlock.number,
+      currentBlock.timestamp,
+    )
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
@@ -268,7 +268,7 @@ export const NounsProposalDetailView = ({
               <InfoBox
                 label="Snapshot"
                 subtext="Taken at block"
-                value={proposal.voteSnapshotBlock}
+                value={proposal.startBlock}
               />
             </div>
 
