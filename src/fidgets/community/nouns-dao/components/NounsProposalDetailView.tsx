@@ -2,20 +2,20 @@ import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import type { NounsProposalData } from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime, getProposalState } from "./ProposalListRowItem";
-import ReactMarkdown from "react-markdown";
-import { Address } from "viem";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
@@ -105,11 +105,15 @@ export const NounsProposalDetailView = ({
   currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
+
   const proposer = proposal?.proposer?.id;
   const sponsor = proposal?.signers?.length
     ? proposal.signers[0].id
     : undefined;
-  const version = versions?.length;
+
+  // Fix: Use a default version of 1 if versions is not an array or length is undefined
+  const isVersionsArray = Array.isArray(versions);
+  const version = isVersionsArray ? versions.length : 1;
 
   const { data: proposerEnsName } = useEnsName({
     address: proposer as Address,
@@ -145,11 +149,28 @@ export const NounsProposalDetailView = ({
 
   const totalVotes = votes.for + votes.against + votes.abstain;
 
-  const lastUpdated = versions?.[0]?.createdAt
-    ? moment(Number(versions[0].createdAt) * 1000).fromNow()
-    : "N/A";
-  const lastUpdatedText =
-    version === 1 ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
+
+  let lastUpdated;
+  if (isVersionsArray && versions[0]?.createdAt) {
+    lastUpdated = moment(Number(versions[0].createdAt) * 1000).fromNow();
+  } else if (proposal.lastUpdatedTimestamp) {
+    lastUpdated = moment(Number(proposal.lastUpdatedTimestamp) * 1000).fromNow();
+  } else if (proposal.createdTimestamp) {
+    lastUpdated = moment(Number(proposal.createdTimestamp) * 1000).fromNow();
+  } else {
+    lastUpdated = "N/A";
+  }
+
+  const isFirstVersion = proposal.createdTimestamp === proposal.lastUpdatedTimestamp;
+  const lastUpdatedText = isFirstVersion ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
+
+  console.log("DEBUG - lastUpdatedText logic:", {
+    version,
+    isFirstVersion,
+    createdTimestamp: proposal.createdTimestamp,
+    lastUpdatedTimestamp: proposal.lastUpdatedTimestamp,
+    result: lastUpdatedText
+  });
 
   const endDate = currentBlock
     ? estimateBlockTime(
@@ -160,6 +181,11 @@ export const NounsProposalDetailView = ({
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
+
+  console.log("Version number:", version);
+  console.log("Last updated:", lastUpdated);
+  console.log("Last updated text:", lastUpdatedText);
+
   console.log(proposal);
   return (
     <div className="flex flex-col size-full">
