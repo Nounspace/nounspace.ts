@@ -13,7 +13,7 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
     inputSelector: (props) => (
       <ThemeColorSelector
         {...props}
-        themeVariable="var(--user-theme-fidget-background-color)"
+        themeVariable="var(--user-theme-fidget-background)"
         defaultColor="#FFFFFF"
         colorType="background"
       />
@@ -30,7 +30,7 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
   },
   {
     fieldName: "fidgetBorderColor",
-    displayName: "Border Color",
+    displayName: "fidgetBorderColor",
     required: false,
     inputSelector: (props) => (
       <ThemeColorSelector

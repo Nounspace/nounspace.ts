@@ -54,9 +54,9 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
+          themeVariable="var(--user-theme-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="font color"
         />
       ),
       group: "style",
@@ -67,26 +67,19 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
+          themeVariable="var(--user-theme-link-color)"
+          defaultColor="#0000FF"
+          colorType="link color"
         />
       ),
-      default: "blue",
+      default: "var(--user-theme-link-color)",
       group: "style",
     },
     {
       fieldName: "headingsFontFamily",
       default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
-      ),
+      inputSelector: FontSelector,
       group: "style",
     },
     {
@@ -96,9 +89,9 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
+          themeVariable="var(--user-theme-headings-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="headings color"
         />
       ),
       group: "style",
@@ -126,11 +119,12 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   return (
     <div
       style={{
-        background: settings.background,
+        fontFamily: settings.fontFamily,
         height: "100%",
+        color: settings.fontColor,
+        background: settings.background,
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
-        // Not visible because of the outer div having overflow: hidden
         boxShadow: settings.fidgetShadow,
         overflow: "auto",
         scrollbarWidth: "none",
