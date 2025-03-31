@@ -26,29 +26,15 @@ const ThemeColorSelector: React.FC<ThemeColorSelectorProps> = ({
         return null;
     }
 
-    const handleThemeToggle = () => {
-        console.log('Toggle clicked:', {
-            isUsingTheme,
-            currentValue: value,
-            willChangeTo: isUsingTheme ? defaultColor : themeVariable
-        });
-
-        const newValue = isUsingTheme ? defaultColor : themeVariable;
-        onChange(newValue as Color);
-    };
-
     return (
         <div className="flex items-center gap-2">
-            <ColorSelector
-                value={value || defaultColor}
-                onChange={onChange}
-            />
+            <ColorSelector value={value} onChange={onChange} />
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div
                             className="cursor-pointer"
-                            onClick={handleThemeToggle}
+                            onClick={() => onChange(isUsingTheme ? defaultColor : themeVariable as Color)}
                         >
                             <FaPaintbrush
                                 className={`w-4 h-4 transition-colors ${isUsingTheme ? 'text-blue-500' : 'text-gray-400'
@@ -57,7 +43,7 @@ const ThemeColorSelector: React.FC<ThemeColorSelectorProps> = ({
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <span>Inherit {colorType || 'color'} from Theme</span>
+                        <span>Inherit {colorType} from Theme</span>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>

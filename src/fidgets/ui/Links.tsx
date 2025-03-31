@@ -80,42 +80,42 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "HeaderColor",
-      default: "black",
+      default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-Header-color)"
+          themeVariable="var(--user-theme-headings-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="headings color"
         />
       ),
       group: "style",
     },
     {
       fieldName: "DescriptionColor",
-      default: "black",
+      default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-description-color)"
+          themeVariable="var(--user-theme-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="font color"
         />
       ),
       group: "style",
     },
     {
       fieldName: "itemBackground",
-      default: "#e0eeff",
+      default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-item-backGround-color)"
-          defaultColor="#000000"
-          colorType="border color"
+          themeVariable="var(--user-theme-fidget-background)"
+          defaultColor="#FFFFFF"
+          colorType="background"
         />
       ),
       group: "style",

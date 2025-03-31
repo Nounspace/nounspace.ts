@@ -17,6 +17,7 @@ import { defaultStyleFields } from "../helpers";
 export type TextFidgetSettings = {
   title?: string;
   rssUrl: string;
+  useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
@@ -44,9 +45,9 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-font-color)"
+          themeVariable="var(--user-theme-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="font color"
         />
       ),
       group: "style",
@@ -65,9 +66,9 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-headings-Font-color)"
+          themeVariable="var(--user-theme-headings-font-color)"
           defaultColor="#000000"
-          colorType="border color"
+          colorType="headings color"
         />
       ),
       group: "style",
@@ -81,9 +82,9 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-item-background-color)"
-          defaultColor="#000000"
-          colorType="border color"
+          themeVariable="var(--user-theme-fidget-background)"
+          defaultColor="#FFFFFF"
+          colorType="background"
         />
       ),
       group: "style",
@@ -95,7 +96,7 @@ export const textConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-item-border-color)"
+          themeVariable="var(--user-theme-fidget-border-color)"
           defaultColor="#000000"
           colorType="border color"
         />
@@ -148,7 +149,12 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
   return (
     <div
       style={{
-        background: settings.background,
+        background: settings.useDefaultColors 
+          ? 'var(--user-theme-fidget-background)' 
+          : settings.background,
+        color: settings.useDefaultColors 
+          ? 'var(--user-theme-font-color)' 
+          : settings.fontColor,
         height: "100%",
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
