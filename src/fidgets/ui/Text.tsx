@@ -1,21 +1,20 @@
-import React from "react";
-import TextInput from "@/common/components/molecules/TextInput";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { defaultStyleFields } from "../helpers";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import {
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/common/components/atoms/card";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -52,13 +51,27 @@ export const textConfig: FidgetProperties = {
       fieldName: "fontColor",
       default: "var(--user-theme-font-color)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "urlColor",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       default: "blue",
       group: "style",
     },
@@ -66,14 +79,28 @@ export const textConfig: FidgetProperties = {
       fieldName: "headingsFontFamily",
       default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "headingsFontColor",
       default: "var(--user-theme-headings-font-color)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
     },
     ...defaultStyleFields,
