@@ -7,13 +7,12 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
 import { SpaceConfigSaveDetails } from "./Space";
-import { find, indexOf, isNil, mapValues, noop, toString } from "lodash";
+import { find, indexOf, isNil, mapValues, toString } from "lodash";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
-import Profile from "@/fidgets/ui/profile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -229,11 +228,19 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      if (isNil(currentUserFid)) {
-        throw new Error("Attempted to save config when user is not signed in!");
-      }
-      if (isNil(spaceId)) {
-        throw new Error("Cannot save config until space is registered");
+      let currentSpaceId = spaceId;
+      if (isNil(currentSpaceId)) {
+        // Register the space based on type
+        if (isTokenPage && contractAddress && tokenData?.network) {
+          // For token spaces
+          currentSpaceId = `t:${tokenData.network}:${contractAddress}`;
+        } else if (!isTokenPage && fid) {
+          // For user spaces
+          currentSpaceId = `u:${fid}`;
+        } else {
+          throw new Error("Cannot save config until space is registered");
+        }
+        setSpaceId(currentSpaceId);
       }
       const saveableConfig = {
         ...spaceConfig,
@@ -249,10 +256,9 @@ export default function PublicSpace({
         ),
         isPrivate: false,
       };
-      // Save the configuration locally
-      return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
+      return saveLocalSpaceTab(currentSpaceId, providedTabName, saveableConfig);
     },
-    [spaceId, providedTabName],
+    [spaceId, providedTabName, isTokenPage, contractAddress, tokenData?.network, fid],
   );
 
   const commitConfig = useCallback(async () => {
@@ -328,20 +334,6 @@ export default function PublicSpace({
     />
   );
 
-  const profile = 
-    isNil(fid) ? undefined :
-    <Profile.fidget
-      settings={{ fid }}
-      saveData={async () => noop()}
-      data={{}}
-    />;
-
-  console.log(
-    fid,
-    isNil(fid),
-    profile
-  );
-
   return (
     <SpacePage
       key={spaceId + providedTabName}
@@ -351,7 +343,6 @@ export default function PublicSpace({
       resetConfig={resetConfig}
       tabBar={tabBar}
       loading={loading}
-      profile={profile ?? undefined}
     />
   );
 } 
