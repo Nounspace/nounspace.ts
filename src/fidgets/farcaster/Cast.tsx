@@ -1,14 +1,14 @@
-import React from "react";
+import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
   FidgetModule,
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import EmbededCast from "./components/Embeds/EmbededCast";
-import { isUndefined } from "lodash";
-import TextInput from "@/common/components/molecules/TextInput";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import { isUndefined } from "lodash";
+import React from "react";
+import EmbededCast from "./components/Embeds/EmbededCast";
 
 type CastFidgetSettings = {
   castHash?: string;
