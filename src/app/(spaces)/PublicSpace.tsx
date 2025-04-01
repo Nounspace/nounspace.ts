@@ -105,14 +105,14 @@ export default function PublicSpace({
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
-    console.log('PublicSpace: Loading space configuration', {
-      providedSpaceId,
-      providedTabName,
-      decodedTabName,
-      currentSpaceId: spaceId,
-      localSpaces: Object.keys(localSpaces),
-      remoteSpaces: Object.keys(remoteSpaces)
-    });
+    // console.log('PublicSpace: Loading space configuration', {
+    //   providedSpaceId,
+    //   providedTabName,
+    //   decodedTabName,
+    //   currentSpaceId: spaceId,
+    //   localSpaces: Object.keys(localSpaces),
+    //   remoteSpaces: Object.keys(remoteSpaces)
+    // });
 
     setSpaceId(providedSpaceId);
     setCurrentSpaceId(providedSpaceId);
@@ -122,19 +122,19 @@ export default function PublicSpace({
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
-          console.log('PublicSpace: Tab order loaded', {
-            spaceId: providedSpaceId,
-            tabOrder: localSpaces[providedSpaceId]?.order
-          });
+          // console.log('PublicSpace: Tab order loaded', {
+          //   spaceId: providedSpaceId,
+          //   tabOrder: localSpaces[providedSpaceId]?.order
+          // });
           // After loading the tab order, load the specific tab
           return loadSpaceTab(providedSpaceId, decodedTabName);
         })
         .then(() => {
-          console.log('PublicSpace: Tab loaded', {
-            spaceId: providedSpaceId,
-            tabName: decodedTabName,
-            config: localSpaces[providedSpaceId]?.tabs[decodedTabName]
-          });
+          // console.log('PublicSpace: Tab loaded', {
+          //   spaceId: providedSpaceId,
+          //   tabName: decodedTabName,
+          //   config: localSpaces[providedSpaceId]?.tabs[decodedTabName]
+          // });
           setSpaceId(providedSpaceId);
           setLoading(false);
           // Load remaining tabs after the initial one has finished
@@ -150,20 +150,20 @@ export default function PublicSpace({
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      console.log('PublicSpace: Loading remaining tabs', {
-        spaceId,
-        tabOrder: localSpaces[spaceId]?.order,
-        currentTab: decodedTabName
-      });
+      // console.log('PublicSpace: Loading remaining tabs', {
+      //   spaceId,
+      //   tabOrder: localSpaces[spaceId]?.order,
+      //   currentTab: decodedTabName
+      // });
       
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
         if (tabName !== decodedTabName) {
-          console.log('PublicSpace: Loading additional tab', {
-            spaceId,
-            tabName,
-            existingConfig: localSpaces[spaceId]?.tabs[tabName]
-          });
+          // console.log('PublicSpace: Loading additional tab', {
+          //   spaceId,
+          //   tabName,
+          //   existingConfig: localSpaces[spaceId]?.tabs[tabName]
+          // });
           await loadSpaceTab(spaceId, tabName);
         }
       }
@@ -226,13 +226,13 @@ export default function PublicSpace({
   ]);
 
   const currentConfig = getCurrentSpaceConfig();
-  console.log('PublicSpace: Current config', {
-    spaceId,
-    tabName: decodedTabName,
-    hasConfig: !!currentConfig,
-    configTabs: currentConfig?.tabs ? Object.keys(currentConfig.tabs) : [],
-    isEditable
-  });
+  // console.log('PublicSpace: Current config', {
+  //   spaceId,
+  //   tabName: decodedTabName,
+  //   hasConfig: !!currentConfig,
+  //   configTabs: currentConfig?.tabs ? Object.keys(currentConfig.tabs) : [],
+  //   isEditable
+  // });
 
   const config = {
     ...(currentConfig?.tabs[decodedTabName]
@@ -256,18 +256,18 @@ export default function PublicSpace({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      console.log('Starting space registration...', {
-        isEditable,
-        spaceId,
-        currentUserFid,
-        isTokenPage,
-        contractAddress,
-        tokenData
-      });
+      // console.log('Starting space registration...', {
+      //   isEditable,
+      //   spaceId,
+      //   currentUserFid,
+      //   isTokenPage,
+      //   contractAddress,
+      //   tokenData
+      // });
       const registerSpace = async () => {
         let newSpaceId: string | undefined;
         if (isTokenPage && contractAddress && tokenData?.network) {
-          console.log('Registering contract space...');
+          // console.log('Registering contract space...');
           newSpaceId = await registerSpaceContract(
             contractAddress,
             "Profile",
@@ -276,10 +276,10 @@ export default function PublicSpace({
             tokenData.network
           );
         } else if (!isTokenPage) {
-          console.log('Registering user space...');
+          // console.log('Registering user space...');
           newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
         }
-        console.log('Registration result:', { newSpaceId });
+        // console.log('Registration result:', { newSpaceId });
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
