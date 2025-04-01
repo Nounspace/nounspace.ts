@@ -97,20 +97,44 @@ export default function PublicSpace({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
 
+  // Decode the tab name from URL
+  const decodedTabName = useMemo(() => {
+    if (!providedTabName) return "Profile";
+    return decodeURIComponent(providedTabName);
+  }, [providedTabName]);
+
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
+    console.log('PublicSpace: Loading space configuration', {
+      providedSpaceId,
+      providedTabName,
+      decodedTabName,
+      currentSpaceId: spaceId,
+      localSpaces: Object.keys(localSpaces),
+      remoteSpaces: Object.keys(remoteSpaces)
+    });
+
     setSpaceId(providedSpaceId);
     setCurrentSpaceId(providedSpaceId);
-    setCurrentTabName(providedTabName);
+    setCurrentTabName(decodedTabName);
     if (!isNil(providedSpaceId)) {
       setLoading(true);
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
+          console.log('PublicSpace: Tab order loaded', {
+            spaceId: providedSpaceId,
+            tabOrder: localSpaces[providedSpaceId]?.order
+          });
           // After loading the tab order, load the specific tab
-          return loadSpaceTab(providedSpaceId, providedTabName);
+          return loadSpaceTab(providedSpaceId, decodedTabName);
         })
         .then(() => {
+          console.log('PublicSpace: Tab loaded', {
+            spaceId: providedSpaceId,
+            tabName: decodedTabName,
+            config: localSpaces[providedSpaceId]?.tabs[decodedTabName]
+          });
           setSpaceId(providedSpaceId);
           setLoading(false);
           // Load remaining tabs after the initial one has finished
@@ -121,19 +145,30 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [providedSpaceId, providedTabName]);
+  }, [providedSpaceId, decodedTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
+      console.log('PublicSpace: Loading remaining tabs', {
+        spaceId,
+        tabOrder: localSpaces[spaceId]?.order,
+        currentTab: decodedTabName
+      });
+      
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
-        if (tabName !== providedTabName) {
+        if (tabName !== decodedTabName) {
+          console.log('PublicSpace: Loading additional tab', {
+            spaceId,
+            tabName,
+            existingConfig: localSpaces[spaceId]?.tabs[tabName]
+          });
           await loadSpaceTab(spaceId, tabName);
         }
       }
     },
-    [localSpaces, providedTabName, loadSpaceTab],
+    [localSpaces, decodedTabName, loadSpaceTab],
   );
 
   // Common Farcaster auth logic
@@ -191,9 +226,17 @@ export default function PublicSpace({
   ]);
 
   const currentConfig = getCurrentSpaceConfig();
+  console.log('PublicSpace: Current config', {
+    spaceId,
+    tabName: decodedTabName,
+    hasConfig: !!currentConfig,
+    configTabs: currentConfig?.tabs ? Object.keys(currentConfig.tabs) : [],
+    isEditable
+  });
+
   const config = {
-    ...(currentConfig?.tabs[providedTabName]
-      ? currentConfig.tabs[providedTabName]
+    ...(currentConfig?.tabs[decodedTabName]
+      ? currentConfig.tabs[decodedTabName]
       : { ...initialConfig }),
     isEditable,
   };
@@ -267,37 +310,37 @@ export default function PublicSpace({
         ),
         isPrivate: false,
       };
-      return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
+      return saveLocalSpaceTab(spaceId, decodedTabName, saveableConfig);
     },
-    [spaceId, providedTabName],
+    [spaceId, decodedTabName],
   );
 
   const commitConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
-    commitSpaceTab(spaceId, providedTabName, tokenData?.network);
-  }, [spaceId, providedTabName, tokenData?.network]);
+    commitSpaceTab(spaceId, decodedTabName, tokenData?.network);
+  }, [spaceId, decodedTabName, tokenData?.network]);
 
   const resetConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
     if (isNil(remoteSpaces[spaceId])) {
-      saveLocalSpaceTab(spaceId, providedTabName, {
+      saveLocalSpaceTab(spaceId, decodedTabName, {
         ...initialConfig,
         isPrivate: false,
       });
     } else {
       saveLocalSpaceTab(
         spaceId,
-        providedTabName,
-        remoteSpaces[spaceId].tabs[providedTabName],
+        decodedTabName,
+        remoteSpaces[spaceId].tabs[decodedTabName],
       );
     }
-  }, [spaceId, initialConfig, remoteSpaces, providedTabName]);
+  }, [spaceId, initialConfig, remoteSpaces, decodedTabName]);
 
   // Common tab management
   async function switchTabTo(tabName: string, shouldSave: boolean = true) {
     if (spaceId && shouldSave) {
       const resolvedConfig = await config;
-      await saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
+      await saveLocalSpaceTab(spaceId, decodedTabName, resolvedConfig);
     }
     if (tabName) router.push(getSpacePageUrl(tabName));
   }
@@ -308,7 +351,7 @@ export default function PublicSpace({
     <TabBar
       isTokenPage={isTokenPage}
       inHomebase={false}
-      currentTab={providedTabName}
+      currentTab={decodedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
@@ -360,7 +403,7 @@ export default function PublicSpace({
 
   return (
     <SpacePage
-      key={spaceId + providedTabName}
+      key={spaceId + decodedTabName}
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
