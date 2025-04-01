@@ -17,15 +17,15 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   owningIdentities,
   network,
 }) => {
-  console.log('ContractPrimarySpaceContent rendered with props:', {
-    spaceId,
-    tabName,
-    ownerId,
-    ownerIdType,
-    contractAddress,
-    network,
-    owningIdentitiesLength: owningIdentities?.length
-  });
+  // console.log('ContractPrimarySpaceContent rendered with props:', {
+  //   spaceId,
+  //   tabName,
+  //   ownerId,
+  //   ownerIdType,
+  //   contractAddress,
+  //   network,
+  //   owningIdentitiesLength: owningIdentities?.length
+  // });
 
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
@@ -35,12 +35,12 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   );
 
   useEffect(() => {
-    console.log('Effect: Adding contract editable spaces for spaceId:', spaceId);
+    // console.log('Effect: Adding contract editable spaces for spaceId:', spaceId);
     addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
 
   useEffect(() => {
-    console.log('Effect: Loading editable spaces');
+    // console.log('Effect: Loading editable spaces');
     loadEditableSpaces();
   }, []);
 
@@ -49,22 +49,22 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   const shouldShowProfile = isNil(spaceId) && (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
   const hasSpaceId = !isNil(spaceId);
 
-  console.log('Rendering conditions:', {
-    hasOwnerAndContract,
-    shouldShowProfile,
-    hasSpaceId,
-    willRenderSpace: hasOwnerAndContract && (shouldShowProfile || hasSpaceId)
-  });
+  // console.log('Rendering conditions:', {
+  //   hasOwnerAndContract,
+  //   shouldShowProfile,
+  //   hasSpaceId,
+  //   willRenderSpace: hasOwnerAndContract && (shouldShowProfile || hasSpaceId)
+  // });
 
   if (hasOwnerAndContract) {
     if (shouldShowProfile || hasSpaceId) {
-      console.log('Rendering ContractDefinedSpace with props:', {
-        ownerId,
-        ownerIdType,
-        spaceId,
-        tabName: isArray(tabName) ? tabName[0] : tabName ?? "Profile",
-        contractAddress
-      });
+      // console.log('Rendering ContractDefinedSpace with props:', {
+      //   ownerId,
+      //   ownerIdType,
+      //   spaceId,
+      //   tabName: isArray(tabName) ? tabName[0] : tabName ?? "Profile",
+      //   contractAddress
+      // });
       return (
         <>
           <ContractDefinedSpace
@@ -79,15 +79,15 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     }
   }
 
-  console.log('Rendering SpaceNotFound because:', {
-    hasOwnerAndContract,
-    shouldShowProfile,
-    hasSpaceId,
-    ownerId,
-    contractAddress,
-    spaceId,
-    tabName
-  });
+  // console.log('Rendering SpaceNotFound because:', {
+  //   hasOwnerAndContract,
+  //   shouldShowProfile,
+  //   hasSpaceId,
+  //   ownerId,
+  //   contractAddress,
+  //   spaceId,
+  //   tabName
+  // });
   return <SpaceNotFound />;
 };
 
