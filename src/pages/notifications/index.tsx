@@ -6,7 +6,7 @@ import {
   Notification,
   NotificationTypeEnum,
   User,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+} from "@neynar/nodejs-sdk/build/api";
 import {
   Tabs,
   TabsList,
