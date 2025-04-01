@@ -24,13 +24,13 @@ export const getServerSideProps = (async ({
 
   try {
     const {
-      result: { user },
-    } = await neynar.lookupUserByUsername(handle);
+      user,
+    } = await neynar.lookupUserByUsername({username: handle});
 
     const userMetadata = {
       username: user.username,
-      displayName: user.displayName,
-      pfpUrl: user.pfp.url,
+      displayName: user.display_name,
+      pfpUrl: user.pfp_url,
       bio: user.profile.bio.text,
     };
 
