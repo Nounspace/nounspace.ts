@@ -224,6 +224,30 @@ export const createStoreFunc = (
 });
 ```
 
+## Development Workflow
+1. **Perform Comprehensive Code Research**
+   - Before implementing any feature, thoroughly explore the codebase to understand existing patterns
+   - Use semantic search to find similar components, utilities, or implementations
+   - Review related files to understand data flow and component interactions
+   - Identify reusable code, hooks, or utilities to avoid duplication
+   - Study the project structure to ensure new code fits the established architecture
+   - Understand the context of the task within the larger system
+
+2. Understand the feature requirements thoroughly
+3. Plan the implementation approach, considering the existing architecture
+4. Implement the feature following the established patterns
+5. Test thoroughly across different environments and conditions
+6. Document any new patterns or approaches
+7. Seek code review before merging
+
+## Code Research Best Practices
+- Always examine similar components or features before creating new ones
+- Look for established patterns in state management, component structure, and API interactions
+- Check for existing utilities or hooks that might solve your problem
+- Review tests for similar components to understand expected behavior
+- Consider performance implications and how new code fits into the existing architecture
+- Document insights gained from research to inform implementation decisions
+
 ## Common Pitfalls & Gotchas
 1. Ensure proper state handling in Zustand stores with mutative
 2. Be cautious with blockchain interactions - always test thoroughly
@@ -233,11 +257,3 @@ export const createStoreFunc = (
 6. Be aware of TypeScript nuances, especially with complex types
 7. Watch for proper error handling in async operations
 8. Maintain consistent naming conventions across the codebase
-
-## Development Workflow
-1. Understand the feature requirements thoroughly
-2. Plan the implementation approach, considering the existing architecture
-3. Implement the feature following the established patterns
-4. Test thoroughly across different environments and conditions
-5. Document any new patterns or approaches
-6. Seek code review before merging
