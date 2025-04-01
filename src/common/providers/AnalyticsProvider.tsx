@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect } from "react";
+import React, { ReactNode, useEffect, Suspense } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { AnalyticsBrowser } from "@segment/analytics-next";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
@@ -30,6 +30,7 @@ export enum AnalyticsEvent {
   LIKE = "Like",
   PLAY = "Play",
   PAUSE = "Pause",
+  GENERATE_BACKGROUND = "Generate Background",
 }
 
 export type AnalyticsEventProperties = {
@@ -57,6 +58,7 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.LIKE]: { username: string; castId: string };
   [AnalyticsEvent.PLAY]: { url: string | string[] };
   [AnalyticsEvent.PAUSE]: { url: string | string[] };
+  [AnalyticsEvent.GENERATE_BACKGROUND]: { user_input: string };
 };
 
 const segment = new AnalyticsBrowser();
@@ -89,6 +91,16 @@ export const analytics = {
 };
 
 export const AnalyticsProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
+  return (
+    <Suspense fallback={null}>
+      <AnalyticsProviderContent>{children}</AnalyticsProviderContent>
+    </Suspense>
+  );
+};
+
+const AnalyticsProviderContent: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const fid = useCurrentFid();

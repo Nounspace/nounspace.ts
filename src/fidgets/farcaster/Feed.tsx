@@ -277,7 +277,6 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         src={url}
         style={{ border: "none", width: "100%", height: "100%" }}
         title="Twitter Feed"
-        scrolling="no"
         frameBorder="0"
       />
     );

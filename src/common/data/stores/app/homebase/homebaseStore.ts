@@ -10,7 +10,7 @@ import axiosBackend from "@/common/data/api/backend";
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
   analytics,

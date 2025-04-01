@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { FaPlus } from "react-icons/fa6";
 import { map } from "lodash";
@@ -27,6 +28,9 @@ interface TabBarProps {
   isTokenPage?: boolean;
   contractAddress?: Address;
 }
+
+const PERMANENT_TABS = ["Feed", "Profile"];
+const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
 function TabBar({
   inHome,
@@ -69,20 +73,33 @@ function TabBar({
 
   async function handleCreateTab(tabName: string) {
     await createTab(tabName);
+    await commitTabOrder();
     switchTabTo(tabName);
   }
 
-  function handleDeleteTab(tabName: string) {
-    switchTabTo(nextClosestTab(tabName), false);
-    updateTabOrder(tabList.filter((name) => name !== tabName));
-    deleteTab(tabName);
+  async function handleDeleteTab(tabName: string) {
+    // Get the next tab before any state changes
+    const nextTab = nextClosestTab(tabName);
+    
+    try {
+        // First update the tab order and delete the tab
+        const newOrder = tabList.filter((name) => name !== tabName);
+        await updateTabOrder(newOrder);
+        await deleteTab(tabName);
+        await commitTabOrder();
+        
+        switchTabTo(nextTab, false);
+    } catch (error) {
+        console.error("Failed to delete tab:", error);
+        // Optionally add error handling UI here
+    }
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
     const uniqueName = generateUniqueTabName(newName);
 
     await renameTab(tabName, uniqueName);
-    await updateTabOrder(
+    updateTabOrder(
       tabList.map((name) => (name === tabName ? uniqueName : name)),
     );
     await commitTab(uniqueName);
@@ -91,13 +108,20 @@ function TabBar({
   }
 
   function nextClosestTab(tabName: string) {
-    const index = tabList.indexOf(tabName) - 1;
-    if (index >= 0) {
-      return tabList[index];
+    const index = tabList.indexOf(tabName);
+    // For middle tabs, prefer the next tab
+    if (index >= 0 && index < tabList.length - 1) {
+        // If there's a next tab, use it
+        return tabList[index + 1];
+    } else if (index > 0) {
+        // If we're at the end, go to previous tab
+        return tabList[index - 1];
     } else if (inHomebase) {
-      return "Feed";
+        // If no other tabs, go to Feed
+        return "Feed";
     } else {
-      return tabList[0];
+        // If no other tabs in profile space, go to Profile
+        return "Profile";
     }
   }
 
@@ -136,17 +160,9 @@ function TabBar({
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
                         onClick={() => {}}
-                        removeable={
-                          tabName !== "Feed" &&
-                          tabName !== "Profile" &&
-                          tabName !== "Welcome"
-                        }
+                        removeable={isEditableTab(tabName)}
                         draggable={inEditMode}
-                        renameable={
-                          tabName !== "Feed" &&
-                          tabName !== "Profile" &&
-                          tabName !== "Welcome"
-                        }
+                        renameable={isEditableTab(tabName)}
                         onRemove={() => handleDeleteTab(tabName)}
                         renameTab={handleRenameTab}
                       />

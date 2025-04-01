@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import SpaceLoading from "./(spaces)/SpaceLoading";
 
 export const metadata = {
   title: "Nounspace",
@@ -54,9 +55,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SpeedInsights />
-        <Suspense>
-          <Providers>{sidebarLayout(children)}</Providers>
-        </Suspense>
+        <Providers>
+          {sidebarLayout(children)}
+        </Providers>
       </body>
     </html>
   );
@@ -70,7 +71,7 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          {page}
+            {page}
         </div>
       </div>
     </>

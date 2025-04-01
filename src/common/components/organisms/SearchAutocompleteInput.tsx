@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
@@ -18,6 +18,16 @@ type SearchAutocompleteInputProps = {
 };
 
 const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = ({
+  onSelect,
+}) => {
+  return (
+    <Suspense fallback={<div>Loading search...</div>}>
+      <SearchAutocompleteInputContent onSelect={onSelect} />
+    </Suspense>
+  );
+};
+
+const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = ({
   onSelect,
 }) => {
   const router = useRouter();

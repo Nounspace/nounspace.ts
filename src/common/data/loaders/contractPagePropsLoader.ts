@@ -1,4 +1,3 @@
-import { GetServerSidePropsContext } from "next";
 import { first, isArray, isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
@@ -25,7 +24,7 @@ const defaultContractPageProps = {
 };
 
 export async function loadContractData(
-  params: GetServerSidePropsContext["params"],
+  params:  Record<string, string | string[]>,
 ) {
   if (isUndefined(params)) {
     return {
