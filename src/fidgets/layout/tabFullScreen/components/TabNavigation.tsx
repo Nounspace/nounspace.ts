@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
@@ -24,6 +24,34 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 }) => {
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
   if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
+  
+  // Function to check if a fidget is a feed type
+  const isFeedFidget = (fidgetId: string): boolean => {
+    const fidgetDatum = fidgetInstanceDatums[fidgetId];
+    if (!fidgetDatum) return false;
+    
+    return fidgetDatum.fidgetType === 'feed';
+  };
+  
+  // Reorder tabs to prioritize feed fidgets
+  const orderedFidgetIds = useMemo(() => {
+    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
+    
+    // Create a copy of the array to avoid mutating the original
+    const reorderedIds = [...processedFidgetIds];
+    
+    // Sort the array to move feed fidgets to the beginning
+    reorderedIds.sort((a, b) => {
+      const aIsFeed = isFeedFidget(a);
+      const bIsFeed = isFeedFidget(b);
+      
+      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
+      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
+      return 0; // Keep original relative order if both are feeds or both are not feeds
+    });
+    
+    return reorderedIds;
+  }, [processedFidgetIds, fidgetInstanceDatums]);
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
@@ -110,10 +138,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         gap-4
         flex whitespace-nowrap
         scrollbar-none
-        ${processedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
+        ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
         rounded-none
       `}>
-        {processedFidgetIds.map((fidgetId) => {
+        {orderedFidgetIds.map((fidgetId) => {
           const fidgetName = getFidgetName(fidgetId);
           
           return (
@@ -138,7 +166,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       </TabsList>
       
       {/* Gradient overlay */}
-      {processedFidgetIds.length > 4 && (
+      {orderedFidgetIds.length > 4 && (
         <div 
           className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90"
           style={{

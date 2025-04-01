@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
@@ -78,10 +78,49 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return bundles;
   }, [validFidgetIds, fidgetInstanceDatums]);
 
-  // Initialize with the first valid fidget ID
+  // Function to check if a fidget is a feed type
+  const isFeedFidget = (fidgetId: string): boolean => {
+    const fidgetDatum = fidgetInstanceDatums[fidgetId];
+    if (!fidgetDatum) return false;
+    
+    return fidgetDatum.fidgetType === 'feed';
+  };
+  
+  // Get ordered fidget IDs with feed prioritized
+  const orderedFidgetIds = useMemo(() => {
+    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
+    
+    // Create a copy of the array to avoid mutating the original
+    const reorderedIds = [...processedFidgetIds];
+    
+    // Sort the array to move feed fidgets to the beginning
+    reorderedIds.sort((a, b) => {
+      const aIsFeed = isFeedFidget(a);
+      const bIsFeed = isFeedFidget(b);
+      
+      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
+      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
+      return 0; // Keep original relative order if both are feeds or both are not feeds
+    });
+    
+    return reorderedIds;
+  }, [processedFidgetIds, fidgetInstanceDatums]);
+
+  // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
-    processedFidgetIds.length > 0 ? processedFidgetIds[0] : ""
+    orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
   );
+  
+  // Update selected tab when orderedFidgetIds changes
+  useEffect(() => {
+    // If there are no fidget IDs, do nothing
+    if (orderedFidgetIds.length === 0) return;
+    
+    // If current selection is invalid, select the first one
+    if (!orderedFidgetIds.includes(selectedTab)) {
+      setSelectedTab(orderedFidgetIds[0]);
+    }
+  }, [orderedFidgetIds, selectedTab]);
   
   // Configuration saving function
   const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {
@@ -106,11 +145,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
         </div>
       </div>
     );
-  }
-
-  // If selected tab is no longer valid, select the first valid one
-  if (!processedFidgetIds.includes(selectedTab)) {
-    setSelectedTab(processedFidgetIds[0]);
   }
 
   return (
@@ -219,7 +253,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation 
-                processedFidgetIds={processedFidgetIds}
+                processedFidgetIds={orderedFidgetIds}
                 selectedTab={selectedTab}
                 fidgetInstanceDatums={fidgetInstanceDatums}
                 isMobile={isMobile}
