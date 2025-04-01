@@ -6,7 +6,6 @@ import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
 import Profile from "./ui/profile";
 import Grid from "./layout/Grid";
-import TabFullScreen from "./layout/TabFullScreen";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
 import Feed from "./farcaster/Feed";
@@ -18,6 +17,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
+import TabFullScreen from "./layout/tabFullScreen";
 
 export const CompleteFidgets = {
   //
