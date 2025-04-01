@@ -13,6 +13,7 @@ import { useWallets } from "@privy-io/react-auth";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
+import { CompleteFidgets } from "@/fidgets";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -74,6 +75,7 @@ export default function PublicSpace({
     deleteSpaceTab,
     registerSpaceFid,
     registerSpaceContract,
+    loadEditableSpaces,
   } = useAppStore((state) => ({
     editableSpaces: state.space.editableSpaces,
     localSpaces: state.space.localSpaces,
@@ -92,10 +94,12 @@ export default function PublicSpace({
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
+    loadEditableSpaces: state.space.loadEditableSpaces,
   }));
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
+    setSpaceId(providedSpaceId);
     setCurrentSpaceId(providedSpaceId);
     setCurrentTabName(providedTabName);
     if (!isNil(providedSpaceId)) {
@@ -156,8 +160,6 @@ export default function PublicSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const isEditable = useMemo(() => {
-    if (!currentUserFid) return false;
-
     if (isTokenPage) {
       // Contract space editability logic
       return (
@@ -184,27 +186,45 @@ export default function PublicSpace({
     editableSpaces,
     ownerId,
     ownerIdType,
-    wallets,
+    walletsReady,
     tokenData?.clankerData?.requestor_fid,
-    isSignedIntoFarcaster,
-    fid
   ]);
 
   const currentConfig = getCurrentSpaceConfig();
   const config = {
     ...(currentConfig?.tabs[providedTabName]
       ? currentConfig.tabs[providedTabName]
-      : initialConfig),
+      : { ...initialConfig }),
     isEditable,
   };
+
+  const memoizedConfig = useMemo(() => {
+    const { timestamp, ...restConfig } = config;
+    return restConfig;
+  }, [
+    config.fidgetInstanceDatums,
+    config.layoutID,
+    config.layoutDetails,
+    config.fidgetTrayContents,
+    config.theme,
+  ]);
 
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
+      console.log('Starting space registration...', {
+        isEditable,
+        spaceId,
+        currentUserFid,
+        isTokenPage,
+        contractAddress,
+        tokenData
+      });
       const registerSpace = async () => {
         let newSpaceId: string | undefined;
         if (isTokenPage && contractAddress && tokenData?.network) {
+          console.log('Registering contract space...');
           newSpaceId = await registerSpaceContract(
             contractAddress,
             "Profile",
@@ -213,8 +233,10 @@ export default function PublicSpace({
             tokenData.network
           );
         } else if (!isTokenPage) {
+          console.log('Registering user space...');
           newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
         }
+        console.log('Registration result:', { newSpaceId });
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
@@ -228,19 +250,8 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      let currentSpaceId = spaceId;
-      if (isNil(currentSpaceId)) {
-        // Register the space based on type
-        if (isTokenPage && contractAddress && tokenData?.network) {
-          // For token spaces
-          currentSpaceId = `t:${tokenData.network}:${contractAddress}`;
-        } else if (!isTokenPage && fid) {
-          // For user spaces
-          currentSpaceId = `u:${fid}`;
-        } else {
-          throw new Error("Cannot save config until space is registered");
-        }
-        setSpaceId(currentSpaceId);
+      if (isNil(spaceId)) {
+        throw new Error("Cannot save config until space is registered");
       }
       const saveableConfig = {
         ...spaceConfig,
@@ -256,9 +267,9 @@ export default function PublicSpace({
         ),
         isPrivate: false,
       };
-      return saveLocalSpaceTab(currentSpaceId, providedTabName, saveableConfig);
+      return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
-    [spaceId, providedTabName, isTokenPage, contractAddress, tokenData?.network, fid],
+    [spaceId, providedTabName],
   );
 
   const commitConfig = useCallback(async () => {
@@ -334,15 +345,28 @@ export default function PublicSpace({
     />
   );
 
+  const profile = useMemo(() => {
+    if (!isTokenPage && fid && CompleteFidgets.profile) {
+      return (
+        <CompleteFidgets.profile.fidget
+          settings={{ fid }}
+          saveData={async () => {}}
+          data={{}}
+        />
+      );
+    }
+    return undefined;
+  }, [isTokenPage, fid]);
+
   return (
     <SpacePage
       key={spaceId + providedTabName}
-      config={config}
+      config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
       tabBar={tabBar}
-      loading={loading}
+      profile={profile}
     />
   );
 } 
