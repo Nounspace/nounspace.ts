@@ -1,0 +1,152 @@
+import { FidgetBundle, FidgetInstanceData } from "@/common/fidgets";
+import { CompleteFidgets } from "@/fidgets";
+
+/**
+ * Checks if a fidget is a media-type fidget (text, gallery, video)
+ */
+export const isMediaFidget = (fidgetType: string): boolean => {
+  return ['text', 'gallery', 'Video'].includes(fidgetType);
+};
+
+/**
+ * Checks if a fidget is a pinned cast
+ */
+export const isPinnedCast = (
+  fidgetId: string, 
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+): boolean => {
+  const fidgetData = fidgetInstanceDatums[fidgetId];
+  return fidgetData?.fidgetType === 'cast';
+};
+
+/**
+ * Creates a FidgetBundle object from a FidgetInstanceData
+ */
+export const createFidgetBundle = (
+  fidgetData: FidgetInstanceData, 
+  isEditable: boolean = false
+): FidgetBundle | null => {
+  if (!fidgetData) return null;
+
+  const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
+  if (!fidgetModule) return null;
+
+  return {
+    ...fidgetData,
+    properties: fidgetModule.properties,
+    config: { ...fidgetData.config, editable: isEditable },
+  };
+};
+
+/**
+ * Processes fidget IDs for display, potentially consolidating media fidgets on mobile
+ */
+export const processTabFidgetIds = (
+  fidgetIds: string[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
+  isMobile: boolean
+): string[] => {
+  if (!isMobile) {
+    // On desktop, use all fidgets as is
+    return fidgetIds.filter(id => {
+      const fidgetData = fidgetInstanceDatums[id];
+      return !!fidgetData;
+    });
+  }
+  
+  // For mobile, process and potentially consolidate media fidgets
+  const mediaFidgetIds: string[] = [];
+  const pinnedCastIds: string[] = [];
+  const nonMediaFidgetIds: string[] = [];
+  
+  // First separate media, pinned casts, and non-media fidgets
+  fidgetIds.forEach(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    if (!fidgetData) return;
+    
+    // Skip fidgets that should be hidden on mobile
+    if (fidgetData.config.settings.showOnMobile === false) return;
+    
+    if (isPinnedCast(id, fidgetInstanceDatums)) {
+      pinnedCastIds.push(id);
+    } else if (isMediaFidget(fidgetData.fidgetType)) {
+      mediaFidgetIds.push(id);
+    } else {
+      nonMediaFidgetIds.push(id);
+    }
+  });
+  
+  const consolidatedIds: string[] = [];
+  
+  // If we have multiple pinned casts, return them under a special id
+  if (pinnedCastIds.length > 1) {
+    consolidatedIds.push('consolidated-pinned');
+  } else {
+    consolidatedIds.push(...pinnedCastIds);
+  }
+  
+  // If we have multiple media fidgets, add them under a special id
+  if (mediaFidgetIds.length > 1) {
+    consolidatedIds.push('consolidated-media');
+  } else {
+    consolidatedIds.push(...mediaFidgetIds);
+  }
+  
+  return [...consolidatedIds, ...nonMediaFidgetIds];
+};
+
+/**
+ * Get the fidget IDs that should be displayed in their original form
+ */
+export const getValidFidgetIds = (
+  fidgetIds: string[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
+  isMobile: boolean
+): string[] => {
+  return fidgetIds.filter(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    if (!fidgetData) return false;
+    
+    // On mobile, check showOnMobile setting
+    if (isMobile) {
+      const showOnMobile = fidgetData.config.settings.showOnMobile;
+      // If showOnMobile is explicitly false, hide the fidget
+      if (showOnMobile === false) return false;
+    }
+    
+    return true;
+  });
+};
+
+/**
+ * Get all media fidget IDs
+ */
+export const getMediaFidgetIds = (
+  fidgetIds: string[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+): string[] => {
+  return fidgetIds.filter(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    return isMediaFidget(fidgetData.fidgetType);
+  });
+};
+
+/**
+ * Get all pinned cast fidget IDs
+ */
+export const getPinnedCastIds = (
+  fidgetIds: string[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+): string[] => {
+  return fidgetIds.filter(id => isPinnedCast(id, fidgetInstanceDatums));
+};
+
+/**
+ * Dummy functions for view-only TabFullScreen layout
+ */
+export const dummyFunctions = {
+  setCurrentFidgetSettings: () => {},
+  setSelectedFidgetID: () => {},
+  removeFidget: () => {},
+  minimizeFidget: () => {},
+};
