@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
 import { CgProfile } from "react-icons/cg";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { User } from "@neynar/nodejs-sdk/build/api";
 import { first, isUndefined } from "lodash";
 import FarcasterLinkify from "../farcaster/components/linkify";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
@@ -64,6 +64,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       const wasFollowing = user.viewer_context?.following ?? false;
       user.viewer_context = {
         ...user.viewer_context,
+        blocking: false,
+        blocked_by: false,
         following: !wasFollowing,
         followed_by: user.viewer_context?.followed_by ?? false, // Default to false if undefined
       };

@@ -3,7 +3,7 @@ import { debounce } from "lodash";
 import axios, { CancelTokenSource, isAxiosError } from "axios";
 import axiosBackend from "@/common/data/api/backend";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { User } from "@neynar/nodejs-sdk/build/api";
 
 type UserSearchResult = {
   users: User[];

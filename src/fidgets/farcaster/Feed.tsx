@@ -6,7 +6,7 @@ import {
   FidgetModule,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { CastRow } from "./components/CastRow";
 import { useFarcasterSigner } from ".";
 import Loading from "@/common/components/molecules/Loading";

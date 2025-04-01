@@ -4,12 +4,12 @@ import { useAppStore } from "@/common/data/stores/app";
 import USER_NOT_LOGGED_IN_HOMEBASE_CONFIG from "@/constants/userNotLoggedInHomebase";
 import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
-import { FeedType } from "@neynar/nodejs-sdk";
 import { noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import TabBar from "@/common/components/organisms/TabBar";
 import { useRouter } from "next/router";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 const Homebase: NextPageWithLayout = () => {
   const router = useRouter();
