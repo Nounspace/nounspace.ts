@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, lazy, useCallback } from "react";
+import React, { useEffect, useMemo, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -24,6 +24,8 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   const {
     tabConfigs,
     homebaseConfig,
+    currentSpaceId,
+    tabOrdering,
     loadTab,
     saveTab,
     commitTab,
@@ -35,7 +37,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     setCurrentSpaceId,
     setCurrentTabName,
     loadTabNames,
-    tabOrdering,
     getIsLoggedIn,
     loadTabOrder,
     updateTabOrder,
@@ -47,6 +48,8 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   } = useAppStore((state) => ({
     tabConfigs: state.homebase.tabs,
     homebaseConfig: state.homebase.homebaseConfig,
+    currentSpaceId: state.currentSpace.currentSpaceId,
+    tabOrdering: state.homebase.tabOrdering,
     loadTab: state.homebase.loadHomebaseTab,
     saveTab: state.homebase.saveHomebaseTabConfig,
     commitTab: state.homebase.commitHomebaseTabToDatabase,
@@ -58,7 +61,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     getIsLoggedIn: state.getIsAccountReady,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
-    tabOrdering: state.homebase.tabOrdering,
     loadTabNames: state.homebase.loadTabNames,
     loadTabOrder: state.homebase.loadTabOrdering,
     updateTabOrder: state.homebase.updateTabOrdering,

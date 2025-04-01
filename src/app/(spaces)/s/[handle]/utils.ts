@@ -30,7 +30,7 @@ export const getUserMetadata = cache(
   },
 );
 
-export const getTabList = cache(async (fid: number): Promise<Tab[]> => {
+export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
     console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
@@ -57,4 +57,4 @@ export const getTabList = cache(async (fid: number): Promise<Tab[]> => {
     console.error("Exception in getTabList:", e);
     return [];
   }
-});
+};

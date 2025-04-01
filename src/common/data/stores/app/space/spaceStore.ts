@@ -600,13 +600,16 @@ export const createSpaceStoreFunc = (
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
-    // TODO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
-      const newSpaceId = data.value!.spaceId;
+      if (!data.value?.spaceId) {
+        console.error("No space ID returned from registration");
+        return undefined;
+      }
+      const newSpaceId = data.value.spaceId;
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
@@ -615,10 +618,10 @@ export const createSpaceStoreFunc = (
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
-      // console.log("Created space", newSpaceId);
       return newSpaceId;
     } catch (e) {
-      null;
+      console.error("Failed to register space for FID:", e);
+      return undefined;
     }
   },
   registerSpaceContract: async (
@@ -640,13 +643,16 @@ export const createSpaceStoreFunc = (
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
-    // TODO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
-      const newSpaceId = data.value!.spaceId;
+      if (!data.value?.spaceId) {
+        console.error("No space ID returned from contract registration");
+        return undefined;
+      }
+      const newSpaceId = data.value.spaceId;
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
@@ -659,7 +665,8 @@ export const createSpaceStoreFunc = (
       );
       return newSpaceId;
     } catch (e) {
-      null;
+      console.error("Failed to register contract space:", e);
+      return undefined;
     }
   },
   loadEditableSpaces: async () => {
