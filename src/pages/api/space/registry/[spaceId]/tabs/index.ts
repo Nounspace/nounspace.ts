@@ -122,13 +122,21 @@ async function registerNewSpaceTab(
       publicKey: "nounspace",
       signature: "not applicable, machine generated file",
     };
-  const { error } = await supabase.storage
+  const { error, data } = await supabase.storage
     .from("spaces")
     .upload(
       `${registration.spaceId}/tabs/${registration.tabName}`,
       new Blob([stringify(uploadedFile)], { type: "application/json" }),
       { upsert: true },
     );
+  
+  console.log("[registry space] Tab Registration Response:", {
+    data,
+    error: error ? error.message : null,
+    spaceId: registration.spaceId,
+    tabName: registration.tabName
+  });
+
   if (!isNull(error)) {
     console.error("Error uploading file:", error);
     res.status(500).json({
@@ -139,6 +147,18 @@ async function registerNewSpaceTab(
     });
     return;
   }
+
+  if (!data) {
+    console.error("No data returned from Supabase upload");
+    res.status(500).json({
+      result: "error",
+      error: {
+        message: "Failed to upload tab configuration",
+      },
+    });
+    return;
+  }
+
   res.status(200).json({
     result: "success",
     value: registration.tabName,
