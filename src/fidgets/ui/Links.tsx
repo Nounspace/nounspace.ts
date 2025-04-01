@@ -127,9 +127,9 @@ export const linkConfig: FidgetProperties = {
       inputSelector: (props) => (
         <ThemeColorSelector
           {...props}
-          themeVariable="var(--user-theme-fidget-background-color)"
-          defaultColor="#000000"
-          colorType="border color"
+          themeVariable="var(--user-theme-fidget-background)"
+          defaultColor="#FFFFFF"
+          colorType="background color"
         />
       ),
       group: "style",
