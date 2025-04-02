@@ -80,35 +80,16 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
       id={id}
     >
       <div className="md:mb-0 md:w-2/3">
-        {field.fieldName === "mobileDisplayName" ? (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger className="cursor-help">
-                <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
-                  {field.displayName}
-                </label>
-              </TooltipTrigger>
-              <TooltipContent>
-                Set a custom name to display for this Fidget in the mobile nav (max {MOBILE_DISPLAY_NAME_MAX_LENGTH} characters)
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ) : (
-          <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
-            {field.displayName || field.fieldName}
-          </label>
-        )}
-        {!isValid && field.fieldName === "mobileDisplayName" && (
-          <p className="text-xs text-red-500 mt-1">
-            Must be {MOBILE_DISPLAY_NAME_MAX_LENGTH} characters or less
-          </p>
-        )}
+        <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
+          {field.displayName || field.fieldName}
+        </label>
       </div>
       <div>
         <InputComponent
           id={id}
           value={value}
           onChange={onChange}
+          displayNameHint={field.displayNameHint}
           className={mergeClasses(
             "!h-9 !rounded-md font-medium !shadow-none",
             !isValid && "border-red-500"
