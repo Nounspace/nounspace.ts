@@ -1,16 +1,17 @@
-import React from "react";
 import {
   Select,
-  SelectValue,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/common/components/atoms/select";
+import React from "react";
 
 export enum MediaSourceTypes {
   URL = "URL",
-  WALLET = "My Wallet",
   EXTERNAL = "External NFT Collection",
+  WALLET = "My Wallet",
+  UPLOAD = "UPLOAD",
 }
 
 export interface MediaSource {
@@ -24,15 +25,10 @@ export interface MediaSourceSelectorProps {
 }
 
 const settings: MediaSource[] = [
-  {
-    name: MediaSourceTypes.URL,
-  },
-  {
-    name: MediaSourceTypes.WALLET,
-  },
-  {
-    name: MediaSourceTypes.EXTERNAL,
-  },
+  { name: MediaSourceTypes.URL },
+  { name: MediaSourceTypes.UPLOAD },
+  { name: MediaSourceTypes.EXTERNAL },
+  { name: MediaSourceTypes.WALLET},
 ];
 
 const MediaSourceSelector: React.FC<MediaSourceSelectorProps> = ({
