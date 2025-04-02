@@ -22,7 +22,7 @@ export const mobileStyleSettings = [
     default: true,
     required: false,
     inputSelector: SwitchButton,
-    group: "style"
+    group: "style",
   },
   {
     fieldName: "customMobileDisplayName",
@@ -57,29 +57,22 @@ export const defaultStyleFields = [
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: BorderSelector,
-    group: "style"
+    group: "style",
   },
   {
     fieldName: "fidgetBorderColor",
     displayName: "fidgetBorderColor",
-    required: false,
-    inputSelector: (props) => (
-      <ThemeColorSelector
-        {...props}
-        themeVariable="var(--user-theme-fidget-border-color)"
-        defaultColor="#000000"
-        colorType="border color"
-      />
-    ),
-    group: "style",
     default: "var(--user-theme-fidget-border-color)",
+    required: false,
+    inputSelector: ColorSelector,
+    group: "style",
   },
   {
     fieldName: "fidgetShadow",
     default: "var(--user-theme-fidget-shadow)",
     required: false,
     inputSelector: ShadowSelector,
-    group: "style"
+    group: "style",
   },
 ] as FidgetFieldConfig[];
 
