@@ -24,7 +24,7 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
   saveFidgetConfig,
   isMobile,
   mobilePadding
-}) => {
+}) => {  
   return (
     <div
       className="h-full w-full"

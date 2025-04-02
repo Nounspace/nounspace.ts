@@ -3,6 +3,7 @@ import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
 import { CompleteFidgets } from "@/fidgets";
+import { getFidgetDisplayName } from "../utils";
 
 interface TabNavigationProps {
   processedFidgetIds: string[];
@@ -55,35 +56,27 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
-    // Special case for consolidated media
-    if (fidgetId === 'consolidated-media') {
-      return "Media";
-    }
-    
-    // Special case for consolidated pinned casts
-    if (fidgetId === 'consolidated-pinned') {
-      return "Pinned";
+    // Handle special consolidated views
+    if (fidgetId === 'consolidated-media' || fidgetId === 'consolidated-pinned') {
+      return getFidgetDisplayName(null, isMobile, fidgetId);
     }
     
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
     
-    const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-    if (!fidgetModule) return "Unknown";
-    
-    // Use custom tab name if available, otherwise use mobile name for mobile devices or fidget name
+    // Get valid fidget IDs and find index for custom tab name
     const validFidgetIds = Object.keys(fidgetInstanceDatums);
-    const tabIndex = validFidgetIds.indexOf(fidgetId);
-    const customName = tabNames && tabNames[tabIndex];
+    const fidgetIdIndex = validFidgetIds.indexOf(fidgetId);
     
-    if (customName) return customName;
-    
-    // Use mobileFidgetName on mobile devices if available, otherwise use fidgetName
-    if (isMobile && fidgetModule.properties.mobileFidgetName) {
-      return fidgetModule.properties.mobileFidgetName;
-    }
-    
-    return fidgetModule.properties.fidgetName;
+    // Use the centralized utility function to get the display name
+    return getFidgetDisplayName(
+      fidgetDatum,
+      isMobile,
+      undefined,
+      tabNames,
+      validFidgetIds,
+      fidgetIdIndex
+    );
   };
 
   // Function to get icon component for a fidget
