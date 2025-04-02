@@ -1,30 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  FidgetSettings,
-  FidgetProperties,
-  FidgetFieldConfig,
-} from "@/common/fidgets";
-import BackArrowIcon from "../atoms/icons/BackArrow";
-import { FaTrashCan, FaCircleInfo } from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from "@/common/components/atoms/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
 import {
+  FidgetFieldConfig,
+  FidgetProperties,
+  FidgetSettings,
+} from "@/common/fidgets";
+import {
+  tabContentClasses,
   tabListClasses,
   tabTriggerClasses,
-  tabContentClasses,
 } from "@/common/lib/theme/helpers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import { MOBILE_DISPLAY_NAME_MAX_LENGTH } from "@/fidgets/helpers";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
+import React, { useEffect, useMemo, useState } from "react";
+import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
+import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
