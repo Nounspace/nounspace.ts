@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
@@ -23,6 +23,15 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   isMobile,
   tabNames,
 }) => {
+  // Ref for the tab list container
+  const tabsListRef = useRef<HTMLDivElement>(null);
+  
+  // State to track scroll position
+  const [scrollState, setScrollState] = useState({
+    isAtStart: true,
+    isAtEnd: false,
+  });
+
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
   if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
   
@@ -53,6 +62,33 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     
     return reorderedIds;
   }, [processedFidgetIds, fidgetInstanceDatums]);
+
+  // Handle scroll events to update gradient visibility
+  const handleScroll = () => {
+    if (!tabsListRef.current) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
+    const isAtStart = scrollLeft <= 10; // Small threshold for "at start"
+    const isAtEnd = scrollWidth - scrollLeft - clientWidth <= 10; // Small threshold for "at end"
+    
+    setScrollState({ isAtStart, isAtEnd });
+  };
+
+  // Add scroll listener when component mounts
+  useEffect(() => {
+    const tabsList = tabsListRef.current;
+    if (tabsList) {
+      tabsList.addEventListener('scroll', handleScroll);
+      // Initialize scroll state
+      handleScroll();
+    }
+    
+    return () => {
+      if (tabsList) {
+        tabsList.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
@@ -125,15 +161,18 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   return (
     <div className="relative w-full h-full">
-      <TabsList className={`
-        w-full h-full 
-        overflow-x-auto
-        gap-4
-        flex whitespace-nowrap
-        scrollbar-none
-        ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
-        rounded-none
-      `}>
+      <TabsList 
+        ref={tabsListRef}
+        className={`
+          w-full h-full 
+          overflow-x-auto
+          gap-4
+          flex whitespace-nowrap
+          scrollbar-none
+          ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
+          rounded-none
+        `}
+      >
         {orderedFidgetIds.map((fidgetId) => {
           const fidgetName = getFidgetName(fidgetId);
           
@@ -161,15 +200,35 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         })}
       </TabsList>
       
-      {/* Gradient overlay */}
-      {orderedFidgetIds.length > 4 && (
-        <div 
-          className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90"
-          style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)'
-          }}
-        />
-      )}
+      {/* Left gradient overlay - with improved transitions and HSL values */}
+      <div 
+        className={`
+          absolute left-0 top-0 bottom-0 w-8
+          pointer-events-none 
+          transition-all duration-500 ease-in-out
+          ${orderedFidgetIds.length > 4 && !scrollState.isAtStart 
+            ? 'opacity-100' 
+            : 'opacity-0 pointer-events-none'}
+        `}
+        style={{
+          background: 'linear-gradient(270deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)'
+        }}
+      />
+      
+      {/* Right gradient overlay - with improved transitions and HSL values */}
+      <div 
+        className={`
+          absolute right-0 top-0 bottom-0 w-8
+          pointer-events-none 
+          transition-all duration-500 ease-in-out
+          ${orderedFidgetIds.length > 4 && !scrollState.isAtEnd 
+            ? 'opacity-100' 
+            : 'opacity-0 pointer-events-none'}
+        `}
+        style={{
+          background: 'linear-gradient(90deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)'
+        }}
+      />
     </div>
   );
 };
