@@ -146,8 +146,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                 min-w-[72px] h-full py-2 px-0
                 font-medium
                 ${isMobile ? 'text-xs' : 'text-sm'}
-                hover:bg-gray-50 transition-colors
                 data-[state=active]:text-primary
+                data-[state=active]:bg-transparent
+                data-[state=active]:shadow-none
+                data-[state=inactive]:opacity-50
+                transition-opacity duration-200
                 rounded-lg
               `}
             >
