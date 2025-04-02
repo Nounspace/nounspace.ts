@@ -25,6 +25,7 @@ export const mobileStyleSettings = [
   {
     fieldName: "customMobileDisplayName",
     displayName: "Mobile Display Name",
+    displayNameHint: "Set a custom name to display for this Fidget in the mobile nav.",
     validator: validateMobileDisplayName,
     inputSelector: TextInput,
     required: false,

@@ -1,10 +1,18 @@
-import React, { forwardRef, useCallback, useState } from "react";
-import styled from "styled-components";
 import { InputProps } from "@/common/components/atoms/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/common/components/atoms/tooltip";
+import React, { forwardRef, useCallback, useState } from "react";
+import { FaInfoCircle } from "react-icons/fa";
+import styled from "styled-components";
 
 export interface TextInputProps extends Omit<InputProps, "onChange"> {
   value: string;
   onChange?: (value: string) => void;
+  displayNameHint?: string;
 }
 
 const TextFieldRoot = styled.div<{ isActive: boolean }>`
@@ -27,6 +35,7 @@ const TextFieldInput = styled.input`
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   const [isActive, setIsActive] = useState(false);
+  const { displayNameHint, ...restProps } = props;
 
   const onChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,15 +53,31 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   };
 
   return (
-    <TextFieldRoot isActive={isActive}>
-      <TextFieldInput
-        {...props}
-        ref={ref}
-        onChange={onChange}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-      />
-    </TextFieldRoot>
+    <div className="flex items-center gap-2">
+      <TextFieldRoot isActive={isActive}>
+        <TextFieldInput
+          {...restProps}
+          ref={ref}
+          onChange={onChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
+      </TextFieldRoot>
+      {displayNameHint && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center">
+                <FaInfoCircle color="#D1D5DB" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="max-w-44">{displayNameHint}</div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </div>
   );
 });
 
