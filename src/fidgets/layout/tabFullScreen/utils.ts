@@ -44,17 +44,18 @@ export const getFidgetDisplayName = (
     if (customName) return customName;
   }
   
-  // Use mobile display name if available and on mobile
-  if (isMobile && fidgetData.config.settings.mobileDisplayName) {
-    return fidgetData.config.settings.mobileDisplayName;
-  }
-  
   const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
   if (!fidgetModule) return 'Unknown';
-  
-  // Use mobile fidget name if available and on mobile
-  if (isMobile && fidgetModule.properties.mobileFidgetName) {
-    return fidgetModule.properties.mobileFidgetName;
+
+  if (isMobile) {
+    // First check for user-defined custom mobile display name
+    if (fidgetData.config.settings.customMobileDisplayName) {
+      return fidgetData.config.settings.customMobileDisplayName;
+    }
+    // Then use the developer-defined mobile fidget name if available
+    if (fidgetModule.properties.mobileFidgetName) {
+      return fidgetModule.properties.mobileFidgetName;
+    }
   }
   
   return fidgetModule.properties.fidgetName;
