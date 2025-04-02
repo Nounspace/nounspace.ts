@@ -1,9 +1,3 @@
-declare global {
-  interface Window {
-    handleGalleryImageUpload?: (url: string) => void;
-  }
-}
-
 import VerifiedNft from "@/common/components/atoms/icons/VerifiedNft";
 import {
   Tooltip,
