@@ -6,7 +6,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton from "@/common/components/molecules/ViewSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
-export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 20;
+export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
 
 export const validateMobileDisplayName = (value: string): boolean => {
   if (!value) return true; // Optional field
