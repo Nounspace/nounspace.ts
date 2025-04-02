@@ -1,10 +1,10 @@
+import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton from "@/common/components/molecules/ViewSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
-import React from "react";
 
 export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 20;
 
@@ -13,50 +13,54 @@ export const validateMobileDisplayName = (value: string): boolean => {
   return value.length <= MOBILE_DISPLAY_NAME_MAX_LENGTH;
 };
 
-export const defaultStyleFields = [
+export const mobileStyleSettings = [
   {
     fieldName: "showOnMobile",
     displayName: "Show on Mobile",
     default: true,
     required: false,
     inputSelector: SwitchButton,
-    group: "style"
+    group: "style",
   },
   {
-    fieldName: "mobileDisplayName",
+    fieldName: "customMobileDisplayName",
     displayName: "Mobile Display Name",
     validator: validateMobileDisplayName,
     inputSelector: TextInput,
     required: false,
-    group: "style"
+    group: "style",
   },
+] as FidgetFieldConfig[];
+
+export const defaultStyleFields = [
+  ...mobileStyleSettings,
   {
     fieldName: "background",
     default: "var(--user-theme-fidget-background)",
     required: false,
     inputSelector: ColorSelector,
-    group: "style"
+    group: "style",
   },
   {
     fieldName: "fidgetBorderWidth",
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: BorderSelector,
-    group: "style"
+    group: "style",
   },
   {
     fieldName: "fidgetBorderColor",
     default: "var(--user-theme-fidget-border-color)",
     required: false,
     inputSelector: ColorSelector,
-    group: "style"
+    group: "style",
   },
   {
     fieldName: "fidgetShadow",
     default: "var(--user-theme-fidget-shadow)",
     required: false,
     inputSelector: ShadowSelector,
-    group: "style"
+    group: "style",
   },
 ] as FidgetFieldConfig[];
 
