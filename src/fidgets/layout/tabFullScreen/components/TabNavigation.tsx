@@ -26,10 +26,12 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   // Ref for the tab list container
   const tabsListRef = useRef<HTMLDivElement>(null);
   
-  // State to track scroll position
+  // Enhanced state to track scroll position and gradient opacities
   const [scrollState, setScrollState] = useState({
     isAtStart: true,
     isAtEnd: false,
+    leftGradientOpacity: 0,
+    rightGradientOpacity: 1,
   });
 
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
@@ -63,15 +65,35 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     return reorderedIds;
   }, [processedFidgetIds, fidgetInstanceDatums]);
 
-  // Handle scroll events to update gradient visibility
+  // Enhanced scroll handler to calculate gradient opacities based on scroll position
   const handleScroll = () => {
     if (!tabsListRef.current) return;
     
     const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
-    const isAtStart = scrollLeft <= 10; // Small threshold for "at start"
-    const isAtEnd = scrollWidth - scrollLeft - clientWidth <= 10; // Small threshold for "at end"
     
-    setScrollState({ isAtStart, isAtEnd });
+    // Calculate how far we are from the start/end as a percentage
+    const maxScroll = scrollWidth - clientWidth;
+    
+    // Calculate transition thresholds (pixels where opacity goes from 0 to 1)
+    const transitionThreshold = 50; // 50px for the transition
+    
+    // Calculate left gradient opacity (0 when at start, 1 when scrolled at least transitionThreshold)
+    const leftGradientOpacity = Math.min(scrollLeft / transitionThreshold, 1);
+    
+    // Calculate right gradient opacity (1 when not at end, 0 when approaching end)
+    const distanceFromEnd = maxScroll - scrollLeft;
+    const rightGradientOpacity = Math.min(distanceFromEnd / transitionThreshold, 1);
+    
+    // Keep the binary flags for any logic that needs them
+    const isAtStart = scrollLeft <= 10;
+    const isAtEnd = distanceFromEnd <= 10;
+    
+    setScrollState({ 
+      isAtStart, 
+      isAtEnd,
+      leftGradientOpacity,
+      rightGradientOpacity
+    });
   };
 
   // Add scroll listener when component mounts
@@ -200,33 +222,31 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         })}
       </TabsList>
       
-      {/* Left gradient overlay - with improved transitions and HSL values */}
+      {/* Left gradient overlay - with opacity directly tied to scroll position */}
       <div 
         className={`
-          absolute left-0 top-0 bottom-0 w-8
+          absolute left-0 top-0 bottom-0 w-12 
           pointer-events-none 
-          transition-all duration-500 ease-in-out
-          ${orderedFidgetIds.length > 4 && !scrollState.isAtStart 
-            ? 'opacity-100' 
-            : 'opacity-0 pointer-events-none'}
+          transition-opacity duration-0
+          ${orderedFidgetIds.length <= 4 ? 'hidden' : ''}
         `}
         style={{
-          background: 'linear-gradient(270deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)'
+          background: 'linear-gradient(270deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)',
+          opacity: scrollState.leftGradientOpacity
         }}
       />
       
-      {/* Right gradient overlay - with improved transitions and HSL values */}
+      {/* Right gradient overlay - with opacity directly tied to scroll position */}
       <div 
         className={`
-          absolute right-0 top-0 bottom-0 w-8
+          absolute right-0 top-0 bottom-0 w-12 
           pointer-events-none 
-          transition-all duration-500 ease-in-out
-          ${orderedFidgetIds.length > 4 && !scrollState.isAtEnd 
-            ? 'opacity-100' 
-            : 'opacity-0 pointer-events-none'}
+          transition-opacity duration-0
+          ${orderedFidgetIds.length <= 4 ? 'hidden' : ''}
         `}
         style={{
-          background: 'linear-gradient(90deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)'
+          background: 'linear-gradient(90deg, transparent 0%, hsla(240, 4.8%, 95.9%, 0.9) 50%, hsla(240, 4.8%, 95.9%, 1) 100%)',
+          opacity: scrollState.rightGradientOpacity
         }}
       />
     </div>
