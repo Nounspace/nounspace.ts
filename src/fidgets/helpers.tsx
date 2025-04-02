@@ -1,5 +1,6 @@
 import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton from "@/common/components/molecules/SwitchButton";
@@ -21,7 +22,7 @@ export const mobileStyleSettings = [
     default: true,
     required: false,
     inputSelector: SwitchButton,
-    group: "style",
+    group: "style"
   },
   {
     fieldName: "customMobileDisplayName",
@@ -56,7 +57,7 @@ export const defaultStyleFields = [
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: BorderSelector,
-    group: "style",
+    group: "style"
   },
   {
     fieldName: "fidgetBorderColor",
@@ -78,7 +79,7 @@ export const defaultStyleFields = [
     default: "var(--user-theme-fidget-shadow)",
     required: false,
     inputSelector: ShadowSelector,
-    group: "style",
+    group: "style"
   },
 ] as FidgetFieldConfig[];
 
