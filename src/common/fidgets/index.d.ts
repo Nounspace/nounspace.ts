@@ -12,9 +12,14 @@ import PlatformSelector from "../components/molecules/PlatformSelector";
 import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
 import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
 
-export type FidgetSettings = Record<string, any>;
+export type FidgetSettings = {
+  mobileDisplayName?: string;
+} & Record<string, any>;
+
+// Update FidgetSettingsStyle with mobile-specific settings
 export type FidgetSettingsStyle = {
   showOnMobile?: boolean;
+  mobileDisplayName?: string;
   background?: Color;
   fontFamily?: FontFamily;
   fontColor?: Color;

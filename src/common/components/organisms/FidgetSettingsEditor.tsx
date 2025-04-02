@@ -23,6 +23,8 @@ import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import { MOBILE_DISPLAY_NAME_MAX_LENGTH } from "@/fidgets/helpers";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -66,26 +68,51 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   id,
 }) => {
   const InputComponent = field.inputSelector;
+  const isValid = !field.validator || field.validator(value);
 
   return (
     <div
       className={mergeClasses(
         "text-gray-700 md:flex-col md:items-center",
         hide && "hidden",
+        !isValid && "text-red-500"
       )}
       id={id}
     >
       <div className="md:mb-0 md:w-2/3">
-        <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
-          {field.displayName || field.fieldName}
-        </label>
+        {field.fieldName === "mobileDisplayName" ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger className="cursor-help">
+                <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
+                  {field.displayName}
+                </label>
+              </TooltipTrigger>
+              <TooltipContent>
+                Set a custom name to display for this Fidget in the mobile nav (max {MOBILE_DISPLAY_NAME_MAX_LENGTH} characters)
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
+            {field.displayName || field.fieldName}
+          </label>
+        )}
+        {!isValid && field.fieldName === "mobileDisplayName" && (
+          <p className="text-xs text-red-500 mt-1">
+            Must be {MOBILE_DISPLAY_NAME_MAX_LENGTH} characters or less
+          </p>
+        )}
       </div>
       <div>
         <InputComponent
           id={id}
           value={value}
           onChange={onChange}
-          className="!h-9 !rounded-md font-medium !shadow-none"
+          className={mergeClasses(
+            "!h-9 !rounded-md font-medium !shadow-none",
+            !isValid && "border-red-500"
+          )}
         />
       </div>
     </div>

@@ -9,6 +9,65 @@ export const isMediaFidget = (fidgetType: string): boolean => {
 };
 
 /**
+ * Gets the appropriate display name for a fidget based on settings and context
+ * 
+ * @param fidgetData The fidget instance data
+ * @param isMobile Whether the display is on mobile
+ * @param specialId Optional special ID for consolidated views
+ * @param customTabNames Optional array of custom tab names
+ * @param fidgetIds Optional array of fidget IDs for matching custom tab names
+ * @param fidgetIdIndex Optional index of the current fidget in the fidgetIds array
+ * @returns The appropriate display name
+ */
+export const getFidgetDisplayName = (
+  fidgetData: FidgetInstanceData | null,
+  isMobile: boolean = false,
+  specialId?: string,
+  customTabNames?: string[],
+  fidgetIds?: string[],
+  fidgetIdIndex?: number
+): string => {
+  // Handle special consolidated views
+  if (specialId === 'consolidated-media') {
+    return "Media";
+  }
+  
+  if (specialId === 'consolidated-pinned') {
+    return "Pinned";
+  }
+  
+  if (!fidgetData) return 'Unknown';
+  
+  // Use custom tab name if available
+  if (customTabNames && fidgetIds && typeof fidgetIdIndex === 'number' && fidgetIdIndex >= 0) {
+    const customName = customTabNames[fidgetIdIndex];
+    if (customName) return customName;
+  }
+  
+  // Use mobile display name if available and on mobile
+  if (isMobile && fidgetData.config.settings.mobileDisplayName) {
+    return fidgetData.config.settings.mobileDisplayName;
+  }
+  
+  const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
+  if (!fidgetModule) return 'Unknown';
+  
+  // Use mobile fidget name if available and on mobile
+  if (isMobile && fidgetModule.properties.mobileFidgetName) {
+    return fidgetModule.properties.mobileFidgetName;
+  }
+  
+  return fidgetModule.properties.fidgetName;
+};
+
+/**
+ * Filter fidget settings that shouldn't show mobile options
+ */
+export const shouldShowMobileSettings = (fidgetType: string): boolean => {
+  return !isMediaFidget(fidgetType);
+};
+
+/**
  * Checks if a fidget is a pinned cast
  */
 export const isPinnedCast = (

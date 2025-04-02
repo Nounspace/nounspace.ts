@@ -3,10 +3,27 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import SwitchButton from "@/common/components/molecules/ViewSelector";
-
+import TextInput from "@/common/components/molecules/TextInput";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
-export const defaultStyleFields: FidgetFieldConfig[] = [
+export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 20;
+
+export const validateMobileDisplayName = (value: string): boolean => {
+  if (!value) return true; // Optional field
+  return value.length <= MOBILE_DISPLAY_NAME_MAX_LENGTH;
+};
+
+export const mobileDisplayNameField: FidgetFieldConfig = {
+  fieldName: "mobileDisplayName",
+  displayName: "Mobile Display Name",
+  validator: validateMobileDisplayName,
+  inputSelector: TextInput,
+  required: false,
+  group: "style"
+};
+
+export const defaultStyleFields = [
   {
     fieldName: "showOnMobile",
     displayName: "Show on Mobile",
@@ -15,6 +32,7 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
     inputSelector: SwitchButton,
     group: "style",
   },
+  mobileDisplayNameField,
   {
     fieldName: "background",
     default: "var(--user-theme-fidget-background)",
