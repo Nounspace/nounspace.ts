@@ -330,3 +330,33 @@
     font-size: 75%;
   }
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--user-theme-headings-font);
+}
+
+.widget h1, .widget h2, .widget h3, .widget h4, .widget h5, .widget h6 {
+  font-family: var(--user-theme-headings-font);
+}
+
+html body h1, 
+html body h2, 
+html body h3, 
+html body h4, 
+html body h5, 
+html body h6 {
+  font-family: var(--user-theme-headings-font) !important;
+}
+
+html body .widget h1, 
+html body .widget h2, 
+html body .widget h3, 
+html body .widget h4, 
+html body .widget h5, 
+html body .widget h6 {
+  font-family: var(--user-theme-headings-font) !important;
+}
+
+.heading, .title, .header, .widget-title, .widget-header {
+  font-family: var(--user-theme-headings-font) !important;
+}
