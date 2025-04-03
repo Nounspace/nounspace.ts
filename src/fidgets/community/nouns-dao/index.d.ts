@@ -24,21 +24,29 @@ export type BaseProposalData = {
   executedTransactionHash?: string;
 };
 
-export type NounsProposalData = BaseProposalData & {
-  voteSnapshotBlock: string;
-  proposer: {
+export type DelegateData = {
+  id: string;
+  nounsRepresented?: {
     id: string;
-    nounsRepresented: {
-      id: string;
-    }[];
-  };
-  signers: {
-    id: string;
-    nounsRepresented: {
-      id: string;
-    }[];
   }[];
+  __typename?: string;
+};
+
+export type NounsProposalData = BaseProposalData & {
   description: string;
+  proposalThreshold?: string;
+  updatePeriodEndBlock?: string;
+  objectionPeriodEndBlock?: string;
+  executionETA?: string | null;
+  targets?: string[];
+  values?: string[];
+  signatures?: string[];
+  calldatas?: string[];
+  onTimelockV1?: boolean | null;
+  voteSnapshotBlock?: string;
+  proposer: DelegateData;
+  signers: DelegateData[];
+  __typename?: string;
 };
 
 export type BuilderProposalData = BaseProposalData & {
