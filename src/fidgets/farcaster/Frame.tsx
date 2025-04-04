@@ -13,6 +13,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 export type FrameFidgetSettings = {
   url: string;
@@ -24,6 +25,7 @@ const frameProperties: FidgetProperties = {
   mobileIcon: <BsAspectRatio size={22} />,
   mobileIconSelected: <BsAspectRatioFill size={22} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "url",
       required: true,

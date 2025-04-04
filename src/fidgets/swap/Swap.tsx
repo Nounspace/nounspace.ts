@@ -9,6 +9,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { BsArrowRepeat } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -28,6 +29,7 @@ const matchaProperties: FidgetProperties = {
   icon: 0x1f501,
   mobileIcon: <BsArrowRepeat size={22} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "defaultSellToken",
       default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
