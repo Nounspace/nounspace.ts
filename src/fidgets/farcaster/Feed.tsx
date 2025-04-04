@@ -28,6 +28,7 @@ import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -70,6 +71,7 @@ export const FilterTypeSelector: React.FC<{
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "selectPlatform",
       displayName: "Select App",
