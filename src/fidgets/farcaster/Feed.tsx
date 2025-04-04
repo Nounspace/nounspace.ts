@@ -29,6 +29,7 @@ import { useFarcasterSigner } from ".";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 export enum FilterType {
   Channel = "channel_id",
