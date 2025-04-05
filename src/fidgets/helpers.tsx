@@ -3,7 +3,7 @@ import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
-import SwitchButton from "@/common/components/molecules/ViewSelector";
+import SwitchButton from "@/common/components/molecules/SwitchButton";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
 export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
