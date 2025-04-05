@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { usePathname } from "next/navigation";
 import { 
   FidgetBundle, 
   FidgetConfig, 
@@ -43,6 +44,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   tabNames,
 }) => {
   const isMobile = useIsMobile();
+  const pathname = usePathname();
+  const isHomebasePath = pathname?.startsWith('/homebase');
   
   // Process fidgets and prepare data for rendering
   const validFidgetIds = useMemo(() => 
@@ -86,9 +89,12 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return fidgetDatum.fidgetType === 'feed';
   };
   
-  // Get ordered fidget IDs with feed prioritized
+  // Get ordered fidget IDs with feed prioritized (except in homebase)
   const orderedFidgetIds = useMemo(() => {
     if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
+    
+    // If we're in homebase path, don't reorder
+    if (isHomebasePath) return processedFidgetIds;
     
     // Create a copy of the array to avoid mutating the original
     const reorderedIds = [...processedFidgetIds];
@@ -104,7 +110,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     });
     
     return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums]);
+  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath]);
 
   // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
