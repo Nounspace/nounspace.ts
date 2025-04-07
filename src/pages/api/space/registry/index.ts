@@ -216,7 +216,7 @@ async function registerNewSpace(
     return;
   }
 
-  console.log("Registered new space:", first(result));
+  // console.log("Registered new space:", first(result));
   res.status(200).json({
     result: "success",
     value: first(result),
