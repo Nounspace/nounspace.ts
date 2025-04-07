@@ -12,7 +12,7 @@ const loadUserSpaceData = async (
   tabNameParam?: string,
 ): Promise<UserDefinedSpacePageProps> => {
 
-  console.log("loading user space data for handle: ", handle);
+  // console.log("loading user space data for handle: ", handle);
   const userMetadata = await getUserMetadata(handle);
   const fid = userMetadata?.fid || null;
 

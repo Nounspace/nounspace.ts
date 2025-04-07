@@ -39,7 +39,7 @@ const Chat: React.FC<
 > = ({
   settings: { roomName = "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab" },
 }) => {
-    console.log("Room name:", roomName);
+    // console.log("Room name:", roomName);
 
     if (!roomName) {
       return (

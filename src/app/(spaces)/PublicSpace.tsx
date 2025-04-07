@@ -256,43 +256,65 @@ export default function PublicSpace({
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      // console.log('Starting space registration...', {
-      //   isEditable,
-      //   spaceId,
-      //   currentUserFid,
-      //   isTokenPage,
-      //   contractAddress,
-      //   tokenData
-      // });
-      const registerSpace = async () => {
-        let newSpaceId: string | undefined;
-        if (isTokenPage && contractAddress && tokenData?.network) {
-          // console.log('Registering contract space...');
-          newSpaceId = await registerSpaceContract(
-            contractAddress,
-            "Profile",
-            currentUserFid,
-            initialConfig,
-            tokenData.network
-          );
-        } else if (!isTokenPage) {
-          // console.log('Registering user space...');
-          newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
-        }
-        // console.log('Registration result:', { newSpaceId });
-        if (newSpaceId) {
-          setSpaceId(newSpaceId);
-          setCurrentSpaceId(newSpaceId);
-          setCurrentTabName("Profile");
-        }
-      };
-      registerSpace();
+      console.log('Space registration conditions met:', {
+        isEditable,
+        spaceId,
+        currentUserFid,
+        isTokenPage,
+        contractAddress,
+        tokenNetwork: tokenData?.network
+      });
+      
+      if (isTokenPage && contractAddress && tokenData?.network) {
+        console.log('Attempting to register contract space:', {
+          contractAddress,
+          currentUserFid,
+          network: tokenData.network
+        });
+        registerSpaceContract(
+          contractAddress,
+          "Profile",
+          currentUserFid,
+          initialConfig,
+          tokenData.network
+        ).then((newSpaceId) => {
+          console.log('Contract space registration result:', {
+            success: !!newSpaceId,
+            newSpaceId,
+            contractAddress
+          });
+          if (newSpaceId) {
+            setSpaceId(newSpaceId);
+            setCurrentSpaceId(newSpaceId);
+            setCurrentTabName("Profile");
+          }
+        });
+      } else if (!isTokenPage) {
+        console.log('Attempting to register user space:', {
+          currentUserFid
+        });
+        registerSpaceFid(currentUserFid, "Profile").then((newSpaceId) => {
+          console.log('User space registration result:', {
+            success: !!newSpaceId,
+            newSpaceId,
+            currentUserFid
+          });
+          if (newSpaceId) {
+            setSpaceId(newSpaceId);
+            setCurrentSpaceId(newSpaceId);
+            setCurrentTabName("Profile");
+          }
+        });
+      }
     }
   }, [isEditable, spaceId, currentUserFid, isTokenPage, contractAddress, tokenData?.network, initialConfig]);
 
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
+      if (isNil(currentUserFid)) {
+        throw new Error("Attempted to save config when user is not signed in!");
+      }
       if (isNil(spaceId)) {
         throw new Error("Cannot save config until space is registered");
       }

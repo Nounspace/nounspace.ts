@@ -48,7 +48,7 @@ export async function identityCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  console.log("identityCanModifySpace", identity, spaceId, network);
+  // console.log("identityCanModifySpace", identity, spaceId, network);
   const data = await identitiesCanModifySpace(spaceId, network);
   return findIndex(data, (i) => i === identity) !== -1;
 }
@@ -128,7 +128,7 @@ async function updateSpace(
 
 async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
   const deleteReq = req.body;
-  console.log("deleteReq", deleteReq);
+  // console.log("deleteReq", deleteReq);
   const spaceId = req.query.spaceId as string;
   const tabId = req.query.tabId as string;
   if (!isDeleteSpaceTabRequest(deleteReq)) {

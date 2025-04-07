@@ -104,10 +104,10 @@ async function registerNewSpaceTab(
   // TO DO: Check that the user can register more tabs
   // Currently we are allowing unlimited files on server side
 
-  console.log(
-    "registerNewSpaceTab called on registry/[spaceId]/tabs with",
-    registration,
-  );
+  // console.log(
+  //   "registerNewSpaceTab called on registry/[spaceId]/tabs with",
+  //   registration,
+  // );
 
   const uploadedFile: SignedFile = registration?.initialConfig
     ? (registration as any)
@@ -130,12 +130,12 @@ async function registerNewSpaceTab(
       { upsert: true },
     );
   
-  console.log("[registry space] Tab Registration Response:", {
-    data,
-    error: error ? error.message : null,
-    spaceId: registration.spaceId,
-    tabName: registration.tabName
-  });
+  // console.log("[registry space] Tab Registration Response:", {
+  //   data,
+  //   error: error ? error.message : null,
+  //   spaceId: registration.spaceId,
+  //   tabName: registration.tabName
+  // });
 
   if (!isNull(error)) {
     console.error("Error uploading file:", error);

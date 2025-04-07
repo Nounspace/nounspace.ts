@@ -22,7 +22,7 @@ export async function fetchClankerByAddress(
   address: Address,
 ): Promise<ClankerToken | null> {
   try {
-    console.log("Fetching Clanker by address:", address);
+    // console.log("Fetching Clanker by address:", address);
     const response = await fetch(`${CLANKER_API_URL}?address=${address}`, {
       headers: {
         "x-api-key": process.env.CLANKER_API_KEY!,
@@ -37,10 +37,10 @@ export async function fetchClankerByAddress(
 
     return json.data as ClankerToken;
   } catch (error) {
-    console.log(
-      "Failed to fetch Clanker data:",
-      error instanceof Error ? error.message : error,
-    );
+    // console.log(
+    //   "Failed to fetch Clanker data:",
+    //   error instanceof Error ? error.message : error,
+    // );
     return null;
   }
 }
