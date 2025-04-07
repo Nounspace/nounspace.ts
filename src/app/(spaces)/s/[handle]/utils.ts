@@ -32,7 +32,7 @@ export const getUserMetadata = cache(
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
-    console.log("Getting tablist for fid:", fid, "type:", typeof fid);
+    // console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
     // Let's try with explicit column names as shown in the schema
     const { data, error } = await supabaseClient
@@ -40,7 +40,7 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
       .select('"spaceId","spaceName"')
       .eq('fid', fid);
     
-    console.log("supabase tabList response: ", data, error ? error.message : "no error");
+    // console.log("supabase tabList response: ", data, error ? error.message : "no error");
 
     if (error) {
       console.error("Error fetching tabs:", error);
@@ -48,7 +48,7 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     }
 
     if (!data || isEmpty(data)) {
-      console.log("No data found for fid:", fid);
+      // console.log("No data found for fid:", fid);
       return [];
     }
 
