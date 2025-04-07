@@ -99,13 +99,19 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  // console.log(owningIdentities);
+  console.log("Debug - Contract Address before query:", contractAddress);
+  console.log("Debug - Supabase client config:", supabaseClient);
 
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from("spaceRegistrations")
     .select("spaceId, spaceName")
-    .eq("contractAddress", contractAddress);
-  const spaceId = first(data)?.spaceId || null;
+    .eq("contractAddress", contractAddress)
+  
+  console.log("Debug - Database Query Error:", error);
+  console.log("Debug - Raw Query Results:", data);
+  console.log("Debug - First Space ID:", data?.[0]?.spaceId);
+  
+  const spaceId = data?.[0]?.spaceId || null;
 
   return {
     props: {
