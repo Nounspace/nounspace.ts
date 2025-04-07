@@ -51,6 +51,11 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets, ready: walletsReady } = useWallets();
+  // Decode the tab name from URL
+  const decodedTabName = useMemo(() => {
+    if (!providedTabName) return "Profile";
+    return decodeURIComponent(providedTabName);
+  }, [providedTabName]);
 
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -97,24 +102,8 @@ export default function PublicSpace({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
 
-  // Decode the tab name from URL
-  const decodedTabName = useMemo(() => {
-    if (!providedTabName) return "Profile";
-    return decodeURIComponent(providedTabName);
-  }, [providedTabName]);
-
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
-    // console.log('PublicSpace: Loading space configuration', {
-    //   providedSpaceId,
-    //   providedTabName,
-    //   decodedTabName,
-    //   currentSpaceId: spaceId,
-    //   localSpaces: Object.keys(localSpaces),
-    //   remoteSpaces: Object.keys(remoteSpaces)
-    // });
-
-    setSpaceId(providedSpaceId);
     setCurrentSpaceId(providedSpaceId);
     setCurrentTabName(decodedTabName);
     if (!isNil(providedSpaceId)) {
@@ -122,22 +111,10 @@ export default function PublicSpace({
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
-          // console.log('PublicSpace: Tab order loaded', {
-          //   spaceId: providedSpaceId,
-          //   tabOrder: localSpaces[providedSpaceId]?.order
-          // });
-          // After loading the tab order, load the specific tab
           return loadSpaceTab(providedSpaceId, decodedTabName);
         })
         .then(() => {
-          // console.log('PublicSpace: Tab loaded', {
-          //   spaceId: providedSpaceId,
-          //   tabName: decodedTabName,
-          //   config: localSpaces[providedSpaceId]?.tabs[decodedTabName]
-          // });
-          setSpaceId(providedSpaceId);
           setLoading(false);
-          // Load remaining tabs after the initial one has finished
           return loadRemainingTabs(providedSpaceId);
         })
         .catch((error) => {
@@ -255,7 +232,8 @@ export default function PublicSpace({
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
-    if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
+    // Only proceed with registration if we're sure the space doesn't exist
+    if (isEditable && isNil(spaceId) && !isNil(currentUserFid) && !loading) {
       console.log('Space registration conditions met:', {
         isEditable,
         spaceId,
@@ -307,7 +285,7 @@ export default function PublicSpace({
         });
       }
     }
-  }, [isEditable, spaceId, currentUserFid, isTokenPage, contractAddress, tokenData?.network, initialConfig]);
+  }, [spaceId, currentUserFid, loading, contractAddress, tokenData?.network]);
 
 
   const saveConfig = useCallback(
