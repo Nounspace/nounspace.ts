@@ -33,7 +33,7 @@ export async function loadContractData(
   }
 
   const { contractAddress, tabName: tabNameUnparsed, network } = params;
-  console.log("contractPageProps network", network);
+  // console.log("contractPageProps network", network);
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
@@ -47,7 +47,7 @@ export async function loadContractData(
       },
     };
   }
-  console.log("network contractPageProps", network);
+  // console.log("network contractPageProps", network);
 
   const contract = await loadEthersViewOnlyContract(
     contractAddress,
@@ -99,7 +99,7 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  console.log(owningIdentities);
+  // console.log(owningIdentities);
 
   const { data } = await supabaseClient
     .from("spaceRegistrations")

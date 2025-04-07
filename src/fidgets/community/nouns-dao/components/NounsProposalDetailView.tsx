@@ -160,7 +160,7 @@ export const NounsProposalDetailView = ({
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
-  console.log(proposal);
+  // console.log(proposal);
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">

@@ -107,9 +107,6 @@ async function updateSpaceTabOrder(
       { upsert: true },
     );
 
-  console.log("[registry space] Supabase Data", data);
-  console.log("[registry space] Supabase Error", error);
-
   if (!isNull(error)) {
     console.error(error);
     res.status(500).json({
@@ -123,10 +120,6 @@ async function updateSpaceTabOrder(
   res.status(200).json({
     result: "success",
     value: updateOrderRequest.tabOrder,
-  });
-  console.log("[registry space] Response Data", {
-    result: "success",
-    value: updateOrderRequest.tabOrder
   });
 }
 
