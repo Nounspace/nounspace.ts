@@ -631,13 +631,30 @@ export const createSpaceStoreFunc = (
     initialConfig,
     network,
   ) => {
+    // First check if space already exists
+    const supabase = createClient();
+    const { data: existingSpace } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId, spaceName")
+      .eq("contractAddress", address)
+      .single();
+
+    if (existingSpace?.spaceId) {
+      console.log("Space already exists with ID:", existingSpace.spaceId);
+      // Update the editable spaces cache with existing space
+      set((draft) => {
+        draft.space.editableSpaces[existingSpace.spaceId] = existingSpace.spaceName || name;
+      }, "registerSpace");
+      return existingSpace.spaceId;
+    }
+
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
       contractAddress: address,
-      tokenOwnerFid,
-      network,
+      tokenOwnerFid: tokenOwnerFid,
+      network: network,
     };
     const registration = signSignable(
       unsignedRegistration,
