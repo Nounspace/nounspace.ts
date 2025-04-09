@@ -62,21 +62,6 @@ export function FrameAppDebugger({
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[300px_500px_1fr] p-4 gap-4 bg-slate-50 max-w-full w-full">
-        <div className="flex flex-col gap-4 order-1 lg:order-0">
-          <div className="flex flex-row gap-2">
-            {/* <WithTooltip tooltip={<p>Reload frame app</p>}>
-              <Button
-                className="flex flex-row gap-3 items-center shadow-sm border"
-                variant={"outline"}
-                onClick={() => {
-                  reloadApp();
-                }}
-              >
-                <RefreshCwIcon size={20} />
-              </Button>
-            </WithTooltip> */}
-          </div>
-        </div>
         <div className="flex flex-col gap-4 order-0 lg:order-1">
           <FrameApp
             key={appIdCounter}
@@ -88,67 +73,7 @@ export function FrameAppDebugger({
             context={context}
           />
         </div>
-        {/*
-        <div className="flex flex-row gap-4 order-2 md:col-span-2 lg:col-span-1 lg:order-2">
-           {frameAppNotificationManager.status === "success" ? (
-            <FrameAppNotificationsManagerProvider
-              manager={frameAppNotificationManager.data.manager}
-            > */}
-              {/* <div className="w-full max-h-[600px]"> */}
-                {/* <div className="p-5 h-full"> */}
-                  {/* <Tabs
-                    value={activeTab}
-                    onValueChange={(value) => setActiveTab(value as TabValues)}
-                    className="grid grid-rows-[auto_1fr] w-full h-full"
-                  >
-                    <TabsList className={cn("grid w-full grid-cols-2")}>
-                      <TabsTrigger value="notifications">
-                        Notifications
-                      </TabsTrigger>
-                      <TabsTrigger value="console">Console</TabsTrigger>
-                    </TabsList>
-                    <TabsContent
-                      className="overflow-hidden"
-                      value="notifications"
-                    >
-                      <FrameAppDebuggerNotifications
-                        frameApp={frameApp}
-                        farcasterSigner={farcasterSigner.signer}
-                      />
-                    </TabsContent>
-                    <TabsContent
-                      className="overflow-y-auto"
-                      ref={debuggerConsoleTabRef}
-                      value="console"
-                    >
-                      <DebuggerConsole
-                        onMount={(element) => {
-                          if (debuggerConsoleTabRef.current) {
-                            debuggerConsoleTabRef.current.scrollTo(
-                              0,
-                              element.scrollHeight
-                            );
-                          }
-                        }}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-             </FrameAppNotificationsManagerProvider> 
-           ) :  
-           null
-           } 
-        </div> */}
       </div>
-      {/* {viewFidProfile !== null && (
-        <FrameAppDebuggerViewProfileDialog
-          fid={viewFidProfile}
-          onDismiss={() => {
-            setViewFidProfile(null);
-          }}
-        />
-      )} */}
     </>
   );
 }

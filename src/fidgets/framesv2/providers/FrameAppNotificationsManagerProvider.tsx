@@ -25,9 +25,7 @@ export const notificationManagerQueryKeys = {
 
 export type FrameAppNotificationsManager = {
   readonly state: any | undefined;
-  addFrame(): Promise<
-    Extract<any, { enabled: true }>["details"]
-  >;
+  addFrame(): Promise<Extract<any, { enabled: true }>["details"]>;
   removeFrame(): Promise<void>;
   enableNotifications(): Promise<any>;
   disableNotifications(): Promise<void>;
@@ -77,9 +75,7 @@ export function useFrameAppNotificationsManager({
   context,
   farcasterSigner,
 }: UseFrameAppNotificationsManagerOptions) {
-  const namespaceSettingsRef = useRef<null>(
-    null
-  );
+  const namespaceSettingsRef = useRef<null>(null);
   const { signer } = farcasterSigner;
   const frameUrl = context.frame.button.action.url;
   const webhookUrl = context.parseResult.manifest?.manifest.frame?.webhookUrl;
@@ -90,16 +86,13 @@ export function useFrameAppNotificationsManager({
     //   if (!namespaceSettingsRef.current) {
     //     throw new Error("Namespace settings not found");
     //   }
-
     //   const response = await fetch(namespaceSettingsRef.current.namespaceUrl, {
     //     method: "POST",
     //     body: JSON.stringify(event),
     //   });
-
     //   if (response.status !== 201 && response.status !== 200) {
     //     throw new Error("Failed to enable notifications");
     //   }
-
     //   return response.json() as Promise<POSTNotificationsDetailResponseBody>;
     // },
   });
@@ -229,6 +222,6 @@ export function useFrameAppNotificationsManager({
 }
 
 export function useFrameAppNotificationsManagerContext() {
-  return undefined 
+  return undefined;
   //useContext(FrameAppNotificationsManagerContext);
 }

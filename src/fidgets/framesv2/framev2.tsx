@@ -1,52 +1,24 @@
 "use client";
-/** requires client because signer is stored in local storage */
 
-// import { Framev2Modal } from "./framev2Modal";
-import { Button } from "@/common/components/atoms/button";
-// import { Button } from "@/components/ui/button";`
-// import { Input } from "@/components/ui/input";
-import TextInput from "@/common/components/molecules/TextInput";
 import { fallbackFrameContext } from "@frames.js/render";
-// import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useRouter } from "next/navigation";
 import React, {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from "react";
 import { zeroAddress } from "viem";
 import { useAccount } from "wagmi";
-// import pkg from "../package.json";
-import {
-  FrameDebugger,
-  FrameLaunchedInContext,
-  type FrameDebuggerRef,
-} from "./frame-v2";
-import { LOCAL_STORAGE_KEYS } from "./constants";
 import type { MockHubActionContext } from "./lib/mock-hub-utils";
-import {
-  type ProtocolConfiguration,
-  protocolConfigurationMap,
-//   ProtocolConfigurationButton,
-} from "./components/protocol-config-button";
-
-// import {
-//   ActionDebugger,
-//   type ActionDebuggerRef,
-// } from "./components/action-debugger";
-import type { ParseFramesWithReportsResult } from "frames.js/frame-parsers";
-// import type { parseFarcasterFrameV2 } from "frames.js/frame-parsers";
-
-// import { Loader2 } from "lucide-react";
-// import { useToast } from "@/components/ui/use-toast";
-// import { ToastAction } from "@/components/ui/toast";
-import {
-  DebuggerConsoleContextProvider,
-  useDebuggerConsole,
-} from "./components/debugger-console";
-// import { ProfileSelectorModal } from "./components/lens-profile-select";
+import { protocolConfigurationMap } from "./components/protocol-config-button";
+import type {
+  ParseFramesWithReportsResult,
+  // SupportedParsingSpecification,
+  ParseFramesV2ResultWithFrameworkDetails,
+} from "frames.js/frame-parsers";
 import type {
   CastActionDefinitionResponse,
   FrameDefinitionResponse,
@@ -64,10 +36,44 @@ import {
 import { useFarcasterIdentity } from "./hooks/useFarcasterIdentity";
 import { ProtocolSelectorProvider } from "./providers/ProtocolSelectorProvider";
 import { FrameContextProvider } from "./providers/FrameContextProvider";
-import { FrameAppDebugger } from "./components/frame-app-debugger";
 
-const FALLBACK_URL =
-  process.env.NEXT_PUBLIC_DEBUGGER_DEFAULT_URL || "https://f.bracket.game";
+import { FrameUI } from "./frame-ui";
+import { FrameApp } from "./components/frame-app";
+import { useFrame_unstable as useFrame } from "@frames.js/render/unstable-use-frame";
+import { useSharedFrameEventHandlers } from "./hooks/useSharedFrameEventHandlers";
+import { attribution, CollapsedFrameUI, defaultTheme } from "@frames.js/render";
+import { useFrameContext } from "./providers/FrameContextProvider";
+import { FrameImageNext } from "@frames.js/render/next";
+import { type UseFrameAppInIframeReturn } from "@frames.js/render/frame-app/iframe";
+import type { FarcasterSignerInstance } from "@frames.js/render/identity/farcaster";
+import { PartialFrameV2 } from "@frames.js/render/unstable-types";
+import type { Frame } from "frames.js/farcaster-v2/types";
+
+export type FrameLaunchedInContext =
+  /* | {
+      context: "trigger";
+      triggerConfig: TriggerConfig;
+      frame: Frame;
+      parseResult: ParseFramesV2ResultWithFrameworkDetails;
+    }*/
+  {
+    context: "button_press";
+    frame: Frame | PartialFrameV2;
+    parseResult: ParseFramesV2ResultWithFrameworkDetails;
+  };
+
+export type ProtocolConfiguration =
+  | {
+      protocol: "farcaster";
+      specification: "farcaster";
+    }
+  | {
+      protocol: "farcaster_v2";
+      specification: "farcaster_v2";
+    };
+
+// const FALLBACK_URL =
+//   process.env.NEXT_PUBLIC_DEBUGGER_DEFAULT_URL || "https://f.bracket.game";
 
 export default function FrameV2Fidget({
   searchParams,
@@ -76,18 +82,25 @@ export default function FrameV2Fidget({
   searchParams: Record<string, string>;
   examples?: React.ReactNode;
 }): JSX.Element {
-  const debuggerRef = useRef<FrameDebuggerRef>(null);
-  const actionDebuggerRef = null;//useRef<ActionDebuggerRef>(null);
-  const debuggerConsole = useDebuggerConsole();
-  // const { toast } = useToast();
+  // const debuggerRef = useRef<FrameDebuggerRef>(null);
+  const actionDebuggerRef = null; //useRef<ActionDebuggerRef>(null);
+  // const debuggerConsole = useDebuggerConsole();
   const urlInputRef = useRef<HTMLInputElement>(null);
   const selectProtocolButtonRef = useRef<HTMLButtonElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
-  // const [protocolConfiguration, setProtocolConfiguration] =
-  //   useState<ProtocolConfiguration | null>(null);
   const [frameV2LaunchContext, setFrameV2LaunchContext] =
     useState<FrameLaunchedInContext | null>(null);
+
+  // Define the onFrameLaunchedInContext function
+  const onFrameLaunchedInContext = useCallback(
+    (launchContext: FrameLaunchedInContext) => {
+      setFrameV2LaunchContext(launchContext);
+    },
+    []
+  );
+
   /**
    * Parse the URL from the query string. This will also cause debugger to automatically load the frame.
    */
@@ -119,45 +132,8 @@ export default function FrameV2Fidget({
     recastedCast: false,
   });
   const account = useAccount();
-
-  localStorage.setItem(
-    LOCAL_STORAGE_KEYS.SELECTED_PROTOCOL,
-    "farcaster_v2"
-  );
-
   const selectedProtocol = "farcaster_v2";
   const protocolConfiguration = protocolConfigurationMap[selectedProtocol];
-
-  // useEffect(() => {
-  //   const selectedProtocol = "farcaster_v2";
-  //   // localStorage.getItem(
-  //     // LOCAL_STORAGE_KEYS.SELECTED_PROTOCOL
-      
-  //   // );
-
-  //   // if (selectedProtocol) {
-  //     setProtocolConfiguration(
-  //       protocolConfigurationMap[selectedProtocol]
-  //     );
-  //   // }
-
-  //   console.log(
-  //     ` pkg.name, Version pkg.version`
-  //   );
-  //   console.log(
-  //     "%c" +
-  //       "*You'll find console.log statements from your frames in the server logs in your terminal, not here.*",
-  //     "font-weight:bold;"
-  //   );
-  // }, []);
-
-  // useEffect(() => {
-  //   if (protocolConfiguration)
-  //     localStorage.setItem(
-  //       LOCAL_STORAGE_KEYS.SELECTED_PROTOCOL,
-  //       protocolConfiguration.protocol
-  //     );
-  // }, [protocolConfiguration]);
 
   const refreshUrl = useCallback(
     (newUrl?: string) => {
@@ -196,14 +172,6 @@ export default function FrameV2Fidget({
           }
         })
         .catch((e) => {
-          // toast({
-          //   title: "Error loading url",
-          //   description: "Please check the console for more information",
-          //   variant: "destructive",
-          //   action: debuggerRef.current ? (
-          //       "Show console"
-          //   ) : undefined,
-          // });
           console.error(e);
         })
         .finally(() => {
@@ -219,48 +187,15 @@ export default function FrameV2Fidget({
     }
 
     if (!protocolConfiguration) {
-    //   toast({
-    //     title: "Select Protocol",
-    //     description: "Please select a protocol to debug the URL",
-    //     variant: "destructive",
-    //     action: (
-    //       // <ToastAction
-    //       //   altText="Select"
-    //       //   onClick={() => {
-    //       //     selectProtocolButtonRef.current?.click();
-    //       //   }}
-    //       //   type="button"
-    //       // >
-    //       //   Select
-    //       // </ToastAction>
-    //     ),
-    //   });
       return;
     }
 
-    debuggerConsole.clear();
     refreshUrl(url);
-  }, [url, protocolConfiguration, refreshUrl, null, debuggerConsole]);
+  }, [url, protocolConfiguration, refreshUrl]);
 
   const farcasterSignerState = useFarcasterIdentity();
-  const xmtpSignerState = useXmtpIdentity();
-  const lensSignerState = useLensIdentity();
-  const anonymousSignerState = useAnonymousIdentity();
   const farcasterFrameContext = useFarcasterFrameContext({
     fallbackContext: fallbackFrameContext,
-  });
-  const xmtpFrameContext = useXmtpFrameContext({
-    fallbackContext: {
-      conversationTopic: "test",
-      participantAccountAddresses: account.address
-        ? [account.address, zeroAddress]
-        : [zeroAddress],
-    },
-  });
-  const lensFrameContext = useLensFrameContext({
-    fallbackContext: {
-      pubId: "0x01-0x01",
-    },
   });
 
   const selectProtocolContextValue = useMemo(() => {
@@ -274,206 +209,201 @@ export default function FrameV2Fidget({
   const frameContextValue = useMemo(() => {
     return {
       farcaster: farcasterFrameContext.frameContext,
-      xmtp: xmtpFrameContext.frameContext,
-      lens: lensFrameContext.frameContext,
-      anonymous: {},
     };
-  }, [
-    farcasterFrameContext.frameContext,
-    xmtpFrameContext.frameContext,
-    lensFrameContext.frameContext,
-  ]);
+  }, [farcasterFrameContext.frameContext]);
+
+  const sharedFrameEventHandlers = useSharedFrameEventHandlers({
+    debuggerRef: null,
+  });
+
+  const protocol: ProtocolConfiguration = {
+    protocol: "farcaster_v2",
+    specification: "farcaster_v2",
+  };
+
+  const frameContext = useFrameContext();
+
+  const frameState = useFrame({
+    ...sharedFrameEventHandlers,
+    frame: initialFrame,
+    homeframeUrl: url,
+    frameActionProxy: "/frames",
+    frameGetProxy: "/frames",
+    // frameStateHook: useDebuggerFrameState,
+    extraButtonRequestPayload: { mockData: mockHubContext },
+    transactionDataSuffix:
+      process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID &&
+      protocol.protocol === "farcaster_v2"
+        ? attribution(
+            parseInt(process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID)
+          )
+        : undefined,
+    resolveSigner() {
+      return farcasterSignerState.withContext(frameContext.farcaster, {
+        specification: protocol.specification,
+      });
+    },
+    onError(error) {
+      console.error(error);
+    },
+    onLaunchFrameButtonPressed(event) {
+      if (event.status === "partial") {
+        console.log(`
+          title: "Partial frame loaded",
+          description:
+            "The frame is invalid, please fix errors before you decide to launch it publicly.",
+          variant: "destructive",
+          action: undefined,
+        }`);
+      }
+
+      onFrameLaunchedInContext({
+        context: "button_press",
+        frame: event.frame,
+        parseResult: event.parseResult,
+      });
+    },
+  });
+
+  const handleFrameError = useCallback((e: Error) => {
+    console.error(e);
+  }, []);
+  const { currentFrameStackItem } = frameState;
+  const [appIdCounter, reloadApp] = useReducer((state) => state + 1, 0);
+  const [frameApp, setFrameApp] = useState<UseFrameAppInIframeReturn | null>(
+    null
+  );
+  const farcasterSigner: FarcasterSignerInstance = farcasterSignerState;
+  const farcasterSignerRef = useRef(farcasterSigner);
+  farcasterSignerRef.current = farcasterSigner;
+  const userContext = useRef<{ fid: number }>({ fid: -1 });
+  const [viewFidProfile, setViewFidProfile] = useState<number | null>(null);
+
+  if (
+    farcasterSigner &&
+    farcasterSigner.signer &&
+    (farcasterSigner.signer?.status === "approved" ||
+      userContext.current.fid !== farcasterSigner.signer._id)
+  ) {
+    userContext.current = {
+      fid: farcasterSigner.signer._id as number,
+    };
+  }
 
   return (
-    <ProtocolSelectorProvider value={selectProtocolContextValue}>
-      <FrameContextProvider value={frameContextValue}>
-        <DebuggerConsoleContextProvider value={debuggerConsole}>
-          <div className="bg-slate-50 min-h-lvh grid grid-rows-[auto_1fr]">
-            {/* <div className="flex flex-row gap-4 border-b p-2 px-4 items-center h-full bg-white">
-               <form
-                className="flex flex-row"
-                onSubmit={(e) => {
-                  e.preventDefault();
+    <>
+      <div className="bg-slate-50 min-h-lvh grid grid-rows-[auto_1fr]">
+        {url && (
+          <>
+            {/* {initialAction && <div></div>} */}
 
-                  const newUrl =
-                    new FormData(e.currentTarget).get("url")?.toString() || "";
+            {initialFrame && !!protocolConfiguration && (
+              <div className="">
+                <div className="flex flex-col gap-4 order-0 lg:order-1">
+                  <div
+                    className="w-full flex flex-col gap-1"
+                    id="frame-preview"
+                  >
+                    <FrameUI
+                      frameState={frameState}
+                      allowPartialFrame={true}
+                      enableImageDebugging={false}
+                      onError={handleFrameError}
+                    />
+                    {/* display frame url bellow frame */}
 
-                  if (!newUrl) {
-                    // toast({
-                    //   title: "Missing URL",
-                    //   description: "Please provide a URL to debug",
-                    //   variant: "destructive",
-                    //   action: (
-                    //     // <ToastAction
-                    //     //   altText="Fix"
-                    //     //   onClick={() => {
-                    //     //     urlInputRef.current?.focus();
-                    //     //   }}
-                    //     //   type="button"
-                    //     // >
-                    //     //   Fix
-                    //     // </ToastAction>
-                    //   ),
-                    // });
-                    return;
-                  }
+                    {!isLoading &&
+                      protocol.specification !== "farcaster_v2" && (
+                        <>
+                          {currentFrameStackItem?.request.method === "GET" && (
+                            <div className="my-5">
+                              <h3 className="font-bold">Preview</h3>
+                              <div className="border rounded mt-2">
+                                <CollapsedFrameUI
+                                  frameState={frameState}
+                                  theme={{ bg: "white" }}
+                                  FrameImage={FrameImageNext}
+                                  allowPartialFrame
+                                />
+                              </div>
+                            </div>
+                          )}
+                          <div className="space-y-1">
+                            {currentFrameStackItem?.status === "done" &&
+                              (currentFrameStackItem.frameResult
+                                .specification === "farcaster" ||
+                                currentFrameStackItem.frameResult
+                                  .specification === "openframes") &&
+                              currentFrameStackItem.frameResult.frame.buttons
+                                ?.filter(
+                                  (button) =>
+                                    button.target?.startsWith(
+                                      "https://warpcast.com/~/add-cast-action"
+                                    ) ||
+                                    button.target?.startsWith(
+                                      "https://warpcast.com/~/composer-action"
+                                    )
+                                )
+                                .map((button) => {
+                                  // Link to debug target
+                                  return (
+                                    <button
+                                      key={button.target}
+                                      className="border text-sm text-gray-800 rounded flex p-2 w-full gap-2"
+                                      onClick={() => {
+                                        const url = new URL(button.target!);
+                                        const params = new URLSearchParams({
+                                          url: url.searchParams.get("url")!,
+                                        });
 
-                  try {
-                    const parsedUrl = new URL(newUrl);
-
-                    if (
-                      parsedUrl.protocol !== "http:" &&
-                      parsedUrl.protocol !== "https:"
-                    ) {
-                      throw new Error("Invalid protocol");
-                    }
-
-                    if (!protocolConfiguration) {
-                      // toast({
-                      //   title: "Select Protocol",
-                      //   description:
-                      //     "Please select a protocol to debug the URL",
-                      //   variant: "destructive",
-                      //   action: (
-                      //     // <ToastAction
-                      //     //   altText="Select"
-                      //     //   onClick={() => {
-                      //     //     selectProtocolButtonRef.current?.click();
-                      //     //   }}
-                      //     //   type="button"
-                      //     // >
-                      //     //   Select
-                      //     // </ToastAction>
-                      //   ),
-                      // });
-                      return;
-                    }
-
-                    if (searchParams.url === parsedUrl.toString()) {
-                      location.reload();
-                    }
-
-                    router.push(
-                      `?url=${encodeURIComponent(parsedUrl.toString())}`
-                    );
-                  } catch (e) {
-                    // toast({
-                    //   title: "Invalid URL",
-                    //   description:
-                    //     "URL must start with http:// or https:// and be in valid format",
-                    //   variant: "destructive",
-                    //   action: (
-                    //     // <ToastAction
-                    //     //   altText="Fix"
-                    //     //   onClick={() => {
-                    //     //     urlInputRef.current?.focus();
-                    //     //   }}
-                    //     //   type="button"
-                    //     // >
-                    //     //   Fix
-                    //     // </ToastAction>
-                    //   ),
-                    // });
-
-                    return;
-                  }
-                }}
-              >
-                <TextInput
-                  type="text"
-                  name="url"
-                  ref={urlInputRef}
-                  className="w-[400px] px-2 py-1 border border-gray-400 rounded-l rounded-r-none"
-                  defaultValue={url ?? FALLBACK_URL}
-                  value={url ?? FALLBACK_URL}
-                  placeholder="Enter URL"
-                />
-                <Button
-                  className="rounded-l-none"
-                  disabled={isLoading}
-                  type="submit"
-                >
-                  {/* {isLoading && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )} * /}
-                  Load
-                </Button>
-              </form> */}
-
-              {/* <ProtocolConfigurationButton
-                onChange={(spec) => {
-                  setProtocolConfiguration(spec);
-                }}
-                value={protocolConfiguration}
-                farcasterSignerState={farcasterSignerState}
-                xmtpSignerState={xmtpSignerState}
-                anonymousSignerState={anonymousSignerState}
-                farcasterFrameContext={farcasterFrameContext}
-                xmtpFrameContext={xmtpFrameContext}
-                ref={selectProtocolButtonRef}
-                lensFrameContext={lensFrameContext}
-                lensSignerState={lensSignerState}
-              ></ProtocolConfigurationButton> 
-
-              <div className="ml-auto">
-                {/* <ConnectButton showBalance={false}></ConnectButton> * /}
-              </div>
-            </div> */}
-            {url ? (
-              <>
-                {initialAction && (
-                  <div>
-                    {/* <ActionDebugger
-                      actionMetadataItem={initialAction}
-                      refreshUrl={refreshUrl}
-                      mockHubContext={mockHubContext}
-                      setMockHubContext={setMockHubContext}
-                      hasExamples={!!examples}
-                      ref={actionDebuggerRef}
-                    /> */}
+                                        router.push(`/?${params.toString()}`);
+                                      }}
+                                      style={{
+                                        flex: "1 1 0px",
+                                        // fixme: hover style
+                                        backgroundColor: defaultTheme.buttonBg,
+                                        borderColor:
+                                          defaultTheme.buttonBorderColor,
+                                        color: defaultTheme.buttonColor,
+                                        cursor: "pointer",
+                                      }}
+                                    ></button>
+                                  );
+                                })}
+                          </div>
+                        </>
+                      )}
                   </div>
-                )}
+                </div>
+              </div>
+            )}
 
-                {initialFrame && !!protocolConfiguration && (
-                  <FrameDebugger
-                    // use key so the frame debugger state is completely reset when protocol changes
-                    key={protocolConfiguration.protocol}
-                    url={url}
-                    mockHubContext={mockHubContext}
-                    setMockHubContext={setMockHubContext}
-                    protocol={protocolConfiguration}
-                    ref={debuggerRef}
-                    hasExamples={!!examples}
-                    onFrameLaunchedInContext={setFrameV2LaunchContext}
-                  />
-                )}
-
-                {initialFrame &&
-                  !!protocolConfiguration &&
-                  frameV2LaunchContext && (
-                    <FrameAppDebugger
-                      context={frameV2LaunchContext}
-                      farcasterSigner={farcasterSignerState}
+            {initialFrame &&
+              !!protocolConfiguration &&
+              frameV2LaunchContext && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[300px_500px_1fr] p-4 gap-4 bg-slate-50 max-w-full w-full">
+                  <div className="flex flex-col gap-4 order-0 lg:order-1">
+                    <FrameApp
+                      key={appIdCounter}
+                      frameAppNotificationManager={
+                        null // frameAppNotificationManager
+                      }
+                      userContext={userContext.current}
                       onClose={() => {
                         setFrameV2LaunchContext(null);
                       }}
+                      onViewProfile={async (params) =>
+                        setViewFidProfile(params.fid)
+                      }
+                      onFrameAppUpdate={setFrameApp}
+                      context={frameV2LaunchContext}
                     />
-                  )}
-              </>
-            ) : (
-              examples
-            )}
-          </div>
-          {/* {lensSignerState.showProfileSelector && (
-            <ProfileSelectorModal
-              profiles={lensSignerState.availableProfiles}
-              onSelect={lensSignerState.handleSelectProfile}
-              show={lensSignerState.showProfileSelector}
-              onClose={lensSignerState.closeProfileSelector}
-            />
-          )} */}
-        </DebuggerConsoleContextProvider>
-      </FrameContextProvider>
-    </ProtocolSelectorProvider>
+                  </div>
+                </div>
+              )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
