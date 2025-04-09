@@ -53,7 +53,7 @@ type FrameAppProps = {
   onClose: NonNullable<UseFrameAppOptions["onClose"]>;
   onFrameAppUpdate: (frameApp: UseFrameAppInIframeReturn) => void;
   onViewProfile: NonNullable<UseFrameAppOptions["onViewProfile"]>;
-  frameAppNotificationManager: any
+  frameAppNotificationManager: any;
 };
 
 export function FrameApp({
@@ -79,22 +79,22 @@ export function FrameApp({
     debug: true,
   });
 
-  const frameAppNotificationManagerPromiseRef = useRef(
-    frameAppNotificationManager.promise
-  );
+  // const frameAppNotificationManagerPromiseRef = useRef(
+  //   frameAppNotificationManager.promise
+  // );
 
   const resolveContext: ResolveContextFunction = useCallback(
     async ({ signal }) => {
       const location: FrameContext["location"] =
         context.context === "button_press"
-          ? { type: "launcher", }
+          ? { type: "launcher" }
           : {
-            type: "cast_embed",
-            embed: "",
-            cast: fallbackFrameContext.castId,
-          };
+              type: "cast_embed",
+              embed: "",
+              cast: fallbackFrameContext.castId,
+            };
 
-      setIsModalOpen(true);  // Updates the global store
+      setIsModalOpen(true); // Updates the global store
 
       try {
         const clientInfoResponse = await fetch("/client-info", {
@@ -113,17 +113,19 @@ export function FrameApp({
           await clientInfoResponse.json()
         );
 
-        const { manager } = await frameAppNotificationManagerPromiseRef.current;
+        // const { manager } = await frameAppNotificationManagerPromiseRef.current;
         const clientFid = clientInfo.fid;
 
         return {
           client: {
             clientFid,
-            added: manager.state?.frame.status === "added",
+            added: false,
+            // manager.state?.frame.status === "added",
             notificationDetails:
-              manager.state?.frame.status === "added"
-                ? manager.state.frame.notificationDetails ?? undefined
-                : undefined,
+              // manager.state?.frame.status === "added"
+              // ? manager.state.frame.notificationDetails ?? undefined
+              // :
+              undefined,
           },
           location,
           user: userContext,

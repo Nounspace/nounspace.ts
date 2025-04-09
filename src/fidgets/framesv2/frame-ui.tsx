@@ -31,16 +31,14 @@ const components: Props["components"] = {
       >
         {frameButton.action === "mint" ? `⬗ ` : ""}
         {frameButton.label}
-        {frameButton.action === "tx" ? (
-          "tx"
-          // <ZapIcon
-          //   className="ml-1 mb-[2px] text-gray-400 inline-block select-none align-text-middle overflow-visible"
-          //   fill="currentColor"
-          //   size={12}
-          // />
-        ) : (
-          ""
-        )}
+        {frameButton.action === "tx"
+          ? "tx"
+          : // <ZapIcon
+            //   className="ml-1 mb-[2px] text-gray-400 inline-block select-none align-text-middle overflow-visible"
+            //   fill="currentColor"
+            //   size={12}
+            // />
+            ""}
         {frameButton.action === "post_redirect" || frameButton.action === "link"
           ? ` ↗`
           : ""}
@@ -140,19 +138,13 @@ const theme: Props["theme"] = {
 };
 
 export function FrameUI(props: Props) {
-  // const { toast } = useToast();
-
   return (
     <BaseFrameUI
       {...props}
       components={components}
       theme={theme}
       onMessage={(message) => {
-        console.log(message)
-        // toast({
-        //   description: message.message,
-        //   variant: message.status === "error" ? "destructive" : "default",
-        // });
+        console.log(message);
       }}
     />
   );
