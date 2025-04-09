@@ -159,6 +159,10 @@ export default function Space({
             )}
           </div>
 
+          {!isUndefined(feed) && !isMobile ? (
+            <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+          ) : null}
+
           <div className={isMobile ? "w-full h-full" : "grow"}>
             <Suspense
               fallback={
@@ -168,21 +172,21 @@ export default function Space({
                 />
               }
             >
-              <LayoutFidget
-                layoutConfig={finalLayoutConfig}
-                fidgetInstanceDatums={config.fidgetInstanceDatums}
-                theme={config.theme}
-                fidgetTrayContents={config.fidgetTrayContents}
-                inEditMode={!isMobile && editMode} // No edit mode on mobile
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                portalRef={portalRef}
-                saveConfig={saveLocalConfig}
-                hasProfile={!isMobile && !isNil(profile)}
-                hasFeed={!isMobile && !isNil(feed)}
-                tabNames={config.tabNames}
-                fid={config.fid}
-              />
+            <LayoutFidget
+              layoutConfig={finalLayoutConfig}
+              fidgetInstanceDatums={config.fidgetInstanceDatums}
+              theme={config.theme}
+              fidgetTrayContents={config.fidgetTrayContents}
+              inEditMode={!isMobile && editMode} // No edit mode on mobile
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancelExitEditMode}
+              portalRef={portalRef}
+              saveConfig={saveLocalConfig}
+              hasProfile={!isMobile && !isNil(profile)}
+              hasFeed={!isNil(feed)}
+              tabNames={config.tabNames}
+              fid={config.fid}
+            />
             </Suspense>
           </div>
         </div>
