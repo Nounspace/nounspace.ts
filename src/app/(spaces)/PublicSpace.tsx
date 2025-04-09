@@ -7,12 +7,13 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
 import { SpaceConfigSaveDetails } from "./Space";
-import { find, indexOf, isNil, mapValues, toString } from "lodash";
+import { find, indexOf, isNil, mapValues, noop, toString } from "lodash";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
+import Profile from "@/fidgets/ui/profile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -327,6 +328,20 @@ export default function PublicSpace({
     />
   );
 
+  const profile = 
+    isNil(fid) ? undefined :
+    <Profile.fidget
+      settings={{ fid }}
+      saveData={async () => noop()}
+      data={{}}
+    />;
+
+  console.log(
+    fid,
+    isNil(fid),
+    profile
+  );
+
   return (
     <SpacePage
       key={spaceId + providedTabName}
@@ -336,6 +351,7 @@ export default function PublicSpace({
       resetConfig={resetConfig}
       tabBar={tabBar}
       loading={loading}
+      profile={profile ?? undefined}
     />
   );
 } 
