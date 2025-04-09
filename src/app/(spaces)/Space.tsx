@@ -106,32 +106,66 @@ export default function Space({
     });
   }
 
-  // Determine which layout fidget to use
-  // Use TabFullScreen for mobile, otherwise use the configured layout
-  let LayoutFidget;
-  let finalLayoutConfig;
-  if (isMobile) {
-    // Use TabFullScreen for mobile
-    LayoutFidget = LayoutFidgets["tabFullScreen"];
-
-    // Extract fidget IDs from the current config to use in TabFullScreen
-    const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
-
-    // Create a layout config for TabFullScreen with all available fidget IDs
-    finalLayoutConfig = {
-      layout: fidgetIds,
-    };
-  } else {
-    // Use the configured layout for desktop
-    LayoutFidget =
-      config && config.layoutDetails && config.layoutDetails.layoutFidget
+  // Memoize the LayoutFidget component selection based on mobile state
+  const LayoutFidget = useMemo(() => {
+    if (isMobile) {
+      // Use TabFullScreen for mobile
+      return LayoutFidgets["tabFullScreen"];
+    } else {
+      // Use the configured layout for desktop
+      return config && config.layoutDetails && config.layoutDetails.layoutFidget
         ? LayoutFidgets[config.layoutDetails.layoutFidget]
         : LayoutFidgets["grid"];
+    }
+  }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
-    finalLayoutConfig = config?.layoutDetails?.layoutConfig ?? {
-      layout: [],
+  // Memoize the layoutConfig to prevent unnecessary re-renders
+  const layoutConfig = useMemo(() => {
+    if (isMobile) {
+      // Extract fidget IDs from the current config to use in TabFullScreen
+      const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
+      
+      // Create a layout config for TabFullScreen with all available fidget IDs
+      return {
+        layout: fidgetIds,
+        layoutFidget: "tabFullScreen",
+      };
+    } else {
+      return config?.layoutDetails?.layoutConfig ?? {
+        layout: [],
+        layoutFidget: "grid",
+      };
+    }
+  }, [isMobile, config?.layoutDetails?.layoutConfig, config?.fidgetInstanceDatums]);
+
+  // Memoize the LayoutFidget render props that don't change during fidget movement
+  const layoutFidgetProps = useMemo(() => {
+    return {
+      theme: config.theme,
+      fidgetInstanceDatums: config.fidgetInstanceDatums,
+      fidgetTrayContents: config.fidgetTrayContents,
+      inEditMode: !isMobile && editMode, // No edit mode on mobile
+      saveExitEditMode: saveExitEditMode,
+      cancelExitEditMode: cancelExitEditMode,
+      portalRef: portalRef,
+      saveConfig: saveLocalConfig,
+      hasProfile: !isMobile && !isNil(profile),
+      hasFeed: !isNil(feed),
+      tabNames: config.tabNames,
+      fid: config.fid
     };
-  }
+  }, [
+    config.theme,
+    config.fidgetInstanceDatums, 
+    config.fidgetTrayContents,
+    config.tabNames,
+    config.fid,
+    isMobile, 
+    editMode, 
+    portalRef, 
+    profile, 
+    feed
+  ]);
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
@@ -159,35 +193,26 @@ export default function Space({
             )}
           </div>
 
-          {!isUndefined(feed) && !isMobile ? (
-            <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
-          ) : null}
+          <div className={isMobile ? "w-full h-full" : "flex h-full"}>
+            {!isUndefined(feed) && !isMobile ? (
+              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+            ) : null}
 
-          <div className={isMobile ? "w-full h-full" : "grow"}>
-            <Suspense
-              fallback={
-                <SpaceLoading
-                  hasProfile={!isNil(profile)}
-                  hasFeed={!isNil(feed)}
+            <div className={isMobile ? "w-full h-full" : "grow"}>
+              <Suspense
+                fallback={
+                  <SpaceLoading
+                    hasProfile={!isNil(profile)}
+                    hasFeed={!isNil(feed)}
+                  />
+                }
+              >
+                <LayoutFidget
+                  layoutConfig={{ ...layoutConfig }}
+                  {...layoutFidgetProps}
                 />
-              }
-            >
-            <LayoutFidget
-              layoutConfig={finalLayoutConfig}
-              fidgetInstanceDatums={config.fidgetInstanceDatums}
-              theme={config.theme}
-              fidgetTrayContents={config.fidgetTrayContents}
-              inEditMode={!isMobile && editMode} // No edit mode on mobile
-              saveExitEditMode={saveExitEditMode}
-              cancelExitEditMode={cancelExitEditMode}
-              portalRef={portalRef}
-              saveConfig={saveLocalConfig}
-              hasProfile={!isMobile && !isNil(profile)}
-              hasFeed={!isNil(feed)}
-              tabNames={config.tabNames}
-              fid={config.fid}
-            />
-            </Suspense>
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>
