@@ -1,41 +1,50 @@
-import React, { useState } from "react";
-import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
-import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
-import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import React, { useRef, useState } from "react";
+import { Button } from "@/common/components/atoms/button";
+import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import Spinner from "@/common/components/atoms/spinner";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/common/components/atoms/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/common/components/atoms/tooltip";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
-import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { useAppStore } from "@/common/data/stores/app";
+import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
+import { ThemeCard } from "@/common/lib/theme/ThemeCard";
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
+import {
+  tabContentClasses,
+  tabListClasses,
+  tabTriggerClasses,
+} from "@/common/lib/theme/helpers";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
-import { Button } from "@/common/components/atoms/button";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/common/components/atoms/tabs";
-import {
-  tabListClasses,
-  tabTriggerClasses,
-  tabContentClasses,
-} from "@/common/lib/theme/helpers";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/common/components/atoms/tooltip";
-import { FaInfoCircle } from "react-icons/fa";
+import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
-import { ThemeCard } from "@/common/lib/theme/ThemeCard";
-import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
+import { usePrivy } from "@privy-io/react-auth";
+import { FaInfoCircle } from "react-icons/fa";
+import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
-import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { base } from "viem/chains";
+import { useBalance } from "wagmi";
+import { SparklesIcon } from "@heroicons/react/24/solid";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -52,6 +61,7 @@ export function ThemeSettingsEditor({
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
+  const [tabValue, setTabValue] = useState("fonts");
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -96,6 +106,7 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
+
   return (
     <>
       <div className="flex flex-col h-full gap-6">
@@ -148,7 +159,8 @@ export function ThemeSettingsEditor({
 
             {/* Templates Dropdown */}
             <div className="grid gap-2">
-              <Tabs defaultValue="fonts">
+              <Tabs value={tabValue} onValueChange={setTabValue}>
+                {/* controlled Tabs */}
                 <TabsList className={tabListClasses}>
                   <TabsTrigger value="style" className={tabTriggerClasses}>
                     Style
@@ -160,7 +172,6 @@ export function ThemeSettingsEditor({
                     Code
                   </TabsTrigger>
                 </TabsList>
-
                 {/* Fonts */}
                 <TabsContent value="fonts" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
@@ -210,7 +221,6 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                 </TabsContent>
-
                 {/* Style */}
                 <TabsContent value="style" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
@@ -280,19 +290,12 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                 </TabsContent>
-
                 {/* Code */}
                 <TabsContent value="code" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Custom styles</h4>
-                      <ThemeSettingsTooltip text="Add HTML/CSS as a single file to customize your background. Pro tip: ask AI for help coding the background of your dreams" />
-                    </div>
-                    <HTMLInput
-                      value={backgroundHTML}
-                      onChange={themePropSetter<string>("backgroundHTML")}
-                    />
-                  </div>
+                  <BackgroundGenerator
+                    backgroundHTML={backgroundHTML}
+                    onChange={themePropSetter<string>("backgroundHTML")}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -310,65 +313,224 @@ export function ThemeSettingsEditor({
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="shrink-0 flex flex-col gap-3 pb-8">
-          {showConfirmCancel ? (
-            // Back Button and Exit Button (shows second)
-            <>
-              <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
-                If you exit, any changes made will not be saved.
+        <div className="flex flex-col gap-2">
+          {tabValue === "fonts" && (
+            <div
+              className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
+              onClick={() => setTabValue("code")}
+            >
+              <p>
+                <span className="font-bold">New!</span> Create a custom
+                background with a prompt.
               </p>
-              <div className="flex items-center gap-2 justify-center">
-                <Button
-                  onClick={() => setShowConfirmCancel(false)}
-                  size="icon"
-                  variant="secondary"
-                >
-                  <BackArrowIcon />
-                </Button>
-                <Button
-                  onClick={cancelAndClose}
-                  variant="destructive"
-                  width="auto"
-                  withIcon
-                >
-                  <FaTriangleExclamation
-                    className="h-8l shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span>Exit</span>
-                </Button>
-              </div>
-            </>
-          ) : (
-            // X Button and Save Button (shows first)
-            <>
-              <div className="gap-2 pt-2 flex items-center justify-center">
-                <Button
-                  onClick={() => setShowConfirmCancel(true)}
-                  size="icon"
-                  variant="secondary"
-                >
-                  <FaX aria-hidden="true" />
-                </Button>
-
-                <Button
-                  onClick={saveAndClose}
-                  variant="primary"
-                  width="auto"
-                  withIcon
-                >
-                  <FaFloppyDisk aria-hidden="true" />
-                  <span>Save</span>
-                </Button>
-              </div>
-            </>
+              {/* <HiOutlineSparkles size={32} /> */}
+              <SparklesIcon className="size-8" />
+            </div>
           )}
+
+          {/* Actions */}
+          <div className="shrink-0 flex flex-col gap-3 pb-8">
+            {showConfirmCancel ? (
+              // Back Button and Exit Button (shows second)
+              <>
+                <p className="w-full text-center text-xs pt-1 pl-8 pr-8">
+                  If you exit, any changes made will not be saved.
+                </p>
+                <div className="flex items-center gap-2 justify-center">
+                  <Button
+                    onClick={() => setShowConfirmCancel(false)}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <BackArrowIcon />
+                  </Button>
+                  <Button
+                    onClick={cancelAndClose}
+                    variant="destructive"
+                    width="auto"
+                    withIcon
+                  >
+                    <FaTriangleExclamation
+                      className="h-8l shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span>Exit</span>
+                  </Button>
+                </div>
+              </>
+            ) : (
+              // X Button and Save Button (shows first)
+              <>
+                <div className="gap-2 pt-2 flex items-center justify-center">
+                  <Button
+                    onClick={() => setShowConfirmCancel(true)}
+                    size="icon"
+                    variant="secondary"
+                  >
+                    <FaX aria-hidden="true" />
+                  </Button>
+
+                  <Button
+                    onClick={saveAndClose}
+                    variant="primary"
+                    width="auto"
+                    withIcon
+                  >
+                    <FaFloppyDisk aria-hidden="true" />
+                    <span>Save</span>
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </>
   );
 }
+
+const BackgroundGenerator = ({
+  backgroundHTML,
+  onChange,
+}: {
+  backgroundHTML: string;
+  onChange: (value: string) => void;
+}) => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generateText, setGenerateText] = useState("Generate");
+  const [showBanner, setShowBanner] = useState(false);
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const timersRef = useRef<number[]>([]);
+  const { showToast } = useToastStore();
+
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const { hasNogs } = useAppStore((state) => ({
+    hasNogs: state.account.hasNogs,
+  }));
+
+  const handleGenerateBackground = async () => {
+    try {
+      analytics.track(AnalyticsEvent.GENERATE_BACKGROUND, {
+        user_input: backgroundHTML,
+      });
+      const response = await fetch(`/api/venice/background`, {
+        method: "POST",
+        body: JSON.stringify({ text: backgroundHTML }),
+      });
+      if (!response.ok) {
+        throw new Error(`Network response was not ok: ${response.statusText}`);
+      }
+      const data = await response.json();
+      onChange(data.response);
+      showToast(
+        "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
+        10000,
+        "background-generated",
+        true,
+      );
+    } catch (error) {
+      console.error("Error generating background:", error);
+    } finally {
+      timersRef.current.forEach((timer) => clearInterval(timer));
+      timersRef.current = [];
+      setGenerateText("Generate");
+      setIsGenerating(false);
+    }
+  };
+
+  const handleGenerate = () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    const messages = [
+      "Analyzing…",
+      "Imagining…",
+      "Coding…",
+      "Reviewing…",
+      "Improving…",
+    ];
+    let index = 0;
+    setGenerateText(messages[index]);
+    const intervalId = window.setInterval(() => {
+      index = (index + 1) % messages.length;
+      setGenerateText(messages[index]);
+    }, 8000);
+    timersRef.current = [intervalId];
+    handleGenerateBackground();
+  };
+
+  const handleGenerateWrapper = () => {
+    // Allow generation if user holds enough SPACE or has nOGs
+    if (!userHoldEnoughSpace && !hasNogs) {
+      setButtonDisabled(true);
+      setShowBanner(true);
+      return;
+    }
+    handleGenerate();
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex flex-row gap-1">
+        <h4 className="text-sm">Prompt and/or HTML/CSS</h4>
+        <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
+      </div>
+      <HTMLInput
+        value={backgroundHTML}
+        onChange={onChange}
+        placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
+      />
+      <Button
+        onClick={handleGenerateWrapper}
+        variant="primary"
+        width="auto"
+        withIcon
+        disabled={buttonDisabled || isGenerating || backgroundHTML === ""}
+        className="w-full"
+      >
+        {isGenerating ? (
+          <Spinner className="size-6" />
+        ) : (
+          <SparklesIcon className="size-5" />
+        )}
+        <span>{isGenerating ? generateText : "Generate"}</span>
+      </Button>
+      {showBanner && (
+        <div className="flex gap-1 items-center border-2 border-red-600 text-red-600 bg-red-100 rounded-lg p-2 text-sm font-medium">
+          <p>
+            Hold at least 1,111{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+              className="font-bold underline"
+            >
+              $SPACE
+            </a>{" "}
+            or 1{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
+              className="font-bold underline"
+            >
+              nOGs
+            </a>{" "}
+            to unlock generation
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ThemeSettingsTooltip = ({ text }: { text: string }) => {
   return (

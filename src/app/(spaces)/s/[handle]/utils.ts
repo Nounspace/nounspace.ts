@@ -24,6 +24,7 @@ export const getUserMetadata = cache(
         bio: user.profile.bio.text,
       };
     } catch (e) {
+      console.error(e);
       return null;
     }
   },
@@ -31,17 +32,29 @@ export const getUserMetadata = cache(
 
 export const getTabList = cache(async (fid: number): Promise<Tab[]> => {
   try {
+    console.log("Getting tablist for fid:", fid, "type:", typeof fid);
+    
+    // Let's try with explicit column names as shown in the schema
     const { data, error } = await supabaseClient
-    .from("spaceRegistrations")
-    .select("spaceId")
-    .eq("fid", fid);
+      .from("spaceRegistrations")
+      .select('"spaceId","spaceName"')
+      .eq('fid', fid);
+    
+    console.log("supabase tabList response: ", data, error ? error.message : "no error");
 
-    if (isEmpty(data)) {
+    if (error) {
+      console.error("Error fetching tabs:", error);
+      return [];
+    }
+
+    if (!data || isEmpty(data)) {
+      console.log("No data found for fid:", fid);
       return [];
     }
 
     return data as Tab[];
   } catch (e) {
+    console.error("Exception in getTabList:", e);
     return [];
   }
 });

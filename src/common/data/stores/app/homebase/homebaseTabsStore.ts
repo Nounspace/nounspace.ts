@@ -1,7 +1,7 @@
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import {
@@ -145,15 +145,36 @@ export const createHomeBaseTabStoreFunc = (
         return [];
       } else {
         const currentTabs = get().homebase.tabs;
+        const validTabNames = data.value || [];
         set((draft) => {
           // Reset all tabs, this removes all ones that no longer exist
           draft.homebase.tabs = {};
-          forEach(data.value || [], (tabName) => {
+          forEach(validTabNames, (tabName) => {
             // Set the tabs that we have and add the missing ones
             draft.homebase.tabs[tabName] = currentTabs[tabName] || {};
           });
+
+          // Clean up tab order by removing tabs that no longer exist
+          draft.homebase.tabOrdering.local = draft.homebase.tabOrdering.local.filter(
+            tabName => validTabNames.includes(tabName)
+          );
+
+          // Add back any valid tabs that aren't in the tab order
+          validTabNames.forEach(tabName => {
+            if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+              draft.homebase.tabOrdering.local.push(tabName);
+            }
+          });
         }, "loadTabNames");
-        return data.value || [];
+
+        // Load remote state for any tabs that don't have it
+        for (const tabName of validTabNames) {
+          if (!get().homebase.tabs[tabName]?.remoteConfig) {
+            await get().homebase.loadHomebaseTab(tabName);
+          }
+        }
+
+        return validTabNames;
       }
     } catch (e) {
       console.debug("failed to load tab names", e);
@@ -163,6 +184,23 @@ export const createHomeBaseTabStoreFunc = (
   async createTab(tabName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
+
+    // Check if tab already exists
+    if (get().homebase.tabs[tabName]) {
+      // If tab exists but doesn't have remote state, load it
+      if (!get().homebase.tabs[tabName]?.remoteConfig) {
+        await get().homebase.loadHomebaseTab(tabName);
+      }
+
+      // Add it back to the tab order if it's not already there
+      set((draft) => {
+        if (!draft.homebase.tabOrdering.local.includes(tabName)) {
+          draft.homebase.tabOrdering.local.push(tabName);
+        }
+      }, "addExistingTabToOrder");
+      return get().homebase.commitTabOrderingToDatabase();
+    }
+
     const req: UnsignedManageHomebaseTabsRequest = {
       publicKey,
       type: "create",
@@ -229,12 +267,22 @@ export const createHomeBaseTabStoreFunc = (
         { request: signedReq },
       );
       if (data.result === "success") {
+        // Update both the tabs and ordering atomically
         set((draft) => {
+          // Remove from tabs object
           delete draft.homebase.tabs[tabName];
+          
+          // Remove from tab ordering and ensure it's a new array
+          draft.homebase.tabOrdering.local = [...draft.homebase.tabOrdering.local]
+            .filter(name => name !== tabName);
         }, "deleteHomebaseTab");
+
+        // Commit the updated tab order to the database
+        await get().homebase.commitTabOrderingToDatabase();
       }
     } catch (e) {
       console.debug("failed to delete homebase tab", e);
+      throw e; // Propagate error to handler
     }
   },
   async renameTab(tabName, newName) {

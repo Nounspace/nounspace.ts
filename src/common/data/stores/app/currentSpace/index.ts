@@ -1,6 +1,6 @@
 import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import { isNil, isUndefined, mapValues, pickBy } from "lodash";
 
 interface CurrentSpaceStoreState {

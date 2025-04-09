@@ -4,6 +4,7 @@ import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import SpaceLoading from "./(spaces)/SpaceLoading";
 
 export const metadata = {
   title: "Nounspace",
@@ -70,9 +71,7 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          <Suspense fallback={<div className="flex items-center justify-center w-full h-full">Loading...</div>}>
             {page}
-          </Suspense>
         </div>
       </div>
     </>

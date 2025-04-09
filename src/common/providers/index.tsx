@@ -11,6 +11,7 @@ import LoggedInStateProvider from "./LoggedInStateProvider";
 import AnalyticsProvider from "./AnalyticsProvider";
 import VersionCheckProivder from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
+import { ToastProvider } from "../components/atoms/Toast";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -24,7 +25,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                   <AuthenticatorProvider>
                     <LoggedInStateProvider>
                       <SidebarContextProvider>
-                        <AnalyticsProvider>{children}</AnalyticsProvider>
+                        <AnalyticsProvider>
+                          <ToastProvider>{children}</ToastProvider>
+                        </AnalyticsProvider>
                       </SidebarContextProvider>
                     </LoggedInStateProvider>
                   </AuthenticatorProvider>

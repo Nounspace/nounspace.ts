@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 const tutorialText = `
  ## To start customizing, click the paintbrush in the bottom left next to 'Cast' ⬋🖌️⬋

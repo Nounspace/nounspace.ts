@@ -1,8 +1,8 @@
 "use client"
 
 import React from 'react';
-import ContractDefinedSpace from '@/common/components/pages/ContractDefinedSpace';
-import SpaceNotFound from '@/common/components/pages/SpaceNotFound';
+import ContractDefinedSpace from '@/app/(spaces)/t/[network]/ContractDefinedSpace';
+import SpaceNotFound from '@/app/(spaces)/SpaceNotFound';
 import { useAppStore } from '@/common/data/stores/app';
 import { isArray, isNil } from 'lodash';
 import { useEffect } from 'react';

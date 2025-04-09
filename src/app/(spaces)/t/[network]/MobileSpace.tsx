@@ -12,7 +12,7 @@ import { MdOutlineSwapHoriz } from "react-icons/md";
 import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 import { useToken } from "@/common/providers/TokenProvider";
-import TokenDataHeader from "../organisms/TokenDataHeader";
+import TokenDataHeader from "../../../../common/components/organisms/TokenDataHeader";
 import {
   getGeckoUrl,
   getMatchaUrl,

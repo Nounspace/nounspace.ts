@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk";
 import { cloneDeep } from "lodash";
