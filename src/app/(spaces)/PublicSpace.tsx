@@ -228,19 +228,11 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      let currentSpaceId = spaceId;
-      if (isNil(currentSpaceId)) {
-        // Register the space based on type
-        if (isTokenPage && contractAddress && tokenData?.network) {
-          // For token spaces
-          currentSpaceId = `t:${tokenData.network}:${contractAddress}`;
-        } else if (!isTokenPage && fid) {
-          // For user spaces
-          currentSpaceId = `u:${fid}`;
-        } else {
-          throw new Error("Cannot save config until space is registered");
-        }
-        setSpaceId(currentSpaceId);
+      if (isNil(currentUserFid)) {
+        throw new Error("Attempted to save config when user is not signed in!");
+      }
+      if (isNil(spaceId)) {
+        throw new Error("Cannot save config until space is registered");
       }
       const saveableConfig = {
         ...spaceConfig,
@@ -256,9 +248,10 @@ export default function PublicSpace({
         ),
         isPrivate: false,
       };
-      return saveLocalSpaceTab(currentSpaceId, providedTabName, saveableConfig);
+      // Save the configuration locally
+      return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
-    [spaceId, providedTabName, isTokenPage, contractAddress, tokenData?.network, fid],
+    [spaceId, providedTabName],
   );
 
   const commitConfig = useCallback(async () => {
