@@ -124,6 +124,7 @@ async function updateSpaceTabOrder(
     result: "success",
     value: updateOrderRequest.tabOrder,
   });
+  console.log("[registry space] Supabase Response", res.status);
 }
 
 export async function identitiesCanModifySpace(

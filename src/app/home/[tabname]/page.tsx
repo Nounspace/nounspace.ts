@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
-import SpacePage, { SpacePageArgs } from "@/common/components/pages/SpacePage";
+import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import TabBar from "@/common/components/organisms/TabBar";  
 import {
   FIDGETS_TAB_CONFIG,
@@ -11,6 +11,7 @@ import {
   NOUNS_TAB_CONFIG,
   WELCOME_TAB_CONFIG,
 } from "@/constants/homePageTabsConfig";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
@@ -73,10 +74,10 @@ const Home = () => {
 
   const args: SpacePageArgs = isInitializing
     ? {
-        config: undefined,
-        saveConfig: undefined,
-        commitConfig: undefined,
-        resetConfig: undefined,
+        config: { ...INITIAL_SPACE_CONFIG_EMPTY, isEditable: false },
+        saveConfig: async () => {},
+        commitConfig: async () => {},
+        resetConfig: async () => {},
         tabBar: tabBar,
       }
     : !isLoggedIn
