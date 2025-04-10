@@ -40,7 +40,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     getIsLoggedIn,
     loadTabOrder,
     updateTabOrder,
-    createTab,
+    createTab: originalCreateTab,
     deleteTab,
     renameTab,
     commitTabOrder,
@@ -157,6 +157,14 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     }
 
     commitConfigHandler();
+  };
+
+  // Wrap createTab to return the expected type
+  // THIS IS A HACK TO FIX THE TYPE ERROR
+  // TODO: UPDATE PRIVATE SPACE TO USE THE OPTIMISTIC UPDATES THAT ARE IN PUBLIC SPACE
+  const createTab = async (tabName: string) => {
+    await originalCreateTab(tabName);
+    return { tabName };
   };
 
   // Memoize the TabBar component to prevent unnecessary re-renders
