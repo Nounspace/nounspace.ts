@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+/* eslint-disable react/react-in-jsx-scope */
 import { Button } from "@/common/components/atoms/button";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
 import Spinner from "@/common/components/atoms/spinner";
@@ -21,6 +21,7 @@ import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import { useAppStore } from "@/common/data/stores/app";
+import { useToastStore } from "@/common/data/stores/toastStore";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
@@ -36,15 +37,15 @@ import {
 } from "@/common/providers/AnalyticsProvider";
 import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
+import { SparklesIcon } from "@heroicons/react/24/solid";
 import { usePrivy } from "@privy-io/react-auth";
+import { useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
-import { SparklesIcon } from "@heroicons/react/24/solid";
-import { useToastStore } from "@/common/data/stores/toastStore";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -63,20 +64,38 @@ export function ThemeSettingsEditor({
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("fonts");
 
-  function themePropSetter<_T extends string>(
-    property: string,
-  ): (value: string) => void {
+  function themePropSetter<_T extends string>(property: string): (value: string) => void {
     return (value: string): void => {
-      saveTheme({
+      const newTheme = {
         ...theme,
         properties: {
           ...theme.properties,
           [property]: value,
         },
-      });
+      };
       if (property === "musicURL") {
         analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
       }
+    
+      // Update CSS variables for global theme
+      if ( property === "font" || property === "headingsFont") {
+        const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
+        if (fontConfig) {
+          document.documentElement.style.setProperty(
+            property === "font" ? "--user-theme-font" : "--user-theme-headings-font",
+            fontConfig.config.style.fontFamily
+          );
+        }
+      }
+
+      if (property === "fontColor" || property === "headingsFontColor") {
+        document.documentElement.style.setProperty(
+          property === "fontColor" ? "--user-theme-font-color" : "--user-theme-headings-font-color",
+          value
+        );
+      }
+
+      saveTheme(newTheme);
     };
   }
 
@@ -188,10 +207,7 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={
-                          FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config
-                            ?.style.fontFamily
-                        }
+                        value={headingsFont}
                         onChange={themePropSetter<FontFamily>("headingsFont")}
                         hideGlobalSettings
                       />
@@ -211,10 +227,7 @@ export function ThemeSettingsEditor({
                       />
                       <FontSelector
                         className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={
-                          FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style
-                            .fontFamily
-                        }
+                        value={font}
                         onChange={themePropSetter<FontFamily>("font")}
                         hideGlobalSettings
                       />

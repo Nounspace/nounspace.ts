@@ -1,26 +1,29 @@
-import React from "react";
-import TextInput from "@/common/components/molecules/TextInput";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import TextInput from "@/common/components/molecules/TextInput";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { defaultStyleFields } from "../helpers";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import {
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/common/components/atoms/card";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 export type TextFidgetSettings = {
   title?: string;
   text: string;
   urlColor: string;
+  fontFamily?: string;
+  fontColor?: string;
+  headingsFontFamily?: string;
+  headingsFontColor?: string;
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
@@ -114,8 +117,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardTitle
             className="text-2xl font-bold"
             style={{
-              fontFamily: settings.headingsFontFamily,
-              color: settings.headingsFontColor,
+              fontFamily: settings.headingsFontFamily || "var(--user-theme-headings-font)",
+              color: settings.headingsFontColor || "var(--user-theme-headings-font-color)",
             }}
           >
             {settings.title}
@@ -127,8 +130,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardDescription
             className="text-base font-normal text-black dark:text-white"
             style={{
-              fontFamily: settings.fontFamily,
-              color: settings.fontColor,
+              fontFamily: settings.fontFamily || "var(--user-theme-font)",
+              color: settings.fontColor || "var(--user-theme-font-color)",
             }}
           >
             <ReactMarkdown
