@@ -290,9 +290,6 @@ export default function PublicSpace({
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
-      if (isNil(currentUserFid)) {
-        throw new Error("Attempted to save config when user is not signed in!");
-      }
       if (isNil(spaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
@@ -409,7 +406,7 @@ export default function PublicSpace({
       commitConfig={commitConfig}
       resetConfig={resetConfig}
       tabBar={tabBar}
-      profile={profile}
+      profile={profile ?? undefined}
     />
   );
 } 
