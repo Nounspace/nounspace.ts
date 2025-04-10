@@ -21,7 +21,7 @@ interface TabBarProps {
   commitTabOrder: () => void;
   switchTabTo: (tabName: string, shouldSave?: boolean) => void;
   deleteTab: (tabName: string) => void;
-  createTab: (tabName: string) => Promise<void>;
+  createTab: (tabName: string) => Promise<{ tabName: string } | undefined>;
   renameTab: (tabName: string, newName: string) => void;
   commitTab: (tabName: string) => void;
   getSpacePageUrl: (tabName: string) => string;
@@ -72,9 +72,26 @@ function TabBar({
   }
 
   async function handleCreateTab(tabName: string) {
-    await createTab(tabName);
-    await commitTabOrder();
+    // Start the tab creation process but don't await it
+    const creationPromise = createTab(tabName);
+    
+    // Switch to the new tab immediately
     switchTabTo(tabName);
+    
+    // Handle the remote operations in the background
+    creationPromise.then(result => {
+      if (result?.tabName) {
+        // If the tab name changed during creation, update the URL
+        if (result.tabName !== tabName) {
+          switchTabTo(result.tabName);
+        }
+      }
+      // Commit the tab order in the background
+      commitTabOrder();
+    }).catch(error => {
+      console.error("Failed to create tab:", error);
+      // Optionally show an error message to the user
+    });
   }
 
   async function handleDeleteTab(tabName: string) {
