@@ -32,22 +32,24 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
     console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
-    // Get the single space registration
-    const { data: registration, error: regError } = await supabaseClient
+    // Get the space registration
+    const { data: registrations, error: regError } = await supabaseClient
       .from("spaceRegistrations")
       .select('spaceId, spaceName')
-      .eq('fid', fid)
-      .single();
+      .eq('fid', fid);
     
     if (regError) {
       console.error("Error fetching space registration:", regError);
       return [];
     }
 
-    if (!registration) {
+    if (!registrations || registrations.length === 0) {
       console.log("No space registration found for fid:", fid);
       return [];
     }
+
+    // Get the first registration (there should only be one per fid)
+    const registration = registrations[0];
 
     try {
       // Get the public URL for the tab order file

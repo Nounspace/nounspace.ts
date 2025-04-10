@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import { useWallets } from "@privy-io/react-auth";
 import { toString, find, isNil } from "lodash";
@@ -21,20 +21,24 @@ export default function DesktopContractDefinedSpace({
   const { wallets } = useWallets();
   const currentUserFid = useCurrentFid();
 
-  const INITIAL_SPACE_CONFIG = createInitialContractSpaceConfigForAddress(
-    contractAddress,
-    tokenData?.clankerData?.cast_hash || "",
-    String(tokenData?.clankerData?.requestor_fid || ""),
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
-    !!tokenData?.clankerData,
-    tokenNetwork,
+  const INITIAL_SPACE_CONFIG = useMemo(
+    () =>
+      createInitialContractSpaceConfigForAddress(
+        contractAddress,
+        tokenData?.clankerData?.cast_hash || "",
+        String(tokenData?.clankerData?.requestor_fid || ""),
+        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
+        !!tokenData?.clankerData,
+        tokenNetwork,
+      ),
+    [contractAddress, tokenData, tokenData?.network],
   );
 
   const getSpacePageUrl = (tabName: string) => 
     `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
 
   // Determine if the current user can edit this space
-  const isEditable = (() => {
+  const isEditable = useMemo(() => {
     if (!currentUserFid) return false;
 
     // Check if user is the requestor
@@ -53,7 +57,7 @@ export default function DesktopContractDefinedSpace({
     }
 
     return false;
-  })();
+  }, [currentUserFid, tokenData?.clankerData?.requestor_fid, ownerId, ownerIdType, wallets]);
 
   return (
     <PublicSpace
