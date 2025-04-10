@@ -104,7 +104,7 @@ export async function loadContractData(
 
   const { data, error } = await supabaseClient
     .from("spaceRegistrations")
-    .select("spaceId, spaceName")
+    .select("spaceId, spaceName, contractAddress")
     .eq("contractAddress", contractAddress)
   
   console.log("Debug - Database Query Error:", error);
