@@ -3,11 +3,11 @@
 import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import { useWallets } from "@privy-io/react-auth";
-import { toString } from "lodash";
+import { toString, find, isNil } from "lodash";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
-
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 
 export default function DesktopContractDefinedSpace({
   spaceId,
@@ -18,6 +18,8 @@ export default function DesktopContractDefinedSpace({
 }: ContractDefinedSpaceProps) {
   const { tokenData } = useToken();
   const tokenNetwork = tokenData?.network;
+  const { wallets } = useWallets();
+  const currentUserFid = useCurrentFid();
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
@@ -35,6 +37,28 @@ export default function DesktopContractDefinedSpace({
   const getSpacePageUrl = (tabName: string) => 
     `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
 
+  // Determine if the current user can edit this space
+  const isEditable = useMemo(() => {
+    if (!currentUserFid) return false;
+
+    // Check if user is the requestor
+    if (parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") === currentUserFid) {
+      return true;
+    }
+
+    // Check if user is the owner
+    if (ownerIdType === "fid" && (toString(ownerId) === toString(currentUserFid) || Number(ownerId) === currentUserFid)) {
+      return true;
+    }
+
+    // Check if user owns the wallet address
+    if (ownerIdType === "address" && !isNil(find(wallets, (w) => w.address === ownerId))) {
+      return true;
+    }
+
+    return false;
+  }, [currentUserFid, tokenData?.clankerData?.requestor_fid, ownerId, ownerIdType, wallets]);
+
   return (
     <PublicSpace
       spaceId={spaceId}
@@ -46,6 +70,7 @@ export default function DesktopContractDefinedSpace({
       ownerId={String(ownerId || "")}
       ownerIdType={ownerIdType}
       tokenData={tokenData || undefined}
+      isEditable={isEditable}
     />
   );
 }
