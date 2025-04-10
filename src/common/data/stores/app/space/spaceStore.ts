@@ -578,6 +578,27 @@ export const createSpaceStoreFunc = (
     }
   },
   registerSpaceFid: async (fid, name) => {
+    // First check if a space already exists for this FID
+    try {
+      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+        "/api/space/registry",
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+          },
+        },
+      );
+      
+      if (existingSpaces.value) {
+        const existingSpace = existingSpaces.value.spaces.find(space => space.fid === fid);
+        if (existingSpace) {
+          return existingSpace.spaceId;
+        }
+      }
+    } catch (e) {
+      console.error("Error checking for existing space:", e);
+    }
+
     const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
@@ -616,6 +637,29 @@ export const createSpaceStoreFunc = (
     initialConfig,
     network,
   ) => {
+    // First check if a space already exists for this contract
+    try {
+      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+        "/api/space/registry",
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+          },
+        },
+      );
+      
+      if (existingSpaces.value) {
+        const existingSpace = existingSpaces.value.spaces.find(
+          space => space.contractAddress === address
+        );
+        if (existingSpace) {
+          return existingSpace.spaceId;
+        }
+      }
+    } catch (e) {
+      console.error("Error checking for existing space:", e);
+    }
+
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
