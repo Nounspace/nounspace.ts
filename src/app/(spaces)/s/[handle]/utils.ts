@@ -9,26 +9,24 @@ export type Tab = {
   spaceName: string;
 };
 
-export const getUserMetadata = cache(
-  async (handle: string): Promise<UserMetadata | null> => {
-    try {
-      const {
-        result: { user },
-      } = await neynar.lookupUserByUsername(handle);
+export const getUserMetadata = async (handle: string): Promise<UserMetadata | null> => {
+  try {
+    const {
+      result: { user },
+    } = await neynar.lookupUserByUsername(handle);
 
-      return {
-        fid: user.fid,
-        username: user.username,
-        displayName: user.displayName,
-        pfpUrl: user.pfp.url,
-        bio: user.profile.bio.text,
-      };
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  },
-);
+    return {
+      fid: user.fid,
+      username: user.username,
+      displayName: user.displayName,
+      pfpUrl: user.pfp.url,
+      bio: user.profile.bio.text,
+    };
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+};
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
