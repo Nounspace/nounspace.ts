@@ -32,10 +32,11 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
     console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
-    // Get the space registration
+    // Get the space registrations
     const { data: registrations, error: regError } = await supabaseClient
       .from("spaceRegistrations")
-      .select('spaceId, spaceName')
+      .select('spaceId, spaceName, fid')
+      .eq('fid', fid);
     
     if (regError) {
       console.error("Error fetching space registration:", regError);

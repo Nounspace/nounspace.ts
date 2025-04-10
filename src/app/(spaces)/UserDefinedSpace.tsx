@@ -1,10 +1,22 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import PublicSpace from "./PublicSpace";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
+
+function LoadingPlaceholder() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    </div>
+  );
+}
 
 export default function UserDefinedSpace({
   spaceId,
@@ -40,18 +52,16 @@ export default function UserDefinedSpace({
     hasUser: !!user 
   });
 
-  if (isLoading) {
-    return null; // Or a loading spinner if you prefer
-  }
-
   return (
-    <PublicSpace
-      spaceId={spaceId}
-      tabName={tabName}
-      initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
-      getSpacePageUrl={getSpacePageUrl}
-      fid={fid}
-      isEditable={isEditable}
-    />
+    <Suspense fallback={<LoadingPlaceholder />}>
+      <PublicSpace
+        spaceId={spaceId}
+        tabName={tabName}
+        initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
+        getSpacePageUrl={getSpacePageUrl}
+        fid={fid}
+        isEditable={isEditable}
+      />
+    </Suspense>
   );
 }
