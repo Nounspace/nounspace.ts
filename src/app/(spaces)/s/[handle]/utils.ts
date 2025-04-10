@@ -36,7 +36,6 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     const { data: registrations, error: regError } = await supabaseClient
       .from("spaceRegistrations")
       .select('spaceId, spaceName')
-      .eq('fid', fid);
     
     if (regError) {
       console.error("Error fetching space registration:", regError);

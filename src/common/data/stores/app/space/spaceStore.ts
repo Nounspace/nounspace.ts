@@ -562,21 +562,7 @@ export const createSpaceStoreFunc = (
         }, "loadSpaceInfo");
       }
     } catch (e) {
-      // Error handling: create default local space if needed
-      console.debug(e);
-      set((draft) => {
-        if (isUndefined(draft.space.localSpaces[spaceId])) {
-          draft.space.localSpaces[spaceId] = {
-            tabs: {},
-            order: [],
-            updatedAt: moment(0).toISOString(),
-            changedNames: {},
-            id: spaceId,
-          };
-        }
-        draft.space.localSpaces[spaceId].order = ["Profile"];
-        draft.space.localSpaces[spaceId].updatedAt = moment().toISOString();
-      }, "loadSpaceInfoProfile");
+      console.debug("Error loading space tab order:", e);
     }
   },
   registerSpaceFid: async (fid, name) => {
