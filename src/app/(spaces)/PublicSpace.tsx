@@ -322,7 +322,10 @@ export default function PublicSpace({
       const resolvedConfig = await config;
       await saveLocalSpaceTab(spaceId, decodedTabName, resolvedConfig);
     }
-    if (tabName) router.push(getSpacePageUrl(tabName));
+    // Update the URL without triggering a full navigation
+    router.replace(getSpacePageUrl(tabName), { scroll: false });
+    // Update the current tab name in the store
+    setCurrentTabName(tabName);
   }
 
   const { editMode } = useSidebarContext();
@@ -346,7 +349,7 @@ export default function PublicSpace({
       }}
       createTab={async (tabName) => {
         return spaceId
-          ? createSpaceTab(spaceId, tabName, undefined, tokenData?.network)
+          ? createSpaceTab(spaceId, tabName, undefined, tokenData?.network as EtherScanChainName)
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
