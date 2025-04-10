@@ -139,7 +139,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   useEffect(() => {
     setState(settings);
-  }, [settings]);
+  }, [settings, fidgetId]);
 
   const _onSave = (e) => {
     e.preventDefault();
@@ -149,15 +149,6 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
     });
   };
 
-  // 'keypress' event misbehaves on mobile so we track 'Enter' key via 'keydown' event
-  // const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>): void => {
-  //   if (event.key === "Enter") {
-  //     event.preventDefault();
-  //     event.stopPropagation();
-  //     onSave(state);
-  //   }
-  // };
-
   const groupedFields = useMemo(
     () => fieldsByGroup(properties.fields),
     [properties.fields],
@@ -165,9 +156,9 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
   return (
     <form
+      key={fidgetId}
       onSubmit={_onSave}
       className="flex-col flex h-full"
-      // onKeyDown={onKeyDown}
     >
       <div className="h-full overflow-auto">
         <div className="flex pb-4 m-2">
