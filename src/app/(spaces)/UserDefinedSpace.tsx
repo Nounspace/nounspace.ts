@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
@@ -18,21 +18,16 @@ export default function UserDefinedSpace({
   console.log("UserDefinedSpace component mounting with props:", { spaceId, tabName, fid });
 
   const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
+  const user = first(data?.users);
+  const username = user?.username;
   const currentUserFid = useCurrentFid();
 
-  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
-    () => createIntialPersonSpaceConfigForFid(fid),
-    [fid],
-  );
+  const INITIAL_PERSONAL_SPACE_CONFIG = createIntialPersonSpaceConfigForFid(fid);
 
   const getSpacePageUrl = (tabName: string) => `/s/${username}/${tabName}`;
 
   // Determine if the current user can edit this space
-  const isEditable = useMemo(() => {
-    return currentUserFid === fid;
-  }, [currentUserFid, fid]);
+  const isEditable = currentUserFid === fid;
 
   console.log("UserDefinedSpace rendering with:", { username, INITIAL_PERSONAL_SPACE_CONFIG, isEditable });
 
