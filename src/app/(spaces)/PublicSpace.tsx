@@ -1,54 +1,63 @@
 "use client";
-import { indexOf, isNil, mapValues, noop, first } from "lodash";
-import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
-import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { SpaceConfigSaveDetails } from "../templates/Space";
-import Profile from "@/fidgets/ui/profile";
-import TabBar from "../organisms/TabBar";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { useSidebarContext } from "../organisms/Sidebar";
+import { SpaceConfigSaveDetails } from "./Space";
+import { find, indexOf, isNil, mapValues, noop, toString } from "lodash";
 import { useRouter } from "next/navigation";
-
+import { useWallets } from "@privy-io/react-auth";
+import { Address } from "viem";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { MasterToken } from "@/common/providers/TokenProvider";
+import Profile from "@/fidgets/ui/profile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export default function UserDefinedSpace({
-  spaceId: providedSpaceId,
-  tabName: providedTabName,
-  fid,
-}: {
+interface PublicSpaceProps {
   spaceId: string | null;
   tabName: string;
-  fid: number;
-}) {
-  return (
-    <Suspense fallback={<div>Loading space...</div>}>
-      <UserDefinedSpaceContent 
-        spaceId={providedSpaceId}
-        tabName={providedTabName}
-        fid={fid}
-      />
-    </Suspense>
-  );
+  initialConfig: any; // Replace with proper type
+  getSpacePageUrl: (tabName: string) => string;
+  // Token-specific props
+  isTokenPage?: boolean;
+  contractAddress?: string;
+  ownerId?: string;
+  ownerIdType?: 'fid' | 'address';
+  tokenData?: MasterToken;
+  // User-specific props
+  fid?: number;
 }
 
-function UserDefinedSpaceContent({
+export default function PublicSpace({
   spaceId: providedSpaceId,
   tabName: providedTabName,
+  initialConfig,
+  getSpacePageUrl,
+  // Token-specific props
+  isTokenPage = false,
+  contractAddress,
+  ownerId,
+  ownerIdType,
+  tokenData,
+  // User-specific props
   fid,
-}: {
-  spaceId: string | null;
-  tabName: string;
-  fid: number;
-}) {
+}: PublicSpaceProps) {
   const router = useRouter();
+  const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  const [spaceId, setSpaceId] = useState(providedSpaceId);
+  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
+  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+  const { wallets, ready: walletsReady } = useWallets();
+
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
+
   const {
     editableSpaces,
     localSpaces,
@@ -56,7 +65,6 @@ function UserDefinedSpaceContent({
     loadSpaceTab,
     saveLocalSpaceTab,
     commitSpaceTab,
-    registerSpace,
     getCurrentSpaceConfig,
     setCurrentSpaceId,
     setCurrentTabName,
@@ -65,6 +73,8 @@ function UserDefinedSpaceContent({
     commitSpaceTabOrder,
     createSpaceTab,
     deleteSpaceTab,
+    registerSpaceFid,
+    registerSpaceContract,
   } = useAppStore((state) => ({
     editableSpaces: state.space.editableSpaces,
     localSpaces: state.space.localSpaces,
@@ -72,23 +82,18 @@ function UserDefinedSpaceContent({
     currentSpaceId: state.currentSpace.currentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
-
-    // TODO: update these two to work with tabs?
-    registerSpace: state.space.registerSpaceFid,
     getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
-
     loadSpaceTab: state.space.loadSpaceTab,
     createSpaceTab: state.space.createSpaceTab,
     deleteSpaceTab: state.space.deleteSpaceTab,
     saveLocalSpaceTab: state.space.saveLocalSpaceTab,
     commitSpaceTab: state.space.commitSpaceTabToDatabase,
-
     loadSpaceTabOrder: state.space.loadSpaceTabOrder,
     updateSpaceTabOrder: state.space.updateLocalSpaceOrder,
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
+    registerSpaceFid: state.space.registerSpaceFid,
+    registerSpaceContract: state.space.registerSpaceContract,
   }));
-  const [loading, setLoading] = useState(!isNil(providedSpaceId));
-  const [spaceId, setSpaceId] = useState(providedSpaceId);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -128,7 +133,7 @@ function UserDefinedSpaceContent({
     [localSpaces, providedTabName, loadSpaceTab],
   );
 
-  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+  // Common Farcaster auth logic
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
       setIsSignedIntoFarcaster(
@@ -136,8 +141,6 @@ function UserDefinedSpaceContent({
       );
     });
   }, [authManagerLastUpdatedAt]);
-
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isSignedIntoFarcaster) return;
@@ -154,52 +157,75 @@ function UserDefinedSpaceContent({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const isEditable = useMemo(() => {
-    return (
-      (isNil(spaceId) && fid === currentUserFid) ||
-      (!isNil(spaceId) && spaceId in editableSpaces)
-    );
-  }, [editableSpaces, currentUserFid]);
+    if (!currentUserFid) return false;
 
-  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
-    () => createIntialPersonSpaceConfigForFid(fid),
-    [fid],
-  );
+    if (isTokenPage) {
+      // Contract space editability logic
+      return (
+        parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") === currentUserFid ||
+        (isNil(spaceId) &&
+          ((ownerIdType === "fid" &&
+            (toString(ownerId) === toString(currentUserFid) ||
+              Number(ownerId) === currentUserFid)) ||
+            (ownerIdType === "address" &&
+              !isNil(find(wallets, (w) => w.address === ownerId))))) ||
+        (!isNil(spaceId) && spaceId in editableSpaces)
+      );
+    } else {
+      // User space editability logic
+      return (
+        (isNil(spaceId) && fid === currentUserFid) ||
+        (!isNil(spaceId) && spaceId in editableSpaces)
+      );
+    }
+  }, [
+    currentUserFid,
+    isTokenPage,
+    spaceId,
+    editableSpaces,
+    ownerId,
+    ownerIdType,
+    wallets,
+    tokenData?.clankerData?.requestor_fid,
+    isSignedIntoFarcaster,
+    fid
+  ]);
 
   const currentConfig = getCurrentSpaceConfig();
-
   const config = {
     ...(currentConfig?.tabs[providedTabName]
       ? currentConfig.tabs[providedTabName]
-      : INITIAL_PERSONAL_SPACE_CONFIG),
+      : initialConfig),
     isEditable,
   };
-
-  const memoizedConfig = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { timestamp, ...restConfig } = config;
-    return restConfig;
-  }, [
-    config.fidgetInstanceDatums,
-    config.layoutID,
-    config.layoutDetails,
-    config.isEditable,
-    config.fidgetTrayContents,
-    config.theme,
-  ]);
 
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
     if (isEditable && isNil(spaceId) && !isNil(currentUserFid)) {
-      registerSpace(currentUserFid, "Profile").then((newSpaceId) => {
+      const registerSpace = async () => {
+        let newSpaceId: string | undefined;
+        if (isTokenPage && contractAddress && tokenData?.network) {
+          newSpaceId = await registerSpaceContract(
+            contractAddress,
+            "Profile",
+            currentUserFid,
+            initialConfig,
+            tokenData.network
+          );
+        } else if (!isTokenPage) {
+          newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
+        }
         if (newSpaceId) {
           setSpaceId(newSpaceId);
           setCurrentSpaceId(newSpaceId);
           setCurrentTabName("Profile");
         }
-      });
+      };
+      registerSpace();
     }
-  }, [isEditable, spaceId, currentUserFid]);
+  }, [isEditable, spaceId, currentUserFid, isTokenPage, contractAddress, tokenData?.network, initialConfig]);
+
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
@@ -226,22 +252,19 @@ function UserDefinedSpaceContent({
       // Save the configuration locally
       return saveLocalSpaceTab(spaceId, providedTabName, saveableConfig);
     },
-    [currentUserFid, spaceId, providedTabName],
+    [spaceId, providedTabName],
   );
 
   const commitConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
-    commitSpaceTab(spaceId, providedTabName);
-  }, [spaceId, providedTabName]);
+    commitSpaceTab(spaceId, providedTabName, tokenData?.network);
+  }, [spaceId, providedTabName, tokenData?.network]);
 
-  // Resets the configuration of a space tab.
-  // If no remote configuration exists, it sets the tab to the initial personal space config.
-  // Otherwise, it restores the tab to its last saved remote state.
   const resetConfig = useCallback(async () => {
     if (isNil(spaceId)) return;
     if (isNil(remoteSpaces[spaceId])) {
       saveLocalSpaceTab(spaceId, providedTabName, {
-        ...INITIAL_PERSONAL_SPACE_CONFIG,
+        ...initialConfig,
         isPrivate: false,
       });
     } else {
@@ -251,72 +274,84 @@ function UserDefinedSpaceContent({
         remoteSpaces[spaceId].tabs[providedTabName],
       );
     }
-  }, [spaceId, INITIAL_PERSONAL_SPACE_CONFIG, remoteSpaces, providedTabName]);
+  }, [spaceId, initialConfig, remoteSpaces, providedTabName]);
 
-  const profile = (
-    <Profile.fidget
-      settings={{ fid }}
-      saveData={async () => noop()}
-      data={{}}
-    />
-  );
-
-  const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
-
-  function switchTabTo(tabName: string) {
-    spaceId && saveLocalSpaceTab(spaceId, providedTabName, config);
-    router.push(`/s/${username}/${tabName}`);
-  }
-
-  function getSpacePageUrl(tabName: string) {
-    return `/s/${username}/${tabName}`;
+  // Common tab management
+  async function switchTabTo(tabName: string, shouldSave: boolean = true) {
+    if (spaceId && shouldSave) {
+      const resolvedConfig = await config;
+      await saveLocalSpaceTab(spaceId, providedTabName, resolvedConfig);
+    }
+    if (tabName) router.push(getSpacePageUrl(tabName));
   }
 
   const { editMode } = useSidebarContext();
 
   const tabBar = (
     <TabBar
+      isTokenPage={isTokenPage}
       inHomebase={false}
       currentTab={providedTabName}
       tabList={spaceId ? localSpaces[spaceId]?.order : ["Profile"]}
+      contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
       updateTabOrder={async (newOrder) => {
         return spaceId ? updateSpaceTabOrder(spaceId, newOrder) : undefined;
       }}
       inEditMode={editMode}
       deleteTab={async (tabName) => {
-        return spaceId ? deleteSpaceTab(spaceId, tabName) : undefined;
-      }}
-      createTab={async (tabName) => {
-        return spaceId ? createSpaceTab(spaceId, tabName) : undefined;
-      }}
-      renameTab={async (oldName, newName) => {
         return spaceId
-          ? saveLocalSpaceTab(spaceId, oldName, config, newName)
+          ? deleteSpaceTab(spaceId, tabName, tokenData?.network as EtherScanChainName)
           : undefined;
       }}
+      createTab={async (tabName) => {
+        return spaceId
+          ? createSpaceTab(spaceId, tabName, undefined, tokenData?.network)
+          : undefined;
+      }}
+      renameTab={async (oldName, newName) => {
+        if (spaceId) {
+          const resolvedConfig = await config;
+          return saveLocalSpaceTab(spaceId, oldName, resolvedConfig, newName);
+        }
+        return undefined;
+      }}
       commitTab={async (tabName) => {
-        return spaceId ? commitSpaceTab(spaceId, tabName) : undefined;
+        return spaceId
+          ? commitSpaceTab(spaceId, tabName, tokenData?.network)
+          : undefined;
       }}
       commitTabOrder={async () => {
-        return spaceId ? commitSpaceTabOrder(spaceId) : undefined;
+        return spaceId ? commitSpaceTabOrder(spaceId, tokenData?.network as EtherScanChainName) : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
     />
   );
 
+  const profile = 
+    isNil(fid) ? undefined :
+    <Profile.fidget
+      settings={{ fid }}
+      saveData={async () => noop()}
+      data={{}}
+    />;
+
+  console.log(
+    fid,
+    isNil(fid),
+    profile
+  );
+
   return (
     <SpacePage
       key={spaceId + providedTabName}
-      config={memoizedConfig}
+      config={config}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
       resetConfig={resetConfig}
-      profile={profile}
       tabBar={tabBar}
       loading={loading}
+      profile={profile ?? undefined}
     />
   );
-}
+} 

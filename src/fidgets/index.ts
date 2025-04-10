@@ -18,6 +18,7 @@ import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
 import TabFullScreen from "./layout/tabFullScreen";
+// import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
   //
@@ -27,6 +28,7 @@ export const CompleteFidgets = {
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
   frame: Frame,
+  // iframely: iframely,
   feed: Feed,
   cast: Cast,
   // createCast: CreateCast,

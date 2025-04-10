@@ -1,4 +1,4 @@
-import { SpaceConfig } from "@/common/components/templates/Space";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
 import { getNetworkWithId } from "@/common/lib/utils/networks";
