@@ -590,13 +590,20 @@ export const createSpaceStoreFunc = (
     }
   },
   registerSpaceFid: async (fid, name) => {
+    console.log("Starting space registration for FID:", fid, "name:", name);
+    
     // First check if space already exists
     const supabase = createClient();
-    const { data: existingSpace } = await supabase
+    const { data: existingSpace, error: existingSpaceError } = await supabase
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
       .eq("fid", fid)
       .single();
+
+    console.log("Existing space check:", {
+      existingSpace,
+      error: existingSpaceError ? existingSpaceError.message : "no error"
+    });
 
     if (existingSpace?.spaceId) {
       console.log("Space already exists with ID:", existingSpace.spaceId);
@@ -607,6 +614,7 @@ export const createSpaceStoreFunc = (
       return existingSpace.spaceId;
     }
 
+    console.log("No existing space found, proceeding with registration");
     const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
@@ -618,23 +626,38 @@ export const createSpaceStoreFunc = (
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
     try {
+      console.log("Sending registration request to backend");
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
+      console.log("Registration response:", data);
+      
       if (!data.value?.spaceId) {
         console.error("No space ID returned from registration");
         return undefined;
       }
       const newSpaceId = data.value.spaceId;
+      console.log("Successfully registered new space with ID:", newSpaceId);
+      
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Profile",
-        createIntialPersonSpaceConfigForFid(fid),
-      );
+      
+      // Check if Profile tab already exists in local state
+      const localSpace = get().space.localSpaces[newSpaceId];
+      const hasProfileTab = localSpace?.tabs?.["Profile"] !== undefined;
+      
+      if (!hasProfileTab) {
+        console.log("Creating initial Profile tab for new space");
+        await get().space.createSpaceTab(
+          newSpaceId,
+          "Profile",
+          createIntialPersonSpaceConfigForFid(fid),
+        );
+      } else {
+        console.log("Profile tab already exists in local state, skipping creation");
+      }
       return newSpaceId;
     } catch (e) {
       console.error("Failed to register space for FID:", e);

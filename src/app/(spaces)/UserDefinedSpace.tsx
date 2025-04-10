@@ -14,6 +14,8 @@ export default function UserDefinedSpace({
   tabName: string;
   fid: number;
 }) {
+  console.log("UserDefinedSpace component mounting with props:", { spaceId, tabName, fid });
+
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
@@ -24,6 +26,8 @@ export default function UserDefinedSpace({
   );
 
   const getSpacePageUrl = (tabName: string) => `/s/${username}/${tabName}`;
+
+  console.log("UserDefinedSpace rendering with:", { username, INITIAL_PERSONAL_SPACE_CONFIG });
 
   return (
     <PublicSpace
