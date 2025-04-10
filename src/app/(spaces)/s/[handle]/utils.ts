@@ -1,8 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
-import { isEmpty } from "lodash";
-import { cache } from "react";
 
 export type Tab = {
   spaceId: string;

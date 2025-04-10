@@ -17,16 +17,8 @@ export const ProfileSpace = ({
   spaceId,
   tabName,
 }: UserDefinedSpacePageProps) => {
+  
   console.log("ProfileSpace component mounting with props:", { fid, spaceId, tabName });
-
-  const { loadEditableSpaces } = useAppStore((state) => ({
-    loadEditableSpaces: state.space.loadEditableSpaces,
-  }));
-
-  useEffect(() => {
-    console.log("ProfileSpace useEffect running");
-    loadEditableSpaces();
-  }, []);
 
   if (isNil(fid)) {
     return <SpaceNotFound />;
