@@ -29,6 +29,8 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // User-specific props
   fid?: number;
+  // Editability prop
+  isEditable?: boolean;
 }
 
 export default function PublicSpace({
@@ -44,6 +46,8 @@ export default function PublicSpace({
   tokenData,
   // User-specific props
   fid,
+  // Editability prop
+  isEditable = false,
 }: PublicSpaceProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
@@ -167,37 +171,6 @@ export default function PublicSpace({
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
-
-  const isEditable = useMemo(() => {
-    if (isTokenPage) {
-      // Contract space editability logic
-      return (
-        parseInt(toString(tokenData?.clankerData?.requestor_fid) || "") === currentUserFid ||
-        (isNil(spaceId) &&
-          ((ownerIdType === "fid" &&
-            (toString(ownerId) === toString(currentUserFid) ||
-              Number(ownerId) === currentUserFid)) ||
-            (ownerIdType === "address" &&
-              !isNil(find(wallets, (w) => w.address === ownerId))))) ||
-        (!isNil(spaceId) && spaceId in editableSpaces)
-      );
-    } else {
-      // User space editability logic
-      return (
-        (isNil(spaceId) && fid === currentUserFid) ||
-        (!isNil(spaceId) && spaceId in editableSpaces)
-      );
-    }
-  }, [
-    currentUserFid,
-    isTokenPage,
-    spaceId,
-    editableSpaces,
-    ownerId,
-    ownerIdType,
-    walletsReady,
-    tokenData?.clankerData?.requestor_fid,
-  ]);
 
   const currentConfig = getCurrentSpaceConfig();
   // console.log('PublicSpace: Current config', {
