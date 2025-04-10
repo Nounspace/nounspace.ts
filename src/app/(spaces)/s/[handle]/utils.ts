@@ -32,27 +32,62 @@ export const getUserMetadata = cache(
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
-    // console.log("Getting tablist for fid:", fid, "type:", typeof fid);
+    console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
-    // Let's try with explicit column names as shown in the schema
-    const { data, error } = await supabaseClient
+    // Get the single space registration
+    const { data: registration, error: regError } = await supabaseClient
       .from("spaceRegistrations")
-      .select('"spaceId","spaceName"')
-      .eq('fid', fid);
+      .select('spaceId, spaceName')
+      .eq('fid', fid)
+      .single();
     
-    // console.log("supabase tabList response: ", data, error ? error.message : "no error");
-
-    if (error) {
-      console.error("Error fetching tabs:", error);
+    if (regError) {
+      console.error("Error fetching space registration:", regError);
       return [];
     }
 
-    if (!data || isEmpty(data)) {
-      // console.log("No data found for fid:", fid);
+    if (!registration) {
+      console.log("No space registration found for fid:", fid);
       return [];
     }
 
-    return data as Tab[];
+    try {
+      // Get the public URL for the tab order file
+      const { data: { publicUrl } } = await supabaseClient.storage
+        .from("spaces")
+        .getPublicUrl(`${registration.spaceId}/tabOrder`);
+
+      // Add cache-busting parameter
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
+      // Fetch the tab order
+      const response = await fetch(urlWithParam, {
+        headers: {
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`No tab order found for space ${registration.spaceId}`);
+        return [registration];
+      }
+
+      const tabOrderData = await response.json();
+      const enhancedTab = {
+        ...registration,
+        order: tabOrderData.tabOrder || [],
+        updatedAt: tabOrderData.timestamp || new Date().toISOString(),
+      };
+
+      console.log("Successfully retrieved tab with order:", enhancedTab);
+      return [enhancedTab];
+    } catch (e) {
+      console.warn(`Error fetching tab order for space ${registration.spaceId}:`, e);
+      return [registration];
+    }
   } catch (e) {
     console.error("Exception in getTabList:", e);
     return [];

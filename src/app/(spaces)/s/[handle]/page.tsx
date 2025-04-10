@@ -11,24 +11,32 @@ const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string,
 ): Promise<UserDefinedSpacePageProps> => {
-
-  // console.log("loading user space data for handle: ", handle);
+  console.log("Starting loadUserSpaceData for handle:", handle);
+  
   const userMetadata = await getUserMetadata(handle);
+  console.log("User metadata result:", userMetadata);
   const fid = userMetadata?.fid || null;
+  console.log("Extracted FID:", fid);
 
   if (!fid) {
+    console.log("No FID found, returning null values");
     return { fid: null, spaceId: null, tabName: null };
   }
 
   const tabList = await getTabList(fid);
+  console.log("Tab list result:", tabList);
+  
   if (!tabList || tabList.length === 0) {
+    console.log("No tab list found, returning null spaceId and tabName");
     return { fid, spaceId: null, tabName: null };
   }
 
   const defaultTab: Tab = tabList[0];
+  console.log("Default tab:", defaultTab);
 
   const spaceId = defaultTab.spaceId;
   const tabName = tabNameParam || defaultTab.spaceName;
+  console.log("Final values - spaceId:", spaceId, "tabName:", tabName);
 
   return { fid, spaceId, tabName };
 };
@@ -51,6 +59,8 @@ export async function generateMetadata({
 const ProfileSpacePage = async ({
   params: { handle, tabName: tabNameParam },
 }) => {
+  console.log("ProfileSpacePage rendering with params:", { handle, tabNameParam });
+
   if (!handle) {
     return <SpaceNotFound />;
   }
@@ -63,6 +73,8 @@ const ProfileSpacePage = async ({
     handle,
     tabNameParam,
   );
+
+  console.log("ProfileSpacePage data loaded:", { fid, spaceId, tabName });
 
   return <ProfileSpace fid={fid} spaceId={spaceId} tabName={tabName} />;
 };
