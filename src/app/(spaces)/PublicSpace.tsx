@@ -104,28 +104,27 @@ export default function PublicSpace({
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
-    setSpaceId(providedSpaceId);
-    setCurrentSpaceId(providedSpaceId);
+    setCurrentSpaceId(spaceId);
     setCurrentTabName(decodedTabName);
-    if (!isNil(providedSpaceId)) {
+    if (!isNil(spaceId)) {
       setLoading(true);
       // First, load the space tab order
-      loadSpaceTabOrder(providedSpaceId)
+      loadSpaceTabOrder(spaceId)
         .then(() => {
           // Load the specific tab
-          return loadSpaceTab(providedSpaceId, decodedTabName);
+          return loadSpaceTab(spaceId, decodedTabName);
         })
         .then(() => {
           setLoading(false);
           // Load remaining tabs after the initial one has finished
-          return loadRemainingTabs(providedSpaceId);
+          return loadRemainingTabs(spaceId);
         })
         .catch((error) => {
           console.error("Error loading space:", error);
           setLoading(false);
         });
     }
-  }, [providedSpaceId, decodedTabName]);
+  }, [spaceId, decodedTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(

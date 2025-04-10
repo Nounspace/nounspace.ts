@@ -321,6 +321,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // Clear editor panel
     unselectFidget();
 
+    // Save both the new layout and the updated fidgetInstanceDatums
     saveLayout(newLayout);
     saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
