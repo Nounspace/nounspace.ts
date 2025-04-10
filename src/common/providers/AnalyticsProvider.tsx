@@ -30,6 +30,7 @@ export enum AnalyticsEvent {
   LIKE = "Like",
   PLAY = "Play",
   PAUSE = "Pause",
+  GENERATE_BACKGROUND = "Generate Background",
 }
 
 export type AnalyticsEventProperties = {
@@ -57,6 +58,7 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.LIKE]: { username: string; castId: string };
   [AnalyticsEvent.PLAY]: { url: string | string[] };
   [AnalyticsEvent.PAUSE]: { url: string | string[] };
+  [AnalyticsEvent.GENERATE_BACKGROUND]: { user_input: string };
 };
 
 const segment = new AnalyticsBrowser();

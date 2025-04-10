@@ -1,7 +1,7 @@
 import {
   SpaceConfig,
   SpaceConfigSaveDetails,
-} from "@/common/components/templates/Space";
+} from "@/app/(spaces)/Space";
 import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { StoreGet, StoreSet } from "../../createStore";
@@ -243,8 +243,6 @@ export const createSpaceStoreFunc = (
   },
   deleteSpaceTab: debounce(
     async (spaceId, tabName, network?: EtherScanChainName) => {
-      // This deletes locally and remotely at the same time
-      // We can separate these out, but I think deleting feels better as a single decisive action
       const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
         publicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
@@ -257,25 +255,37 @@ export const createSpaceStoreFunc = (
         get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
       try {
+        // Delete from backend first
         await axiosBackend.delete(
           `/api/space/registry/${spaceId}/tabs/${tabName}`,
           { data: signedRequest },
         );
+
+        // Then update local state atomically
         set((draft) => {
+          // Remove from tabs
           delete draft.space.localSpaces[spaceId].tabs[tabName];
           delete draft.space.remoteSpaces[spaceId].tabs[tabName];
-          draft.space.localSpaces[spaceId].order = filter(
-            draft.space.localSpaces[spaceId].order,
-            (x) => x !== tabName,
-          );
-          draft.space.remoteSpaces[spaceId].order = filter(
-            draft.space.localSpaces[spaceId].order,
-            (x) => x !== tabName,
-          );
+          
+          // Update order arrays with new arrays to ensure state updates
+          draft.space.localSpaces[spaceId].order = [
+            ...draft.space.localSpaces[spaceId].order.filter(x => x !== tabName)
+          ];
+          draft.space.remoteSpaces[spaceId].order = [
+            ...draft.space.localSpaces[spaceId].order
+          ];
+
+          // Update timestamps
+          const timestamp = moment().toISOString();
+          draft.space.localSpaces[spaceId].updatedAt = timestamp;
+          draft.space.remoteSpaces[spaceId].updatedAt = timestamp;
         }, "deleteSpaceTab");
-        return get().space.commitSpaceOrderToDatabase(spaceId, network);
+
+        // Finally commit the new order
+        await get().space.commitSpaceOrderToDatabase(spaceId, network);
       } catch (e) {
-        console.error(e);
+        console.error("Failed to delete space tab:", e);
+        throw e;
       }
     },
     1000,

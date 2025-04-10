@@ -121,7 +121,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       className="h-screen flex-row flex bg-white transition-transform -translate-x-full sm:translate-x-0"
       aria-label="Sidebar"
     >
-      <div className="flex-1 w-[270px] h-full pt-12 flex-col flex px-4 py-4 overflow-y-hidden border-r">
+      <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
         <div className="h-full flex-col">
           {selectedFidgetID ? (
             <>{currentFidgetSettings}</>
