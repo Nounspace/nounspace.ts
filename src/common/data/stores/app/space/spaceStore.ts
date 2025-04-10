@@ -243,6 +243,8 @@ export const createSpaceStoreFunc = (
   },
   deleteSpaceTab: debounce(
     async (spaceId, tabName, network?: EtherScanChainName) => {
+      // This deletes locally and remotely at the same time
+      // We can separate these out, but I think deleting feels better as a single decisive action
       const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
         publicKey: get().account.currentSpaceIdentityPublicKey!,
         timestamp: moment().toISOString(),
@@ -255,37 +257,25 @@ export const createSpaceStoreFunc = (
         get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
       try {
-        // Delete from backend first
         await axiosBackend.delete(
           `/api/space/registry/${spaceId}/tabs/${tabName}`,
           { data: signedRequest },
         );
-
-        // Then update local state atomically
         set((draft) => {
-          // Remove from tabs
           delete draft.space.localSpaces[spaceId].tabs[tabName];
           delete draft.space.remoteSpaces[spaceId].tabs[tabName];
-          
-          // Update order arrays with new arrays to ensure state updates
-          draft.space.localSpaces[spaceId].order = [
-            ...draft.space.localSpaces[spaceId].order.filter(x => x !== tabName)
-          ];
-          draft.space.remoteSpaces[spaceId].order = [
-            ...draft.space.localSpaces[spaceId].order
-          ];
-
-          // Update timestamps
-          const timestamp = moment().toISOString();
-          draft.space.localSpaces[spaceId].updatedAt = timestamp;
-          draft.space.remoteSpaces[spaceId].updatedAt = timestamp;
+          draft.space.localSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
+          draft.space.remoteSpaces[spaceId].order = filter(
+            draft.space.localSpaces[spaceId].order,
+            (x) => x !== tabName,
+          );
         }, "deleteSpaceTab");
-
-        // Finally commit the new order
-        await get().space.commitSpaceOrderToDatabase(spaceId, network);
+        return get().space.commitSpaceOrderToDatabase(spaceId, network);
       } catch (e) {
-        console.error("Failed to delete space tab:", e);
-        throw e;
+        console.error(e);
       }
     },
     1000,
@@ -628,45 +618,25 @@ export const createSpaceStoreFunc = (
     initialConfig,
     network,
   ) => {
-    // First check if space already exists
-    const supabase = createClient();
-    const { data: existingSpace } = await supabase
-      .from("spaceRegistrations")
-      .select("spaceId, spaceName")
-      .eq("contractAddress", address)
-      .single();
-
-    if (existingSpace?.spaceId) {
-      console.log("Space already exists with ID:", existingSpace.spaceId);
-      // Update the editable spaces cache with existing space
-      set((draft) => {
-        draft.space.editableSpaces[existingSpace.spaceId] = existingSpace.spaceName || name;
-      }, "registerSpace");
-      return existingSpace.spaceId;
-    }
-
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
       timestamp: moment().toISOString(),
       contractAddress: address,
-      tokenOwnerFid: tokenOwnerFid,
-      network: network,
+      tokenOwnerFid,
+      network,
     };
     const registration = signSignable(
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
+    // TODO: Error handling
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
-      if (!data.value?.spaceId) {
-        console.error("No space ID returned from contract registration");
-        return undefined;
-      }
-      const newSpaceId = data.value.spaceId;
+      const newSpaceId = data.value!.spaceId;
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
@@ -679,8 +649,7 @@ export const createSpaceStoreFunc = (
       );
       return newSpaceId;
     } catch (e) {
-      console.error("Failed to register contract space:", e);
-      return undefined;
+      null;
     }
   },
   loadEditableSpaces: async () => {

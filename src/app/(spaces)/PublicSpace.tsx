@@ -55,6 +55,8 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets, ready: walletsReady } = useWallets();
+  const [isRegistering, setIsRegistering] = useState(false);
+  
   // Decode the tab name from URL
   const decodedTabName = useMemo(() => {
     if (!providedTabName) return "Profile";
@@ -106,13 +108,38 @@ export default function PublicSpace({
     loadEditableSpaces: state.space.loadEditableSpaces,
   }));
 
+  // Common Farcaster auth logic
+  useEffect(() => {
+    authManagerGetInitializedAuthenticators().then((authNames) => {
+      setIsSignedIntoFarcaster(
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
+      );
+    });
+  }, [authManagerLastUpdatedAt]);
+
+  useEffect(() => {
+    if (!isSignedIntoFarcaster) return;
+    authManagerCallMethod({
+      requestingFidgetId: "root",
+      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
+      methodName: "getAccountFid",
+      isLookup: true,
+    }).then((authManagerResp) => {
+      if (authManagerResp.result === "success") {
+        setCurrentUserFid(authManagerResp.value as number);
+        // Load editable spaces after we have the FID
+        loadEditableSpaces();
+      }
+    });
+  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
+
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     setCurrentSpaceId(spaceId);
     setCurrentTabName(decodedTabName);
     if (!isNil(spaceId)) {
       setLoading(true);
-      // First, load the space tab order
+      // Load the space tab order
       loadSpaceTabOrder(spaceId)
         .then(() => {
           // Load the specific tab
@@ -149,29 +176,6 @@ export default function PublicSpace({
     [localSpaces, decodedTabName, loadSpaceTab],
   );
 
-  // Common Farcaster auth logic
-  useEffect(() => {
-    authManagerGetInitializedAuthenticators().then((authNames) => {
-      setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
-      );
-    });
-  }, [authManagerLastUpdatedAt]);
-
-  useEffect(() => {
-    if (!isSignedIntoFarcaster) return;
-    authManagerCallMethod({
-      requestingFidgetId: "root",
-      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
-      methodName: "getAccountFid",
-      isLookup: true,
-    }).then((authManagerResp) => {
-      if (authManagerResp.result === "success") {
-        setCurrentUserFid(authManagerResp.value as number);
-      }
-    });
-  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
-
   const currentConfig = getCurrentSpaceConfig();
   // console.log('PublicSpace: Current config', {
   //   spaceId,
@@ -204,60 +208,71 @@ export default function PublicSpace({
   // Creates a new "Profile" space for the user when they're eligible to edit but don't have an existing space ID.
   // This ensures that new users or users without a space get a default profile space created for them.
   useEffect(() => {
-    // Only proceed with registration if we're sure the space doesn't exist
-    if (isEditable && isNil(spaceId) && !isNil(currentUserFid) && !loading) {
+    // Only proceed with registration if we're sure the space doesn't exist and we're not already registering
+    if (isEditable && isNil(spaceId) && !isNil(currentUserFid) && !loading && !isRegistering) {
       console.log('Space registration conditions met:', {
         isEditable,
         spaceId,
         currentUserFid,
         isTokenPage,
         contractAddress,
-        tokenNetwork: tokenData?.network
+        tokenNetwork: tokenData?.network,
+        isRegistering
       });
 
-      if (isTokenPage && contractAddress && tokenData?.network) {
-        console.log('Attempting to register contract space:', {
-          contractAddress,
-          currentUserFid,
-          network: tokenData.network
-        });
-        registerSpaceContract(
-          contractAddress,
-          "Profile",
-          currentUserFid,
-          initialConfig,
-          tokenData.network
-        ).then((newSpaceId) => {
-          console.log('Contract space registration result:', {
-            success: !!newSpaceId,
-            newSpaceId,
-            contractAddress
-          });
+      setIsRegistering(true);
+
+      const registerSpace = async () => {
+        try {
+          let newSpaceId: string | undefined;
+
+          if (isTokenPage && contractAddress && tokenData?.network) {
+            console.log('Attempting to register contract space:', {
+              contractAddress,
+              currentUserFid,
+              network: tokenData.network
+            });
+            newSpaceId = await registerSpaceContract(
+              contractAddress,
+              "Profile",
+              currentUserFid,
+              initialConfig,
+              tokenData.network
+            );
+            console.log('Contract space registration result:', {
+              success: !!newSpaceId,
+              newSpaceId,
+              contractAddress
+            });
+          } else if (!isTokenPage) {
+            console.log('Attempting to register user space:', {
+              currentUserFid
+            });
+            newSpaceId = await registerSpaceFid(currentUserFid, "Profile");
+            console.log('User space registration result:', {
+              success: !!newSpaceId,
+              newSpaceId,
+              currentUserFid
+            });
+          }
+
           if (newSpaceId) {
+            // Wait for the space to be properly registered before updating state
+            await loadEditableSpaces();
             setSpaceId(newSpaceId);
             setCurrentSpaceId(newSpaceId);
             setCurrentTabName("Profile");
           }
-        });
-      } else if (!isTokenPage) {
-        console.log('Attempting to register user space:', {
-          currentUserFid
-        });
-        registerSpaceFid(currentUserFid, "Profile").then((newSpaceId) => {
-          console.log('User space registration result:', {
-            success: !!newSpaceId,
-            newSpaceId,
-            currentUserFid
-          });
-          if (newSpaceId) {
-            setSpaceId(newSpaceId);
-            setCurrentSpaceId(newSpaceId);
-            setCurrentTabName("Profile");
-          }
-        });
-      }
+        } catch (error) {
+          console.error('Error during space registration:', error);
+        } finally {
+          setIsRegistering(false);
+        }
+      };
+
+      registerSpace();
     }
-  }, [spaceId, currentUserFid, loading, contractAddress, tokenData?.network]);
+  }, [spaceId, currentUserFid, loading, contractAddress, tokenData?.network, isEditable, isTokenPage]);
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {

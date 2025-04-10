@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
+import React, { ReactNode, useEffect, Suspense } from "react";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -100,40 +100,27 @@ export default function Space({
     });
   }
 
-  // Memoize the LayoutFidget component selection
-  const LayoutFidget = useMemo(() => {
-    return LayoutFidgets[config?.layoutDetails?.layoutFidget || "grid"] || LayoutFidgets.grid;
-  }, [config?.layoutDetails?.layoutFidget]);
+  // Get the LayoutFidget component
+  const LayoutFidget = LayoutFidgets[config?.layoutDetails?.layoutFidget || "grid"] || LayoutFidgets.grid;
 
-  // Memoize the layoutConfig to prevent unnecessary re-renders
-  const layoutConfig = useMemo(() => {
-    return config?.layoutDetails?.layoutConfig ?? {
-      layout: [],
-      layoutFidget: "grid",
-    };
-  }, [config?.layoutDetails?.layoutConfig]);
+  // Get the layoutConfig
+  const layoutConfig = config?.layoutDetails?.layoutConfig ?? {
+    layout: [],
+    layoutFidget: "grid",
+  };
 
-  // Memoize the LayoutFidget render props that don't change during fidget movement
-  const layoutFidgetProps = useMemo(() => {
-    return {
-      theme: config.theme,
-      fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: editMode,
-      saveExitEditMode: saveExitEditMode,
-      cancelExitEditMode: cancelExitEditMode,
-      portalRef: portalRef,
-      saveConfig: saveLocalConfig,
-      hasProfile: !isNil(profile),
-      hasFeed: !isNil(feed),
-    };
-  }, [
-    config.theme, 
-    config.fidgetTrayContents, 
-    editMode, 
-    portalRef, 
-    profile, 
-    feed
-  ]);
+  // Get the LayoutFidget render props
+  const layoutFidgetProps = {
+    theme: config.theme,
+    fidgetTrayContents: config.fidgetTrayContents,
+    inEditMode: editMode,
+    saveExitEditMode: saveExitEditMode,
+    cancelExitEditMode: cancelExitEditMode,
+    portalRef: portalRef,
+    saveConfig: saveLocalConfig,
+    hasProfile: !isNil(profile),
+    hasFeed: !isNil(feed),
+  };
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
