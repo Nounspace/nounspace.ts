@@ -104,6 +104,7 @@ export default function PublicSpace({
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
+    setSpaceId(providedSpaceId);
     setCurrentSpaceId(providedSpaceId);
     setCurrentTabName(decodedTabName);
     if (!isNil(providedSpaceId)) {
@@ -111,10 +112,12 @@ export default function PublicSpace({
       // First, load the space tab order
       loadSpaceTabOrder(providedSpaceId)
         .then(() => {
+          // Load the specific tab
           return loadSpaceTab(providedSpaceId, decodedTabName);
         })
         .then(() => {
           setLoading(false);
+          // Load remaining tabs after the initial one has finished
           return loadRemainingTabs(providedSpaceId);
         })
         .catch((error) => {
@@ -136,11 +139,6 @@ export default function PublicSpace({
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
         if (tabName !== decodedTabName) {
-          // console.log('PublicSpace: Loading additional tab', {
-          //   spaceId,
-          //   tabName,
-          //   existingConfig: localSpaces[spaceId]?.tabs[tabName]
-          // });
           await loadSpaceTab(spaceId, tabName);
         }
       }
@@ -219,12 +217,14 @@ export default function PublicSpace({
   };
 
   const memoizedConfig = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { timestamp, ...restConfig } = config;
     return restConfig;
   }, [
     config.fidgetInstanceDatums,
     config.layoutID,
     config.layoutDetails,
+    config.isEditable,
     config.fidgetTrayContents,
     config.theme,
   ]);
@@ -242,7 +242,7 @@ export default function PublicSpace({
         contractAddress,
         tokenNetwork: tokenData?.network
       });
-      
+
       if (isTokenPage && contractAddress && tokenData?.network) {
         console.log('Attempting to register contract space:', {
           contractAddress,
@@ -286,7 +286,6 @@ export default function PublicSpace({
       }
     }
   }, [spaceId, currentUserFid, loading, contractAddress, tokenData?.network]);
-
 
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
@@ -400,7 +399,7 @@ export default function PublicSpace({
 
   return (
     <SpacePage
-      key={spaceId + decodedTabName}
+      key={spaceId + providedTabName}
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
