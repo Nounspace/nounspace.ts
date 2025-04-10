@@ -590,6 +590,23 @@ export const createSpaceStoreFunc = (
     }
   },
   registerSpaceFid: async (fid, name) => {
+    // First check if space already exists
+    const supabase = createClient();
+    const { data: existingSpace } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId, spaceName")
+      .eq("fid", fid)
+      .single();
+
+    if (existingSpace?.spaceId) {
+      console.log("Space already exists with ID:", existingSpace.spaceId);
+      // Update the editable spaces cache with existing space
+      set((draft) => {
+        draft.space.editableSpaces[existingSpace.spaceId] = existingSpace.spaceName || name;
+      }, "registerSpace");
+      return existingSpace.spaceId;
+    }
+
     const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
       spaceName: name,
