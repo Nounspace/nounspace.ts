@@ -48,23 +48,23 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   const shouldShowProfile = isNil(spaceId) && (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
   const hasSpaceId = !isNil(spaceId);
 
-  if (hasOwnerAndContract) {
-    if (shouldShowProfile || hasSpaceId) {
-      return (
-        <>
-          <ContractDefinedSpace
-            ownerId={ownerId}
-            ownerIdType={ownerIdType}
-            spaceId={spaceId}
-            tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
-            contractAddress={contractAddress}
-          />
-        </>
-      );
-    }
+  // Only show 404 if we don't have a valid contract address
+  if (isNil(contractAddress)) {
+    return <SpaceNotFound />;
   }
 
-  return <SpaceNotFound />;
+  // If we have a contract address, show the space even if it doesn't exist yet
+  return (
+    <>
+      <ContractDefinedSpace
+        ownerId={ownerId}
+        ownerIdType={ownerIdType}
+        spaceId={spaceId}
+        tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
+        contractAddress={contractAddress}
+      />
+    </>
+  );
 };
 
 export default ContractPrimarySpaceContent;

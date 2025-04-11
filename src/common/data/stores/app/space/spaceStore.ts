@@ -337,8 +337,59 @@ export const createSpaceStoreFunc = (
       await get().space.commitSpaceOrderToDatabase(spaceId, network);
       return result;
     } catch (e) {
-      console.error("Failed to create space tab:", e);
-      // Roll back local changes on failure
+      console.error("Failed to create space tab:", {
+        error: e,
+        spaceId,
+        tabName,
+        network,
+        request: {
+          identityPublicKey: unsignedRequest.identityPublicKey,
+          timestamp: unsignedRequest.timestamp,
+        }
+      });
+      
+      // Check if it's a rate limit error
+      if (axios.isAxiosError(e) && e.response?.status === 429) {
+        console.warn("Rate limit hit, attempting retry after delay", {
+          spaceId,
+          tabName,
+          network
+        });
+        
+        // If it's a rate limit error, we'll retry after a delay
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+        try {
+          await axiosBackend.post<RegisterNewSpaceTabResponse>(
+            `/api/space/registry/${spaceId}/tabs`,
+            signedRequest,
+          );
+          await get().space.commitSpaceOrderToDatabase(spaceId, network);
+          return result;
+        } catch (retryError) {
+          console.error("Failed to create space tab after retry:", {
+            error: retryError,
+            spaceId,
+            tabName,
+            network,
+            originalError: e
+          });
+          // If retry fails, we'll keep the local state but show an error
+          throw new Error("Failed to create tab due to rate limiting. Please try again in a few seconds.");
+        }
+      }
+      
+      // For other errors, roll back local changes
+      console.error("Rolling back local changes due to error:", {
+        error: e,
+        spaceId,
+        tabName,
+        network,
+        localState: {
+          tabs: get().space.localSpaces[spaceId]?.tabs,
+          order: get().space.localSpaces[spaceId]?.order
+        }
+      });
+      
       set((draft) => {
         delete draft.space.localSpaces[spaceId].tabs[tabName];
         draft.space.localSpaces[spaceId].order = draft.space.localSpaces[spaceId].order.filter(
