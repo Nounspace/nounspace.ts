@@ -37,7 +37,7 @@ function TabBar({
   inHomebase,
   inEditMode,
   currentTab,
-  tabList,
+  tabList = ["Profile"],
   switchTabTo,
   updateTabOrder,
   commitTabOrder,

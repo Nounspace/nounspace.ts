@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
@@ -28,9 +28,10 @@ interface PublicSpaceProps {
   ownerIdType?: 'fid' | 'address';
   tokenData?: MasterToken;
   // User-specific props
-  fid?: number;
+  spaceOwnerFid?: number;
+  spaceOwnerUsername?: string;
   // Editability prop
-  isEditable?: boolean;
+  isEditable?: (userFid: number) => boolean;
 }
 
 export default function PublicSpace({
@@ -45,28 +46,19 @@ export default function PublicSpace({
   ownerIdType,
   tokenData,
   // User-specific props
-  fid,
+  spaceOwnerFid: fid,
   // Editability prop
-  isEditable = false,
+  isEditable = (userFid: number) => false,
 }: PublicSpaceProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [spaceId, setSpaceId] = useState(providedSpaceId);
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
-  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
-  const { wallets, ready: walletsReady } = useWallets();
   
   // Decode the tab name from URL
   const decodedTabName = useMemo(() => {
     if (!providedTabName) return "Profile";
     return decodeURIComponent(providedTabName);
   }, [providedTabName]);
-
-  const {
-    lastUpdatedAt: authManagerLastUpdatedAt,
-    getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
-    callMethod: authManagerCallMethod,
-  } = useAuthenticatorManager();
 
   const {
     loadEditableSpaces,
@@ -105,29 +97,11 @@ export default function PublicSpace({
     registerSpaceContract: state.space.registerSpaceContract,
   }));
 
-  // Check if user is signed into Farcaster
-  useEffect(() => {
-    authManagerGetInitializedAuthenticators().then((authNames) => {
-      setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1
-      );
-    });
-  }, [authManagerLastUpdatedAt]);
-
-  // Get FID from Farcaster authenticator
-  useEffect(() => {
-    if (!isSignedIntoFarcaster) return;
-    authManagerCallMethod({
-      requestingFidgetId: "root",
-      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
-      methodName: "getAccountFid",
-      isLookup: true,
-    }).then((authManagerResp) => {
-      if (authManagerResp.result === "success") {
-        setCurrentUserFid(authManagerResp.value as number);
-      }
-    });
-  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
+  const {
+    lastUpdatedAt: authManagerLastUpdatedAt,
+    getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
+    callMethod: authManagerCallMethod,
+  } = useAuthenticatorManager();
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -145,6 +119,7 @@ export default function PublicSpace({
           return loadSpaceTab(spaceId, decodedTabName);
         })
         .then(() => {
+          setSpaceId(providedSpaceId);
           setLoading(false);
           // Load remaining tabs after the initial one has finished
           return loadRemainingTabs(spaceId);
@@ -174,6 +149,32 @@ export default function PublicSpace({
     },
     [localSpaces, decodedTabName, loadSpaceTab],
   );
+
+  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+
+  useEffect(() => {
+    authManagerGetInitializedAuthenticators().then((authNames) => {
+      setIsSignedIntoFarcaster(
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
+      );
+    });
+  }, [authManagerLastUpdatedAt]);
+
+  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isSignedIntoFarcaster) return;
+    authManagerCallMethod({
+      requestingFidgetId: "root",
+      authenticatorId: FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME,
+      methodName: "getAccountFid",
+      isLookup: true,
+    }).then((authManagerResp) => {
+      if (authManagerResp.result === "success") {
+        setCurrentUserFid(authManagerResp.value as number);
+      }
+    });
+  }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const currentConfig = getCurrentSpaceConfig();
   // console.log('PublicSpace: Current config', {
@@ -371,28 +372,36 @@ export default function PublicSpace({
     />
   );
 
-  const profile = useMemo(() => {
-    if (!isTokenPage && fid && CompleteFidgets.profile) {
-      return (
-        <CompleteFidgets.profile.fidget
-          settings={{ fid }}
-          saveData={async () => {}}
-          data={{}}
-        />
-      );
-    }
-    return undefined;
-  }, [isTokenPage, fid]);
+  const profile = (
+    isNil(fid) ? undefined :
+    <Profile.fidget
+      settings={{ fid }}
+      saveData={async () => noop()}
+      data={{}}
+    />);
+
+  const loadingPlaceholder = (
+    <div className="animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+      <div className="space-y-3">
+        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+      </div>
+    </div>
+  );
+  
 
   return (
-    <SpacePage
-      key={spaceId + providedTabName}
-      config={memoizedConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-      tabBar={tabBar}
-      profile={profile ?? undefined}
-    />
+    <Suspense fallback={loadingPlaceholder}>
+      <SpacePage
+        key={spaceId + providedTabName}
+        config={memoizedConfig}
+        saveConfig={saveConfig}
+        commitConfig={commitConfig}
+        resetConfig={resetConfig}
+        tabBar={tabBar}
+        profile={profile ?? undefined}
+      />
+    </Suspense>
   );
 } 

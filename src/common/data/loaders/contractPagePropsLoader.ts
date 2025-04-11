@@ -100,7 +100,6 @@ export async function loadContractData(
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
   console.log("Debug - Contract Address before query:", contractAddress);
-  console.log("Debug - Supabase client config:", supabaseClient);
 
   const { data, error } = await supabaseClient
     .from("spaceRegistrations")
