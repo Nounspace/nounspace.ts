@@ -1,5 +1,5 @@
 import neynar from "@/common/data/api/neynar";
-import supabaseClient from "@/common/data/database/supabase/clients/server";
+import { createClient } from "@/common/data/database/supabase/clients/component";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 
 export type Tab = {
@@ -30,11 +30,15 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
   try {
     console.log("Getting tablist for fid:", fid, "type:", typeof fid);
     
-    // Get the space registrations
-    const { data: registrations, error: regError } = await supabaseClient
+    const supabase = createClient();
+    
+    // Get the space registrations using the browser client
+    const { data: registrations, error: regError } = await supabase
       .from("spaceRegistrations")
       .select('spaceId, spaceName, fid')
-      .eq('fid', fid);
+      .eq('fid', fid)
+      .order('timestamp', { ascending: false })
+      .limit(1);
     
     if (regError) {
       console.error("Error fetching space registration:", regError);
@@ -48,10 +52,11 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
 
     // Get the first registration (there should only be one per fid)
     const registration = registrations[0];
+    console.log("Found space registration:", registration);
 
     try {
       // Get the public URL for the tab order file
-      const { data: { publicUrl } } = await supabaseClient.storage
+      const { data: { publicUrl } } = await supabase.storage
         .from("spaces")
         .getPublicUrl(`${registration.spaceId}/tabOrder`);
 

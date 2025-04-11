@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { isArray, isNil } from "lodash";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
@@ -19,7 +19,6 @@ export const ProfileSpace = ({
   spaceId,
   tabName,
 }: UserDefinedSpacePageProps) => {
-
   console.log("ProfileSpace component mounting with props:", { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName });
 
   if (isNil(spaceOwnerFid)) {
@@ -33,20 +32,14 @@ export const ProfileSpace = ({
     return `/s/${spaceOwnerUsername}/${tabName}`;
   };
 
-  // Determine if the current user can edit this space
-  function isEditable(userFid: number) {
-    return userFid === spaceOwnerFid;
-  }
-
   return (
     <PublicSpace
-        spaceId={spaceId}
-        tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
-        initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
-        getSpacePageUrl={getSpacePageUrl}
-        spaceOwnerFid={spaceOwnerFid}
-        isEditable={isEditable}
-      />
+      spaceId={spaceId}
+      tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
+      initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
+      getSpacePageUrl={getSpacePageUrl}
+      spaceOwnerFid={spaceOwnerFid}
+    />
   );
 };
 
