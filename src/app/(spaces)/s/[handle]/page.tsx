@@ -15,20 +15,21 @@ const loadUserSpaceData = async (
   
   const userMetadata = await getUserMetadata(handle);
   console.log("User metadata result:", userMetadata);
-  const fid = userMetadata?.fid || null;
-  console.log("Extracted FID:", fid);
+  const spaceOwnerFid = userMetadata?.fid || null;
+  const spaceOwnerUsername = userMetadata?.username || null;
+  console.log("Extracted FID:", spaceOwnerFid);
 
-  if (!fid) {
+  if (!spaceOwnerFid) {
     console.log("No FID found, returning null values");
-    return { fid: null, spaceId: null, tabName: null };
+    return { spaceOwnerFid: null, spaceOwnerUsername: null, spaceId: null, tabName: null };
   }
 
-  const tabList = await getTabList(fid);
+  const tabList = await getTabList(spaceOwnerFid);
   console.log("Tab list result:", tabList);
   
   if (!tabList || tabList.length === 0) {
     console.log("No tab list found, returning null spaceId and tabName");
-    return { fid, spaceId: null, tabName: null };
+    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
   }
 
   const defaultTab: Tab = tabList[0];
@@ -38,7 +39,7 @@ const loadUserSpaceData = async (
   const tabName = tabNameParam || defaultTab.spaceName;
   console.log("Final values - spaceId:", spaceId, "tabName:", tabName);
 
-  return { fid, spaceId, tabName };
+  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
 };
 
 export async function generateMetadata({
@@ -69,14 +70,19 @@ const ProfileSpacePage = async ({
     tabNameParam = decodeURIComponent(tabNameParam);
   }
 
-  const { fid, spaceId, tabName } = await loadUserSpaceData(
+  const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName } = await loadUserSpaceData(
     handle,
     tabNameParam,
   );
 
-  console.log("ProfileSpacePage data loaded:", { fid, spaceId, tabName });
+  console.log("ProfileSpacePage data loaded:", { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName });
 
-  return <ProfileSpace fid={fid} spaceId={spaceId} tabName={tabName} />;
+  return <ProfileSpace 
+    spaceOwnerFid={spaceOwnerFid} 
+    spaceOwnerUsername={spaceOwnerUsername} 
+    spaceId={spaceId} 
+    tabName={tabName} 
+  />;
 };
 
 export default ProfileSpacePage;
