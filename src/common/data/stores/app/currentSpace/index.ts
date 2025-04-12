@@ -28,7 +28,7 @@ export type CurrentSpaceStore = CurrentSpaceStoreState &
   CurrentSpaceStoreActions;
 
 export const currentSpaceStoreDefaults: CurrentSpaceStoreState = {
-  currentSpaceId: HOMEBASE_ID,
+  currentSpaceId: null,
   currentTabName: "",
 };
 
@@ -46,7 +46,7 @@ export const createCurrentSpaceStoreFunc = (
     }, "setCurrentSpaceId");
   },
   getCurrentTabName: () => {
-    return get().currentSpace.currentTabName;
+    return get().currentSpace.currentTabName ?? "Profile";
   },
   setCurrentTabName(name) {
     set((draft) => {
