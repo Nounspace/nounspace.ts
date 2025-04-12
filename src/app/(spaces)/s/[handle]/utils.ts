@@ -1,7 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 import supabaseClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
-import { unstable_noStore as noStore } from "next/cache";
 
 export type Tab = {
   spaceId: string;
@@ -28,8 +27,6 @@ export const getUserMetadata = async (handle: string): Promise<UserMetadata | nu
 };
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
-  noStore();
-
   try {
     console.log("Getting tablist for fid:", fid);
     
@@ -39,7 +36,6 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
       .select('spaceId, spaceName, fid')
       .eq('fid', fid)
       .limit(1)
-      .abortSignal(new AbortController().signal); // This adds a unique signal each time
     
     if (regError) {
       console.error("Error fetching space registration:", regError);

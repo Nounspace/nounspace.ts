@@ -44,6 +44,7 @@ type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
   fid: number | null;
   contractAddress: string | null;
+  network: string | null;
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {

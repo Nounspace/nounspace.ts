@@ -10,6 +10,7 @@ import {
 } from "../database/supabase/serverHelpers";
 import supabaseClient from "../database/supabase/clients/server";
 import { string } from "prop-types";
+import { unstable_noStore as noStore } from 'next/cache';
 
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
@@ -105,7 +106,8 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress")
     .eq("contractAddress", contractAddress)
-    .order('timestamp', { ascending: false });
+    .order("timestamp", { ascending: true })
+    .limit(1)
   
   console.log("Debug - Database Query Error:", error);
   console.log("Debug - Raw Query Results:", data);

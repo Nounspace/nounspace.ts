@@ -91,12 +91,15 @@ interface CachedSpace {
   };
   order: string[];
   orderUpdatedAt?: string;
+  contractAddress?: string | null;
+  network?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
   changedNames: {
     [newName: string]: string;
   };
+  fid?: number | null;
 }
 
 interface SpaceState {
@@ -688,86 +691,129 @@ export const createSpaceStoreFunc = (
     initialConfig,
     network,
   ) => {
-    // First check if a space already exists for this contract
     try {
-      console.log('Checking for existing space:', {
-        address,
-        network,
-        tokenOwnerFid
-      });
+      // First check local spaces for matching contract
+      const existingSpace = Object.values(get().space.localSpaces).find(
+        space => space.contractAddress === address && space.network === network
+      );
+      
+      if (existingSpace) {
+        console.log('Found existing space in local cache:', {
+          spaceId: existingSpace.id,
+          address,
+          network
+        });
+        return existingSpace.id;
+      }
 
+      // First check if a space already exists for this contract
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
         "/api/space/registry",
         {
           params: {
             identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+            contractAddress: address,
+            network: network,
           },
         },
       );
       
-      console.log('Existing spaces check result:', {
-        hasData: !!existingSpaces.value,
-        spaceCount: existingSpaces.value?.spaces.length || 0,
-        matchingSpaces: existingSpaces.value?.spaces.filter(space => space.contractAddress === address) || []
-      });
-
       if (existingSpaces.value) {
         const existingSpace = existingSpaces.value.spaces.find(
-          space => space.contractAddress === address
+          space => space.contractAddress === address && space.network === network
         );
         if (existingSpace) {
-          console.log('Found existing space:', existingSpace);
+          console.log('Found existing space:', {
+            spaceId: existingSpace.spaceId,
+            address,
+            network
+          });
+          // Cache the space info in local state
+          set((draft) => {
+            draft.space.editableSpaces[existingSpace.spaceId] = name;
+            draft.space.localSpaces[existingSpace.spaceId] = {
+              id: existingSpace.spaceId,
+              updatedAt: moment().toISOString(),
+              tabs: {},
+              order: [],
+              changedNames: {},
+              contractAddress: address,
+              network: network
+            };
+          });
           return existingSpace.spaceId;
         }
       }
-    } catch (e) {
-      console.error("Error checking for existing space:", e);
-    }
 
-    console.log('No existing space found, registering new space:', {
-      address,
-      name,
-      tokenOwnerFid,
-      network
-    });
-
-    const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
-      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-      spaceName: name,
-      timestamp: moment().toISOString(),
-      contractAddress: address,
-      tokenOwnerFid,
-      network: network as EtherScanChainName,
-    };
-    const registration = signSignable(
-      unsignedRegistration,
-      get().account.getCurrentIdentity()!.rootKeys.privateKey,
-    );
-    // TODO: Error handling
-    try {
-      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
-        "/api/space/registry",
-        registration,
-      );
-      const newSpaceId = data.value!.spaceId;
-      console.log('Successfully registered new space:', {
-        spaceId: newSpaceId,
+      console.log('No existing space found, registering new space:', {
         address,
-        name
+        name,
+        tokenOwnerFid,
+        network
       });
-      set((draft) => {
-        draft.space.editableSpaces[newSpaceId] = name;
-      }, "registerSpace");
 
-      await get().space.createSpaceTab(
-        newSpaceId,
-        "Profile",
-        initialConfig,
-        network,
+      const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+        spaceName: name,
+        timestamp: moment().toISOString(),
+        contractAddress: address,
+        tokenOwnerFid,
+        network: network as EtherScanChainName,
+      };
+      const registration = signSignable(
+        unsignedRegistration,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
-      return newSpaceId;
+      // TODO: Error handling
+      try {
+        const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+          "/api/space/registry",
+          registration,
+        );
+        const newSpaceId = data.value!.spaceId;
+        set((draft) => {
+          draft.space.editableSpaces[newSpaceId] = name;
+          draft.space.localSpaces[newSpaceId] = {
+            id: newSpaceId,
+            updatedAt: moment().toISOString(),
+            tabs: {},
+            order: [],
+            changedNames: {},
+            contractAddress: address,
+            network: network
+          };
+          draft.space.remoteSpaces[newSpaceId] = {
+            id: newSpaceId,
+            updatedAt: moment().toISOString(),
+            tabs: {},
+            order: [],
+            contractAddress: address,
+            network: network
+          };
+        }, "registerSpace");
+        await get().space.createSpaceTab(
+          newSpaceId,
+          "Profile",
+          initialConfig,
+          network,
+        );
+        return newSpaceId;
+      } catch (e) {
+        console.error('Error registering new space:', {
+          error: e,
+          address,
+          network,
+          tokenOwnerFid
+        });
+        return undefined;
+      }
     } catch (e) {
-      console.error('Error registering new space:', e);
+      console.error("Error in registerSpaceContract:", {
+        error: e,
+        address,
+        network,
+        tokenOwnerFid
+      });
       return undefined;
     }
   },
