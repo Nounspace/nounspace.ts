@@ -29,9 +29,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  experimental: {
-    serverComponentsHmrCache: false,
-  },
   env: {
     NEXT_PUBLIC_VERSION: packageInfo.version,
   },
