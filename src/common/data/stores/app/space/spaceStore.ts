@@ -359,6 +359,20 @@ export const createSpaceStoreFunc = (
         request: {
           identityPublicKey: unsignedRequest.identityPublicKey,
           timestamp: unsignedRequest.timestamp,
+          initialConfig: initialConfig,
+          network: network
+        },
+        response: axios.isAxiosError(e) ? {
+          status: e.response?.status,
+          statusText: e.response?.statusText,
+          data: e.response?.data,
+          headers: e.response?.headers
+        } : null,
+        stack: e instanceof Error ? e.stack : undefined,
+        localState: {
+          tabs: get().space.localSpaces[spaceId]?.tabs,
+          order: get().space.localSpaces[spaceId]?.order,
+          changedNames: get().space.localSpaces[spaceId]?.changedNames
         }
       });
       
@@ -367,7 +381,9 @@ export const createSpaceStoreFunc = (
         console.warn("Rate limit hit, attempting retry after delay", {
           spaceId,
           tabName,
-          network
+          network,
+          retryAfter: e.response?.headers?.['retry-after'],
+          rateLimitRemaining: e.response?.headers?.['x-ratelimit-remaining']
         });
         
         // If it's a rate limit error, we'll retry after a delay
@@ -404,12 +420,6 @@ export const createSpaceStoreFunc = (
         }
       });
       
-      set((draft) => {
-        delete draft.space.localSpaces[spaceId].tabs[tabName];
-        draft.space.localSpaces[spaceId].order = draft.space.localSpaces[spaceId].order.filter(
-          (name) => name !== tabName
-        );
-      }, "rollbackCreateSpaceTab");
       throw e; // Re-throw to allow error handling in the UI
     }
   },
