@@ -191,6 +191,7 @@ export type Database = {
           spaceId: string;
           spaceName: string;
           timestamp: string;
+          network: string | null;
         };
         Insert: {
           contractAddress?: string | null;
@@ -200,6 +201,7 @@ export type Database = {
           spaceId?: string;
           spaceName: string;
           timestamp: string;
+          network?: string | null;
         };
         Update: {
           contractAddress?: string | null;
@@ -209,6 +211,7 @@ export type Database = {
           spaceId?: string;
           spaceName?: string;
           timestamp?: string;
+          network?: string | null;
         };
         Relationships: [
           {
