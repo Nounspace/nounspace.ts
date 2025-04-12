@@ -15,6 +15,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from '@/common/utils/spaceEditability';
+import { revalidatePath } from 'next/cache'
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -116,9 +117,42 @@ export default function PublicSpace({
 
   // Sets the current space and tab name on initial load
   useEffect(() => {
+    // First check local spaces for existing space
+    if (isTokenPage && contractAddress && tokenData?.network) {
+      const existingSpace = Object.values(localSpaces).find(
+        space => space.contractAddress === contractAddress && space.network === tokenData.network
+      );
+      
+      if (existingSpace) {
+        console.log('Found existing space in local cache:', {
+          spaceId: existingSpace.id,
+          contractAddress,
+          network: tokenData.network
+        });
+        setCurrentSpaceId(existingSpace.id);
+        setCurrentTabName(decodeURIComponent(providedTabName));
+        return;
+      }
+    } else if (!isTokenPage && spaceOwnerFid) {
+      const existingSpace = Object.values(localSpaces).find(
+        space => space.fid === spaceOwnerFid
+      );
+      
+      if (existingSpace) {
+        console.log('Found existing user space in local cache:', {
+          spaceId: existingSpace.id,
+          spaceOwnerFid
+        });
+        setCurrentSpaceId(existingSpace.id);
+        setCurrentTabName(decodeURIComponent(providedTabName));
+        return;
+      }
+    }
+
+    // If no existing space found locally, use the provided spaceId
     setCurrentSpaceId(providedSpaceId);
     setCurrentTabName(decodeURIComponent(providedTabName));
-  }, [providedSpaceId, providedTabName]);
+  }, [providedSpaceId, providedTabName, isTokenPage, contractAddress, tokenData?.network, spaceOwnerFid, localSpaces]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -245,6 +279,38 @@ export default function PublicSpace({
         try {
           let newSpaceId: string | undefined;
           
+          // First check local spaces for existing space
+          if (isTokenPage && contractAddress && tokenData?.network) {
+            const existingSpace = Object.values(localSpaces).find(
+              space => space.contractAddress === contractAddress && space.network === tokenData.network
+            );
+            
+            if (existingSpace) {
+              console.log('Found existing space in local cache:', {
+                spaceId: existingSpace.id,
+                contractAddress,
+                network: tokenData.network
+              });
+              setCurrentSpaceId(existingSpace.id);
+              setCurrentTabName("Profile");
+              return;
+            }
+          } else if (!isTokenPage) {
+            const existingSpace = Object.values(localSpaces).find(
+              space => space.fid === currentUserFid
+            );
+            
+            if (existingSpace) {
+              console.log('Found existing user space in local cache:', {
+                spaceId: existingSpace.id,
+                currentUserFid
+              });
+              setCurrentSpaceId(existingSpace.id);
+              setCurrentTabName("Profile");
+              return;
+            }
+          }
+          
           if (isTokenPage && contractAddress && tokenData?.network) {
             console.log('Attempting to register contract space:', {
               contractAddress,
@@ -263,9 +329,6 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress
             });
-            if (newSpaceId) {
-              router.refresh(); // Refresh the page to get the new space ID
-            }
           } else if (!isTokenPage) {
             console.log('Attempting to register user space:', {
               currentUserFid
@@ -276,6 +339,10 @@ export default function PublicSpace({
               newSpaceId,
               currentUserFid
             });
+            
+            revalidatePath(getSpacePageUrl("Profile"));
+            const newUrl = getSpacePageUrl("Profile");
+            router.replace(newUrl, { scroll: false });
           }
 
           if (newSpaceId) {
@@ -285,7 +352,7 @@ export default function PublicSpace({
             
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
-            await loadEditableSpaces();
+            await loadEditableSpaces(); // First load
             await loadSpaceTab(newSpaceId, "Profile");
             
             // Load remaining tabs
@@ -295,6 +362,14 @@ export default function PublicSpace({
                 await loadSpaceTab(newSpaceId, tabName);
               }
             }
+
+            // Invalidate cache by reloading editable spaces
+            await loadEditableSpaces(); // Second load to invalidate cache
+
+            // Update the URL to include the new space ID
+            revalidatePath(getSpacePageUrl("Profile"));
+            const newUrl = getSpacePageUrl("Profile");
+            router.replace(newUrl, { scroll: false });
           }
         } catch (error) {
           console.error('Error during space registration:', error);
@@ -313,6 +388,7 @@ export default function PublicSpace({
     tokenData?.network,
     getCurrentSpaceId,
     getCurrentTabName,
+    localSpaces,
   ]);
 
   const saveConfig = useCallback(
@@ -375,9 +451,7 @@ export default function PublicSpace({
       await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
     }
     // Update the URL without triggering a full navigation
-    router.replace(getSpacePageUrl(tabName), { scroll: false });
-    // Update the current tab name in the store
-    setCurrentTabName(tabName);
+    router.push(getSpacePageUrl(tabName), { scroll: false });
   }
 
   const { editMode } = useSidebarContext();
