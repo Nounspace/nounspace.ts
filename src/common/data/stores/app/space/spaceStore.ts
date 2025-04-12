@@ -122,6 +122,7 @@ interface SpaceActions {
     spaceId: string,
     tabName: string,
     network?: string,
+    isInitialCommit?: boolean,
   ) => Promise<void> | undefined;
   saveLocalSpaceTab: (
     spaceId: string,
@@ -196,37 +197,37 @@ export const createSpaceStoreFunc = (
       }, "addContractEditableSpaces");
     }
   },
-  commitSpaceTabToDatabase: debounce(
-    async (spaceId: string, tabName: string, network?: string) => {
-      const localCopy = cloneDeep(
-        get().space.localSpaces[spaceId].tabs[tabName],
+  commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
+    const localCopy = cloneDeep(
+      get().space.localSpaces[spaceId].tabs[tabName],
+    );
+    const oldTabName =
+      get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
+    
+    if (localCopy) {
+      const file = await get().account.createSignedFile(
+        stringify(localCopy),
+        "json",
+        { fileName: tabName },
       );
-      const oldTabName =
-        get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
-      if (localCopy) {
-        const file = await get().account.createSignedFile(
-          stringify(localCopy),
-          "json",
-          { fileName: tabName },
+      
+      try {
+        await axiosBackend.post(
+          `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
+          { ...file, network },
         );
-        try {
-          await axiosBackend.post(
-            `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
-            { ...file, network },
-          );
-          set((draft) => {
-            draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
-            delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
-            delete draft.space.localSpaces[spaceId].changedNames[tabName];
-          }, "commitSpaceTabToDatabase");
-        } catch (e) {
-          console.error(e);
-          throw e;
-        }
+        
+        set((draft) => {
+          draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
+          delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
+          delete draft.space.localSpaces[spaceId].changedNames[tabName];
+        }, "commitSpaceTabToDatabase");
+      } catch (e) {
+        console.error("Failed to commit space tab:", e);
+        throw e;
       }
-    },
-    1000,
-  ),
+    }
+  },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
     const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
     mergeWith(localCopy, config, (_, newItem) => {
@@ -284,12 +285,15 @@ export const createSpaceStoreFunc = (
     1000,
   ),
   createSpaceTab: async (
-    spaceId,
-    tabName,
-    initialConfig = INITIAL_SPACE_CONFIG_EMPTY,
+    spaceId: string,
+    tabName: string,
+    initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: EtherScanChainName,
   ) => {
-    // First update local state optimistically
+    if (isNil(initialConfig)) {
+      initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
+    }
+
     set((draft) => {
       if (isUndefined(draft.space.localSpaces[spaceId])) {
         draft.space.localSpaces[spaceId] = {
@@ -309,6 +313,7 @@ export const createSpaceStoreFunc = (
           name: `${spaceId}-${tabName}-theme`,
         },
         isPrivate: false,
+        timestamp: moment().toISOString(),
       };
 
       draft.space.localSpaces[spaceId].order.push(tabName);
@@ -337,7 +342,13 @@ export const createSpaceStoreFunc = (
         `/api/space/registry/${spaceId}/tabs`,
         signedRequest,
       );
-      await get().space.commitSpaceOrderToDatabase(spaceId, network);
+      
+      // Commit both the order and the tab content immediately
+      await Promise.all([
+        get().space.commitSpaceOrderToDatabase(spaceId, network),
+        get().space.commitSpaceTabToDatabase(spaceId, tabName, network, true) // true for immediate commit
+      ]);
+      
       return result;
     } catch (e) {
       console.error("Failed to create space tab:", {
@@ -663,25 +674,38 @@ export const createSpaceStoreFunc = (
       unsignedRegistration,
       get().account.getCurrentIdentity()!.rootKeys.privateKey,
     );
-    // TODO: Error handling
+
     try {
       const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
         "/api/space/registry",
         registration,
       );
       const newSpaceId = data.value!.spaceId;
+      
+      // Initialize the space with proper structure
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
-      }, "registerSpace");
+        draft.space.localSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+          fid: fid
+        };
+      });
+
+      // Create and commit the initial Profile tab
       await get().space.createSpaceTab(
         newSpaceId,
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
-      // console.log("Created space", newSpaceId);
+
       return newSpaceId;
     } catch (e) {
-      null;
+      console.error("Failed to register space:", e);
+      throw e;
     }
   },
   registerSpaceContract: async (
@@ -706,7 +730,7 @@ export const createSpaceStoreFunc = (
         return existingSpace.id;
       }
 
-      // First check if a space already exists for this contract
+      // Check if a space already exists for this contract
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
         "/api/space/registry",
         {
@@ -764,13 +788,15 @@ export const createSpaceStoreFunc = (
         unsignedRegistration,
         get().account.getCurrentIdentity()!.rootKeys.privateKey,
       );
-      // TODO: Error handling
+
       try {
         const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
           "/api/space/registry",
           registration,
         );
         const newSpaceId = data.value!.spaceId;
+        
+        // Initialize both local and remote spaces with proper structure
         set((draft) => {
           draft.space.editableSpaces[newSpaceId] = name;
           draft.space.localSpaces[newSpaceId] = {
@@ -791,30 +817,23 @@ export const createSpaceStoreFunc = (
             network: network
           };
         }, "registerSpace");
+
+        // Create and commit the initial Profile tab
         await get().space.createSpaceTab(
           newSpaceId,
           "Profile",
           initialConfig,
           network,
         );
+
         return newSpaceId;
       } catch (e) {
-        console.error('Error registering new space:', {
-          error: e,
-          address,
-          network,
-          tokenOwnerFid
-        });
-        return undefined;
+        console.error("Failed to register contract space:", e);
+        throw e;
       }
     } catch (e) {
-      console.error("Error in registerSpaceContract:", {
-        error: e,
-        address,
-        network,
-        tokenOwnerFid
-      });
-      return undefined;
+      console.error("Error in registerSpaceContract:", e);
+      throw e;
     }
   },
   loadEditableSpaces: async () => {
