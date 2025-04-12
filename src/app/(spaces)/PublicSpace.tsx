@@ -114,8 +114,9 @@ export default function PublicSpace({
       spaceOwnerAddress,
       tokenData,
       wallets: wallets.map(w => ({ address: w.address as Address })),
+      isTokenPage,
     });
-  }, [currentUserFid, spaceOwnerFid, spaceOwnerAddress, tokenData, wallets]);
+  }, [currentUserFid, spaceOwnerFid, spaceOwnerAddress, tokenData, wallets, isTokenPage]);
 
   // Internal isEditable function
   const isEditable = useCallback((userFid: number) => {
