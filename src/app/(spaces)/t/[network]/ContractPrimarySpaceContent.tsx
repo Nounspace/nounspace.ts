@@ -17,6 +17,15 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   owningIdentities,
   network,
 }) => {
+  console.log('ContractPrimarySpaceContent received props:', {
+    spaceId,
+    tabName,
+    ownerId,
+    ownerIdType,
+    contractAddress,
+    owningIdentities,
+    network,
+  });
 
   const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
     (state) => ({
@@ -26,10 +35,15 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   );
 
   useEffect(() => {
+    console.log('addContractEditableSpaces called with:', {
+      spaceId,
+      owningIdentities,
+    });
     addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
 
   useEffect(() => {
+    console.log('loadEditableSpaces called');
     loadEditableSpaces();
 
     console.log('ContractPrimarySpaceContent rendered with props:', {
@@ -48,12 +62,21 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   const shouldShowProfile = isNil(spaceId) && (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
   const hasSpaceId = !isNil(spaceId);
 
+  console.log('Rendering conditions:', {
+    hasOwnerAndContract,
+    shouldShowProfile,
+    hasSpaceId,
+    currentSpaceId: spaceId,
+  });
+
   // Only show 404 if we don't have a valid contract address
   if (isNil(contractAddress)) {
+    console.log('Returning SpaceNotFound due to missing contractAddress');
     return <SpaceNotFound />;
   }
 
   // If we have a contract address, show the space even if it doesn't exist yet
+  console.log('Rendering ContractDefinedSpace with spaceId:', spaceId);
   return (
     <>
       <ContractDefinedSpace
