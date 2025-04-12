@@ -1,13 +1,13 @@
 "use client";
 
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
 import { SpaceConfigSaveDetails } from "./Space";
-import { find, indexOf, isNil, mapValues, toString } from "lodash";
+import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
 import { Address } from "viem";
@@ -263,6 +263,9 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress
             });
+            if (newSpaceId) {
+              router.refresh(); // Refresh the page to get the new space ID
+            }
           } else if (!isTokenPage) {
             console.log('Attempting to register user space:', {
               currentUserFid

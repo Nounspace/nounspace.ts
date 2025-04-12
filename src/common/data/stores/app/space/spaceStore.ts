@@ -690,6 +690,12 @@ export const createSpaceStoreFunc = (
   ) => {
     // First check if a space already exists for this contract
     try {
+      console.log('Checking for existing space:', {
+        address,
+        network,
+        tokenOwnerFid
+      });
+
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
         "/api/space/registry",
         {
@@ -699,17 +705,31 @@ export const createSpaceStoreFunc = (
         },
       );
       
+      console.log('Existing spaces check result:', {
+        hasData: !!existingSpaces.value,
+        spaceCount: existingSpaces.value?.spaces.length || 0,
+        matchingSpaces: existingSpaces.value?.spaces.filter(space => space.contractAddress === address) || []
+      });
+
       if (existingSpaces.value) {
         const existingSpace = existingSpaces.value.spaces.find(
           space => space.contractAddress === address
         );
         if (existingSpace) {
+          console.log('Found existing space:', existingSpace);
           return existingSpace.spaceId;
         }
       }
     } catch (e) {
       console.error("Error checking for existing space:", e);
     }
+
+    console.log('No existing space found, registering new space:', {
+      address,
+      name,
+      tokenOwnerFid,
+      network
+    });
 
     const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
       identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
@@ -730,6 +750,11 @@ export const createSpaceStoreFunc = (
         registration,
       );
       const newSpaceId = data.value!.spaceId;
+      console.log('Successfully registered new space:', {
+        spaceId: newSpaceId,
+        address,
+        name
+      });
       set((draft) => {
         draft.space.editableSpaces[newSpaceId] = name;
       }, "registerSpace");
@@ -742,7 +767,8 @@ export const createSpaceStoreFunc = (
       );
       return newSpaceId;
     } catch (e) {
-      null;
+      console.error('Error registering new space:', e);
+      return undefined;
     }
   },
   loadEditableSpaces: async () => {
