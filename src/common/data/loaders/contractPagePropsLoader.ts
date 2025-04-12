@@ -105,10 +105,17 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress")
     .eq("contractAddress", contractAddress)
+    .order('timestamp', { ascending: false });
   
   console.log("Debug - Database Query Error:", error);
   console.log("Debug - Raw Query Results:", data);
   console.log("Debug - First Space ID:", data?.[0]?.spaceId);
+  console.log("Debug - Query Details:", {
+    table: "spaceRegistrations",
+    filter: { contractAddress },
+    order: "timestamp DESC",
+    resultCount: data?.length || 0
+  });
   
   const spaceId = data?.[0]?.spaceId || null;
 

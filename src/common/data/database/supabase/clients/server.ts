@@ -9,6 +9,11 @@ const supabaseClient = createClient<SupabaseDataBaseType>(
       autoRefreshToken: false,
       persistSession: false,
     },
+    global: {
+      fetch: (url: any, options = {}) => {
+        return fetch(url, { ...options, cache: 'no-store' });
+      }
+    }
   }
 );
 
