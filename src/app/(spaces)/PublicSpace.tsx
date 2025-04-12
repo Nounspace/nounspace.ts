@@ -16,6 +16,7 @@ import { MasterToken } from "@/common/providers/TokenProvider";
 import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from '@/common/utils/spaceEditability';
 import { revalidatePath } from 'next/cache'
+import { INITIAL_SPACE_CONFIG_EMPTY } from '@/constants/initialPersonSpace';
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -478,7 +479,12 @@ export default function PublicSpace({
       createTab={async (tabName) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
-          ? createSpaceTab(currentSpaceId, tabName, undefined, tokenData?.network as EtherScanChainName)
+          ? createSpaceTab(
+            currentSpaceId, 
+            tabName, 
+            INITIAL_SPACE_CONFIG_EMPTY, 
+            tokenData?.network as EtherScanChainName
+          )
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
