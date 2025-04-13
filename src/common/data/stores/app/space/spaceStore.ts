@@ -229,10 +229,18 @@ export const createSpaceStoreFunc = (
     }
   },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
-    const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-    mergeWith(localCopy, config, (_, newItem) => {
-      if (isArray(newItem)) return newItem;
-    });
+    let localCopy;
+    // If the tab doesn't exist yet, use the new config directly
+    if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
+      localCopy = cloneDeep(config);
+    } else {
+      // Otherwise merge with existing config
+      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      mergeWith(localCopy, config, (_, newItem) => {
+        if (isArray(newItem)) return newItem;
+      });
+    }
+
     set((draft) => {
       if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
         draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
@@ -306,9 +314,9 @@ export const createSpaceStoreFunc = (
       }
 
       draft.space.localSpaces[spaceId].tabs[tabName] = {
-        ...cloneDeep(initialConfig),
+        ...cloneDeep(initialConfig!),
         theme: {
-          ...cloneDeep(initialConfig.theme),
+          ...cloneDeep(initialConfig!.theme),
           id: `${spaceId}-${tabName}-theme`,
           name: `${spaceId}-${tabName}-theme`,
         },
