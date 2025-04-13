@@ -6,11 +6,13 @@ import ProfileSpace, {
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
-
+import { unstable_noStore as noStore } from 'next/cache';
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string,
 ): Promise<UserDefinedSpacePageProps> => {
+  noStore();
+
   console.log("Starting loadUserSpaceData for handle:", handle);
   
   const userMetadata = await getUserMetadata(handle);
