@@ -10,7 +10,7 @@ import {
 } from "../database/supabase/serverHelpers";
 import createSupabaseServerClient from "../database/supabase/clients/server";
 import { string } from "prop-types";
-
+import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
 const defaultContractPageProps = {
@@ -26,6 +26,8 @@ const defaultContractPageProps = {
 export async function loadContractData(
   params:  Record<string, string | string[]>,
 ) {
+
+  noStore();
   if (isUndefined(params)) {
     return {
       props: defaultContractPageProps,
