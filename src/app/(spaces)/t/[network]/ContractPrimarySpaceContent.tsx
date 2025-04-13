@@ -7,6 +7,7 @@ import { useAppStore } from '@/common/data/stores/app';
 import { isArray, isNil } from 'lodash';
 import { useEffect } from 'react';
 import { ContractSpacePageProps } from './[contractAddress]/page';
+import createInitialContractSpaceConfigForAddress from '@/constants/initialContractSpace';
 
 const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId,
@@ -16,6 +17,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   contractAddress,
   owningIdentities,
   network,
+  tokenData,
 }) => {
   console.log('ContractPrimarySpaceContent received props:', {
     spaceId,
@@ -27,10 +29,11 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     network,
   });
 
-  const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
+  const { loadEditableSpaces, addContractEditableSpaces, registerSpaceContract } = useAppStore(
     (state) => ({
       loadEditableSpaces: state.space.loadEditableSpaces,
       addContractEditableSpaces: state.space.addContractEditableSpaces,
+      registerSpaceContract: state.space.registerSpaceContract,
     }),
   );
 
@@ -41,6 +44,45 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     });
     addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
+
+  useEffect(() => {
+    const registerSpaceIfNeeded = async () => {
+      if (isNil(spaceId) && !isNil(contractAddress) && !isNil(network) && !isNil(tokenData)) {
+        const tokenOwnerFid = tokenData.clankerData?.requestor_fid;
+        if (!tokenOwnerFid) {
+          console.log('Skipping space registration: No token owner FID available');
+          return;
+        }
+
+        try {
+          const initialConfig = createInitialContractSpaceConfigForAddress(
+            contractAddress,
+            tokenData.clankerData?.cast_hash || "",
+            String(tokenOwnerFid),
+            tokenData.clankerData?.symbol || tokenData.geckoData?.symbol || "",
+            !!tokenData.clankerData,
+            network
+          );
+
+          const newSpaceId = await registerSpaceContract(
+            contractAddress,
+            "Profile",
+            tokenOwnerFid,
+            initialConfig,
+            network
+          );
+
+          if (newSpaceId) {
+            await loadEditableSpaces();
+          }
+        } catch (error) {
+          console.error('Error registering contract space:', error);
+        }
+      }
+    };
+
+    registerSpaceIfNeeded();
+  }, [spaceId, contractAddress, network, tokenData]);
 
   useEffect(() => {
     console.log('loadEditableSpaces called');
