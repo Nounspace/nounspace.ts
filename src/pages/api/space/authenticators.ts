@@ -1,7 +1,7 @@
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
-import supabaseClient from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { SignedFile, validateSignable } from "@/common/lib/signedFiles";
 import { authenticatorsPath, preKeysPath } from "@/constants/supabase";
 import stringify from "fast-json-stable-stringify";
@@ -39,7 +39,8 @@ async function handlePost(
       });
       return;
     }
-    const { data, error } = await supabaseClient.storage
+    const { data, error } = await createSupabaseServerClient()
+      .storage
       .from("private")
       .list(preKeysPath(identityPublicKey));
     if (error !== null || data === null) {
@@ -59,7 +60,8 @@ async function handlePost(
           },
         });
       } else {
-        const { error: storageError } = await supabaseClient.storage
+        const { error: storageError } = await createSupabaseServerClient()
+          .storage
           .from("private")
           .upload(
             `${authenticatorsPath(identityPublicKey)}`,

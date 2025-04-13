@@ -1,5 +1,5 @@
 import neynar from "@/common/data/api/neynar";
-import supabaseClient from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 
 export type Tab = {
@@ -31,7 +31,7 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     console.log("Getting tablist for fid:", fid);
     
     // Add timestamp to bust cache
-    const { data: registrations, error: regError } = await supabaseClient
+    const { data: registrations, error: regError } = await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select('spaceId, spaceName, fid')
       .eq('fid', fid)
@@ -53,7 +53,8 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
 
     try {
       // Get the tab order file directly from storage
-      const { data: tabOrderData, error: storageError } = await supabaseClient.storage
+      const { data: tabOrderData, error: storageError } = await createSupabaseServerClient()
+        .storage
         .from("spaces")
         .download(`${registration.spaceId}/tabOrder`);
 
