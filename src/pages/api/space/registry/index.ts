@@ -3,7 +3,7 @@ import { contractOwnerFromContractAddress } from "@/common/data/api/etherscan";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
-import supabaseClient from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
@@ -74,7 +74,7 @@ export type ModifiableSpacesResponse = NounspaceResponse<{
 }>;
 
 async function identityCanRegisterForFid(identity: string, fid: number) {
-  const { data } = await supabaseClient
+  const { data } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select("fid, identityPublicKey")
     .eq("fid", fid);
@@ -201,7 +201,7 @@ async function registerNewSpace(
     delete registration.tokenOwnerFid;
   }
 
-  const { data: result, error } = await supabaseClient
+  const { data: result, error } = await createSupabaseServerClient()
     .from("spaceRegistrations")
     .insert([registration])
     .select();
@@ -244,7 +244,7 @@ async function listModifiableSpaces(
     });
     return;
   }
-  const { data, error } = await supabaseClient
+  const { data, error } = await createSupabaseServerClient()
     .from("spaceRegistrations")
     .select("*, fidRegistrations!inner (fid, identityPublicKey)")
     .filter("fidRegistrations.identityPublicKey", "eq", identity);

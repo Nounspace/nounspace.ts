@@ -2,7 +2,7 @@
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
-import supabase from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import {
   isSignable,
   Signable,
@@ -122,7 +122,8 @@ async function registerNewSpaceTab(
       publicKey: "nounspace",
       signature: "not applicable, machine generated file",
     };
-  const { error, data } = await supabase.storage
+  const { error, data } = await createSupabaseServerClient()
+    .storage
     .from("spaces")
     .upload(
       `${registration.spaceId}/tabs/${registration.tabName}`,
