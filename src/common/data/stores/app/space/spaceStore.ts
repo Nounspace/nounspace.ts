@@ -343,10 +343,21 @@ export const createSpaceStoreFunc = (
         signedRequest,
       );
       
+      // Create a signed file for the initial configuration
+      const localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      const file = await get().account.createSignedFile(
+        stringify(localCopy),
+        "json",
+        { fileName: tabName },
+      );
+      
       // Commit both the order and the tab content immediately
       await Promise.all([
         get().space.commitSpaceOrderToDatabase(spaceId, network),
-        get().space.commitSpaceTabToDatabase(spaceId, tabName, network, true) // true for immediate commit
+        axiosBackend.post(
+          `/api/space/registry/${spaceId}/tabs/${tabName}`,
+          { ...file, network },
+        )
       ]);
       
       return result;
