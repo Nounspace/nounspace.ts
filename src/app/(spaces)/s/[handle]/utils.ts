@@ -1,6 +1,7 @@
 import neynar from "@/common/data/api/neynar";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
+import { unstable_noStore as noStore } from 'next/cache';
 
 export type Tab = {
   spaceId: string;
@@ -27,6 +28,8 @@ export const getUserMetadata = async (handle: string): Promise<UserMetadata | nu
 };
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
+  noStore();
+
   try {
     console.log("Getting tablist for fid:", fid);
     
