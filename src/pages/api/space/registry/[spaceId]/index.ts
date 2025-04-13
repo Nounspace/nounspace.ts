@@ -1,4 +1,4 @@
-import supabase from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
@@ -99,6 +99,7 @@ async function updateSpaceTabOrder(
     stringify(updateOrderRequest),
   );
 
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.storage
     .from("spaces")
     .upload(
@@ -133,6 +134,7 @@ export async function identitiesCanModifySpace(
     network,
     "network",
   );
+  const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
     .select("contractAddress")

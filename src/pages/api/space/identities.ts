@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import supabase from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import { rootKeyPath } from "@/constants/supabase";
 import { isUndefined } from "lodash";
 import { ed25519 } from "@noble/curves/ed25519";
@@ -58,6 +58,7 @@ async function handlePost(
       if (!validateSignable(file)) {
         throw Error("Invalid signature on keys file");
       }
+      const supabase = createSupabaseServerClient();
       const { error } = await supabase
         .from("walletIdentities")
         .insert(identityRequest);
@@ -101,6 +102,7 @@ async function handleGet(
 ) {
   const query = req.query;
   if (query.address) {
+    const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("walletIdentities")
       .select()

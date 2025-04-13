@@ -7,7 +7,7 @@ import {
   validateSignable,
 } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
-import supabase from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { homebaseTabsPath } from "@/constants/supabase";
 import { isArray, isNil, isUndefined, map } from "lodash";
 import { StorageError } from "@supabase/storage-js";
@@ -78,7 +78,8 @@ async function manageHomebaseTabs(
   let errorResult: StorageError | null;
 
   if (updateReq.type === "create") {
-    const { error } = await supabase.storage
+    const { error } = await createSupabaseServerClient()
+      .storage
       .from("private")
       .upload(
         `${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`,
@@ -86,12 +87,14 @@ async function manageHomebaseTabs(
       );
     errorResult = error;
   } else if (updateReq.type === "delete") {
-    const { error } = await supabase.storage
+    const { error } = await createSupabaseServerClient()
+      .storage
       .from("private")
       .remove([`${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`]);
     errorResult = error;
   } else {
-    const { error } = await supabase.storage
+    const { error } = await createSupabaseServerClient()
+      .storage
       .from("private")
       .move(
         `${homebaseTabsPath(updateReq.publicKey, updateReq.tabName)}`,
@@ -118,7 +121,8 @@ async function manageHomebaseTabs(
 export async function listTabsForIdentity(
   identityPublicKey: string,
 ): Promise<string[]> {
-  const { data: listResults, error: listErrors } = await supabase.storage
+  const { data: listResults, error: listErrors } = await createSupabaseServerClient()
+    .storage
     .from("private")
     .list(`${homebaseTabsPath(identityPublicKey, "")}`);
   if (listErrors) {

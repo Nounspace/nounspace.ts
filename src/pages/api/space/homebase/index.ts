@@ -7,7 +7,7 @@ import {
   validateSignable,
 } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
-import supabase from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
 import { homebasePath } from "@/constants/supabase";
 
@@ -38,7 +38,8 @@ async function updateHomebase(
     });
     return;
   }
-  const { error } = await supabase.storage
+  const { error } = await createSupabaseServerClient()
+    .storage
     .from("private")
     .upload(
       homebasePath(file.publicKey),
