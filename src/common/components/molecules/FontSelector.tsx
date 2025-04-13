@@ -16,9 +16,20 @@ export const FONT_FAMILY_OPTIONS_BY_NAME = FONT_FAMILY_OPTIONS.reduce(
 
 const getSettingByValue = (settings, value: string) => {
   if (!value) return null;
+  
+  // Special handling for theme fonts
+  if (value === "var(--user-theme-font)" || value === "Theme Font") {
+    return settings.find(setting => setting.name === "Theme Font");
+  }
+  if (value === "var(--user-theme-headings-font)" || value === "Theme Headings Font") {
+    return settings.find(setting => setting.name === "Theme Headings Font");
+  }
+
+  // First try to find by name
   const byName = settings.find((setting) => setting.name === value);
   if (byName) return byName;
   
+  // If not found, try to find by fontFamily value
   return settings.find((setting) => setting.config.style.fontFamily === value);
 };
 
@@ -27,6 +38,7 @@ export interface FontSelectorProps {
   value: string;
   className?: string;
   hideGlobalSettings?: boolean;
+  isThemeEditor?: boolean;
 }
 
 export const FontSelector: React.FC<FontSelectorProps> = ({
@@ -34,6 +46,7 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
   value,
   className,
   hideGlobalSettings = false,
+  isThemeEditor = false,
 }) => {
   const settings = FONT_FAMILY_OPTIONS.filter((setting) => {
     if (hideGlobalSettings) {
@@ -48,7 +61,11 @@ export const FontSelector: React.FC<FontSelectorProps> = ({
       (setting) => setting.config.style.fontFamily === fontFamily
     );
     if (fontConfig) {
-      onChange(fontConfig.name);
+      if (isThemeEditor) {
+        onChange(fontConfig.name);
+      } else {
+        onChange(fontConfig.config.style.fontFamily);
+      }
     }
   };
 

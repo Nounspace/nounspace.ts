@@ -1,27 +1,26 @@
-import React from "react";
-import TextInput from "@/common/components/molecules/TextInput";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/common/components/atoms/avatar";
+import {
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/common/components/atoms/card";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import {
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-} from "@/common/components/atoms/card";
 import LinksInput from "@/common/components/molecules/LinksInput";
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from "@/common/components/atoms/avatar";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import React from "react";
 
 export type Link = {
   text: string;
@@ -241,7 +240,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                   <CardDescription
                     className="items-start text-base font-normal text-black dark:text-white flex-grow"
                     style={{
-                      fontFamily: settings.fontFamily,
+                      fontFamily: "var(--user-theme-font)",
                       color: settings.HeaderColor,
                       textAlign: "left",
                       wordWrap: "break-word",
@@ -267,6 +266,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         color: settings.DescriptionColor,
+                        fontFamily: "var(--user-theme-font)",
                       }}
                     >
                       {link.description}

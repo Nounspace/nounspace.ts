@@ -210,6 +210,7 @@ export function ThemeSettingsEditor({
                         value={headingsFont}
                         onChange={themePropSetter<FontFamily>("headingsFont")}
                         hideGlobalSettings
+                        isThemeEditor
                       />
                     </div>
                   </div>
@@ -230,6 +231,7 @@ export function ThemeSettingsEditor({
                         value={font}
                         onChange={themePropSetter<FontFamily>("font")}
                         hideGlobalSettings
+                        isThemeEditor
                       />
                     </div>
                   </div>
