@@ -101,11 +101,13 @@ export async function loadContractData(
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
   console.log("Debug - Contract Address before query:", contractAddress);
+  console.log("Debug - Network:", network);
 
   const { data, error } = await supabaseClient
     .from("spaceRegistrations")
-    .select("spaceId, spaceName, contractAddress")
+    .select("spaceId, spaceName, contractAddress, network")
     .eq("contractAddress", contractAddress)
+    .eq("network", network)
     .order("timestamp", { ascending: true })
     .limit(1)
   
@@ -114,8 +116,8 @@ export async function loadContractData(
   console.log("Debug - First Space ID:", data?.[0]?.spaceId);
   console.log("Debug - Query Details:", {
     table: "spaceRegistrations",
-    filter: { contractAddress },
-    order: "timestamp DESC",
+    filter: { contractAddress, network },
+    order: "timestamp ASC",
     resultCount: data?.length || 0
   });
   
