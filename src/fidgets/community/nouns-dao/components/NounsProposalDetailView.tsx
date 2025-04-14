@@ -2,20 +2,20 @@ import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import type { NounsProposalData } from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime, getProposalState } from "./ProposalListRowItem";
-import ReactMarkdown from "react-markdown";
-import { Address } from "viem";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
@@ -105,11 +105,14 @@ export const NounsProposalDetailView = ({
   currentBlock: { number: number; timestamp: number };
   loading: boolean;
 }) => {
+
   const proposer = proposal?.proposer?.id;
   const sponsor = proposal?.signers?.length
     ? proposal.signers[0].id
     : undefined;
-  const version = versions?.length;
+
+  const isVersionsArray = Array.isArray(versions);
+  const version = isVersionsArray ? versions.length : 1;
 
   const { data: proposerEnsName } = useEnsName({
     address: proposer as Address,
@@ -145,22 +148,41 @@ export const NounsProposalDetailView = ({
 
   const totalVotes = votes.for + votes.against + votes.abstain;
 
-  const lastUpdated = versions?.[0]?.createdAt
-    ? moment(Number(versions[0].createdAt) * 1000).fromNow()
-    : "N/A";
-  const lastUpdatedText =
-    version === 1 ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
+
+  let lastUpdated;
+  if (isVersionsArray && versions[0]?.createdAt) {
+    lastUpdated = moment(Number(versions[0].createdAt) * 1000).fromNow();
+  } else if (proposal.lastUpdatedTimestamp) {
+    lastUpdated = moment(Number(proposal.lastUpdatedTimestamp) * 1000).fromNow();
+  } else if (proposal.createdTimestamp) {
+    lastUpdated = moment(Number(proposal.createdTimestamp) * 1000).fromNow();
+  } else {
+    lastUpdated = "N/A";
+  }
+
+  const isFirstVersion = proposal.createdTimestamp === proposal.lastUpdatedTimestamp;
+  const lastUpdatedText = isFirstVersion ? `Created ${lastUpdated}` : `Updated ${lastUpdated}`;
 
   const endDate = currentBlock
     ? estimateBlockTime(
-        Number(proposal.endBlock),
-        currentBlock.number,
-        currentBlock.timestamp,
-      )
+      Number(proposal.endBlock),
+      currentBlock.number,
+      currentBlock.timestamp,
+    )
     : new Date();
   const formattedEndDate = moment(endDate).format("MMM D, YYYY");
   const formattedEndTime = moment(endDate).format("h:mm A");
-  // console.log(proposal);
+
+  const processDescription = (description: string): string => {
+    const lines = description.split('\n');
+    if (lines.length > 0 && lines[0].trim().startsWith('#')) {
+      return lines.slice(1).join('\n').trim();
+    }
+    return description;
+  };
+
+  const processedDescription = processDescription(proposal.description);
+
   return (
     <div className="flex flex-col size-full">
       <div className="flex justify-between pb-3">
@@ -202,7 +224,7 @@ export const NounsProposalDetailView = ({
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
-              <p className="font-medium text-base/[1.25]">{proposal.title}</p>
+              <p className="font-medium text-2xl/[1.25]">{proposal.title}</p>
               {(proposer || sponsor) && (
                 <div className="flex gap-4">
                   <AddressInfo
@@ -268,7 +290,7 @@ export const NounsProposalDetailView = ({
               <InfoBox
                 label="Snapshot"
                 subtext="Taken at block"
-                value={proposal.voteSnapshotBlock}
+                value={proposal.startBlock}
               />
             </div>
 
@@ -278,7 +300,7 @@ export const NounsProposalDetailView = ({
               rehypePlugins={[rehypeRaw]}
               remarkPlugins={[remarkGfm]}
             >
-              {proposal.description}
+              {processedDescription}
             </ReactMarkdown>
           </div>
         </div>
