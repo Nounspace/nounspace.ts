@@ -45,6 +45,32 @@ export const alchemyProvider = new AlchemyProvider(
   process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
 );
 
+// Rate limiting setup
+const RATE_LIMIT = 5; // 5 calls per second
+const BUCKET_SIZE = 5;
+let tokens = BUCKET_SIZE;
+let lastRefill = Date.now();
+
+async function refillTokens() {
+  const now = Date.now();
+  const timePassed = now - lastRefill;
+  const tokensToAdd = Math.floor(timePassed / 1000) * RATE_LIMIT;
+  if (tokensToAdd > 0) {
+    tokens = Math.min(BUCKET_SIZE, tokens + tokensToAdd);
+    lastRefill = now;
+  }
+}
+
+async function waitForToken() {
+  await refillTokens();
+  if (tokens <= 0) {
+    const waitTime = Math.ceil((1000 - (Date.now() - lastRefill)) / RATE_LIMIT);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+    await refillTokens();
+  }
+  tokens--;
+}
+
 async function getContractABI(
   contractAddress: string,
   network?: string,
@@ -54,6 +80,7 @@ async function getContractABI(
 
   const apiKey = process.env.ETHERSCAN_API_KEY!;
   try {
+    await waitForToken();
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
         module: "contract",
@@ -88,6 +115,7 @@ async function getContractCreator(
   const baseUrl = "https://api.etherscan.io";
   const apiKey = process.env.ETHERSCAN_API_KEY!;
   try {
+    await waitForToken();
     const { data } = await axios.get<EtherscanResponse>(`${baseUrl}/v2/api`, {
       params: {
         module: "contract",
@@ -185,7 +213,7 @@ export async function contractOwnerFromContract(
       } catch (error) {
         console.error("Error fetching user FID:", error);
       }
-      console.log("Contract creator:", contractCreation);
+      // console.log("Contract creator:", contractCreation);
     }
   }
 

@@ -4,7 +4,7 @@ import requestHandler, {
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next";
 import neynar from "@/common/data/api/neynar";
-import supabaseClient from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import moment from "moment";
 import { first, isArray, isUndefined, map } from "lodash";
 
@@ -79,7 +79,7 @@ async function linkFidToIdentity(
       },
     });
   }
-  const { data: checkExistsData } = await supabaseClient
+  const { data: checkExistsData } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select("fid, created")
     .eq("fid", reqBody.fid);
@@ -95,7 +95,7 @@ async function linkFidToIdentity(
       });
       return;
     }
-    const { data, error } = await supabaseClient
+    const { data, error } = await createSupabaseServerClient()
       .from("fidRegistrations")
       .update({
         created: reqBody.timestamp,
@@ -121,7 +121,7 @@ async function linkFidToIdentity(
       value: first(data),
     });
   } else {
-    const { data, error } = await supabaseClient
+    const { data, error } = await createSupabaseServerClient()
       .from("fidRegistrations")
       .insert({
         fid: reqBody.fid,
@@ -169,7 +169,7 @@ async function lookUpFidsForIdentity(
     });
     return;
   }
-  const { data, error } = await supabaseClient
+  const { data, error } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select("fid")
     .eq("identityPublicKey", identity)

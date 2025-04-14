@@ -1,4 +1,4 @@
-import supabase from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
@@ -99,6 +99,7 @@ async function updateSpaceTabOrder(
     stringify(updateOrderRequest),
   );
 
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.storage
     .from("spaces")
     .upload(
@@ -106,9 +107,6 @@ async function updateSpaceTabOrder(
       new Blob([stringify(updateOrderRequest)], { type: "application/json" }),
       { upsert: true },
     );
-
-  console.log("[registry space] Supabase Data", data);
-  console.log("[registry space] Supabase Error", error);
 
   if (!isNull(error)) {
     console.error(error);
@@ -124,7 +122,6 @@ async function updateSpaceTabOrder(
     result: "success",
     value: updateOrderRequest.tabOrder,
   });
-  console.log("[registry space] Supabase Response", res.status);
 }
 
 export async function identitiesCanModifySpace(
@@ -137,6 +134,7 @@ export async function identitiesCanModifySpace(
     network,
     "network",
   );
+  const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
     .select("contractAddress")

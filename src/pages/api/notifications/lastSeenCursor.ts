@@ -2,7 +2,7 @@ import requestHandler from "@/common/data/api/requestHandler";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { validateSignable, isSignable } from "@/common/lib/signedFiles";
-import supabase from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import type { Tables } from "@/supabase/database";
 import { z, ZodSchema } from "zod";
 
@@ -45,7 +45,7 @@ const _identityExists = async (
   fid: number,
   identityPublicKey: string,
 ): Promise<boolean> => {
-  const { count, error } = await supabase
+  const { count, error } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select("*", { count: "exact", head: true })
     .eq("fid", fid)
@@ -62,7 +62,7 @@ const _createOrUpdateNotificationCursor = async (
   identityPublicKey: string,
   lastSeenTimestamp: string,
 ): Promise<Tables<"lastSeenNotificationCursors">> => {
-  const { data, error } = await supabase
+  const { data, error } = await createSupabaseServerClient()
     .from("lastSeenNotificationCursors")
     .upsert(
       { fid, identityPublicKey, lastSeenTimestamp },
@@ -170,7 +170,7 @@ const get = async (
   }
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await createSupabaseServerClient()
       .from("lastSeenNotificationCursors")
       .select("lastSeenTimestamp")
       .eq("fid", params.fid)

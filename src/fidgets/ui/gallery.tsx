@@ -1,21 +1,3 @@
-import React, { CSSProperties, useEffect, useState } from "react";
-import TextInput from "@/common/components/molecules/TextInput";
-import {
-  FidgetArgs,
-  FidgetProperties,
-  FidgetModule,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
-import MediaSourceSelector, {
-  MediaSource,
-  MediaSourceTypes,
-} from "@/common/components/molecules/MediaSourceSelector";
-import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
-import AlchemyNftSelector, {
-  AlchemyNftSelectorValue,
-} from "@/common/components/molecules/AlchemyNFTSelector";
 import VerifiedNft from "@/common/components/atoms/icons/VerifiedNft";
 import {
   Tooltip,
@@ -23,12 +5,31 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/common/components/atoms/tooltip";
+import AlchemyChainSelector from "@/common/components/molecules/AlchemyChainSelector";
+import AlchemyNftSelector, {
+  AlchemyNftSelectorValue,
+} from "@/common/components/molecules/AlchemyNFTSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import ImgBBUploader from "@/common/components/molecules/ImgBBUploader";
+import MediaSourceSelector, {
+  MediaSource,
+  MediaSourceTypes,
+} from "@/common/components/molecules/MediaSourceSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import { Color } from "@/common/lib/theme";
-import { ErrorWrapper } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import React, { CSSProperties, useEffect, useState } from "react";
 
 export type GalleryFidgetSettings = {
   imageUrl: string;
+  uploadedImage: string;
   RedirectionURL: string;
   Scale: number;
   selectMediaSource: MediaSource;
@@ -50,6 +51,32 @@ const galleryConfig: FidgetProperties = {
       required: false,
       default: { name: MediaSourceTypes.URL },
       group: "settings",
+    },
+    {
+      fieldName: "imageUploader",
+      displayName: "Upload Image",
+      inputSelector: ({ updateSettings }) => {
+        const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
+
+        const handleImageUploaded = (Upload: string) => {
+          console.log("Image uploaded, URL:", Upload);
+          setLocalImageUrl(Upload);
+          updateSettings?.({
+            uploadedImage: Upload,
+            imageUrl: Upload
+          });
+        };
+
+        return (
+          <div className="flex flex-col gap-4">
+            <ImgBBUploader onImageUploaded={handleImageUploaded} />
+          </div>
+        );
+      },
+      required: false,
+      group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name !== MediaSourceTypes.UPLOAD,
     },
     {
       fieldName: "imageUrl",
@@ -114,6 +141,8 @@ const galleryConfig: FidgetProperties = {
       inputSelector: TextInput,
       default: "",
       group: "settings",
+      disabledIf: (settings) =>
+        settings?.selectMediaSource?.name === MediaSourceTypes.UPLOAD,
     },
     {
       fieldName: "badgeColor",
@@ -125,6 +154,7 @@ const galleryConfig: FidgetProperties = {
       disabledIf: (settings) =>
         settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
     },
+   
     ...defaultStyleFields,
   ],
   size: {
@@ -154,6 +184,30 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [badgeColor, setBadgeColor] = useState<Color>(settings.badgeColor);
+  const [uploadedImage, setuploadedImage] = useState<string | null>(settings.uploadedImage || null);
+
+  React.useEffect(() => {
+    if (uploadedImage) {
+      localStorage.setItem('galleryuploadedImage', uploadedImage);
+    }
+
+    window.handleGalleryImageUpload = (url: string) => {
+      console.log("Global handler called with URL:", url);
+      setuploadedImage(url);
+      localStorage.setItem('galleryuploadedImage', url);
+    };
+
+    return () => {
+      delete window.handleGalleryImageUpload;
+    };
+  }, [uploadedImage]);
+
+  React.useEffect(() => {
+    const savedImageUrl = localStorage.getItem('galleryuploadedImage');
+    if (savedImageUrl && settings.selectMediaSource?.name === MediaSourceTypes.UPLOAD) {
+      setuploadedImage(savedImageUrl);
+    }
+  }, [settings.selectMediaSource?.name]);
 
   useEffect(() => {
     if (settings.selectMediaSource?.name === MediaSourceTypes.EXTERNAL) {
@@ -189,6 +243,17 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     } else if (settings.selectMediaSource?.name === MediaSourceTypes.WALLET) {
       setNftImageUrl(settings.nftSelector?.imageUrl || "");
       setError(null);
+    } else if (settings.selectMediaSource?.name === MediaSourceTypes.UPLOAD) {
+      if (uploadedImage) {
+        console.log("Using local uploaded image URL:", uploadedImage);
+        setNftImageUrl(uploadedImage);
+        setError(null);
+      } else if (settings.uploadedImage) {
+        setNftImageUrl(settings.uploadedImage);
+        setError(null);
+      } else {
+        setError("Please upload an image");
+      }
     } else {
       setNftImageUrl(null);
       setError("Please select a media source.");
@@ -198,6 +263,8 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     settings.nftAddress,
     settings.nftTokenId,
     settings.network,
+    settings.uploadedImage,
+    uploadedImage,
   ]);
 
   useEffect(() => {
