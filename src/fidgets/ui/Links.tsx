@@ -37,6 +37,8 @@ export type LinkFidgetSettings = {
   description?: string;
   DescriptionColor: string;
   HeaderColor: string;
+  headingsFontFamily: string;
+  fontFamily: string;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -74,6 +76,13 @@ export const linkConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       default: "Londrina Solid",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "Theme Font",
       required: false,
       inputSelector: FontSelector,
       group: "style",
@@ -149,10 +158,29 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
 
+  const getHeadingsFontFamily = () => {
+    if (settings.headingsFontFamily === "Theme Headings Font") {
+      return "var(--user-theme-headings-font)";
+    }
+    const root = document.documentElement;
+    const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
+    if (settings.headingsFontFamily === "Londrina Solid" && themeFont) {
+      return themeFont;
+    }
+    return settings.headingsFontFamily;
+  };
+
+  const getFontFamily = () => {
+    if (settings.fontFamily === "Theme Font") {
+      return "var(--user-theme-font)";
+    }
+    return settings.fontFamily;
+  };
+
   return (
     <div
       style={{
-        fontFamily: settings.headingsFontFamily,
+        fontFamily: getFontFamily(),
         background: settings.background,
         height: "100%",
         borderWidth: settings.fidgetBorderWidth,
@@ -169,7 +197,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
           <CardTitle
             className="text-2xl font-bold"
             style={{
-              fontFamily: settings.headingsFontFamily,
+              fontFamily: getHeadingsFontFamily(),
               color: settings.HeaderColor,
             }}
           >
@@ -240,7 +268,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                   <CardDescription
                     className="items-start text-base font-normal text-black dark:text-white flex-grow"
                     style={{
-                      fontFamily: "var(--user-theme-font)",
+                      fontFamily: getHeadingsFontFamily(),
                       color: settings.HeaderColor,
                       textAlign: "left",
                       wordWrap: "break-word",
@@ -266,7 +294,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         color: settings.DescriptionColor,
-                        fontFamily: "var(--user-theme-font)",
+                        fontFamily: getFontFamily(),
                       }}
                     >
                       {link.description}
