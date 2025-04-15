@@ -12,6 +12,7 @@ import FarcasterLinkify from "../farcaster/components/linkify";
 import { followUser, unfollowUser } from "../farcaster/utils";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { IoLocationOutline } from "react-icons/io5";
+import { BsPerson, BsPersonFill } from "react-icons/bs";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -20,6 +21,8 @@ export type ProfileFidgetSettings = {
 const profileProperties: FidgetProperties = {
   fidgetName: "Profile",
   icon: 0x1f464, // This is the hex code for an emoji
+  mobileIcon: <BsPerson size={24} />,
+  mobileIconSelected: <BsPersonFill size={24} />,
   fields: [
     {
       fieldName: "fid",
