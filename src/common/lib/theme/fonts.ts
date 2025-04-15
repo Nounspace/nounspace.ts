@@ -1,27 +1,27 @@
 import {
+  Anek_Latin,
+  Exo,
+  Goldman,
+  IBM_Plex_Mono,
   Inter,
-  Roboto,
-  Roboto_Mono,
-  Open_Sans,
   Lato,
-  Noto_Serif,
+  Londrina_Solid,
   Noto_Sans,
+  Noto_Serif,
+  Open_Sans,
+  Oswald,
   Poppins,
+  Quicksand,
   Raleway,
+  Roboto,
   Roboto_Condensed,
+  Roboto_Mono,
   Roboto_Slab,
   Source_Code_Pro,
   Space_Grotesk,
+  Trispace,
   Ubuntu,
   Work_Sans,
-  Londrina_Solid,
-  Quicksand,
-  Anek_Latin,
-  Goldman,
-  Trispace,
-  Oswald,
-  Exo,
-  IBM_Plex_Mono,
 } from "next/font/google";
 
 import type { FontFamily } from "@/common/lib/theme";
@@ -268,7 +268,12 @@ export const FONT_FAMILY_OPTIONS: FontConfig[] = [
   },
   {
     name: "Londrina Solid",
-    config: londrina_solid,
+    config: {
+      ...londrina_solid,
+      style: {
+        fontFamily: londrina_solid.style.fontFamily,
+      }
+    },
   },
   {
     name: "Quicksand",
