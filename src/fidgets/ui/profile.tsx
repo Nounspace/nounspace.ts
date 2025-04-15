@@ -1,17 +1,16 @@
-import React, { useState, useMemo } from "react";
+import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
-import { CgProfile } from "react-icons/cg";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
+import { defaultStyleFields } from "@/fidgets/helpers";
 import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { first, isUndefined } from "lodash";
-import FarcasterLinkify from "../farcaster/components/linkify";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import React, { useMemo, useState } from "react";
+import { CgProfile } from "react-icons/cg";
 import { useFarcasterSigner } from "../farcaster";
+import FarcasterLinkify from "../farcaster/components/linkify";
 import { followUser, unfollowUser } from "../farcaster/utils";
-import { Button } from "@/common/components/atoms/button";
-import { defaultStyleFields } from "@/fidgets/helpers";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { LocateIcon, Pin, PinIcon } from "lucide-react";
 import { IoLocationOutline } from "react-icons/io5";
 
 export type ProfileFidgetSettings = {

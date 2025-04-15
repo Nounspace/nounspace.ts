@@ -3,7 +3,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import { validateSignable, Signable } from "@/common/lib/signedFiles";
 import { NextApiRequest, NextApiResponse } from "next/types";
-import supabase from "@/common/data/database/supabase/clients/server";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import {
   first,
   fromPairs,
@@ -58,7 +58,7 @@ async function getSpaceOrder(
     });
     return;
   }
-  const { data: orders, error } = await supabase
+  const { data: orders, error } = await createSupabaseServerClient()
     .from("spaceOrderings")
     .select("ordering")
     .eq("fid", fid);
@@ -80,7 +80,7 @@ async function getSpaceOrder(
     return;
   }
   const { data: spacesForOrdering, error: spacesForOrderingError } =
-    await supabase
+    await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
       .eq("fid", fid)
@@ -139,7 +139,7 @@ async function updateSpaceOrder(
     });
     return;
   }
-  const { data: fidsForPublicKey, error: fidLookupError } = await supabase
+  const { data: fidsForPublicKey, error: fidLookupError } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select("fid")
     .eq("identityPublicKey", updateOrderReq.identityPublicKey);
@@ -176,7 +176,7 @@ async function updateSpaceOrder(
     return;
   }
   const { data: currentRecords, error: currentRecordLookupError } =
-    await supabase
+    await createSupabaseServerClient()
       .from("spaceOrderings")
       .select("timestamp")
       .eq("fid", updateOrderReq.fid);
@@ -212,7 +212,7 @@ async function updateSpaceOrder(
     return;
   }
   const { data: spacesForOrdering, error: spacesForOrderingError } =
-    await supabase
+    await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
       .eq("fid", updateOrderReq.fid)
@@ -245,7 +245,7 @@ async function updateSpaceOrder(
     });
     return;
   }
-  const { error } = await supabase
+  const { error } = await createSupabaseServerClient()
     .from("spaceOrderings")
     .upsert(updateOrderReq, { onConflict: "fid" })
     .select();

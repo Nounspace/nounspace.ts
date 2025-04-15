@@ -34,7 +34,7 @@ const TokenDataHeader: React.FC = () => {
           },
         },
       });
-      console.log("Token added to MetaMask", wasAdded);
+      // console.log("Token added to MetaMask", wasAdded);
     } catch (error) {
       console.error("Error adding token to MetaMask", error);
     }

@@ -13,8 +13,8 @@ import { FidgetSettingsStyle } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import { NOUNS_DAO } from "@/constants/basedDaos";
-import axios from "axios";
-import Text from "@/fidgets/ui/Text";
+import { getBlock } from "wagmi/actions";
+import { wagmiConfig } from "@/common/providers/Wagmi";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -95,12 +95,10 @@ export const NounishGovernance: React.FC<
   useEffect(() => {
     const fetchBlockNumber = async () => {
       try {
-        const response = await axios.get(
-          "https://pioneers.dev/api/v1/blockHeight/eip155%3A1",
-        );
+        const block = await getBlock(wagmiConfig);
         setCurrentBlock({
-          number: Number(response.data.height),
-          timestamp: Date.now(),
+          number: Number(block.number),
+          timestamp: Number(block.timestamp) * 1000,
         });
       } catch (error) {
         console.error("Error fetching block number:", error);

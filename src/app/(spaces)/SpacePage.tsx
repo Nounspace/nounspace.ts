@@ -1,8 +1,6 @@
 import React, { ReactNode, Suspense } from "react";
-import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
-import { isUndefined } from "lodash";
+import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space"; 
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
-import SpaceLoading from "./SpaceLoading";
 
 export type SpacePageArgs = {
   config: SpaceConfig;
@@ -12,7 +10,6 @@ export type SpacePageArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
-  loading?: boolean;
 };
 
 export default function SpacePage({
@@ -22,7 +19,6 @@ export default function SpacePage({
   resetConfig,
   tabBar,
   profile,
-  loading,
   feed,
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
@@ -36,11 +32,11 @@ export default function SpacePage({
         commitConfig={commitConfig}
         resetConfig={resetConfig}
         tabBar={tabBar}
-          profile={profile}
-          feed={feed}
-          setEditMode={setEditMode}
-          editMode={editMode}
-          setSidebarEditable={setSidebarEditable}
+        profile={profile}
+        feed={feed}
+        setEditMode={setEditMode}
+        editMode={editMode}
+        setSidebarEditable={setSidebarEditable}
         portalRef={portalRef}
       />
     </>

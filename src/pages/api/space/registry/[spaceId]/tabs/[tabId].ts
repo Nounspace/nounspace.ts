@@ -11,7 +11,7 @@ import {
 } from "@/common/lib/signedFiles";
 import { findIndex, isNull } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
-import supabase from "@/common/data/database/supabase/clients/server";
+import { createSupabaseServerClient } from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
 import { identitiesCanModifySpace } from "../../[spaceId]";
 
@@ -48,7 +48,7 @@ export async function identityCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  console.log("identityCanModifySpace", identity, spaceId, network);
+  // console.log("identityCanModifySpace", identity, spaceId, network);
   const data = await identitiesCanModifySpace(spaceId, network);
   return findIndex(data, (i) => i === identity) !== -1;
 }
@@ -92,6 +92,7 @@ async function updateSpace(
     return;
   }
   if (req.fileName !== tabName) {
+    const supabase = createSupabaseServerClient();
     const { error } = await supabase.storage
       .from("spaces")
       .move(`${spaceId}/tabs/${tabName}`, `${spaceId}/tabs/${req.fileName}`);
@@ -105,6 +106,7 @@ async function updateSpace(
       return;
     }
   }
+  const supabase = createSupabaseServerClient();
   const { error } = await supabase.storage
     .from("spaces")
     .update(
@@ -128,7 +130,7 @@ async function updateSpace(
 
 async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
   const deleteReq = req.body;
-  console.log("deleteReq", deleteReq);
+  // console.log("deleteReq", deleteReq);
   const spaceId = req.query.spaceId as string;
   const tabId = req.query.tabId as string;
   if (!isDeleteSpaceTabRequest(deleteReq)) {
@@ -183,6 +185,7 @@ async function deleteSpace(req: NextApiRequest, res: NextApiResponse) {
     });
     return;
   }
+  const supabase = createSupabaseServerClient();
   const { error } = await supabase.storage
     .from("spaces")
     .remove([`${deleteReq.spaceId}/tabs/${deleteReq.tabName}`]);
