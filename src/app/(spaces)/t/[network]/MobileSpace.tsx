@@ -160,11 +160,7 @@ export const MobileContractDefinedSpace = ({
         },
       });
 
-      if (wasAdded) {
-        console.log("Token added to MetaMask");
-      } else {
-        console.log("Token not added");
-      }
+      // console.log("Token added to MetaMask");
     } catch (error) {
       alert(`Error adding token to MetaMask: ${error}`);
     }

@@ -1,5 +1,5 @@
 import { isNil, map } from "lodash";
-import supabaseClient from "./clients/server";
+import createSupabaseServerClient from "./clients/server";
 import { contractOwnerFromContractAddress } from "../../api/etherscan";
 import { tokenRequestorFromContractAddress } from "../../queries/clanker";
 
@@ -7,7 +7,7 @@ export async function loadOwnedItentitiesForWalletAddress(
   walletAddress: string,
   network?: string,
 ) {
-  const { data } = await supabaseClient
+  const { data } = await createSupabaseServerClient()
     .from("walletIdentities")
     .select("identityPublicKey")
     .eq("walletAddress", walletAddress);
@@ -40,7 +40,7 @@ export async function loadIdentitiesOwningContractSpace(
 }
 
 export async function loadOwnedItentitiesForFid(fid: string) {
-  const { data } = await supabaseClient
+  const { data } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select(`identityPublicKey`)
     .eq("fid", fid);
@@ -49,7 +49,7 @@ export async function loadOwnedItentitiesForFid(fid: string) {
 }
 
 export async function loadOwnedItentitiesForSpaceByFid(spaceId: string) {
-  const { data } = await supabaseClient
+  const { data } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select(
       `

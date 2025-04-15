@@ -1,9 +1,10 @@
 import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton from "@/common/components/molecules/SwitchButton";
+
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
 export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
@@ -37,10 +38,18 @@ export const defaultStyleFields = [
   ...mobileStyleSettings,
   {
     fieldName: "background",
-    default: "var(--user-theme-fidget-background)",
+    displayName: "Background",
     required: false,
-    inputSelector: ColorSelector,
+    inputSelector: (props) => (
+      <ThemeColorSelector
+        {...props}
+        themeVariable="var(--user-theme-fidget-background)"
+        defaultColor="#FFFFFF"
+        colorType="background"
+      />
+    ),
     group: "style",
+    default: "var(--user-theme-fidget-background)",
   },
   {
     fieldName: "fidgetBorderWidth",
@@ -51,10 +60,18 @@ export const defaultStyleFields = [
   },
   {
     fieldName: "fidgetBorderColor",
-    default: "var(--user-theme-fidget-border-color)",
+    displayName: "fidgetBorderColor",
     required: false,
-    inputSelector: ColorSelector,
+    inputSelector: (props) => (
+      <ThemeColorSelector
+        {...props}
+        themeVariable="var(--user-theme-fidget-border-color)"
+        defaultColor="#000000"
+        colorType="border color"
+      />
+    ),
     group: "style",
+    default: "var(--user-theme-fidget-border-color)",
   },
   {
     fieldName: "fidgetShadow",

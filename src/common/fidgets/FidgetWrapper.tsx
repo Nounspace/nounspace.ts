@@ -1,30 +1,29 @@
-import React from "react";
-import { useAppStore } from "@/common/data/stores/app";
 import { Card, CardContent } from "@/common/components/atoms/card";
+import CSSInput from "@/common/components/molecules/CSSInput";
+import ScopedStyles from "@/common/components/molecules/ScopedStyles";
+import { useAppStore } from "@/common/data/stores/app";
+import { reduce } from "lodash";
+import React from "react";
+import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
-  FidgetConfig,
-  FidgetSettings,
-  FidgetBundle,
   FidgetArgs,
+  FidgetBundle,
+  FidgetConfig,
   FidgetData,
   FidgetProperties,
   FidgetRenderContext,
+  FidgetSettings,
 } from ".";
-import { reduce } from "lodash";
-import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
-import CSSInput from "@/common/components/molecules/CSSInput";
-import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
 import StashIcon from "../components/atoms/icons/Stash";
-import { FaX } from "react-icons/fa6";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "../components/atoms/tooltip";
-import { getFidgetCardStyles } from "@/common/lib/theme/helpers";
+import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
 export type FidgetWrapperProps = {
   fidget: React.FC<FidgetArgs>;
@@ -186,11 +185,20 @@ export function FidgetWrapper({
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
             : "size-full overflow-hidden"
         }
-        style={getFidgetCardStyles({
-          background: homebaseConfig?.theme?.properties.fidgetBackground,
-          borderColor: homebaseConfig?.theme?.properties.fidgetBorderColor,
-          settings: settingsWithDefaults,
-        })}
+        style={{
+          background: settingsWithDefaults.useDefaultColors 
+            ? homebaseConfig?.theme?.properties.fidgetBackground
+            : settingsWithDefaults.background,
+          borderColor: settingsWithDefaults.useDefaultColors
+            ? homebaseConfig?.theme?.properties.fidgetBorderColor
+            : settingsWithDefaults.fidgetBorderColor,
+          borderWidth: settingsWithDefaults.useDefaultColors
+            ? homebaseConfig?.theme?.properties.fidgetBorderWidth
+            : settingsWithDefaults.fidgetBorderWidth,
+          boxShadow: settingsWithDefaults.useDefaultColors
+            ? homebaseConfig?.theme?.properties.fidgetShadow
+            : settingsWithDefaults.fidgetShadow,
+        }}
       >
         {bundle.config.editable && (
           <button

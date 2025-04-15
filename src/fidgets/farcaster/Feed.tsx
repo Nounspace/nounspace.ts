@@ -1,56 +1,56 @@
-import React, { useEffect, useCallback } from "react";
-import { isNil } from "lodash";
-import {
-  FidgetArgs,
-  FidgetProperties,
-  FidgetModule,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
-import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { CastRow } from "./components/CastRow";
-import { useFarcasterSigner } from ".";
-import Loading from "@/common/components/molecules/Loading";
-import { useInView } from "react-intersection-observer";
-import { CastThreadView } from "./components/CastThreadView";
+import BorderSelector from "@/common/components/molecules/BorderSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import Loading from "@/common/components/molecules/Loading";
+import PlatformSelector, { Platform } from "@/common/components/molecules/PlatformSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
+import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import {
   useGetCasts,
   useGetCastsByKeyword,
-} from "@/common/data/queries/farcaster"; // Import new hook
+} from "@/common/data/queries/farcaster";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  type FidgetSettingsStyle,
+} from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import PlatformSelector from "@/common/components/molecules/PlatformSelector";
-import { Platform } from "@/common/components/molecules/PlatformSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { mobileStyleSettings } from "../helpers";
+import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { isNil } from "lodash";
+import React, { useCallback, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
+import { useFarcasterSigner } from ".";
+import { CastRow } from "./components/CastRow";
+import { CastThreadView } from "./components/CastThreadView";
 
 export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
-  Keyword = "keyword", // Add new filter type
+  Keyword = "keyword", 
 }
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users?: string; // this should be a number array, but that requires special inputs to build later
+  users?: string; 
   channel?: string;
-  keyword?: string; // Add keyword field
+  keyword?: string; 
   selectPlatform: Platform;
   Xhandle: string;
   style: string;
+  useDefaultColors?: boolean; 
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
   { name: "Channel", value: FilterType.Channel },
   { name: "Users", value: FilterType.Users },
-  { name: "Keyword", value: FilterType.Keyword }, // Add new filter type
+  { name: "Keyword", value: FilterType.Keyword },
 ];
 
 export const FilterTypeSelector: React.FC<{
@@ -158,19 +158,34 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fontColor",
-      default: "var(--user-theme-font-color)",
+      displayName: "Font Color",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-font-color)"
+          defaultColor="#000000"
+          colorType="font color"
+        />
+      ),
       group: "style",
+      default: "var(--user-theme-font-color)",
     },
     {
       fieldName: "background",
-      default: "var(--user-theme-fidget-background)",
+      displayName: "Background",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-background)"
+          defaultColor="#FFFFFF"
+          colorType="background"
+        />
+      ),
       group: "style",
-      disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+      default: "var(--user-theme-fidget-background)",
+      disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
     },
     {
       fieldName: "fidgetBorderWidth",
@@ -179,16 +194,23 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       inputSelector: BorderSelector,
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "The other app" || settings?.useDefaultColors === true,
     },
     {
       fieldName: "fidgetBorderColor",
-      default: "var(--user-theme-fidget-border-color)",
+      displayName: "Border Color",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      ),
       group: "style",
-      disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+      default: "var(--user-theme-fidget-border-color)",
+      disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
     },
     {
       fieldName: "fidgetShadow",
@@ -197,7 +219,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       inputSelector: ShadowSelector,
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "The other app" || settings?.useDefaultColors === true,
     },
   ],
   size: {
@@ -282,6 +304,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         src={url}
         style={{ border: "none", width: "100%", height: "100%" }}
         title="Twitter Feed"
+        scrolling="no"
         frameBorder="0"
       />
     );
@@ -308,7 +331,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     ? page.result.casts?.map(
                       (
                         cast,
-                        index, // Ensure casts array is accessed correctly for keyword filter
+                        index, 
                       ) => (
                         <CastRow
                           cast={cast}
@@ -320,7 +343,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     : page.casts?.map(
                       (
                         cast,
-                        index, // Ensure casts array is accessed correctly for other filters
+                        index, 
                       ) => (
                         <CastRow
                           cast={cast}
@@ -368,8 +391,9 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     <div
       className="h-full"
       style={{
-        fontFamily: settings.fontFamily,
-        color: settings.fontColor,
+        fontFamily: settings.useDefaultColors ? 'var(--user-theme-font)' : settings.fontFamily,
+        color: settings.useDefaultColors ? 'var(--user-theme-font-color)' : settings.fontColor,
+        background: settings.useDefaultColors ? 'var(--user-theme-fidget-background)' : settings.background,
       }}
     >
       {isThreadView && (
