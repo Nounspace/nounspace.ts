@@ -65,8 +65,8 @@ const Home = () => {
       inEditMode={false}
       updateTabOrder={async () => Promise.resolve()}
       deleteTab={async () => Promise.resolve()}
-      createTab={async () => Promise.resolve()}
-      renameTab={async () => Promise.resolve()}
+      createTab={async () => Promise.resolve({ tabName })}
+      renameTab={async () => Promise.resolve({ tabName })}
       commitTab={async () => Promise.resolve()}
       commitTabOrder={async () => Promise.resolve()}
     />

@@ -5,9 +5,9 @@ import {
   CardTitle,
 } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import TextInput from "@/common/components/molecules/TextInput";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import React from "react";
@@ -55,14 +55,28 @@ export const textConfig: FidgetProperties = {
       fieldName: "fontColor",
       default: "var(--user-theme-font-color)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-font-color)"
+          defaultColor="#000000"
+          colorType="font color"
+        />
+      ),
       group: "style",
     },
     {
       fieldName: "urlColor",
       required: false,
-      inputSelector: ColorSelector,
-      default: "blue",
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-link-color)"
+          defaultColor="#0000FF"
+          colorType="link color"
+        />
+      ),
+      default: "var(--user-theme-link-color)",
       group: "style",
     },
     {
@@ -76,7 +90,14 @@ export const textConfig: FidgetProperties = {
       fieldName: "headingsFontColor",
       default: "var(--user-theme-headings-font-color)",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-headings-font-color)"
+          defaultColor="#000000"
+          colorType="headings color"
+        />
+      ),
       group: "style",
     },
     ...defaultStyleFields,
@@ -102,11 +123,12 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   return (
     <div
       style={{
-        background: settings.background,
+        fontFamily: settings.fontFamily,
         height: "100%",
+        color: settings.fontColor,
+        background: settings.background,
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
-        // Not visible because of the outer div having overflow: hidden
         boxShadow: settings.fidgetShadow,
         overflow: "auto",
         scrollbarWidth: "none",

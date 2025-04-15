@@ -1,17 +1,25 @@
-import React from "react";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import React from "react";
 
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
 export const defaultStyleFields: FidgetFieldConfig[] = [
   {
     fieldName: "background",
-    default: "var(--user-theme-fidget-background)",
+    displayName: "Background",
     required: false,
-    inputSelector: ColorSelector,
+    inputSelector: (props) => (
+      <ThemeColorSelector
+        {...props}
+        themeVariable="var(--user-theme-fidget-background)"
+        defaultColor="#FFFFFF"
+        colorType="background"
+      />
+    ),
     group: "style",
+    default: "var(--user-theme-fidget-background)",
   },
   {
     fieldName: "fidgetBorderWidth",
@@ -22,10 +30,18 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
   },
   {
     fieldName: "fidgetBorderColor",
-    default: "var(--user-theme-fidget-border-color)",
+    displayName: "fidgetBorderColor",
     required: false,
-    inputSelector: ColorSelector,
+    inputSelector: (props) => (
+      <ThemeColorSelector
+        {...props}
+        themeVariable="var(--user-theme-fidget-border-color)"
+        defaultColor="#000000"
+        colorType="border color"
+      />
+    ),
     group: "style",
+    default: "var(--user-theme-fidget-border-color)",
   },
   {
     fieldName: "fidgetShadow",

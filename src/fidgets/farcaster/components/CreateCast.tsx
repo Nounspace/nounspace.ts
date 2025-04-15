@@ -37,8 +37,19 @@ import {
   fetchChannelsForUser,
   submitCast,
 } from "../utils";
-import EmojiPicker, { Theme } from 'emoji-picker-react';
-import { GoSmiley } from 'react-icons/go';
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import { GoSmiley } from "react-icons/go";
+import { HiOutlineSparkles } from "react-icons/hi2";
+import Spinner from "@/common/components/atoms/spinner";
+import { XCircle } from "lucide-react";
+import { useBannerStore } from "@/stores/bannerStore";
+import { usePrivy } from "@privy-io/react-auth";
+import { useBalance } from "wagmi";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { useAppStore } from "@/common/data/stores/app";
+import { base } from "viem/chains";
+
+const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
@@ -91,9 +102,11 @@ export type ModProtocolCastAddBody = Exclude<
   type: CastType;
 };
 
+const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
+
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -112,6 +125,25 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [initialChannels, setInitialChannels] = useState() as any;
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+
+  const { isBannerClosed, closeBanner } = useBannerStore();
+  const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
+
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const { hasNogs } = useAppStore((state) => ({
+    hasNogs: state.account.hasNogs,
+  }));
+  const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
 
   useEffect(() => {
     const fetchInitialChannels = async () => {
@@ -311,10 +343,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }
           }
 
-          console.log(mentions);
-          console.log("mentionsText.length" + mentionsText.length);
+          // console.log(mentions);
+          // console.log("mentionsText.length" + mentionsText.length);
           if (mentions.length > 10)
-            console.log("only up to 10 mentions. " + mentions.length);
+            // console.log("only up to 10 mentions. " + mentions.length);
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
               "Mismatch between mentions and their positions:",
@@ -337,7 +369,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        console.log("Updated Draft before posting:", updatedDraft);
+        // console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };
@@ -358,7 +390,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
           message: "Invalid parent cast ID hash length.",
         };
       }
-    } ``
+    }
+    ``;
 
     // Prepare the mentions and their positions
     const mentions = draft.mentionsToFids
@@ -373,9 +406,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId
         ? {
-          fid: draft.parentCastId.fid,
-          hash: draft.parentCastId.hash,
-        }
+            fid: draft.parentCastId.fid,
+            hash: draft.parentCastId.hash,
+          }
         : undefined,
       mentions, // Pass mentions (FIDs)
       mentionsPositions, // Pass positions here
@@ -416,6 +449,43 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const handleEmojiClick = (emojiObject: any) => {
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
+  };
+
+  const handleEnhanceCast = async (text: string) => {
+    if (isEnhancing) return;
+
+    if (!sparklesBannerClosed) {
+      closeBanner(SPARKLES_BANNER_KEY);
+    }
+
+    if (!userHoldEnoughSpace && !hasNogs) {
+      setShowEnhanceBanner(true);
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const response = await fetch("/api/venice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text, fid }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to enhance text:", errorText);
+        throw new Error("Failed to enhance text");
+      }
+
+      const result = await response.json();
+      setText(result.response);
+    } catch (error) {
+      console.error("Error enhancing text:", error);
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   return (
@@ -481,6 +551,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
             type="button"
             variant="ghost"
             disabled={isPublishing}
+            onClick={() => handleEnhanceCast(text)}
+          >
+            {isEnhancing ? (
+              <Spinner style={{ width: "30px", height: "30px" }} />
+            ) : (
+              <HiOutlineSparkles size={20} />
+            )}
+          </Button>
+
+          <Button
+            className="h-10"
+            type="button"
+            variant="ghost"
+            disabled={isPublishing}
             onClick={() => setIsPickingEmoji(!isPickingEmoji)}
           >
             <GoSmiley size={20} />
@@ -489,11 +573,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             ref={parentRef}
             style={{
               opacity: isPickingEmoji ? 1 : 0,
-              pointerEvents: isPickingEmoji ? 'auto' : 'none',
+              pointerEvents: isPickingEmoji ? "auto" : "none",
               marginTop: 50,
-              transition: 'opacity 1s ease',
+              transition: "opacity 1s ease",
               zIndex: 10,
-              position: 'absolute',
+              position: "absolute",
             }}
           >
             <EmojiPicker
@@ -542,6 +626,42 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         </div>
       </form>
+
+      {!sparklesBannerClosed && !showEnhanceBanner && (
+        <div className="flex justify-center items-center w-full gap-1 text-orange-600 bg-orange-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
+          <p>
+            Click the <b>sparkles</b> to enhance a draft cast or generate one
+            from scratch.
+          </p>
+        </div>
+      )}
+
+      {showEnhanceBanner && (
+        <div className="flex justify-center gap-1 w-full items-center text-red-600 bg-red-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
+          <p>
+            Hold at least 1,111{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
+              className="font-bold underline"
+            >
+              $SPACE
+            </a>{" "}
+            or 1{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
+              className="font-bold underline"
+            >
+              nOGs
+            </a>{" "}
+            to unlock generation
+          </p>
+        </div>
+      )}
+
       {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (

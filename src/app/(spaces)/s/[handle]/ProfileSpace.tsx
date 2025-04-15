@@ -1,39 +1,44 @@
 "use client";
+
 import React from "react";
-import { useAppStore } from "@/common/data/stores/app";
 import { isArray, isNil } from "lodash";
-import { useEffect } from "react";
-import UserDefinedSpace from "@/app/(spaces)/UserDefinedSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
+import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+import PublicSpace from "../../PublicSpace";
 
 export type UserDefinedSpacePageProps = {
-  fid: number | null;
+  spaceOwnerFid: number | null;
+  spaceOwnerUsername: string | null;
   spaceId: string | null;
   tabName: string | string[] | null | undefined;
 };
 
 export const ProfileSpace = ({
-  fid,
+  spaceOwnerFid,
+  spaceOwnerUsername,
   spaceId,
   tabName,
 }: UserDefinedSpacePageProps) => {
-  const { loadEditableSpaces } = useAppStore((state) => ({
-    loadEditableSpaces: state.space.loadEditableSpaces,
-  }));
+  console.log("ProfileSpace component mounting with props:", { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName });
 
-  useEffect(() => {
-    loadEditableSpaces();
-  }, []);
-
-  if (isNil(fid)) {
+  if (isNil(spaceOwnerFid)) {
     return <SpaceNotFound />;
   }
 
+  const INITIAL_PERSONAL_SPACE_CONFIG = createIntialPersonSpaceConfigForFid(spaceOwnerFid);
+
+  const getSpacePageUrl = (tabName: string) => {
+    if (!spaceOwnerUsername) return '#';
+    return `/s/${spaceOwnerUsername}/${tabName}`;
+  };
+
   return (
-    <UserDefinedSpace
-      fid={fid}
+    <PublicSpace
       spaceId={spaceId}
       tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
+      initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
+      getSpacePageUrl={getSpacePageUrl}
+      spaceOwnerFid={spaceOwnerFid}
     />
   );
 };

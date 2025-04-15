@@ -1,5 +1,5 @@
 import matter from "gray-matter";
-import supabaseClient from "../database/supabase/clients/server";
+import createSupabaseServerClient from "../database/supabase/clients/server";
 import { endsWith, filter, isNull, map, startsWith } from "lodash";
 import { type FileObject } from "@supabase/storage-js";
 
@@ -16,7 +16,10 @@ type MatterResultData = {
 };
 
 export async function getAllMarkdownFiles(): Promise<PostData[]> {
-  const { data, error } = await supabaseClient.storage.from("explore").list();
+  const { data, error } = await createSupabaseServerClient()
+    .storage
+    .from("explore")
+    .list();
   if (error) {
     throw error;
   } else {
@@ -36,7 +39,8 @@ export async function getAllMarkdownFiles(): Promise<PostData[]> {
 export async function getMarkdownFileBySlug(
   slug: string,
 ): Promise<PostData | null> {
-  const { data, error } = await supabaseClient.storage
+  const { data, error } = await createSupabaseServerClient()
+    .storage
     .from("explore")
     .download(`${slug}.md`);
   if (error) {
@@ -55,7 +59,10 @@ export async function getMarkdownFileBySlug(
 }
 
 export async function getAllSlugs() {
-  const { data, error } = await supabaseClient.storage.from("explore").list();
+  const { data, error } = await createSupabaseServerClient()
+    .storage
+    .from("explore")
+    .list();
   if (error) {
     throw error;
   } else {

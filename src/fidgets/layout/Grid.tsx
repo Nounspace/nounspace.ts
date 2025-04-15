@@ -311,23 +311,26 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function removeFidgetFromGrid(fidgetId: string) {
-    // New set of instances
-    const newFidgetInstanceDatums = { ...fidgetInstanceDatums };
-    delete newFidgetInstanceDatums[fidgetId];
-
     //Make new layout with item removed
     const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
 
-    // Clear editor panel
-    unselectFidget();
-
     saveLayout(newLayout);
-    saveFidgetInstanceDatums(newFidgetInstanceDatums);
+  }
+
+  function removeFidgetFromInstanceDatums(fidgetId: string){
+      // New set of instances - use computed property name to remove the correct fidget
+      const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
+
+      console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
+
+      saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
+    unselectFidget();
     removeFidgetFromGrid(fidgetId);
     removeFidgetFromTray(fidgetId);
+    removeFidgetFromInstanceDatums(fidgetId);
   }
 
   function moveFidgetFromGridToTray(fidgetId: string) {

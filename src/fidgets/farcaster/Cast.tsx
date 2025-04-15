@@ -1,19 +1,20 @@
-import React from "react";
+import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
   FidgetModule,
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import EmbededCast from "./components/Embeds/EmbededCast";
-import { isUndefined } from "lodash";
-import TextInput from "@/common/components/molecules/TextInput";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import { isUndefined } from "lodash";
+import React from "react";
+import EmbededCast from "./components/Embeds/EmbededCast";
 
 type CastFidgetSettings = {
   castHash?: string;
   casterFid?: number;
   castUrl?: string;
+  useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
 const castFidgetProperties: FidgetProperties = {
@@ -46,8 +47,10 @@ const castFidgetProperties: FidgetProperties = {
 };
 
 const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
-  settings: { castHash, casterFid, castUrl },
+  settings,
 }) => {
+  const { castHash, casterFid, castUrl } = settings;
+  
   const castId =
     !isUndefined(castHash) && !isUndefined(casterFid)
       ? { hash: castHash, fid: casterFid }
@@ -57,7 +60,20 @@ const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
     return "Must Cast URL or both Caster FID and Cast Hash";
   }
 
-  return <EmbededCast url={castUrl} castId={castId} />;
+  return (
+    <div
+      style={{
+        background: settings.useDefaultColors 
+          ? 'var(--user-theme-fidget-background)'
+          : settings.background,
+        borderColor: settings.useDefaultColors
+          ? 'var(--user-theme-fidget-border-color)'
+          : settings.fidgetBorderColor,
+      }}
+    >
+      <EmbededCast url={castUrl} castId={castId} />
+    </div>
+  );
 };
 
 const exp: FidgetModule<FidgetArgs<CastFidgetSettings>> = {

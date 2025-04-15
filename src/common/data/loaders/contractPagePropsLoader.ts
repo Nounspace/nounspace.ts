@@ -8,9 +8,9 @@ import {
   loadOwnedItentitiesForFid,
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
-import supabaseClient from "../database/supabase/clients/server";
+import createSupabaseServerClient from "../database/supabase/clients/server";
 import { string } from "prop-types";
-
+import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
 const defaultContractPageProps = {
@@ -26,6 +26,8 @@ const defaultContractPageProps = {
 export async function loadContractData(
   params:  Record<string, string | string[]>,
 ) {
+
+  noStore();
   if (isUndefined(params)) {
     return {
       props: defaultContractPageProps,
@@ -33,7 +35,7 @@ export async function loadContractData(
   }
 
   const { contractAddress, tabName: tabNameUnparsed, network } = params;
-  console.log("contractPageProps network", network);
+  // console.log("contractPageProps network", network);
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
@@ -47,7 +49,7 @@ export async function loadContractData(
       },
     };
   }
-  console.log("network contractPageProps", network);
+  // console.log("network contractPageProps", network);
 
   const contract = await loadEthersViewOnlyContract(
     contractAddress,
@@ -99,13 +101,28 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  console.log(owningIdentities);
+  console.log("Debug - Contract Address before query:", contractAddress);
+  console.log("Debug - Network:", network);
 
-  const { data } = await supabaseClient
+  const { data, error } = await createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("spaceId, spaceName")
-    .eq("contractAddress", contractAddress);
-  const spaceId = first(data)?.spaceId || null;
+    .select("spaceId, spaceName, contractAddress, network")
+    .eq("contractAddress", contractAddress)
+    .eq("network", network)
+    .order("timestamp", { ascending: true })
+    .limit(1)
+  
+  console.log("Debug - Database Query Error:", error);
+  console.log("Debug - Raw Query Results:", data);
+  console.log("Debug - First Space ID:", data?.[0]?.spaceId);
+  console.log("Debug - Query Details:", {
+    table: "spaceRegistrations",
+    filter: { contractAddress, network },
+    order: "timestamp ASC",
+    resultCount: data?.length || 0
+  });
+  
+  const spaceId = data?.[0]?.spaceId || null;
 
   return {
     props: {

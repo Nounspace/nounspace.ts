@@ -24,6 +24,7 @@ const wagmiParams: CreateConfigParameters<
 };
 
 const wagmiConfig = createConfig(wagmiParams);
+export { wagmiConfig };
 
 export default function Wagmi({ children }: { children: React.ReactNode }) {
   return <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>;
