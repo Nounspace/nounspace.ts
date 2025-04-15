@@ -20,6 +20,10 @@ export type TextFidgetSettings = {
   title?: string;
   text: string;
   urlColor: string;
+  fontFamily?: string;
+  fontColor?: string;
+  headingsFontFamily?: string;
+  headingsFontColor?: string;
 } & FidgetSettingsStyle;
 
 export const textConfig: FidgetProperties = {
@@ -135,8 +139,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardTitle
             className="text-2xl font-bold"
             style={{
-              fontFamily: settings.headingsFontFamily,
-              color: settings.headingsFontColor,
+              fontFamily: settings.headingsFontFamily || "var(--user-theme-headings-font)",
+              color: settings.headingsFontColor || "var(--user-theme-headings-font-color)",
             }}
           >
             {settings.title}
@@ -148,8 +152,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardDescription
             className="text-base font-normal text-black dark:text-white"
             style={{
-              fontFamily: settings.fontFamily,
-              color: settings.fontColor,
+              fontFamily: settings.fontFamily || "var(--user-theme-font)",
+              color: settings.fontColor || "var(--user-theme-font-color)",
             }}
           >
             <ReactMarkdown
