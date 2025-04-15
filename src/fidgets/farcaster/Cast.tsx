@@ -10,7 +10,6 @@ import { BsFillPinFill, BsPin } from "react-icons/bs";
 import { isUndefined } from "lodash";
 import React from "react";
 import EmbededCast from "./components/Embeds/EmbededCast";
-import { BsFillPinFill, BsPin } from "react-icons/bs";
 
 type CastFidgetSettings = {
   castHash?: string;
