@@ -23,7 +23,6 @@ import { BsLink45Deg } from "react-icons/bs";
 import { mobileStyleSettings } from "../helpers";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
-import { mobileStyleSettings } from "../helpers";
 
 export type Link = {
   text: string;
