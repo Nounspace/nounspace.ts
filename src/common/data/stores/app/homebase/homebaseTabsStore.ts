@@ -2,8 +2,17 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/app/(spaces)/Space";
-import { StoreGet, StoreSet } from "../../createStore";
-import { AppStore } from "..";
+import axiosBackend from "@/common/data/api/backend";
+import { createClient } from "@/common/data/database/supabase/clients/component";
+import { SignedFile, signSignable } from "@/common/lib/signedFiles";
+import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
+import {
+  ManageHomebaseTabsResponse,
+  UnsignedManageHomebaseTabsRequest,
+} from "@/pages/api/space/homebase/tabs";
+import axios from "axios";
+import stringify from "fast-json-stable-stringify";
 import {
   clone,
   cloneDeep,
@@ -13,17 +22,8 @@ import {
   isArray,
   mergeWith,
 } from "lodash";
-import stringify from "fast-json-stable-stringify";
-import axiosBackend from "@/common/data/api/backend";
-import {
-  ManageHomebaseTabsResponse,
-  UnsignedManageHomebaseTabsRequest,
-} from "@/pages/api/space/homebase/tabs";
-import { createClient } from "@/common/data/database/supabase/clients/component";
-import { homebaseTabOrderPath, homebaseTabsPath } from "@/constants/supabase";
-import axios from "axios";
-import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import { AppStore } from "..";
+import { StoreGet, StoreSet } from "../../createStore";
 
 interface HomeBaseTabStoreState {
   tabs: {
@@ -64,6 +64,42 @@ export const homeBaseStoreDefaults: HomeBaseTabStoreState = {
     local: [],
     remote: [],
   },
+};
+
+// Function to show tooltip using DOM elements
+const showTooltipError = (title: string, description: string) => {
+  // Only run in browser environment
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+  
+  // Create a simple error message element
+  const errorContainer = document.createElement('div');
+  errorContainer.style.position = 'fixed';
+  errorContainer.style.top = '20px';
+  errorContainer.style.right = '20px';
+  errorContainer.style.zIndex = '9999999999999999';
+  errorContainer.style.backgroundColor = '#ef4444';
+  errorContainer.style.color = 'white';
+  errorContainer.style.padding = '16px';
+  errorContainer.style.borderRadius = '6px';
+  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+  errorContainer.style.maxWidth = '400px';
+  
+  const titleElement = document.createElement('h3');
+  titleElement.style.fontWeight = 'bold';
+  titleElement.style.marginBottom = '4px';
+  titleElement.textContent = title;
+  
+  const descriptionElement = document.createElement('p');
+  descriptionElement.textContent = description;
+  
+  errorContainer.appendChild(titleElement);
+  errorContainer.appendChild(descriptionElement);
+  document.body.appendChild(errorContainer);
+  
+  // Remove after timeout
+  setTimeout(() => {
+    document.body.removeChild(errorContainer);
+  }, 4000);
 };
 
 export const createHomeBaseTabStoreFunc = (
@@ -185,6 +221,19 @@ export const createHomeBaseTabStoreFunc = (
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
+    if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+      showTooltipError(
+        "Invalid Tab Name", 
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      
+      const error = new Error(
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      (error as any).status = 400;
+      throw error;
+    }
+
     // Check if tab already exists
     if (get().homebase.tabs[tabName]) {
       // If tab exists but doesn't have remote state, load it
@@ -288,6 +337,20 @@ export const createHomeBaseTabStoreFunc = (
   async renameTab(tabName, newName) {
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
+
+    if (/[^a-zA-Z0-9-_ ]/.test(newName)) {
+      showTooltipError(
+        "Invalid Tab Name", 
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      
+      const error = new Error(
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      (error as any).status = 400;
+      throw error;
+    }
+
     const req: UnsignedManageHomebaseTabsRequest = {
       publicKey,
       type: "rename",
