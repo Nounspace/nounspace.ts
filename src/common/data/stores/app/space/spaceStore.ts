@@ -32,6 +32,7 @@ import stringify from "fast-json-stable-stringify";
 import {
   cloneDeep,
   debounce,
+  filter,
   fromPairs,
   includes,
   isArray,
@@ -396,15 +397,7 @@ export const createSpaceStoreFunc = (
     // Return the tabName immediately so UI can switch to it
     const result = { tabName };
 
-    // Then make the remote API call in the background
-    const unsignedRequest: UnsignedSpaceTabRegistration = {
-      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-      timestamp: moment().toISOString(),
-      spaceId,
-      tabName,
-      initialConfig,
-      network,
-
+    // Check if the tab name contains special characters
     if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
       // Show error
       showTooltipError(
@@ -420,6 +413,14 @@ export const createSpaceStoreFunc = (
       throw error; 
     }
 
+    // Then make the remote API call in the background
+    const unsignedRequest: UnsignedSpaceTabRegistration = {
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+      timestamp: moment().toISOString(),
+      spaceId,
+      tabName,
+      initialConfig,
+      network,
     };
     const signedRequest = signSignable(
       unsignedRequest,
