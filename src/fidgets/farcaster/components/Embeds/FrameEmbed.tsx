@@ -25,7 +25,7 @@ import { isUndefined } from "lodash";
 // Due to issue with FrameImageNext from @frame.js/render/next
 // Implement the exact same thing again
 function FrameImageNext(
-  props: ImgHTMLAttributes<HTMLImageElement> & { src: string },
+  props: ImgHTMLAttributes<HTMLImageElement> & { src: string }
 ): React.ReactNode {
   return (
     <Image
@@ -58,7 +58,7 @@ async function createFrameActionMessage(
     state: Uint8Array | undefined;
     address: Uint8Array | undefined;
     transactionId: Uint8Array | undefined;
-  },
+  }
 ): Promise<
   | {
       message: null;
@@ -85,7 +85,7 @@ async function createFrameActionMessage(
       transactionId,
     }),
     messageDataOptions,
-    signer,
+    signer
   );
 
   if (message.isErr()) {
@@ -93,7 +93,7 @@ async function createFrameActionMessage(
   }
 
   const trustedBytes = Buffer.from(
-    Message.encode(message._unsafeUnwrap()).finish(),
+    Message.encode(message._unsafeUnwrap()).finish()
   ).toString("hex");
 
   return { message: message.unwrapOr(null), trustedBytes };
@@ -196,7 +196,7 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
       signFrameAction,
       onSignerlessFramePress: () =>
         console.error(
-          "User is not signed into farcaster and so cannot use frames!",
+          "User is not signed into farcaster and so cannot use frames!"
         ),
     },
   });

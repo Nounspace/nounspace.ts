@@ -4,7 +4,7 @@ import { getAction } from "@/fidgets/farcaster/framesV2/actions/getAction";
 import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
 import { isSpecificationValid,
   type CastActionDefinitionResponse,
-  type FrameDefinitionResponse } from "@/fidgets/farcaster/framesV2/actions/types";
+  type FrameDefinitionResponse } from "@/fidgets/farcaster/framesV2/lib/utils";
 
 /** Proxies fetching a frame through a backend to avoid CORS issues and preserve user IP privacy */
 export async function GET(request: NextRequest): Promise<Response> {

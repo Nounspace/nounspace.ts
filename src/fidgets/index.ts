@@ -1,6 +1,6 @@
 // TO DO: Figure out how to do this importing dynamically
 import Example from "./example";
-import Frame from "./farcaster/Frame";
+// import Frame from "./farcaster/Frame";
 import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
@@ -17,6 +17,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
+import framesV2 from "./farcaster/framesV2";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -26,7 +27,7 @@ export const CompleteFidgets = {
   profile:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
-  frame: Frame,
+  frame: framesV2,
   // iframely: iframely,
   feed: Feed,
   cast: Cast,
