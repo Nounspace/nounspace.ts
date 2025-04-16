@@ -155,8 +155,6 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     } else {
       await saveTab(tabName, configToSave);
     }
-
-    commitConfigHandler();
   };
 
   // Wrap createTab to return the expected type

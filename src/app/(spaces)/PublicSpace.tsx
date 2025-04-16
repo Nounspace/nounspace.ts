@@ -47,6 +47,13 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
 }: PublicSpaceProps) {
+  console.log('PublicSpace mounted:', {
+    spaceId: providedSpaceId,
+    tabName: providedTabName,
+    isTokenPage,
+    contractAddress
+  });
+
   const router = useRouter();
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
@@ -101,7 +108,7 @@ export default function PublicSpace({
 
   // Create an editability checker
   const editabilityCheck = useMemo(() => {
-    return createEditabilityChecker({
+    const checker = createEditabilityChecker({
       currentUserFid,
       spaceOwnerFid,
       spaceOwnerAddress,
@@ -109,6 +116,16 @@ export default function PublicSpace({
       wallets: wallets.map(w => ({ address: w.address as Address })),
       isTokenPage,
     });
+    
+    console.log('Editability check:', {
+      isEditable: checker.isEditable,
+      isLoading: checker.isLoading,
+      currentUserFid,
+      spaceOwnerFid,
+      spaceOwnerAddress
+    });
+    
+    return checker;
   }, [currentUserFid, spaceOwnerFid, spaceOwnerAddress, tokenData, wallets, isTokenPage]);
 
   // Internal isEditable function
@@ -118,6 +135,13 @@ export default function PublicSpace({
 
   // Sets the current space and tab name on initial load
   useEffect(() => {
+    console.log('Setting current space and tab:', {
+      providedSpaceId,
+      providedTabName,
+      currentSpaceId: getCurrentSpaceId(),
+      currentTabName: getCurrentTabName()
+    });
+    
     // First check local spaces for existing space
     if (isTokenPage && contractAddress && tokenData?.network) {
       const existingSpace = Object.values(localSpaces).find(
@@ -125,7 +149,7 @@ export default function PublicSpace({
       );
       
       if (existingSpace) {
-        console.log('Found existing space in local cache:', {
+        console.log('Found existing token space:', {
           spaceId: existingSpace.id,
           contractAddress,
           network: tokenData.network
@@ -140,7 +164,7 @@ export default function PublicSpace({
       );
       
       if (existingSpace) {
-        console.log('Found existing user space in local cache:', {
+        console.log('Found existing user space:', {
           spaceId: existingSpace.id,
           spaceOwnerFid
         });
@@ -159,22 +183,32 @@ export default function PublicSpace({
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName();
+    
+    console.log('Loading space tab:', {
+      currentSpaceId,
+      currentTabName,
+      loading
+    });
+    
     if (!isNil(currentSpaceId)) {
       setLoading(true);
       // First, load the space tab order
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
-          loadEditableSpaces();
+          console.log('Loaded space tab order');
+          return loadEditableSpaces();
         })
         .then(() => {
+          console.log('Loaded editable spaces');
           // Load the specific tab
           return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
         })
         .then(() => {
+          console.log('Loaded space tab');
           setLoading(false);
         })
         .catch((error) => {
-          console.error("Error loading space:", error);
+          console.error('Error loading space:', error);
           setLoading(false);
         });
     }
@@ -219,13 +253,13 @@ export default function PublicSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const currentConfig = getCurrentSpaceConfig();
-  // console.log('PublicSpace: Current config', {
-  //   spaceId,
-  //   tabName: decodedTabName,
-  //   hasConfig: !!currentConfig,
-  //   configTabs: currentConfig?.tabs ? Object.keys(currentConfig.tabs) : [],
-  //   isEditable
-  // });
+  console.log('Current space config:', {
+    spaceId: getCurrentSpaceId(),
+    tabName: getCurrentTabName(),
+    hasConfig: !!currentConfig,
+    configTabs: currentConfig?.tabs ? Object.keys(currentConfig.tabs) : [],
+    isEditable: editabilityCheck.isEditable
+  });
 
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
@@ -396,6 +430,13 @@ export default function PublicSpace({
     async (spaceConfig: SpaceConfigSaveDetails) => {
       const currentSpaceId = getCurrentSpaceId();
       const currentTabName = getCurrentTabName() ?? "Profile";
+      
+      console.log('Saving space config:', {
+        spaceId: currentSpaceId,
+        tabName: currentTabName,
+        fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
+      });
+      
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
@@ -421,6 +462,12 @@ export default function PublicSpace({
   const commitConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
+    
+    console.log('Committing space config:', {
+      spaceId: currentSpaceId,
+      tabName: currentTabName
+    });
+    
     if (isNil(currentSpaceId)) return;
     commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
   }, [getCurrentSpaceId, getCurrentTabName, tokenData?.network]);
@@ -428,6 +475,12 @@ export default function PublicSpace({
   const resetConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
+    
+    console.log('Resetting space config:', {
+      spaceId: currentSpaceId,
+      tabName: currentTabName
+    });
+    
     if (isNil(currentSpaceId)) return;
     if (isNil(remoteSpaces[currentSpaceId])) {
       saveLocalSpaceTab(currentSpaceId, currentTabName, {
@@ -447,6 +500,13 @@ export default function PublicSpace({
   async function switchTabTo(tabName: string, shouldSave: boolean = true) {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
+    
+    console.log('Switching tab:', {
+      from: currentTabName,
+      to: tabName,
+      shouldSave
+    });
+    
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
       await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
