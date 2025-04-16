@@ -72,10 +72,10 @@ export const createHomeBaseTabStoreFunc = (
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
   updateTabOrdering(newOrdering, commit = false) {
-    console.log('Updating tab ordering:', {
-      newOrder: newOrdering,
-      commit
-    });
+    // console.log('Updating tab ordering:', {
+    //   newOrder: newOrdering,
+    //   commit
+    // });
     
     set((draft) => {
       draft.homebase.tabOrdering.local = newOrdering;
@@ -85,7 +85,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async loadTabOrdering() {
-    console.log('Loading tab ordering...');
+    // console.log('Loading tab ordering...');
     const supabase = createClient();
     const {
       data: { publicUrl },
@@ -108,10 +108,10 @@ export const createHomeBaseTabStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as string[];
       
-      console.log('Loaded tab ordering:', {
-        tabCount: tabOrder.length,
-        tabs: tabOrder
-      });
+      // console.log('Loaded tab ordering:', {
+      //   tabCount: tabOrder.length,
+      //   tabs: tabOrder
+      // });
       
       set((draft) => {
         draft.homebase.tabOrdering = {
@@ -121,17 +121,17 @@ export const createHomeBaseTabStoreFunc = (
       }, `loadHomebaseTabOrdering`);
       return tabOrder;
     } catch (e) {
-      console.log('Failed to load tab ordering, using empty array');
+      // console.log('Failed to load tab ordering, using empty array');
       return [];
     }
   },
   commitTabOrderingToDatabase: debounce(async () => {
     const localCopy = cloneDeep(get().homebase.tabOrdering.local);
     if (localCopy) {
-      console.log('Committing tab ordering to database:', {
-        tabCount: localCopy.length,
-        tabs: localCopy
-      });
+      // console.log('Committing tab ordering to database:', {
+      //   tabCount: localCopy.length,
+      //   tabs: localCopy
+      // });
       
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
@@ -150,7 +150,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   }, 1000),
   async loadTabNames() {
-    console.log('Loading tab names...');
+    // console.log('Loading tab names...');
     try {
       const { data } = await axiosBackend.get<ManageHomebaseTabsResponse>(
         "/api/space/homebase/tabs",
@@ -161,16 +161,16 @@ export const createHomeBaseTabStoreFunc = (
         },
       );
       if (data.result === "error") {
-        console.log('Failed to load tab names, using empty array');
+        // console.log('Failed to load tab names, using empty array');
         return [];
       } else {
         const currentTabs = get().homebase.tabs;
         const validTabNames = data.value || [];
         
-        console.log('Loaded tab names:', {
-          tabCount: validTabNames.length,
-          tabs: validTabNames
-        });
+        // console.log('Loaded tab names:', {
+        //   tabCount: validTabNames.length,
+        //   tabs: validTabNames
+        // });
         
         set((draft) => {
           // Reset all tabs, this removes all ones that no longer exist
@@ -203,18 +203,18 @@ export const createHomeBaseTabStoreFunc = (
         return validTabNames;
       }
     } catch (e) {
-      console.debug("failed to load tab names", e);
+      // console.debug("failed to load tab names", e);
       return [];
     }
   },
   async createTab(tabName) {
-    console.log('Creating new tab:', { tabName });
+    // console.log('Creating new tab:', { tabName });
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
     // Check if tab already exists
     if (get().homebase.tabs[tabName]) {
-      console.log('Tab already exists:', { tabName });
+      // console.log('Tab already exists:', { tabName });
       // If tab exists but doesn't have remote state, load it
       if (!get().homebase.tabs[tabName]?.remoteConfig) {
         await get().homebase.loadHomebaseTab(tabName);
@@ -257,10 +257,10 @@ export const createHomeBaseTabStoreFunc = (
         { request: signedReq, file },
       );
       if (data.result === "success") {
-        console.log('Successfully created tab:', {
-          tabName,
-          fidgetCount: Object.keys(initialConfig.fidgetInstanceDatums || {}).length
-        });
+        // console.log('Successfully created tab:', {
+        //   tabName,
+        //   fidgetCount: Object.keys(initialConfig.fidgetInstanceDatums || {}).length
+        // });
         
         set((draft) => {
           // Add the new tab to the tabs object
@@ -283,7 +283,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async deleteTab(tabName) {
-    console.log('Deleting tab:', { tabName });
+    // console.log('Deleting tab:', { tabName });
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
     const req: UnsignedManageHomebaseTabsRequest = {
@@ -301,7 +301,7 @@ export const createHomeBaseTabStoreFunc = (
         { request: signedReq },
       );
       if (data.result === "success") {
-        console.log('Successfully deleted tab:', { tabName });
+        // console.log('Successfully deleted tab:', { tabName });
         // Update both the tabs and ordering atomically
         set((draft) => {
           // Remove from tabs object
@@ -321,7 +321,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async renameTab(tabName, newName) {
-    console.log('Renaming tab:', { from: tabName, to: newName });
+    // console.log('Renaming tab:', { from: tabName, to: newName });
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
     const req: UnsignedManageHomebaseTabsRequest = {
@@ -340,7 +340,7 @@ export const createHomeBaseTabStoreFunc = (
         { request: signedReq },
       );
       if (data.result === "success") {
-        console.log('Successfully renamed tab:', { from: tabName, to: newName });
+        // console.log('Successfully renamed tab:', { from: tabName, to: newName });
         const currentTabData = get().homebase.tabs[tabName];
         set((draft) => {
           delete draft.homebase.tabs[tabName];
@@ -352,7 +352,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   async loadHomebaseTab(tabName) {
-    console.log('Loading homebase tab:', { tabName });
+    // console.log('Loading homebase tab:', { tabName });
     if (!has(get().homebase.tabs, tabName)) return;
 
     const supabase = createClient();
@@ -377,11 +377,11 @@ export const createHomeBaseTabStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
       
-      console.log('Loaded homebase tab config:', {
-        tabName,
-        timestamp: spaceConfig.timestamp,
-        fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
-      });
+      // console.log('Loaded homebase tab config:', {
+      //   tabName,
+      //   timestamp: spaceConfig.timestamp,
+      //   fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
+      // });
       
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
@@ -389,7 +389,7 @@ export const createHomeBaseTabStoreFunc = (
       }, `loadHomebaseTab:${tabName}-found`);
       return spaceConfig;
     } catch (e) {
-      console.log('Failed to load tab config, using default:', { tabName });
+      // console.log('Failed to load tab config, using default:', { tabName });
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(
           INITIAL_HOMEBASE_CONFIG,
@@ -402,16 +402,16 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   commitHomebaseTabToDatabase: debounce(async (tabname) => {
-    console.log('Committing tab to database:', { tabname });
+    // console.log('Committing tab to database:', { tabname });
     const tab = get().homebase.tabs[tabname];
     if (tab && tab.config) {
       const localCopy = cloneDeep(tab.config);
       
-      console.log('Tab config to commit:', {
-        tabname,
-        timestamp: localCopy.timestamp,
-        fidgetCount: Object.keys(localCopy.fidgetInstanceDatums || {}).length
-      });
+      // console.log('Tab config to commit:', {
+      //   tabname,
+      //   timestamp: localCopy.timestamp,
+      //   fidgetCount: Object.keys(localCopy.fidgetInstanceDatums || {}).length
+      // });
       
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
@@ -430,13 +430,13 @@ export const createHomeBaseTabStoreFunc = (
     }
   }, 1000),
   async saveHomebaseTabConfig(tabName, config: SpaceConfigSaveDetails) {
-    console.log('Saving tab config:', {
-      tabName,
-      timestamp: config.timestamp,
-      fidgetCount: Object.keys(config.fidgetInstanceDatums || {}).length,
-      hasLayoutDetails: !!config.layoutDetails,
-      hasFidgetTrayContents: !!config.fidgetTrayContents
-    });
+    // console.log('Saving tab config:', {
+    //   tabName,
+    //   timestamp: config.timestamp,
+    //   fidgetCount: Object.keys(config.fidgetInstanceDatums || {}).length,
+    //   hasLayoutDetails: !!config.layoutDetails,
+    //   hasFidgetTrayContents: !!config.fidgetTrayContents
+    // });
     
     const localCopy = cloneDeep(
       get().homebase.tabs[tabName].config,
@@ -463,12 +463,12 @@ export const createHomeBaseTabStoreFunc = (
         localCopy.fidgetTrayContents
     };
     
-    console.log('Updated tab config:', {
-      tabName,
-      fidgetCount: Object.keys(updatedConfig.fidgetInstanceDatums || {}).length,
-      layoutFidget: updatedConfig.layoutDetails.layoutFidget,
-      trayCount: updatedConfig.fidgetTrayContents?.length || 0
-    });
+    // console.log('Updated tab config:', {
+    //   tabName,
+    //   fidgetCount: Object.keys(updatedConfig.fidgetInstanceDatums || {}).length,
+    //   layoutFidget: updatedConfig.layoutDetails.layoutFidget,
+    //   trayCount: updatedConfig.fidgetTrayContents?.length || 0
+    // });
     
     set(
       (draft) => {
@@ -479,7 +479,7 @@ export const createHomeBaseTabStoreFunc = (
     );
   },
   async resetHomebaseTabConfig(tabName) {
-    console.log('Resetting tab config:', { tabName });
+    // console.log('Resetting tab config:', { tabName });
     const currentTabInfo = get().homebase.tabs[tabName];
     if (currentTabInfo) {
       set((draft) => {
@@ -490,7 +490,7 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   clearHomebaseTabs() {
-    console.log('Clearing all homebase tabs');
+    // console.log('Clearing all homebase tabs');
     set((draft) => {
       draft.homebase.tabs = {};
     }, "clearHomebaseTabs");

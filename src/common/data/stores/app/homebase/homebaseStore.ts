@@ -49,7 +49,6 @@ export const createHomeBaseStoreFunc = (
   ...homeBaseStoreDefaults,
   ...createHomeBaseTabStoreFunc(set, get),
   loadHomebase: async () => {
-    console.log('Loading homebase...');
     const supabase = createClient();
     const {
       data: { publicUrl },
@@ -70,12 +69,6 @@ export const createHomeBaseStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
       
-      console.log('Loaded homebase config:', {
-        timestamp: spaceConfig.timestamp,
-        tabCount: Object.keys(spaceConfig.tabs || {}).length,
-        fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
-      });
-
       const currentHomebase = get().homebase.homebaseConfig;
       if (
         (spaceConfig &&
@@ -90,7 +83,6 @@ export const createHomeBaseStoreFunc = (
           currentHomebase &&
           currentHomebase.timestamp)
       ) {
-        console.log('Using local homebase config as it is more recent');
         return cloneDeep(currentHomebase);
       }
       set((draft) => {
@@ -99,7 +91,6 @@ export const createHomeBaseStoreFunc = (
       }, "loadHomebase-found");
       return spaceConfig;
     } catch (e) {
-      console.log('Failed to load homebase, using default config');
       set((draft) => {
         draft.homebase.homebaseConfig = {
           ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
@@ -124,12 +115,6 @@ export const createHomeBaseStoreFunc = (
   commitHomebaseToDatabase: debounce(async () => {
     const localCopy = cloneDeep(get().homebase.homebaseConfig);
     if (localCopy) {
-      console.log('Committing homebase to database:', {
-        timestamp: localCopy.timestamp,
-        tabCount: Object.keys(localCopy.tabs || {}).length,
-        fidgetCount: Object.keys(localCopy.fidgetInstanceDatums || {}).length
-      });
-      
       const file = await get().account.createEncryptedSignedFile(
         stringify(localCopy),
         "json",
@@ -148,12 +133,6 @@ export const createHomeBaseStoreFunc = (
     }
   }, 1000),
   saveHomebaseConfig: async (config) => {
-    console.log('Saving homebase config:', {
-      timestamp: config.timestamp,
-      tabCount: Object.keys(config.tabs || {}).length,
-      fidgetCount: Object.keys(config.fidgetInstanceDatums || {}).length
-    });
-
     const localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
     mergeWith(localCopy, config, (_, newItem) => {
       if (isArray(newItem)) return newItem;
@@ -169,18 +148,11 @@ export const createHomeBaseStoreFunc = (
   },
   resetHomebaseConfig: async () => {
     const remote = cloneDeep(get().homebase.remoteHomebaseConfig);
-    console.log('Resetting homebase config to remote state:', {
-      timestamp: remote.timestamp,
-      tabCount: Object.keys(remote.tabs || {}).length,
-      fidgetCount: Object.keys(remote.fidgetInstanceDatums || {}).length
-    });
-    
     set((draft) => {
       draft.homebase.homebaseConfig = remote;
     }, "resetHomebaseConfig");
   },
   clearHomebase: () => {
-    console.log('Clearing homebase config');
     set(
       (draft) => {
         draft.homebase.homebaseConfig = undefined;
@@ -191,7 +163,6 @@ export const createHomeBaseStoreFunc = (
     );
   },
   clearHomebaseTabOrder: () => {
-    console.log('Clearing homebase tab order');
     set(
       (draft) => {
         draft.homebase.tabOrdering.local = [];

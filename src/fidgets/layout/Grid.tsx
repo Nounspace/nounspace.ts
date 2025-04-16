@@ -316,22 +316,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       (fidget) => fidget.id === fidgetId,
     );
 
-    console.log('Removing from tray:', {
-      removedId: fidgetId,
-      remainingTrayIds: newFidgetTrayContents.map(fidget => fidget.id)
-    });
-
     saveTrayContents(newFidgetTrayContents);
   }
 
   function removeFidgetFromGrid(fidgetId: string) {
     //Make new layout with item removed
     const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
-
-    console.log('Removing from grid:', {
-      removedId: fidgetId,
-      remainingLayoutIds: newLayout.map(item => item.i)
-    });
 
     saveLayout(newLayout);
   }
@@ -340,22 +330,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       // New set of instances - use computed property name to remove the correct fidget
       const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
 
-      console.log('Removing from instance datums:', {
-        removedId: fidgetId,
-        remainingInstanceIds: Object.keys(newFidgetInstanceDatums)
-      });
-
       saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
-    console.log('Starting fidget removal:', {
-      fidgetId,
-      currentInstanceIds: Object.keys(fidgetInstanceDatums),
-      currentLayoutIds: layoutConfig.layout.map(item => item.i),
-      currentTrayIds: fidgetTrayContents.map(fidget => fidget.id)
-    });
-
     unselectFidget();
     
     // Create new state objects
@@ -368,13 +346,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       layoutConfig: { layout: newLayout },
       fidgetTrayContents: newTrayContents,
       fidgetInstanceDatums: newFidgetInstanceDatums
-    });
-    
-    console.log('Completed fidget removal:', {
-      fidgetId,
-      remainingInstanceIds: Object.keys(newFidgetInstanceDatums),
-      remainingLayoutIds: newLayout.map(item => item.i),
-      remainingTrayIds: newTrayContents.map(fidget => fidget.id)
     });
   }
 
@@ -506,11 +477,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Log initial config state
   useEffect(() => {
-    console.log('Grid received config:', {
-      fidgetIds: Object.keys(fidgetInstanceDatums),
-      layoutIds: layoutConfig.layout.map(item => item.i),
-      trayIds: fidgetTrayContents.map(fidget => fidget.id)
-    });
+    // console.log('Grid received config:', {
+    //   fidgetIds: Object.keys(fidgetInstanceDatums),
+    //   layoutIds: layoutConfig.layout.map(item => item.i),
+    //   trayIds: fidgetTrayContents.map(fidget => fidget.id)
+    // });
   }, []);
 
   return (
