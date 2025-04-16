@@ -28,7 +28,7 @@ const DISALLOW_URL_PATTERNS = [
 const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
   mobileFidgetName: "Site",
-  icon: 0x1f310, // 🌐
+  icon: 0x1f310, // �
   mobileIcon: <BsCloud size={24} />,
   mobileIconSelected: <BsCloudFill size={24} />,
   fields: [
@@ -68,6 +68,39 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
+  const scaleValue = size;
+
+  useEffect(() => {
+    async function checkEmbedInfo() {
+      if (!isValid || !url) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          `/api/iframely?url=${encodeURIComponent(url)}`,
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.message || "Failed to get embed information",
+          );
+        }
+
+        const data = await response.json();
+        setEmbedInfo(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error occurred");
+        console.error("Error fetching embed info:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    checkEmbedInfo();
+  }, [url, isValid]);
+
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
   }
@@ -85,25 +118,23 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (!embedInfo) {
-    return <ErrorWrapper icon="🔍" message="Checking embeddability..." />;
+    return <ErrorWrapper icon="�" message="Checking embeddability..." />;
   }
-
-  const scaleValue = size;
 
   if (embedInfo.directEmbed && transformedUrl) {
     return (
       <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-156px)] md:h-full">
         <iframe
-        src={transformedUrl}
-        title="IFrame Fidget"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-        }}
-        className="size-full"
+          src={transformedUrl}
+          title="IFrame Fidget"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            transform: `scale(${scaleValue})`,
+            transformOrigin: "0 0",
+            width: `${100 / scaleValue}%`,
+            height: `${100 / scaleValue}%`,
+          }}
+          className="size-full"
         />
       </div>
     );
@@ -120,7 +151,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   return (
     <ErrorWrapper
-      icon="🔒"
+      icon="�"
       message={`This URL cannot be displayed due to security restrictions (${url}).`}
     />
   );
