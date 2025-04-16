@@ -1,11 +1,10 @@
 import { POST as handlePOSTRequest } from "@frames.js/render/next";
 import { type NextRequest } from "next/server";
-import { getAction } from "../../fidgets/framesv2/actions/getAction";
+import { getAction } from "@/fidgets/farcaster/framesV2/actions/getAction";
 import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
-// import { parseFramesWithReports } from "./frames.js/src/parseFramesWithReports";
 import { isSpecificationValid,
   type CastActionDefinitionResponse,
-  type FrameDefinitionResponse } from "frames.js/parseFramesWithReports";
+  type FrameDefinitionResponse } from "@/fidgets/farcaster/framesV2/actions/types";
 
 /** Proxies fetching a frame through a backend to avoid CORS issues and preserve user IP privacy */
 export async function GET(request: NextRequest): Promise<Response> {
