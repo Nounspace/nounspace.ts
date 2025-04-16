@@ -1,4 +1,5 @@
 import React, { useState, ChangeEvent } from "react";
+import debounce from "@/common/lib/utils/debounce";
 
 interface VideoResult {
   id: {
@@ -34,10 +35,12 @@ export function YouTubeSelector({ onVideoSelect }: YouTubeSelectorProps) {
     }
   }
 
+  const debouncedSearchYouTube = debounce(searchYouTube, 300);
+
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
     const query = event.target.value;
     setSearchQuery(query);
-    if (query.length > 2) searchYouTube(query);
+    if (query.length > 2) debouncedSearchYouTube(query);
   }
 
   function handleVideoSelect(videoId: string) {
