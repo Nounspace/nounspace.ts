@@ -159,8 +159,8 @@ interface SpaceActions {
   ) => Promise<void> | undefined;
   registerSpaceFid: (
     fid: number,
-    username: string,
-    tabName: string,
+    name: string,
+    path: string,
   ) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
