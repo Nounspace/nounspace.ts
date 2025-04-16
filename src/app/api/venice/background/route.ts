@@ -80,6 +80,7 @@ Please adhere to the following requirements and guidelines:
 6. **Incorporate User Context**:
   - The user's instructions (appended at runtime) will provide specific design preferences, themes, or elements they want to include.
   - Integrate the user’s context into the final design while following the guidelines above.
+  - Do not include text in the background unless the user explicitly requests it
 
 Important: Do not output anything except for the final HTML and CSS code necessary to render the background. 
 
