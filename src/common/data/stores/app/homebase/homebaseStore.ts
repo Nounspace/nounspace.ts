@@ -68,6 +68,7 @@ export const createHomeBaseStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
+      
       const currentHomebase = get().homebase.homebaseConfig;
       if (
         (spaceConfig &&
@@ -82,7 +83,6 @@ export const createHomeBaseStoreFunc = (
           currentHomebase &&
           currentHomebase.timestamp)
       ) {
-        console.debug("local homebase config is more recent");
         return cloneDeep(currentHomebase);
       }
       set((draft) => {
@@ -127,7 +127,7 @@ export const createHomeBaseStoreFunc = (
         }, "commitHomebaseToDatabase");
         analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
       } catch (e) {
-        console.error(e);
+        console.error('Failed to commit homebase:', e);
         throw e;
       }
     }
