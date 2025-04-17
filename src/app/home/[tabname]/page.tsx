@@ -20,7 +20,7 @@ const getTabConfig = (tabName: string) => {
       return FIDGETS_TAB_CONFIG;
     case "Nouns":
       return NOUNS_TAB_CONFIG;
-    case "nounspace":
+    case "Nounspace":
       return NOUNSPACE_TAB_CONFIG;
     case "Press":
       return PRESS_TAB_CONFIG;
@@ -43,7 +43,7 @@ const Home = () => {
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
-  const tabOrdering = ["Nouns", "nounspace", "Press"];
+  const tabOrdering = ["Nouns", "Nounspace", "Press"];
   const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {
