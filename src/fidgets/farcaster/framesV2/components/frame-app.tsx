@@ -1,9 +1,10 @@
 import React from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 // import * as Dialog from "@radix-ui/react-dialog";
-import { Dialog, DialogContent, 
+import {
+  Dialog, DialogContent,
   DialogOverlay, DialogTitle
- } from "@/common/components/atoms/dialog";
+} from "@/common/components/atoms/dialog";
 
 import { Loader2Icon } from "lucide-react";
 
@@ -112,10 +113,10 @@ export function FrameApp({
         context.context === "button_press"
           ? { type: "launcher" }
           : {
-              type: "cast_embed",
-              embed: "",
-              cast: fallbackFrameContext.castId,
-            };
+            type: "cast_embed",
+            embed: "",
+            cast: fallbackFrameContext.castId,
+          };
 
       setIsModalOpen(true); // Updates the global store
 
@@ -242,118 +243,118 @@ export function FrameApp({
       }
     },
 
-    onEIP6963RequestProviderRequested({ endpoint }) {
-      if (!config._internal.mipd) {
-        return;
-      }
+    // onEIP6963RequestProviderRequested({ endpoint }) {
+    //   if (!config._internal.mipd) {
+    //     return;
+    //   }
 
-      config._internal.mipd.getProviders().map((providerInfo) => {
-        endpoint.emit({
-          event: "eip6963:announceProvider",
-          info: providerInfo.info as EIP6963ProviderInfo,
-        });
-      });
-    },
+    //   config._internal.mipd.getProviders().map((providerInfo) => {
+    //     endpoint.emit({
+    //       event: "eip6963:announceProvider",
+    //       info: providerInfo.info as EIP6963ProviderInfo,
+    //     });
+    //   });
+    // },
 
-    async onSignIn({ nonce, notBefore, expirationTime, frame }) {
-      console.info("sdk.actions.signIn() called", {
-        nonce,
-        notBefore,
-        expirationTime,
-      });
-      let abortTimeout: NodeJS.Timeout | undefined;
+    // async onSignIn({ nonce, notBefore, expirationTime, frame }) {
+    //   console.info("sdk.actions.signIn() called", {
+    //     nonce,
+    //     notBefore,
+    //     expirationTime,
+    //   });
+    //   let abortTimeout: NodeJS.Timeout | undefined;
 
-      try {
-        const frameUrl = frame.frame.button?.action?.url;
+    //   try {
+    //     const frameUrl = frame.frame.button?.action?.url;
 
-        if (!frameUrl) {
-          throw new Error("Frame is malformed, action url is missing");
-        }
+    //     if (!frameUrl) {
+    //       throw new Error("Frame is malformed, action url is missing");
+    //     }
 
-        const createChannelResult = await appClient.createChannel({
-          nonce,
-          notBefore,
-          expirationTime,
-          siweUri: frameUrl,
-          domain: new URL(frameUrl).hostname,
-        });
+    //     const createChannelResult = await appClient.createChannel({
+    //       nonce,
+    //       notBefore,
+    //       expirationTime,
+    //       siweUri: frameUrl,
+    //       domain: new URL(frameUrl).hostname,
+    //     });
 
-        if (createChannelResult.isError) {
-          throw (
-            createChannelResult.error ||
-            new Error("Failed to create sign in channel")
-          );
-        }
+    //     if (createChannelResult.isError) {
+    //       throw (
+    //         createChannelResult.error ||
+    //         new Error("Failed to create sign in channel")
+    //       );
+    //     }
 
-        const abortController = new AbortController();
+    //     const abortController = new AbortController();
 
-        setFarcasterSignInAbortControllerURL({
-          controller: abortController,
-          url: new URL(createChannelResult.data.url),
-        });
+    //     setFarcasterSignInAbortControllerURL({
+    //       controller: abortController,
+    //       url: new URL(createChannelResult.data.url),
+    //     });
 
-        const signInTimeoutReason = "Sign in timed out";
+    //     const signInTimeoutReason = "Sign in timed out";
 
-        abortTimeout = setTimeout(() => {
-          abortController.abort(signInTimeoutReason);
-        }, 30000);
+    //     abortTimeout = setTimeout(() => {
+    //       abortController.abort(signInTimeoutReason);
+    //     }, 30000);
 
-        let status: Awaited<ReturnType<typeof appClient.status>> | undefined;
+    //     let status: Awaited<ReturnType<typeof appClient.status>> | undefined;
 
-        const POLLING_INTERVAL = 1000;
-        const MAX_RETRIES = 30;
-        let retryCount = 0;
+    //     const POLLING_INTERVAL = 1000;
+    //     const MAX_RETRIES = 30;
+    //     let retryCount = 0;
 
-        while (retryCount < MAX_RETRIES) {
-          if (abortController.signal.aborted) {
-            if (abortTimeout) {
-              clearTimeout(abortTimeout);
-            }
+    //     while (retryCount < MAX_RETRIES) {
+    //       if (abortController.signal.aborted) {
+    //         if (abortTimeout) {
+    //           clearTimeout(abortTimeout);
+    //         }
 
-            if (abortController.signal.reason === signInTimeoutReason) {
-              throw new Error(abortController.signal.reason);
-            }
-          }
+    //         if (abortController.signal.reason === signInTimeoutReason) {
+    //           throw new Error(abortController.signal.reason);
+    //         }
+    //       }
 
-          status = await appClient.status({
-            channelToken: createChannelResult.data.channelToken,
-          });
+    //       status = await appClient.status({
+    //         channelToken: createChannelResult.data.channelToken,
+    //       });
 
-          if (!status.isError && status.data.state === "completed") {
-            break;
-          }
+    //       if (!status.isError && status.data.state === "completed") {
+    //         break;
+    //       }
 
-          retryCount++;
-          await new Promise((r) => setTimeout(r, POLLING_INTERVAL));
-        }
+    //       retryCount++;
+    //       await new Promise((r) => setTimeout(r, POLLING_INTERVAL));
+    //     }
 
-        if (retryCount >= MAX_RETRIES) {
-          throw new Error("Polling timeout exceeded");
-        }
+    //     if (retryCount >= MAX_RETRIES) {
+    //       throw new Error("Polling timeout exceeded");
+    //     }
 
-        clearTimeout(abortTimeout);
+    //     clearTimeout(abortTimeout);
 
-        if (!status) throw new Error("Signature or message is missing");
-        const { message, signature } = status.data;
+    //     if (!status) throw new Error("Signature or message is missing");
+    //     const { message, signature } = status.data;
 
-        if (!(signature && message)) {
-          throw new Error("Signature or message is missing");
-        }
+    //     if (!(signature && message)) {
+    //       throw new Error("Signature or message is missing");
+    //     }
 
-        return {
-          signature,
-          message,
-        };
-      } finally {
-        clearTimeout(abortTimeout);
-        setFarcasterSignInAbortControllerURL(null);
-      }
-    },
+    //     return {
+    //       signature,
+    //       message,
+    //     };
+    //   } finally {
+    //     clearTimeout(abortTimeout);
+    //     setFarcasterSignInAbortControllerURL(null);
+    //   }
+    // },
 
-    async onViewProfile(params) {
-      console.info("sdk.actions.viewProfile() called", params);
-      onViewProfile(params);
-    },
+    // async onViewProfile(params) {
+    //   console.info("sdk.actions.viewProfile() called", params);
+    //   onViewProfile(params);
+    // },
   });
 
   const onFrameAppUpdateRef = useRef(onFrameAppUpdate);
@@ -371,17 +372,23 @@ export function FrameApp({
 
   return (
     <>
-      {!!farcasterSignInAbortControllerAndURL && (
+      {/* {!!farcasterSignInAbortControllerAndURL && (
         <Dialog
           open
-          onOpenChange={() => {
-            farcasterSignInAbortControllerAndURL.controller.abort(
-              "User closed sign in dialog"
-            );
+          onOpenChange={(open) => {
+            if (!open && farcasterSignInAbortControllerAndURL) {
+              farcasterSignInAbortControllerAndURL.controller.abort(
+                "User closed sign in dialog"
+              );
+            }
           }}
         >
           <DialogTitle>Frame V2</DialogTitle>
-          <DialogContent className="max-w-[300px]">
+          <DialogContent
+            className="max-w-[300px]"
+            aria-description="Frame preview"
+            aria-describedby={undefined}
+          >
             <div className="flex flex-col gap-4 justify-center items-center">
               <h2 className="text-xl font-semibold">Sign in with Farcaster</h2>
               <QRCode
@@ -392,12 +399,15 @@ export function FrameApp({
             </div>
           </DialogContent>
         </Dialog>
-      )}
+      )} */}
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogOverlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-50" />
         <DialogTitle>Frame Frame Frame</DialogTitle>
         <DialogContent
+          aria-description="Frame preview"
+          aria-label="Frame preview"
+          aria-describedby={undefined}
           className={mergeClasses(
             "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
             "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[10px] p-[25px]",
