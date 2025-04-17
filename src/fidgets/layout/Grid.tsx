@@ -32,6 +32,7 @@ import {
 } from "@/common/providers/AnalyticsProvider";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
+import { debounce } from "lodash";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -198,6 +199,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     [fidgetInstanceDatums, saveFidgetInstanceDatums],
   );
 
+  // Debounced save function
+  const debouncedSaveConfig = useCallback(
+    debounce((config) => {
+      saveConfig(config);
+    }, 100),
+    [saveConfig]
+  );
+
   function unselectFidget() {
     setSelectedFidgetID("");
     setCurrentFidgetSettings(<></>);
@@ -321,16 +330,23 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       // New set of instances - use computed property name to remove the correct fidget
       const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
 
-      console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
-
       saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
     unselectFidget();
-    removeFidgetFromGrid(fidgetId);
-    removeFidgetFromTray(fidgetId);
-    removeFidgetFromInstanceDatums(fidgetId);
+    
+    // Create new state objects
+    const newLayout = layoutConfig.layout.filter(item => item.i !== fidgetId);
+    const newTrayContents = fidgetTrayContents.filter(fidget => fidget.id !== fidgetId);
+    const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
+    
+    // Save all changes atomically with debouncing
+    debouncedSaveConfig({
+      layoutConfig: { layout: newLayout },
+      fidgetTrayContents: newTrayContents,
+      fidgetInstanceDatums: newFidgetInstanceDatums
+    });
   }
 
   function moveFidgetFromGridToTray(fidgetId: string) {
@@ -352,7 +368,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       inEditMode &&
       newLayout.length === layoutConfig.layout.length
     ) {
-      saveLayout(newLayout);
+      debouncedSaveConfig({
+        layoutConfig: { layout: newLayout }
+      });
     }
   }
 
@@ -455,6 +473,15 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       initialRenderRef.current = false;
       setTimeout(() => setItemsVisible(true), 100);
     }
+  }, []);
+
+  // Log initial config state
+  useEffect(() => {
+    // console.log('Grid received config:', {
+    //   fidgetIds: Object.keys(fidgetInstanceDatums),
+    //   layoutIds: layoutConfig.layout.map(item => item.i),
+    //   trayIds: fidgetTrayContents.map(fidget => fidget.id)
+    // });
   }, []);
 
   return (
