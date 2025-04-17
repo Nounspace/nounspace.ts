@@ -791,22 +791,6 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
     },
   },
   fidgetInstanceDatums: {
-    "Video:7c2f01b3-14bf-4231-86ee-365bb566979c": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "var(--user-theme-fidget-background)",
-          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "var(--user-theme-fidget-shadow)",
-          size: 0.8,
-          url: "https://www.youtube.com/watch?v=thJ8iul0lnI",
-        },
-      },
-      fidgetType: "Video",
-      id: "Video:7c2f01b3-14bf-4231-86ee-365bb566979c",
-    },
     "text:0e25fd64-373b-47c9-abf1-a5e4bbed9f9f": {
       config: {
         data: {},
@@ -833,6 +817,22 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
       },
       fidgetType: "text",
       id: "text:0e25fd64-373b-47c9-abf1-a5e4bbed9f9f",
+    },
+    "Video:7c2f01b3-14bf-4231-86ee-365bb566979c": {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: "var(--user-theme-fidget-background)",
+          fidgetBorderColor: "var(--user-theme-fidget-border-color)",
+          fidgetBorderWidth: "4px",
+          fidgetShadow: "var(--user-theme-fidget-shadow)",
+          size: 0.8,
+          url: "https://www.youtube.com/watch?v=thJ8iul0lnI",
+        },
+      },
+      fidgetType: "Video",
+      id: "Video:7c2f01b3-14bf-4231-86ee-365bb566979c",
     },
     "iframe:0fa69a1b-934c-40d1-99cd-c5c462f39d03": {
       config: {
