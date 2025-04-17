@@ -1,44 +1,31 @@
-// import type { UseFrameAppNotificationsManagerResult } from "./providers/FrameAppNotificationsManagerProvider";
-// import { cn } from "@/lib/utils";
-// import { Dialog, DialogContent } from "@/components/ui/dialog";
-// import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/common/components/atoms/dialog";
-import { useCopyToClipboard } from "../hooks/useCopyToClipboad";
-// import { useAppStore } from "@/common/data/stores/app";
-// import * as Dialog from "@radix-ui/react-dialog";
-// import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-// import { ToastAction } from "@/components/ui/toast";
-// import { useToast } from "@/components/ui/use-toast";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import * as Dialog from "@radix-ui/react-dialog";
 
-import React from "react";
 import { Loader2Icon } from "lucide-react";
 import Image from "next/image";
 
-import Modal from "../../../../src/common/components/molecules/Modal";
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { Button } from "@/common/components/atoms/button";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
+import { fallbackFrameContext } from "@frames.js/render";
 import {
   useFrameAppInIframe,
   type UseFrameAppInIframeReturn,
 } from "@frames.js/render/frame-app/iframe";
-import type { FrameLaunchedInContext } from "./frame-debugger";
-import { fallbackFrameContext } from "@frames.js/render";
 import type { UseFrameAppOptions } from "@frames.js/render/use-frame-app";
+import type { FrameLaunchedInContext } from "./frame-debugger";
 
-import { useConfig } from "wagmi";
 import type { EIP6963ProviderInfo } from "@farcaster/frame-sdk";
 import type {
+  FrameContext,
   FramePrimaryButton,
   ResolveContextFunction,
-  FrameContext,
 } from "@frames.js/render/frame-app/types";
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { UseQueryResult } from "@tanstack/react-query";
+import { useConfig } from "wagmi";
 
 import { createAppClient, QRCode, viemConnector } from "@farcaster/auth-kit";
 import { useWagmiProvider } from "@frames.js/render/frame-app/provider/wagmi";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
 // in debugger we don't want to automatically reject repeated add frame calls
@@ -66,8 +53,7 @@ type FrameAppProps = {
   onClose: NonNullable<UseFrameAppOptions["onClose"]>;
   onFrameAppUpdate: (frameApp: UseFrameAppInIframeReturn) => void;
   onViewProfile: NonNullable<UseFrameAppOptions["onViewProfile"]>;
-  frameAppNotificationManager: any
-  // frameAppNotificationManager: UseQueryResult<UseFrameAppNotificationsManagerResult>;
+  frameAppNotificationManager: any;
 };
 
 export function FrameApp({
@@ -93,29 +79,22 @@ export function FrameApp({
     debug: true,
   });
 
-  const copyFarcasterSignInLink = useCopyToClipboard();
-  // const { toast } = useToast();
-
-  /**
-   * we have to store promise in ref otherwise it will always invalidate the frame app hooks
-   * which happens for example when you disable notifications from notifications panel
-   */
-  const frameAppNotificationManagerPromiseRef = useRef(
-    frameAppNotificationManager.promise
-  );
+  // const frameAppNotificationManagerPromiseRef = useRef(
+  //   frameAppNotificationManager.promise
+  // );
 
   const resolveContext: ResolveContextFunction = useCallback(
     async ({ signal }) => {
       const location: FrameContext["location"] =
         context.context === "button_press"
-          ? { type: "launcher", }
+          ? { type: "launcher" }
           : {
-            type: "cast_embed",
-            embed: "",
-            cast: fallbackFrameContext.castId,
-          };
+              type: "cast_embed",
+              embed: "",
+              cast: fallbackFrameContext.castId,
+            };
 
-      setIsModalOpen(true);  // Updates the global store
+      setIsModalOpen(true); // Updates the global store
 
       try {
         const clientInfoResponse = await fetch("/client-info", {
@@ -134,32 +113,25 @@ export function FrameApp({
           await clientInfoResponse.json()
         );
 
-        const { manager } = await frameAppNotificationManagerPromiseRef.current;
+        // const { manager } = await frameAppNotificationManagerPromiseRef.current;
         const clientFid = clientInfo.fid;
 
         return {
           client: {
             clientFid,
-            added: manager.state?.frame.status === "added",
+            added: false,
+            // manager.state?.frame.status === "added",
             notificationDetails:
-              manager.state?.frame.status === "added"
-                ? manager.state.frame.notificationDetails ?? undefined
-                : undefined,
+              // manager.state?.frame.status === "added"
+              // ? manager.state.frame.notificationDetails ?? undefined
+              // :
+              undefined,
           },
           location,
           user: userContext,
         };
       } catch (e) {
-        if (!(typeof e === "string" && e.startsWith("Aborted because"))) {
-          console.error(e);
-          // toast({
-          //   title: "Unexpected error",
-          //   description:
-          //     "Failed to load notifications settings. Check the console for more details.",
-          //   variant: "destructive",
-          // });
-        }
-
+        console.error(e);
         return {
           client: {
             clientFid: -1,
@@ -170,7 +142,7 @@ export function FrameApp({
         };
       }
     },
-    [null, context, userContext]
+    [context, userContext]
   );
 
   const frameApp = useFrameAppInIframe({
@@ -188,21 +160,6 @@ export function FrameApp({
 
     onClose() {
       console.info("sdk.actions.close() called");
-      // toast({
-      //   title: "Frame app closed",
-      //   description:
-      //     "The frame app called close() action. Would you like to close it?",
-      //   action: (
-      //     <ToastAction
-      //       altText="Close"
-      //       onClick={() => {
-      //         onClose();
-      //       }}
-      //     >
-      //       Close
-      //     </ToastAction>
-      //   ),
-      // });
     },
 
     onOpenUrl(url) {
@@ -224,42 +181,22 @@ export function FrameApp({
     async onAddFrameRequested(parseResult) {
       console.info("sdk.actions.addFrame() called");
       if (frameAppNotificationManager.status === "pending") {
-        console.log("Notifications manager not ready")
-        // toast({
-        //   title: "Notifications manager not ready",
-        //   description:
-        //     "Notifications manager is not ready. Please wait a moment.",
-        //   variant: "destructive",
-        // });
-        // throw new Error("Notifications manager is not ready");
+        console.log("Notifications manager not ready");
+        return false;
       }
 
       if (frameAppNotificationManager.status === "error") {
-        console.error("Notifications manager error")
-        // toast({
-        //   title: "Notifications manager error",
-        //   description:
-        //     "Notifications manager failed to load. Please check the console for more details.",
-        //   variant: "destructive",
-        // });
-        // throw new Error("Notifications manager failed to load");
+        console.error("Notifications manager error");
+        return false;
       }
 
       const webhookUrl = parseResult.manifest?.manifest.frame?.webhookUrl;
 
       if (!webhookUrl) {
-        console.error("Webhook URL not found")
-        // toast({
-        //   title: "Webhook URL not found",
-        //   description:
-        //     "Webhook URL is not found in the manifest. It is required in order to enable notifications.",
-        //   variant: "destructive",
-        // });
+        console.error("Webhook URL not found");
         return false;
       }
 
-      // check what is the status of notifications for this app and signer
-      // if there are no settings ask for user's consent and store the result
       const consent = window.confirm(
         "Do you want to add the frame to the app?"
       );
@@ -278,12 +215,6 @@ export function FrameApp({
         };
       } catch (e) {
         console.error("Failed to add frame", e);
-        // toast({
-        //   title: "Failed to add frame",
-        //   description:
-        //     "Failed to add frame to the notifications manager. Check the console for more details.",
-        //   variant: "destructive",
-        // });
         throw e;
       }
     },
@@ -340,15 +271,14 @@ export function FrameApp({
 
         const signInTimeoutReason = "Sign in timed out";
 
-        // abort controller after 30 seconds
         abortTimeout = setTimeout(() => {
           abortController.abort(signInTimeoutReason);
         }, 30000);
 
         let status: Awaited<ReturnType<typeof appClient.status>> | undefined;
 
-        const POLLING_INTERVAL = 1000; // 1 second
-        const MAX_RETRIES = 30; // 30 seconds total polling time
+        const POLLING_INTERVAL = 1000;
+        const MAX_RETRIES = 30;
         let retryCount = 0;
 
         while (retryCount < MAX_RETRIES) {
@@ -410,27 +340,16 @@ export function FrameApp({
     onFrameAppUpdateRef.current(frameApp);
   }, [frameApp]);
 
-  // useEffect(() => {
-  //   if (isAppReady && primaryButton) {
-  //     primaryButton.callback();
-  //   }
-  // }, [isAppReady, primaryButton]);
-
   const [isModalOpen, setIsModalOpen] = useState(true);
-
-  // const handleModalClose = () => {
-  //   console.log("Modal Closed");
-  // };
 
   const handleCloseClick = () => {
     setIsModalOpen(false);
-    // handleModalClose();
   };
 
   return (
     <>
       {!!farcasterSignInAbortControllerAndURL && (
-        <Dialog
+        <Dialog.Root
           open
           onOpenChange={() => {
             farcasterSignInAbortControllerAndURL.controller.abort(
@@ -438,112 +357,83 @@ export function FrameApp({
             );
           }}
         >
-          <DialogContent className="max-w-[300px]">
+          <Dialog.Content className="max-w-[300px]">
             <div className="flex flex-col gap-4 justify-center items-center">
               <h2 className="text-xl font-semibold">Sign in with Farcaster</h2>
               <QRCode
                 uri={farcasterSignInAbortControllerAndURL.url.toString()}
               />
               <span className="text-muted-foreground text-sm">or</span>
-              <Button
-                onClick={() => {
-                  copyFarcasterSignInLink.copyToClipboard(
-                    farcasterSignInAbortControllerAndURL.url.toString()
-                  );
-                }}
-                variant="ghost"
-              >
-                {copyFarcasterSignInLink.copyState === "copied" && "Copied"}
-                {copyFarcasterSignInLink.copyState === "idle" && "Copy link"}
-                {copyFarcasterSignInLink.copyState === "failed" &&
-                  "Copy failed"}
-              </Button>
+              <Button variant="ghost">Copy failed</Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </Dialog.Content>
+        </Dialog.Root>
       )}
 
-       <Modal
-        open={isModalOpen}
-        // focusMode
-        // showClose
-        // title={`Frame v2`}
-        setOpen={setIsModalOpen}
-      > 
-        {/* Title bar  */}
-        <div className="bg-blue-600 text-white px-4 py-2 flex justify-between items-center rounded-t-lg">
-          <h2 className="text-lg font-semibold">Frame Preview</h2>
-          <button
-            onClick={handleCloseClick}
-            className="text-white hover:text-gray-200"
-          >
-            <Cross2Icon />
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-1 w-[424px] h-[695px] relative overflow-auto"
-          id="frame-app-preview">
-          {frameApp.status === "pending" ||
-            (!isAppReady && (
-              <div
-                className=
-                "bg-white flex items-center justify-center absolute top-0 bottom-0 left-0 right-0"
-                style={{
-                  backgroundColor:
-                    context.frame.button.action.splashBackgroundColor,
-                }}
-              >
-                {context.frame.button.action.splashImageUrl && (
-                  <div className="w-[200px] h-[200px] relative">
-                    <Image
-                      alt={`${name} splash image`}
-                      src={context.frame.button.action.splashImageUrl}
-                      width={200}
-                      height={200}
-                    />
-                    <div className="absolute bottom-0 right-0">
-                      <Loader2Icon
-                        className="animate-spin text-primary"
-                        size={40}
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          {frameApp.status === "success" && (
-            <>
-              <iframe
-                className="flex h-full w-full border rounded-lg"
-                sandbox="allow-forms allow-scripts allow-same-origin"
-                {...frameApp.iframeProps}
-              />
-              {!!primaryButton && !primaryButton.button.hidden && (
-                <div className="w-full py-1">
-                  <Button
-                    className="w-full gap-2"
-                    disabled={
-                      primaryButton.button.disabled ||
-                      primaryButton.button.loading
-                    }
-                    onClick={() => {
-                      primaryButton.callback();
-                    }}
-                    size="lg"
-                    type="button"
-                  >
-                    {primaryButton.button.loading && (
-                      <Loader2Icon className="animate-spin" />
-                    )}
-                    {primaryButton.button.text}
-                  </Button>
-                </div>
-              )}
-            </>
+      <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-50" />
+        <Dialog.Content
+          className={mergeClasses(
+            "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
+            "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[10px] p-[25px]",
+            "shadow-[hsl(206_22%_7%_/_35%)_0px_10px_38px_-10px,_hsl(206_22%_7%_/_20%)_0px_10px_20px_-15px] focus:outline-none",
+            "z-50"
           )}
-        </div>
+          onMouseDown={(e) => e.stopPropagation()}
+        >
+          <div className="flex justify-between items-center bg-blue-600 text-white px-6 py-3 rounded-t-lg">
+            <h2 className="text-lg font-semibold">Frame Preview</h2>
+            <button
+              onClick={handleCloseClick}
+              className="text-white hover:text-gray-200"
+            >
+              <Cross2Icon />
+            </button>
+          </div>
 
-      </Modal>
+          <div
+            className="flex flex-col gap-1 w-[full] h-[695px] relative overflow-auto"
+            id="frame-app-preview"
+          >
+            {frameApp.status === "pending" ||
+              (!isAppReady && (
+                <div
+                  className="bg-white flex items-center justify-center absolute top-0 bottom-0 left-0 right-0"
+                  style={{
+                    backgroundColor:
+                      context.frame.button.action.splashBackgroundColor,
+                  }}
+                >
+                  {context.frame.button.action.splashImageUrl && (
+                    <div className="w-[200px] h-[200px] relative">
+                      <Image
+                        alt={`${name} splash image`}
+                        src={context.frame.button.action.splashImageUrl}
+                        width={200}
+                        height={200}
+                      />
+                      {/* <div className="absolute bottom-0 right-0">
+                        <Loader2Icon
+                          className="animate-spin text-primary"
+                          size={40}
+                        />
+                      </div> */}
+                    </div>
+                  )}
+                </div>
+              ))}
+            <div className="flex flex-col items-center justify-center w-full h-full">
+              {frameApp.status === "success" && (
+                <iframe
+                  className="w-full h-full border-none rounded-lg"
+                  sandbox="allow-forms allow-scripts allow-same-origin"
+                  {...frameApp.iframeProps}
+                />
+              )}
+            </div>
+          </div>
+        </Dialog.Content>
+      </Dialog.Root>
     </>
   );
 }
