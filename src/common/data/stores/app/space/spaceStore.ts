@@ -286,11 +286,29 @@ export const createSpaceStoreFunc = (
     if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
       localCopy = cloneDeep(config);
     } else {
-      // Otherwise merge with existing config
-      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-      mergeWith(localCopy, config, (_, newItem) => {
-        if (isArray(newItem)) return newItem;
-      });
+      // Otherwise update fields explicitly
+      const existingConfig = get().space.localSpaces[spaceId].tabs[tabName];
+      localCopy = {
+        ...existingConfig,
+        // Only update fidgetInstanceDatums if provided
+        fidgetInstanceDatums: config.fidgetInstanceDatums ? 
+          cloneDeep(config.fidgetInstanceDatums) : 
+          existingConfig.fidgetInstanceDatums,
+        // Only update layoutDetails if provided
+        layoutDetails: config.layoutDetails ? {
+          ...existingConfig.layoutDetails,
+          ...config.layoutDetails,
+          layoutFidget: config.layoutDetails.layoutFidget || existingConfig.layoutDetails.layoutFidget
+        } : existingConfig.layoutDetails,
+        // Only update fidgetTrayContents if provided
+        fidgetTrayContents: config.fidgetTrayContents !== undefined ? 
+          cloneDeep(config.fidgetTrayContents) : 
+          existingConfig.fidgetTrayContents,
+        // Only update theme if provided
+        theme: config.theme ? cloneDeep(config.theme) : existingConfig.theme,
+        // Always update timestamp
+        timestamp: moment().toISOString()
+      };
     }
 
     set((draft) => {
