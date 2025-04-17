@@ -44,12 +44,12 @@ const Home = () => {
 
   // Local state to manage current tab name and ordering
   const tabOrdering = ["Nouns", "nounspace", "Press"];
-  const [tabName, setTabName] = useState<string>("Welcome");
+  const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {
     const newTabName = params?.tabname ? 
       decodeURIComponent(params.tabname as string) : 
-      "Welcome";
+      "Nouns";
 
     setTabName(newTabName);
   }, []);
