@@ -1,6 +1,9 @@
 import React from "react";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import * as Dialog from "@radix-ui/react-dialog";
+// import * as Dialog from "@radix-ui/react-dialog";
+import { Dialog, DialogContent, 
+  DialogOverlay, DialogTitle
+ } from "@/common/components/atoms/dialog";
 
 import { Loader2Icon } from "lucide-react";
 
@@ -369,7 +372,7 @@ export function FrameApp({
   return (
     <>
       {!!farcasterSignInAbortControllerAndURL && (
-        <Dialog.Root
+        <Dialog
           open
           onOpenChange={() => {
             farcasterSignInAbortControllerAndURL.controller.abort(
@@ -377,7 +380,8 @@ export function FrameApp({
             );
           }}
         >
-          <Dialog.Content className="max-w-[300px]">
+          <DialogTitle>Frame V2</DialogTitle>
+          <DialogContent className="max-w-[300px]">
             <div className="flex flex-col gap-4 justify-center items-center">
               <h2 className="text-xl font-semibold">Sign in with Farcaster</h2>
               <QRCode
@@ -386,13 +390,14 @@ export function FrameApp({
               <span className="text-muted-foreground text-sm">or</span>
               <Button variant="ghost">Copy failed</Button>
             </div>
-          </Dialog.Content>
-        </Dialog.Root>
+          </DialogContent>
+        </Dialog>
       )}
 
-      <Dialog.Root open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-50" />
-        <Dialog.Content
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogOverlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-50" />
+        <DialogTitle>Frame Frame Frame</DialogTitle>
+        <DialogContent
           className={mergeClasses(
             "data-[state=open]:animate-contentShow fixed bg-background top-[40%]",
             "left-[50%] w-[100vw] max-w-[600px] translate-x-[-50%] translate-y-[-40%] rounded-[10px] p-[25px]",
@@ -452,8 +457,8 @@ export function FrameApp({
               )}
             </div>
           </div>
-        </Dialog.Content>
-      </Dialog.Root>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

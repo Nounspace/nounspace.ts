@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "../../../common/components/atoms/button";
 import { fallbackFrameContext } from "@frames.js/render";
 import { useRouter } from "next/navigation";
 import React, {
@@ -55,13 +56,13 @@ export type FrameLaunchedInContext =
 
 export type ProtocolConfiguration =
   | {
-      protocol: "farcaster";
-      specification: "farcaster";
-    }
+    protocol: "farcaster";
+    specification: "farcaster";
+  }
   | {
-      protocol: "farcaster_v2";
-      specification: "farcaster_v2";
-    };
+    protocol: "farcaster_v2";
+    specification: "farcaster_v2";
+  };
 
 // const FALLBACK_URL =
 //   process.env.NEXT_PUBLIC_DEBUGGER_DEFAULT_URL || "https://f.bracket.game";
@@ -228,10 +229,10 @@ export default function FrameV2Fidget({
     extraButtonRequestPayload: { mockData: mockHubContext },
     transactionDataSuffix:
       process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID &&
-      protocol.protocol === "farcaster_v2"
+        protocol.protocol === "farcaster_v2"
         ? attribution(
-            parseInt(process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID)
-          )
+          parseInt(process.env.NEXT_PUBLIC_FARCASTER_ATTRIBUTION_FID)
+        )
         : undefined,
     resolveSigner() {
       return farcasterSignerState.withContext(frameContext.farcaster, {
@@ -323,7 +324,7 @@ export default function FrameV2Fidget({
                               </div>
                             </div>
                           )}
-                          <div className="space-y-1">
+                          {/* <div className="space-y-1">
                             {currentFrameStackItem?.status === "done" &&
                               (currentFrameStackItem.frameResult
                                 .specification === "farcaster" ||
@@ -342,9 +343,11 @@ export default function FrameV2Fidget({
                                 .map((button) => {
                                   // Link to debug target
                                   return (
-                                    <button
+                                    <Button
                                       key={button.target}
-                                      className="border text-sm text-gray-800 rounded flex p-2 w-full gap-2"
+                                      className="line-clamp-1 min-w-40 max-w-xs truncate"
+                                      variant="primary"
+                                      color="primary"
                                       onClick={() => {
                                         const url = new URL(button.target!);
                                         const params = new URLSearchParams({
@@ -362,10 +365,10 @@ export default function FrameV2Fidget({
                                         color: defaultTheme.buttonColor,
                                         cursor: "pointer",
                                       }}
-                                    ></button>
+                                    ></Button>
                                   );
                                 })}
-                          </div>
+                          </div> */}
                         </>
                       )}
                   </div>
