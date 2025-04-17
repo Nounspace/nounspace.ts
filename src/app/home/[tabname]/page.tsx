@@ -99,7 +99,7 @@ const Home = () => {
           tabBar: tabBar,
         };
 
-  return <SpacePage {...args} />;
+  return <SpacePage key={tabName} {...args} />;
 };
 
 export default Home;
