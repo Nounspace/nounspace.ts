@@ -13,7 +13,7 @@ interface ScanAddressProps {
 export default function ScanAddress({ address, chain }: ScanAddressProps) {
   const chainData = CHAIN_OPTIONS.find((c) => c.id === chain);
 
-  // console.log("chainData", chainData, "address", address, "chain", chain);
+  // //console.log("chainData", chainData, "address", address, "chain", chain);
 
   if (!address || !chainData) return null;
 

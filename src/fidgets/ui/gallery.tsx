@@ -59,7 +59,7 @@ const galleryConfig: FidgetProperties = {
         const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
 
         const handleImageUploaded = (Upload: string) => {
-          console.log("Image uploaded, URL:", Upload);
+          //console.log("Image uploaded, URL:", Upload);
           setLocalImageUrl(Upload);
           updateSettings?.({
             uploadedImage: Upload,
@@ -192,7 +192,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     }
 
     window.handleGalleryImageUpload = (url: string) => {
-      console.log("Global handler called with URL:", url);
+      //console.log("Global handler called with URL:", url);
       setuploadedImage(url);
       localStorage.setItem('galleryuploadedImage', url);
     };
@@ -245,7 +245,7 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
       setError(null);
     } else if (settings.selectMediaSource?.name === MediaSourceTypes.UPLOAD) {
       if (uploadedImage) {
-        console.log("Using local uploaded image URL:", uploadedImage);
+        //console.log("Using local uploaded image URL:", uploadedImage);
         setNftImageUrl(uploadedImage);
         setError(null);
       } else if (settings.uploadedImage) {

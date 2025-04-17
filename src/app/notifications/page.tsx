@@ -355,7 +355,7 @@ function NotificationsPageContent() {
   }, []);
 
   const onSelectNotification = useCallback(() => {
-    // console.log("@TODO: navigateToCastDetail"); // TODO
+    // //console.log("@TODO: navigateToCastDetail"); // TODO
   }, []);
 
   const filterByType = useCallback(

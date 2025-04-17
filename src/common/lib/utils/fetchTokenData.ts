@@ -66,7 +66,7 @@ export async function fetchTokenData(
         },
       },
     );
-    // console.log("Response status:", response.status);
+    // //console.log("Response status:", response.status);
     if (!response.ok) {
       // console.error("Error fetching token data:", response.statusText);
       return null;
@@ -90,14 +90,14 @@ export async function fetchTokenData(
     // Calculate market cap if not available
     if (!marketCap && token.price_usd) {
       const totalSupply = token.total_supply;
-      // console.log("Total supply:", totalSupply);
+      // //console.log("Total supply:", totalSupply);
       if (totalSupply) {
         const adjustedTotalSupply =
           parseFloat(totalSupply) / Math.pow(10, token.decimals);
         marketCap = (
           parseFloat(token.price_usd) * adjustedTotalSupply
         ).toString();
-        // console.log(
+        // //console.log(
         //   "Calculated market cap:",
         //   marketCap,
         //   "USD",

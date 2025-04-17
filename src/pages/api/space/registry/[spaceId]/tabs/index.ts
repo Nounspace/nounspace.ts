@@ -104,7 +104,7 @@ async function registerNewSpaceTab(
   // TO DO: Check that the user can register more tabs
   // Currently we are allowing unlimited files on server side
 
-  // console.log(
+  // //console.log(
   //   "registerNewSpaceTab called on registry/[spaceId]/tabs with",
   //   registration,
   // );
@@ -131,7 +131,7 @@ async function registerNewSpaceTab(
       { upsert: true },
     );
   
-  // console.log("[registry space] Tab Registration Response:", {
+  // //console.log("[registry space] Tab Registration Response:", {
   //   data,
   //   error: error ? error.message : null,
   //   spaceId: registration.spaceId,

@@ -39,7 +39,7 @@ export function VideoSelector({
   }
 
   function handleNftSelect(value: AlchemyVideoNftSelectorValue) {
-    // console.log("NFT selected", value);
+    // //console.log("NFT selected", value);
     if (value.imageUrl) handleVideoSelect(value.imageUrl);
   }
 

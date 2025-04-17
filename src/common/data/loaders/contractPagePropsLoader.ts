@@ -35,7 +35,7 @@ export async function loadContractData(
   }
 
   const { contractAddress, tabName: tabNameUnparsed, network } = params;
-  // console.log("contractPageProps network", network);
+  // //console.log("contractPageProps network", network);
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
@@ -49,7 +49,7 @@ export async function loadContractData(
       },
     };
   }
-  // console.log("network contractPageProps", network);
+  // //console.log("network contractPageProps", network);
 
   const contract = await loadEthersViewOnlyContract(
     contractAddress,
@@ -101,8 +101,8 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  console.log("Debug - Contract Address before query:", contractAddress);
-  console.log("Debug - Network:", network);
+  //console.log("Debug - Contract Address before query:", contractAddress);
+  //console.log("Debug - Network:", network);
 
   const { data, error } = await createSupabaseServerClient()
     .from("spaceRegistrations")
@@ -112,15 +112,15 @@ export async function loadContractData(
     .order("timestamp", { ascending: true })
     .limit(1)
   
-  console.log("Debug - Database Query Error:", error);
-  console.log("Debug - Raw Query Results:", data);
-  console.log("Debug - First Space ID:", data?.[0]?.spaceId);
-  console.log("Debug - Query Details:", {
-    table: "spaceRegistrations",
-    filter: { contractAddress, network },
-    order: "timestamp ASC",
-    resultCount: data?.length || 0
-  });
+  //console.log("Debug - Database Query Error:", error);
+  //console.log("Debug - Raw Query Results:", data);
+  //console.log("Debug - First Space ID:", data?.[0]?.spaceId);
+  //console.log("Debug - Query Details:", {
+  //   table: "spaceRegistrations",
+  //   filter: { contractAddress, network },
+  //   order: "timestamp ASC",
+  //   resultCount: data?.length || 0
+  // });
   
   const spaceId = data?.[0]?.spaceId || null;
 
