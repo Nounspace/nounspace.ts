@@ -1422,15 +1422,15 @@
   dependencies:
     tslib "^2.4.0"
 
-"@frames.js/render@^0.5.5":
-  version "0.5.5"
-  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.5.5.tgz#13d113c5b0f23a6e4de5afac52d9e039d37011cf"
-  integrity sha512-BkAlLs000NwTGQCQZ4LDDvuWFhZ4wAp45XMXIXKhtzRzthyb+ux9JCNRp1dc7t7Z/cMEgE3jANdhbOYMIFoxjQ==
+"@frames.js/render@^0.5.6":
+  version "0.5.6"
+  resolved "https://registry.yarnpkg.com/@frames.js/render/-/render-0.5.6.tgz#c039359e1aa963fb4fddf4f6040e128fbf1ff0a6"
+  integrity sha512-dkgd2Efqp+xkMukDFaXUyY0d1v2usq7CCgMucCUQ7tZOV/KGFSPPWlq8uN8osibAhsJcfNfmBkEKysoeA9hPHw==
   dependencies:
     "@farcaster/core" "^0.15.6"
     "@farcaster/frame-host" "^0.0.24"
     "@noble/ed25519" "^2.0.0"
-    frames.js "^0.21.3"
+    frames.js "^0.22.0"
     ox "^0.4.4"
     zod "^3.24.1"
 
@@ -10134,6 +10134,22 @@ frames.js@^0.21.3:
   version "0.21.3"
   resolved "https://registry.yarnpkg.com/frames.js/-/frames.js-0.21.3.tgz#b07493c09bc650fee92c9390cdf206530282b523"
   integrity sha512-A9J1jfYPGu/Ip+Ne2pFy/klcjDGUJLkAtWs1IL2iKc4JQ2dGTd9a8ROFW51oe2Oqp9xTxWIZz/UlHgkG8f3Cig==
+  dependencies:
+    "@farcaster/frame-core" "^0.0.24"
+    "@noble/ed25519" "^2.2.3"
+    "@noble/hashes" "^1.7.1"
+    "@vercel/og" "^0.6.3"
+    cheerio "^1.0.0-rc.12"
+    ox "^0.4.4"
+    protobufjs "^7.2.6"
+    type-fest "^4.28.1"
+    viem "^2.7.8"
+    zod "^3.24.1"
+
+frames.js@^0.22.0:
+  version "0.22.0"
+  resolved "https://registry.yarnpkg.com/frames.js/-/frames.js-0.22.0.tgz#4403ded7a0ce2bf09f734bfe2c47d7a92d94fcd0"
+  integrity sha512-ST/CgNJUVR/5e+Y1ZonRfP4ZNeckbvAkPQhSBNQlqCLb3CZRaRwi+fbM9kklvG0i3fSBjTnvYNi5TI7/rPTebQ==
   dependencies:
     "@farcaster/frame-core" "^0.0.24"
     "@noble/ed25519" "^2.2.3"
