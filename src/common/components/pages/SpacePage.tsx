@@ -4,7 +4,6 @@ import { isUndefined } from "lodash";
 import SpaceLoading from "@/common/components/templates/SpaceLoading";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
-import FrameV2Fidget from "@/fidgets/framesv2/framev2";
 
 export type SpacePageArgs = {
   config?: SpaceConfig;
