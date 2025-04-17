@@ -41,7 +41,8 @@ export default function SpacePage({
       ) : (
         <FrameV2Fidget searchParams={{ 
           // url: "https://04e0-2804-14d-5c5e-67cc-5046-5ea8-6517-c54b.ngrok-free.app/frames/hello/vaipraonde", 
-          url: "https://www.skatehive.app/post/hive-173115/@samuelvelizsk8/fegxlhrj",
+          // url: "https://www.skatehive.app/post/hive-173115/@samuelvelizsk8/fegxlhrj",
+          url: "https://www.builderscore.xyz/",
           specification:"farcaster_v2", 
           actions:"true" 
           }} />

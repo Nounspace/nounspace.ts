@@ -1,13 +1,13 @@
 import { POST as handlePOSTRequest } from "@frames.js/render/next";
 import { type NextRequest } from "next/server";
-import { getAction } from "../../fidgets/framesv2/actions/getAction";
-import { persistMockResponsesForDebugHubRequests } from "../../fidgets/framesv2/lib/mock-hub-utils";
+import { getAction } from "../../../fidgets/framesv2/actions/getAction";
+import { persistMockResponsesForDebugHubRequests } from "../../../fidgets/framesv2/lib/mock-hub-utils";
 import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
 // import { parseFramesWithReports } from "./frames.js/src/parseFramesWithReports";
 import { isSpecificationValid,
   type CastActionDefinitionResponse,
   type FrameDefinitionResponse
- } from "../../fidgets/framesv2/lib/utils";
+ } from "../../../fidgets/framesv2/lib/utils";
 
 /** Proxies fetching a frame through a backend to avoid CORS issues and preserve user IP privacy */
 export async function GET(request: NextRequest): Promise<Response> {
