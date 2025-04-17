@@ -10,6 +10,7 @@ import {
   PRESS_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
   WELCOME_TAB_CONFIG,
+  NOUNSPACE_TAB_CONFIG,
 } from "@/constants/homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
@@ -19,6 +20,8 @@ const getTabConfig = (tabName: string) => {
       return FIDGETS_TAB_CONFIG;
     case "Nouns":
       return NOUNS_TAB_CONFIG;
+    case "nounspace":
+      return NOUNSPACE_TAB_CONFIG;
     case "Press":
       return PRESS_TAB_CONFIG;
     default:
@@ -40,7 +43,7 @@ const Home = () => {
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
-  const tabOrdering = ["Welcome", "Fidgets", "Nouns", "Press"];
+  const tabOrdering = ["Nouns", "nounspace", "Press"];
   const [tabName, setTabName] = useState<string>("Welcome");
 
   useEffect(() => {
