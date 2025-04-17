@@ -324,7 +324,7 @@ export default function FrameV2Fidget({
                               </div>
                             </div>
                           )}
-                          {/* <div className="space-y-1">
+                          <div className="space-y-1">
                             {currentFrameStackItem?.status === "done" &&
                               (currentFrameStackItem.frameResult
                                 .specification === "farcaster" ||
@@ -368,7 +368,7 @@ export default function FrameV2Fidget({
                                     ></Button>
                                   );
                                 })}
-                          </div> */}
+                          </div>
                         </>
                       )}
                   </div>
