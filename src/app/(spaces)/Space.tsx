@@ -78,6 +78,67 @@ export default function Space({
     setSidebarEditable(config.isEditable);
   }, [config.isEditable]);
 
+  // Clean up unused fidgetInstanceDatums when config is first loaded
+  useEffect(() => {
+    console.log('Checking fidget cleanup...');
+    console.log('Current layout:', config?.layoutDetails?.layoutConfig?.layout);
+    console.log('Current fidgetInstanceDatums:', config?.fidgetInstanceDatums);
+
+    if (!config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
+      console.log('Missing required config data, skipping cleanup');
+      return;
+    }
+
+    // Extract fidget IDs from the layout objects using the 'i' property
+    const layoutFidgetIds = new Set(
+      config.layoutDetails.layoutConfig.layout.map(item => item.i)
+    );
+    console.log('Layout fidget IDs:', Array.from(layoutFidgetIds));
+
+    // Check if the onboarding fidget is in the layout
+    const hasOnboardingInLayout = layoutFidgetIds.has('text:onboarding');
+    console.log('Has onboarding in layout:', hasOnboardingInLayout);
+
+    // If onboarding is not in layout, remove it from fidgetInstanceDatums
+    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+      id => !layoutFidgetIds.has(id)
+    );
+    console.log('Unused fidget IDs:', unusedFidgetIds);
+
+    if (unusedFidgetIds.length > 0) {
+      console.log('Found unused fidgets, cleaning up...');
+      const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+      unusedFidgetIds.forEach(id => {
+        delete cleanedFidgetInstanceDatums[id];
+      });
+
+      console.log('Cleaned fidgetInstanceDatums:', cleanedFidgetInstanceDatums);
+      
+      // Only pass the fidgetInstanceDatums field to ensure it replaces rather than merges
+      const saveConfigPromise = saveConfig({
+        fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log('Saving cleaned fidgetInstanceDatums...');
+      
+      saveConfigPromise.then(() => {
+        console.log('Save completed, verifying config state...');
+        console.log('Current config after save:', config);
+        
+        // Only commit if the save was successful
+        if (Object.keys(config.fidgetInstanceDatums).length === Object.keys(cleanedFidgetInstanceDatums).length) {
+          console.log('Config state matches cleaned state, committing to database');
+          commitConfig();
+        } else {
+          console.log('Config state does not match cleaned state, skipping commit');
+        }
+      });
+    } else {
+      console.log('No unused fidgets found');
+    }
+  }, [config?.layoutDetails?.layoutConfig?.layout]); // Only run when layout changes
+
   function saveExitEditMode() {
     commitConfig();
     setEditMode(false);
