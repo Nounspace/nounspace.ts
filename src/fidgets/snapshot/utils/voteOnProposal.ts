@@ -28,12 +28,12 @@ const voteOnProposal = async (
       alert("Please connect your wallet");
       return;
     }
-    // console.log("Voting with account:", account);
-    // console.log("Voting on proposal:", proposalId);
-    // console.log("Choice:", choiceId);
-    // console.log("Reason:", reason);
-    // console.log("Space:", space);
-    // console.log("Type:", type);
+    // //console.log("Voting with account:", account);
+    // //console.log("Voting on proposal:", proposalId);
+    // //console.log("Choice:", choiceId);
+    // //console.log("Reason:", reason);
+    // //console.log("Space:", space);
+    // //console.log("Type:", type);
 
     const receipt = await client.vote(web3, account, {
       space: space,

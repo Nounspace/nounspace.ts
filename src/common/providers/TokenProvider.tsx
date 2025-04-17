@@ -40,7 +40,7 @@ export const fetchMasterToken = async (
   address: string,
   network: EtherScanChainName,
 ) => {
-    // console.log("Fetching token data...", address);
+    // //console.log("Fetching token data...", address);
     const tokenResponse = await fetchTokenData(
       address,
       null,

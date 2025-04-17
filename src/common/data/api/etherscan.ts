@@ -213,7 +213,7 @@ export async function contractOwnerFromContract(
       } catch (error) {
         console.error("Error fetching user FID:", error);
       }
-      // console.log("Contract creator:", contractCreation);
+      // //console.log("Contract creator:", contractCreation);
     }
   }
 

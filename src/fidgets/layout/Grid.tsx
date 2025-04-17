@@ -321,7 +321,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       // New set of instances - use computed property name to remove the correct fidget
       const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
 
-      console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
+      //console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
 
       saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }

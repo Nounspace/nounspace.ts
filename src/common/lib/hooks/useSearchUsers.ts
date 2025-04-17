@@ -51,7 +51,7 @@ const useSearchUsers = (
         setError(null);
       } catch (err) {
         if (axios.isCancel(err)) {
-          // console.log("Search request cancelled");
+          // //console.log("Search request cancelled");
         } else {
           const errMsg = isAxiosError(err)
             ? err.response?.data?.error?.message

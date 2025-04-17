@@ -63,7 +63,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
         };
 
         const onClick = () => {
-          // console.log("fidgetBundle", fidgetBundle);
+          // //console.log("fidgetBundle", fidgetBundle);
           selectFidget(fidgetBundle);
         };
 

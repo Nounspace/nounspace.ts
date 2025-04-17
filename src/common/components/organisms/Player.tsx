@@ -90,7 +90,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     // Default to YouTube metadata
     const response = await fetch(`/api/metadata/youtube?url=${videoUrl}`);
     const data = await response.json();
-    // console.log("youtube", data);
+    // //console.log("youtube", data);
     const snippet = data?.value?.snippet;
 
     if (!snippet) return;

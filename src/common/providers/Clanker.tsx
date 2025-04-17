@@ -31,7 +31,7 @@ export const ClankerProvider: React.FC<ClankerProviderProps> = ({
 
   const fetchClanker = async (address: string) => {
     try {
-      // console.log("Fetching clanker...", address);
+      // //console.log("Fetching clanker...", address);
       const response = await axios.get(`/api/clanker/ca?address=${address}`);
       setClankerData(response.data);
     } catch (error) {

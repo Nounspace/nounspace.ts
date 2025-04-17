@@ -343,10 +343,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }
           }
 
-          // console.log(mentions);
-          // console.log("mentionsText.length" + mentionsText.length);
+          // //console.log(mentions);
+          // //console.log("mentionsText.length" + mentionsText.length);
           if (mentions.length > 10)
-            // console.log("only up to 10 mentions. " + mentions.length);
+            // //console.log("only up to 10 mentions. " + mentions.length);
           if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
             console.error(
               "Mismatch between mentions and their positions:",
@@ -369,7 +369,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        // console.log("Updated Draft before posting:", updatedDraft);
+        // //console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };

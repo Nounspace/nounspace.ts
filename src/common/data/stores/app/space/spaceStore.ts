@@ -751,11 +751,11 @@ export const createSpaceStoreFunc = (
       );
       
       if (existingSpace) {
-        console.log('Found existing space in local cache:', {
-          spaceId: existingSpace.id,
-          address,
-          network
-        });
+        //console.log('Found existing space in local cache:', {
+          // spaceId: existingSpace.id,
+          // address,
+        //   network
+        // });
         return existingSpace.id;
       }
 
@@ -776,11 +776,11 @@ export const createSpaceStoreFunc = (
           space => space.contractAddress === address && space.network === network
         );
         if (existingSpace) {
-          console.log('Found existing space:', {
-            spaceId: existingSpace.spaceId,
-            address,
-            network
-          });
+          //console.log('Found existing space:', {
+            // spaceId: existingSpace.spaceId,
+            // address,
+            // network
+          // });
           // Cache the space info in local state
           set((draft) => {
             draft.space.editableSpaces[existingSpace.spaceId] = name;
@@ -798,12 +798,12 @@ export const createSpaceStoreFunc = (
         }
       }
 
-      console.log('No existing space found, registering new space:', {
-        address,
-        name,
-        tokenOwnerFid,
-        network
-      });
+      //console.log('No existing space found, registering new space:', {
+      //   address,
+      //   name,
+      //   tokenOwnerFid,
+      //   network
+      // });
 
       const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,

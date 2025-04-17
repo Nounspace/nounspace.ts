@@ -338,7 +338,7 @@ export const createHomeBaseTabStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
-      // console.log("spaceConfig", spaceConfig);
+      // //console.log("spaceConfig", spaceConfig);
       set((draft) => {
         draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
         draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
