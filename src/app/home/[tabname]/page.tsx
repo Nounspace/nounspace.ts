@@ -4,38 +4,30 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
-import TabBar from "@/common/components/organisms/TabBar";  
+import TabBar from "@/common/components/organisms/TabBar";
 import {
-  FIDGETS_TAB_CONFIG,
   PRESS_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
-  WELCOME_TAB_CONFIG,
   NOUNSPACE_TAB_CONFIG,
 } from "@/constants/homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
-    case "Fidgets":
-      return FIDGETS_TAB_CONFIG;
-    case "Nouns":
-      return NOUNS_TAB_CONFIG;
     case "Nounspace":
       return NOUNSPACE_TAB_CONFIG;
     case "Press":
       return PRESS_TAB_CONFIG;
+    case "Nouns":
     default:
-      return WELCOME_TAB_CONFIG;
+      return NOUNS_TAB_CONFIG;
   }
 };
 
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const {
-    getIsLoggedIn,
-    getIsInitializing,
-  } = useAppStore((state) => ({
+  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
@@ -47,9 +39,9 @@ const Home = () => {
   const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {
-    const newTabName = params?.tabname ? 
-      decodeURIComponent(params.tabname as string) : 
-      "Nouns";
+    const newTabName = params?.tabname
+      ? decodeURIComponent(params.tabname as string)
+      : "Nouns";
 
     setTabName(newTabName);
   }, []);
