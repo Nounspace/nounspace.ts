@@ -48,7 +48,7 @@ const nextConfig = {
     return [
       {
         source: "/",
-        destination: "/home/Welcome",
+        destination: "/home/Nouns",
         permanent: true,
       },
       {
@@ -68,7 +68,7 @@ const nextConfig = {
     return [
       {
         source: "/home",
-        destination: "/home/Welcome", 
+        destination: "/home/Nouns", 
       },
     ];
   },

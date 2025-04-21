@@ -4,6 +4,7 @@ import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
 import { CompleteFidgets } from "@/fidgets";
 import { getFidgetDisplayName } from "../utils";
+import { usePathname } from "next/navigation";
 
 interface TabNavigationProps {
   processedFidgetIds: string[];
@@ -45,9 +46,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     return fidgetDatum.fidgetType === 'feed';
   };
   
+  const pathname = usePathname();
+  const isHomebasePath = pathname?.startsWith('/homebase');
+  const isHomePath = pathname?.startsWith('/home');
+
   // Reorder tabs to prioritize feed fidgets
   const orderedFidgetIds = useMemo(() => {
     if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
+    if (isHomebasePath || isHomePath) return processedFidgetIds;
     
     // Create a copy of the array to avoid mutating the original
     const reorderedIds = [...processedFidgetIds];
@@ -63,7 +69,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     });
     
     return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums]);
+  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, isHomePath]);
 
   // Enhanced scroll handler to calculate gradient opacities based on scroll position
   const handleScroll = () => {

@@ -46,6 +46,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const isMobile = useIsMobile();
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
+  const isHomePath = pathname?.startsWith('/home');
   
   // Process fidgets and prepare data for rendering
   const validFidgetIds = useMemo(() => 
@@ -93,8 +94,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const orderedFidgetIds = useMemo(() => {
     if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
     
-    // If we're in homebase path, don't reorder
-    if (isHomebasePath) return processedFidgetIds;
+    // If we're in homebase or home path, don't reorder
+    if (isHomebasePath || isHomePath) return processedFidgetIds;
     
     // Create a copy of the array to avoid mutating the original
     const reorderedIds = [...processedFidgetIds];
