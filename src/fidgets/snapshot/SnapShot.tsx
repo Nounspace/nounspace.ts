@@ -1,5 +1,3 @@
-// src/components/SnapShot.tsx
-
 import { Button } from "@/common/components/atoms/button";
 import { CardContent } from "@/common/components/atoms/card";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -8,6 +6,7 @@ import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from 
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
 import { defaultStyleFields } from "@/fidgets/helpers";
 import React, { useState } from "react";
+import { BsFillLightningChargeFill } from "react-icons/bs";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import ProposalItem from "./components/ProposalItem";
 
@@ -22,6 +21,8 @@ export type snapShotSettings = {
 
 export const snapshotConfig: FidgetProperties = {
   fidgetName: "SnapShot Governance",
+  mobileFidgetName: "Gov",
+  mobileIcon: <BsFillLightningChargeFill size={22} />,
   icon: 0x26a1,
   fields: [
     {
