@@ -1,25 +1,32 @@
+import { Button } from "@/common/components/atoms/button";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import React, { useReducer, useState } from "react";
+import { FaAngleDown } from "react-icons/fa6";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
-import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
 import {
-  renderSingleChoiceVotingUI,
-  renderApprovalVotingUI,
-  renderRankedChoiceVotingUI,
-  renderWeightedVotingUI,
+    renderApprovalVotingUI,
+    renderRankedChoiceVotingUI,
+    renderSingleChoiceVotingUI,
+    renderWeightedVotingUI,
 } from "../utils/renderVotingUI";
-import { initialState, reducer, State, Action } from "../utils/stateManagement";
-import { Button } from "@/common/components/atoms/button";
-import { FaAngleDown } from "react-icons/fa6";
+import { Action, initialState, reducer, State } from "../utils/stateManagement";
+import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
 
 interface ProposalItemProps {
   proposal: any;
   space: string;
+  headingsFont?: string;
+  bodyFont?: string;
 }
 
-const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
+const ProposalItem: React.FC<ProposalItemProps> = ({ 
+  proposal, 
+  space, 
+  headingsFont = "var(--user-theme-headings-font)",
+  bodyFont = "var(--user-theme-font)"
+}) => {
   const extractImageUrl = (markdown: string): string | null => {
     const imageRegex = /!\[.*?\]\((.*?)\)/;
     const match = imageRegex.exec(markdown);
@@ -125,7 +132,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
     );
 
     return (
-      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
+      <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2" style={{ fontFamily: bodyFont }}>
         {proposal.choices.map((choice: string, index: number) => {
           const score = proposal.scores[index];
           const percentage = (score / totalScores) * 100;
@@ -159,7 +166,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
   };
 
   return (
-    <div className="p-4 border border-gray-200 bg-white rounded-lg">
+    <div className="p-4 border border-gray-200 bg-white rounded-lg" style={{ fontFamily: bodyFont }}>
       <div className="grid grid-cols-[4rem_1fr] gap-4">
         <img
           src={avatarUrl}
@@ -168,7 +175,7 @@ const ProposalItem: React.FC<ProposalItemProps> = ({ proposal, space }) => {
           onError={handleError}
         />
         <div className="flex flex-col flex-grow">
-          <h4 className="font-bold grid grid-cols-[1fr_auto] gap-4 items-start">
+          <h4 className="font-bold grid grid-cols-[1fr_auto] gap-4 items-start" style={{ fontFamily: headingsFont }}>
             {proposal.title}
             <Badge color={getStatusBadgeColor()} status={status} />
           </h4>

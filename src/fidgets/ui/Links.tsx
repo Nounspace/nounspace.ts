@@ -75,7 +75,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "headingsFontFamily",
-      default: "Londrina Solid",
+      default: "Theme Headings Font",
       required: false,
       inputSelector: FontSelector,
       group: "style",
@@ -192,21 +192,27 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
+  const isThemeHeadingsFont = (value: string) => {
+    return value === "Theme Headings Font" || 
+           value === "var(--user-theme-headings-font)" ||
+           (!value && "Theme Headings Font");
+  };
+
+  const isThemeBodyFont = (value: string) => {
+    return value === "Theme Font" || 
+           value === "var(--user-theme-font)" ||
+           (!value && "Theme Font");
+  };
 
   const getHeadingsFontFamily = () => {
-    if (settings.headingsFontFamily === "Theme Headings Font") {
+    if (isThemeHeadingsFont(settings.headingsFontFamily)) {
       return "var(--user-theme-headings-font)";
-    }
-    const root = document.documentElement;
-    const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
-    if (settings.headingsFontFamily === "Londrina Solid" && themeFont) {
-      return themeFont;
     }
     return settings.headingsFontFamily;
   };
 
   const getFontFamily = () => {
-    if (settings.fontFamily === "Theme Font") {
+    if (isThemeBodyFont(settings.fontFamily)) {
       return "var(--user-theme-font)";
     }
     return settings.fontFamily;

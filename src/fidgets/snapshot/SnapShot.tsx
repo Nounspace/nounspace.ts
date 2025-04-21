@@ -1,21 +1,23 @@
 // src/components/SnapShot.tsx
 
-import React, { useState } from "react";
-import { CardContent } from "@/common/components/atoms/card";
-import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
-import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import ProposalItem from "./components/ProposalItem";
-import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
 import { Button } from "@/common/components/atoms/button";
+import { CardContent } from "@/common/components/atoms/card";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import TextInput from "@/common/components/molecules/TextInput";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
+import { defaultStyleFields } from "@/fidgets/helpers";
+import React, { useState } from "react";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import ProposalItem from "./components/ProposalItem";
 
 export type snapShotSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
   "snapshot ens": string;
   "snapshot space": string;
+  headingsFontFamily?: string;
+  fontFamily?: string;
 } & FidgetSettingsStyle;
 
 export const snapshotConfig: FidgetProperties = {
@@ -28,7 +30,20 @@ export const snapshotConfig: FidgetProperties = {
       required: true,
       inputSelector: TextInput,
     },
-
+    {
+      fieldName: "headingsFontFamily",
+      default: "Theme Headings Font",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "Theme Font",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
     ...defaultStyleFields,
   ],
   size: {
@@ -71,13 +86,25 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
     setSkip((prevSkip) => prevSkip + first);
   };
 
+  const getHeadingsFontFamily = () => {
+    return settings.headingsFontFamily === "Theme Headings Font" 
+      ? "var(--user-theme-headings-font)" 
+      : settings.headingsFontFamily || "var(--user-theme-headings-font)";
+  };
+
+  const getBodyFontFamily = () => {
+    return settings.fontFamily === "Theme Font" 
+      ? "var(--user-theme-font)" 
+      : settings.fontFamily || "var(--user-theme-font)";
+  };
+
   return (
     <CardContent className="size-full overflow-hidden p-4 flex flex-col">
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily() }}>
         {settings["snapshot ens"]} proposals
       </h1>
       {error && <p className="text-red-500">{error}</p>}
-      <div className="grid gap-2 overflow-auto">
+      <div className="grid gap-2 overflow-auto" style={{ fontFamily: getBodyFontFamily() }}>
         {proposals.map((proposal) => (
           <ProposalItem
             key={proposal.id}
@@ -85,6 +112,8 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             // isExpanded={expandedProposalId === proposal.id}
             // onToggleExpand={handleToggleExpand}
             space={settings["snapshot ens"]}
+            headingsFont={getHeadingsFontFamily()}
+            bodyFont={getBodyFontFamily()}
           />
         ))}
       </div>
