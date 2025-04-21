@@ -14,6 +14,7 @@ import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import { getDexScreenerUrl, getGeckoIframe } from "@/common/lib/utils/links";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { BsBarChart, BsBarChartFill } from "react-icons/bs";
 
 export type MarketDataProps = {
   chain: { id: string; name: string } | null;
@@ -25,7 +26,10 @@ export type MarketDataProps = {
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Market Data",
+  mobileFidgetName: "Chart",
   icon: 0x1f4c8,
+  mobileIcon: <BsBarChart size={20} />,
+  mobileIconSelected: <BsBarChartFill size={20} />,
   fields: [
     {
       fieldName: "chain",
@@ -104,7 +108,7 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
   const scaleValue = size;
 
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
       <iframe
         src={url}
         title="Market Data"

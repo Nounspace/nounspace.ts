@@ -8,6 +8,8 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
+import { BsArrowRepeat } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -25,7 +27,9 @@ type MatchaFidgetSettings = {
 const matchaProperties: FidgetProperties = {
   fidgetName: "Swap",
   icon: 0x1f501,
+  mobileIcon: <BsArrowRepeat size={22} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "defaultSellToken",
       default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
@@ -164,7 +168,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   }, []);
 
   return (
-    <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
       <iframe
         src={url}
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"

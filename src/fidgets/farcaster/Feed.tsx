@@ -19,6 +19,8 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
+import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect } from "react";
@@ -69,6 +71,7 @@ export const FilterTypeSelector: React.FC<{
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "selectPlatform",
       displayName: "Select App",
@@ -226,6 +229,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     maxWidth: 36,
   },
   icon: 0x1f4f0,
+  mobileIcon: <BsChatRightHeart size={20} />,
+  mobileIconSelected: <BsChatRightHeartFill size={20} />,
 };
 
 export const FEED_TYPES = [

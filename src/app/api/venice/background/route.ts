@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek-r1-671b",
+        model: "deepseek-coder-v2-lite",
         messages: [
           {
             role: "system",
@@ -67,7 +67,7 @@ Please adhere to the following requirements and guidelines:
 3. **Visual Quality and Creativity**:
   - The design should be **visually appealing and modern**. 
   - Consider using **gradients**, **patterns**, **subtle animations** (CSS-based only), or **layered effects** to enhance the background. 
-  - You may embed images using **data URLs (Base64)** if needed, or link to existing publicly hosted images.
+  - You can embed publicly hosted images, but do not embed images that are Base64 encoded.
   - Keep the background from overshadowing typical webpage content (e.g., maintain good contrast for text readability).
 
 4. **Maintainability**:
@@ -80,6 +80,7 @@ Please adhere to the following requirements and guidelines:
 6. **Incorporate User Context**:
   - The user's instructions (appended at runtime) will provide specific design preferences, themes, or elements they want to include.
   - Integrate the user’s context into the final design while following the guidelines above.
+  - Do not include text in the background unless the user explicitly requests it
 
 Important: Do not output anything except for the final HTML and CSS code necessary to render the background. 
 

@@ -1,6 +1,6 @@
+import { InputProps } from "@/common/components/atoms/input";
 import React, { forwardRef, useCallback, useState } from "react";
 import styled from "styled-components";
-import { InputProps } from "@/common/components/atoms/input";
 
 export interface TextInputProps extends Omit<InputProps, "onChange"> {
   value: string;

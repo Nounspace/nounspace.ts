@@ -19,6 +19,8 @@ import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
+import { BsLink45Deg } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
 
@@ -44,7 +46,9 @@ export type LinkFidgetSettings = {
 export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
   icon: 0x26d3,
+  mobileIcon: <BsLink45Deg size={26} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "title",
       default: "My Links",
@@ -76,6 +80,13 @@ export const linkConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       default: "Theme Headings Font",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "Theme Font",
       required: false,
       inputSelector: FontSelector,
       group: "style",
@@ -213,6 +224,25 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 
   const getFontFamily = () => {
     if (isThemeBodyFont(settings.fontFamily)) {
+      return "var(--user-theme-font)";
+    }
+    return settings.fontFamily;
+  };
+
+  const getHeadingsFontFamily = () => {
+    if (settings.headingsFontFamily === "Theme Headings Font") {
+      return "var(--user-theme-headings-font)";
+    }
+    const root = document.documentElement;
+    const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
+    if (settings.headingsFontFamily === "Londrina Solid" && themeFont) {
+      return themeFont;
+    }
+    return settings.headingsFontFamily;
+  };
+
+  const getFontFamily = () => {
+    if (settings.fontFamily === "Theme Font") {
       return "var(--user-theme-font)";
     }
     return settings.fontFamily;

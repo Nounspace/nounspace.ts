@@ -47,7 +47,7 @@ export const Tab = ({
     >
       <Link href={getSpacePageUrl(tabName)}>
         <div
-          className={`static flex p-2 items-center transition-colors duration-300 group 
+          className={`static flex md:p-2 items-center transition-colors duration-300 group 
             ${
               isSelected
                 ? inEditMode
@@ -57,7 +57,7 @@ export const Tab = ({
             }`}
         >
           {/* Text */}
-          <motion.span layout="position">
+          <motion.span layout="position" className="whitespace-nowrap">
             
               {inEditMode && renameable && isSelected ? (
                 <div className="cursor-text">

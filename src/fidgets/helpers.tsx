@@ -1,11 +1,41 @@
+import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import React from "react";
+import TextInput from "@/common/components/molecules/TextInput";
+import SwitchButton from "@/common/components/molecules/SwitchButton";
 
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
 
-export const defaultStyleFields: FidgetFieldConfig[] = [
+export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
+
+export const validateMobileDisplayName = (value: string): boolean => {
+  if (!value) return true; // Optional field
+  return value.length <= MOBILE_DISPLAY_NAME_MAX_LENGTH;
+};
+
+export const mobileStyleSettings = [
+  {
+    fieldName: "showOnMobile",
+    displayName: "Show on Mobile",
+    default: true,
+    required: false,
+    inputSelector: SwitchButton,
+    group: "style",
+  },
+  {
+    fieldName: "customMobileDisplayName",
+    displayName: "Mobile Display Name",
+    displayNameHint: "Set a custom name to display for this Fidget in the mobile nav.",
+    validator: validateMobileDisplayName,
+    inputSelector: TextInput,
+    required: false,
+    group: "style",
+  },
+] as FidgetFieldConfig[];
+
+export const defaultStyleFields = [
+  ...mobileStyleSettings,
   {
     fieldName: "background",
     displayName: "Background",
@@ -50,7 +80,7 @@ export const defaultStyleFields: FidgetFieldConfig[] = [
     inputSelector: ShadowSelector,
     group: "style",
   },
-];
+] as FidgetFieldConfig[];
 
 export const transformUrl = (url: string) => {
   if (url && url.match(/youtube\.com\/watch\?v=/)) {
