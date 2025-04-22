@@ -1,9 +1,9 @@
 import React, { ReactNode, Suspense } from "react";
-import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space"; 
+import Space, { SpaceConfig, SpaceConfigSaveDetails, LoadingSpaceConfig } from "./Space"; 
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export type SpacePageArgs = {
-  config: SpaceConfig;
+  config: LoadingSpaceConfig;
   saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;

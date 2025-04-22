@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, use } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
-import { SpaceConfigSaveDetails } from "./Space";
+import { SpaceConfigSaveDetails, SpaceConfig, LoadingSpaceConfig } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
@@ -17,6 +17,11 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from '@/common/utils/spaceEditability';
 import { revalidatePath } from 'next/cache'
 import { INITIAL_SPACE_CONFIG_EMPTY } from '@/constants/initialPersonSpace';
+import { UpdatableDatabaseWritableSpaceSaveConfig } from "@/common/data/stores/app/space/spaceStore";
+import { Suspense } from "react";
+import SpaceLoading from './SpaceLoading';
+import { Color, UserTheme } from '@/common/lib/theme';
+import { FidgetInstanceData, FidgetConfig } from '@/common/fidgets';
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -32,6 +37,19 @@ interface PublicSpaceProps {
   spaceOwnerAddress?: Address;
   // Token data
   tokenData?: MasterToken;
+}
+
+// Create a wrapper component that handles the loading state
+function SpaceConfigProvider({ 
+  config, 
+  children 
+}: { 
+  config: Promise<LoadingSpaceConfig>; 
+  children: (config: LoadingSpaceConfig) => React.ReactNode;
+}) {
+  // use() will automatically handle the Promise and Suspense
+  const resolvedConfig = use(config);
+  return <>{children(resolvedConfig)}</>;
 }
 
 export default function PublicSpace({
@@ -262,16 +280,30 @@ export default function PublicSpace({
   });
 
   const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
-      ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
-      : { ...initialConfig }),
+    ...currentConfig?.tabs[getCurrentTabName() ?? "Profile"],
     isEditable,
   };
 
   const memoizedConfig = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { timestamp, ...restConfig } = config;
-    return restConfig;
+    return {
+      ...restConfig,
+      fidgetInstanceDatums: restConfig.fidgetInstanceDatums || {},
+      layoutID: restConfig.layoutID || '',
+      layoutDetails: restConfig.layoutDetails || { 
+        layoutConfig: { layout: [] },
+        layoutFidget: 'grid'
+      },
+      fidgetTrayContents: restConfig.fidgetTrayContents || [],
+      theme: restConfig.theme || { 
+        id: 'default',
+        name: 'Default',
+        properties: {}
+      },
+      tabNames: restConfig.tabNames || [],
+      isEditable: typeof restConfig.isEditable === 'function' ? restConfig.isEditable(currentUserFid || 0) : false,
+    };
   }, [
     config.fidgetInstanceDatums,
     config.layoutID,
@@ -279,6 +311,8 @@ export default function PublicSpace({
     config.isEditable,
     config.fidgetTrayContents,
     config.theme,
+    config.tabNames,
+    currentUserFid,
   ]);
 
   // Update the space registration effect to use the new editability check
@@ -426,37 +460,42 @@ export default function PublicSpace({
     localSpaces,
   ]);
 
+  // Single helper function to transform config to saveable format
+  const transformToSaveableConfig = useCallback((sourceConfig: any): UpdatableDatabaseWritableSpaceSaveConfig => {
+    if (!sourceConfig?.fidgetInstanceDatums) {
+      return { fidgetInstanceDatums: {}, isPrivate: false };
+    }
+
+    return {
+      fidgetInstanceDatums: Object.fromEntries(
+        Object.entries(sourceConfig.fidgetInstanceDatums).map(([key, datum]: [string, any]) => [
+          key,
+          {
+            ...datum,
+            config: {
+              settings: datum.config.settings,
+              editable: datum.config.editable,
+            }
+          }
+        ])
+      ),
+      isPrivate: false
+    };
+  }, []);
+
+  // Update saveConfig to use the transform helper
   const saveConfig = useCallback(
     async (spaceConfig: SpaceConfigSaveDetails) => {
       const currentSpaceId = getCurrentSpaceId();
       const currentTabName = getCurrentTabName() ?? "Profile";
       
-      console.log('Saving space config:', {
-        spaceId: currentSpaceId,
-        tabName: currentTabName,
-        fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
-      });
-      
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
-      const saveableConfig = {
-        ...spaceConfig,
-        fidgetInstanceDatums: mapValues(
-          spaceConfig.fidgetInstanceDatums,
-          (datum) => ({
-            ...datum,
-            config: {
-              settings: datum.config.settings,
-              editable: datum.config.editable,
-            },
-          }),
-        ),
-        isPrivate: false,
-      };
-      return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
+
+      return saveLocalSpaceTab(currentSpaceId, currentTabName, transformToSaveableConfig(spaceConfig));
     },
-    [getCurrentSpaceId, getCurrentTabName],
+    [getCurrentSpaceId, getCurrentTabName, transformToSaveableConfig],
   );
 
   const commitConfig = useCallback(async () => {
@@ -501,17 +540,16 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
     
-    console.log('Switching tab:', {
-      from: currentTabName,
-      to: tabName,
-      shouldSave
-    });
-    
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
-      await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
+      if (resolvedConfig.fidgetInstanceDatums) {
+        await saveLocalSpaceTab(
+          currentSpaceId, 
+          currentTabName, 
+          transformToSaveableConfig(resolvedConfig)
+        );
+      }
     }
-    // Update the URL without triggering a full navigation
     router.push(getSpacePageUrl(tabName), { scroll: false });
   }
 
@@ -551,7 +589,14 @@ export default function PublicSpace({
         const currentSpaceId = getCurrentSpaceId();
         if (currentSpaceId) {
           const resolvedConfig = await config;
-          return saveLocalSpaceTab(currentSpaceId, oldName, resolvedConfig, newName);
+          if (resolvedConfig.fidgetInstanceDatums) {
+            return saveLocalSpaceTab(
+              currentSpaceId, 
+              oldName, 
+              transformToSaveableConfig(resolvedConfig), 
+              newName
+            );
+          }
         }
         return undefined;
       }}
@@ -579,15 +624,62 @@ export default function PublicSpace({
       data={{}}
     />);
 
+  // Convert config to a Promise if it isn't already
+  const configPromise = useMemo(() => {
+    if (config instanceof Promise) {
+      return config;
+    }
+    // Ensure the config matches LoadingSpaceConfig type
+    const defaultColor: Color = { r: 0, g: 0, b: 0, a: 1 } as unknown as Color;
+    const defaultBackgroundColor: Color = { r: 255, g: 255, b: 255, a: 1 } as unknown as Color;
+    
+    const loadingConfig: LoadingSpaceConfig = {
+      ...config,
+      fidgetInstanceDatums: config.fidgetInstanceDatums || {},
+      layoutID: config.layoutID || '',
+      layoutDetails: config.layoutDetails || { 
+        layoutConfig: { layout: [] },
+        layoutFidget: 'grid'
+      },
+      fidgetTrayContents: config.fidgetTrayContents || [],
+      theme: config.theme || { 
+        id: 'default',
+        name: 'Default',
+        properties: {
+          font: 'Inter',
+          fontColor: defaultColor,
+          headingsFont: 'Inter',
+          headingsFontColor: defaultColor,
+          background: defaultBackgroundColor,
+          backgroundHTML: '',
+          musicURL: '',
+          fidgetBackground: defaultBackgroundColor,
+          fidgetBorderWidth: '1px',
+          fidgetBorderColor: defaultColor,
+          fidgetShadow: 'none'
+        }
+      } as UserTheme,
+      tabNames: config.tabNames || [],
+      isEditable: typeof config.isEditable === 'function' ? config.isEditable(currentUserFid || 0) : false,
+    };
+    return Promise.resolve(loadingConfig);
+  }, [config, currentUserFid]);
+
   return (
-    <SpacePage
-      key={getCurrentSpaceId() + providedTabName}
-      config={memoizedConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-      tabBar={tabBar}
-      profile={profile ?? undefined}
-    />
+    <Suspense fallback={<SpaceLoading />}>
+      <SpaceConfigProvider config={configPromise}>
+        {(resolvedConfig) => (
+          <SpacePage
+            key={getCurrentSpaceId() + providedTabName}
+            config={resolvedConfig}
+            saveConfig={saveConfig}
+            commitConfig={commitConfig}
+            resetConfig={resetConfig}
+            tabBar={tabBar}
+            profile={profile ?? undefined}
+          />
+        )}
+      </SpaceConfigProvider>
+    </Suspense>
   );
 } 
