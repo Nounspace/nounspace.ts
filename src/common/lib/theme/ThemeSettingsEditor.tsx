@@ -39,7 +39,7 @@ import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
@@ -418,6 +418,20 @@ const BackgroundGenerator = ({
   const [internalBackgroundHTML, setInternalBackgroundHTML] = useState(backgroundHTML);
   const timersRef = useRef<number[]>([]);
   const { showToast } = useToastStore();
+  
+  // Sync internal state with props when backgroundHTML changes
+  useEffect(() => {
+    setInternalBackgroundHTML(backgroundHTML);
+  }, [backgroundHTML]);
+
+  // Random prompt choices
+  const randomPrompts = [
+    "Animated rainbow gradient",
+    "Pastel gradient waves",
+    "Floating neon geometric shapes",
+    "Aurora borealis starry night",
+    "Abstract liquid chrome swirls"
+  ];
 
   const { user } = usePrivy();
   const result = useBalance({
@@ -433,14 +447,14 @@ const BackgroundGenerator = ({
     hasNogs: state.account.hasNogs,
   }));
 
-  const handleGenerateBackground = async () => {
+  const handleGenerateBackground = async (promptText: string) => {
     try {
       analytics.track(AnalyticsEvent.GENERATE_BACKGROUND, {
-        user_input: backgroundHTML,
+        user_input: promptText,
       });
       const response = await fetch(`/api/venice/background`, {
         method: "POST",
-        body: JSON.stringify({ text: backgroundHTML }),
+        body: JSON.stringify({ text: promptText }),
       });
       if (!response.ok) {
         throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -480,7 +494,15 @@ const BackgroundGenerator = ({
       setGenerateText(messages[index]);
     }, 8000);
     timersRef.current = [intervalId];
-    handleGenerateBackground();
+    
+    // If field is empty, use a random prompt from the list
+    const inputText = internalBackgroundHTML.trim() === "" 
+      ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
+      : internalBackgroundHTML;
+
+    console.log(`inputText: ${inputText}`);
+      
+    handleGenerateBackground(inputText);
   };
 
   const handleGenerateWrapper = () => {
@@ -512,7 +534,7 @@ const BackgroundGenerator = ({
         variant="primary"
         width="auto"
         withIcon
-        disabled={buttonDisabled || isGenerating || internalBackgroundHTML === ""}
+        disabled={buttonDisabled || isGenerating}
         className="w-full"
       >
         {isGenerating ? (
