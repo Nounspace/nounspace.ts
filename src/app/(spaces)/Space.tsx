@@ -24,6 +24,10 @@ export type SpaceFidgetConfig = {
   id: string;
 };
 
+export type LoadingSpaceConfig = Partial<Omit<SpaceConfig, 'isEditable'>> & {
+  isEditable: boolean;
+};
+
 export type SpaceConfig = {
   fidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
@@ -45,7 +49,7 @@ export type SpaceConfigSaveDetails = Partial<
 };
 
 type SpaceArgs = {
-  config: SpaceConfig;
+  config: LoadingSpaceConfig;
   saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
@@ -127,7 +131,8 @@ export default function Space({
         console.log('Current config after save:', config);
         
         // Only commit if the save was successful
-        if (Object.keys(config.fidgetInstanceDatums).length === Object.keys(cleanedFidgetInstanceDatums).length) {
+        if (config.fidgetInstanceDatums 
+            && Object.keys(config.fidgetInstanceDatums).length === Object.keys(cleanedFidgetInstanceDatums).length) {
           console.log('Config state matches cleaned state, committing to database');
           commitConfig();
         } else {
@@ -230,7 +235,7 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML ?? ''} />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
