@@ -415,6 +415,7 @@ const BackgroundGenerator = ({
   const [generateText, setGenerateText] = useState("Generate");
   const [showBanner, setShowBanner] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [internalBackgroundHTML, setInternalBackgroundHTML] = useState(backgroundHTML);
   const timersRef = useRef<number[]>([]);
   const { showToast } = useToastStore();
 
@@ -500,7 +501,10 @@ const BackgroundGenerator = ({
       </div>
       <HTMLInput
         value={backgroundHTML}
-        onChange={onChange}
+        onChange={(value) => {
+          setInternalBackgroundHTML(value);
+          onChange(value);
+        }}
         placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
       />
       <Button
@@ -508,7 +512,7 @@ const BackgroundGenerator = ({
         variant="primary"
         width="auto"
         withIcon
-        disabled={buttonDisabled || isGenerating || backgroundHTML === ""}
+        disabled={buttonDisabled || isGenerating || internalBackgroundHTML === ""}
         className="w-full"
       >
         {isGenerating ? (
