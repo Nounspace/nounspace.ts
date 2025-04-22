@@ -31,6 +31,7 @@ export enum AnalyticsEvent {
   PLAY = "Play",
   PAUSE = "Pause",
   GENERATE_BACKGROUND = "Generate Background",
+  SPACE_REGISTERED = "Space Registered",
 }
 
 export type AnalyticsEventProperties = {
@@ -59,6 +60,11 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.PLAY]: { url: string | string[] };
   [AnalyticsEvent.PAUSE]: { url: string | string[] };
   [AnalyticsEvent.GENERATE_BACKGROUND]: { user_input: string };
+  [AnalyticsEvent.SPACE_REGISTERED]: {
+    type: "user" | "token";
+    spaceId: string;
+    path: string;
+  };
 };
 
 const segment = new AnalyticsBrowser();

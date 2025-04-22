@@ -1,5 +1,7 @@
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import {
@@ -19,7 +21,11 @@ export type FrameFidgetSettings = {
 
 const frameProperties: FidgetProperties = {
   fidgetName: "Farcaster Frame",
+  mobileFidgetName: "Frame",
+  mobileIcon: <BsAspectRatio size={22} />,
+  mobileIconSelected: <BsAspectRatioFill size={22} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "url",
       required: true,

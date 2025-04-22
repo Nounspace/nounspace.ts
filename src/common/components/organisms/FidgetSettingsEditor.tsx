@@ -1,28 +1,29 @@
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  FidgetSettings,
-  FidgetProperties,
-  FidgetFieldConfig,
-} from "@/common/fidgets";
-import BackArrowIcon from "../atoms/icons/BackArrow";
-import { FaTrashCan } from "react-icons/fa6";
 import { Button } from "@/common/components/atoms/button";
 import {
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from "@/common/components/atoms/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/common/components/atoms/tooltip";
 import {
+  FidgetFieldConfig,
+  FidgetProperties,
+  FidgetSettings,
+} from "@/common/fidgets";
+import {
+  tabContentClasses,
   tabListClasses,
   tabTriggerClasses,
-  tabContentClasses,
 } from "@/common/lib/theme/helpers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import {
   analytics,
   AnalyticsEvent,
 } from "@/common/providers/AnalyticsProvider";
+import React, { useEffect, useMemo, useState } from "react";
+import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
+import BackArrowIcon from "../atoms/icons/BackArrow";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -66,26 +67,45 @@ export const FidgetSettingsRow: React.FC<FidgetSettingsRowProps> = ({
   id,
 }) => {
   const InputComponent = field.inputSelector;
+  const isValid = !field.validator || field.validator(value);
 
   return (
     <div
       className={mergeClasses(
         "text-gray-700 md:flex-col md:items-center",
         hide && "hidden",
+        !isValid && "text-red-500"
       )}
       id={id}
     >
-      <div className="md:mb-0 md:w-2/3">
+      <div className="md:mb-0 md:w-full flex items-center justify-between gap-2">
         <label className="capitalize text-sm font-medium text-gray-900 dark:text-white">
           {field.displayName || field.fieldName}
         </label>
+        {field.displayNameHint && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center">
+                  <FaCircleInfo color="#D1D5DB" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="max-w-44">{field.displayNameHint}</div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
       <div>
         <InputComponent
           id={id}
           value={value}
           onChange={onChange}
-          className="!h-9 !rounded-md font-medium !shadow-none"
+          className={mergeClasses(
+            "!h-9 !rounded-md font-medium !shadow-none",
+            !isValid && "border-red-500"
+          )}
         />
       </div>
     </div>

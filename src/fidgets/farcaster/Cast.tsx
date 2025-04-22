@@ -6,6 +6,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
+import { BsFillPinFill, BsPin } from "react-icons/bs";
 import { isUndefined } from "lodash";
 import React from "react";
 import EmbededCast from "./components/Embeds/EmbededCast";
@@ -19,7 +20,10 @@ type CastFidgetSettings = {
 
 const castFidgetProperties: FidgetProperties = {
   fidgetName: "Pinned Cast",
+  mobileFidgetName: "Pinned",
   icon: 0x1f4ac, // 💬
+  mobileIcon: <BsPin size={22} />,
+  mobileIconSelected: <BsFillPinFill size={22} />,
   fields: [
     {
       fieldName: "castHash",

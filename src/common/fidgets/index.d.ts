@@ -12,8 +12,14 @@ import PlatformSelector from "../components/molecules/PlatformSelector";
 import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
 import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
 
-export type FidgetSettings = Record<string, any>;
+export type FidgetSettings = {
+  mobileDisplayName?: string;
+} & Record<string, any>;
+
+// Update FidgetSettingsStyle with mobile-specific settings
 export type FidgetSettingsStyle = {
+  showOnMobile?: boolean;
+  customMobileDisplayName?: string;
   background?: Color;
   fontFamily?: FontFamily;
   fontColor?: Color;
@@ -42,6 +48,7 @@ export type FidgetGroup = "settings" | "style" | "code";
 export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
   readonly fieldName: string;
   readonly displayName?: string;
+  readonly displayNameHint?: string;
   readonly validator?: (value) => boolean;
   readonly inputSelector:
     | typeof TextInput
@@ -65,7 +72,10 @@ export type FidgetFieldConfig<S extends FidgetSettings = FidgetSettings> = {
 // Properties are developer defined variables (they are inaccessible to the user)
 export type FidgetProperties<S extends FidgetSettings = FidgetSettings> = {
   fidgetName: string;
+  mobileFidgetName?: string;
   icon: number;
+  mobileIcon?: React.ReactNode;
+  mobileIconSelected?: React.ReactNode;
   fields: FidgetFieldConfig<S>[];
   size: {
     minHeight: NumericRange<1, 36>;
@@ -140,9 +150,9 @@ interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
   portalRef: React.RefObject<HTMLDivElement>;
 
   hasProfile: boolean;
-  tabNames: string[];
   hasFeed: boolean;
-  fid: number;
+  tabNames?: string[];
+  fid?: number;
 }
 
 type LayoutFidgetDefaultProps = LayoutFidgetProps;

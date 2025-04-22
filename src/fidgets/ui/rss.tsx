@@ -9,6 +9,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
+import { BsRss, BsRssFill } from "react-icons/bs";
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import RSSParser from "rss-parser";
@@ -23,6 +24,8 @@ export type TextFidgetSettings = {
 export const textConfig: FidgetProperties = {
   fidgetName: "RSS",
   icon: 0x1f6f0,
+  mobileIcon: <BsRss size={20} />,
+  mobileIconSelected: <BsRssFill size={20} />,
   fields: [
     {
       fieldName: "rssUrl",

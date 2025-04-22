@@ -19,6 +19,8 @@ import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
+import { BsLink45Deg } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
 
@@ -44,7 +46,9 @@ export type LinkFidgetSettings = {
 export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
   icon: 0x26d3,
+  mobileIcon: <BsLink45Deg size={26} />,
   fields: [
+    ...mobileStyleSettings,
     {
       fieldName: "title",
       default: "My Links",

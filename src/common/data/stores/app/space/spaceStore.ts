@@ -2,16 +2,33 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/app/(spaces)/Space";
-import { AppStore } from "..";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
-import { StoreGet, StoreSet } from "../../createStore";
-import axiosBackend from "../../../api/backend";
+import { SignedFile, signSignable } from "@/common/lib/signedFiles";
+import {
+  analytics,
+  AnalyticsEvent,
+} from "@/common/providers/AnalyticsProvider";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import createIntialPersonSpaceConfigForFid, {
+  INITIAL_SPACE_CONFIG_EMPTY,
+} from "@/constants/initialPersonSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
   SpaceRegistrationContract,
   SpaceRegistrationFid,
 } from "@/pages/api/space/registry";
+import {
+  UnsignedUpdateTabOrderRequest,
+  UpdateTabOrderRequest,
+} from "@/pages/api/space/registry/[spaceId]";
+import {
+  RegisterNewSpaceTabResponse,
+  UnsignedSpaceTabRegistration,
+} from "@/pages/api/space/registry/[spaceId]/tabs";
+import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
+import axios from "axios";
+import stringify from "fast-json-stable-stringify";
 import {
   cloneDeep,
   debounce,
@@ -22,30 +39,13 @@ import {
   isNil,
   isUndefined,
   map,
-  mergeWith,
+  mergeWith
 } from "lodash";
 import moment from "moment";
-import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import stringify from "fast-json-stable-stringify";
+import { AppStore } from "..";
+import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
-import axios from "axios";
-import createIntialPersonSpaceConfigForFid, {
-  INITIAL_SPACE_CONFIG_EMPTY,
-} from "@/constants/initialPersonSpace";
-import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
-import {
-  RegisterNewSpaceTabResponse,
-  UnsignedSpaceTabRegistration,
-} from "@/pages/api/space/registry/[spaceId]/tabs";
-import {
-  UnsignedUpdateTabOrderRequest,
-  UpdateTabOrderRequest,
-} from "@/pages/api/space/registry/[spaceId]";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { StoreGet, StoreSet } from "../../createStore";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -160,7 +160,7 @@ interface SpaceActions {
   registerSpaceFid: (
     fid: number,
     name: string,
-    network?: string,
+    path: string,
   ) => Promise<string | undefined>;
   registerSpaceContract: (
     address: string,
@@ -178,6 +178,42 @@ export const spaceStoreprofiles: SpaceState = {
   remoteSpaces: {},
   editableSpaces: {},
   localSpaces: {},
+};
+
+// Function to show tooltip using React components
+const showTooltipError = (title: string, description: string) => {
+  // Only run in browser environment
+  if (typeof document === 'undefined' || typeof window === 'undefined') return;
+
+  // Create a simple error message element instead of using the tooltip components
+  const errorContainer = document.createElement('div');
+  errorContainer.style.position = 'fixed';
+  errorContainer.style.top = '20px';
+  errorContainer.style.right = '20px';
+  errorContainer.style.zIndex = '9999';
+  errorContainer.style.backgroundColor = '#ef4444'; // red-500
+  errorContainer.style.color = 'white';
+  errorContainer.style.padding = '16px';
+  errorContainer.style.borderRadius = '6px';
+  errorContainer.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+  errorContainer.style.maxWidth = '400px';
+
+  const titleElement = document.createElement('h3');
+  titleElement.style.fontWeight = 'bold';
+  titleElement.style.marginBottom = '4px';
+  titleElement.textContent = title;
+
+  const descriptionElement = document.createElement('p');
+  descriptionElement.textContent = description;
+
+  errorContainer.appendChild(titleElement);
+  errorContainer.appendChild(descriptionElement);
+  document.body.appendChild(errorContainer);
+
+  // Remove after timeout
+  setTimeout(() => {
+    document.body.removeChild(errorContainer);
+  }, 4000);
 };
 
 export const createSpaceStoreFunc = (
@@ -229,16 +265,50 @@ export const createSpaceStoreFunc = (
     }
   },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
+    // Check if the new name contains special characters
+    if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
+      // Show error
+      showTooltipError(
+        "Invalid Tab Name",
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+
+      // Create an error and stop execution
+      const error = new Error(
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      (error as any).status = 400;
+      throw error; // Stops the execution of the function
+    }
+
     let localCopy;
     // If the tab doesn't exist yet, use the new config directly
     if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
       localCopy = cloneDeep(config);
     } else {
-      // Otherwise merge with existing config
-      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-      mergeWith(localCopy, config, (_, newItem) => {
-        if (isArray(newItem)) return newItem;
-      });
+      // Otherwise update fields explicitly
+      const existingConfig = get().space.localSpaces[spaceId].tabs[tabName];
+      localCopy = {
+        ...existingConfig,
+        // Only update fidgetInstanceDatums if provided
+        fidgetInstanceDatums: config.fidgetInstanceDatums ? 
+          cloneDeep(config.fidgetInstanceDatums) : 
+          existingConfig.fidgetInstanceDatums,
+        // Only update layoutDetails if provided
+        layoutDetails: config.layoutDetails ? {
+          ...existingConfig.layoutDetails,
+          ...config.layoutDetails,
+          layoutFidget: config.layoutDetails.layoutFidget || existingConfig.layoutDetails.layoutFidget
+        } : existingConfig.layoutDetails,
+        // Only update fidgetTrayContents if provided
+        fidgetTrayContents: config.fidgetTrayContents !== undefined ? 
+          cloneDeep(config.fidgetTrayContents) : 
+          existingConfig.fidgetTrayContents,
+        // Only update theme if provided
+        theme: config.theme ? cloneDeep(config.theme) : existingConfig.theme,
+        // Always update timestamp
+        timestamp: moment().toISOString()
+      };
     }
 
     set((draft) => {
@@ -276,6 +346,15 @@ export const createSpaceStoreFunc = (
         set((draft) => {
           delete draft.space.localSpaces[spaceId].tabs[tabName];
           delete draft.space.remoteSpaces[spaceId].tabs[tabName];
+
+          // Update order arrays with new arrays to ensure state updates
+          draft.space.localSpaces[spaceId].order = [
+            ...draft.space.localSpaces[spaceId].order.filter(x => x !== tabName)
+          ];
+          draft.space.remoteSpaces[spaceId].order = [
+            ...draft.space.localSpaces[spaceId].order
+          ];
+
           draft.space.localSpaces[spaceId].order = filter(
             draft.space.localSpaces[spaceId].order,
             (x) => x !== tabName,
@@ -284,6 +363,11 @@ export const createSpaceStoreFunc = (
             draft.space.localSpaces[spaceId].order,
             (x) => x !== tabName,
           );
+          
+          // Update timestamps
+          const timestamp = moment().toISOString();
+          draft.space.localSpaces[spaceId].updatedAt = timestamp;
+          draft.space.remoteSpaces[spaceId].updatedAt = timestamp;
         }, "deleteSpaceTab");
         return get().space.commitSpaceOrderToDatabase(spaceId, network);
       } catch (e) {
@@ -330,6 +414,22 @@ export const createSpaceStoreFunc = (
 
     // Return the tabName immediately so UI can switch to it
     const result = { tabName };
+
+    // Check if the tab name contains special characters
+    if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+      // Show error
+      showTooltipError(
+        "Invalid Tab Name",
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+
+      // Create an error and stop execution
+      const error = new Error(
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
+      );
+      (error as any).status = 400;
+      throw error; 
+    }
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
@@ -671,7 +771,7 @@ export const createSpaceStoreFunc = (
       console.debug("Error loading space tab order:", e);
     }
   },
-  registerSpaceFid: async (fid, name) => {
+  registerSpaceFid: async (fid, name, path) => {
     // First check if a space already exists for this FID
     try {
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -730,6 +830,11 @@ export const createSpaceStoreFunc = (
         "Profile",
         createIntialPersonSpaceConfigForFid(fid),
       );
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "user",
+        spaceId: newSpaceId,
+        path: path,
+      });
 
       return newSpaceId;
     } catch (e) {
@@ -855,7 +960,12 @@ export const createSpaceStoreFunc = (
           network,
         );
 
-        return newSpaceId;
+        analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "token",
+        spaceId: newSpaceId,
+        path: `/t/${network}/${address}/Profile`,
+      });
+      return newSpaceId;
       } catch (e) {
         console.error("Failed to register contract space:", e);
         throw e;

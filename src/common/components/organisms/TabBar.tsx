@@ -10,6 +10,7 @@ import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -49,6 +50,8 @@ function TabBar({
   isTokenPage,
   contractAddress,
 }: TabBarProps) {
+  const isMobile = useIsMobile();
+
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
@@ -146,19 +149,19 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex flex-row justify-center h-16 overflow-y-scroll w-full z-70 bg-white">
+        <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
           {tabList && (
             <Reorder.Group
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
-              className="flex flex-row gap-4 grow items-start m-4 tabs"
+              className="flex flex-row gap-5 md:gap-4 grow items-start m-4 tabs"
               values={tabList}
             >
               <AnimatePresence initial={false}>
@@ -190,7 +193,7 @@ function TabBar({
             </Reorder.Group>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && (
+        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode ? (

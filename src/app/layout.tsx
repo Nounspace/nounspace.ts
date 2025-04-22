@@ -9,13 +9,13 @@ import SpaceLoading from "./(spaces)/SpaceLoading";
 export const metadata = {
   title: "Nounspace",
   description:
-    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on nounspace",
+    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
   openGraph: {
     siteName: "Nounspace",
     title: "Nounspace",
     type: "website",
     description:
-      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on nounspace",
+      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
     images: {
       url: `${WEBSITE_URL}/images/nounspace_og.png`,
       type: "image/png",

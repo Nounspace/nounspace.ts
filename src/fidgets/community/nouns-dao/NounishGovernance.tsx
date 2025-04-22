@@ -29,6 +29,8 @@ export type NounishGovernanceSettings = {
 
 export const nounishGovernanceConfig: FidgetProperties = {
   fidgetName: "Nounish Governance",
+  mobileFidgetName: "Gov",
+  mobileIcon: <span className="text-base">⌐◨-◨</span>,
   icon: 0x1f3db,
   fields: [
     {

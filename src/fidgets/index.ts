@@ -17,6 +17,7 @@ import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
+import TabFullScreen from "./layout/tabFullScreen";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -49,4 +50,5 @@ export const CompleteFidgets = {
 
 export const LayoutFidgets = {
   grid: Grid,
+  tabFullScreen: TabFullScreen,
 };
