@@ -203,16 +203,19 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 }) => {
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
+
   const isThemeHeadingsFont = (value: string) => {
-    return value === "Theme Headings Font" || 
-           value === "var(--user-theme-headings-font)" ||
-           (!value && "Theme Headings Font");
+    if (!value) return true;
+    return value === "Theme Headings Font" ||
+      value === "var(--user-theme-headings-font)" ||
+      value.includes("Theme Headings Font");
   };
 
   const isThemeBodyFont = (value: string) => {
-    return value === "Theme Font" || 
-           value === "var(--user-theme-font)" ||
-           (!value && "Theme Font");
+    if (!value) return true;
+    return value === "Theme Font" ||
+      value === "var(--user-theme-font)" ||
+      value.includes("Theme Font");
   };
 
   const getHeadingsFontFamily = () => {
