@@ -426,11 +426,12 @@ const BackgroundGenerator = ({
 
   // Random prompt choices
   const randomPrompts = [
-    "Animated rainbow gradient",
-    "Pastel gradient waves",
-    "Floating neon geometric shapes",
-    "Aurora borealis starry night",
-    "Abstract liquid chrome swirls"
+    "Warm sunset gradient",
+    "Soft pastel stripes",
+    "Floating bubble circles",
+    "Calm teal radial glow",
+    "Lush green rainforest",
+    "Animated purple gradient"
   ];
 
   const { user } = usePrivy();
