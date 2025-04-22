@@ -12,7 +12,12 @@ import { CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
-import { FaPaintbrush, FaDiscord } from "react-icons/fa6";
+import {
+  FaPaintbrush,
+  FaDiscord,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa6";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -77,6 +82,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const isExplorerPage = pathname === "/explore";
 
   const [shrunk, setShrunk] = useState(true);
+
+  const toggleSidebar = () => {
+    setShrunk((prev) => !prev);
+  };
 
   function handleLogout() {
     router.push("/home");
@@ -181,8 +190,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       id="logo-sidebar"
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
-      onMouseEnter={() => setShrunk(false)}
-      onMouseLeave={() => setShrunk(true)}
     >
       <Modal
         open={showCastModal}
@@ -196,10 +203,22 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       <div className="pt-12 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
-            "flex flex-col h-full w-[270px] ml-auto transition-all duration-300",
+            "flex flex-col h-full ml-auto transition-all duration-300 relative",
             shrunk ? "w-[90px]" : "w-[270px]"
           )}
         >
+          <button
+            onClick={toggleSidebar}
+            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {shrunk ? (
+              <FaChevronRight size={14} />
+            ) : (
+              <FaChevronLeft size={14} />
+            )}
+          </button>
+
           <BrandHeader />
           <div
             className={mergeClasses(
