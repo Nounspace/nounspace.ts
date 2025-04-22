@@ -19,10 +19,10 @@ import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
-import { BsLink45Deg } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
+import { BsLink45Deg } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 export type Link = {
   text: string;
@@ -80,13 +80,6 @@ export const linkConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       default: "Theme Headings Font",
-      required: false,
-      inputSelector: FontSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fontFamily",
-      default: "Theme Font",
       required: false,
       inputSelector: FontSelector,
       group: "style",
@@ -218,34 +211,26 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
       value.includes("Theme Font");
   };
 
+  // Combined function to get the source of the headers
   const getHeadingsFontFamily = () => {
     if (isThemeHeadingsFont(settings.headingsFontFamily)) {
       return "var(--user-theme-headings-font)";
     }
+    
+    if (settings.headingsFontFamily === "Londrina Solid") {
+      const root = document.documentElement;
+      const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
+      if (themeFont) {
+        return themeFont;
+      }
+    }
+    
     return settings.headingsFontFamily;
   };
 
+  // Combined function to get the body source
   const getFontFamily = () => {
     if (isThemeBodyFont(settings.fontFamily)) {
-      return "var(--user-theme-font)";
-    }
-    return settings.fontFamily;
-  };
-
-  const getHeadingsFontFamily = () => {
-    if (settings.headingsFontFamily === "Theme Headings Font") {
-      return "var(--user-theme-headings-font)";
-    }
-    const root = document.documentElement;
-    const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
-    if (settings.headingsFontFamily === "Londrina Solid" && themeFont) {
-      return themeFont;
-    }
-    return settings.headingsFontFamily;
-  };
-
-  const getFontFamily = () => {
-    if (settings.fontFamily === "Theme Font") {
       return "var(--user-theme-font)";
     }
     return settings.fontFamily;
