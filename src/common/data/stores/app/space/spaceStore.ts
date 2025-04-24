@@ -216,6 +216,14 @@ const showTooltipError = (title: string, description: string) => {
   }, 4000);
 };
 
+// Add validation function
+const validateTabName = (tabName: string): string | null => {
+  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
+  }
+  return null;
+};
+
 export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
@@ -363,6 +371,12 @@ export const createSpaceStoreFunc = (
     initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: EtherScanChainName,
   ) => {
+    // Validate the tab name before proceeding
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
     if (isNil(initialConfig)) {
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
     }
@@ -395,22 +409,6 @@ export const createSpaceStoreFunc = (
 
     // Return the tabName immediately so UI can switch to it
     const result = { tabName };
-
-    // Check if the tab name contains special characters
-    if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-      // Show error
-      showTooltipError(
-        "Invalid Tab Name",
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-
-      // Create an error and stop execution
-      const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      (error as any).status = 400;
-      throw error; 
-    }
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
