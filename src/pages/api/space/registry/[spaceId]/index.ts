@@ -94,10 +94,10 @@ async function updateSpaceTabOrder(
     return;
   }
 
-  console.log(
-    "[registry space] Updating tab order",
-    stringify(updateOrderRequest),
-  );
+  // console.log(
+  //   "[registry space] Updating tab order",
+  //   stringify(updateOrderRequest),
+  // );
 
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase.storage
@@ -109,7 +109,7 @@ async function updateSpaceTabOrder(
     );
 
   if (!isNull(error)) {
-    console.error(error);
+    // console.error(error);
     res.status(500).json({
       result: "error",
       error: {
@@ -128,12 +128,12 @@ export async function identitiesCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  console.log(
-    "Checking identities that can modify space",
-    stringify(spaceId),
-    network,
-    "network",
-  );
+  // console.log(
+  //   "Checking identities that can modify space",
+  //   stringify(spaceId),
+  //   network,
+  //   "network",
+  // );
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
