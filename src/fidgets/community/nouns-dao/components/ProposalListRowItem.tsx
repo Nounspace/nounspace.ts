@@ -1,7 +1,7 @@
-import React from "react";
 import { Badge } from "@/common/components/atoms/badge";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import moment from "moment";
+import React from "react";
 import { MdAccessTimeFilled } from "react-icons/md";
 
 const baseBadgeClassNames =
@@ -285,10 +285,14 @@ const ProposalListRowItem = ({
   proposal,
   setProposal,
   currentBlock,
+  headingsFont,
+  bodyFont,
 }: {
   proposal: any;
-  setProposal: (proposalId: string, proposal: any) => void;
+  setProposal: (proposalId: string, proposal?: any) => void;
   currentBlock: { number: number; timestamp: number };
+  headingsFont?: string;
+  bodyFont?: string;
 }) => {
   const proposalStatus = getProposalState(proposal, currentBlock);
 
@@ -333,11 +337,12 @@ const ProposalListRowItem = ({
         "flex overflow-hidden border border-gray-200 bg-gray-50 rounded-[8px]",
         "p-3 py-2.5 gap-3 cursor-pointer hover:bg-white items-center",
       )}
+      style={{ fontFamily: bodyFont }}
     >
       <div className="flex flex-col md:flex flex-auto flex-nowrap gap-1.5">
-        <p className="flex-auto font-medium text-sm/[1.25] mb-0">
+        <p className="flex-auto font-medium text-sm/[1.25] mb-0" style={{ fontFamily: headingsFont }}>
           <span className="flex-none mr-2 text-gray-400 font-bold">
-            {proposal.id}
+            #{proposal.id}
           </span>
           {proposal.title}
         </p>
