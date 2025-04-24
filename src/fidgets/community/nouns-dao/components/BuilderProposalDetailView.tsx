@@ -1,25 +1,25 @@
-import React from "react";
+/* eslint-disable react/react-in-jsx-scope */
 import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
+import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import type {
-  ProposalData,
   BuilderProposalData,
   NounsProposalData,
+  ProposalData,
 } from "@/fidgets/community/nouns-dao";
 import moment from "moment";
 import { FaArrowLeft } from "react-icons/fa6";
 import { RiExternalLinkLine } from "react-icons/ri";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
+import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime } from "./ProposalListRowItem";
-import ReactMarkdown from "react-markdown";
-import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
-import rehypeRaw from "rehype-raw";
-import remarkGfm from "remark-gfm";
-import { Address } from "viem";
 
 const VoteStat = ({ label, value, total, progressColor, labelColor }) => {
   const percentage = Math.round((100.0 * value) / total);
@@ -100,12 +100,16 @@ export const BuilderProposalDetailView = ({
   goBack,
   currentBlock,
   loading,
+  headingsFont,
+  bodyFont,
 }: {
   proposal: ProposalData;
   versions: any[];
   goBack: () => void;
   currentBlock: { number: number; timestamp: number };
   loading: boolean;
+  headingsFont?: string;
+  bodyFont?: string;
 }) => {
   const proposer =
     (proposal as BuilderProposalData).proposer ||
@@ -157,7 +161,7 @@ export const BuilderProposalDetailView = ({
   const formattedEndTime = moment(endDate).format("h:mm A");
 
   return (
-    <div className="flex flex-col size-full">
+    <div className="flex flex-col size-full" style={{ fontFamily: bodyFont }}>
       <div className="flex justify-between pb-3">
         <Button
           variant="outline"
@@ -196,82 +200,80 @@ export const BuilderProposalDetailView = ({
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
-              <p className="font-medium text-base/[1.25]">{proposal.title}</p>
+              <p className="font-medium text-base/[1.25]" style={{ fontFamily: headingsFont }}>{proposal.title}</p>
               {proposer && (
-                <div className="flex gap-4">
-                  <AddressInfo
-                    label="Proposed by"
-                    address={proposerEnsOrAddress}
-                  />
+                <AddressInfo label="Proposer" address={proposerEnsOrAddress} />
+              )}
+            </div>
+
+            <div className="flex gap-2">
+              <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                #{(proposal as BuilderProposalData).proposalNumber || "N/A"}
+              </div>
+              <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                {lastUpdatedText}
+              </div>
+              <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                Ends {formattedEndDate} at {formattedEndTime}
+              </div>
+              {version && (
+                <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                  Version {version}
                 </div>
               )}
             </div>
-            <div className="flex gap-2 items-center">
-              <StatusBadge
-                className={mergeClasses(
-                  "px-[8px] rounded-[6px] bg-gray-100",
-                  "hover:bg-gray-100 text-[10px]/[1.25] font-semibold",
-                )}
-              >
-                Version {version}
-              </StatusBadge>
-              <span className="text-[10px]/[1.25] text-gray-500">
-                {lastUpdatedText}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
             <div className="flex gap-2">
               <VoteStat
                 label="For"
                 value={votes.for}
                 total={totalVotes}
-                labelColor="#0E9F6E"
-                progressColor="#31C48D"
+                progressColor="#33BB33"
+                labelColor="#33BB33"
               />
               <VoteStat
                 label="Against"
                 value={votes.against}
                 total={totalVotes}
-                labelColor="#F05252"
-                progressColor="#F05252"
+                progressColor="#DD3333"
+                labelColor="#DD3333"
               />
               <VoteStat
                 label="Abstain"
                 value={votes.abstain}
                 total={totalVotes}
-                labelColor="#6B7280"
-                progressColor="#111928"
+                progressColor="#333333"
+                labelColor="#333333"
               />
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 text-xs">
               <InfoBox
-                label="Threshold"
-                subtext="Threshold"
-                value={`${votes.quorum} votes`}
+                label="Quorum"
+                subtext="Votes"
+                value={`${votes.quorum}`}
               />
               <InfoBox
-                label="Ends"
-                subtext={formattedEndTime}
-                value={formattedEndDate}
+                label="Start Block"
+                subtext="Block Number"
+                value={(proposal as BuilderProposalData).voteStart}
               />
               <InfoBox
-                label="Snapshot"
-                subtext="Taken at block"
-                value={(proposal as BuilderProposalData).snapshotBlockNumber}
+                label="End Block"
+                subtext="Block Number"
+                value={(proposal as BuilderProposalData).voteEnd}
               />
             </div>
-            <div className="flex flex-col gap-2 p-5">
+          </div>
+          <div className="flex flex-col gap-2 pb-8 font-normal">
+            <h2 className="font-medium text-sm/[1.25]" style={{ fontFamily: headingsFont }}>Description</h2>
+            <div className="text-sm/[1.25] border border-gray-200 p-4 rounded-md whitespace-pre-wrap">
               <ReactMarkdown
-                components={MarkdownRenderers()}
                 rehypePlugins={[rehypeRaw]}
                 remarkPlugins={[remarkGfm]}
+                components={MarkdownRenderers()}
               >
                 {proposal.description}
               </ReactMarkdown>
             </div>
-            <div>Current Block Number: {currentBlock.number}</div>
-            <div>Current Block Timestamp: {currentBlock.timestamp}</div>
           </div>
         </div>
       </div>
