@@ -1,13 +1,13 @@
-import React from "react";
-import { CardHeader, CardTitle } from "@/common/components/atoms/card";
-import BuilderProposalItem from "./BuilderProposalItem";
-import ProposalListRowItem from "./ProposalListRowItem";
+/* eslint-disable react/react-in-jsx-scope */
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/common/components/atoms/avatar";
+import { CardHeader, CardTitle } from "@/common/components/atoms/card";
 import { FidgetSpinner } from "react-loader-spinner";
+import BuilderProposalItem from "./BuilderProposalItem";
+import ProposalListRowItem from "./ProposalListRowItem";
 
 const ProposalListView = ({
   proposals,
@@ -17,6 +17,8 @@ const ProposalListView = ({
   isBuilderSubgraph,
   title,
   daoIcon,
+  headingsFont,
+  bodyFont,
 }: {
   proposals: any[];
   setProposal: (proposalId: string) => void;
@@ -25,6 +27,8 @@ const ProposalListView = ({
   isBuilderSubgraph: boolean;
   title: string;
   daoIcon: string;
+  headingsFont?: string;
+  bodyFont?: string;
 }) => {
   if (loading) {
     return (
@@ -49,16 +53,20 @@ const ProposalListView = ({
               />
             </AvatarFallback>
           </Avatar>
-          <CardTitle className="text-xl ml-3">{title}</CardTitle>
+          <CardTitle className="text-xl ml-3" style={{ fontFamily: headingsFont }}>
+            {title}
+          </CardTitle>
         </div>
       </CardHeader>
-      <div className="grid gap-2">
+      <div className="grid gap-2" style={{ fontFamily: bodyFont }}>
         {proposals.map((proposal, i) =>
           isBuilderSubgraph ? (
             <BuilderProposalItem
               key={i}
               proposal={proposal}
               setProposal={setProposal}
+              headingsFont={headingsFont}
+              bodyFont={bodyFont}
             />
           ) : (
             <ProposalListRowItem
@@ -66,6 +74,8 @@ const ProposalListView = ({
               proposal={proposal}
               setProposal={setProposal}
               currentBlock={currentBlock}
+              headingsFont={headingsFont}
+              bodyFont={bodyFont}
             />
           ),
         )}

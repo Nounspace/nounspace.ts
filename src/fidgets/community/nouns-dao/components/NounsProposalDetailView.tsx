@@ -1,4 +1,4 @@
-import React from "react";
+/* eslint-disable react/react-in-jsx-scope */
 import { Button } from "@/common/components/atoms/button";
 import { Progress } from "@/common/components/atoms/progress";
 import Spinner from "@/common/components/atoms/spinner";
@@ -98,12 +98,16 @@ export const NounsProposalDetailView = ({
   goBack,
   currentBlock,
   loading,
+  headingsFont,
+  bodyFont,
 }: {
   proposal: NounsProposalData;
   versions: any[];
   goBack: () => void;
   currentBlock: { number: number; timestamp: number };
   loading: boolean;
+  headingsFont?: string;
+  bodyFont?: string;
 }) => {
 
   const proposer = proposal?.proposer?.id;
@@ -184,7 +188,7 @@ export const NounsProposalDetailView = ({
   const processedDescription = processDescription(proposal.description);
 
   return (
-    <div className="flex flex-col size-full">
+    <div className="flex flex-col size-full" style={{ fontFamily: bodyFont }}>
       <div className="flex justify-between pb-3">
         <Button
           variant="outline"
@@ -216,92 +220,98 @@ export const NounsProposalDetailView = ({
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
               <div className="flex items-center">
-                <span className="flex-none mr-2 text-gray-700 font-medium text-xs/[1.25]">
-                  Proposal {proposal.id}
-                </span>
                 <StatusBadge
-                  status={getProposalState(proposal, currentBlock)}
+                  status={getProposalState(
+                    proposal,
+                    currentBlock
+                  )}
                   className="px-[8px] rounded-[6px]  text-[10px]/[1.25] font-medium"
                 />
               </div>
-              <p className="font-medium text-2xl/[1.25]">{proposal.title}</p>
-              {(proposer || sponsor) && (
-                <div className="flex gap-4">
-                  <AddressInfo
-                    label="Proposed by"
-                    address={proposerEnsOrAddress}
-                  />
-                  <AddressInfo
-                    label="Sponsored by"
-                    address={sponsorEnsOrAddress}
-                  />
+              <p className="font-medium text-base/[1.25]" style={{ fontFamily: headingsFont }}>{proposal.title}</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                {proposerEnsOrAddress && (
+                  <AddressInfo label="Proposer" address={proposerEnsOrAddress} />
+                )}
+                {sponsorEnsOrAddress && (
+                  <AddressInfo label="Sponsor" address={sponsorEnsOrAddress} />
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                #{proposal.id}
+              </div>
+              {lastUpdated !== "N/A" && (
+                <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                  {lastUpdatedText}
+                </div>
+              )}
+              {proposal.endBlock && (
+                <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                  Ends {formattedEndDate} at {formattedEndTime}
+                </div>
+              )}
+              {version && version > 1 && (
+                <div className="bg-gray-200 px-2 py-1 text-[10px]/[1.25] font-medium rounded-[4px] text-gray-700 flex-0">
+                  Version {version}
                 </div>
               )}
             </div>
-            <div className="flex gap-2 items-center">
-              <StatusBadge
-                className={mergeClasses(
-                  "px-[8px] rounded-[6px] bg-gray-100",
-                  "hover:bg-gray-100 text-[10px]/[1.25] font-semibold",
-                )}
-              >
-                Version {version}
-              </StatusBadge>
-              <span className="text-[10px]/[1.25] text-gray-500">
-                {lastUpdatedText}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
             <div className="flex gap-2">
               <VoteStat
                 label="For"
                 value={votes.for}
                 total={totalVotes}
-                labelColor="#0E9F6E"
-                progressColor="#31C48D"
+                progressColor="#33BB33"
+                labelColor="#33BB33"
               />
               <VoteStat
                 label="Against"
                 value={votes.against}
                 total={totalVotes}
-                labelColor="#F05252"
-                progressColor="#F05252"
+                progressColor="#DD3333"
+                labelColor="#DD3333"
               />
               <VoteStat
                 label="Abstain"
                 value={votes.abstain}
                 total={totalVotes}
-                labelColor="#6B7280"
-                progressColor="#111928"
+                progressColor="#333333"
+                labelColor="#333333"
               />
             </div>
-            <div className="flex gap-2 flex-wrap">
+            <div className="flex gap-2 text-xs">
               <InfoBox
-                label="Threshold"
-                subtext="Threshold"
-                value={`${votes.quorum} votes`}
+                label="Quorum"
+                subtext="Votes"
+                value={`${votes.quorum}`}
               />
               <InfoBox
-                label="Ends"
-                subtext={formattedEndTime}
-                value={formattedEndDate}
-              />
-              <InfoBox
-                label="Snapshot"
-                subtext="Taken at block"
+                label="Start Block"
+                subtext="Block Number"
                 value={proposal.startBlock}
               />
+              <InfoBox
+                label="End Block"
+                subtext="Block Number"
+                value={proposal.endBlock}
+              />
             </div>
-
-            <ReactMarkdown
-              className="prose"
-              components={MarkdownRenderers()}
-              rehypePlugins={[rehypeRaw]}
-              remarkPlugins={[remarkGfm]}
-            >
-              {processedDescription}
-            </ReactMarkdown>
+          </div>
+          <div className="flex flex-col gap-2 pb-8 font-normal">
+            <h2 className="font-medium text-sm/[1.25]" style={{ fontFamily: headingsFont }}>Description</h2>
+            <div className="text-sm/[1.25] border border-gray-200 p-4 rounded-md whitespace-pre-wrap">
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw]}
+                remarkPlugins={[remarkGfm]}
+                components={MarkdownRenderers()}
+              >
+                {processedDescription}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
       </div>

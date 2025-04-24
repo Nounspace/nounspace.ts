@@ -1,16 +1,16 @@
-import TextInput from "@/common/components/molecules/TextInput";
-import CSSInput from "@/common/ui/molecules/CSSInput";
-import HTMLInput from "@/common/ui/molecules/HTMLInput";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import type { ThemeSettings, FontFamily, Color } from "@/common/lib/theme";
-import SwitchButton from "../components/molecules/ViewSelector";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import TextInput from "@/common/components/molecules/TextInput";
+import type { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
+import CSSInput from "@/common/ui/molecules/CSSInput";
+import HTMLInput from "@/common/ui/molecules/HTMLInput";
 import { FilterTypeSelector } from "@/fidgets/farcaster/Feed";
-import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
-import PlatformSelector from "../components/molecules/PlatformSelector";
 import AlchemyChainSelector from "../components/molecules/AlchemyChainSelector";
 import AlchemyNftSelector from "../components/molecules/AlchemyNFTSelector";
+import FeedTypeSelector from "../components/molecules/FeedTypeSelector";
+import PlatformSelector from "../components/molecules/PlatformSelector";
+import SwitchButton from "../components/molecules/ViewSelector";
 
 export type FidgetSettings = {
   mobileDisplayName?: string;
