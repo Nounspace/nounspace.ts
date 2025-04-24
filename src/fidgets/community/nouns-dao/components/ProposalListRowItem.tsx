@@ -275,7 +275,7 @@ export const getProposalState = (
   // Only log for specific proposals or those with issues
   if (result === "DEFEATED" || result === "UPDATABLE" ||
     proposal.id === "771" || proposal.id === "772" || proposal.id === "773") {
-    console.log("Proposal Debug:", debug);
+    // console.log("Proposal Debug:", debug);
   }
 
   return result;
@@ -294,7 +294,7 @@ const ProposalListRowItem = ({
 
   // Additional logging for specific problematic proposals
   if (proposal.id === "772" || proposal.id === "773") {
-    console.log(`Proposal ${proposal.id} final status:`, proposalStatus);
+    // console.log(`Proposal ${proposal.id} final status:`, proposalStatus);
   }
 
   const getDateBadgeText = () => {

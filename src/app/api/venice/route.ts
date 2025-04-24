@@ -99,11 +99,11 @@ ${exampleCastsText}
       ) + userCast;
 
     // use for debug
-    if (DEBUG_PROMPTS) console.log(`\n\n---------SYSTEM-----------`);
-    console.log(system_prompt);
-    console.log(`\n\n---------USER-----------`);
-    console.log(user_prompt);
-    console.log(`--------------------`);
+    // if (DEBUG_PROMPTS) console.log(`\n\n---------SYSTEM-----------`);
+    // console.log(system_prompt);
+    // console.log(`\n\n---------USER-----------`);
+    // console.log(user_prompt);
+    // console.log(`--------------------`);
 
     // build the venice model options
     const getOptions = (messages: any) => ({
