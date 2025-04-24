@@ -442,7 +442,7 @@ export default function PublicSpace({
       }
       const saveableConfig = {
         ...spaceConfig,
-        fidgetInstanceDatums: mapValues(
+        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums ? mapValues(
           spaceConfig.fidgetInstanceDatums,
           (datum) => ({
             ...datum,
@@ -451,7 +451,7 @@ export default function PublicSpace({
               editable: datum.config.editable,
             },
           }),
-        ),
+        ) : undefined,
         isPrivate: false,
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
