@@ -23,6 +23,7 @@ import SwitchButton, {
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
 import { BsLink45Deg } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 
 export type Link = {
   text: string;
@@ -49,6 +50,16 @@ export const linkConfig: FidgetProperties = {
   icon: 0x26d3,
   mobileIcon: <BsLink45Deg size={26} />,
   fields: [
+    ...mobileStyleSettings,
+    {
+      fieldName: "scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
+      default: 1,
+      required: false,
+      inputSelector: ImageScaleSlider,
+      group: "style",
+    },
     {
       fieldName: "title",
       displayName: "Title",
@@ -73,15 +84,6 @@ export const linkConfig: FidgetProperties = {
       required: true,
       inputSelector: LinksInput,
       group: "settings",
-    },
-    {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the image size.",
-      default: 1,
-      required: false,
-      inputSelector: ImageScaleSlider,
-      group: "style",
     },
     {
       fieldName: "viewMode",
@@ -232,20 +234,39 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
   const links = Array.isArray(settings.links) ? settings.links : [];
   const isGridView = settings.viewMode === "grid";
 
+  const isThemeHeadingsFont = (value: string) => {
+    if (!value) return true;
+    return value === "Theme Headings Font" ||
+      value === "var(--user-theme-headings-font)" ||
+      value.includes("Theme Headings Font");
+  };
+
+  const isThemeBodyFont = (value: string) => {
+    if (!value) return true;
+    return value === "Theme Font" ||
+      value === "var(--user-theme-font)" ||
+      value.includes("Theme Font");
+  };
+
   const getHeadingsFontFamily = () => {
-    if (settings.headingsFontFamily === "Theme Headings Font") {
+    if (isThemeHeadingsFont(settings.headingsFontFamily)) {
       return "var(--user-theme-headings-font)";
     }
-    const root = document.documentElement;
-    const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
-    if (settings.headingsFontFamily === "Londrina Solid" && themeFont) {
-      return themeFont;
+    
+    if (settings.headingsFontFamily === "Londrina Solid") {
+      const root = document.documentElement;
+      const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
+      if (themeFont) {
+        return themeFont;
+      }
     }
+    
     return settings.headingsFontFamily;
   };
 
+  // Combined function to get the body source
   const getFontFamily = () => {
-    if (settings.fontFamily === "Theme Font") {
+    if (isThemeBodyFont(settings.fontFamily)) {
       return "var(--user-theme-font)";
     }
     return settings.fontFamily;

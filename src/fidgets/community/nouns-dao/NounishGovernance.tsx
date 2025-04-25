@@ -1,6 +1,6 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import FontSelector from "@/common/components/molecules/FontSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
@@ -26,10 +26,8 @@ export type NounishGovernanceSettings = {
     icon: string;
   };
   scale: number;
-  background: string;
-  fidgetBorderWidth: string;
-  fidgetBorderColor: string;
-  fidgetShadow: string;
+  headingsFontFamily?: string;
+  fontFamily?: string;
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
@@ -56,7 +54,7 @@ export const nounishGovernanceConfig: FidgetProperties = {
       displayName: "Scale",
       displayNameHint: "Drag the slider to adjust the image size.",
       required: false,
-      inputSelector: ImageScaleSlider,
+      inputSelector: FontSelector,
       default: 1,
       group: "style",
     },
@@ -147,10 +145,6 @@ export const NounishGovernance: React.FC<
     <div
       className="size-full"
       style={{
-        background: settings.background,
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
         transform: `scale(${settings.scale})`,
         transformOrigin: "0 0",
       }}

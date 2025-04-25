@@ -48,8 +48,8 @@ export const useUserTheme = () => {
       return homebaseTabs[currentTabName]?.config?.theme ?? defaultTheme;
     }
   } else {
-    // console.log( `Theme selected: Space tab - ${currentSpaceId}, ${currentTabName ?? "Profile"}`, );
-    // console.log("Theme:",currentSpace?.tabs[currentTabName ?? "Profile"]?.theme,);
+    // console.log(`Theme selected: Space tab - ${currentSpaceId}, ${currentTabName ?? "Profile"}`);
+    // console.log("Theme:", currentSpace?.tabs[currentTabName ?? "Profile"]?.theme);
     return (
       currentSpace?.tabs[currentTabName ?? "Profile"]?.theme ?? defaultTheme
     );
