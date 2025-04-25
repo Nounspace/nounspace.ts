@@ -11,6 +11,7 @@ import {
   VENICE_MODEL,
 } from "./config";
 import { CREATE_PROMPT, ENHANCE_PROMPT, SYSTEM_PROMPT } from "./prompts";
+import { TrendingTimeWindow } from "@neynar/nodejs-sdk/build/api";
 
 //
 // Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
@@ -39,29 +40,26 @@ export async function POST(request: Request) {
   }
 
   // get values
-
   // if USE_USER_PAST_TWEETS
   // get user past casts as examples
   let user_past_tweets;
   let userCasts: any;
   if (USE_USER_PAST_TWEETS) {
     if (USERS_CASTS_CHRONOLOGICALLY) {
-      userCasts = await neynar.fetchAllCastsCreatedByUser(userFid, {
+      userCasts = await neynar.fetchCastsForUser({
+        fid: userFid,
         viewerFid: userFid,
         limit: 5,
       });
       userCasts = userCasts.result;
-      // exampleCastsText = userCasts.result.casts?.length
-      // ? userCasts.result.casts.map(cast => `<tweet>${cast.text}</tweet>\n`).join("\n")
-      // : "";
     } else {
       userCasts = await neynar.fetchPopularCastsByUser(userFid);
     }
 
     const exampleCastsText = userCasts.casts?.length
       ? userCasts.casts
-          .map((cast) => `<tweet>${cast.text}</tweet>\n`)
-          .join("\n")
+        .map((cast) => `<tweet>${cast.text}</tweet>\n`)
+        .join("\n")
       : "";
 
     user_past_tweets = `
@@ -72,11 +70,24 @@ ${exampleCastsText}
 `;
   }
 
-  const currentUser = await neynar.fetchBulkUsers([userFid]);
+  const fids = [userFid];
+  const currentUser = await neynar.fetchBulkUsers({ fids });
   const userName = currentUser.users[0].username || "";
   const userBio = currentUser.users[0].profile.bio.text || "";
 
-  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed());
+  // Fill in the appropriate values
+  const viewerFid = userFid;
+  const timeWindow: TrendingTimeWindow = "24h";
+  const limit = MAX_TRENDING_TWEETS;
+  //const channelId =
+  //const parentUrl =
+  //const provider =
+  //const providerMetadata =
+  const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed({
+    viewerFid, 
+    timeWindow,
+    limit,
+  }));
   const userCast = res.text || "";
 
   // generate or enahance casts

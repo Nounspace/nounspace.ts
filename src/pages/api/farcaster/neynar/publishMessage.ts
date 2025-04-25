@@ -7,9 +7,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 async function publishMessage(req: NextApiRequest, res: NextApiResponse) {
   try {
     const message = {
-      ...req.body.data
+      ...req.body
     };
-    const response = await neynar.publishMessageToFarcaster(message);
+    const response = await neynar.publishMessageToFarcaster({body: message});
     res.status(200).json(response);
   } catch (e: any) {
     if (e.response?.data) {

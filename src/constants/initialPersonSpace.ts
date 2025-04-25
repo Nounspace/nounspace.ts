@@ -1,6 +1,6 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { FeedType, FilterType } from "@neynar/nodejs-sdk";
+import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
 
 export const INITIAL_SPACE_CONFIG_EMPTY: Omit<SpaceConfig, "isEditable"> = {
