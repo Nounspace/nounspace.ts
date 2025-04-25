@@ -1,8 +1,8 @@
-import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import TextInput from "@/common/components/molecules/TextInput";
 import SwitchButton from "@/common/components/molecules/SwitchButton";
+import TextInput from "@/common/components/molecules/TextInput";
+import React from "react";
 
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
@@ -39,6 +39,8 @@ export const defaultStyleFields = [
   {
     fieldName: "background",
     displayName: "Background",
+    displayNameHint: "Color used for the background of the Image Fidget",
+    default: "var(--user-theme-fidget-background)",
     required: false,
     inputSelector: (props) => (
       <ThemeColorSelector
@@ -49,10 +51,11 @@ export const defaultStyleFields = [
       />
     ),
     group: "style",
-    default: "var(--user-theme-fidget-background)",
   },
   {
     fieldName: "fidgetBorderWidth",
+    displayName: "FidgetBorderWidth",
+    displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: BorderSelector,
@@ -60,7 +63,9 @@ export const defaultStyleFields = [
   },
   {
     fieldName: "fidgetBorderColor",
-    displayName: "fidgetBorderColor",
+    displayName: "FidgetBorderColor",
+    displayNameHint: "Color of the Fidget's Border.",
+    default: "var(--user-theme-fidget-border-color)",
     required: false,
     inputSelector: (props) => (
       <ThemeColorSelector
@@ -71,10 +76,11 @@ export const defaultStyleFields = [
       />
     ),
     group: "style",
-    default: "var(--user-theme-fidget-border-color)",
   },
   {
     fieldName: "fidgetShadow",
+    displayName: "FidgetShadow",
+    displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
     default: "var(--user-theme-fidget-shadow)",
     required: false,
     inputSelector: ShadowSelector,

@@ -1,20 +1,20 @@
-import React, { useEffect, useMemo, useState } from "react";
 import { CardContent } from "@/common/components/atoms/card";
-import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
-import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
+import { DaoSelector } from "@/common/components/molecules/DaoSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
-import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
 } from "@/common/lib/utils/queries";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import { NOUNS_DAO } from "@/constants/basedDaos";
-import { getBlock } from "wagmi/actions";
 import { wagmiConfig } from "@/common/providers/Wagmi";
+import { NOUNS_DAO } from "@/constants/basedDaos";
+import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
+import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
+import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
+import { defaultStyleFields } from "@/fidgets/helpers";
+import React, { useEffect, useMemo, useState } from "react";
+import { getBlock } from "wagmi/actions";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -25,6 +25,11 @@ export type NounishGovernanceSettings = {
     graphUrl: string;
     icon: string;
   };
+  scale: number;
+  background: string;
+  fidgetBorderWidth: string;
+  fidgetBorderColor: string;
+  fidgetShadow: string;
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
@@ -35,6 +40,8 @@ export const nounishGovernanceConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "selectedDao",
+      displayName: "Select DAO",
+      displayNameHint: "Choose from available Nounish communities and BuilderDAOs",
       default: {
         name: "Nouns DAO",
         contract: "", // nouns dao does not need a contract address
@@ -42,6 +49,16 @@ export const nounishGovernanceConfig: FidgetProperties = {
       },
       required: false,
       inputSelector: DaoSelector,
+      group: "settings",
+    },
+    {
+      fieldName: "scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
+      required: false,
+      inputSelector: ImageScaleSlider,
+      default: 1,
+      group: "style",
     },
     ...defaultStyleFields,
   ],
@@ -125,38 +142,51 @@ export const NounishGovernance: React.FC<
       (proposal) => proposal.proposalId === proposalId,
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
+
   return (
-    <CardContent className="size-full overflow-scroll p-4">
-      {proposalId && selectedProposal ? (
-        isBuilderSubgraph ? (
-          <BuilderProposalDetailView
-            proposal={selectedProposal}
-            goBack={handleGoBack}
-            currentBlock={currentBlock}
-            loading={listLoading}
-            versions={[]}
-          />
+    <div
+      className="size-full"
+      style={{
+        background: settings.background,
+        borderWidth: settings.fidgetBorderWidth,
+        borderColor: settings.fidgetBorderColor,
+        boxShadow: settings.fidgetShadow,
+        transform: `scale(${settings.scale})`,
+        transformOrigin: "0 0",
+      }}
+    >
+      <CardContent className="size-full overflow-scroll p-4">
+        {proposalId && selectedProposal ? (
+          isBuilderSubgraph ? (
+            <BuilderProposalDetailView
+              proposal={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+              versions={[]}
+            />
+          ) : (
+            <NounsProposalDetailView
+              proposal={selectedProposal}
+              versions={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+            />
+          )
         ) : (
-          <NounsProposalDetailView
-            proposal={selectedProposal}
-            versions={selectedProposal}
-            goBack={handleGoBack}
+          <ProposalListView
+            proposals={proposalsData?.proposals || []}
             currentBlock={currentBlock}
+            setProposal={handleSetProposal}
             loading={listLoading}
+            isBuilderSubgraph={isBuilderSubgraph}
+            title={selectedDao.name}
+            daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
           />
-        )
-      ) : (
-        <ProposalListView
-          proposals={proposalsData?.proposals || []}
-          currentBlock={currentBlock}
-          setProposal={handleSetProposal}
-          loading={listLoading}
-          isBuilderSubgraph={isBuilderSubgraph}
-          title={selectedDao.name}
-          daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
-        />
-      )}
-    </CardContent>
+        )}
+      </CardContent>
+    </div>
   );
 };
 

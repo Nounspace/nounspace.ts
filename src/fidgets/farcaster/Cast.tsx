@@ -5,10 +5,10 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import { BsFillPinFill, BsPin } from "react-icons/bs";
 import { isUndefined } from "lodash";
 import React from "react";
+import { BsFillPinFill, BsPin } from "react-icons/bs";
+import { defaultStyleFields } from "../helpers";
 import EmbededCast from "./components/Embeds/EmbededCast";
 
 type CastFidgetSettings = {
@@ -27,18 +27,27 @@ const castFidgetProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "castHash",
+      displayName: "CastHash",
+      displayNameHint: "To copy the hash of a cast, visit the cast on Warpcast, click the ellipsis in the top right, and click Copy cast hash",
       required: false,
       inputSelector: TextInput,
+      group: "settings",
     },
     {
       fieldName: "casterFid",
+      displayName: "CasterFID",
+      displayNameHint: "To copy the FID of a caster, visit their profile on Warpcast, click the vertical ellipsis in the top right, and click About.",
       required: false,
       inputSelector: TextInput,
+      group: "settings",
     },
     {
       fieldName: "castUrl",
+      displayName: "CastURL",
+      displayNameHint: "The simplest way to pin a cast is to copy the URL of the cast from Warpcast. Simply visit the cast on Warpcast, click the Share icon in the bottom right, and click 'Copy link'",
       required: false,
       inputSelector: TextInput,
+      group: "settings",
     },
     ...defaultStyleFields,
   ],

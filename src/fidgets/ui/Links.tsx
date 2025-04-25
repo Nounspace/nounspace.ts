@@ -12,6 +12,7 @@ import {
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import LinksInput from "@/common/components/molecules/LinksInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
@@ -19,10 +20,9 @@ import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector
 import SwitchButton, {
   ViewMode,
 } from "@/common/components/molecules/ViewSelector";
-import { BsLink45Deg } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
+import { BsLink45Deg } from "react-icons/bs";
 
 export type Link = {
   text: string;
@@ -41,6 +41,7 @@ export type LinkFidgetSettings = {
   HeaderColor: string;
   headingsFontFamily: string;
   fontFamily: string;
+  scale: number;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -48,9 +49,10 @@ export const linkConfig: FidgetProperties = {
   icon: 0x26d3,
   mobileIcon: <BsLink45Deg size={26} />,
   fields: [
-    ...mobileStyleSettings,
     {
       fieldName: "title",
+      displayName: "Title",
+      displayNameHint: "Add a title to display above your list of links.",
       default: "My Links",
       required: false,
       inputSelector: TextInput,
@@ -58,6 +60,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "links",
+      displayName: "Links",
+      displayNameHint: "Input the URL then add optional details to each link such as Icon, Title, and Description.",
       default: [
         {
           text: "Nouns",
@@ -71,7 +75,18 @@ export const linkConfig: FidgetProperties = {
       group: "settings",
     },
     {
+      fieldName: "scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
+      default: 1,
+      required: false,
+      inputSelector: ImageScaleSlider,
+      group: "style",
+    },
+    {
       fieldName: "viewMode",
+      displayName: "View Mode",
+      displayNameHint: "Choose between grid or list layout for displaying your links.",
       default: "list",
       required: false,
       inputSelector: SwitchButton,
@@ -79,6 +94,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "headingsFontFamily",
+      displayName: "HeadingsFontFamily",
+      displayNameHint: "Font used for the title and link text. Set to Theme Font to inherit the Title Font from the Theme.",
       default: "Londrina Solid",
       required: false,
       inputSelector: FontSelector,
@@ -86,6 +103,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "fontFamily",
+      displayName: "FontFamily",
+      displayNameHint: "Font used for the description text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "Theme Font",
       required: false,
       inputSelector: FontSelector,
@@ -93,6 +112,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "HeaderColor",
+      displayName: "HeaderColor",
+      displayNameHint: "Color used for the title and link text.",
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
@@ -107,6 +128,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "DescriptionColor",
+      displayName: "DescriptionColor",
+      displayNameHint: "Color used for the description text.",
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
@@ -121,6 +144,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "itemBackground",
+      displayName: "ItemBackground",
+      displayNameHint: "Color used for the background of each individual link item.",
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
@@ -135,6 +160,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "background",
+      displayName: "Background",
+      displayNameHint: "Color used for the background of the Fidget",
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
@@ -142,13 +169,15 @@ export const linkConfig: FidgetProperties = {
           {...props}
           themeVariable="var(--user-theme-fidget-background)"
           defaultColor="#FFFFFF"
-          colorType="background color"
+          colorType="background"
         />
       ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderWidth",
+      displayName: "FidgetBorderWidth",
+      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
       inputSelector: BorderSelector,
@@ -156,6 +185,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "fidgetBorderColor",
+      displayName: "FidgetBorderColor",
+      displayNameHint: "Color of the Fidget's Border.",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
       inputSelector: (props) => (
@@ -170,6 +201,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "fidgetShadow",
+      displayName: "FidgetShadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
       inputSelector: ShadowSelector,
@@ -177,6 +210,8 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "css",
+      displayName: "CSS",
+      displayNameHint: "Add custom CSS to further customize the appearance of your links.",
       default: "",
       required: false,
       inputSelector: CSSInput,
@@ -229,6 +264,8 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         scrollbarWidth: "none",
         padding: "0.5rem",
         borderRadius: "1rem",
+        transform: `scale(${settings.scale})`,
+        transformOrigin: "0 0",
       }}
     >
       {settings?.title && (

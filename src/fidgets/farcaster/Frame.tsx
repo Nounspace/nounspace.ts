@@ -1,7 +1,6 @@
 import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import {
@@ -13,6 +12,8 @@ import {
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import React from "react";
+import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
+import { mobileStyleSettings } from "../helpers";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
@@ -28,12 +29,25 @@ const frameProperties: FidgetProperties = {
     ...mobileStyleSettings,
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste the URL to the Frame you want to embed.",
       required: true,
       inputSelector: TextInput,
+      group: "settings",
+    },
+    {
+      fieldName: "Scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
+      required: false,
+      inputSelector: ImageScaleSlider,
+      default: 1,
+      group: "style",
     },
     {
       fieldName: "background",
       displayName: "Background",
+      displayNameHint: "Color used for the background of the Fidget",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -48,6 +62,8 @@ const frameProperties: FidgetProperties = {
     },
     {
       fieldName: "fidgetBorderWidth",
+      displayName: "FidgetBorderWidth",
+      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "transparent",
       required: false,
       inputSelector: BorderSelector,
@@ -56,6 +72,7 @@ const frameProperties: FidgetProperties = {
     {
       fieldName: "fidgetBorderColor",
       displayName: "Border Color",
+      displayNameHint: "Color of the Fidget's Border.",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -70,6 +87,8 @@ const frameProperties: FidgetProperties = {
     },
     {
       fieldName: "fidgetShadow",
+      displayName: "FidgetShadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "none",
       required: false,
       inputSelector: ShadowSelector,

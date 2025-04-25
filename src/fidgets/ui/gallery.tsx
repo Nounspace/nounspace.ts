@@ -55,6 +55,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "imageUploader",
       displayName: "Upload Image",
+      displayNameHint: "If your image isn't hosted publicly yet, you can upload it using a free tool like imgbb",
       inputSelector: ({ updateSettings }) => {
         const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
 
@@ -81,6 +82,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "imageUrl",
       displayName: "Image URL",
+      displayNameHint: "Paste the Image Address for a publicly hosted image.",
       required: true,
       inputSelector: TextInput,
       default:
@@ -92,6 +94,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "network",
       displayName: "Network",
+      displayNameHint: "Choose the blockchain network where your NFTs are stored.",
       inputSelector: AlchemyChainSelector,
       required: true,
       group: "settings",
@@ -101,6 +104,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "nftSelector",
       displayName: "NFT",
+      displayNameHint: "Select your verified wallet address to view your NFTs.",
       inputSelector: AlchemyNftSelector,
       required: true,
       group: "settings",
@@ -129,6 +133,8 @@ const galleryConfig: FidgetProperties = {
     },
     {
       fieldName: "Scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
       required: false,
       inputSelector: ImageScaleSlider,
       default: 1,
@@ -137,6 +143,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "Link",
       displayName: "Links To",
+      displayNameHint: "Optionally input a URL here that will open in a new window when the image is clicked.",
       required: false,
       inputSelector: TextInput,
       default: "",
@@ -154,7 +161,6 @@ const galleryConfig: FidgetProperties = {
       disabledIf: (settings) =>
         settings?.selectMediaSource?.name !== MediaSourceTypes.WALLET,
     },
-   
     ...defaultStyleFields,
   ],
   size: {

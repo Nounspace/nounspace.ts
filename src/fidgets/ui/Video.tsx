@@ -1,18 +1,15 @@
-import React, { useEffect } from "react";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl } from "@/fidgets/helpers";
-import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { ErrorWrapper } from "@/fidgets/helpers";
+import { isValidUrl } from "@/common/lib/utils/url";
+import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import React from "react";
 
 export type VideoFidgetSettings = {
   url: string;
@@ -32,18 +29,23 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste the URL to the Frame you want to embed",
       required: true,
-      default: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
       inputSelector: TextInput,
       group: "settings",
     },
     ...defaultStyleFields,
     {
       fieldName: "size",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
       required: false,
       inputSelector: IFrameWidthSlider,
+      default: 1,
       group: "style",
     },
+   
   ],
   size: {
     minHeight: 2,
@@ -56,26 +58,18 @@ const frameConfig: FidgetProperties = {
 const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   settings: { url, size = 1 },
 }) => {
-  const isMobile = useIsMobile();
-  
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
-  const transformedUrl = transformUrl(sanitizedUrl || "");
 
   if (!url) {
-    return (
-      <ErrorWrapper
-        icon="➕"
-        message="Provide a YouTube/Vimeo URL to display here."
-      />
-    );
+    return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
   }
 
   if (!isValid) {
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
 
-  if (!transformedUrl) {
+  if (!sanitizedUrl) {
     return (
       <ErrorWrapper
         icon="🔒"
@@ -84,29 +78,23 @@ const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
     );
   }
 
-  const scaleValue = size;
-
   return (
-    <div style={{ 
-      overflow: "hidden", 
-      width: "100%", 
-      height: "100%",
-      position: "relative"
-    }}>
+    <div 
+      style={{ 
+        overflow: "hidden", 
+        width: "100%", 
+        height: "100%",
+      }}
+    >
       <iframe
-        src={transformedUrl}
-        title="IFrame Fidget"
+        src={sanitizedUrl}
+        title="Frame Fidget"
         sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        allowFullScreen
         style={{
-          transform: isMobile ? 'none' : `scale(${scaleValue})`,
+          transform: `scale(${size})`,
           transformOrigin: "0 0",
-          width: isMobile ? "100%" : `${100 / scaleValue}%`,
-          height: isMobile ? "100%" : `${100 / scaleValue}%`,
-          // Removed absolute positioning which was causing issues
-          position: "relative",
-          top: 0,
-          left: 0,
+          width: `${100 / size}%`,
+          height: `${100 / size}%`,
           border: "none"
         }}
         className="size-full"

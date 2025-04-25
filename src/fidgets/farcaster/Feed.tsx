@@ -19,13 +19,13 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect } from "react";
+import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
+import { mobileStyleSettings } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
@@ -75,40 +75,49 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "selectPlatform",
       displayName: "Select App",
+      displayNameHint: "Choose between Farcaster or The Other App (aka X) to display social feeds.",
       inputSelector: PlatformSelector,
       required: false,
       default: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+      group: "settings",
     },
     {
       fieldName: "feedType",
       displayName: "Feed Type",
+      displayNameHint: "Choose between Following feed or Filter feed with different options.",
       inputSelector: FeedTypeSelector,
       required: false,
       disabledIf: (settings) =>
         settings?.selectPlatform?.name === "The other app",
       default: FeedType.Following,
+      group: "settings",
     },
     {
       fieldName: "Xhandle",
       displayName: "Username",
+      displayNameHint: "Input an X username to display a feed of their Tweets. Do not include the '@'",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) => settings?.selectPlatform?.name === "Farcaster",
       default: "thenounspace",
+      group: "settings",
     },
     {
       fieldName: "filterType",
       displayName: "Filter Type",
+      displayNameHint: "Choose between Users, Channel, or Keyword to filter the feed.",
       inputSelector: FilterTypeSelector,
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings?.selectPlatform?.name === "The other app",
       default: FilterType.Users,
+      group: "settings",
     },
     {
       fieldName: "users",
       displayName: "FID",
+      displayNameHint: "Input an FID to display a feed of that user's casts.",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) =>
@@ -116,10 +125,12 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.filterType !== FilterType.Users ||
         settings?.selectPlatform?.name === "The other app",
       default: "",
+      group: "settings",
     },
     {
       fieldName: "channel",
       displayName: "Channel",
+      displayNameHint: "Input a channel name to display casts from that channel.",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) =>
@@ -127,10 +138,12 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.filterType !== FilterType.Channel ||
         settings.selectPlatform?.name === "The other app",
       default: "",
+      group: "settings",
     },
     {
       fieldName: "keyword",
       displayName: "Keyword",
+      displayNameHint: "Input a keyword to filter casts containing this term.",
       inputSelector: TextInput,
       required: false,
       disabledIf: (settings) =>
@@ -138,10 +151,12 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
         settings.filterType !== FilterType.Keyword ||
         settings?.selectPlatform?.name === "The other app",
       default: "",
+      group: "settings",
     },
     {
       fieldName: "style",
       displayName: "Feed Style",
+      displayNameHint: "Choose the visual style for The Other App feed.",
       inputSelector: ThemeSelector,
       required: false,
       group: "style",
@@ -151,6 +166,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fontFamily",
+      displayName: "FontFamily",
+      displayNameHint: "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
       inputSelector: FontSelector,
@@ -158,7 +175,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fontColor",
-      displayName: "Font Color",
+      displayName: "FontColor",
+      displayNameHint: "Color used for the text input (body text)",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -174,6 +192,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "background",
       displayName: "Background",
+      displayNameHint: "Color used for the background of the Fidget",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -189,6 +208,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fidgetBorderWidth",
+      displayName: "FidgetBorderWidth",
+      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
       inputSelector: BorderSelector,
@@ -199,6 +220,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "fidgetBorderColor",
       displayName: "Border Color",
+      displayNameHint: "Color of the Fidget's Border.",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -214,6 +236,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fidgetShadow",
+      displayName: "FidgetShadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
       inputSelector: ShadowSelector,
