@@ -1,4 +1,4 @@
-import neynar from "@/common/data/api/neynar";
+// import neynar from "@/common/data/api/neynar";
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
   makeCastAdd,
@@ -16,8 +16,8 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-  //   formatPlaintextToHubCastMessage,
-  //   getMentionFidsByUsernames,
+//     formatPlaintextToHubCastMessage,
+//     getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -60,6 +60,7 @@ import { useBalance } from "wagmi";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { base } from "viem/chains";
+// import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
@@ -280,28 +281,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   }, [editor]);
 
-  async function getUsernamesAndFids(usernames: string[]): Promise<{ username: string, fid: string }[]> {
-
-    //
-    // Try to use utils getUsernameForFid
-    //
-
-    // Make sure to fetch mentions for all the unique usernames
-    const fetchedMentions = await Promise.all(
-      usernames.map(username => neynar.lookupUserByUsername({username}))
-    );
-  
-    // Filter and map the results to include both username and fid
-    const mentionsWithFids = fetchedMentions
-      .filter(mention => mention && mention.user.username && mention.user.fid)
-      .map(mention => ({
-        username: mention.user.username,
-        fid: mention.user.fid.toString() // Ensure fid is a string
-      }));
-  
-    return mentionsWithFids;
-  }
-
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
@@ -337,11 +316,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
       if (uniqueUsernames.length > 0) {
         try {
           // Fetch the FIDs for the mentioned users
-          const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
 
-          // const fetchedMentions =
-          //   await neynar.lookupUserByUsername(username)
-          //   // await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
+          const query = uniqueUsernames.join(",");
+          console.log(query);
+          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+          const fetchedMentions = await res.json();
+          console.log("fetchedMentions");
+          console.log(fetchedMentions);
 
           mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
@@ -403,7 +385,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        // console.log("Updated Draft before posting:", updatedDraft);
+        console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };

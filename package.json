@@ -1,6 +1,6 @@
 {
-  "name": "Nounspace",
-  "version": "0.0.23",
+  "name": "nounspace",
+  "version": "0.1.0",
   "license": "",
   "private": true,
   "scripts": {
