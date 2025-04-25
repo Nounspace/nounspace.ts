@@ -1,4 +1,11 @@
+import neynar from "@/common/data/api/neynar";
 import React, { useCallback, useEffect, useState, useRef } from "react";
+import {
+  makeCastAdd,
+  FarcasterNetwork,
+  CastAddBody,
+} from "@farcaster/core";
+
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import {
   ModManifest,
@@ -9,32 +16,37 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-  formatPlaintextToHubCastMessage,
-  getMentionFidsByUsernames,
+  //   formatPlaintextToHubCastMessage,
+  //   getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
+import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
+import { CreationMod } from "@mod-protocol/react";
+import { creationMods } from "@mod-protocol/mod-registry";
+import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
+// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
+
+
 import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
-import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
+
 import { ChannelPicker } from "./channelPicker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { CreationMod } from "@mod-protocol/react";
-import { creationMods } from "@mod-protocol/mod-registry";
-import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { renderEmbedForUrl } from "./Embeds";
 import { PhotoIcon } from "@heroicons/react/20/solid";
-import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
 import {
+  FarcasterEmbed,
   fetchChannelsByName,
   fetchChannelsForUser,
+  isFarcasterUrlEmbed,
   submitCast,
 } from "../utils";
 import EmojiPicker, { Theme } from "emoji-picker-react";
@@ -95,18 +107,18 @@ type CreateCastProps = {
   afterSubmit?: () => void;
 };
 
-export type ModProtocolCastAddBody = Exclude<
-  Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
-  false
-> & {
-  type: CastType;
-};
+// export type ModProtocolCastAddBody = Exclude<
+//   Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
+//   false
+// > & {
+//   type: CastType;
+// };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => {},
+  afterSubmit = () => { },
 }) => {
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
@@ -268,6 +280,28 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   }, [editor]);
 
+  async function getUsernamesAndFids(usernames: string[]): Promise<{ username: string, fid: string }[]> {
+
+    //
+    // Try to use utils getUsernameForFid
+    //
+
+    // Make sure to fetch mentions for all the unique usernames
+    const fetchedMentions = await Promise.all(
+      usernames.map(username => neynar.lookupUserByUsername({username}))
+    );
+  
+    // Filter and map the results to include both username and fid
+    const mentionsWithFids = fetchedMentions
+      .filter(mention => mention && mention.user.username && mention.user.fid)
+      .map(mention => ({
+        username: mention.user.username,
+        fid: mention.user.fid.toString() // Ensure fid is a string
+      }));
+  
+    return mentionsWithFids;
+  }
+
   const text = getText();
   const embeds = getEmbeds();
   const channel = getChannel();
@@ -303,8 +337,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
       if (uniqueUsernames.length > 0) {
         try {
           // Fetch the FIDs for the mentioned users
-          const fetchedMentions =
-            await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
+          const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+
+          // const fetchedMentions =
+          //   await neynar.lookupUserByUsername(username)
+          //   // await getMentionFidsByUsernames(API_URL)(uniqueUsernames);
 
           mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
@@ -343,17 +380,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }
           }
 
-          // console.log(mentions);
-          // console.log("mentionsText.length" + mentionsText.length);
           if (mentions.length > 10)
-            // console.log("only up to 10 mentions. " + mentions.length);
-          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-            console.error(
-              "Mismatch between mentions and their positions:",
-              mentionsToFids,
-              mentionsPositions,
-            );
-          }
+            if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
+              console.error(
+                "Mismatch between mentions and their positions:",
+                mentionsToFids,
+                mentionsPositions,
+              );
+            }
         } catch (error) {
           console.error("Error fetching FIDs:", error);
         }
@@ -380,7 +414,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   async function publishPost(
     draft: DraftType,
     fid: number,
-    signer: Signer,
+    signer: Signer
   ): Promise<{ success: boolean; message?: string }> {
     if (draft.parentCastId) {
       const { hash } = draft.parentCastId;
@@ -391,40 +425,38 @@ const CreateCast: React.FC<CreateCastProps> = ({
         };
       }
     }
-    ``;
 
-    // Prepare the mentions and their positions
     const mentions = draft.mentionsToFids
       ? Object.values(draft.mentionsToFids).map(Number)
       : [];
-    const mentionsPositions = draft.mentionsPositions || []; // Use the correct positions
+    const mentionsPositions = draft.mentionsPositions || [];
 
-    const unsignedCastBody: ModProtocolCastAddBody = {
+    const castBody: CastAddBody = {
       type: CastType.CAST,
       text: draft.text,
       embeds: draft.embeds || [],
-      parentUrl: draft.parentUrl || undefined,
-      parentCastId: draft.parentCastId
-        ? {
-            fid: draft.parentCastId.fid,
-            hash: draft.parentCastId.hash,
-          }
-        : undefined,
-      mentions, // Pass mentions (FIDs)
-      mentionsPositions, // Pass positions here
       embedsDeprecated: [],
+      parentUrl: draft.parentUrl || undefined,
+      parentCastId: draft.parentCastId,
+      mentions,
+      mentionsPositions,
     };
 
-    if (!unsignedCastBody)
-      return { success: false, message: "Invalid cast data." };
+    const castAddMessageResp = await makeCastAdd(
+      castBody,
+      { fid, network: FarcasterNetwork.MAINNET },
+      signer
+    );
+
+    if (!castAddMessageResp.isOk()) {
+      return {
+        success: false,
+        message: "Invalid cast data.",
+      };
+    }
 
     try {
-      const result = await submitCast(
-        { ...unsignedCastBody, type: CastType.CAST },
-        fid,
-        signer,
-      );
-
+      const result = await submitCast(castAddMessageResp.value, fid, signer);
       if (result) {
         return { success: true };
       } else {
@@ -437,6 +469,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       };
     }
   }
+
 
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
