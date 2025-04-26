@@ -318,12 +318,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
           // Fetch the FIDs for the mentioned users
           // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
 
-          const query = uniqueUsernames.join(",");
-          console.log(query);
+          const query = encodeURIComponent(uniqueUsernames.join(","));
+          // console.log(query);
           const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
           const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
+          // console.log("fetchedMentions");
+          // console.log(fetchedMentions);
 
           mentionsToFids = fetchedMentions.reduce(
             (acc, mention) => {
@@ -385,7 +385,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        console.log("Updated Draft before posting:", updatedDraft);
+        // console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };
