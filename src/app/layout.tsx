@@ -1,10 +1,26 @@
 import { WEBSITE_URL } from "@/constants/app";
-import React, { Suspense } from "react";
+import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import SpaceLoading from "./(spaces)/SpaceLoading";
+import Head from "next/head";
+
+const frame = {
+  version: "next",
+  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+  aspectRatio: 3/2,
+  button: {
+    title: "Start Nounspace",
+    action: {
+      type: "launch_frame",
+      url: WEBSITE_URL,
+      name: "Nounspace",
+      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
+      splashBackgroundColor:"#f5f0ec"
+    }
+  }
+}
 
 export const metadata = {
   title: "Nounspace",
@@ -40,6 +56,9 @@ export const metadata = {
     ],
     apple: "/images/apple-touch-icon.png",
   },
+  other: {
+    'fc:frame': JSON.stringify(frame),
+  },
 };
 
 // TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
@@ -53,6 +72,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Head>
+        <meta
+          name="fc:frame"
+          content={JSON.stringify(frame)}
+        />
+      </Head>
       <body>
         <SpeedInsights />
         <Providers>
