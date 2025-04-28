@@ -1,20 +1,20 @@
-import React, { useEffect, useMemo, useState } from "react";
 import { CardContent } from "@/common/components/atoms/card";
-import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
-import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
+import { DaoSelector } from "@/common/components/molecules/DaoSelector";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
-import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
 } from "@/common/lib/utils/queries";
-import { FidgetSettingsStyle } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import { NOUNS_DAO } from "@/constants/basedDaos";
-import { getBlock } from "wagmi/actions";
 import { wagmiConfig } from "@/common/providers/Wagmi";
+import { NOUNS_DAO } from "@/constants/basedDaos";
+import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
+import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
+import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
+import { defaultStyleFields } from "@/fidgets/helpers";
+import React, { useEffect, useMemo, useState } from "react";
+import { getBlock } from "wagmi/actions";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -25,6 +25,8 @@ export type NounishGovernanceSettings = {
     graphUrl: string;
     icon: string;
   };
+  headingsFontFamily?: string;
+  fontFamily?: string;
 } & FidgetSettingsStyle;
 
 export const nounishGovernanceConfig: FidgetProperties = {
@@ -42,6 +44,20 @@ export const nounishGovernanceConfig: FidgetProperties = {
       },
       required: false,
       inputSelector: DaoSelector,
+    },
+    {
+      fieldName: "headingsFontFamily",
+      default: "Theme Headings Font",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
+    },
+    {
+      fieldName: "fontFamily",
+      default: "Theme Font",
+      required: false,
+      inputSelector: FontSelector,
+      group: "style",
     },
     ...defaultStyleFields,
   ],
@@ -108,6 +124,18 @@ export const NounishGovernance: React.FC<
     fetchBlockNumber();
   }, []);
 
+  const getHeadingsFontFamily = () => {
+    return settings.headingsFontFamily === "Theme Headings Font" 
+      ? "var(--user-theme-headings-font)" 
+      : settings.headingsFontFamily || "var(--user-theme-headings-font)";
+  };
+
+  const getBodyFontFamily = () => {
+    return settings.fontFamily === "Theme Font" 
+      ? "var(--user-theme-font)" 
+      : settings.fontFamily || "var(--user-theme-font)";
+  };
+
   if (listError) {
     return <div>Error loading data</div>;
   }
@@ -126,7 +154,7 @@ export const NounishGovernance: React.FC<
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
   return (
-    <CardContent className="size-full overflow-scroll p-4">
+    <CardContent className="size-full overflow-scroll p-4" style={{ fontFamily: getBodyFontFamily() }}>
       {proposalId && selectedProposal ? (
         isBuilderSubgraph ? (
           <BuilderProposalDetailView
@@ -135,6 +163,8 @@ export const NounishGovernance: React.FC<
             currentBlock={currentBlock}
             loading={listLoading}
             versions={[]}
+            headingsFont={getHeadingsFontFamily()}
+            bodyFont={getBodyFontFamily()}
           />
         ) : (
           <NounsProposalDetailView
@@ -143,6 +173,8 @@ export const NounishGovernance: React.FC<
             goBack={handleGoBack}
             currentBlock={currentBlock}
             loading={listLoading}
+            headingsFont={getHeadingsFontFamily()}
+            bodyFont={getBodyFontFamily()}
           />
         )
       ) : (
@@ -154,6 +186,8 @@ export const NounishGovernance: React.FC<
           isBuilderSubgraph={isBuilderSubgraph}
           title={selectedDao.name}
           daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
+          headingsFont={getHeadingsFontFamily()}
+          bodyFont={getBodyFontFamily()}
         />
       )}
     </CardContent>

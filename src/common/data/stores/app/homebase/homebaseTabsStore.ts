@@ -102,6 +102,14 @@ const showTooltipError = (title: string, description: string) => {
   }, 4000);
 };
 
+// Add validation function
+const validateTabName = (tabName: string): string | null => {
+  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
+  }
+  return null;
+};
+
 export const createHomeBaseTabStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
@@ -248,17 +256,10 @@ export const createHomeBaseTabStoreFunc = (
     const publicKey = get().account.currentSpaceIdentityPublicKey;
     if (!publicKey) return;
 
-    if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-      showTooltipError(
-        "Invalid Tab Name", 
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      
-      const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      (error as any).status = 400;
-      throw error;
+    // Validate the tab name before proceeding
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      throw new Error(validationError);
     }
 
     // Check if tab already exists
@@ -492,50 +493,20 @@ export const createHomeBaseTabStoreFunc = (
       }
     }
   }, 1000),
-  async saveHomebaseTabConfig(tabName, config: SpaceConfigSaveDetails) {
-    // console.log('Saving tab config:', {
-    //   tabName,
-    //   timestamp: config.timestamp,
-    //   fidgetCount: Object.keys(config.fidgetInstanceDatums || {}).length,
-    //   hasLayoutDetails: !!config.layoutDetails,
-    //   hasFidgetTrayContents: !!config.fidgetTrayContents
-    // });
-    
+  async saveHomebaseTabConfig(tabName, config) {
     const localCopy = cloneDeep(
       get().homebase.tabs[tabName].config,
     ) as SpaceConfig;
-    
-    // Only update fields that are explicitly provided in the config
-    const updatedConfig: SpaceConfig = {
-      ...localCopy,
-      // Only update timestamp if provided
-      timestamp: config.timestamp || localCopy.timestamp,
-      // Only update fidgetInstanceDatums if provided
-      fidgetInstanceDatums: config.fidgetInstanceDatums ? 
-        cloneDeep(config.fidgetInstanceDatums) : 
-        localCopy.fidgetInstanceDatums,
-      // Only update layoutDetails if provided
-      layoutDetails: config.layoutDetails ? {
-        ...localCopy.layoutDetails,
-        ...config.layoutDetails,
-        layoutFidget: config.layoutDetails.layoutFidget || localCopy.layoutDetails.layoutFidget
-      } : localCopy.layoutDetails,
-      // Only update fidgetTrayContents if provided
-      fidgetTrayContents: config.fidgetTrayContents !== undefined ? 
-        cloneDeep(config.fidgetTrayContents) : 
-        localCopy.fidgetTrayContents
-    };
-    
-    // console.log('Updated tab config:', {
-    //   tabName,
-    //   fidgetCount: Object.keys(updatedConfig.fidgetInstanceDatums || {}).length,
-    //   layoutFidget: updatedConfig.layoutDetails.layoutFidget,
-    //   trayCount: updatedConfig.fidgetTrayContents?.length || 0
-    // });
-    
+    mergeWith(localCopy, config, (objValue, srcValue) => {
+      if (isArray(srcValue)) return srcValue;
+      if (typeof srcValue === 'object' && srcValue !== null) {
+        // For objects, return the source value to replace the target completely
+        return srcValue;
+      }
+    });
     set(
       (draft) => {
-        draft.homebase.tabs[tabName].config = updatedConfig;
+        draft.homebase.tabs[tabName].config = localCopy;
       },
       `saveHomebaseTab:${tabName}`,
       false,
