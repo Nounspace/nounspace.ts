@@ -16,8 +16,8 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
-//     formatPlaintextToHubCastMessage,
-//     getMentionFidsByUsernames,
+  //     formatPlaintextToHubCastMessage,
+  //     getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -322,18 +322,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
           // console.log(query);
           const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
           const fetchedMentions = await res.json();
-          // console.log("fetchedMentions");
-          // console.log(fetchedMentions);
+          console.log("fetchedMentions");
+          console.log(fetchedMentions);
 
-          mentionsToFids = fetchedMentions.reduce(
-            (acc, mention) => {
-              if (mention && mention.username && mention.fid) {
-                acc[mention.username] = mention.fid.toString(); // Convert fid to string
-              }
-              return acc;
-            },
-            {} as { [key: string]: string },
-          );
+          if (Array.isArray(fetchedMentions)) {
+            mentionsToFids = fetchedMentions.reduce(
+              (acc, mention) => {
+                if (mention && mention.username && mention.fid) {
+                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
+                }
+                return acc;
+              },
+              {} as { [key: string]: string },
+            );
+          }
 
           mentionsPositions = [];
           // const currentTextIndex = 0;

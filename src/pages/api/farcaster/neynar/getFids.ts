@@ -46,31 +46,6 @@ async function getUsernamesAndFidsHandler(
   }
 }
 
-
-async function loadCast(req: NextApiRequest, res: NextApiResponse) {
-  const id = isString(req.query.identifier) ? req.query.identifier : "";
-  const type = isString(req.query.type)
-    ? (req.query.type as CastParamType)
-    : CastParamType.Hash;
-
-  try {
-    const data = await neynar.lookupCastByHashOrWarpcastUrl({
-      identifier: id, 
-      type
-    });
-
-    res.status(200).json(data);
-  } catch (e) {
-    if (isAxiosError(e)) {
-      res
-        .status(e.response!.data.status || 500)
-        .json(e.response!.data || "An unknown error occurred");
-    } else {
-      res.status(500).json("An unknown error occurred");
-    }
-  }
-}
-
 // // Default export for API route
 export default requestHandler({
   get: getUsernamesAndFidsHandler,
