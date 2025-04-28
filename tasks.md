@@ -31,8 +31,6 @@
     - [x] Reference: [Events](docs/miniapp-llm-full.md#events)
 
 ## Integration & Refactor
-- [ ] Refactor any direct SDK usage (e.g. in `FrameEmbed.tsx`) to use the new hook.
-  - [ ] Reference: [Calling ready](docs/miniapp-llm-full.md#calling-ready) and [SDK](docs/miniapp-llm-full.md#sdk) for correct usage.
 - [x] Ensure the hook can be used anywhere in the app and provides all necessary information for mini-app/Frame integration (auth, context, actions, etc.).
 - [ ] Support all required Mini App surfaces:
   - [ ] Splash screen handling ([Splash Screen](docs/miniapp-llm-full.md#splash-screen))
@@ -53,7 +51,6 @@
 - [x] Ensure the provider and hook follow the established code patterns and best practices in the codebase.
 
 ## Advanced/Optional
-- [ ] Support notification event handling and webhook integration ([Sending Notifications](docs/miniapp-llm-full.md#sending-notifications), [Receiving webhooks](docs/miniapp-llm-full.md#receiving-webhooks)).
 - [ ] Support Mini App embed meta tag parsing and rendering ([Mini App Embed](docs/miniapp-llm-full.md#mini-app-embed), [Sharing your app](docs/miniapp-llm-full.md#sharing-your-app)).
 - [ ] Support manifest file validation and usage ([Manifest](docs/miniapp-llm-full.md#manifest), [Publishing your app](docs/miniapp-llm-full.md#publishing-your-app)).
 
