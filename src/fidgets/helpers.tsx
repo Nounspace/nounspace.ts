@@ -88,16 +88,29 @@ export const defaultStyleFields = [
   },
 ] as FidgetFieldConfig[];
 
-export const transformUrl = (url: string) => {
-  if (url && url.match(/youtube\.com\/watch\?v=/)) {
-    return url.replace("watch?v=", "embed/");
+export const transformUrl = (url: string): string => {
+  if (!url) return "";
+  
+  if (url.includes('/embed/') || url.includes('player.vimeo.com/video/')) {
+    return url;
   }
-  if (url && url.match(/vimeo\.com\/\d+/)) {
-    return url.replace("vimeo.com", "player.vimeo.com/video");
+  
+  const youtubeRegex = 
+    /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&].*)?/;
+  const youtubeMatch = url.match(youtubeRegex);
+  
+  if (youtubeMatch && youtubeMatch[1]) {
+    return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   }
-  if (url && url.match(/odysee\.com\/@/)) {
-    return url.replace("odysee.com", "odysee.com/$/embed");
+  
+  const vimeoRegex = 
+    /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^/]*)\/videos\/|)(\d+)(?:|\/\?|$)/;
+  const vimeoMatch = url.match(vimeoRegex);
+  
+  if (vimeoMatch && vimeoMatch[1]) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
+  
   return url;
 };
 

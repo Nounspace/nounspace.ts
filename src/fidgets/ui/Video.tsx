@@ -31,9 +31,9 @@ const frameConfig: FidgetProperties = {
     {
       fieldName: "url",
       displayName: "URL",
-      displayNameHint: "Paste the URL to the Frame you want to embed",
+      displayNameHint: "Paste any YouTube or Vimeo URL and it will be automatically converted",
       required: true,
-      default: "https://www.youtube.com/embed/lOzCA7bZG_k",
+      default: "https://www.youtube.com/watch?v=lOzCA7bZG_k", 
       inputSelector: TextInput,
       group: "settings",
     },
