@@ -21,7 +21,7 @@ import {
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { mobileStyleSettings } from "../helpers";
-import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect } from "react";
 import { useInView } from "react-intersection-observer";

@@ -205,7 +205,8 @@ export async function contractOwnerFromContract(
       );
       ownerId = contractCreation.contractCreator;
       try {
-        const userFid = await neynar.fetchBulkUsersByEthereumAddress([ownerId]);
+        const addresses = [ownerId];
+        const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({addresses});
         if (userFid[ownerId]) {
           ownerId = userFid[ownerId][0].fid.toString();
           ownerIdType = "fid" as OwnerType;
