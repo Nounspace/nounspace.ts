@@ -9,7 +9,6 @@ import Head from "next/head";
 const frame = {
   version: "next",
   imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
-  aspectRatio: 3/2,
   button: {
     title: "Start Nounspace",
     action: {
@@ -17,7 +16,7 @@ const frame = {
       url: WEBSITE_URL,
       name: "Nounspace",
       splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor:"#f5f0ec"
+      splashBackgroundColor: "#FFFFFF",
     }
   }
 }
