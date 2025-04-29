@@ -5,7 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Farcaster Mini App Webhook endpoint
- * Handles POST events from Farcaster clients (frame_added, frame_removed, notifications_enabled, notifications_disabled)
+ * Handles POST events from Farcaster clients:
+ *   - frame_added
+ *   - frame_removed
+ *   - notifications_enabled
+ *   - notifications_disabled
  * See: https://github.com/farcasterxyz/frames-v2-demo/blob/main/src/app/api/webhook/route.ts
  */
 export async function POST(request: NextRequest) {
