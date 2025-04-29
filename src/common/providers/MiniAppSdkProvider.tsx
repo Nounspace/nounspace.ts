@@ -33,15 +33,20 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     // Only initialize on client side
-    if (typeof window === "undefined") {
-      return;
-    }
+    // if (typeof window === "undefined") {
+    //   return;
+    // }
 
     const initializeSdk = async () => {
       try {
+        // Initialize the frame SDK
+        await frameSdk.actions.ready();
+
         // Store the sdk reference
         // Get initial frame context - it's a Promise
         const initialFrameContext = await frameSdk.context;
+
+        console.log("Frame SDK initialized successfully.", initialFrameContext);
         
         setState((prev) => ({
           ...prev,
