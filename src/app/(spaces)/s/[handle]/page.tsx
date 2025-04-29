@@ -69,14 +69,14 @@ export async function generateMetadata({
   
   const spaceFrame = {
     version: "next",
-    imageUrl: userMetadata?.pfpUrl || `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
     button: {
       title: `Visit ${displayName}'s Space`,
       action: {
         type: "launch_frame",
         url: frameUrl,
         name: `${displayName}'s Nounspace`,
-        splashImageUrl: userMetadata?.pfpUrl || `${WEBSITE_URL}/images/nounspace_logo.png`,
+        splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
         splashBackgroundColor: "#FFFFFF",
       }
     }
