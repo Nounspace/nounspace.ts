@@ -4,10 +4,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/common/components/atoms/card";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
@@ -16,6 +14,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
+import { defaultStyleFields } from "../helpers";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -29,16 +28,16 @@ export type TextFidgetSettings = {
 
 const defaultText = `Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.`;
 
+
 export const textConfig: FidgetProperties = {
   fidgetName: "Text",
   icon: 0x1f4c4,
   fields: [
-    // Settings group
     {
       fieldName: "title",
       displayName: "Title",
       displayNameHint: "Optional title for your Text Fidget.",
-      default: "",
+      default: "Text Fidget",
       required: false,
       inputSelector: TextInput,
       group: "settings",
@@ -52,8 +51,6 @@ export const textConfig: FidgetProperties = {
       inputSelector: CSSInput,
       group: "settings",
     },
-
-    // Style group
     {
       fieldName: "fontFamily",
       displayName: "FontFamily",
@@ -83,7 +80,6 @@ export const textConfig: FidgetProperties = {
       fieldName: "urlColor",
       displayName: "UrlColor",
       displayNameHint: "Color used for links in the text input (body text).",
-      default: "var(--user-theme-link-color)",
       required: false,
       inputSelector: (props) => (
         <ThemeColorSelector
@@ -93,6 +89,7 @@ export const textConfig: FidgetProperties = {
           colorType="link color"
         />
       ),
+      default: "var(--user-theme-link-color)",
       group: "style",
     },
     {
@@ -115,60 +112,18 @@ export const textConfig: FidgetProperties = {
           {...props}
           themeVariable="var(--user-theme-headings-font-color)"
           defaultColor="#000000"
-          colorType="heading color"
+          colorType="headings color"
         />
       ),
       group: "style",
     },
+    ...defaultStyleFields,
     {
-      fieldName: "background",
-      displayName: "Background",
-      displayNameHint: "Color used for the background of the Text Fidget",
-      default: "var(--user-theme-fidget-background)",
+      fieldName: "css",
+      default: "",
       required: false,
-      inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderWidth",
-      displayName: "FidgetBorderWidth",
-      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
-      default: "var(--user-theme-fidget-border-width)",
-      required: false,
-      inputSelector: BorderSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fidgetBorderColor",
-      displayName: "FidgetBorderColor",
-      displayNameHint: "Color of the Fidget's Border.",
-      default: "var(--user-theme-fidget-border-color)",
-      required: false,
-      inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "fidgetShadow",
-      displayName: "FidgetShadow",
-      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
-      default: "var(--user-theme-fidget-shadow)",
-      required: false,
-      inputSelector: ShadowSelector,
-      group: "style",
+      inputSelector: CSSInput,
+      group: "code",
     },
   ],
   size: {
