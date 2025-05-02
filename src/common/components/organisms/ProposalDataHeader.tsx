@@ -6,7 +6,6 @@ import { format } from "date-fns";
 import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
-import { IoMdShare } from "react-icons/io";
 
 const AddressDisplay = ({ address }: { address: Address }) => {
   const { data: ensName } = useEnsName({
@@ -34,7 +33,7 @@ const ProposalDataHeader: React.FC = () => {
   
   if (!proposalData) {
     return (
-      <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
+      <div className="mt-2 flex items-center justify-between px-3 md:px-4 py-2 w-full border-r border-r-gray-200">
         <div>Loading proposal data...</div>
       </div>
     );
@@ -58,19 +57,8 @@ const ProposalDataHeader: React.FC = () => {
     }
   }, [proposalData, id, title]);
 
-  const handleCopyUrl = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url)
-      .then(() => {
-        alert("URL copied to clipboard");
-      })
-      .catch((error) => {
-        console.error("Failed to copy URL:", error);
-      });
-  };
-
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
+    <div className="mt-2 flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-4 py-2 w-full border-r-2 border-r-gray-200">
       <div className="flex flex-col">
         <h1 className="text-xl font-bold text-black">
           Proposal {id}: {title}
@@ -87,15 +75,6 @@ const ProposalDataHeader: React.FC = () => {
               ))}
             </>
           )}
-        </div>
-      </div>
-
-      <div className="mt-2 md:mt-0 flex items-center">
-        <div className="hidden md:flex items-center space-x-2">
-          <IoMdShare
-            className="text-gray-500 cursor-pointer"
-            onClick={handleCopyUrl}
-          />
         </div>
       </div>
     </div>
