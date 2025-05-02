@@ -2,7 +2,7 @@ import { Metadata } from "next/types";
 import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
 import { defaultFrame } from "@/app/layout";
-import { loadProposalData } from "./[tabname]/page";
+import { loadProposalData } from "./utils";
 
 export const defaultMetadata = {
   other: {
