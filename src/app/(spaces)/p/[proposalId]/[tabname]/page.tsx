@@ -29,6 +29,9 @@ async function loadProposalData(proposalId: string): Promise<ProposalData> {
               proposer {
                 id
               }
+              signers {
+                id
+              }
             }
           }`,
         variables: {
