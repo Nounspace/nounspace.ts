@@ -12,6 +12,7 @@ import AnalyticsProvider from "./AnalyticsProvider";
 import VersionCheckProivder from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 import { ToastProvider } from "../components/atoms/Toast";
+import MiniAppSdkProvider from "./MiniAppSdkProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -26,7 +27,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <LoggedInStateProvider>
                       <SidebarContextProvider>
                         <AnalyticsProvider>
-                          <ToastProvider>{children}</ToastProvider>
+                          <MiniAppSdkProvider>
+                            <ToastProvider>{children}</ToastProvider>
+                          </MiniAppSdkProvider>
                         </AnalyticsProvider>
                       </SidebarContextProvider>
                     </LoggedInStateProvider>

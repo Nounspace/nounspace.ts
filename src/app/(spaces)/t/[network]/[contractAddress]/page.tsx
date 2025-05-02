@@ -25,18 +25,18 @@ export interface ContractSpacePageProps {
   network: EtherScanChainName;
 }
 
-export async function generateMetadata({
-  params: { contractAddress, network },
-}): Promise<Metadata> {
+// export async function generateMetadata({
+//   params: { contractAddress, network },
+// }): Promise<Metadata> {
 
-  const tokenResponse = await fetchMasterToken(
-    contractAddress,
-    network as EtherScanChainName,
-  );
+//   const tokenResponse = await fetchMasterToken(
+//     contractAddress,
+//     network as EtherScanChainName,
+//   );
 
-  const metadata = generateContractMetadataHtml(contractAddress, tokenResponse);
-  return metadata;
-}
+//   const metadata = generateContractMetadataHtml(contractAddress, tokenResponse);
+//   return metadata;
+// }
 
 export default async function ContractPrimarySpace ({ params }) {
   const {props: {
