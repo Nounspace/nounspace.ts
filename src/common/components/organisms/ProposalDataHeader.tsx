@@ -29,7 +29,7 @@ const AddressDisplay = ({ address }: { address: Address }) => {
 };
 
 const ProposalDataHeader: React.FC = () => {
-  const { proposalId, proposalData } = useProposalContext();
+  const { proposalData } = useProposalContext();
   console.log("DEBUG: proposalData", proposalData);
   
   if (!proposalData) {
