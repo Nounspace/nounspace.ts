@@ -13,15 +13,82 @@ export const size = {
 
 export const contentType = 'image/png';
 
+// Function to fetch proposal data
+async function loadProposalData(proposalId: string) {
+  try {
+    const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: `query Proposal($proposalId: ID!) {
+            proposal(id: $proposalId) {
+              id
+              title
+              createdTimestamp
+              proposer {
+                id
+              }
+              signers {
+                id
+              }
+              description
+            }
+          }`,
+        variables: {
+          proposalId,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch proposal data: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+    return data.data.proposal;
+  } catch (error) {
+    console.error("Error loading proposal data:", error);
+    return {
+      id: proposalId,
+      title: "Error loading proposal",
+      proposer: {
+        id: "0x0",
+      },
+      description: "",
+    };
+  }
+}
+
+/**
+ * Extracts the first URL ending with jpeg, jpg, png, or containing "image" in the path
+ */
+function extractFirstImageUrl(text: string): string | null {
+  if (!text) return null;
+  
+  // Match URLs that end with image extensions or contain 'image' in the path
+  const regex = /(https?:\/\/[^\s]+\.(jpeg|jpg|png|gif|webp)|https?:\/\/[^\s]+image[^\s]*)/i;
+  const match = text.match(regex);
+  
+  return match ? match[0] : null;
+}
+
 // Image generation - changed from GET function to default export function
 export default async function Image({ params }: { params: { proposalId: string } }) {
   try {
     console.log("params", params);
-
-    // Get image URL from search parameters
-    // const imageUrl = params?.image;
-    const imageUrl = null;
-    const title = params?.proposalId || 'Nounspace';
+    
+    const proposalData = await loadProposalData(params.proposalId);
+    
+    // Extract image URL from proposal description if available
+    const imageUrl = proposalData.description 
+      ? extractFirstImageUrl(proposalData.description)
+      : null;
+      
+    const title = proposalData.title || params?.proposalId || 'Nounspace';
 
     const frameImageUrl = `${WEBSITE_URL}/images/rainforest.png`;
     
