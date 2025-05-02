@@ -631,9 +631,13 @@ export default function PublicSpace({
     />
   );
 
-  const profile = isTokenPage ? undefined : (
-    <Profile.fidget settings={{}} saveData={async () => noop()} data={{}} />
-  );
+  const profile = (
+    isTokenPage || !spaceOwnerFid ? undefined :
+    <Profile.fidget
+      settings={{ fid: spaceOwnerFid }}
+      saveData={async () => noop()}
+      data={{}}
+    />);
 
   if (!profile) {
     console.warn("Profile component is undefined");
