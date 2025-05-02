@@ -1,15 +1,9 @@
 import { OwnerType } from "@/common/data/api/etherscan";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
 import React from "react";
-import {
-  fetchMasterToken,
-  MasterToken,
-  TokenProvider,
-} from "@/common/providers/TokenProvider";
+import { MasterToken, TokenProvider } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { Metadata } from "next/types";
-import { generateContractMetadataHtml } from "@/common/lib/utils/generateContractMetadataHtml";
 import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
 
 export interface ContractSpacePageProps {
