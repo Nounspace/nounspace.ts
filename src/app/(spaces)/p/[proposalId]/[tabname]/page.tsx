@@ -18,7 +18,7 @@ export interface ProposalData {
   createdTimestamp?: string;
 }
 
-async function loadProposalData(proposalId: string): Promise<ProposalData> {
+export async function loadProposalData(proposalId: string): Promise<ProposalData> {
   try {
     const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
       method: "POST",

@@ -6,7 +6,7 @@ import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 
-const frame = {
+export const defaultFrame = {
   version: "next",
   imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
   button: {
@@ -56,7 +56,7 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(frame),
+    'fc:frame': JSON.stringify(defaultFrame),
   },
 };
 
@@ -74,7 +74,7 @@ export default function RootLayout({
       <Head>
         <meta
           name="fc:frame"
-          content={JSON.stringify(frame)}
+          content={JSON.stringify(defaultFrame)}
         />
       </Head>
       <body>
