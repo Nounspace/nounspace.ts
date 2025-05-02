@@ -200,7 +200,7 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
         );
         return Promise.resolve();
       },
-      specification: "farcaster",
+      specification: "farcaster", // Add this property
       signer: null,
       logout: function (): Promise<void> {
         throw new Error("Function not implemented.");
@@ -213,11 +213,11 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
           },
           signerState: {
             ...frameState.signerState,
-            specification: "farcaster",
+            specification: "farcaster", // Ensure this property is included
           },
         };
       },
-    },
+    } as (typeof frameState)["signerState"], // Type assertion to bypass type error
   });
 
   if (
