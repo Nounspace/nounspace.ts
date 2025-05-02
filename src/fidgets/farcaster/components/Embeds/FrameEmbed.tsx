@@ -211,7 +211,10 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
             ...context,
             ...(overrides || {}),
           },
-          signerState: frameState.signerState,
+          signerState: {
+            ...frameState.signerState,
+            specification: "farcaster",
+          },
         };
       },
     },
