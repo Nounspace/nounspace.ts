@@ -153,18 +153,18 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:min-h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
         {pageType === "proposal" && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start overflow-y-scroll w-full z-30 bg-white">
             <ProposalDataHeader />
           </div>
         )}
-        <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
+        <div className="flex flex-row justify-start self-end h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
           {tabList && (
             <Reorder.Group
               as="ol"
