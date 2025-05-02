@@ -177,14 +177,17 @@ export default function Space({
     });
   }
 
-  // Memoize the LayoutFidget component selection based on mobile state
+    // Memoize the LayoutFidget component selection based on mobile state
   const LayoutFidget = useMemo(() => {
-    const layoutFidgetKey = config?.layoutDetails?.layoutFidget || "grid";
-    if (!LayoutFidgets[layoutFidgetKey]) {
-      console.error(`Invalid layoutFidget: ${layoutFidgetKey}`);
-      return LayoutFidgets["grid"];
+    if (isMobile) {
+      // Use TabFullScreen for mobile
+      return LayoutFidgets["tabFullScreen"];
+    } else {
+      // Use the configured layout for desktop
+      return config && config.layoutDetails && config.layoutDetails.layoutFidget
+        ? LayoutFidgets[config.layoutDetails.layoutFidget]
+        : LayoutFidgets["grid"];
     }
-    return LayoutFidgets[layoutFidgetKey];
   }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
   // Memoize the layoutConfig to prevent unnecessary re-renders
