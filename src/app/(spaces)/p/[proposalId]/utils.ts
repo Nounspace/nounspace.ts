@@ -10,6 +10,7 @@ export interface ProposalData {
     id: Address;
   }[];
   createdTimestamp?: string;
+  description?: string;
 }
 
 export async function loadProposalData(proposalId: string): Promise<ProposalData> {
@@ -31,6 +32,7 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
               signers {
                 id
               }
+              description
             }
           }`,
         variables: {
