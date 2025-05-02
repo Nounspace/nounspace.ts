@@ -3,22 +3,7 @@ import React from "react";
 import { getUserMetadata } from "./utils";
 import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
-
-// Default frame for layout
-const defaultFrame = {
-  version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
-  button: {
-    title: "Start Nounspace",
-    action: {
-      type: "launch_frame",
-      url: WEBSITE_URL,
-      name: "Nounspace",
-      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor: "#FFFFFF",
-    },
-  },
-};
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {
@@ -51,7 +36,7 @@ export async function generateMetadata({
   
   const spaceFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
     button: {
       title: `Visit ${displayName}'s Space`,
       action: {

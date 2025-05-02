@@ -1,13 +1,12 @@
-"use client"
+"use client";
 
-import React from 'react';
-import ContractDefinedSpace from '@/app/(spaces)/t/[network]/ContractDefinedSpace';
-import SpaceNotFound from '@/app/(spaces)/SpaceNotFound';
-import { useAppStore } from '@/common/data/stores/app';
-import { isArray, isNil } from 'lodash';
-import { useEffect } from 'react';
-import { ContractSpacePageProps } from './[contractAddress]/page';
-import createInitialContractSpaceConfigForAddress from '@/constants/initialContractSpace';
+import React from "react";
+import ContractDefinedSpace from "@/app/(spaces)/t/[network]/ContractDefinedSpace";
+import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
+import { useAppStore } from "@/common/data/stores/app";
+import { isArray, isNil } from "lodash";
+import { useEffect } from "react";
+import { ContractSpacePageProps } from "./[contractAddress]/page";
 
 const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId,
@@ -19,7 +18,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   network,
   tokenData,
 }) => {
-  console.log('ContractPrimarySpaceContent received props:', {
+  console.log("ContractPrimarySpaceContent received props:", {
     spaceId,
     tabName,
     ownerId,
@@ -29,16 +28,18 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     network,
   });
 
-  const { loadEditableSpaces, addContractEditableSpaces, registerSpaceContract } = useAppStore(
-    (state) => ({
-      loadEditableSpaces: state.space.loadEditableSpaces,
-      addContractEditableSpaces: state.space.addContractEditableSpaces,
-      registerSpaceContract: state.space.registerSpaceContract,
-    }),
-  );
+  const {
+    loadEditableSpaces,
+    addContractEditableSpaces,
+    registerSpaceContract,
+  } = useAppStore((state) => ({
+    loadEditableSpaces: state.space.loadEditableSpaces,
+    addContractEditableSpaces: state.space.addContractEditableSpaces,
+    registerSpaceContract: state.space.registerSpaceContract,
+  }));
 
   useEffect(() => {
-    console.log('addContractEditableSpaces called with:', {
+    console.log("addContractEditableSpaces called with:", {
       spaceId,
       owningIdentities,
     });
@@ -46,10 +47,10 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   }, [spaceId]);
 
   useEffect(() => {
-    console.log('loadEditableSpaces called');
+    console.log("loadEditableSpaces called");
     loadEditableSpaces();
 
-    console.log('ContractPrimarySpaceContent rendered with props:', {
+    console.log("ContractPrimarySpaceContent rendered with props:", {
       spaceId,
       tabName,
       ownerId,
@@ -62,10 +63,12 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
 
   // Log the conditions that determine rendering
   const hasOwnerAndContract = !isNil(ownerId) && !isNil(contractAddress);
-  const shouldShowProfile = isNil(spaceId) && (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
+  const shouldShowProfile =
+    isNil(spaceId) &&
+    (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
   const hasSpaceId = !isNil(spaceId);
 
-  console.log('Rendering conditions:', {
+  console.log("Rendering conditions:", {
     hasOwnerAndContract,
     shouldShowProfile,
     hasSpaceId,
@@ -74,12 +77,12 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
 
   // Only show 404 if we don't have a valid contract address
   if (isNil(contractAddress)) {
-    console.log('Returning SpaceNotFound due to missing contractAddress');
+    console.log("Returning SpaceNotFound due to missing contractAddress");
     return <SpaceNotFound />;
   }
 
   // If we have a contract address, show the space even if it doesn't exist yet
-  console.log('Rendering ContractDefinedSpace with spaceId:', spaceId);
+  console.log("Rendering ContractDefinedSpace with spaceId:", spaceId);
   return (
     <>
       <ContractDefinedSpace

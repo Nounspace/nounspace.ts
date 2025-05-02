@@ -1,4 +1,4 @@
-export const dynamic = 'force-static'; 
+export const dynamic = "force-static";
 export const revalidate = 60;
 
 import React from "react";
@@ -8,12 +8,11 @@ import { Address } from "viem";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { useParams } from 'next/navigation';
-import ContractPrimarySpaceContent from '../../ContractPrimarySpaceContent';
+import ContractPrimarySpaceContent from "../../ContractPrimarySpaceContent";
 
 async function loadTokenData(
   contractAddress: Address,
-  network: EtherScanChainName,
+  network: EtherScanChainName
 ): Promise<MasterToken> {
   if (network === "base") {
     const [tokenResponse, clankerResponse] = await Promise.all([
@@ -44,10 +43,10 @@ export default async function WrappedContractPrimarySpace({ params }) {
 
   const props = {
     ...contractData.props,
-      contractAddress,
-      tokenData,
-      network,
-  }
+    contractAddress,
+    tokenData,
+    network,
+  };
 
   return (
     <TokenProvider
@@ -55,9 +54,7 @@ export default async function WrappedContractPrimarySpace({ params }) {
       defaultTokenData={tokenData}
       network={network}
     >
-      <ContractPrimarySpaceContent 
-        {...props}
-      />
+      <ContractPrimarySpaceContent {...props} />
     </TokenProvider>
   );
-};
+}
