@@ -1,6 +1,6 @@
 "use client";
 
-import { ProposalData } from "@/app/(spaces)/p/[proposalId]/[tabname]/page";
+import { ProposalData } from "@/app/(spaces)/p/[proposalId]/utils";
 import React, {
   createContext,
   useContext,

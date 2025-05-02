@@ -5,21 +5,7 @@ import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
-
-export const defaultFrame = {
-  version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
-  button: {
-    title: "Start Nounspace",
-    action: {
-      type: "launch_frame",
-      url: WEBSITE_URL,
-      name: "Nounspace",
-      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor: "#FFFFFF",
-    }
-  }
-}
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 export const metadata = {
   title: "Nounspace",

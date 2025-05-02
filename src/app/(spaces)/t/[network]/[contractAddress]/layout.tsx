@@ -2,23 +2,7 @@ import { WEBSITE_URL } from "@/constants/app";
 import { Metadata } from "next/types";
 import React from "react";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
-
-// Default frame for layout
-const defaultFrame = {
-  version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
-  button: {
-    title: "Start Nounspace",
-    action: {
-      type: "launch_frame",
-      url: WEBSITE_URL,
-      name: "Nounspace",
-      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor: "#FFFFFF",
-    },
-  },
-};
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {

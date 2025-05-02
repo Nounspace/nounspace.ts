@@ -1,10 +1,10 @@
 import { Metadata } from "next/types";
 import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
-import { defaultFrame } from "@/app/layout";
 import { loadProposalData } from "./utils";
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
-export const defaultMetadata = {
+const defaultMetadata = {
   other: {
     'fc:frame': JSON.stringify(defaultFrame),
   },
