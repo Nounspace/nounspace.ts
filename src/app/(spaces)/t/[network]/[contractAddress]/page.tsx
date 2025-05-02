@@ -8,10 +8,9 @@ import {
 } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { useParams } from 'next/navigation';
-import { Metadata } from 'next/types';
-import { generateContractMetadataHtml } from '@/common/lib/utils/generateContractMetadataHtml';
-import ContractPrimarySpaceContent from '../ContractPrimarySpaceContent';
+import { Metadata } from "next/types";
+import { generateContractMetadataHtml } from "@/common/lib/utils/generateContractMetadataHtml";
+import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
@@ -28,25 +27,26 @@ export interface ContractSpacePageProps {
 export async function generateMetadata({
   params: { contractAddress, network },
 }): Promise<Metadata> {
-
   const tokenResponse = await fetchMasterToken(
     contractAddress,
-    network as EtherScanChainName,
+    network as EtherScanChainName
   );
 
   const metadata = generateContractMetadataHtml(contractAddress, tokenResponse);
   return metadata;
 }
 
-export default async function ContractPrimarySpace ({ params }) {
-  const {props: {
-    spaceId,
-    tabName,
-    ownerId,
-    ownerIdType,
-    contractAddress,
-    owningIdentities,
-  }} = await loadContractData(params || {});
+export default async function ContractPrimarySpace({ params }) {
+  const {
+    props: {
+      spaceId,
+      tabName,
+      ownerId,
+      ownerIdType,
+      contractAddress,
+      owningIdentities,
+    },
+  } = await loadContractData(params || {});
   const network = params?.network as EtherScanChainName;
 
   return (
@@ -65,4 +65,4 @@ export default async function ContractPrimarySpace ({ params }) {
       />
     </TokenProvider>
   );
-};
+}

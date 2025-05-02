@@ -80,62 +80,72 @@ export default function Space({
 
   // Clean up unused fidgetInstanceDatums when config is first loaded
   useEffect(() => {
-    console.log('Checking fidget cleanup...');
-    console.log('Current layout:', config?.layoutDetails?.layoutConfig?.layout);
-    console.log('Current fidgetInstanceDatums:', config?.fidgetInstanceDatums);
+    console.log("Checking fidget cleanup...");
+    console.log("Current layout:", config?.layoutDetails?.layoutConfig?.layout);
+    console.log("Current fidgetInstanceDatums:", config?.fidgetInstanceDatums);
 
-    if (!config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
-      console.log('Missing required config data, skipping cleanup');
+    if (
+      !config?.layoutDetails?.layoutConfig?.layout ||
+      !config?.fidgetInstanceDatums
+    ) {
+      console.log("Missing required config data, skipping cleanup");
       return;
     }
 
     // Extract fidget IDs from the layout objects using the 'i' property
     const layoutFidgetIds = new Set(
-      config.layoutDetails.layoutConfig.layout.map(item => item.i)
+      config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
-    console.log('Layout fidget IDs:', Array.from(layoutFidgetIds));
+    console.log("Layout fidget IDs:", Array.from(layoutFidgetIds));
 
     // Check if the onboarding fidget is in the layout
-    const hasOnboardingInLayout = layoutFidgetIds.has('text:onboarding');
-    console.log('Has onboarding in layout:', hasOnboardingInLayout);
+    const hasOnboardingInLayout = layoutFidgetIds.has("text:onboarding");
+    console.log("Has onboarding in layout:", hasOnboardingInLayout);
 
     // If onboarding is not in layout, remove it from fidgetInstanceDatums
     const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-      id => !layoutFidgetIds.has(id)
+      (id) => !layoutFidgetIds.has(id)
     );
-    console.log('Unused fidget IDs:', unusedFidgetIds);
+    console.log("Unused fidget IDs:", unusedFidgetIds);
 
     if (unusedFidgetIds.length > 0) {
-      console.log('Found unused fidgets, cleaning up...');
+      console.log("Found unused fidgets, cleaning up...");
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      unusedFidgetIds.forEach(id => {
+      unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
 
-      console.log('Cleaned fidgetInstanceDatums:', cleanedFidgetInstanceDatums);
-      
+      console.log("Cleaned fidgetInstanceDatums:", cleanedFidgetInstanceDatums);
+
       // Only pass the fidgetInstanceDatums field to ensure it replaces rather than merges
       const saveConfigPromise = saveConfig({
         fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
-      console.log('Saving cleaned fidgetInstanceDatums...');
-      
+
+      console.log("Saving cleaned fidgetInstanceDatums...");
+
       saveConfigPromise.then(() => {
-        console.log('Save completed, verifying config state...');
-        console.log('Current config after save:', config);
-        
+        console.log("Save completed, verifying config state...");
+        console.log("Current config after save:", config);
+
         // Only commit if the save was successful
-        if (Object.keys(config.fidgetInstanceDatums).length === Object.keys(cleanedFidgetInstanceDatums).length) {
-          console.log('Config state matches cleaned state, committing to database');
+        if (
+          Object.keys(config.fidgetInstanceDatums).length ===
+          Object.keys(cleanedFidgetInstanceDatums).length
+        ) {
+          console.log(
+            "Config state matches cleaned state, committing to database"
+          );
           commitConfig();
         } else {
-          console.log('Config state does not match cleaned state, skipping commit');
+          console.log(
+            "Config state does not match cleaned state, skipping commit"
+          );
         }
       });
     } else {
-      console.log('No unused fidgets found');
+      console.log("No unused fidgets found");
     }
   }, [config?.layoutDetails?.layoutConfig?.layout]); // Only run when layout changes
 
@@ -169,15 +179,12 @@ export default function Space({
 
   // Memoize the LayoutFidget component selection based on mobile state
   const LayoutFidget = useMemo(() => {
-    if (isMobile) {
-      // Use TabFullScreen for mobile
-      return LayoutFidgets["tabFullScreen"];
-    } else {
-      // Use the configured layout for desktop
-      return config && config.layoutDetails && config.layoutDetails.layoutFidget
-        ? LayoutFidgets[config.layoutDetails.layoutFidget]
-        : LayoutFidgets["grid"];
+    const layoutFidgetKey = config?.layoutDetails?.layoutFidget || "grid";
+    if (!LayoutFidgets[layoutFidgetKey]) {
+      console.error(`Invalid layoutFidget: ${layoutFidgetKey}`);
+      return LayoutFidgets["grid"];
     }
+    return LayoutFidgets[layoutFidgetKey];
   }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
   // Memoize the layoutConfig to prevent unnecessary re-renders
@@ -185,19 +192,25 @@ export default function Space({
     if (isMobile) {
       // Extract fidget IDs from the current config to use in TabFullScreen
       const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
-      
+
       // Create a layout config for TabFullScreen with all available fidget IDs
       return {
         layout: fidgetIds,
         layoutFidget: "tabFullScreen",
       };
     } else {
-      return config?.layoutDetails?.layoutConfig ?? {
-        layout: [],
-        layoutFidget: "grid",
-      };
+      return (
+        config?.layoutDetails?.layoutConfig ?? {
+          layout: [],
+          layoutFidget: "grid",
+        }
+      );
     }
-  }, [isMobile, config?.layoutDetails?.layoutConfig, config?.fidgetInstanceDatums]);
+  }, [
+    isMobile,
+    config?.layoutDetails?.layoutConfig,
+    config?.fidgetInstanceDatums,
+  ]);
 
   // Memoize the LayoutFidget render props that don't change during fidget movement
   const layoutFidgetProps = useMemo(() => {
@@ -213,20 +226,24 @@ export default function Space({
       hasProfile: !isMobile && !isNil(profile),
       hasFeed: !isNil(feed),
       tabNames: config.tabNames,
-      fid: config.fid
+      fid: config.fid,
     };
   }, [
     config.theme,
-    config.fidgetInstanceDatums, 
+    config.fidgetInstanceDatums,
     config.fidgetTrayContents,
     config.tabNames,
     config.fid,
-    isMobile, 
-    editMode, 
-    portalRef, 
-    profile, 
-    feed
+    isMobile,
+    editMode,
+    portalRef,
+    profile,
+    feed,
   ]);
+
+  if (!LayoutFidget) {
+    console.error("LayoutFidget is undefined");
+  }
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
@@ -268,10 +285,14 @@ export default function Space({
                   />
                 }
               >
-                <LayoutFidget
-                  layoutConfig={{ ...layoutConfig }}
-                  {...layoutFidgetProps}
-                />
+                {LayoutFidget ? (
+                  <LayoutFidget
+                    layoutConfig={{ ...layoutConfig }}
+                    {...layoutFidgetProps}
+                  />
+                ) : (
+                  <div>Error: LayoutFidget is undefined</div>
+                )}
               </Suspense>
             </div>
           </div>
