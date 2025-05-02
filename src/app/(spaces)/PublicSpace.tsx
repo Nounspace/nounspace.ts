@@ -33,7 +33,7 @@ interface PublicSpaceProps {
   // Token data
   tokenData?: MasterToken;
   // New prop to identify page type
-  pageType?: "person" | "token" | "proposal";
+  pageType?: "profile" | "token" | "proposal";
 }
 
 export default function PublicSpace({
@@ -631,8 +631,9 @@ export default function PublicSpace({
     />
   );
 
+  // @todo - Use correct page type for profile
   const profile = (
-    isTokenPage || !spaceOwnerFid ? undefined :
+    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined :
     <Profile.fidget
       settings={{ fid: spaceOwnerFid }}
       saveData={async () => noop()}
