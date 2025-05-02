@@ -60,14 +60,13 @@ const ProposalDataHeader: React.FC = () => {
   return (
     <div className="mt-2 flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-4 py-2 w-full border-r-2 border-r-gray-200">
       <div className="flex flex-col">
-        <h1 className="text-xl font-bold text-black">
-          Proposal {id}: {title}
-        </h1>
+        <h1 className="text-xl font-bold text-black">⌐◨-◨ - Proposal {id}</h1>
         <div className="text-sm text-gray-500">
-          Proposed {formattedDate} by <AddressDisplay address={proposer} />
+          Proposed by <AddressDisplay address={proposer} /> at {formattedDate}
           {signers && signers.length > 0 && (
             <>
-              , sponsored by {signers.map((signer, index) => (
+              , sponsored by{" "}
+              {signers.map((signer, index) => (
                 <React.Fragment key={signer.id}>
                   {index > 0 && ", "}
                   <AddressDisplay address={signer.id} />
