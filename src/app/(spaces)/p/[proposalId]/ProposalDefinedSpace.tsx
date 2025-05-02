@@ -5,6 +5,7 @@ import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { Address } from "viem";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 import { ProposalData } from "./[tabname]/page";
+import { useProposalContext } from "@/common/providers/ProposalProvider";
 
 export interface ProposalPageSpaceProps {
   spaceId?: string | null;
@@ -18,15 +19,16 @@ const ProposalDefinedSpace = ({
   spaceId,
   tabName,
   proposalId,
-  proposalData,
 }: ProposalPageSpaceProps) => {
+  const { proposalData } = useProposalContext();
   const ownerId = proposalData?.proposer.id;
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
       createInitalProposalSpaceConfigForProposalId(
         proposalId as Address,
-        ownerId as Address
+        ownerId as Address,
+        proposalData?.proposer.id as Address
       ),
     [proposalId, proposalData]
   );
