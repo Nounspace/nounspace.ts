@@ -5,21 +5,7 @@ import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
-
-const frame = {
-  version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
-  button: {
-    title: "Start Nounspace",
-    action: {
-      type: "launch_frame",
-      url: WEBSITE_URL,
-      name: "Nounspace",
-      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor: "#FFFFFF",
-    }
-  }
-}
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 export const metadata = {
   title: "Nounspace",
@@ -32,7 +18,7 @@ export const metadata = {
     description:
       "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
     images: {
-      url: `${WEBSITE_URL}/images/nounspace_og.png`,
+      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
       type: "image/png",
       width: 1200,
       height: 737,
@@ -56,7 +42,7 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(frame),
+    'fc:frame': JSON.stringify(defaultFrame),
   },
 };
 
@@ -74,7 +60,7 @@ export default function RootLayout({
       <Head>
         <meta
           name="fc:frame"
-          content={JSON.stringify(frame)}
+          content={JSON.stringify(defaultFrame)}
         />
       </Head>
       <body>
