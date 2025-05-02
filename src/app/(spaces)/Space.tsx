@@ -162,10 +162,13 @@ export default function Space({
       // Use TabFullScreen for mobile
       return LayoutFidgets["tabFullScreen"];
     } else {
-      // Use the configured layout for desktop
-      return config && config.layoutDetails && config.layoutDetails.layoutFidget
-        ? LayoutFidgets[config.layoutDetails.layoutFidget]
-        : LayoutFidgets["grid"];
+      // Use the configured layout for desktop or fallback to "grid"
+      const layoutFidgetKey =
+        config?.layoutDetails?.layoutFidget &&
+        LayoutFidgets[config.layoutDetails.layoutFidget]
+          ? config.layoutDetails.layoutFidget
+          : "grid";
+      return LayoutFidgets[layoutFidgetKey];
     }
   }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
@@ -273,7 +276,12 @@ export default function Space({
                     {...layoutFidgetProps}
                   />
                 ) : (
-                  <div>Error: LayoutFidget is undefined</div>
+                  <div className="flex items-center justify-center h-full">
+                    <SpaceLoading
+                      hasProfile={!isNil(profile)}
+                      hasFeed={!isNil(feed)}
+                    />
+                  </div>
                 )}
               </Suspense>
             </div>
