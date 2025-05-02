@@ -137,12 +137,18 @@ export const textConfig: FidgetProperties = {
 export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   settings,
 }) => {
+  const headingsFontFamily = settings.headingsFontFamily || "var(--user-theme-headings-font)";
+  const headingsFontColor = settings.headingsFontColor || "var(--user-theme-headings-font-color)";
+  const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
+  const bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  const urlColor = settings.urlColor || "var(--user-theme-link-color)";
+
   return (
     <div
       style={{
-        fontFamily: settings.fontFamily,
+        fontFamily: bodyFontFamily,
         height: "100%",
-        color: settings.fontColor,
+        color: bodyFontColor,
         background: settings.background,
         borderWidth: settings.fidgetBorderWidth,
         borderColor: settings.fidgetBorderColor,
@@ -156,8 +162,8 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardTitle
             className="text-2xl font-bold"
             style={{
-              fontFamily: settings.headingsFontFamily || "var(--user-theme-headings-font)",
-              color: settings.headingsFontColor || "var(--user-theme-headings-font-color)",
+              fontFamily: headingsFontFamily,
+              color: headingsFontColor,
             }}
           >
             {settings.title}
@@ -169,14 +175,14 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
           <CardDescription
             className="text-base font-normal text-black dark:text-white"
             style={{
-              fontFamily: settings.fontFamily || "var(--user-theme-font)",
-              color: settings.fontColor || "var(--user-theme-font-color)",
+              fontFamily: bodyFontFamily,
+              color: bodyFontColor,
             }}
           >
             <ReactMarkdown
               rehypePlugins={[rehypeRaw]}
               remarkPlugins={[remarkGfm]}
-              components={MarkdownRenderers(settings.urlColor)}
+              components={MarkdownRenderers(urlColor)}
             >
               {settings.text}
             </ReactMarkdown>
