@@ -30,7 +30,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
-  pageType: SpacePageType | undefined;
+  pageType?: SpacePageType | undefined;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
