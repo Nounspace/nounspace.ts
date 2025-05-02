@@ -12,6 +12,10 @@ export interface ProposalData {
   proposer: {
     id: Address;
   };
+  signers?: {
+    id: Address;
+  }[];
+  createdTimestamp?: string;
 }
 
 async function loadProposalData(proposalId: string): Promise<ProposalData> {
@@ -26,6 +30,7 @@ async function loadProposalData(proposalId: string): Promise<ProposalData> {
             proposal(id: $proposalId) {
               id
               title
+              createdTimestamp
               proposer {
                 id
               }
@@ -49,7 +54,7 @@ async function loadProposalData(proposalId: string): Promise<ProposalData> {
     const data = await response.json();
 
     return {
-      ...data.data,
+      ...data.data.proposal,
     };
   } catch (error) {
     console.error("Error loading proposal data:", error);
@@ -60,6 +65,8 @@ async function loadProposalData(proposalId: string): Promise<ProposalData> {
       proposer: {
         id: "0x0",
       },
+      signers: [],
+      createdTimestamp: "",
     };
   }
 }
@@ -67,8 +74,6 @@ async function loadProposalData(proposalId: string): Promise<ProposalData> {
 export default async function WrapperProposalPrimarySpace({ params }) {
   const proposalId = params?.proposalId as string;
   const proposalData = await loadProposalData(proposalId || "0");
-
-  console.log("DEBUG proposalData", proposalData);
 
   const props = {
     ...proposalData,

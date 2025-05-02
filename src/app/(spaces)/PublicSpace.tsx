@@ -19,6 +19,8 @@ import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
+export type SpacePageType = "profile" | "token" | "proposal"
+
 interface PublicSpaceProps {
   spaceId: string | null;
   tabName: string;
@@ -33,7 +35,7 @@ interface PublicSpaceProps {
   // Token data
   tokenData?: MasterToken;
   // New prop to identify page type
-  pageType?: "profile" | "token" | "proposal";
+  pageType?: SpacePageType;
 }
 
 export default function PublicSpace({
@@ -562,6 +564,7 @@ export default function PublicSpace({
   const tabBar = (
     <TabBar
       isTokenPage={isTokenPage}
+      pageType={pageType}
       inHomebase={false}
       currentTab={getCurrentTabName() ?? "Profile"}
       tabList={
