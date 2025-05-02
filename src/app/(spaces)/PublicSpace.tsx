@@ -19,7 +19,7 @@ import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal"
+export type SpacePageType = "profile" | "token" | "proposal";
 
 interface PublicSpaceProps {
   spaceId: string | null;
@@ -486,16 +486,15 @@ export default function PublicSpace({
       }
       const saveableConfig = {
         ...spaceConfig,
-        fidgetInstanceDatums: mapValues(
-          spaceConfig.fidgetInstanceDatums,
-          (datum) => ({
-            ...datum,
-            config: {
-              settings: datum.config.settings,
-              editable: datum.config.editable,
-            },
-          })
-        ),
+        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
+          ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
+              ...datum,
+              config: {
+                settings: datum.config.settings,
+                editable: datum.config.editable,
+              },
+            }))
+          : undefined,
         isPrivate: false,
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
@@ -635,13 +634,14 @@ export default function PublicSpace({
   );
 
   // @todo - Use correct page type for profile
-  const profile = (
-    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined :
-    <Profile.fidget
-      settings={{ fid: spaceOwnerFid }}
-      saveData={async () => noop()}
-      data={{}}
-    />);
+  const profile =
+    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined : (
+      <Profile.fidget
+        settings={{ fid: spaceOwnerFid }}
+        saveData={async () => noop()}
+        data={{}}
+      />
+    );
 
   if (!profile) {
     console.warn("Profile component is undefined");

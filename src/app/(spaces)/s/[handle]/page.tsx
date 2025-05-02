@@ -4,9 +4,8 @@ import ProfileSpace, {
   UserDefinedSpacePageProps,
 } from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
-import { Metadata } from "next/types";
-import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { unstable_noStore as noStore } from 'next/cache';
+
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string,
@@ -43,21 +42,6 @@ const loadUserSpaceData = async (
 
   return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
 };
-
-export async function generateMetadata({
-  params: { handle },
-}): Promise<Metadata> {
-  if (!handle) {
-    return {};
-  }
-
-  const userMetadata = await getUserMetadata(handle);
-  if (!userMetadata) {
-    return {};
-  }
-
-  return getUserMetadataStructure(userMetadata);
-}
 
 const ProfileSpacePage = async ({
   params: { handle, tabName: tabNameParam },

@@ -134,33 +134,17 @@ export const createHomeBaseStoreFunc = (
   }, 1000),
   saveHomebaseConfig: async (config) => {
     const localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
-    
-    // Only update fields that are explicitly provided in the config
-    const updatedConfig: SpaceConfig = {
-      ...localCopy,
-      // Only update fidgetInstanceDatums if provided
-      fidgetInstanceDatums: config.fidgetInstanceDatums ? 
-        cloneDeep(config.fidgetInstanceDatums) : 
-        localCopy.fidgetInstanceDatums,
-      // Only update layoutDetails if provided
-      layoutDetails: config.layoutDetails ? {
-        ...localCopy.layoutDetails,
-        ...config.layoutDetails,
-        layoutFidget: config.layoutDetails.layoutFidget || localCopy.layoutDetails.layoutFidget
-      } : localCopy.layoutDetails,
-      // Only update fidgetTrayContents if provided
-      fidgetTrayContents: config.fidgetTrayContents !== undefined ? 
-        cloneDeep(config.fidgetTrayContents) : 
-        localCopy.fidgetTrayContents,
-      // Only update theme if provided
-      theme: config.theme ? cloneDeep(config.theme) : localCopy.theme,
-      // Always update timestamp
-      timestamp: moment().toISOString()
-    };
-    
+    mergeWith(localCopy, config, (objValue, srcValue) => {
+      if (isArray(srcValue)) return srcValue;
+      if (typeof srcValue === 'object' && srcValue !== null) {
+        // For objects, return the source value to replace the target completely
+        return srcValue;
+      }
+    });
+    localCopy.timestamp = moment().toISOString();
     set(
       (draft) => {
-        draft.homebase.homebaseConfig = updatedConfig;
+        draft.homebase.homebaseConfig = localCopy;
       },
       "saveHomebaseConfig",
       false,

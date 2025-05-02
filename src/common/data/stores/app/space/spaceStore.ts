@@ -67,7 +67,7 @@ export type DatabaseWritableSpaceConfig = Omit<
 export type DatabaseWritableSpaceSaveConfig = Partial<
   Omit<SpaceConfigSaveDetails, "fidgetInstanceDatums" | "isEditable">
 > & {
-  fidgetInstanceDatums: {
+  fidgetInstanceDatums?: {
     [key: string]: Omit<FidgetInstanceData, "config"> & {
       config: Omit<FidgetConfig, "data">;
     };
@@ -224,6 +224,14 @@ const showTooltipError = (title: string, description: string) => {
   }, 4000);
 };
 
+// Add validation function
+const validateTabName = (tabName: string): string | null => {
+  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
+  }
+  return null;
+};
+
 export const createSpaceStoreFunc = (
   set: StoreSet<AppStore>,
   get: StoreGet<AppStore>,
@@ -301,34 +309,22 @@ export const createSpaceStoreFunc = (
       throw error; // Stops the execution of the function
     }
 
+    console.log("NewConfig", config);
     let localCopy;
     // If the tab doesn't exist yet, use the new config directly
     if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
       localCopy = cloneDeep(config);
     } else {
-      // Otherwise update fields explicitly
-      const existingConfig = get().space.localSpaces[spaceId].tabs[tabName];
-      localCopy = {
-        ...existingConfig,
-        // Only update fidgetInstanceDatums if provided
-        fidgetInstanceDatums: config.fidgetInstanceDatums ? 
-          cloneDeep(config.fidgetInstanceDatums) : 
-          existingConfig.fidgetInstanceDatums,
-        // Only update layoutDetails if provided
-        layoutDetails: config.layoutDetails ? {
-          ...existingConfig.layoutDetails,
-          ...config.layoutDetails,
-          layoutFidget: config.layoutDetails.layoutFidget || existingConfig.layoutDetails.layoutFidget
-        } : existingConfig.layoutDetails,
-        // Only update fidgetTrayContents if provided
-        fidgetTrayContents: config.fidgetTrayContents !== undefined ? 
-          cloneDeep(config.fidgetTrayContents) : 
-          existingConfig.fidgetTrayContents,
-        // Only update theme if provided
-        theme: config.theme ? cloneDeep(config.theme) : existingConfig.theme,
-        // Always update timestamp
-        timestamp: moment().toISOString()
-      };
+      // Otherwise merge with existing config
+      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      mergeWith(localCopy, config, (objValue, srcValue) => {
+        if (isArray(srcValue)) return srcValue;
+        if (typeof srcValue === 'object' && srcValue !== null) {
+          // For objects, return the source value to replace the target completely
+          return srcValue;
+        }
+      });
+      console.log("localCopy", localCopy);
     }
 
     set((draft) => {
@@ -368,13 +364,6 @@ export const createSpaceStoreFunc = (
           delete draft.space.remoteSpaces[spaceId].tabs[tabName];
 
           // Update order arrays with new arrays to ensure state updates
-          draft.space.localSpaces[spaceId].order = [
-            ...draft.space.localSpaces[spaceId].order.filter(x => x !== tabName)
-          ];
-          draft.space.remoteSpaces[spaceId].order = [
-            ...draft.space.localSpaces[spaceId].order
-          ];
-
           draft.space.localSpaces[spaceId].order = filter(
             draft.space.localSpaces[spaceId].order,
             (x) => x !== tabName,
@@ -402,6 +391,12 @@ export const createSpaceStoreFunc = (
     initialConfig?: Omit<SpaceConfig, "isEditable">,
     network?: EtherScanChainName,
   ) => {
+    // Validate the tab name before proceeding
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
     if (isNil(initialConfig)) {
       initialConfig = INITIAL_SPACE_CONFIG_EMPTY;
     }
@@ -434,22 +429,6 @@ export const createSpaceStoreFunc = (
 
     // Return the tabName immediately so UI can switch to it
     const result = { tabName };
-
-    // Check if the tab name contains special characters
-    if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
-      // Show error
-      showTooltipError(
-        "Invalid Tab Name",
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-
-      // Create an error and stop execution
-      const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      (error as any).status = 400;
-      throw error; 
-    }
 
     // Then make the remote API call in the background
     const unsignedRequest: UnsignedSpaceTabRegistration = {
@@ -876,11 +855,11 @@ export const createSpaceStoreFunc = (
       );
       
       if (existingSpace) {
-        console.log('Found existing space in local cache:', {
-          spaceId: existingSpace.id,
-          address,
-          network
-        });
+        // console.log('Found existing space in local cache:', {
+        //   spaceId,
+        //   network,
+        //   space: existingSpace,
+        // });
         return existingSpace.id;
       }
 
@@ -901,11 +880,11 @@ export const createSpaceStoreFunc = (
           space => space.contractAddress === address && space.network === network
         );
         if (existingSpace) {
-          console.log('Found existing space:', {
-            spaceId: existingSpace.spaceId,
-            address,
-            network
-          });
+          // console.log('Found existing space:', {
+          //   spaceId,
+          //   network,
+          //   space: existingSpace,
+          // });
           // Cache the space info in local state
           set((draft) => {
             draft.space.editableSpaces[existingSpace.spaceId] = name;
@@ -923,12 +902,10 @@ export const createSpaceStoreFunc = (
         }
       }
 
-      console.log('No existing space found, registering new space:', {
-        address,
-        name,
-        tokenOwnerFid,
-        network
-      });
+      // console.log('No existing space found, registering new space:', {
+      //   spaceId,
+      //   network,
+      // });
 
       const unsignedRegistration: Omit<SpaceRegistrationContract, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,

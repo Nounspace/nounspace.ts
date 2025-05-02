@@ -36,6 +36,14 @@ interface TabBarProps {
 const PERMANENT_TABS = ["Feed", "Profile"];
 const isEditableTab = (tabName: string) => !PERMANENT_TABS.includes(tabName);
 
+// Add validation function
+const validateTabName = (tabName: string): string | null => {
+  if (/[^a-zA-Z0-9-_ ]/.test(tabName)) {
+    return "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed.";
+  }
+  return null;
+};
+
 function TabBar({
   inHome,
   inHomebase,
@@ -69,16 +77,33 @@ function TabBar({
   }
 
   function generateUniqueTabName(tabName: string) {
+    // First validate the base name
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
     let iter = 1;
     let uniqueName = tabName;
     while (tabList.includes(uniqueName)) {
-      uniqueName = tabName + ` (${iter})`;
+      uniqueName = `${tabName} - ${iter}`;
+      // Validate each generated name
+      const validationError = validateTabName(uniqueName);
+      if (validationError) {
+        throw new Error(validationError);
+      }
       iter += 1;
     }
     return uniqueName;
   }
 
   async function handleCreateTab(tabName: string) {
+    // Validate the tab name before proceeding
+    const validationError = validateTabName(tabName);
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
     // Start the tab creation process but don't await it
     const creationPromise = createTab(tabName);
     
@@ -120,8 +145,13 @@ function TabBar({
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
-    const uniqueName = generateUniqueTabName(newName);
+    // Validate the new name before proceeding
+    const validationError = validateTabName(newName);
+    if (validationError) {
+      throw new Error(validationError);
+    }
 
+    const uniqueName = generateUniqueTabName(newName);
     await renameTab(tabName, uniqueName);
     updateTabOrder(
       tabList.map((name) => (name === tabName ? uniqueName : name)),
