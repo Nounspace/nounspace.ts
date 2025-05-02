@@ -9,8 +9,10 @@ import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
+import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -28,6 +30,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
+  pageType?: SpacePageType | undefined;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -57,6 +60,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
+  pageType
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
@@ -179,13 +183,18 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:min-h-16 overflow-y-scroll w-full z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
+        {pageType === "proposal" && (
+          <div className="flex flex-row justify-start overflow-y-scroll w-full z-30 bg-white">
+            <ProposalDataHeader />
+          </div>
+        )}
+        <div className="flex flex-row justify-start self-end h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
           {tabList && (
             <Reorder.Group
               as="ol"

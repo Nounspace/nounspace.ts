@@ -89,24 +89,27 @@ export default function Space({
     }
 
     // Skip if config is not loaded
-    if (!config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
+    if (
+      !config?.layoutDetails?.layoutConfig?.layout ||
+      !config?.fidgetInstanceDatums
+    ) {
       return;
     }
 
     // Get fidget IDs from layout
     const layoutFidgetIds = new Set(
-      config.layoutDetails.layoutConfig.layout.map(item => item.i)
+      config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
     // Find unused fidgets
     const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-      id => !layoutFidgetIds.has(id)
+      (id) => !layoutFidgetIds.has(id)
     );
 
     // Remove unused fidgets
     if (unusedFidgetIds.length > 0) {
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      unusedFidgetIds.forEach(id => {
+      unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
 
@@ -114,7 +117,7 @@ export default function Space({
       if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
         saveConfig({
           fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         }).then(() => {
           commitConfig();
         });
@@ -159,10 +162,13 @@ export default function Space({
       // Use TabFullScreen for mobile
       return LayoutFidgets["tabFullScreen"];
     } else {
-      // Use the configured layout for desktop
-      return config && config.layoutDetails && config.layoutDetails.layoutFidget
-        ? LayoutFidgets[config.layoutDetails.layoutFidget]
-        : LayoutFidgets["grid"];
+      // Use the configured layout for desktop or fallback to "grid"
+      const layoutFidgetKey =
+        config?.layoutDetails?.layoutFidget &&
+        LayoutFidgets[config.layoutDetails.layoutFidget]
+          ? config.layoutDetails.layoutFidget
+          : "grid";
+      return LayoutFidgets[layoutFidgetKey];
     }
   }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
@@ -171,19 +177,25 @@ export default function Space({
     if (isMobile) {
       // Extract fidget IDs from the current config to use in TabFullScreen
       const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
-      
+
       // Create a layout config for TabFullScreen with all available fidget IDs
       return {
         layout: fidgetIds,
         layoutFidget: "tabFullScreen",
       };
     } else {
-      return config?.layoutDetails?.layoutConfig ?? {
-        layout: [],
-        layoutFidget: "grid",
-      };
+      return (
+        config?.layoutDetails?.layoutConfig ?? {
+          layout: [],
+          layoutFidget: "grid",
+        }
+      );
     }
-  }, [isMobile, config?.layoutDetails?.layoutConfig, config?.fidgetInstanceDatums]);
+  }, [
+    isMobile,
+    config?.layoutDetails?.layoutConfig,
+    config?.fidgetInstanceDatums,
+  ]);
 
   // Memoize the LayoutFidget render props that don't change during fidget movement
   const layoutFidgetProps = useMemo(() => {
@@ -199,20 +211,24 @@ export default function Space({
       hasProfile: !isMobile && !isNil(profile),
       hasFeed: !isNil(feed),
       tabNames: config.tabNames,
-      fid: config.fid
+      fid: config.fid,
     };
   }, [
     config.theme,
-    config.fidgetInstanceDatums, 
+    config.fidgetInstanceDatums,
     config.fidgetTrayContents,
     config.tabNames,
     config.fid,
-    isMobile, 
-    editMode, 
-    portalRef, 
-    profile, 
-    feed
+    isMobile,
+    editMode,
+    portalRef,
+    profile,
+    feed,
   ]);
+
+  if (!LayoutFidget) {
+    console.error("LayoutFidget is undefined");
+  }
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
@@ -254,10 +270,19 @@ export default function Space({
                   />
                 }
               >
-                <LayoutFidget
-                  layoutConfig={{ ...layoutConfig }}
-                  {...layoutFidgetProps}
-                />
+                {LayoutFidget ? (
+                  <LayoutFidget
+                    layoutConfig={{ ...layoutConfig }}
+                    {...layoutFidgetProps}
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <SpaceLoading
+                      hasProfile={!isNil(profile)}
+                      hasFeed={!isNil(feed)}
+                    />
+                  </div>
+                )}
               </Suspense>
             </div>
           </div>
