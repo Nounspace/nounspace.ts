@@ -37,7 +37,7 @@ const ProposalDefinedSpace = ({
     <div className="w-full">
       <PublicSpace
         spaceId={spaceId || ""} // Ensure spaceId is a string
-        tabName={tabName || ""} // Ensure tabName is a string
+        tabName={tabName || "Profile"} // Ensure tabName is a string
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
