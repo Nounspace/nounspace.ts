@@ -18,6 +18,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         settings: {
           url: `https://www.nouns.camp/proposals/${proposalId}?tab=description`,
           showOnMobile: true,
+          customMobileDisplayName: "Proposal",
           background: "var(--user-theme-fidget-background)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
@@ -34,6 +35,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         settings: {
           url: "https://euphonious-kulfi-5e5a30.netlify.app/?id=" + proposalId,
           showOnMobile: true,
+          customMobileDisplayName: "TLDR",
           background: "var(--user-theme-fidget-background)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
@@ -50,6 +52,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         settings: {
           url: `https://www.nouns.camp/proposals/${proposalId}?tab=activity`,
           showOnMobile: true,
+          customMobileDisplayName: "Activity",
           background: "var(--user-theme-fidget-background)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
@@ -66,6 +69,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         settings: {
           url: `https://chat-fidget.vercel.app/?room=prop%20${proposalId}%20chat&owner=${proposerAddress}`,
           showOnMobile: true,
+          customMobileDisplayName: "Chat",
           background: "var(--user-theme-fidget-background)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
           fidgetBorderColor: "var(--user-theme-fidget-border-color)",
