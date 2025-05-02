@@ -25,7 +25,7 @@ export async function generateMetadata({ params: { proposalId } }): Promise<Meta
 
   const proposalFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
     button: {
       title: `View Proposal ${proposalData.id}`,
       action: {

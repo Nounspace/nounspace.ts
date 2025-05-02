@@ -8,7 +8,7 @@ import Head from "next/head";
 
 export const defaultFrame = {
   version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+  imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
   button: {
     title: "Start Nounspace",
     action: {
@@ -32,7 +32,7 @@ export const metadata = {
     description:
       "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
     images: {
-      url: `${WEBSITE_URL}/images/nounspace_og.png`,
+      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
       type: "image/png",
       width: 1200,
       height: 737,

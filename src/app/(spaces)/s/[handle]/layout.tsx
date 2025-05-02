@@ -7,7 +7,7 @@ import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 // Default frame for layout
 const defaultFrame = {
   version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+  imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
   button: {
     title: "Start Nounspace",
     action: {
@@ -51,7 +51,7 @@ export async function generateMetadata({
   
   const spaceFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
     button: {
       title: `Visit ${displayName}'s Space`,
       action: {

@@ -7,7 +7,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 // Default frame for layout
 const defaultFrame = {
   version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+  imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
   button: {
     title: "Start Nounspace",
     action: {
@@ -71,7 +71,7 @@ export async function generateMetadata({
   // Create token frame with the symbol if available
   const tokenFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
     button: {
       title: symbol ? `Visit ${symbol}` : "Visit Token Space",
       action: {
