@@ -79,12 +79,12 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
       try {
         const response = await fetch(
-          `/api/iframely?url=${encodeURIComponent(url)}`,
+          `/api/iframely?url=${encodeURIComponent(url)}`
         );
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.message || "Failed to get embed information",
+            errorData.message || "Failed to get embed information"
           );
         }
 
@@ -110,7 +110,18 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (loading) {
-    return <ErrorWrapper icon="⏳" message="Loading embed..." />;
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ErrorWrapper icon="⏳" message="Loading embed..." />
+      </div>
+    );
   }
 
   if (error) {
@@ -123,7 +134,10 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   if (embedInfo.directEmbed && transformedUrl) {
     return (
-      <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-156px)] md:h-full">
+      <div
+        style={{ overflow: "hidden", width: "100%" }}
+        className="h-[calc(100dvh-156px)] md:h-full"
+      >
         <iframe
           src={transformedUrl}
           title="IFrame Fidget"

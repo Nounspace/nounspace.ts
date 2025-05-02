@@ -1,5 +1,5 @@
 import React, { ReactNode, Suspense } from "react";
-import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space"; 
+import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export type SpacePageArgs = {

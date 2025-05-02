@@ -17,6 +17,7 @@ import {
   RegisterNewSpaceResponse,
   SpaceRegistrationContract,
   SpaceRegistrationFid,
+  SpaceRegistrationProposer,
 } from "@/pages/api/space/registry";
 import {
   UnsignedUpdateTabOrderRequest,
@@ -114,6 +115,10 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
+  addProposalEditableSpaces: (
+    spaceId: string | null | undefined,
+    identities: string[],
+  ) => void;
   addContractEditableSpaces: (
     spaceId: string | null | undefined,
     identities: string[],
@@ -168,6 +173,9 @@ interface SpaceActions {
     fid: number,
     initialConfig: Omit<SpaceConfig, "isEditable">,
     network: EtherScanChainName,
+  ) => Promise<string | undefined>;
+  registerProposalSpace: (
+    proposalId: string,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -229,6 +237,18 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
+  addProposalEditableSpaces: (spaceId, identities) => {
+    const currentSpaceIdentityPrimaryKey =
+      get().account.currentSpaceIdentityPublicKey;
+    if (
+      includes(identities, currentSpaceIdentityPrimaryKey) &&
+      !isNil(spaceId)
+    ) {
+      set((draft) => {
+        draft.space.editableSpaces[spaceId] = spaceId;
+      }, "addProposalEditableSpaces");
+    }
+  },
   addContractEditableSpaces: (spaceId, identities) => {
     const currentSpaceIdentityPrimaryKey =
       get().account.currentSpaceIdentityPublicKey;
@@ -949,6 +969,79 @@ export const createSpaceStoreFunc = (
       }
     } catch (e) {
       console.error("Error in registerSpaceContract:", e);
+      throw e;
+    }
+  },
+  registerProposalSpace: async (proposalId) => {
+    try {
+      // Check if a space already exists for this proposal
+      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+        "/api/space/registry",
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+            proposalId,
+          },
+        },
+      );
+
+      if (existingSpaces.value) {
+        const existingSpace = existingSpaces.value.spaces.find(
+          (space) => space.proposalId === proposalId
+        );
+        if (existingSpace) {
+          return existingSpace.spaceId;
+        }
+      }
+
+      // Register a new space for the proposal
+      const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
+        identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+        spaceName: `Proposal-${proposalId}`,
+        timestamp: moment().toISOString(),
+        proposalId,
+      };
+      const registration = signSignable(
+        unsignedRegistration,
+        get().account.getCurrentIdentity()!.rootKeys.privateKey,
+      );
+
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry",
+        registration,
+      );
+      const newSpaceId = data.value!.spaceId;
+
+      // Initialize the space with proper structure
+      set((draft) => {
+        draft.space.editableSpaces[newSpaceId] = `Proposal-${proposalId}`;
+        draft.space.localSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+        };
+      });
+
+      // Create and commit the initial "Overview" tab
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Overview",
+        INITIAL_SPACE_CONFIG_EMPTY
+      );
+
+
+      // TODO: Install analytics again after proposal space is working 
+      // analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+      //   type: "proposal",
+      //   spaceId: newSpaceId,
+      //   proposalId,
+      // });
+
+      return newSpaceId;
+    } catch (e) {
+      console.error("Failed to register proposal space:", e);
       throw e;
     }
   },

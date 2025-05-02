@@ -108,17 +108,17 @@ export function useMiniAppSdk() {
   /**
    * Prompt the user to compose a cast
    */
-  const composeCast = useCallback(async (options: Parameters<typeof sdk.actions.composeCast>[0]) => {
-    if (sdkInstance) {
-      try {
-        return await sdkInstance.actions.composeCast(options);
-      } catch (err) {
-        console.error("Error composing cast:", err);
-        return false;
-      }
-    }
-    return false;
-  }, [sdkInstance]);
+  // const composeCast = useCallback(async (options: Parameters<typeof sdk.actions.composeCast>[0]) => {
+  //   if (sdkInstance) {
+  //     try {
+  //       return await sdkInstance.actions.composeCast(options);
+  //     } catch (err) {
+  //       console.error("Error composing cast:", err);
+  //       return false;
+  //     }
+  //   }
+  //   return false;
+  // }, [sdkInstance]);
 
   /**
    * Open an external URL
@@ -197,7 +197,7 @@ export function useMiniAppSdk() {
       close,
       signIn,
       addFrame,
-      composeCast,
+      // composeCast,
       openUrl,
       viewProfile,
     },

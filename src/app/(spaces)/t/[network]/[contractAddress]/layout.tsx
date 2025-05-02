@@ -2,23 +2,7 @@ import { WEBSITE_URL } from "@/constants/app";
 import { Metadata } from "next/types";
 import React from "react";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
-
-// Default frame for layout
-const defaultFrame = {
-  version: "next",
-  imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
-  button: {
-    title: "Start Nounspace",
-    action: {
-      type: "launch_frame",
-      url: WEBSITE_URL,
-      name: "Nounspace",
-      splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
-      splashBackgroundColor: "#FFFFFF",
-    },
-  },
-};
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {
@@ -71,7 +55,7 @@ export async function generateMetadata({
   // Create token frame with the symbol if available
   const tokenFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og.png`,
+    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
     button: {
       title: symbol ? `Visit ${symbol}` : "Visit Token Space",
       action: {

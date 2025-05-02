@@ -36,15 +36,21 @@ export interface SpaceRegistrationFid extends SpaceRegistrationBase {
   fid: number;
 }
 
+export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
+  proposalId: string;
+}
+
 export type SpaceRegistration =
   | SpaceRegistrationContract
-  | SpaceRegistrationFid;
+  | SpaceRegistrationFid
+  | SpaceRegistrationProposer;
 
 type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
   fid: number | null;
   contractAddress: string | null;
   network: string | null;
+  proposalId?: string | null;
 };
 
 function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
@@ -64,6 +70,22 @@ function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
     (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
 
   return isValid;
+}
+
+// Update the type guard to handle SpaceRegistrationContract
+function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistrationContract {
+  return (
+    isSpaceRegistration(maybe) &&
+    typeof maybe["contractAddress"] === "string"
+  );
+}
+
+// Update the type guard to handle SpaceRegistrationProposer
+function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistrationProposer {
+  return (
+    isSpaceRegistration(maybe) &&
+    typeof maybe["proposalId"] === "string"
+  );
 }
 
 export type RegisterNewSpaceResponse = NounspaceResponse<SpaceInfo>;
@@ -175,7 +197,7 @@ async function registerNewSpace(
       });
       return;
     }
-  } else {
+  } else if (isSpaceRegistrationContract(registration)) {
     if (
       !(await identityCanRegisterForContract(
         registration.identityPublicKey,
@@ -195,6 +217,8 @@ async function registerNewSpace(
       });
       return;
     }
+  } else if (isSpaceRegistrationProposer(registration)) {
+    // Handle proposer-specific logic if needed
   }
 
   if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {
@@ -217,7 +241,6 @@ async function registerNewSpace(
     return;
   }
 
-  // console.log("Registered new space:", first(result));
   res.status(200).json({
     result: "success",
     value: first(result),
