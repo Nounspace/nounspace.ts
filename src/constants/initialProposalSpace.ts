@@ -32,7 +32,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         editable: true,
         data: {},
         settings: {
-          url: "[insert URL for ai generated summaries]",
+          url: "https://euphonious-kulfi-5e5a30.netlify.app/?id=" + proposalId,
           showOnMobile: true,
           background: "var(--user-theme-fidget-background)",
           fidgetBorderWidth: "var(--user-theme-fidget-border-width)",
