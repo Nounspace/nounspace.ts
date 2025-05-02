@@ -1,5 +1,6 @@
 "use client";
 
+import { ProposalData } from "@/app/(spaces)/p/[proposalId]/[tabname]/page";
 import React, {
   createContext,
   useContext,
@@ -8,7 +9,6 @@ import React, {
   useEffect,
 } from "react";
 import { Address } from "viem";
-import { ProposalData } from "@/fidgets/community/nouns-dao";
 
 interface ProposalContextType {
   proposalId: Address;

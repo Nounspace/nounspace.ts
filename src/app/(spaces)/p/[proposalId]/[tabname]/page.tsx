@@ -3,36 +3,70 @@ export const revalidate = 60;
 
 import React from "react";
 import { Address } from "viem";
-import { NOUNSBUILD_PROPOSALS_QUERY } from "@/common/lib/utils/queries";
-import { ProposalData } from "@/fidgets/community/nouns-dao";
 import { ProposalProvider } from "@/common/providers/ProposalProvider";
 import ProposalPrimarySpaceContent from "../ProposalPrimarySpaceContent";
 import { TokenProvider } from "@/common/providers/TokenProvider";
 
-async function loadProposalData(proposalId: Address): Promise<ProposalData> {
-  const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query: NOUNSBUILD_PROPOSALS_QUERY,
-      variables: {
-        where: { proposalId },
-      },
-    }),
-  });
-
-  const data = await response.json();
-
-  return {
-    ...data.data,
+export interface ProposalData {
+  id: string;
+  title: string;
+  proposer: {
+    id: Address;
   };
+}
+
+async function loadProposalData(proposalId: string): Promise<ProposalData> {
+  try {
+    const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query: `query Proposal($proposalId: ID!) {
+            proposal(id: $proposalId) {
+              id
+              title
+              proposer {
+                id
+              }
+            }
+          }`,
+        variables: {
+          proposalId,
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch proposal data: ${response.status} ${response.statusText}`
+      );
+    }
+
+    const data = await response.json();
+
+    return {
+      ...data.data,
+    };
+  } catch (error) {
+    console.error("Error loading proposal data:", error);
+    // Return a minimal valid object to prevent rendering errors
+    return {
+      id: proposalId,
+      title: "Error loading proposal",
+      proposer: {
+        id: "0x0",
+      },
+    };
+  }
 }
 
 export default async function WrapperProposalPrimarySpace({ params }) {
   const proposalId = params?.proposalId as string;
-  const proposalData = await loadProposalData(params || {});
+  const proposalData = await loadProposalData(proposalId || "0");
+
+  console.log("DEBUG proposalData", proposalData);
 
   const props = {
     ...proposalData,
