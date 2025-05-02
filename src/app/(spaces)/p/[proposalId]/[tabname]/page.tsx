@@ -4,8 +4,7 @@ export const revalidate = 60;
 import React from "react";
 import { Address } from "viem";
 import { ProposalProvider } from "@/common/providers/ProposalProvider";
-import ProposalPrimarySpaceContent from "../ProposalPrimarySpaceContent";
-import { TokenProvider } from "@/common/providers/TokenProvider";
+import ProposalDefinedSpace from "../ProposalDefinedSpace";
 
 export interface ProposalData {
   id: string;
@@ -74,17 +73,11 @@ export default async function WrapperProposalPrimarySpace({ params }) {
   };
 
   return (
-    <TokenProvider
-      contractAddress={proposalId as Address}
-      defaultTokenData={undefined}
-      network="base"
+    <ProposalProvider
+      proposalId={proposalId as Address}
+      defaultProposalData={proposalData}
     >
-      <ProposalProvider
-        proposalId={proposalId as Address}
-        defaultProposalData={proposalData}
-      >
-        <ProposalPrimarySpaceContent {...props} />
-      </ProposalProvider>
-    </TokenProvider>
+      <ProposalDefinedSpace {...props} />
+    </ProposalProvider>
   );
 }
