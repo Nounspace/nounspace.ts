@@ -4,8 +4,8 @@ import React, { useMemo } from "react";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { Address } from "viem";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
-import { ProposalData } from "./[tabname]/page";
 import { useProposalContext } from "@/common/providers/ProposalProvider";
+import { ProposalData } from "./utils";
 
 export interface ProposalPageSpaceProps {
   spaceId?: string | null;
