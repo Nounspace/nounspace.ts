@@ -12786,10 +12786,10 @@ react-aria@^3.33.1:
     "@react-aria/visually-hidden" "^3.8.12"
     "@react-types/shared" "^3.23.1"
 
-react-best-gradient-color-picker@^3.0.7:
-  version "3.0.8"
-  resolved "https://registry.yarnpkg.com/react-best-gradient-color-picker/-/react-best-gradient-color-picker-3.0.8.tgz#57f838a2071d0b69f2dfebb0fa30c7f51ec969e5"
-  integrity sha512-dq9VYxx1TtrvzKBHX3DYmuyMJY+F3/uB16AhmLag3hqMxULm2PZubmdQp9JB8Bg20Irg+E5YD6bIIw2GUo44kQ==
+react-best-gradient-color-picker@^3.0.14:
+  version "3.0.14"
+  resolved "https://registry.yarnpkg.com/react-best-gradient-color-picker/-/react-best-gradient-color-picker-3.0.14.tgz#ed8636e0cad560571385b07c48c67a66b554a636"
+  integrity sha512-UYY7PRNUWMAS02Migb4jGSFFo3jFkYIck8cKiJR4IJUermGq5s4dNoi/s5xVsgK0MKSV4j4cJxyOIoFuw7st4w==
   dependencies:
     html2canvas "^1.4.1"
     lodash.throttle "^4.1.1"
