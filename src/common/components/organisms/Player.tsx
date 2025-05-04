@@ -153,7 +153,7 @@ export const Player: React.FC<PlayerProps> = ({ url , shrunk = false }) => {
     return (
       <>
         <div 
-          className="relative w-12 h-12 mx-auto overflow-hidden rounded-lg cursor-pointer"
+          className="relative w-16 h-16 mx-auto overflow-hidden rounded-lg cursor-pointer"
           onClick={playing ? onPause : onPlay}
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
