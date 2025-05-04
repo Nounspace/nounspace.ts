@@ -25,6 +25,9 @@ import {
   NOUNISH_LOWFI_META,
   NOUNISH_LOWFI_URL,
 } from "@/constants/nounishLowfi";
+import { FaPause, FaPlay } from "react-icons/fa";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+
 
 type ContentMetadata = {
   title?: string | null;
@@ -33,6 +36,8 @@ type ContentMetadata = {
 };
 export type PlayerProps = {
   url: string | string[];
+  shrunk?: boolean;
+
 };
 
 const getToggleIcon = ({ playing, started, ready }): [IconType, string] => {
@@ -45,7 +50,7 @@ const getToggleIcon = ({ playing, started, ready }): [IconType, string] => {
   }
 };
 
-export const Player: React.FC<PlayerProps> = ({ url }) => {
+export const Player: React.FC<PlayerProps> = ({ url , shrunk = false }) => {
   const hasWindow = useHasWindow();
   const playerRef = useRef<ReactPlayer | null>(null);
   const [muted, setMuted] = useState(true);
@@ -58,6 +63,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     started,
     ready,
   });
+  const [isHovering, setIsHovering] = useState(false);
 
   const getMetadata = async (_url: string | string[]) => {
     // Handle array of URLs by taking the first one
@@ -142,6 +148,67 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     embedOptions: {},
     onUnstarted: onUnstarted,
   };
+
+  if (shrunk) {
+    return (
+      <>
+        <div 
+          className="relative w-12 h-12 mx-auto overflow-hidden rounded-lg cursor-pointer"
+          onClick={playing ? onPause : onPlay}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          {metadata?.thumbnail ? (
+            <Image
+              src={metadata.thumbnail}
+              alt="Music thumbnail"
+              layout="fill"
+              objectFit="cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-300"></div>
+          )}
+          
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            {!ready ? (
+              <LiaCircleNotchSolid className="text-white animate-spin drop-shadow-md" size={24} />
+            ) : (
+              <div 
+                className={mergeClasses(
+                  "transition-transform duration-200",
+                  isHovering ? "scale-110" : "scale-100"
+                )}
+              >
+                {playing ? (
+                  <FaPause className="text-white drop-shadow-md" size={24} />
+                ) : (
+                  <FaPlay className="text-white drop-shadow-md" size={24} />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        {hasWindow && (
+          <ReactPlayer
+            className="hidden"
+            url={url}
+            ref={playerRef}
+            playing={playing}
+            loop={true}
+            light={false}
+            controls={false}
+            muted={muted}
+            config={{
+              youtube: youtubeConfig,
+            }}
+            onReady={onReady}
+            onStart={onStart}
+            onPause={onPause}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <>
