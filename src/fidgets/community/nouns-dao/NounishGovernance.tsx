@@ -1,7 +1,12 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  FidgetSettingsStyle,
+} from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
   NOUNSBUILD_PROPOSALS_QUERY,
@@ -81,7 +86,7 @@ export const NounishGovernance: React.FC<
 
   const isBuilderSubgraph = useMemo(
     () => selectedDao?.graphUrl.includes("nouns-builder-base-mainnet") || false,
-    [selectedDao?.graphUrl],
+    [selectedDao?.graphUrl]
   );
 
   const daoContractAddress =
@@ -125,14 +130,14 @@ export const NounishGovernance: React.FC<
   }, []);
 
   const getHeadingsFontFamily = () => {
-    return settings.headingsFontFamily === "Theme Headings Font" 
-      ? "var(--user-theme-headings-font)" 
+    return settings.headingsFontFamily === "Theme Headings Font"
+      ? "var(--user-theme-headings-font)"
       : settings.headingsFontFamily || "var(--user-theme-headings-font)";
   };
 
   const getBodyFontFamily = () => {
-    return settings.fontFamily === "Theme Font" 
-      ? "var(--user-theme-font)" 
+    return settings.fontFamily === "Theme Font"
+      ? "var(--user-theme-font)"
       : settings.fontFamily || "var(--user-theme-font)";
   };
 
@@ -150,11 +155,14 @@ export const NounishGovernance: React.FC<
 
   const selectedProposal = isBuilderSubgraph
     ? proposalsData?.proposals.find(
-      (proposal) => proposal.proposalId === proposalId,
-    )
+        (proposal) => proposal.proposalId === proposalId
+      )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
   return (
-    <CardContent className="size-full overflow-scroll p-4" style={{ fontFamily: getBodyFontFamily() }}>
+    <CardContent
+      className="size-full overflow-scroll p-4"
+      style={{ fontFamily: getBodyFontFamily() }}
+    >
       {proposalId && selectedProposal ? (
         isBuilderSubgraph ? (
           <BuilderProposalDetailView
@@ -169,7 +177,6 @@ export const NounishGovernance: React.FC<
         ) : (
           <NounsProposalDetailView
             proposal={selectedProposal}
-            versions={selectedProposal}
             goBack={handleGoBack}
             currentBlock={currentBlock}
             loading={listLoading}
