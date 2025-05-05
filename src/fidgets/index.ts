@@ -18,6 +18,7 @@ import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
 import chat from "./ui/chat";
 import TabFullScreen from "./layout/tabFullScreen";
+import SingleNounsProposal from "./community/nouns-dao/SingleNounsProposal";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
@@ -46,6 +47,7 @@ export const CompleteFidgets = {
   Video: VideoFidget,
   Market: marketData,
   Chat: chat,
+  Prop: SingleNounsProposal
 };
 
 export const LayoutFidgets = {
