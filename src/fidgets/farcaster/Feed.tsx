@@ -74,8 +74,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     ...mobileStyleSettings,
     {
       fieldName: "selectPlatform",
-      displayName: "Select App",
-      displayNameHint: "Choose between Farcaster or The Other App (aka X) to display social feeds.",
+      displayName: "Network",
       inputSelector: PlatformSelector,
       required: false,
       default: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
@@ -84,11 +83,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "feedType",
       displayName: "Feed Type",
-      displayNameHint: "Choose between Following feed or Filter feed with different options.",
+      displayNameHint: "Select Following for a personalized feed or Filter by User, Channel, or Keyword.",
       inputSelector: FeedTypeSelector,
       required: false,
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "X",
       default: FeedType.Following,
       group: "settings",
     },
@@ -110,7 +109,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "X",
       default: FilterType.Users,
       group: "settings",
     },
@@ -123,7 +122,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Users ||
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "X",
       default: "",
       group: "settings",
     },
@@ -136,7 +135,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Channel ||
-        settings.selectPlatform?.name === "The other app",
+        settings.selectPlatform?.name === "X",
       default: "",
       group: "settings",
     },
@@ -149,19 +148,18 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Keyword ||
-        settings?.selectPlatform?.name === "The other app",
+        settings?.selectPlatform?.name === "X",
       default: "",
       group: "settings",
     },
     {
       fieldName: "style",
       displayName: "Feed Style",
-      displayNameHint: "Choose the visual style for The Other App feed.",
       inputSelector: ThemeSelector,
       required: false,
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name !== "The other app",
+        settings?.selectPlatform?.name !== "X",
       default: "light",
     },
     {
@@ -204,7 +202,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       ),
       group: "style",
       default: "var(--user-theme-fidget-background)",
-      disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
+      disabledIf: (settings) => settings?.selectPlatform?.name === "X",
     },
     {
       fieldName: "fidgetBorderWidth",
@@ -215,7 +213,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       inputSelector: BorderSelector,
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app" || settings?.useDefaultColors === true,
+        settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
     },
     {
       fieldName: "fidgetBorderColor",
@@ -232,7 +230,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       ),
       group: "style",
       default: "var(--user-theme-fidget-border-color)",
-      disabledIf: (settings) => settings?.selectPlatform?.name === "The other app",
+      disabledIf: (settings) => settings?.selectPlatform?.name === "X",
     },
     {
       fieldName: "fidgetShadow",
@@ -243,7 +241,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       inputSelector: ShadowSelector,
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "The other app" || settings?.useDefaultColors === true,
+        settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
     },
   ],
   size: {
@@ -335,7 +333,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   };
 
   const renderFeedContent = () => {
-    if (selectPlatform.name === "The other app") {
+    if (selectPlatform.name === "X") {
       return renderXFeed();
     }
     return renderFeed();
