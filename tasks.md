@@ -27,11 +27,11 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [x] Create story or visual spec for `MobileNavbar`
 
 ### 3. Implement MobileNavbar
-- [ ] Create `/src/common/components/organisms/MobileNavbar.tsx`
-  - [ ] Render a scrollable tab list with Tailwind utilities
-  - [ ] Highlight selected tab via theme tokens
-  - [ ] Apply ARIA roles (`tablist`, `tab`)
-  - [ ] Support dynamic tab labels and icons (use `tabNames` from `SpaceConfig.tabNames`)
+- [x] Create `/src/common/components/organisms/MobileNavbar.tsx`
+  - [x] Render a scrollable tab list with Tailwind utilities
+  - [x] Highlight selected tab via theme tokens
+  - [x] Apply ARIA roles (`tablist`, `tab`)
+  - [x] Support dynamic tab labels and icons (use `tabNames` from `SpaceConfig.tabNames`)
 
 ### 4. Refactor `Space.tsx`
 - [ ] Import and integrate `MobileNavbar` when `isMobile === true`
@@ -48,16 +48,16 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [ ] Simplify `LayoutFidget` modules to consume new hooks and `MobileNavbar`
 
 ### 6. Styling & Theming
-- [ ] Ensure `MobileNavbar` uses `mergeClasses` pattern for conditional classes
-- [ ] Use design tokens from `/src/constants/themes.ts`
+- [x] Ensure `MobileNavbar` uses `mergeClasses` pattern for conditional classes
+- [x] Use design tokens from `/src/constants/themes.ts`
 
 ### 7. Accessibility
-- [ ] Verify `MobileNavbar` tablist meets WAI-ARIA guidelines
-- [ ] Ensure keyboard navigation (arrow keys, focus management)
+- [x] Verify `MobileNavbar` tablist meets WAI-ARIA guidelines
+- [x] Ensure keyboard navigation (arrow keys, focus management)
 
 ### 8. Performance & Optimization
-- [ ] Memoize tab list items with `React.memo`
-- [ ] Use `useCallback` for event handlers
+- [x] Memoize tab list items with `React.memo`
+- [x] Use `useCallback` for event handlers
 - [ ] Benchmark mount/render times before/after
 
 ### 9. Validation
