@@ -21,10 +21,10 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [x] Identify Tailwind classes and design tokens needed for new navbar
 
 ### 2. Design Mobile Navbar Component
-- [ ] Define interface for `MobileNavbar` in `/src/common/components/organisms/MobileNavbar.tsx`
+- [x] Define interface for `MobileNavbar` in `/src/common/components/organisms/MobileNavbar.tsx`
   - Props: `tabs: TabItem[]`, `selected: string`, `onSelect: (id: string) => void`, `theme: UserTheme`
-- [ ] Sketch responsive behaviors: fixed bottom, icon + label, overflow scrolling
-- [ ] Create story or visual spec for `MobileNavbar`
+- [x] Sketch responsive behaviors: fixed bottom, icon + label, overflow scrolling
+- [x] Create story or visual spec for `MobileNavbar`
 
 ### 3. Implement MobileNavbar
 - [ ] Create `/src/common/components/organisms/MobileNavbar.tsx`
@@ -75,7 +75,7 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 
 ## Milestones
 - [x] Phase 1 complete: research and specs approved
-- [ ] Phase 2 complete: `MobileNavbar` component implemented
+- [x] Phase 2 complete: `MobileNavbar` component implemented
 - [ ] Phase 3 complete: refactor `Space.tsx` with new views
 - [ ] Phase 4 complete: unified layout patterns and utilities
 - [ ] Final review and merge
