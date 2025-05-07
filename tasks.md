@@ -70,8 +70,10 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [ ] Snapshot tests for `MobileNavbar`
 
 ### 10. Documentation & Cleanup
-- [ ] Update README with new usage examples
 - [ ] Document `MobileNavbar` API in `/docs/components.md`
+- [ ] Create comprehensive JSDoc comments with TypeScript interfaces
+- [ ] Add React component usage examples with code snippets
+- [ ] Document theming API and customization options
 - [ ] Remove deprecated gradient overlay code from `Space.tsx`
 - [ ] Clean up unused imports and props
 
