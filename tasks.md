@@ -8,7 +8,7 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - Standardize layout handling by abstracting desktop and mobile views
 - Build a reusable, responsive mobile navbar component
 - Improve code organization and clarity in `Space.tsx` and layout fidget modules
-- Ensure accessibility, performance, and test coverage
+- Ensure accessibility and performance
 
 ## Phases & Tasks
 
@@ -32,8 +32,6 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
   - [ ] Highlight selected tab via theme tokens
   - [ ] Apply ARIA roles (`tablist`, `tab`)
   - [ ] Support dynamic tab labels and icons (use `tabNames` from `SpaceConfig.tabNames`)
-- [ ] Write unit tests using React Testing Library in `/src/common/components/organisms/__tests__/MobileNavbar.test.tsx`
-  - [ ] Test rendering, selection, keyboard navigation
 
 ### 4. Refactor `Space.tsx`
 - [ ] Import and integrate `MobileNavbar` when `isMobile === true`
@@ -52,22 +50,20 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 ### 6. Styling & Theming
 - [ ] Ensure `MobileNavbar` uses `mergeClasses` pattern for conditional classes
 - [ ] Use design tokens from `/src/constants/themes.ts`
-- [ ] Add responsive tests for tailwind variants
 
 ### 7. Accessibility
 - [ ] Verify `MobileNavbar` tablist meets WAI-ARIA guidelines
 - [ ] Ensure keyboard navigation (arrow keys, focus management)
-- [ ] Test with screen readers
 
 ### 8. Performance & Optimization
 - [ ] Memoize tab list items with `React.memo`
 - [ ] Use `useCallback` for event handlers
 - [ ] Benchmark mount/render times before/after
 
-### 9. Testing & Validation
-- [ ] End-to-end tests for mobile and desktop views (Cypress or Playwright)
-- [ ] Integration tests: switching tabs, saving configuration
-- [ ] Snapshot tests for `MobileNavbar`
+### 9. Validation
+- [ ] Manual testing of mobile and desktop views
+- [ ] Verify tab switching works correctly
+- [ ] Check configuration saving
 
 ### 10. Documentation & Cleanup
 - [ ] Document `MobileNavbar` API in `/docs/components.md`
@@ -79,7 +75,7 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 
 ## Milestones
 - [x] Phase 1 complete: research and specs approved
-- [ ] Phase 2 complete: `MobileNavbar` component implemented and tested
+- [ ] Phase 2 complete: `MobileNavbar` component implemented
 - [ ] Phase 3 complete: refactor `Space.tsx` with new views
 - [ ] Phase 4 complete: unified layout patterns and utilities
 - [ ] Final review and merge
