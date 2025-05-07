@@ -13,12 +13,12 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 ## Phases & Tasks
 
 ### 1. Research & Exploration
-- [ ] Review `Space.tsx` and existing `LayoutFidgets` in `/src/fidgets/layout/`
-  - [ ] Identify duplication between Grid and TabFullScreen implementations
-  - [ ] Map out props and behaviors shared by both layouts
-  - [ ] Note existing mobile hooks (`useIsMobile`, `MOBILE_PADDING`, etc.)
-- [ ] Audit current mobile UI in browser/dev tools (responsive modes)
-- [ ] Identify Tailwind classes and design tokens needed for new navbar
+- [x] Review `Space.tsx` and existing `LayoutFidgets` in `/src/fidgets/layout/`
+  - [x] Identify duplication between Grid and TabFullScreen implementations
+  - [x] Map out props and behaviors shared by both layouts
+  - [x] Note existing mobile hooks (`useIsMobile`, `MOBILE_PADDING`, etc.)
+- [x] Audit current mobile UI in browser/dev tools (responsive modes)
+- [x] Identify Tailwind classes and design tokens needed for new navbar
 
 ### 2. Design Mobile Navbar Component
 - [ ] Define interface for `MobileNavbar` in `/src/common/components/organisms/MobileNavbar.tsx`
@@ -78,7 +78,7 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [ ] Clean up unused imports and props
 
 ## Milestones
-- [ ] Phase 1 complete: research and specs approved
+- [x] Phase 1 complete: research and specs approved
 - [ ] Phase 2 complete: `MobileNavbar` component implemented and tested
 - [ ] Phase 3 complete: refactor `Space.tsx` with new views
 - [ ] Phase 4 complete: unified layout patterns and utilities
