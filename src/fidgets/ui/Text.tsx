@@ -28,8 +28,8 @@ export type TextFidgetSettings = {
 
 const defaultText = `Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.`;
 
-const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3">{children}</div>
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3 pt-3">{children}</div>
 );
 
 export const textConfig: FidgetProperties = {
