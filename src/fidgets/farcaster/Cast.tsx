@@ -30,9 +30,21 @@ const castFidgetProperties: FidgetProperties = {
   mobileIconSelected: <BsFillPinFill size={22} />,
   fields: [
     {
+      fieldName: "castUrl",
+      displayName: "Cast URL",
+      displayNameHint: "Copy link of a cast from Warpcast's share button",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
       fieldName: "castHash",
       displayName: "Cast Hash",
-      displayNameHint: "Paste the Warpcast link to the cast you want to pin",
+      displayNameHint: "Copy the hash from a cast's ellipsis menu",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -44,19 +56,7 @@ const castFidgetProperties: FidgetProperties = {
     {
       fieldName: "casterFid",
       displayName: "Caster FID",
-      displayNameHint: "Optional: The hash of the cast (from Warpcast's ellipsis menu)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <TextInput {...props} />
-        </WithMargin>
-      ),
-      group: "settings",
-    },
-    {
-      fieldName: "castUrl",
-      displayName: "Cast URL",
-      displayNameHint: "Optional: The FID of the cast author",
+      displayNameHint: "Find the FID in the caster's profile About section",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
