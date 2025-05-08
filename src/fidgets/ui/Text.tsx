@@ -79,7 +79,7 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "fontColor",
       displayName: "Font Color",
-      displayNameHint: "Color used for the text input (body text)",
+      displayNameHint: "Color used for the body text. Click the paintbrush to inherit from the Theme.",
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
@@ -97,7 +97,7 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "urlColor",
       displayName: "URL Color",
-      displayNameHint: "Color used for links in the text input (body text).",
+      displayNameHint: "Color used for links. Click the paintbrush to set to the default.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -115,7 +115,7 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       displayName: "Headings Font Family",
-      displayNameHint: "Font for headings. Use Theme Font to inherit from Theme",
+      displayNameHint: "Font for headings. Use Theme Font to inherit from Theme.",
       default: "var(--user-theme-headings-font)",
       required: false,
       inputSelector: (props) => (
@@ -128,7 +128,7 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "headingsFontColor",
       displayName: "Headings Font Color",
-      displayNameHint: "Color used for the title input",
+      displayNameHint: "Color used for the (optional) title. Click the paintbrush to inherit from Theme.",
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
