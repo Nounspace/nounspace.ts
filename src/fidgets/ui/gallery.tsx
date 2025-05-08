@@ -63,7 +63,6 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "imageUploader",
       displayName: "Upload Image",
-      displayNameHint: "If your image isn't hosted publicly yet, you can upload it using a free tool like imgbb",
       inputSelector: ({ updateSettings }) => {
         const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
 
@@ -92,7 +91,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "imageUrl",
       displayName: "Image URL",
-      displayNameHint: "Paste the Image Address for a publicly hosted image.",
+      displayNameHint: "Right click on a publicly hosted image to copy its address, then paste the image address here.",
       required: true,
       inputSelector: (props) => (
         <WithMargin>
@@ -122,7 +121,7 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "nftSelector",
       displayName: "NFT",
-      displayNameHint: "Select your verified wallet address to view your NFTs.",
+      displayNameHint: "Select a verified wallet address to view your NFTs.",
       inputSelector: (props) => (
         <WithMargin>
           <AlchemyNftSelector {...props} />
