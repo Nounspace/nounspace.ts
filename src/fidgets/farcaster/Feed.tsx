@@ -21,7 +21,7 @@ import {
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isNil } from "lodash";
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
@@ -322,6 +322,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   } = settings;
   const { feedType, users, channel, filterType, keyword } = settings;
   const { fid } = useFarcasterSigner("feed");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [prevFeedType, setPrevFeedType] = useState(feedType);
 
   const {
     data,
@@ -330,6 +332,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     hasNextPage,
     isError,
     isPending,
+    refetch
   } =
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })
@@ -345,26 +348,41 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   const [ref, inView] = useInView();
 
   useEffect(() => {
-    if (inView && hasNextPage) {
+    if (prevFeedType !== feedType) {
+      setIsTransitioning(true);
+      threadStack.clear();
+      setTimeout(() => {
+        refetch().then(() => {
+          setIsTransitioning(false);
+          setPrevFeedType(feedType);
+        }).catch(() => {
+          setIsTransitioning(false);
+          setPrevFeedType(feedType);
+        });
+      }, 200);
+    }
+  }, [feedType, prevFeedType, refetch, threadStack]);
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isTransitioning) {
       fetchNextPage();
     }
-  }, [inView]);
+  }, [inView, hasNextPage, fetchNextPage, isTransitioning]);
+
 
   useEffect(() => {
     threadStack.clear();
-  }, [settings]);
+  }, [settings, threadStack]);
 
   const onSelectCast = useCallback((hash: string) => {
     threadStack.push(hash);
-  }, []);
+  }, [threadStack]);
 
   const renderThread = () => (
     <CastThreadView
       cast={{
         hash: threadStack.last || "",
-        author: {
-          fid: fid,
-        },
+        author: { fid },
       }}
       onBack={threadStack.pop}
       onSelect={onSelectCast}
@@ -394,6 +412,35 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   };
 
   const renderFeed = () => {
+    if (isTransitioning || isPending) {
+      return (
+        <div className="h-full w-full flex justify-center items-center">
+          <Loading />
+        </div>
+      );
+    }
+
+    if (isError) {
+      return (
+        <div className="p-4 text-center">
+          <p>Error loading feed. Please try again.</p>
+        </div>
+      );
+    }
+
+    const hasData = data && (
+      filterType === FilterType.Keyword
+        ? data.pages.some(page => page.result.casts?.length > 0)
+        : data.pages.some(page => page.casts?.length > 0)
+    );
+
+    if (!hasData) {
+      return (
+        <div className="p-4 text-center">
+          <p>No content found with these filter settings</p>
+        </div>
+      );
+    }
     return (
       <>
         {!isPending && (
@@ -472,14 +519,19 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         background: settings.useDefaultColors ? 'var(--user-theme-fidget-background)' : settings.background,
       }}
     >
-      {isThreadView && (
-        <div className="h-full overflow-y-scroll justify-center items-center">
+      {isTransitioning ? (
+        <div className="h-full w-full flex justify-center items-center">
+          <Loading />
+        </div>
+      ) : isThreadView ? (
+        <div className="h-full overflow-y-auto">
           {renderThread()}
         </div>
+      ) : (
+        <div className="h-full overflow-y-auto">
+          {renderFeedContent()}
+        </div>
       )}
-      <div className="h-full overflow-y-scroll justify-center items-center">
-        {renderFeedContent()}
-      </div>
     </div>
   );
 };
