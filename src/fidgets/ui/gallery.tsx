@@ -40,6 +40,10 @@ export type GalleryFidgetSettings = {
   badgeColor: Color;
 } & FidgetSettingsStyle;
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 const galleryConfig: FidgetProperties = {
   fidgetName: "Image",
   icon: 0x1f5bc,
@@ -47,7 +51,11 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "selectMediaSource",
       displayName: "Source",
-      inputSelector: MediaSourceSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <MediaSourceSelector {...props} />
+        </WithMargin>
+      ),
       required: false,
       default: { name: MediaSourceTypes.URL },
       group: "settings",
@@ -69,9 +77,11 @@ const galleryConfig: FidgetProperties = {
         };
 
         return (
-          <div className="flex flex-col gap-4">
-            <ImgBBUploader onImageUploaded={handleImageUploaded} />
-          </div>
+          <WithMargin>
+            <div className="flex flex-col gap-4">
+              <ImgBBUploader onImageUploaded={handleImageUploaded} />
+            </div>
+          </WithMargin>
         );
       },
       required: false,
@@ -84,7 +94,11 @@ const galleryConfig: FidgetProperties = {
       displayName: "Image URL",
       displayNameHint: "Paste the Image Address for a publicly hosted image.",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       default:
         "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
       group: "settings",
@@ -95,7 +109,11 @@ const galleryConfig: FidgetProperties = {
       fieldName: "network",
       displayName: "Network",
       displayNameHint: "Choose the blockchain network where your NFTs are stored.",
-      inputSelector: AlchemyChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <AlchemyChainSelector {...props} />
+        </WithMargin>
+      ),
       required: true,
       group: "settings",
       disabledIf: (settings) =>
@@ -105,7 +123,11 @@ const galleryConfig: FidgetProperties = {
       fieldName: "nftSelector",
       displayName: "NFT",
       displayNameHint: "Select your verified wallet address to view your NFTs.",
-      inputSelector: AlchemyNftSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <AlchemyNftSelector {...props} />
+        </WithMargin>
+      ),
       required: true,
       group: "settings",
       disabledIf: (settings) =>
@@ -114,8 +136,13 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "nftAddress",
       displayName: "Collection Address",
+      displayNameHint: "Contract address of the NFT collection",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       default: "",
       group: "settings",
       disabledIf: (settings) =>
@@ -124,8 +151,13 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "nftTokenId",
       displayName: "Token ID",
+      displayNameHint: "Unique identifier of the NFT within the collection",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       default: "",
       group: "settings",
       disabledIf: (settings) =>
@@ -134,18 +166,26 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "Scale",
       displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the image size.",
+      displayNameHint: "Adjust the image size",
       required: false,
-      inputSelector: ImageScaleSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
       default: 1,
       group: "style",
     },
     {
       fieldName: "Link",
       displayName: "Links To",
-      displayNameHint: "Optionally input a URL here that will open in a new window when the image is clicked.",
+      displayNameHint: "URL to open when image is clicked",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       default: "",
       group: "settings",
       disabledIf: (settings) =>
@@ -154,8 +194,13 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "badgeColor",
       displayName: "Badge Color",
+      displayNameHint: "Color for the verification badge",
       required: false,
-      inputSelector: ColorSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ColorSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
       default: "rgb(55, 114, 249)",
       disabledIf: (settings) =>

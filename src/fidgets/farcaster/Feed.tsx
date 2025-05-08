@@ -32,19 +32,19 @@ import { CastThreadView } from "./components/CastThreadView";
 export enum FilterType {
   Channel = "channel_id",
   Users = "fids",
-  Keyword = "keyword", 
+  Keyword = "keyword",
 }
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
-  users?: string; 
+  users?: string;
   channel?: string;
-  keyword?: string; 
+  keyword?: string;
   selectPlatform: Platform;
   Xhandle: string;
   style: string;
-  useDefaultColors?: boolean; 
+  useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
@@ -68,6 +68,10 @@ export const FilterTypeSelector: React.FC<{
   );
 };
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
   fields: [
@@ -75,7 +79,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "selectPlatform",
       displayName: "Network",
-      inputSelector: PlatformSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <PlatformSelector {...props} />
+        </WithMargin>
+      ),
       required: false,
       default: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
       group: "settings",
@@ -84,7 +92,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "feedType",
       displayName: "Feed Type",
       displayNameHint: "Select Following for a personalized feed or Filter by User, Channel, or Keyword.",
-      inputSelector: FeedTypeSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FeedTypeSelector {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) =>
         settings?.selectPlatform?.name === "X",
@@ -95,7 +107,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "Xhandle",
       displayName: "Username",
       displayNameHint: "Input an X username to display a feed of their Tweets. Do not include the '@'",
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) => settings?.selectPlatform?.name === "Farcaster",
       default: "thenounspace",
@@ -105,7 +121,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "filterType",
       displayName: "Filter Type",
       displayNameHint: "Choose between Users, Channel, or Keyword to filter the feed.",
-      inputSelector: FilterTypeSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FilterTypeSelector {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
@@ -117,7 +137,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "users",
       displayName: "FID",
       displayNameHint: "Input an FID to display a feed of that user's casts.",
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
@@ -130,7 +154,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "channel",
       displayName: "Channel",
       displayNameHint: "Input a channel name to display casts from that channel.",
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
@@ -143,7 +171,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       fieldName: "keyword",
       displayName: "Keyword",
       displayNameHint: "Input a keyword to filter casts containing this term.",
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       required: false,
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
@@ -155,7 +187,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "style",
       displayName: "Feed Style",
-      inputSelector: ThemeSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeSelector {...props} />
+        </WithMargin>
+      ),
       required: false,
       group: "style",
       disabledIf: (settings) =>
@@ -168,7 +204,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayNameHint: "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -177,12 +217,14 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayNameHint: "Color used for the text input (body text)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
       ),
       group: "style",
       default: "var(--user-theme-font-color)",
@@ -193,12 +235,14 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayNameHint: "Color used for the background of the Fidget",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
+        </WithMargin>
       ),
       group: "style",
       default: "var(--user-theme-fidget-background)",
@@ -206,11 +250,15 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fidgetBorderWidth",
-      displayName: "FidgetBorderWidth",
+      displayName: "Fidget Border Width",
       displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
-      inputSelector: BorderSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <BorderSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
       disabledIf: (settings) =>
         settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
@@ -221,12 +269,14 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayNameHint: "Color of the Fidget's Border.",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-border-color)"
+            defaultColor="#000000"
+            colorType="border color"
+          />
+        </WithMargin>
       ),
       group: "style",
       default: "var(--user-theme-fidget-border-color)",
@@ -238,7 +288,11 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
-      inputSelector: ShadowSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ShadowSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
       disabledIf: (settings) =>
         settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
@@ -353,7 +407,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     ? page.result.casts?.map(
                       (
                         cast,
-                        index, 
+                        index,
                       ) => (
                         <CastRow
                           cast={cast}
@@ -365,7 +419,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
                     : page.casts?.map(
                       (
                         cast,
-                        index, 
+                        index,
                       ) => (
                         <CastRow
                           cast={cast}

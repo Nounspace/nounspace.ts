@@ -14,13 +14,22 @@ export const validateMobileDisplayName = (value: string): boolean => {
   return value.length <= MOBILE_DISPLAY_NAME_MAX_LENGTH;
 };
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
+
 export const mobileStyleSettings = [
   {
     fieldName: "showOnMobile",
     displayName: "Show on Mobile",
     default: true,
     required: false,
-    inputSelector: SwitchButton,
+    inputSelector: (props) => (
+      <WithMargin>
+        <SwitchButton {...props} />
+      </WithMargin>
+    ),
     group: "style",
   },
   {
@@ -28,7 +37,11 @@ export const mobileStyleSettings = [
     displayName: "Mobile Display Name",
     displayNameHint: "Set a custom name to display for this Fidget in the mobile nav.",
     validator: validateMobileDisplayName,
-    inputSelector: TextInput,
+    inputSelector: (props) => (
+      <WithMargin>
+        <TextInput {...props} />
+      </WithMargin>
+    ),
     required: false,
     group: "style",
   },
@@ -43,47 +56,59 @@ export const defaultStyleFields = [
     default: "var(--user-theme-fidget-background)",
     required: false,
     inputSelector: (props) => (
-      <ThemeColorSelector
-        {...props}
-        themeVariable="var(--user-theme-fidget-background)"
-        defaultColor="#FFFFFF"
-        colorType="background"
-      />
+      <WithMargin>
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-background)"
+          defaultColor="#FFFFFF"
+          colorType="background"
+        />
+      </WithMargin>
     ),
     group: "style",
   },
   {
     fieldName: "fidgetBorderWidth",
-    displayName: "FidgetBorderWidth",
-    displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
+    displayName: "Fidget Border Width",
+    displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
     default: "var(--user-theme-fidget-border-width)",
     required: false,
-    inputSelector: BorderSelector,
+    inputSelector: (props) => (
+      <WithMargin>
+        <BorderSelector {...props} />
+      </WithMargin>
+    ),
     group: "style",
   },
   {
     fieldName: "fidgetBorderColor",
-    displayName: "FidgetBorderColor",
+    displayName: "Fidget Border Color",
     displayNameHint: "Color of the Fidget's Border.",
     default: "var(--user-theme-fidget-border-color)",
     required: false,
     inputSelector: (props) => (
-      <ThemeColorSelector
-        {...props}
-        themeVariable="var(--user-theme-fidget-border-color)"
-        defaultColor="#000000"
-        colorType="border color"
-      />
+      <WithMargin>
+        <ThemeColorSelector
+          {...props}
+          themeVariable="var(--user-theme-fidget-border-color)"
+          defaultColor="#000000"
+          colorType="border color"
+        />
+      </WithMargin>
     ),
     group: "style",
   },
   {
     fieldName: "fidgetShadow",
-    displayName: "FidgetShadow",
+    displayName: "Fidget Shadow",
     displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
     default: "var(--user-theme-fidget-shadow)",
     required: false,
-    inputSelector: ShadowSelector,
+    inputSelector: (props) => (
+      <WithMargin>
+        <ShadowSelector {...props} />
+      </WithMargin>
+    ),
     group: "style",
   },
 ] as FidgetFieldConfig[];

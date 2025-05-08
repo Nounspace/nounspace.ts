@@ -24,6 +24,10 @@ const DISALLOW_URL_PATTERNS = [
   /%3Cscript/i,
 ];
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
   mobileFidgetName: "Site",
@@ -36,7 +40,11 @@ const frameConfig: FidgetProperties = {
       displayName: "URL",
       displayNameHint: "Paste the URL of the webpage you'd like to embed",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
    ...defaultStyleFields,
@@ -45,7 +53,11 @@ const frameConfig: FidgetProperties = {
       displayName: "Size",
       displayNameHint: "Drag the slider to adjust the zoom level.",
       required: false,
-      inputSelector: IFrameWidthSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IFrameWidthSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
   ],

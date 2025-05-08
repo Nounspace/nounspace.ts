@@ -17,6 +17,10 @@ export type VideoFidgetSettings = {
   size: number;
 } & FidgetSettingsStyle;
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 const DISALLOW_URL_PATTERNS = [
   /javascript:/i,
   /^data:/i,
@@ -34,7 +38,11 @@ const frameConfig: FidgetProperties = {
       displayNameHint: "Paste any YouTube or Vimeo URL and it will be automatically converted",
       required: true,
       default: "https://www.youtube.com/watch?v=lOzCA7bZG_k", 
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     ...defaultStyleFields,
@@ -43,7 +51,11 @@ const frameConfig: FidgetProperties = {
       displayName: "Scale",
       displayNameHint: "Drag the slider to adjust the image size.",
       required: false,
-      inputSelector: IFrameWidthSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IFrameWidthSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
   ],

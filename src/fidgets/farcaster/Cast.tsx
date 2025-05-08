@@ -18,6 +18,10 @@ type CastFidgetSettings = {
   useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 const castFidgetProperties: FidgetProperties = {
   fidgetName: "Pinned Cast",
   mobileFidgetName: "Pinned",
@@ -27,26 +31,38 @@ const castFidgetProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "castHash",
-      displayName: "CastHash",
-      displayNameHint: "To copy the hash of a cast, visit the cast on Warpcast, click the ellipsis in the top right, and click Copy cast hash",
+      displayName: "Cast Hash",
+      displayNameHint: "Paste the Warpcast link to the cast you want to pin",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "casterFid",
-      displayName: "CasterFID",
-      displayNameHint: "To copy the FID of a caster, visit their profile on Warpcast, click the vertical ellipsis in the top right, and click About.",
+      displayName: "Caster FID",
+      displayNameHint: "Optional: The hash of the cast (from Warpcast's ellipsis menu)",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "castUrl",
-      displayName: "CastURL",
-      displayNameHint: "The simplest way to pin a cast is to copy the URL of the cast from Warpcast. Simply visit the cast on Warpcast, click the Share icon in the bottom right, and click 'Copy link'",
+      displayName: "Cast URL",
+      displayNameHint: "Optional: The FID of the cast author",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     ...defaultStyleFields,
@@ -63,7 +79,7 @@ const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
   settings,
 }) => {
   const { castHash, casterFid, castUrl } = settings;
-  
+
   const castId =
     !isUndefined(castHash) && !isUndefined(casterFid)
       ? { hash: castHash, fid: casterFid }
@@ -76,7 +92,7 @@ const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
   return (
     <div
       style={{
-        background: settings.useDefaultColors 
+        background: settings.useDefaultColors
           ? 'var(--user-theme-fidget-background)'
           : settings.background,
         borderColor: settings.useDefaultColors

@@ -45,6 +45,10 @@ export type LinkFidgetSettings = {
   scale: number;
 } & FidgetSettingsStyle;
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
 export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
   icon: 0x26d3,
@@ -57,7 +61,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Drag the slider to adjust the image size.",
       default: 1,
       required: false,
-      inputSelector: ImageScaleSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -66,7 +74,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Add a title to display above your list of links.",
       default: "My Links",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
@@ -82,7 +94,11 @@ export const linkConfig: FidgetProperties = {
         },
       ],
       required: true,
-      inputSelector: LinksInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <LinksInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
@@ -91,7 +107,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Choose between grid or list layout for displaying your links.",
       default: "list",
       required: false,
-      inputSelector: SwitchButton,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SwitchButton {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -100,7 +120,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Font used for the title and link text. Set to Theme Font to inherit the Title Font from the Theme.",
       default: "Londrina Solid",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -109,7 +133,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Font used for the description text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "Theme Font",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -119,12 +147,14 @@ export const linkConfig: FidgetProperties = {
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-headings-font-color)"
-          defaultColor="#000000"
-          colorType="headings color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -135,12 +165,14 @@ export const linkConfig: FidgetProperties = {
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -151,12 +183,14 @@ export const linkConfig: FidgetProperties = {
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
+        <WithMargin>
+         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-background)"
           defaultColor="#FFFFFF"
           colorType="background"
         />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -167,22 +201,28 @@ export const linkConfig: FidgetProperties = {
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
+        <WithMargin>
+         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-background)"
           defaultColor="#FFFFFF"
           colorType="background"
         />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderWidth",
-      displayName: "FidgetBorderWidth",
+      displayName: "Fidget Border Width",
       displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
-      inputSelector: BorderSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <BorderSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -192,12 +232,14 @@ export const linkConfig: FidgetProperties = {
       default: "var(--user-theme-fidget-border-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
+        <WithMargin>
+         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-border-color)"
           defaultColor="#000000"
           colorType="border color"
         />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -207,7 +249,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
-      inputSelector: ShadowSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ShadowSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -216,7 +262,11 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Add custom CSS to further customize the appearance of your links.",
       default: "",
       required: false,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "code",
     },
   ],
@@ -252,7 +302,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
     if (isThemeHeadingsFont(settings.headingsFontFamily)) {
       return "var(--user-theme-headings-font)";
     }
-    
+
     if (settings.headingsFontFamily === "Londrina Solid") {
       const root = document.documentElement;
       const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
@@ -260,7 +310,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         return themeFont;
       }
     }
-    
+
     return settings.headingsFontFamily;
   };
 

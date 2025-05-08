@@ -28,6 +28,9 @@ export type TextFidgetSettings = {
 
 const defaultText = `Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.`;
 
+const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
 
 export const textConfig: FidgetProperties = {
   fidgetName: "Text",
@@ -39,25 +42,38 @@ export const textConfig: FidgetProperties = {
       displayNameHint: "Optional title for your Text Fidget.",
       default: "Text Fidget",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
+
     },
     {
       fieldName: "text",
       displayName: "Text",
-      displayNameHint: "Input text to display and use Markdown Syntax to format or embed content like images.",
+      displayNameHint: "Use Markdown syntax to format and embed content",
       default: defaultText,
       required: true,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "fontFamily",
       displayName: "Font Family",
-      displayNameHint: "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
+      displayNameHint: "Font for body text. Use Theme Font to inherit from Theme",
       default: "var(--user-theme-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -67,12 +83,14 @@ export const textConfig: FidgetProperties = {
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -82,12 +100,14 @@ export const textConfig: FidgetProperties = {
       displayNameHint: "Color used for links in the text input (body text).",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-link-color)"
-          defaultColor="#0000FF"
-          colorType="link color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-link-color)"
+            defaultColor="#0000FF"
+            colorType="link color"
+          />
+        </WithMargin>
       ),
       default: "var(--user-theme-link-color)",
       group: "style",
@@ -95,10 +115,14 @@ export const textConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       displayName: "Headings Font Family",
-      displayNameHint: "Font used for the title input. Set to Theme Font to inherit the Title Font from the Theme.",
+      displayNameHint: "Font for headings. Use Theme Font to inherit from Theme",
       default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -108,21 +132,29 @@ export const textConfig: FidgetProperties = {
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-headings-font-color)"
-          defaultColor="#000000"
-          colorType="headings color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     ...defaultStyleFields,
     {
       fieldName: "css",
+      displayName: "Custom CSS",
+      displayNameHint: "Add custom CSS styles to this fidget",
       default: "",
       required: false,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "code",
     },
   ],

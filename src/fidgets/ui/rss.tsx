@@ -23,6 +23,11 @@ export type RSSFidgetSettings = {
   useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3">{children}</div>
+);
+
+
 export const rssConfig: FidgetProperties = {
   fidgetName: "RSS",
   icon: 0x1f6f0,
@@ -32,10 +37,14 @@ export const rssConfig: FidgetProperties = {
     {
       fieldName: "rssUrl",
       displayName: "RSS Feed URL",
-      displayNameHint: "Enter the URL of the RSS feed you want to display (e.g. https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml)",
+      displayNameHint: "Enter the URL of the RSS feed you want to display.",
       default: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
@@ -44,7 +53,11 @@ export const rssConfig: FidgetProperties = {
       displayNameHint: "Drag the slider to adjust the size.",
       default: 1,
       required: false,
-      inputSelector: ImageScaleSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -53,7 +66,11 @@ export const rssConfig: FidgetProperties = {
       displayNameHint: "Font used for the content text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -63,12 +80,15 @@ export const rssConfig: FidgetProperties = {
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+
       ),
       group: "style",
     },
@@ -78,7 +98,11 @@ export const rssConfig: FidgetProperties = {
       displayNameHint: "Font used for titles. Set to Theme Font to inherit the Title Font from the Theme.",
       default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
@@ -88,12 +112,15 @@ export const rssConfig: FidgetProperties = {
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-headings-font-color)"
-          defaultColor="#000000"
-          colorType="headings color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings color"
+          />
+        </WithMargin>
+
       ),
       group: "style",
     },
@@ -105,12 +132,14 @@ export const rssConfig: FidgetProperties = {
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -121,12 +150,14 @@ export const rssConfig: FidgetProperties = {
       default: "var(--user-theme-fidget-border-color)",
       required: false,
       inputSelector: (props) => (
+        <WithMargin>
         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-border-color)"
           defaultColor="#000000"
           colorType="border color"
         />
+        </WithMargin>
       ),
       group: "style",
     },
@@ -136,7 +167,11 @@ export const rssConfig: FidgetProperties = {
       displayNameHint: "Add custom CSS to further customize the appearance",
       default: "",
       required: false,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "code",
     },
   ],
@@ -178,11 +213,11 @@ export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
   return (
     <div
       style={{
-        background: settings.useDefaultColors 
-          ? 'var(--user-theme-fidget-background)' 
+        background: settings.useDefaultColors
+          ? 'var(--user-theme-fidget-background)'
           : settings.background,
-        color: settings.useDefaultColors 
-          ? 'var(--user-theme-font-color)' 
+        color: settings.useDefaultColors
+          ? 'var(--user-theme-font-color)'
           : settings.fontColor,
         height: "100%",
         borderWidth: settings.fidgetBorderWidth,
