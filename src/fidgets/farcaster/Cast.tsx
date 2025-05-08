@@ -32,7 +32,7 @@ const castFidgetProperties: FidgetProperties = {
     {
       fieldName: "castUrl",
       displayName: "Cast URL",
-      displayNameHint: "Copy link of a cast from Warpcast's share button",
+      displayNameHint: "Copy and paste the URL of a cast from Warpcast's share button. This is the easiest way to pin a cast.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -44,7 +44,7 @@ const castFidgetProperties: FidgetProperties = {
     {
       fieldName: "castHash",
       displayName: "Cast Hash",
-      displayNameHint: "Copy the hash from a cast's ellipsis menu",
+      displayNameHint: "Copy and paste the hash from a cast's ellipsis menu on Warpcast. Then input the caster's FID.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -56,7 +56,7 @@ const castFidgetProperties: FidgetProperties = {
     {
       fieldName: "casterFid",
       displayName: "Caster FID",
-      displayNameHint: "Find the FID in the caster's profile About section",
+      displayNameHint: "Copy and paste the FID from the caster's profile About section. Then input the Cast Hash if you haven't already.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -86,7 +86,7 @@ const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
       : undefined;
 
   if (isUndefined(castUrl) && isUndefined(castId)) {
-    return "Must Cast URL or both Caster FID and Cast Hash";
+    return "Must input either Cast URL or both Caster FID and Cast Hash";
   }
 
   return (
