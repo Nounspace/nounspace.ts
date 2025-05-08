@@ -69,7 +69,7 @@ export const FilterTypeSelector: React.FC<{
 };
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 mt-1.5">{children}</div>
+  <div className="mb-3 pt-3">{children}</div>
 );
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {

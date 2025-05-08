@@ -24,7 +24,7 @@ export type RSSFidgetSettings = {
 } & FidgetSettingsStyle;
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3">{children}</div>
+  <div className="mb-3 pt-3">{children}</div>
 );
 
 
