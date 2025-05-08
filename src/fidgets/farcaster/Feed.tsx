@@ -344,7 +344,9 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         channel,
       });
 
-  const threadStack = useLifoQueue<string>();
+  const threadStackRef = React.useRef(useLifoQueue<string>());
+  const threadStack = threadStackRef.current;
+
   const [ref, inView] = useInView();
 
   useEffect(() => {
@@ -361,7 +363,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         });
       }, 200);
     }
-  }, [feedType, prevFeedType, refetch, threadStack]);
+  }, [feedType, prevFeedType, refetch]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isTransitioning) {
