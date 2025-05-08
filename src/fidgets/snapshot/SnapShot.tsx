@@ -5,7 +5,7 @@ import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import React, { useState } from "react";
 import { BsFillLightningChargeFill } from "react-icons/bs";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
@@ -27,6 +27,19 @@ export const snapshotConfig: FidgetProperties = {
   mobileIcon: <BsFillLightningChargeFill size={22} />,
   icon: 0x26a1,
   fields: [
+    {
+      fieldName: "scale",
+      displayName: "Scale",
+      displayNameHint: "Adjust the size of the governance display",
+      default: 1,
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
     {
       fieldName: "snapshot ens",
       displayName: "Snapshot ENS",
@@ -50,15 +63,7 @@ export const snapshotConfig: FidgetProperties = {
       inputSelector: FontSelector,
       group: "style",
     },
-    {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the image size.",
-      default: 1,
-      required: false,
-      inputSelector: ImageScaleSlider,
-      group: "style",
-    },
+
     ...defaultStyleFields,
   ],
   size: {
@@ -102,51 +107,63 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
   };
 
   const getHeadingsFontFamily = () => {
-    return settings.headingsFontFamily === "Theme Headings Font" 
-      ? "var(--user-theme-headings-font)" 
+    return settings.headingsFontFamily === "Theme Headings Font"
+      ? "var(--user-theme-headings-font)"
       : settings.headingsFontFamily || "var(--user-theme-headings-font)";
   };
 
   const getBodyFontFamily = () => {
-    return settings.fontFamily === "Theme Font" 
-      ? "var(--user-theme-font)" 
+    return settings.fontFamily === "Theme Font"
+      ? "var(--user-theme-font)"
       : settings.fontFamily || "var(--user-theme-font)";
   };
 
+  const scale = typeof settings.scale === 'number' && !isNaN(settings.scale)
+    ? settings.scale
+    : 1;
+
+  const containerStyle: React.CSSProperties = {
+    overflow: "auto",
+    transform: `scale(${scale})`,
+    transformOrigin: "0 0",
+  };
+
   return (
-    <CardContent className="size-full overflow-hidden p-4 flex flex-col">
-      <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily() }}>
-        {settings["snapshot ens"]} proposals
-      </h1>
-      {error && <p className="text-red-500">{error}</p>}
-      <div className="grid gap-2 overflow-auto" style={{ fontFamily: getBodyFontFamily() }}>
-        {proposals.map((proposal) => (
-          <ProposalItem
-            key={proposal.id}
-            proposal={proposal}
-            // isExpanded={expandedProposalId === proposal.id}
-            // onToggleExpand={handleToggleExpand}
-            space={settings["snapshot ens"]}
-          />
-        ))}
-      </div>
-      <div className="flex justify-between mt-4">
-        <Button
-          variant="primary"
-          onClick={handlePrevious}
-          disabled={skip === 0}
-        >
-          <FaAngleLeft /> Previous
-        </Button>
-        <Button
-          variant="primary"
-          onClick={handleNext}
-          disabled={proposals.length < first}
-        >
-          Next <FaAngleRight />
-        </Button>
-      </div>
-    </CardContent>
+    <div className="size-full" style={containerStyle}>
+      <CardContent className="size-full overflow-hidden p-4 flex flex-col">
+        <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily() }}>
+          {settings["snapshot ens"]} proposals
+        </h1>
+        {error && <p className="text-red-500">{error}</p>}
+        <div className="grid gap-2 overflow-auto" style={{ fontFamily: getBodyFontFamily() }}>
+          {proposals.map((proposal) => (
+            <ProposalItem
+              key={proposal.id}
+              proposal={proposal}
+              // isExpanded={expandedProposalId === proposal.id}
+              // onToggleExpand={handleToggleExpand}
+              space={settings["snapshot ens"]}
+            />
+          ))}
+        </div>
+        <div className="flex justify-between mt-4">
+          <Button
+            variant="primary"
+            onClick={handlePrevious}
+            disabled={skip === 0}
+          >
+            <FaAngleLeft /> Previous
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleNext}
+            disabled={proposals.length < first}
+          >
+            Next <FaAngleRight />
+          </Button>
+        </div>
+      </CardContent>
+    </div>
   );
 };
 

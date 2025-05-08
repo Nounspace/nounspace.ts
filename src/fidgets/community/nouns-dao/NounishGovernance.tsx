@@ -1,6 +1,6 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
@@ -12,7 +12,7 @@ import { NOUNS_DAO } from "@/constants/basedDaos";
 import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
 import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
 import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import React, { useEffect, useMemo, useState } from "react";
 import { getBlock } from "wagmi/actions";
 
@@ -52,10 +52,14 @@ export const nounishGovernanceConfig: FidgetProperties = {
     {
       fieldName: "scale",
       displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the image size.",
-      required: false,
-      inputSelector: FontSelector,
+      displayNameHint: "Adjust the size of the governance display",
       default: 1,
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     ...defaultStyleFields,
@@ -145,8 +149,11 @@ export const NounishGovernance: React.FC<
     <div
       className="size-full"
       style={{
-        transform: `scale(${settings.scale})`,
-        transformOrigin: "0 0",
+          overflow: "auto",
+          scrollbarWidth: "none",
+          transform: `scale(${settings.scale || 1})`,
+          transformOrigin: "0 0",
+
       }}
     >
       <CardContent className="size-full overflow-scroll p-4">
