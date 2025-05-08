@@ -153,7 +153,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "channel",
       displayName: "Channel",
-      displayNameHint: "Input a channel name to display casts from that channel.",
+      displayNameHint: "Input a Farcaster channel name to display casts from that channel.",
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
@@ -214,7 +214,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "fontColor",
       displayName: "Font Color",
-      displayNameHint: "Color used for the text input (body text)",
+      displayNameHint: "Color used for the body text. Click the paintbrush to inherit the Font Color from the Theme.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -232,7 +232,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "background",
       displayName: "Background",
-      displayNameHint: "Color used for the background of the Fidget",
+      displayNameHint: "Color used for the background of the Fidget. Click the paintbrush to inherit the Fidget Background Color from the theme.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
