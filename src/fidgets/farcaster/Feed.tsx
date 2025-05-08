@@ -201,7 +201,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "font Family",
       displayName: "Font Family",
-      displayNameHint: "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
+      displayNameHint: "Font used for the body text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
       inputSelector: (props) => (
@@ -213,7 +213,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     },
     {
       fieldName: "fontColor",
-      displayName: "FontColor",
+      displayName: "Font Color",
       displayNameHint: "Color used for the text input (body text)",
       required: false,
       inputSelector: (props) => (
