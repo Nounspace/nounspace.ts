@@ -106,7 +106,7 @@ const frameProperties: FidgetProperties = {
       default: "var(--user-theme-fidget-border-color)",
     },
     {
-      fieldName: "fidgetShadow",
+      fieldName: "fidget Shadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow effect. Use Theme Shadow to inherit from Theme",
       default: "none",

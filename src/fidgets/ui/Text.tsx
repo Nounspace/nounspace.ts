@@ -64,7 +64,7 @@ export const textConfig: FidgetProperties = {
       group: "settings",
     },
     {
-      fieldName: "fontFamily",
+      fieldName: "font Family",
       displayName: "Font Family",
       displayNameHint: "Font for body text. Use Theme Font to inherit from Theme",
       default: "var(--user-theme-font)",

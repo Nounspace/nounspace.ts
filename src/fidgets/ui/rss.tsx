@@ -61,8 +61,8 @@ export const rssConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "fontFamily",
-      displayName: "FontFamily",
+      fieldName: "font Family",
+      displayName: "Font Family",
       displayNameHint: "Font used for the content text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,

@@ -99,7 +99,7 @@ export const defaultStyleFields = [
     group: "style",
   },
   {
-    fieldName: "fidgetShadow",
+    fieldName: "fidget Shadow",
     displayName: "Fidget Shadow",
     displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
     default: "var(--user-theme-fidget-shadow)",

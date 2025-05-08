@@ -199,7 +199,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       default: "light",
     },
     {
-      fieldName: "fontFamily",
+      fieldName: "font Family",
       displayName: "FontFamily",
       displayNameHint: "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
@@ -283,8 +283,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) => settings?.selectPlatform?.name === "X",
     },
     {
-      fieldName: "fidgetShadow",
-      displayName: "FidgetShadow",
+      fieldName: "fidget Shadow",
+      displayName: "Fidget Shadow",
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,

@@ -44,7 +44,7 @@ export const snapshotConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "fontFamily",
+      fieldName: "font Family",
       default: "Theme Font",
       required: false,
       inputSelector: FontSelector,
