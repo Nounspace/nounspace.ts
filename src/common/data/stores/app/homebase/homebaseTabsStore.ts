@@ -348,7 +348,7 @@ export const createHomeBaseTabStoreFunc = (
       }
     } catch (e) {
       console.error('Failed to delete tab:', e);
-      throw e; 
+      throw e;
     }
   },
   async renameTab(tabName, newName) {
@@ -443,6 +443,7 @@ export const createHomeBaseTabStoreFunc = (
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
   },
+
   commitHomebaseTabToDatabase: debounce(async (tabname, immediate = false) => {
     const tab = get().homebase.tabs[tabname];
     if (tab && tab.config) {
@@ -453,25 +454,30 @@ export const createHomeBaseTabStoreFunc = (
       //   fidgetCount: Object.keys(localCopy.fidgetInstanceDatums || {}).length, 
       //   immediate 
       //   });
-
-      const file = await get().account.createEncryptedSignedFile(
-        stringify(localCopy),
-        "json",
-        { useRootKey: true, fileName: tabname },
-      );
       try {
+        const file = await get().account.createEncryptedSignedFile(
+          stringify(localCopy),
+          "json",
+          { useRootKey: true, fileName: tabname },
+        );
+
         await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
 
         set((draft) => {
-          draft.homebase.tabs[tabname].remoteConfig = localCopy;
+          draft.homebase.tabs[tabname].remoteConfig = cloneDeep(localCopy);
         }, "commitHomebaseToDatabase");
+
         console.log(`Tab ${tabname} saved successfully`);
       } catch (e) {
         console.error('Failed to save tab:', e);
+        showTooltipError(
+          "Save Failed",
+          "Changes could not be saved to the server. Please try again."
+        );
         throw e;
       }
     }
-  }, 1000, { leading: false, trailing: true }),
+  }, 500, { leading: false, trailing: true }),
 
   async saveHomebaseTabConfig(tabName, config) {
     try {
@@ -495,7 +501,19 @@ export const createHomeBaseTabStoreFunc = (
         false,
       );
 
-      return get().homebase.commitHomebaseTabToDatabase(tabName);
+      const shouldSaveImmediately =
+        config.fidgetInstanceDatums !== undefined ||
+        (config as any).layoutConfig?.layout !== undefined;
+
+      const isExplicitSave = (config as any).forceSave === true;
+
+
+      if (shouldSaveImmediately || isExplicitSave) {
+        const commitFunc = get().homebase.commitHomebaseTabToDatabase;
+        return commitFunc(tabName);
+      } else {
+        return get().homebase.commitHomebaseTabToDatabase(tabName);
+      }
     } catch (error) {
       console.error(`Error saving homebase tab config for ${tabName}:`, error);
       showTooltipError(
