@@ -294,8 +294,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           settings: newSettings,
         });
 
-        await saveExitEditMode();
-
         toast.success("Fidget saved successfully!");
       } catch (e) {
         toast.error("Failed to save fidget settings", { duration: 1000 });
