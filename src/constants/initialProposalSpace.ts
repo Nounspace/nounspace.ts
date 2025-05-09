@@ -101,7 +101,7 @@ export const createInitalProposalSpaceConfigForProposalId = (
         },
         {
           w: 4,
-          h: 4,
+          h: 6,
           x: 4,
           y: 0,
           i: "iframe:10e88b10-b999-4ddc-a577-bd0eeb6bc76d",
@@ -130,9 +130,9 @@ export const createInitalProposalSpaceConfigForProposalId = (
         },
         {
           w: 4,
-          h: 6,
+          h: 4,
           x: 4,
-          y: 4,
+          y: 6,
           i: "iframe:ffb3cd56-3203-4b94-b842-adab9a7eabc9",
           minW: 2,
           maxW: 36,
