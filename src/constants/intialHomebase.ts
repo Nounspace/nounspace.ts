@@ -10,23 +10,23 @@ const tutorialText = `
 
 (after saving, scroll down here for more instructions)
 
-![Add Fidget2](https://hackmd.io/_uploads/B15DHk2exl.gif)
+![Add Fidget2](https://space.mypinata.cloud/ipfs/bafkreiczpd2bzyoboj6uxr65kta5cmg3bziveq2nz5egx4fuxr2nmkthru)
 
 ### Customize Fidgets
 1. From customization mode, click any Fidget on the grid to open its settings.
 2. Click 'Style' to customize a fidget's look. Any Fidget styles set to "Theme" inherit their look from the Tab's theme.  
 
-![EditFidget-ezgif.com-loop-count](https://hackmd.io/_uploads/r1pTND6s0.gif)
+![EditFidget](https://space.mypinata.cloud/ipfs/bafybeihcjkbcljxr4ttgt6xcxmsc4m4qvw62hkolifmd3t5pdc7kvj5nji)
 
 ### Arrange Fidgets
 - **Move:** Drag from the center
 ![move fidget](https://space.mypinata.cloud/ipfs/QmYWvdpdiyKwjVAqjhcFTBkiTUnc8rF4p2EGg3C4sTRsr6)
 - **Resize:** Drag from an edge or corner
-![2024-08-28 21.05.59](https://hackmd.io/_uploads/ryxADUpjC.gif)
+![Resize Fidget](https://space.mypinata.cloud/ipfs/bafybeifmssfizx5xjmmqyc6wwqxgs2xdhhbdtnvldtj276mfdul3eacmwu)
 - **Stash in Fidget Tray:** Click a fidget then click ⇱ to save it for later.
-![image](https://hackmd.io/_uploads/Syz8wUajC.png)
+![image](https://space.mypinata.cloud/ipfs/bafkreigy7ymnuwertvr6bn4bmwfe3vu3vvw4r6ekkzv6prs4zwlibsjtya)
 - **Delete:** Click a fidget then click X it to delete it forever.
-![image](https://hackmd.io/_uploads/SyhwvLpoR.png)
+![image](https://space.mypinata.cloud/ipfs/bafkreieucvjlovm7wq5ftcvvvcv52sujnqqjwji5epoigb2ycumhmgrtfy)
 
 ### Customize Theme
 - **Templates:** Select a pre-made Theme. Then, customize it further to make it your own.
@@ -34,12 +34,12 @@ const tutorialText = `
 - **Fonts:** Set the default header and body fonts for Fidgets on the Tab.
 - **Code:** Add HTML/CSS to fully customize the Tab's background, or generate a custom background with a prompt. 
 
-![Edit Theme2](https://hackmd.io/_uploads/HJNNpRiglx.gif)
+![Edit Theme2](https://space.mypinata.cloud/ipfs/bafybeietizt4vgyaiv62ytn25ztanusjmbcw6iwm3v2gedcpipr6koxh3e)
 
 ### Customize Music
 Add a soundtrack to each Tab. Search for or paste the link to any song or playlist on YouTube, or select a music NFT.
 
-![customize music](https://hackmd.io/_uploads/rkvjARsxll.gif)
+![customize music](https://space.mypinata.cloud/ipfs/bafkreigtslrp3kjj42gp25bxd5nubs47qx22ivj3pkm3tc7j3fbqt3b5hy)
 
 ### Homebase vs. Space
 **Your Space** is your public profile that everyone can see.
@@ -58,6 +58,7 @@ const onboardingFidgetConfig = {
   config: {
     editable: true,
     settings: {
+      title: "",
       text: tutorialText,
       urlColor: "blue",
       fontFamily: "Londrina Solid",
