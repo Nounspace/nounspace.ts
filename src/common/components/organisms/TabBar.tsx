@@ -9,8 +9,10 @@ import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
+import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -28,6 +30,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
+  pageType?: SpacePageType | undefined;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -57,6 +60,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
+  pageType
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
