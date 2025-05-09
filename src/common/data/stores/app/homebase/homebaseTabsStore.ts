@@ -419,7 +419,7 @@ export const createHomeBaseTabStoreFunc = (
       const spaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
-      
+
       // console.log('Loaded homebase tab config:', {
       //   tabName,
       //   timestamp: spaceConfig.timestamp,
@@ -472,25 +472,39 @@ export const createHomeBaseTabStoreFunc = (
       }
     }
   }, 1000, { leading: false, trailing: true }),
+
   async saveHomebaseTabConfig(tabName, config) {
-    const localCopy = cloneDeep(
-      get().homebase.tabs[tabName].config,
-    ) as SpaceConfig;
-    mergeWith(localCopy, config, (objValue, srcValue) => {
-      if (isArray(srcValue)) return srcValue;
-      if (typeof srcValue === 'object' && srcValue !== null) {
-       // For objects, return the source value to replace the target completely
-        return srcValue;
-      }
-    });
-    set(
-      (draft) => {
-        draft.homebase.tabs[tabName].config = localCopy;
-      },
-      `saveHomebaseTab:${tabName}`,
-      false,
-    );
+    try {
+      const localCopy = cloneDeep(
+        get().homebase.tabs[tabName].config,
+      ) as SpaceConfig;
+
+      mergeWith(localCopy, config, (objValue, srcValue) => {
+        if (isArray(srcValue)) return srcValue;
+        if (typeof srcValue === 'object' && srcValue !== null) {
+           // For objects, return the source value to replace the target completely
+          return srcValue;
+        }
+      });
+
+      set(
+        (draft) => {
+          draft.homebase.tabs[tabName].config = localCopy;
+        },
+        `saveHomebaseTab:${tabName}`,
+        false,
+      );
+
+      return get().homebase.commitHomebaseTabToDatabase(tabName);
+    } catch (error) {
+      console.error(`Error saving homebase tab config for ${tabName}:`, error);
+      showTooltipError(
+        "Error Saving Layout",
+        "Failed to save your changes. Please try again."
+      );
+    }
   },
+
   async resetHomebaseTabConfig(tabName) {
     // console.log('Resetting tab config:', { tabName });
     const currentTabInfo = get().homebase.tabs[tabName];
