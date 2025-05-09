@@ -76,9 +76,9 @@ export function ThemeSettingsEditor({
       if (property === "musicURL") {
         analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
       }
-    
+
       // Update CSS variables for global theme
-      if ( property === "font" || property === "headingsFont") {
+      if (property === "font" || property === "headingsFont") {
         const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
         if (fontConfig) {
           document.documentElement.style.setProperty(
@@ -315,9 +315,9 @@ export function ThemeSettingsEditor({
               </Tabs>
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 mt-4">
               <div className="flex flex-row gap-1">
-                <h4 className="text-sm mt-4">Music</h4>
+                <h4 className="text-sm">Music</h4>
                 <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
               </div>
               <VideoSelector
