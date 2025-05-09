@@ -9,7 +9,7 @@ From customization mode, click the blue **+** button. Then, drag a Fidget to an 
 ![Add Fidget2](https://hackmd.io/_uploads/B15DHk2exl.gif)
 
 ### Customize Fidgets
-From customization mode, click any Fidget on the grid to open its settings. In addition to customizing each Fidget's settings, you can customize its look in the 'Style' tab. Any Fidget style settings set to "Theme" inherit their look from the theme of their Tab.  
+From customization mode, click any Fidget on the grid to open its settings. In addition to customizing each Fidget's settings, you can customize its look in the 'Style' tab. Any Fidget styles set to "Theme" inherit their look from the theme of their Tab.  
 
 ![EditFidget-ezgif.com-loop-count](https://hackmd.io/_uploads/r1pTND6s0.gif)
 
