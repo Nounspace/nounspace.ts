@@ -518,7 +518,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       if (positionX === -1 || positionY === -1) {
         toast.error("There is no space available to add this fidget");
         return false;
-        }
+      }
 
       const newItem: PlacedGridItem = {
         i: id,
@@ -548,28 +548,28 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       saveConfig({
         layoutConfig: { layout: newLayout },
         fidgetInstanceDatums: newInstanceDatums
-        }).then((result) => {
+      }).then((result) => {
         if (result !== undefined && result !== null) {
-        console.log(`Fidget ${id} successfully added to tab ${fid || 'unknown'}`);
-        
-        analytics.track(AnalyticsEvent.ADD_FIDGET, {
-        fidgetType: fidget.fidgetType,
-        });
+          console.log(`Fidget ${id} successfully added to tab ${fid || 'unknown'}`);
+
+          analytics.track(AnalyticsEvent.ADD_FIDGET, {
+            fidgetType: fidget.fidgetType,
+          });
         } else {
-        console.warn(`Possible problem adding fidget ${id} to tab ${fid || 'unknown'}`);
-        toast.error("Error saving fidget. Positions may not be preserved.");
+          console.warn(`Possible problem adding fidget ${id} to tab ${fid || 'unknown'}`);
+          toast.error("Error saving fidget. Positions may not be preserved.");
         }
-        }).catch((error) => {
+      }).catch((error) => {
         console.error(`Error adding fidget to tab ${fid || 'unknown'}:`, error);
         toast.error("Error adding fidget");
-        });
+      });
 
       return true;
     } catch (error) {
       console.error(`Error adding fidget to tab ${fid || 'unknown'}:`, error);
       toast.error("Error adding fidget");
       return false;
-      }
+    }
   };
 
   function editorPanelPortal(portalNode: HTMLDivElement | null) {
@@ -676,9 +676,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 <div
                   key={gridItem.i}
                   className={`grid-item ${selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 rounded-2xl outline-sky-600"
-                      : ""
-                  }`}
+                    ? "outline outline-4 outline-offset-1 rounded-2xl outline-sky-600"
+                    : ""
+                    }`}
                 >
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
