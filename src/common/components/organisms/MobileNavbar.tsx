@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { UserTheme } from "@/common/lib/theme";
 import { MdGridView } from "react-icons/md";
@@ -294,30 +294,44 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   TabItem.displayName = 'TabItem';
 
   return (
-    <div 
+    <Tabs
+      value={selected}
+      onValueChange={onSelect}
       className={mergeClasses(
         "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-50",
         className
       )}
+      style={{
+        backgroundColor: theme.properties.background || "white",
+        borderColor: theme.properties.fidgetBorderColor || "rgb(229 231 235)",
+      }}
     >
-      <div className="relative w-full h-full">
-        {/* Main tab list - scrollable horizontally */}
+      <div 
+        className="relative w-full h-full"
+        onKeyDown={handleKeyDown} // Add keyboard navigation to the container
+      >
+        {/* Left gradient overlay for scroll indication */}
+        <div 
+          className="absolute left-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, ${theme.properties.background || "white"}, transparent)`,
+            opacity: scrollState.leftGradientOpacity,
+            transition: 'opacity 0.3s ease'
+          }}
+        />
+        
         <TabsList 
           ref={tabsListRef}
           className={mergeClasses(
-            "w-full h-full",
-            "overflow-x-auto scrollbar-none",
-            "flex items-center whitespace-nowrap",
-            "gap-4 px-4",
-            tabs.length <= 4 ? "justify-evenly" : "justify-start",
-            "rounded-none"
+            "flex items-center justify-start w-full h-full overflow-x-auto no-scrollbar",
+            "px-2" // Add some padding for better spacing
           )}
-          aria-label="Navigation tabs"
-          onKeyDown={handleKeyDown}
+          role="tablist" // Ensure ARIA role is set
+          aria-label="Mobile Navigation Tabs"
         >
           {tabs.map((tab, index) => (
-            <TabItem 
-              key={tab.id} 
+            <TabItem
+              key={tab.id}
               tab={tab}
               index={index}
               isSelected={selected === tab.id}
@@ -330,31 +344,17 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           ))}
         </TabsList>
         
-        {/* Left gradient overlay (shown when scrolled) */}
-        {tabs.length > 4 && (
-          <div 
-            className="absolute left-0 top-0 bottom-0 w-12 pointer-events-none transition-opacity duration-100"
-            style={{
-              background: 'linear-gradient(270deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)',
-              opacity: scrollState.leftGradientOpacity
-            }}
-            aria-hidden="true"
-          />
-        )}
-        
-        {/* Right gradient overlay (hidden at end of scroll) */}
-        {tabs.length > 4 && (
-          <div 
-            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none transition-opacity duration-100"
-            style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)',
-              opacity: scrollState.rightGradientOpacity
-            }}
-            aria-hidden="true"
-          />
-        )}
+        {/* Right gradient overlay for scroll indication */}
+        <div 
+          className="absolute right-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to left, ${theme.properties.background || "white"}, transparent)`,
+            opacity: scrollState.rightGradientOpacity,
+            transition: 'opacity 0.3s ease'
+          }}
+        />
       </div>
-    </div>
+    </Tabs>
   );
 };
 
