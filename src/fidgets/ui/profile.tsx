@@ -3,7 +3,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { User } from "@neynar/nodejs-sdk/build/api";
 import { first, isUndefined } from "lodash";
 import React, { useMemo, useState } from "react";
 import { CgProfile } from "react-icons/cg";
@@ -71,10 +71,12 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       // Optimistically update the user's following state
       const wasFollowing = user.viewer_context?.following ?? false;
       user.viewer_context = {
-        ...user.viewer_context,
         following: !wasFollowing,
-        followed_by: user.viewer_context?.followed_by ?? false, // Default to false if undefined
+        followed_by: user.viewer_context?.followed_by ?? false,
+        blocking: user.viewer_context?.blocking ?? false,
+        blocked_by: user.viewer_context?.blocked_by ?? false,
       };
+      
 
       try {
         let success;
@@ -124,7 +126,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   }
   
   // Extract location if available
-  // @ts-expect-error > maybe update the neynar package solves this
+  // DISABLE: @_ts-expect-error > maybe update the neynar package solves this
   const location = user.profile?.location?.address?.city || '';
   // const location = 'teste';
   const hasLocation = location.length > 0;
