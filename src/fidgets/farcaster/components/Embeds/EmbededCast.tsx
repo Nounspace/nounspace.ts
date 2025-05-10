@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
 import { isEmpty, isString } from "lodash";
-import { CastParamType } from "@neynar/nodejs-sdk";
-import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
-import { CastResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { CastParamType } from "@neynar/nodejs-sdk/build/api";
+import { CastWithInteractions } from "@neynar/nodejs-sdk/build/api";
+import { CastResponse } from "@neynar/nodejs-sdk/build/api";
 import type { CastEmbed } from ".";
 import { bytesToHex } from "@noble/ciphers/utils";
 import axiosBackend from "@/common/data/api/backend";

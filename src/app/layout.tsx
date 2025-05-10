@@ -1,10 +1,11 @@
 import { WEBSITE_URL } from "@/constants/app";
-import React, { Suspense } from "react";
+import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import SpaceLoading from "./(spaces)/SpaceLoading";
+import Head from "next/head";
+import { defaultFrame } from "@/common/lib/frames/metadata";
 
 export const metadata = {
   title: "Nounspace",
@@ -17,7 +18,7 @@ export const metadata = {
     description:
       "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
     images: {
-      url: `${WEBSITE_URL}/images/nounspace_og.png`,
+      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
       type: "image/png",
       width: 1200,
       height: 737,
@@ -40,6 +41,9 @@ export const metadata = {
     ],
     apple: "/images/apple-touch-icon.png",
   },
+  other: {
+    'fc:frame': JSON.stringify(defaultFrame),
+  },
 };
 
 // TO DO: Add global cookie check for a signature of a timestamp (within the last minute)
@@ -53,6 +57,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Head>
+        <meta
+          name="fc:frame"
+          content={JSON.stringify(defaultFrame)}
+        />
+      </Head>
       <body>
         <SpeedInsights />
         <Providers>

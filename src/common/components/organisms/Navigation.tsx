@@ -305,6 +305,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             >
               <Player
                 url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL}
+                shrunk={shrunk}
               />
             </div>
             {isLoggedIn && (

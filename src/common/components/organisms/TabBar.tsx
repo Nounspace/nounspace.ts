@@ -9,8 +9,10 @@ import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
+import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -28,6 +30,7 @@ interface TabBarProps {
   getSpacePageUrl: (tabName: string) => string;
   isTokenPage?: boolean;
   contractAddress?: Address;
+  pageType?: SpacePageType | undefined;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -57,6 +60,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
+  pageType
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
@@ -190,28 +194,26 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
+        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
           {tabList && (
             <Reorder.Group
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
-              className="flex flex-row gap-5 md:gap-4 grow items-start m-4 tabs"
+              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
               values={tabList}
             >
               <AnimatePresence initial={false}>
                 {map(
-                  inHome
-                    ? ["Welcome", ...tabList]
-                    : inHomebase
-                      ? ["Feed", ...tabList]
-                      : tabList,
+                    inHomebase
+                    ? ["Feed", ...tabList]
+                    : tabList,
                   (tabName: string) => {
                     return (
                       <Tab

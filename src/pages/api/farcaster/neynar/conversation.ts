@@ -1,6 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 import requestHandler from "@/common/data/api/requestHandler";
-import { CastParamType } from "@neynar/nodejs-sdk";
+import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
 import { isString } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
@@ -12,8 +12,10 @@ async function loadConversation(req: NextApiRequest, res: NextApiResponse) {
     : CastParamType.Hash;
 
   try {
-    const data = await neynar.lookupCastConversation(id, type, {
+    const data = await neynar.lookupCastConversation({
       ...req.query,
+      identifier: id, 
+      type,
     });
 
     res.status(200).json(data);
