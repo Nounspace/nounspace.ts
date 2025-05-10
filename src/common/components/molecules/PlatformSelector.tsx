@@ -29,7 +29,7 @@ const PlatformSelector: React.FC<PlatformSelectorProps> = ({
       icon: "/images/farcaster.jpeg",
     },
     {
-      name: "The other app",
+      name: "X",
       icon: "/images/twitter.avif",
     },
   ];
