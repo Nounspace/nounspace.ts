@@ -2,7 +2,9 @@ import BorderSelector from "@/common/components/molecules/BorderSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import Loading from "@/common/components/molecules/Loading";
-import PlatformSelector, { Platform } from "@/common/components/molecules/PlatformSelector";
+import PlatformSelector, {
+  Platform,
+} from "@/common/components/molecules/PlatformSelector";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
@@ -20,7 +22,7 @@ import {
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { mobileStyleSettings } from "../helpers";
-import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import { FeedType } from "@neynar/nodejs-sdk";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
@@ -91,22 +93,23 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "feedType",
       displayName: "Feed Type",
-      displayNameHint: "Select Following for a personalized feed or Filter by User, Channel, or Keyword.",
+      displayNameHint:
+        "Select Following for a personalized feed or Filter by User, Channel, or Keyword.",
       inputSelector: (props) => (
         <WithMargin>
           <FeedTypeSelector {...props} />
         </WithMargin>
       ),
       required: false,
-      disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "X",
+      disabledIf: (settings) => settings?.selectPlatform?.name === "X",
       default: FeedType.Following,
       group: "settings",
     },
     {
       fieldName: "Xhandle",
       displayName: "Username",
-      displayNameHint: "Input an X username to display a feed of their Tweets. Do not include the '@'",
+      displayNameHint:
+        "Input an X username to display a feed of their Tweets. Do not include the '@'",
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
@@ -120,7 +123,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "filterType",
       displayName: "Filter Type",
-      displayNameHint: "Choose between Users, Channel, or Keyword to filter the feed.",
+      displayNameHint:
+        "Choose between Users, Channel, or Keyword to filter the feed.",
       inputSelector: (props) => (
         <WithMargin>
           <FilterTypeSelector {...props} />
@@ -153,7 +157,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "channel",
       displayName: "Channel",
-      displayNameHint: "Input a Farcaster channel name to display casts from that channel.",
+      displayNameHint:
+        "Input a Farcaster channel name to display casts from that channel.",
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
@@ -194,14 +199,14 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       ),
       required: false,
       group: "style",
-      disabledIf: (settings) =>
-        settings?.selectPlatform?.name !== "X",
+      disabledIf: (settings) => settings?.selectPlatform?.name !== "X",
       default: "light",
     },
     {
       fieldName: "font Family",
       displayName: "Font Family",
-      displayNameHint: "Font used for the body text. Set to Theme Font to inherit the Body Font from the Theme.",
+      displayNameHint:
+        "Font used for the body text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
       inputSelector: (props) => (
@@ -214,7 +219,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "fontColor",
       displayName: "Font Color",
-      displayNameHint: "Color used for the body text. Click the paintbrush to inherit the Font Color from the Theme.",
+      displayNameHint:
+        "Color used for the body text. Click the paintbrush to inherit the Font Color from the Theme.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -232,7 +238,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "background",
       displayName: "Background",
-      displayNameHint: "Color used for the background of the Fidget. Click the paintbrush to inherit the Fidget Background Color from the theme.",
+      displayNameHint:
+        "Color used for the background of the Fidget. Click the paintbrush to inherit the Fidget Background Color from the theme.",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -251,7 +258,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "fidgetBorderWidth",
       displayName: "Fidget Border Width",
-      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
+      displayNameHint:
+        "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
       inputSelector: (props) => (
@@ -261,7 +269,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       ),
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
+        settings?.selectPlatform?.name === "X" ||
+        settings?.useDefaultColors === true,
     },
     {
       fieldName: "fidgetBorderColor",
@@ -285,7 +294,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
     {
       fieldName: "fidget Shadow",
       displayName: "Fidget Shadow",
-      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+      displayNameHint:
+        "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
       inputSelector: (props) => (
@@ -295,7 +305,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       ),
       group: "style",
       disabledIf: (settings) =>
-        settings?.selectPlatform?.name === "X" || settings?.useDefaultColors === true,
+        settings?.selectPlatform?.name === "X" ||
+        settings?.useDefaultColors === true,
     },
   ],
   size: {
@@ -332,17 +343,17 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     hasNextPage,
     isError,
     isPending,
-    refetch
+    refetch,
   } =
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })
       : useGetCasts({
-        feedType,
-        fid,
-        filterType,
-        fids: users,
-        channel,
-      });
+          feedType,
+          fid,
+          filterType,
+          fids: users,
+          channel,
+        });
 
   const threadStackRef = React.useRef(useLifoQueue<string>());
   const threadStack = threadStackRef.current;
@@ -354,13 +365,15 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       setIsTransitioning(true);
       threadStack.clear();
       setTimeout(() => {
-        refetch().then(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        }).catch(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        });
+        refetch()
+          .then(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          })
+          .catch(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          });
       }, 200);
     }
   }, [feedType, prevFeedType, refetch]);
@@ -371,14 +384,16 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     }
   }, [inView, hasNextPage, fetchNextPage, isTransitioning]);
 
-
   useEffect(() => {
     threadStack.clear();
   }, [settings, threadStack]);
 
-  const onSelectCast = useCallback((hash: string) => {
-    threadStack.push(hash);
-  }, [threadStack]);
+  const onSelectCast = useCallback(
+    (hash: string) => {
+      threadStack.push(hash);
+    },
+    [threadStack]
+  );
 
   const renderThread = () => (
     <CastThreadView
@@ -430,11 +445,11 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       );
     }
 
-    const hasData = data && (
-      filterType === FilterType.Keyword
-        ? data.pages.some(page => page.result.casts?.length > 0)
-        : data.pages.some(page => page.casts?.length > 0)
-    );
+    const hasData =
+      data &&
+      (filterType === FilterType.Keyword
+        ? data.pages.some((page) => page.result.casts?.length > 0)
+        : data.pages.some((page) => page.casts?.length > 0));
 
     if (!hasData) {
       return (
@@ -453,30 +468,20 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
               data.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
                   {filterType === FilterType.Keyword
-                    ? page.result.casts?.map(
-                      (
-                        cast,
-                        index,
-                      ) => (
+                    ? page.result.casts?.map((cast, index) => (
                         <CastRow
                           cast={cast}
                           key={index}
                           onSelect={onSelectCast}
                         />
-                      ),
-                    )
-                    : page.casts?.map(
-                      (
-                        cast,
-                        index,
-                      ) => (
+                      ))
+                    : page.casts?.map((cast, index) => (
                         <CastRow
                           cast={cast}
                           key={index}
                           onSelect={onSelectCast}
                         />
-                      ),
-                    )}
+                      ))}
                 </React.Fragment>
               ))
             ) : (
@@ -516,9 +521,15 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     <div
       className="h-full"
       style={{
-        fontFamily: settings.useDefaultColors ? 'var(--user-theme-font)' : settings.fontFamily,
-        color: settings.useDefaultColors ? 'var(--user-theme-font-color)' : settings.fontColor,
-        background: settings.useDefaultColors ? 'var(--user-theme-fidget-background)' : settings.background,
+        fontFamily: settings.useDefaultColors
+          ? "var(--user-theme-font)"
+          : settings.fontFamily,
+        color: settings.useDefaultColors
+          ? "var(--user-theme-font-color)"
+          : settings.fontColor,
+        background: settings.useDefaultColors
+          ? "var(--user-theme-fidget-background)"
+          : settings.background,
       }}
     >
       {isTransitioning ? (
@@ -526,13 +537,9 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           <Loading />
         </div>
       ) : isThreadView ? (
-        <div className="h-full overflow-y-auto">
-          {renderThread()}
-        </div>
+        <div className="h-full overflow-y-auto">{renderThread()}</div>
       ) : (
-        <div className="h-full overflow-y-auto">
-          {renderFeedContent()}
-        </div>
+        <div className="h-full overflow-y-auto">{renderFeedContent()}</div>
       )}
     </div>
   );

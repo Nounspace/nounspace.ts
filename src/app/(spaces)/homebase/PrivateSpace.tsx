@@ -13,10 +13,10 @@ import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { LoginModal } from "@privy-io/react-auth";
-import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import { FeedType } from "@neynar/nodejs-sdk";
 
 // Lazy load the TabBar component to improve performance
-const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
+const TabBar = lazy(() => import("@/common/components/organisms/TabBar"));
 
 // Main component for the private space
 function PrivateSpace({ tabName }: { tabName: string }) {
@@ -166,63 +166,70 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   };
 
   // Memoize the TabBar component to prevent unnecessary re-renders
-  const tabBar = useMemo(() => (
-    <TabBar
-      getSpacePageUrl={getSpacePageUrl}
-      inHomebase={true}
-      currentTab={tabName}
-      tabList={tabOrdering.local}
-      switchTabTo={switchTabTo}
-      updateTabOrder={updateTabOrder}
-      inEditMode={editMode}
-      deleteTab={deleteTab}
-      createTab={createTab}
-      renameTab={renameTab}
-      commitTabOrder={commitTabOrder}
-      commitTab={commitTab}
-    />
-  ), [tabName, tabOrdering.local, editMode]);
+  const tabBar = useMemo(
+    () => (
+      <TabBar
+        getSpacePageUrl={getSpacePageUrl}
+        inHomebase={true}
+        currentTab={tabName}
+        tabList={tabOrdering.local}
+        switchTabTo={switchTabTo}
+        updateTabOrder={updateTabOrder}
+        inEditMode={editMode}
+        deleteTab={deleteTab}
+        createTab={createTab}
+        renameTab={renameTab}
+        commitTabOrder={commitTabOrder}
+        commitTab={commitTab}
+      />
+    ),
+    [tabName, tabOrdering.local, editMode]
+  );
 
   // Define the arguments for the SpacePage component
-  const args: SpacePageArgs = useMemo(() => ({
-    config: (() => {
-      const { timestamp, ...restConfig } = {
-        ...((tabName === "Feed" 
-            ? homebaseConfig 
-            : tabConfigs[tabName]?.config)
-            ?? INITIAL_SPACE_CONFIG_EMPTY),
-        isEditable: true,
-      };
-      return restConfig;
-    })(),
-    saveConfig: saveConfigHandler,
-    commitConfig: commitConfigHandler,
-    resetConfig: resetConfigHandler,
-    tabBar: tabBar,
-    feed: tabName === "Feed" && currentFid ? (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any,
-        }}
-        saveData={async () => noop()}
-        data={{}}
-      />
-    ) : undefined,
-  }), [
-    tabName,
-    tabName === "Feed" 
-      ? homebaseConfig 
-      : tabConfigs[tabName]?.config,
-    tabOrdering.local,
-    editMode
-  ]);
+  const args: SpacePageArgs = useMemo(
+    () => ({
+      config: (() => {
+        const { timestamp, ...restConfig } = {
+          ...((tabName === "Feed"
+            ? homebaseConfig
+            : tabConfigs[tabName]?.config) ?? INITIAL_SPACE_CONFIG_EMPTY),
+          isEditable: true,
+        };
+        return restConfig;
+      })(),
+      saveConfig: saveConfigHandler,
+      commitConfig: commitConfigHandler,
+      resetConfig: resetConfigHandler,
+      tabBar: tabBar,
+      feed:
+        tabName === "Feed" && currentFid ? (
+          <FeedModule.fidget
+            settings={{
+              feedType: FeedType.Following,
+              users: "",
+              filterType: FilterType.Users,
+              selectPlatform: {
+                name: "Farcaster",
+                icon: "/images/farcaster.jpeg",
+              },
+              Xhandle: "",
+              style: "",
+              fontFamily: "var(--user-theme-font)",
+              fontColor: "var(--user-theme-font-color)" as any,
+            }}
+            saveData={async () => noop()}
+            data={{}}
+          />
+        ) : undefined,
+    }),
+    [
+      tabName,
+      tabName === "Feed" ? homebaseConfig : tabConfigs[tabName]?.config,
+      tabOrdering.local,
+      editMode,
+    ]
+  );
 
   // If not logged in, show a loading state with the login modal
   if (!isLoggedIn) {
@@ -243,9 +250,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   }
 
   // Render the SpacePage component with the defined arguments
-  return (
-    <SpacePage key={tabName} {...args} />
-  );
+  return <SpacePage key={tabName} {...args} />;
 }
 
-export default PrivateSpace; 
+export default PrivateSpace;
