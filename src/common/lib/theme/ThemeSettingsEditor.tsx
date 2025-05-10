@@ -39,7 +39,7 @@ import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
@@ -76,9 +76,9 @@ export function ThemeSettingsEditor({
       if (property === "musicURL") {
         analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
       }
-    
+
       // Update CSS variables for global theme
-      if ( property === "font" || property === "headingsFont") {
+      if (property === "font" || property === "headingsFont") {
         const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
         if (fontConfig) {
           document.documentElement.style.setProperty(
@@ -315,9 +315,9 @@ export function ThemeSettingsEditor({
               </Tabs>
             </div>
 
-            <div className="grid gap-2">
+            <div className="grid gap-2 mt-4">
               <div className="flex flex-row gap-1">
-                <h4 className="text-sm mt-4">Music</h4>
+                <h4 className="text-sm">Music</h4>
                 <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
               </div>
               <VideoSelector
@@ -415,8 +415,24 @@ const BackgroundGenerator = ({
   const [generateText, setGenerateText] = useState("Generate");
   const [showBanner, setShowBanner] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [internalBackgroundHTML, setInternalBackgroundHTML] = useState(backgroundHTML);
   const timersRef = useRef<number[]>([]);
   const { showToast } = useToastStore();
+  
+  // Sync internal state with props when backgroundHTML changes
+  useEffect(() => {
+    setInternalBackgroundHTML(backgroundHTML);
+  }, [backgroundHTML]);
+
+  // Random prompt choices
+  const randomPrompts = [
+    "Warm sunset gradient",
+    "Soft pastel stripes",
+    "Floating bubble circles",
+    "Calm teal radial glow",
+    "Lush green rainforest",
+    "Animated purple gradient"
+  ];
 
   const { user } = usePrivy();
   const result = useBalance({
@@ -432,14 +448,14 @@ const BackgroundGenerator = ({
     hasNogs: state.account.hasNogs,
   }));
 
-  const handleGenerateBackground = async () => {
+  const handleGenerateBackground = async (promptText: string) => {
     try {
       analytics.track(AnalyticsEvent.GENERATE_BACKGROUND, {
-        user_input: backgroundHTML,
+        user_input: promptText,
       });
       const response = await fetch(`/api/venice/background`, {
         method: "POST",
-        body: JSON.stringify({ text: backgroundHTML }),
+        body: JSON.stringify({ text: promptText }),
       });
       if (!response.ok) {
         throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -479,7 +495,15 @@ const BackgroundGenerator = ({
       setGenerateText(messages[index]);
     }, 8000);
     timersRef.current = [intervalId];
-    handleGenerateBackground();
+    
+    // If field is empty, use a random prompt from the list
+    const inputText = internalBackgroundHTML.trim() === "" 
+      ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
+      : internalBackgroundHTML;
+
+    console.log(`inputText: ${inputText}`);
+      
+    handleGenerateBackground(inputText);
   };
 
   const handleGenerateWrapper = () => {
@@ -500,7 +524,10 @@ const BackgroundGenerator = ({
       </div>
       <HTMLInput
         value={backgroundHTML}
-        onChange={onChange}
+        onChange={(value) => {
+          setInternalBackgroundHTML(value);
+          onChange(value);
+        }}
         placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
       />
       <Button
@@ -508,7 +535,7 @@ const BackgroundGenerator = ({
         variant="primary"
         width="auto"
         withIcon
-        disabled={buttonDisabled || isGenerating || backgroundHTML === ""}
+        disabled={buttonDisabled || isGenerating}
         className="w-full"
       >
         {isGenerating ? (

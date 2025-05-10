@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
+import { isValidUrl } from "@/common/lib/utils/url";
+import { defaultStyleFields, ErrorWrapper, transformUrl } from "@/fidgets/helpers";
+import React, { useEffect, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
 export type IFrameFidgetSettings = {
@@ -25,6 +24,10 @@ const DISALLOW_URL_PATTERNS = [
   /%3Cscript/i,
 ];
 
+export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
+  <div className="mb-3 pt-3">{children}</div>
+);
+
 const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
   mobileFidgetName: "Site",
@@ -34,15 +37,27 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste the URL of the webpage you'd like to embed",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
-    ...defaultStyleFields,
+   ...defaultStyleFields,
     {
       fieldName: "size",
+      displayName: "Size",
+      displayNameHint: "Drag the slider to adjust the zoom level.",
       required: false,
-      inputSelector: IFrameWidthSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IFrameWidthSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
   ],
@@ -79,12 +94,12 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
       try {
         const response = await fetch(
-          `/api/iframely?url=${encodeURIComponent(url)}`,
+          `/api/iframely?url=${encodeURIComponent(url)}`
         );
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData.message || "Failed to get embed information",
+            errorData.message || "Failed to get embed information"
           );
         }
 
@@ -110,7 +125,18 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (loading) {
-    return <ErrorWrapper icon="⏳" message="Loading embed..." />;
+    return (
+      <div
+        style={{
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <ErrorWrapper icon="⏳" message="Loading embed..." />
+      </div>
+    );
   }
 
   if (error) {
@@ -123,7 +149,10 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   if (embedInfo.directEmbed && transformedUrl) {
     return (
-      <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-156px)] md:h-full">
+      <div
+        style={{ overflow: "hidden", width: "100%" }}
+        className="h-[calc(100dvh-156px)] md:h-full"
+      >
         <iframe
           src={transformedUrl}
           title="IFrame Fidget"
