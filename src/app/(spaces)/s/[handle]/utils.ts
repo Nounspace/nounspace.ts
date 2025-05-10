@@ -10,15 +10,13 @@ export type Tab = {
 
 export const getUserMetadata = async (handle: string): Promise<UserMetadata | null> => {
   try {
-    const {
-      result: { user },
-    } = await neynar.lookupUserByUsername(handle);
+    const { user } = await neynar.lookupUserByUsername({username: handle});
 
     return {
       fid: user.fid,
       username: user.username,
-      displayName: user.displayName,
-      pfpUrl: user.pfp.url,
+      displayName: user.display_name,
+      pfpUrl: user.pfp_url,
       bio: user.profile.bio.text,
     };
   } catch (e) {

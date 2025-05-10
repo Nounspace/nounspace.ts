@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
-import { FeedType } from "@neynar/nodejs-sdk";
 import { isNil, noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
@@ -14,6 +13,7 @@ import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { LoginModal } from "@privy-io/react-auth";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 // Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
