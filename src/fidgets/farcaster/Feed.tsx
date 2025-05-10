@@ -19,7 +19,6 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { mobileStyleSettings } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isNil } from "lodash";
