@@ -40,7 +40,7 @@ export type FidLinkToIdentityResponse = NounspaceResponse<{
 
 async function checkSigningKeyValidForFid(fid: number, signingKey: string) {
   try {
-    const result = await neynar.lookupDeveloperManagedSigner(signingKey);
+    const result = await neynar.lookupDeveloperManagedSigner({publicKey: signingKey});
     return result.fid === fid && result.status === "approved";
   } catch {
     return false;

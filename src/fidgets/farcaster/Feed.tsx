@@ -19,13 +19,13 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { FeedType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { mobileStyleSettings } from "../helpers";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
-import { mobileStyleSettings } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
