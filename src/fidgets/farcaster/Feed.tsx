@@ -26,7 +26,6 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
-import { mobileStyleSettings } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
