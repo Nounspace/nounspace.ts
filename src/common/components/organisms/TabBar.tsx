@@ -179,6 +179,17 @@ function TabBar({
     }
   }
 
+   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
+    
+    switchTabTo(tabName, true);
+  }, [switchTabTo]);
+
   const isLoggedIn = getIsLoggedIn();
 
   return (
@@ -211,7 +222,7 @@ function TabBar({
                         tabName={tabName}
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
-                        onClick={() => {}}
+                        onClick={() => handleTabClick(tabName)}  
                         removeable={isEditableTab(tabName)}
                         draggable={inEditMode}
                         renameable={isEditableTab(tabName)}
