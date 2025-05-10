@@ -9,7 +9,7 @@ type DesktopViewProps = LayoutFidgetProps<LayoutFidgetConfig<any>>;
  */
 const DesktopView: React.FC<DesktopViewProps> = (props) => {
   // Import the grid layout dynamically to avoid circular dependencies
-  const GridLayout = require('@/fidgets/layout/grid').default;
+  const GridLayout = require('@/fidgets/layout/Grid').default;
   
   return <GridLayout {...props} />;
 };
