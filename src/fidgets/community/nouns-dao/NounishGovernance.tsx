@@ -1,6 +1,6 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
@@ -12,7 +12,7 @@ import { NOUNS_DAO } from "@/constants/basedDaos";
 import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
 import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
 import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import React, { useEffect, useMemo, useState } from "react";
 import { getBlock } from "wagmi/actions";
 
@@ -25,6 +25,7 @@ export type NounishGovernanceSettings = {
     graphUrl: string;
     icon: string;
   };
+  scale: number;
   headingsFontFamily?: string;
   fontFamily?: string;
 } & FidgetSettingsStyle;
@@ -37,6 +38,8 @@ export const nounishGovernanceConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "selectedDao",
+      displayName: "Select DAO",
+      displayNameHint: "Choose from available Nounish communities and BuilderDAOs",
       default: {
         name: "Nouns DAO",
         contract: "", // nouns dao does not need a contract address
@@ -44,19 +47,19 @@ export const nounishGovernanceConfig: FidgetProperties = {
       },
       required: false,
       inputSelector: DaoSelector,
+      group: "settings",
     },
     {
-      fieldName: "headingsFontFamily",
-      default: "Theme Headings Font",
+      fieldName: "scale",
+      displayName: "Scale",
+      displayNameHint: "Adjust the size of the governance display",
+      default: 1,
       required: false,
-      inputSelector: FontSelector,
-      group: "style",
-    },
-    {
-      fieldName: "fontFamily",
-      default: "Theme Font",
-      required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     ...defaultStyleFields,
@@ -124,18 +127,6 @@ export const NounishGovernance: React.FC<
     fetchBlockNumber();
   }, []);
 
-  const getHeadingsFontFamily = () => {
-    return settings.headingsFontFamily === "Theme Headings Font" 
-      ? "var(--user-theme-headings-font)" 
-      : settings.headingsFontFamily || "var(--user-theme-headings-font)";
-  };
-
-  const getBodyFontFamily = () => {
-    return settings.fontFamily === "Theme Font" 
-      ? "var(--user-theme-font)" 
-      : settings.fontFamily || "var(--user-theme-font)";
-  };
-
   if (listError) {
     return <div>Error loading data</div>;
   }
@@ -153,44 +144,50 @@ export const NounishGovernance: React.FC<
       (proposal) => proposal.proposalId === proposalId,
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
+
   return (
-    <CardContent className="size-full overflow-scroll p-4" style={{ fontFamily: getBodyFontFamily() }}>
-      {proposalId && selectedProposal ? (
-        isBuilderSubgraph ? (
-          <BuilderProposalDetailView
-            proposal={selectedProposal}
-            goBack={handleGoBack}
-            currentBlock={currentBlock}
-            loading={listLoading}
-            versions={[]}
-            headingsFont={getHeadingsFontFamily()}
-            bodyFont={getBodyFontFamily()}
-          />
+    <div
+      className="size-full"
+      style={{
+          overflow: "auto",
+          scrollbarWidth: "none",
+          transform: `scale(${settings.scale || 1})`,
+          transformOrigin: "0 0",
+
+      }}
+    >
+      <CardContent className="size-full overflow-scroll p-4">
+        {proposalId && selectedProposal ? (
+          isBuilderSubgraph ? (
+            <BuilderProposalDetailView
+              proposal={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+              versions={[]}
+            />
+          ) : (
+            <NounsProposalDetailView
+              proposal={selectedProposal}
+              versions={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+            />
+          )
         ) : (
-          <NounsProposalDetailView
-            proposal={selectedProposal}
-            versions={selectedProposal}
-            goBack={handleGoBack}
+          <ProposalListView
+            proposals={proposalsData?.proposals || []}
             currentBlock={currentBlock}
+            setProposal={handleSetProposal}
             loading={listLoading}
-            headingsFont={getHeadingsFontFamily()}
-            bodyFont={getBodyFontFamily()}
+            isBuilderSubgraph={isBuilderSubgraph}
+            title={selectedDao.name}
+            daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
           />
-        )
-      ) : (
-        <ProposalListView
-          proposals={proposalsData?.proposals || []}
-          currentBlock={currentBlock}
-          setProposal={handleSetProposal}
-          loading={listLoading}
-          isBuilderSubgraph={isBuilderSubgraph}
-          title={selectedDao.name}
-          daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
-          headingsFont={getHeadingsFontFamily()}
-          bodyFont={getBodyFontFamily()}
-        />
-      )}
-    </CardContent>
+        )}
+      </CardContent>
+    </div>
   );
 };
 

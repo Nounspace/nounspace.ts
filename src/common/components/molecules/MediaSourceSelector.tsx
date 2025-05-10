@@ -11,7 +11,7 @@ export enum MediaSourceTypes {
   URL = "URL",
   EXTERNAL = "External NFT Collection",
   WALLET = "My Wallet",
-  UPLOAD = "UPLOAD",
+  UPLOAD = "Upload image",
 }
 
 export interface MediaSource {
