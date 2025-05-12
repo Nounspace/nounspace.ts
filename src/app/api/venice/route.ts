@@ -1,7 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 
 import {
-  DEBUG_PROMPTS,
   MAX_TRENDING_TWEETS,
   MODEL_TEMPERATURE_CREATIVE,
   TODAY_TIME_DATE,
@@ -11,7 +10,13 @@ import {
   VENICE_MODEL,
 } from "./config";
 import { CREATE_PROMPT, ENHANCE_PROMPT, SYSTEM_PROMPT } from "./prompts";
-import { TrendingFeedTimeWindow } from "@neynar/nodejs-sdk/build/neynar-api/common/constants";
+
+enum TrendingFeedTimeWindow {
+  ONE_HOUR = "1h",
+  SIX_HOUR = "6h",
+  TWELVE_HOUR = "12h",
+  TWENTY_FOUR_HOUR = "24h",
+}
 //
 // Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
 //

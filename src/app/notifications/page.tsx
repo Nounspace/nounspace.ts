@@ -12,9 +12,9 @@ import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
 import {
   Notification,
-  NotificationTypeEnum,
   User,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+} from "@neynar/nodejs-sdk/build/neynar-api/v2/openapi-farcaster";
+
 import {
   Tabs,
   TabsList,
@@ -39,7 +39,14 @@ import moment from "moment";
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { formatTimeAgo } from "@/common/lib/utils/date";
-
+// If NotificationTypeEnum is not exported, define it locally:
+enum NotificationTypeEnum {
+  Mention = "mention",
+  Follows = "follows",
+  Recasts = "recasts",
+  Reply = "reply",
+  Likes = "likes",
+}
 const TAB_OPTIONS = {
   ALL: "all",
   MENTIONS: NotificationTypeEnum.Mention,
