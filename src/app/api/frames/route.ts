@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
+import { parseFramesWithReports } from "@/common/lib/frames/parseFramesWithReports";
 
 // --- Type Definitions ---
 interface FrameData {
