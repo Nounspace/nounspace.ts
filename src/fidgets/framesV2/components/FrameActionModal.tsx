@@ -87,7 +87,7 @@ export default function FrameActionModal({
         }
 
         // Process the frame action through our API endpoint
-        const response = await fetch("/frames", {
+        const response = await fetch("/api/frames", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
