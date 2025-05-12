@@ -12,17 +12,15 @@ import {
   LayoutFidgetProps 
 } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
-import { 
-  createFidgetBundle, 
-  getMediaFidgetIds, 
-  getPinnedCastIds, 
-  getValidFidgetIds, 
-  processTabFidgetIds 
-} from "./utils";
-import TabNavigation from "./components/TabNavigation";
+import { createFidgetBundle } from "./utils";
 import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
 import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
 import FidgetContent from "./components/FidgetContent";
+import MobileNavbar from "@/common/components/organisms/MobileNavbar";
+import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils";
+import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds";
+import { UserTheme } from "@/common/lib/theme";
+import defaultUserTheme from "@/common/lib/theme/defaultTheme";
 
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
   layout: string[];
@@ -48,22 +46,24 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const isHomebasePath = pathname?.startsWith('/homebase');
   const isHomePath = pathname?.startsWith('/home');
   
-  // Process fidgets and prepare data for rendering
-  const validFidgetIds = useMemo(() => 
-    getValidFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+  // Use the unified hook to process fidget IDs
+  const {
+    validFidgetIds,
+    processedFidgetIds,
+    mediaFidgetIds,
+    pinnedCastIds,
+    orderedFidgetIds
+  } = useProcessedFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile);
   
-  const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+  // Create tab items for the MobileNavbar
+  const tabItems = useMemo(() => 
+    createTabItemsFromFidgetIds(orderedFidgetIds, fidgetInstanceDatums, tabNames),
+  [orderedFidgetIds, fidgetInstanceDatums, tabNames]);
   
-  const mediaFidgetIds = useMemo(() => 
-    getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),
-  [validFidgetIds, fidgetInstanceDatums]);
-  
-  const pinnedCastIds = useMemo(() => 
-    getPinnedCastIds(validFidgetIds, fidgetInstanceDatums),
-  [validFidgetIds, fidgetInstanceDatums]);
+  // Initialize with the first fidget ID
+  const [selectedTab, setSelectedTab] = useState(
+    orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
+  );
   
   // Create bundles for all fidgets
   const fidgetBundles = useMemo(() => {
@@ -81,42 +81,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     
     return bundles;
   }, [validFidgetIds, fidgetInstanceDatums]);
-
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  // Get ordered fidget IDs with feed prioritized (except in homebase)
-  const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    
-    // If we're in homebase or home path, don't reorder
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
-    
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
-    
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath]);
-
-  // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
-  const [selectedTab, setSelectedTab] = useState(
-    orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
-  );
   
   // Update selected tab when orderedFidgetIds changes
   useEffect(() => {
@@ -255,18 +219,14 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
-            <div 
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white"
-              style={{ height: `${TAB_HEIGHT}px` }}
-            >
-              <TabNavigation 
-                processedFidgetIds={orderedFidgetIds}
-                selectedTab={selectedTab}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                isMobile={isMobile}
-                tabNames={tabNames}
-              />
-            </div>
+            <MobileNavbar
+              tabs={tabItems}
+              selected={selectedTab}
+              onSelect={setSelectedTab}
+              theme={(theme as UserTheme) || defaultUserTheme}
+              fidgetInstanceDatums={fidgetInstanceDatums}
+              tabNames={tabNames}
+            />
           )}
         </Tabs>
       </div>

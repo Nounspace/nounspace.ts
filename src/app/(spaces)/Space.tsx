@@ -156,30 +156,18 @@ export default function Space({
     });
   }
 
-  // Memoize the layoutConfig to prevent unnecessary re-renders
-  const layoutConfig = useMemo(() => {
-    if (isMobile) {
-      // Extract fidget IDs from the current config to use in MobileView
-      const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
-
-      // Create a layout config for mobile with all available fidget IDs
-      return {
-        layout: fidgetIds,
-        layoutFidget: "tabFullScreen",
-      };
-    } else {
-      return (
-        config?.layoutDetails?.layoutConfig ?? {
-          layout: [],
-          layoutFidget: "grid",
-        }
-      );
-    }
-  }, [
-    isMobile,
-    config?.layoutDetails?.layoutConfig,
-    config?.fidgetInstanceDatums,
-  ]);
+  // Get mobile fidget IDs from the current config
+  const mobileFidgetIds = useMemo(() => 
+    Object.keys(config.fidgetInstanceDatums || {}),
+  [config?.fidgetInstanceDatums]);
+  
+  // Get desktop layout config from config or use default
+  const desktopLayoutConfig = useMemo(() => 
+    config?.layoutDetails?.layoutConfig ?? {
+      layout: [],
+      layoutFidget: "grid",
+    },
+  [config?.layoutDetails?.layoutConfig]);
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
@@ -214,14 +202,14 @@ export default function Space({
                 {isMobile ? (
                   <MobileView
                     fidgetInstanceDatums={config.fidgetInstanceDatums}
-                    layoutFidgetIds={layoutConfig.layout}
+                    layoutFidgetIds={mobileFidgetIds}
                     theme={config.theme}
                     saveConfig={saveLocalConfig}
                     tabNames={config.tabNames}
                   />
                 ) : (
                   <DesktopView
-                    layoutConfig={{ ...layoutConfig }}
+                    layoutConfig={{ ...desktopLayoutConfig }}
                     theme={config.theme}
                     fidgetInstanceDatums={config.fidgetInstanceDatums}
                     fidgetTrayContents={config.fidgetTrayContents}
