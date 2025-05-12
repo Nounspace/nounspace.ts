@@ -12,9 +12,10 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "@/app/(spaces)/SpaceLoading";
-import { LoginModal } from "@privy-io/react-auth";
-import { FeedType } from "@neynar/nodejs-sdk";
-
+export declare const FeedType: {
+  readonly Following: "following";
+  readonly Filter: "filter";
+};
 // Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import("@/common/components/organisms/TabBar"));
 
