@@ -2,7 +2,8 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
-import Sidebar from "@/common/components/organisms/Sidebar";
+import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
+import ClientNavbarWrapper from "@/common/components/organisms/ClientNavbarWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
@@ -76,12 +77,18 @@ export default function RootLayout({
 const sidebarLayout = (page: React.ReactNode) => {
   return (
     <>
-      <div className="min-h-screen max-w-screen h-screen w-screen">
-        <div className="flex w-full h-full">
+      <div className="min-h-screen max-w-screen h-screen w-screen flex flex-col">
+        {/* App Navigation Bar */}
+        <div className="w-full flex-shrink-0">
+          <ClientNavbarWrapper />
+        </div>
+        
+        {/* Main Content with Sidebar */}
+        <div className="flex w-full h-full flex-grow">
           <div className="mx-auto transition-all duration-100 ease-out z-10">
-            <Sidebar />
+            <ClientSidebarWrapper />
           </div>
-            {page}
+          {page}
         </div>
       </div>
     </>

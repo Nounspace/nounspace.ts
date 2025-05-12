@@ -73,9 +73,25 @@ The goal is to implement a unified design pattern for desktop (grid) and mobile 
 - [x] Remove deprecated gradient overlay code from `Space.tsx`
 - [x] Clean up unused imports and props
 
+
+### 11. App Navigation Bar
+- [x] Design and implement a top-level AppNavbar component in `/src/common/components/organisms/AppNavbar.tsx`
+  - Use navigation items from the app sidebar for consistency
+  - Place the navigation bar at the top of the app, above main content
+  - Layout:
+    - If user is **not logged in**: `[ sidebar open icon {space} icon_logo {space} sign in button ]`
+    - If user **is logged in**: `[ user icon to open sidebar {space} icon_logo {space} write new cast button (icon only) ]`
+  - Integrate with authentication (Privy) to determine login state
+  - Ensure accessibility (ARIA roles, keyboard navigation)
+  - Use theme tokens and Tailwind CSS for styling, following the `mergeClasses` pattern
+  - Memoize navigation items and handlers for performance
+  - Update documentation and usage examples in `/docs/components.md`
+  - Add unit and integration tests for navigation bar behaviors
+
 ## Milestones
 - [x] Phase 1 complete: research and specs approved
 - [x] Phase 2 complete: `MobileNavbar` component implemented
 - [x] Phase 3 complete: refactor `Space.tsx` with new views
 - [x] Phase 4 complete: unified layout patterns and utilities
+- [x] Phase 5 complete: AppNavbar implemented and integrated
 - [x] Final review and merge
