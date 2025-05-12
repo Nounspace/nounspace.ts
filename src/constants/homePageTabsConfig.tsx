@@ -862,7 +862,7 @@ export const NOUNSPACE_TAB_CONFIG: SpaceConfig = {
                 "https://mobile.nounspace.com/_next/image?url=%2Fdiscord-logo.png&w=48&q=75",
               description: "",
               text: "Discord",
-              url: "https://discord.gg/CKbCNWU4",
+              url: "https://discord.gg/eYQeXU2WuH",
             },
             {
               avatar:
