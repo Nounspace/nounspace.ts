@@ -624,9 +624,9 @@ export const NOUNS_TAB_CONFIG: SpaceConfig = {
           fidgetBorderWidth: "2px",
           fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
           fontColor: "#000000",
-          fontFamily: "'__Inter_d65c78', '__Inter_Fallback_d65c78'",
+          fontFamily: "var(--user-theme-font)",
           headingsFontColor: "#000000",
-          headingsFontFamily: "'__Poppins_57cb75', '__Poppins_Fallback_57cb75'",
+          headingsFontFamily: "var(--user-theme-headings-font)",
           text: "A platform built by the Nouns community for the Nouns community.\n\nExplore the Nouniverse, or log in with Farcaster on desktop to customize your own **Profile** and **Dashboard** with **Themes**, **Mini Apps**, and **Tabs**.",
           title: "Welcome to Nounspace",
           url: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
@@ -862,7 +862,7 @@ export const NOUNSPACE_TAB_CONFIG: SpaceConfig = {
                 "https://mobile.nounspace.com/_next/image?url=%2Fdiscord-logo.png&w=48&q=75",
               description: "",
               text: "Discord",
-              url: "https://discord.gg/CKbCNWU4",
+              url: "https://discord.gg/eYQeXU2WuH",
             },
             {
               avatar:
