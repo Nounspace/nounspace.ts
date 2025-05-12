@@ -78,13 +78,17 @@ const frameProperties: FidgetProperties = {
       fieldName: "fidgetBorderWidth",
       displayName: "Fidget Border Width",
       displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
-      default: "transparent",
+      default: "var(--user-theme-fidget-border-width)",
       required: false,
       inputSelector: (props) => (
-        <WithMargin>
-          <BorderSelector {...props} />
-        </WithMargin>
-      ),
+           <WithMargin>
+            <BorderSelector 
+             {...props} 
+             hideGlobalSettings={true}
+             value={props.value === "var(--user-theme-fidget-border-width)" && !props.isInitialRender ? "0" : props.value}
+           />
+           </WithMargin>
+         ),
       group: "style",
     },
     {
@@ -109,13 +113,17 @@ const frameProperties: FidgetProperties = {
       fieldName: "fidget Shadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow effect. Use Theme Shadow to inherit from Theme",
-      default: "none",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ShadowSelector {...props} />
-        </WithMargin>
-      ),
+      default: "var(--user-theme-fidget-shadow)",
+         required: false,
+         inputSelector: (props) => (
+           <WithMargin>
+             <ShadowSelector
+              {...props} 
+              hideGlobalSettings={true}
+              value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+            />
+           </WithMargin>
+         ),
       group: "style",
     },
   ],

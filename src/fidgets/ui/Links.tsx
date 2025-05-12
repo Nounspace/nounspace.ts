@@ -218,11 +218,15 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <BorderSelector {...props} />
-        </WithMargin>
-      ),
+       inputSelector: (props) => (
+            <WithMargin>
+             <BorderSelector 
+              {...props} 
+              hideGlobalSettings={true}
+              value={props.value === "var(--user-theme-fidget-border-width)" && !props.isInitialRender ? "0" : props.value}
+            />
+            </WithMargin>
+          ),
       group: "style",
     },
     {
@@ -249,11 +253,15 @@ export const linkConfig: FidgetProperties = {
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ShadowSelector {...props} />
-        </WithMargin>
-      ),
+     inputSelector: (props) => (
+           <WithMargin>
+             <ShadowSelector
+              {...props} 
+              hideGlobalSettings={true}
+              value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+            />
+           </WithMargin>
+         ),
       group: "style",
     },
     {
@@ -335,8 +343,6 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         scrollbarWidth: "none",
         padding: "0.5rem",
         borderRadius: "1rem",
-        transform: `scale(${settings.scale})`,
-        transformOrigin: "0 0",
       }}
     >
       {settings?.title && (
@@ -353,7 +359,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         </CardHeader>
       )}
 
-      <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"}>
+      <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"} style={{ transform: `scale(${settings.scale})`, transformOrigin: "0 0" }}>
         {links.length > 0 &&
           links.map((link, index) => (
             <a

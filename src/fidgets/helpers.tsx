@@ -23,6 +23,7 @@ export const mobileStyleSettings = [
   {
     fieldName: "showOnMobile",
     displayName: "Show on Mobile",
+    displayNameHint: "Toggle whether this Fidget should be visible on mobile devices.",
     default: true,
     required: false,
     inputSelector: (props) => (
@@ -52,7 +53,7 @@ export const defaultStyleFields = [
   {
     fieldName: "background",
     displayName: "Background",
-    displayNameHint: "Color used for the background of the Image Fidget",
+    displayNameHint: "Color used for the background of the Fidget.",
     default: "var(--user-theme-fidget-background)",
     required: false,
     inputSelector: (props) => (
@@ -70,12 +71,16 @@ export const defaultStyleFields = [
   {
     fieldName: "fidgetBorderWidth",
     displayName: "Fidget Border Width",
-    displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
+    displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: (props) => (
       <WithMargin>
-        <BorderSelector {...props} />
+       <BorderSelector 
+        {...props} 
+        hideGlobalSettings={true}
+        value={props.value === "var(--user-theme-fidget-border-width)" && !props.isInitialRender ? "0" : props.value}
+      />
       </WithMargin>
     ),
     group: "style",
@@ -106,7 +111,11 @@ export const defaultStyleFields = [
     required: false,
     inputSelector: (props) => (
       <WithMargin>
-        <ShadowSelector {...props} />
+        <ShadowSelector
+         {...props} 
+         hideGlobalSettings={true}
+         value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+       />
       </WithMargin>
     ),
     group: "style",
