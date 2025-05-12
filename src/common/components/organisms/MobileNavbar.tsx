@@ -265,7 +265,6 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           "data-[state=active]:shadow-none",
           "data-[state=active]:bg-transparent",
           "transition-all duration-200",
-          "rounded-lg",
           "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
           isSelected 
             ? "data-[state=active]:text-primary opacity-100" 
@@ -323,7 +322,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         <TabsList 
           ref={tabsListRef}
           className={mergeClasses(
-            "flex items-center justify-start w-full h-full overflow-x-auto no-scrollbar",
+            "flex items-center justify-start w-full h-full overflow-x-auto no-scrollbar rounded-none",
             "px-2" // Add some padding for better spacing
           )}
           role="tablist" // Ensure ARIA role is set
