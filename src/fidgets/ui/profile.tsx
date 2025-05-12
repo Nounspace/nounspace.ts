@@ -3,7 +3,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import { defaultStyleFields } from "@/fidgets/helpers";
-import { User } from "@neynar/nodejs-sdk/build/api";
+import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { first, isUndefined } from "lodash";
 import React, { useMemo, useState } from "react";
 import { CgProfile } from "react-icons/cg";
@@ -47,7 +47,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   const { fid: viewerFid, signer } = useFarcasterSigner("Profile");
   const { data: userData } = useLoadFarcasterUser(
     fid,
-    viewerFid > 0 ? viewerFid : undefined,
+    viewerFid > 0 ? viewerFid : undefined
   );
 
   const [actionStatus, setActionStatus] = useState<
@@ -73,10 +73,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       user.viewer_context = {
         following: !wasFollowing,
         followed_by: user.viewer_context?.followed_by ?? false,
-        blocking: user.viewer_context?.blocking ?? false,
-        blocked_by: user.viewer_context?.blocked_by ?? false,
       };
-      
 
       try {
         let success;
@@ -92,8 +89,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       } catch (error) {
         // Revert the optimistic update if the operation fails
         user.viewer_context = {
-          ...user.viewer_context,
           following: wasFollowing,
+          followed_by: user.viewer_context?.followed_by ?? false,
         };
         setActionStatus("error");
         setErrorMessage("An error occurred while updating follow status.");
@@ -124,11 +121,10 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
       </div>
     );
   }
-  
+
   // Extract location if available
-  // DISABLE: @_ts-expect-error > maybe update the neynar package solves this
-  const location = user.profile?.location?.address?.city || '';
-  // const location = 'teste';
+  // Location property does not exist on UserProfile, so we disable this for now
+  const location = "";
   const hasLocation = location.length > 0;
 
   // For mobile view, we need a different layout
@@ -171,12 +167,12 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
             </div>
           )}
         </div>
-        
+
         {/* Bio - full width on mobile */}
         <p className="text-sm mb-3 w-full">
           <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
         </p>
-        
+
         {/* Followers/Following count - underneath bio */}
         <div className="flex flex-row text-sm items-center gap-3">
           <p>
@@ -250,9 +246,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           <p className="mr-6">
             <span className="font-bold">{user.follower_count}</span> Followers
           </p>
-          {hasLocation && (
-            <p className="text-slate-500">{location}</p>
-          )}
+          {hasLocation && <p className="text-slate-500">{location}</p>}
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { AlchemyProvider, Provider } from "ethers/providers";
 import { filter, isUndefined } from "lodash";
 import neynar from "./neynar";
 
+
 export type OwnerType = "address" | "fid";
 
 interface ContractCreation {
@@ -206,7 +207,7 @@ export async function contractOwnerFromContract(
       ownerId = contractCreation.contractCreator;
       try {
         const addresses = [ownerId];
-        const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({addresses});
+        const userFid = await neynar.fetchBulkUsersByEthereumAddress(addresses);
         if (userFid[ownerId]) {
           ownerId = userFid[ownerId][0].fid.toString();
           ownerIdType = "fid" as OwnerType;

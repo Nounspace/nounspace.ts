@@ -8,6 +8,7 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Suspense } from "react";
+import { FarcasterUser } from "@mod-protocol/core";
 
 export default function InfoToast() {
   return (
@@ -26,8 +27,11 @@ function InfoToastContent() {
   const spaceFarcasterName = queryParams?.get("handle");
   const { fid } = useFarcasterSigner("navigation");
   const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
+  const user = useMemo<FarcasterUser | undefined>(
+    () => first(data?.users) as FarcasterUser | undefined,
+    [data]
+  );
+  const username = useMemo(() => user?.username ?? "", [user]);
   const { getIsLoggedIn } = useAppStore((state) => ({
     getIsLoggedIn: state.getIsAccountReady,
   }));

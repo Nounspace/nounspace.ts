@@ -17,7 +17,7 @@ import {
   CastWithInteractions,
   EmbedUrl,
   User,
-} from "@neynar/nodejs-sdk/build/api";
+} from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { ReactionType } from "@farcaster/core";
@@ -87,7 +87,7 @@ export const PriorityLink = ({ children, href, ...props }) => {
       e.stopPropagation();
       router.push(href);
     },
-    [href],
+    [href]
   );
 
   return (
@@ -109,7 +109,7 @@ export const CastAvatar = ({
       <Avatar
         className={classNames(
           "size-10 flex-none bg-background hover:brightness-[90%] transition duration-300 ease-out",
-          className,
+          className
         )}
       >
         <AvatarImage
@@ -145,7 +145,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
             key={i}
             className={classNames(
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
-              embedData.castId ? "max-w-[100%]" : "max-w-max",
+              embedData.castId ? "max-w-[100%]" : "max-w-max"
             )}
             onClick={(event) => {
               event.stopPropagation();
@@ -187,7 +187,7 @@ const CastAttributionHeader = ({
       <div
         className={classNames(
           "flex gap-x-1 truncate flex-wrap",
-          inline ? "flex-row mb-0.5" : "flex-col",
+          inline ? "flex-row mb-0.5" : "flex-col"
         )}
       >
         <CastAttributionPrimary cast={cast} />
@@ -337,7 +337,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     key: CastReactionType,
     isActive: boolean,
     count?: number | string,
-    icon?: JSX.Element,
+    icon?: JSX.Element
   ) => {
     return (
       <div
@@ -372,7 +372,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     if (parentCastHash.length !== 20) {
       console.error(
         "Hash must be 20 bytes, but received length:",
-        parentCastHash.length,
+        parentCastHash.length
       );
       return;
     }
@@ -425,13 +425,13 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           const isActive = get(reactionInfo, "isActive", false);
           const icon = getIconForCastReactionType(
             key as CastReactionType,
-            isActive,
+            isActive
           );
           const reaction = renderReaction(
             key as CastReactionType,
             isActive,
             reactionInfo.count,
-            icon,
+            icon
           );
           return reaction;
         })}
@@ -458,7 +458,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           CastReactionType.quote,
           true,
           undefined,
-          getIconForCastReactionType(CastReactionType.quote),
+          getIconForCastReactionType(CastReactionType.quote)
         )}
         {cast.channel && cast.channel.name && (
           <div
@@ -533,11 +533,11 @@ const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
 
 const getIconForCastReactionType = (
   reactionType: CastReactionType,
-  isActive?: boolean,
+  isActive?: boolean
 ): JSX.Element | undefined => {
   const className = classNames(
     isActive ? "text-foreground/70" : "",
-    "mt-0.5 w-4 h-4 mr-1",
+    "mt-0.5 w-4 h-4 mr-1"
   );
 
   switch (reactionType) {
@@ -584,7 +584,7 @@ export const CastRow = ({
   const { fid: userFid } = useFarcasterSigner("render-cast");
 
   const getChannelForParentUrl = (
-    _parentUrl: string | null,
+    _parentUrl: string | null
   ): { name: string } | null => null;
 
   const renderRecastBadge = () => {
@@ -622,7 +622,7 @@ export const CastRow = ({
         onSelect && onSelect(cast.hash);
       }
     },
-    [cast.hash, isFocused],
+    [cast.hash, isFocused]
   );
 
   return (
@@ -633,7 +633,7 @@ export const CastRow = ({
         !isEmbed && (!hasReplies || isFocused)
           ? "border-b border-b-foreground/10"
           : "",
-        className,
+        className
       )}
     >
       <div
