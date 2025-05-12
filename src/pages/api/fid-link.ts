@@ -40,7 +40,7 @@ export type FidLinkToIdentityResponse = NounspaceResponse<{
 
 async function checkSigningKeyValidForFid(fid: number, signingKey: string) {
   try {
-    const result = await neynar.lookupDeveloperManagedSigner({publicKey: signingKey});
+    const result = await neynar.lookupDeveloperManagedSigner(signingKey);
     return result.fid === fid && result.status === "approved";
   } catch {
     return false;
@@ -71,13 +71,15 @@ async function linkFidToIdentity(
     });
     return;
   }
-  if (!checkSigningKeyValidForFid) {
+  const isSigningKeyValid = await checkSigningKeyValidForFid(reqBody.fid, reqBody.signingPublicKey);
+  if (!isSigningKeyValid) {
     res.status(400).json({
       result: "error",
       error: {
         message: `Signing key ${reqBody.signingPublicKey} is not valid for fid ${reqBody.fid}`,
       },
     });
+    return;
   }
   const { data: checkExistsData } = await createSupabaseServerClient()
     .from("fidRegistrations")

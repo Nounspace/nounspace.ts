@@ -1,7 +1,7 @@
 import React, { useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
-import { User } from "@neynar/nodejs-sdk/build/api";
+import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import {
   Command,
@@ -27,9 +27,9 @@ const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = ({
   );
 };
 
-const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = ({
-  onSelect,
-}) => {
+const SearchAutocompleteInputContent: React.FC<
+  SearchAutocompleteInputProps
+> = ({ onSelect }) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState<string | null>(null);

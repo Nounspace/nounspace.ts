@@ -4,7 +4,7 @@ import { CastRow } from "./CastRow";
 import { IoArrowBack } from "react-icons/io5";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { Button } from "@/common/components/atoms/button";
-import { CastWithInteractions } from "@neynar/nodejs-sdk/build/api";
+import { CastWithInteractions } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useLoadFarcasterConversation } from "@/common/data/queries/farcaster";
 import { CardHeader, CardTitle } from "@/common/components/atoms/card";
 import ScrollToIndex from "@/common/components/molecules/ScrollToIndex";
@@ -24,7 +24,7 @@ export const CastThreadView = ({
 }: CastThreadViewProps) => {
   const { data, isLoading } = useLoadFarcasterConversation(
     cast.hash,
-    viewerFid,
+    viewerFid
   );
 
   const parentCasts: CastWithInteractions[] =

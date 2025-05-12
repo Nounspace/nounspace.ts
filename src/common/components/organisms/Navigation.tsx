@@ -34,7 +34,7 @@ import RocketIcon from "../atoms/icons/RocketIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
-
+import { FarcasterUser } from "@mod-protocol/core";
 type NavItemProps = {
   label: string;
   active?: boolean;
@@ -105,16 +105,20 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const { fid } = useFarcasterSigner("navigation");
   const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
+
   const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
+  const user = useMemo(
+    () => first(data?.users) as FarcasterUser | undefined,
+    [data]
+  );
   const username = useMemo(() => user?.username, [user]);
 
   const CurrentUserImage = useCallback(
     () =>
-      user && user.pfp_url ? (
+      user && user.pfp.url ? (
         <img
           className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
+          src={user.pfp.url}
         />
       ) : (
         <CgProfile />

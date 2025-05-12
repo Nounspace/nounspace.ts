@@ -11,8 +11,7 @@ import {
   VENICE_MODEL,
 } from "./config";
 import { CREATE_PROMPT, ENHANCE_PROMPT, SYSTEM_PROMPT } from "./prompts";
-import { TrendingTimeWindow } from "@neynar/nodejs-sdk/build/api";
-
+import { TrendingFeedTimeWindow } from "@neynar/nodejs-sdk/build/neynar-api/common/constants";
 //
 // Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
 //
@@ -46,8 +45,7 @@ export async function POST(request: Request) {
   let userCasts: any;
   if (USE_USER_PAST_TWEETS) {
     if (USERS_CASTS_CHRONOLOGICALLY) {
-      userCasts = await neynar.fetchCastsForUser({
-        fid: userFid,
+      userCasts = await neynar.fetchAllCastsCreatedByUser(userFid, {
         viewerFid: userFid,
         limit: 5,
       });
@@ -71,20 +69,18 @@ ${exampleCastsText}
   }
 
   const fids = [userFid];
-  const currentUser = await neynar.fetchBulkUsers({ fids });
+  const currentUser = await neynar.fetchBulkUsers(fids);
   const userName = currentUser.users[0].username || "";
   const userBio = currentUser.users[0].profile.bio.text || "";
 
   // Fill in the appropriate values
-  const viewerFid = userFid;
-  const timeWindow: TrendingTimeWindow = "24h";
+  const timeWindow = TrendingFeedTimeWindow.TWENTY_FOUR_HOUR;
   const limit = MAX_TRENDING_TWEETS;
   //const channelId =
   //const parentUrl =
   //const provider =
   //const providerMetadata =
   const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed({
-    viewerFid, 
     timeWindow,
     limit,
   }));

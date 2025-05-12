@@ -8,7 +8,7 @@ import {
   FilterType,
   ChannelResponse,
   FeedResponse,
-} from "@neynar/nodejs-sdk/build/api";
+} from "@neynar/nodejs-sdk/build/neynar-api/v2";
 
 // TO DO: Make this into a Feed that is configured to filter to a specific channel that is selectable in settings
 
@@ -23,7 +23,7 @@ export const useLookupChannel = (channel: string) => {
           params: {
             id: channel,
           },
-        },
+        }
       );
 
       return data;
@@ -43,7 +43,7 @@ export const useGetChannelCasts = (channel: string) => {
             channelId: channel,
             filterType: FilterType.ChannelId,
           },
-        },
+        }
       );
 
       return data;

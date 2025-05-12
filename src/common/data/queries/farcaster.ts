@@ -4,7 +4,7 @@ import {
   FeedResponse,
   FeedType,
   FilterType,
-} from "@neynar/nodejs-sdk/build/api";
+} from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import axiosBackend from "../api/backend";
 import { isUndefined } from "lodash";

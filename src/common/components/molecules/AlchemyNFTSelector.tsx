@@ -9,7 +9,6 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { formatEthereumAddress } from "@/common/lib/utils/ethereum";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { AlchemyNetwork, getAlchemyChainUrlV3 } from "@/fidgets/ui/gallery";
-import { NeynarUser } from "@/pages/api/farcaster/neynar/user";
 import { first } from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
@@ -38,14 +37,14 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
   const fid = farcasterSigner.fid;
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
+  const username = useMemo(() => user?.username || "", [user]);
 
   // Initialize local state with values from props
   const [selectedImage, setSelectedImage] = useState<number | undefined>(
-    value.selectedImage,
+    value.selectedImage
   );
   const [walletAddress, setWalletAddress] = useState<string | undefined>(
-    value.walletAddress,
+    value.walletAddress
   );
   const [selectedChain, setSelectedChain] = useState<
     AlchemyNetwork | undefined
@@ -62,7 +61,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
       try {
         const response = await fetch(
           `/api/farcaster/neynar/user?username=${username}`,
-          { signal: abortController.signal },
+          { signal: abortController.signal }
         );
         const data = await response.json();
         if (!data) {
@@ -70,7 +69,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
           return;
         }
 
-        const user = data.user as NeynarUser;
+        const user = data.user;
         if (user.verifications.length > 0) {
           setError(null);
           setVerifiedAddresses(user.verifications);
@@ -115,7 +114,7 @@ export const AlchemyNftSelector: React.FC<AlchemyNftSelectorProps> = ({
           }
 
           const images = data.ownedNfts.map(
-            (nft: any) => nft.image.cachedUrl || "",
+            (nft: any) => nft.image.cachedUrl || ""
           );
           setNftImages(images);
           setError(null);

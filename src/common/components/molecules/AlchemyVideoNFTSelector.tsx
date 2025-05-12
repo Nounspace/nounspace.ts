@@ -15,7 +15,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { CHAIN_OPTIONS } from "./AlchemyChainSelector";
 import { zeroAddress } from "viem";
 import Image from "next/image";
-
+import { FarcasterUser } from "@mod-protocol/core";
 export interface AlchemyVideoNftSelectorValue {
   chain?: AlchemyNetwork;
   walletAddress?: string;
@@ -59,7 +59,7 @@ function formatNftUrl(nft: any, chain: AlchemyNetwork = "eth") {
   const contractName = nft?.name || "";
   const contractAddress = nft.contract?.address || "";
   const thumbnailUrl = formatIpfsUrl(
-    nft.image?.thumbnailUrl || nft?.raw?.metadata?.image || "",
+    nft.image?.thumbnailUrl || nft?.raw?.metadata?.image || ""
   );
 
   const url = new URL(baseUrl);
@@ -80,7 +80,17 @@ export const AlchemyVideoNftSelector: React.FC<
   const farcasterSigner = useFarcasterSigner("gallery");
   const fid = farcasterSigner.fid;
   const { data } = useLoadFarcasterUser(fid);
-  const user = useMemo(() => first(data?.users), [data]);
+  const user = useMemo<FarcasterUser | undefined>(() => {
+    const firstUser = first(data?.users);
+    if (firstUser) {
+      return {
+        ...firstUser,
+        displayName: firstUser.display_name || "",
+        pfp: { url: firstUser.pfp_url || "" },
+      } as unknown as FarcasterUser;
+    }
+    return undefined;
+  }, [data]);
   const username = useMemo(() => user?.username, [user]);
 
   const {
@@ -90,15 +100,15 @@ export const AlchemyVideoNftSelector: React.FC<
   } = useNeynarUser(username);
   const verifiedAddresses = useMemo(
     () => neynarUser?.verifications || [],
-    [neynarUser],
+    [neynarUser]
   );
 
   // Initialize local state with values from props
   const [selectedImage, setSelectedImage] = useState<number | undefined>(
-    value.selectedImage,
+    value.selectedImage
   );
   const [walletAddress, setWalletAddress] = useState<string | undefined>(
-    value.walletAddress,
+    value.walletAddress
   );
   const [selectedChain, setSelectedChain] = useState<
     AlchemyNetwork | undefined
@@ -139,7 +149,7 @@ export const AlchemyVideoNftSelector: React.FC<
           const videoNfts = data.ownedNfts.filter(
             (nft: any) =>
               nft.raw?.metadata?.mimeType === "audio/wave" ||
-              nft.raw?.metadata?.content?.mime === "video/mp4",
+              nft.raw?.metadata?.content?.mime === "video/mp4"
           );
 
           const images = videoNfts

@@ -1,6 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 import requestHandler from "@/common/data/api/requestHandler";
-import { CastParamType } from "@neynar/nodejs-sdk/build/api";
+import { CastParamType } from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import { isAxiosError } from "axios";
 import { isString } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
@@ -23,15 +23,15 @@ async function getUsernamesAndFidsHandler(
   try {
     const fetchedMentions = await Promise.all(
       usernames.map((username) =>
-        neynar.lookupUserByUsername({ username })
+        neynar.lookupUserByUsername(username)
       )
     );
 
     const mentionsWithFids = fetchedMentions
-      .filter((mention) => mention?.user?.username && mention?.user?.fid)
+      .filter((mention) => mention?.result?.user?.username && mention?.result?.user?.fid)
       .map((mention) => ({
-        username: mention.user.username,
-        fid: mention.user.fid.toString(),
+        username: mention.result.user.username,
+        fid: mention.result.user.fid.toString(),
       }));
 
     res.status(200).json(mentionsWithFids);
