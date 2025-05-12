@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  Suspense,
+} from "react";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
@@ -8,7 +14,7 @@ import {
   Notification,
   NotificationTypeEnum,
   User,
-} from "@neynar/nodejs-sdk/build/api";
+} from "@neynar/nodejs-sdk/build/neynar-api/v2";
 import {
   Tabs,
   TabsList,
@@ -95,12 +101,12 @@ const NotificationHeader = ({
 }) => {
   const numAvatarsNotShown = Math.max(
     0,
-    relatedUsers.length - maxAvatarsToDisplay,
+    relatedUsers.length - maxAvatarsToDisplay
   );
 
   const relativeDateString = useMemo(() => {
     return formatTimeAgo(
-      moment.utc(notification.most_recent_timestamp).toDate(),
+      moment.utc(notification.most_recent_timestamp).toDate()
     );
   }, [notification.most_recent_timestamp]);
 
@@ -309,7 +315,7 @@ const NotificationRow: NotificationRowProps = ({
 
 const isNotificationUnseen = (
   notification: Notification,
-  lastSeenNotificationDate?: moment.Moment | null,
+  lastSeenNotificationDate?: moment.Moment | null
 ): boolean | undefined => {
   if (lastSeenNotificationDate === undefined) return undefined;
   if (lastSeenNotificationDate === null) return true;
@@ -347,7 +353,7 @@ function NotificationsPageContent() {
 
   const { mutate: updateLastSeenCursor } = useMutateNotificationsLastSeenCursor(
     fid,
-    identityPublicKey,
+    identityPublicKey
   );
 
   const onTabChange = useCallback((value: string) => {
@@ -364,7 +370,7 @@ function NotificationsPageContent() {
         ? _notifications
         : _notifications.filter((notification) => notification.type === tab);
     },
-    [tab],
+    [tab]
   );
 
   const lastSeenNotificationDate = useMemo<
@@ -420,7 +426,7 @@ function NotificationsPageContent() {
       const wasJustCreated = moment.isMoment(curr) && prev === null;
       const wasJustUpdated = moment.isMoment(curr) && moment.isMoment(prev);
       return wasJustCreated || wasJustUpdated;
-    },
+    }
   );
 
   return (
@@ -446,7 +452,7 @@ function NotificationsPageContent() {
                     (notification, pageItemIndex) => {
                       const isUnseen = isNotificationUnseen(
                         notification,
-                        delayedLastSeenNotificationDate,
+                        delayedLastSeenNotificationDate
                       );
                       return (
                         <NotificationRow
@@ -456,10 +462,10 @@ function NotificationsPageContent() {
                           key={`${pageIndex}-${pageItemIndex}`}
                         />
                       );
-                    },
+                    }
                   )}
-              </React.Fragment>
-            ))}
+                </React.Fragment>
+              ))}
             </Suspense>
           </div>
           {error && (
