@@ -6,6 +6,7 @@ import React from "react";
 
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
 
@@ -15,7 +16,9 @@ export const validateMobileDisplayName = (value: string): boolean => {
 };
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
+  <div className={mergeClasses("pt-2.5")}>
+    {children}
+  </div>
 );
 
 
@@ -111,10 +114,10 @@ export const defaultStyleFields = [
     inputSelector: (props) => (
       <WithMargin>
         <ShadowSelector
-         {...props} 
-         hideGlobalSettings={true}
-         value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
-       />
+          {...props}
+          hideGlobalSettings={true}
+          value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+        />
       </WithMargin>
     ),
     group: "style",
