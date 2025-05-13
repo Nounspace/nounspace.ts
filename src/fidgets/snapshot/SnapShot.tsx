@@ -28,19 +28,6 @@ export const snapshotConfig: FidgetProperties = {
   icon: 0x26a1,
   fields: [
     {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Adjust the size of the governance display",
-      default: 1,
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ImageScaleSlider {...props} />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
       fieldName: "snapshot ens",
       displayName: "Snapshot ENS",
       displayNameHint: "Enter the ENS name of the Snapshot space (e.g. 'gnars.eth')",
@@ -117,19 +104,9 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
       ? "var(--user-theme-font)"
       : settings.fontFamily || "var(--user-theme-font)";
   };
-
-  const scale = typeof settings.scale === 'number' && !isNaN(settings.scale)
-    ? settings.scale
-    : 1;
-
-  const containerStyle: React.CSSProperties = {
-    overflow: "auto",
-    transform: `scale(${scale})`,
-    transformOrigin: "0 0",
-  };
-
+  
   return (
-    <div className="size-full" style={containerStyle}>
+    <div className="size-full" >
       <CardContent className="size-full overflow-hidden p-4 flex flex-col">
         <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily() }}>
           {settings["snapshot ens"]} proposals

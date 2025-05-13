@@ -13,16 +13,12 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import React from "react";
 import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
   url: string;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const frameProperties: FidgetProperties = {
   fidgetName: "Farcaster Frame",

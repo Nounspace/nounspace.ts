@@ -14,7 +14,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
-import { defaultStyleFields } from "../helpers";
+import { defaultStyleFields, WithMargin } from "../helpers";
 
 export type TextFidgetSettings = {
   title?: string;
@@ -27,10 +27,6 @@ export type TextFidgetSettings = {
 } & FidgetSettingsStyle;
 
 const defaultText = `Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.`;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 export const textConfig: FidgetProperties = {
   fidgetName: "Text",

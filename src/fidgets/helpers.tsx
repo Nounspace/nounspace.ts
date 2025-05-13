@@ -76,11 +76,10 @@ export const defaultStyleFields = [
     required: false,
     inputSelector: (props) => (
       <WithMargin>
-       <BorderSelector 
-        {...props} 
-        hideGlobalSettings={true}
-        value={props.value === "var(--user-theme-fidget-border-width)" && !props.isInitialRender ? "0" : props.value}
-      />
+        <BorderSelector
+          {...props}
+          hideGlobalSettings={false}
+        />
       </WithMargin>
     ),
     group: "style",
@@ -104,7 +103,7 @@ export const defaultStyleFields = [
     group: "style",
   },
   {
-    fieldName: "fidget Shadow",
+    fieldName: "fidgetShadow",
     displayName: "Fidget Shadow",
     displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
     default: "var(--user-theme-fidget-shadow)",
@@ -124,27 +123,21 @@ export const defaultStyleFields = [
 
 export const transformUrl = (url: string): string => {
   if (!url) return "";
-  
   if (url.includes('/embed/') || url.includes('player.vimeo.com/video/')) {
     return url;
   }
-  
-  const youtubeRegex = 
+  const youtubeRegex =
     /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&].*)?/;
   const youtubeMatch = url.match(youtubeRegex);
-  
   if (youtubeMatch && youtubeMatch[1]) {
     return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   }
-  
-  const vimeoRegex = 
+  const vimeoRegex =
     /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^/]*)\/videos\/|)(\d+)(?:|\/\?|$)/;
   const vimeoMatch = url.match(vimeoRegex);
-  
   if (vimeoMatch && vimeoMatch[1]) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
-  
   return url;
 };
 

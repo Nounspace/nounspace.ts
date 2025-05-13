@@ -46,21 +46,13 @@ export const nounishGovernanceConfig: FidgetProperties = {
         graphUrl: NOUNS_DAO,
       },
       required: false,
-      inputSelector: DaoSelector,
-      group: "settings",
-    },
-    {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Adjust the size of the governance display",
-      default: 1,
-      required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ImageScaleSlider {...props} />
+          <DaoSelector {...props} />
         </WithMargin>
       ),
-      group: "style",
+
+      group: "settings",
     },
     ...defaultStyleFields,
   ],
@@ -148,13 +140,6 @@ export const NounishGovernance: React.FC<
   return (
     <div
       className="size-full"
-      style={{
-          overflow: "auto",
-          scrollbarWidth: "none",
-          transform: `scale(${settings.scale || 1})`,
-          transformOrigin: "0 0",
-
-      }}
     >
       <CardContent className="size-full overflow-scroll p-4">
         {proposalId && selectedProposal ? (
