@@ -9,7 +9,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { BsArrowRepeat } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -34,28 +34,55 @@ const matchaProperties: FidgetProperties = {
       fieldName: "defaultSellToken",
       default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput
+            {...props}
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "defaultBuyToken",
       default: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "fromChain",
       default: { id: "8453", name: "Base" },
       required: false,
-      inputSelector: ChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ChainSelector
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "toChain",
       default: { id: "8453", name: "Base" },
       required: false,
-      inputSelector: ChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ChainSelector
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     // {
