@@ -172,17 +172,6 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
 
   return (
     <div
-      style={{
-        fontFamily: bodyFontFamily,
-        height: "100%",
-        color: bodyFontColor,
-        background: settings.background,
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
-      }}
     >
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
