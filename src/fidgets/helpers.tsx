@@ -115,8 +115,7 @@ export const defaultStyleFields = [
       <WithMargin>
         <ShadowSelector
           {...props}
-          hideGlobalSettings={true}
-          value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+          hideGlobalSettings={false}
         />
       </WithMargin>
     ),

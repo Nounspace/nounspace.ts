@@ -80,8 +80,7 @@ const frameProperties: FidgetProperties = {
            <WithMargin>
             <BorderSelector 
              {...props} 
-             hideGlobalSettings={true}
-             value={props.value === "var(--user-theme-fidget-border-width)" && !props.isInitialRender ? "0" : props.value}
+             hideGlobalSettings={false}
            />
            </WithMargin>
          ),
@@ -115,8 +114,7 @@ const frameProperties: FidgetProperties = {
            <WithMargin>
              <ShadowSelector
               {...props} 
-              hideGlobalSettings={true}
-              value={props.value === "var(--user-theme-fidget-shadow)" && !props.isInitialRender ? "none" : props.value}
+              hideGlobalSettings={false}
             />
            </WithMargin>
          ),
