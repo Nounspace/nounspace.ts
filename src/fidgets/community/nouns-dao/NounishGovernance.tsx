@@ -1,6 +1,7 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
@@ -51,8 +52,25 @@ export const nounishGovernanceConfig: FidgetProperties = {
           <DaoSelector {...props} />
         </WithMargin>
       ),
-
       group: "settings",
+    },
+    {
+      fieldName: "fontColor",
+      displayName: "Font Color",
+      displayNameHint: "Color used for the text input (body text)",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+      ),
+      group: "style",
     },
     ...defaultStyleFields,
   ],
@@ -137,11 +155,19 @@ export const NounishGovernance: React.FC<
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
 
+
+    const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
+    const bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+
   return (
     <div
       className="size-full"
+      style={{
+        fontFamily: bodyFontFamily,
+        color: bodyFontColor,
+      }}
     >
-      <CardContent className="size-full overflow-scroll p-4">
+      <CardContent className="size-full overflow-scroll p-4" >
         {proposalId && selectedProposal ? (
           isBuilderSubgraph ? (
             <BuilderProposalDetailView
@@ -150,6 +176,8 @@ export const NounishGovernance: React.FC<
               currentBlock={currentBlock}
               loading={listLoading}
               versions={[]}
+              bodyFont={bodyFontFamily}
+              headingsFont={bodyFontFamily}
             />
           ) : (
             <NounsProposalDetailView
@@ -158,6 +186,8 @@ export const NounishGovernance: React.FC<
               goBack={handleGoBack}
               currentBlock={currentBlock}
               loading={listLoading}
+              bodyFont={bodyFontFamily}
+              headingsFont={bodyFontFamily}
             />
           )
         ) : (
@@ -169,6 +199,8 @@ export const NounishGovernance: React.FC<
             isBuilderSubgraph={isBuilderSubgraph}
             title={selectedDao.name}
             daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
+            bodyFont={bodyFontFamily}
+            headingsFont={bodyFontFamily}
           />
         )}
       </CardContent>

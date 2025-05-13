@@ -10,6 +10,7 @@ import {
 } from "@/common/fidgets";
 import { BsArrowRepeat } from "react-icons/bs";
 import { mobileStyleSettings, WithMargin } from "../helpers";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -72,6 +73,22 @@ const matchaProperties: FidgetProperties = {
       group: "settings",
     },
     {
+      fieldName: "fidgetShadow",
+      displayName: "Fidget Shadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ShadowSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
       fieldName: "To Chain",
       default: { id: "8453", name: "Base" },
       required: false,
@@ -85,34 +102,6 @@ const matchaProperties: FidgetProperties = {
       ),
       group: "settings",
     },
-    // {
-    //   fieldName: "optionalFeeRecipient",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: TextInput,
-    //   group: "settings",
-    // },
-    // {
-    //   fieldName: "background",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: SimpleColorSelector,
-    //   group: "style",
-    // },
-    // {
-    //   fieldName: "fontFamily",
-    //   default: "Londrina Solid",
-    //   required: false,
-    //   inputSelector: FontSelector,
-    //   group: "style",
-    // },
-    // {
-    //   fieldName: "fontColor",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: SimpleColorSelector,
-    //   group: "style",
-    // },
     {
       fieldName: "size",
       required: false,

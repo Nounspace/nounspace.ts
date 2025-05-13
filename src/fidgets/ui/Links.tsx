@@ -12,7 +12,6 @@ import {
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import LinksInput from "@/common/components/molecules/LinksInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
@@ -102,7 +101,7 @@ export const linkConfig: FidgetProperties = {
       fieldName: "headingsFontFamily",
       displayName: "HeadingsFontFamily",
       displayNameHint: "Font used for the title and link text. Set to Theme Font to inherit the Title Font from the Theme.",
-      default: "Londrina Solid",
+      default: "var(--user-theme-headings-font)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -112,7 +111,7 @@ export const linkConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
       displayName: "Font Family",
       displayNameHint: "Font used for the description text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "Theme Font",
@@ -214,7 +213,7 @@ export const linkConfig: FidgetProperties = {
     },
     {
       fieldName: "fidgetBorderColor",
-      displayName: "FidgetBorderColor",
+      displayName: "Fidget Border Color",
       displayNameHint: "Color of the Fidget's Border.",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
@@ -316,7 +315,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
     <div
     >
       {settings?.title && (
-        <CardHeader className="p-1 pl-2">
+        <CardHeader className="p-4">
           <CardTitle
             className="text-2xl font-bold"
             style={{
@@ -339,20 +338,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
               rel="noopener noreferrer"
             >
               <CardContent
-                style={{
-                  background: settings.itemBackground,
-                  wordWrap: "break-word",
-                  maxHeight: "200px",
-                  height: "auto",
-                  display: "flex",
-                  flexDirection: isGridView ? "column" : "row",
-                  padding: isGridView ? "1rem" : "0.5rem",
-                  margin: isGridView ? "0.25rem" : "0.5rem",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  transition: "transform 0.3s",
-                  border: "none",
-                }}
+
                 className={
                   isGridView
                     ? "p-4 flex flex-col items-start justify-between m-1 hover:scale-105"
