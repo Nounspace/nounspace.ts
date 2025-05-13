@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Modal from "@/common/components/molecules/Modal";
 
 // Import the FrameMetadata type from wherever it's defined
 interface FrameMetadata {
@@ -31,7 +32,6 @@ export default function FrameActionModal({
   fid = 20721,
   currentFrameData,
 }: FrameActionModalProps) {
-  const modalRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
   const [frameData, setFrameData] = useState<{
@@ -135,209 +135,75 @@ export default function FrameActionModal({
     fetchFrameAction();
   }, [isOpen, frameUrl, buttonIndex, fid, currentFrameData]);
 
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-
-    // Prevent scrolling when modal is open
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", handleEscape);
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
-
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 50,
-        padding: "16px",
-        backdropFilter: "blur(5px)",
+    <Modal
+      open={isOpen}
+      setOpen={(open) => {
+        if (!open) onClose();
       }}
-      onClick={handleBackdropClick}
+      title={frameData.title || "Frame Action"}
+      showClose
+      overlay
     >
-      <div
-        ref={modalRef}
-        style={{
-          backgroundColor: "white",
-          borderRadius: "8px",
-          boxShadow:
-            "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-          width: "100%",
-          maxWidth: "36rem",
-          overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          height: "90vh",
-          maxHeight: "90vh",
-          animation: "fadeInUp 0.3s ease-out forwards",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            borderBottom: "1px solid #e5e7eb",
-            padding: "16px 24px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "#1f2937",
-            }}
-          >
-            {frameData.title || "Frame Action"}
-          </h3>
-          <button
-            onClick={onClose}
-            style={{
-              color: "#6b7280",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "18px",
-            }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Content */}
-        <div
-          style={{
-            flex: 1,
-            overflow: "auto",
-          }}
-        >
-          {loading ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                height: "256px",
-                backgroundColor: "#f9fafb",
-              }}
-            >
-              <p
-                style={{
-                  color: "#4b5563",
-                }}
+      {/* Content */}
+      <div className="flex-1 overflow-auto" style={{ minHeight: 200 }}>
+        {loading ? (
+          <div className="flex items-center justify-center h-64 bg-gray-50">
+            <p className="text-gray-500">
+              Processing {getOriginalButtonLabel()} action...
+            </p>
+          </div>
+        ) : frameData.error ? (
+          <div className="p-6 text-red-500">
+            <p>{frameData.error}</p>
+          </div>
+        ) : frameData.postUrl ? (
+          <div className="relative w-full h-[60vh] min-h-[300px]">
+            <iframe
+              ref={iframeRef}
+              src={frameData.postUrl}
+              style={{ width: "100%", height: "100%", border: "none" }}
+              title="Frame Content"
+            />
+          </div>
+        ) : (
+          <>
+            {frameData.image && (
+              <div
+                className="relative w-full"
+                style={{ aspectRatio: "1.91/1" }}
               >
-                Processing {getOriginalButtonLabel()} action...
+                <Image
+                  src={frameData.image}
+                  alt={frameData.title || "Frame image"}
+                  fill
+                  style={{ objectFit: "cover" }}
+                  sizes="(max-width: 768px) 100vw, 600px"
+                  priority
+                />
+              </div>
+            )}
+            <div className="p-6">
+              <p className="text-gray-700 mb-4">
+                {frameData.title
+                  ? `Action completed: ${frameData.title}`
+                  : "Action completed successfully"}
               </p>
             </div>
-          ) : frameData.error ? (
-            <div
-              style={{
-                padding: "24px",
-                color: "#ef4444",
-              }}
-            >
-              <p>{frameData.error}</p>
-            </div>
-          ) : frameData.postUrl ? (
-            <div
-              style={{
-                position: "relative",
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-              }}
-            >
-              <iframe
-                ref={iframeRef}
-                src={frameData.postUrl}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                }}
-                title="Frame Content"
-              />
-            </div>
-          ) : (
-            <>
-              {frameData.image && (
-                <div
-                  style={{
-                    position: "relative",
-                    width: "100%",
-                    aspectRatio: "1.91/1",
-                  }}
-                >
-                  <Image
-                    src={frameData.image}
-                    alt={frameData.title || "Frame image"}
-                    fill
-                    style={{
-                      objectFit: "cover",
-                    }}
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    priority
-                  />
-                </div>
-              )}
-
-              <div style={{ padding: "24px" }}>
-                <p style={{ color: "#374151", marginBottom: "16px" }}>
-                  {frameData.title
-                    ? `Action completed: ${frameData.title}`
-                    : "Action completed successfully"}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            borderTop: "1px solid #e5e7eb",
-            padding: "12px 24px",
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "8px",
-          }}
-        >
-          <button
-            onClick={onClose}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: "#6b7280",
-              color: "white",
-              borderRadius: "6px",
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            Close
-          </button>
-        </div>
+          </>
+        )}
       </div>
-    </div>
+      {/* Footer */}
+      <div className="border-t border-gray-200 pt-3 flex justify-end gap-2 mt-2">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
+        >
+          Close
+        </button>
+      </div>
+    </Modal>
   );
 }
