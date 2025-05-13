@@ -57,7 +57,7 @@ export default function FrameRenderer({
           params.append("fid", fid.toString());
         }
 
-        const response = await fetch(`/frames?${params.toString()}`);
+        const response = await fetch(`/api/frames?${params.toString()}`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch frame: ${response.statusText}`);

@@ -108,6 +108,34 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
     if (safeParseResult.raw?.flattenedMeta) {
       const meta = safeParseResult.raw.flattenedMeta;
 
+      // --- PATCH: Handle JSON "next" format in fc:frame meta tag ---
+      if (meta["fc:frame"]) {
+        // Try to parse as JSON only if it looks like JSON
+        const fcFrameRaw = meta["fc:frame"].trim();
+        if (fcFrameRaw.startsWith("{") || fcFrameRaw.startsWith("[")) {
+          try {
+            const fcFrame = JSON.parse(fcFrameRaw);
+            if (fcFrame && typeof fcFrame === "object") {
+              frameData.image = fcFrame.imageUrl || null;
+              frameData.title = fcFrame.title || null;
+              frameData.postUrl = fcFrame.postUrl || fallbackUrl;
+              if (fcFrame.button) {
+                const buttons = Array.isArray(fcFrame.button)
+                  ? fcFrame.button
+                  : [fcFrame.button];
+                frameData.buttons = buttons.map((btn: any) => ({
+                  label: btn.title || btn.label || "Continue",
+                  action: btn.action?.type || "post",
+                }));
+              }
+            }
+          } catch (err) {
+            // Not JSON, ignore
+          }
+        }
+      }
+      // --- END PATCH ---
+
       const buttons: { label: string; action: string }[] = [];
       for (let i = 1; i <= 4; i++) {
         const buttonLabel = meta[`fc:frame:button:${i}`];
@@ -117,14 +145,22 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
         }
       }
 
-      if (buttons.length > 0) {
+      if (buttons.length > 0 && frameData.buttons.length === 0) {
         frameData.buttons = buttons;
       }
 
-      frameData.title = meta["fc:frame:title"] || meta["og:title"] || null;
-      frameData.image = meta["fc:frame:image"] || meta["og:image"] || null;
-      frameData.postUrl = meta["fc:frame:post_url"] || fallbackUrl;
-      frameData.inputText = !!meta["fc:frame:input:text"];
+      if (!frameData.title) {
+        frameData.title = meta["fc:frame:title"] || meta["og:title"] || null;
+      }
+      if (!frameData.image) {
+        frameData.image = meta["fc:frame:image"] || meta["og:image"] || null;
+      }
+      if (!frameData.postUrl || frameData.postUrl === fallbackUrl) {
+        frameData.postUrl = meta["fc:frame:post_url"] || fallbackUrl;
+      }
+      if (!frameData.inputText) {
+        frameData.inputText = !!meta["fc:frame:input:text"];
+      }
     }
   } catch (e) {
     console.warn("Error extracting raw meta tags:", e);
