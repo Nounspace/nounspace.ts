@@ -239,7 +239,7 @@ export default function FrameRenderer({
             src={frameData.image}
             alt={frameData.title || "Frame image"}
             fill
-            style={{ objectFit: "contain" }}
+            style={{ objectFit: "cover" }}
             sizes="100vw"
             priority
             onError={() => setImgError(true)}
