@@ -465,7 +465,7 @@ export const createHomeBaseTabStoreFunc = (
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
   },
-  commitHomebaseTabToDatabase: debounce(async (tabname) => {
+  commitHomebaseTabToDatabase: debounce(async (tabname, immediate = false) => {
     // console.log('Committing tab to database:', { tabname });
     const tab = get().homebase.tabs[tabname];
     if (tab && tab.config) {
@@ -492,7 +492,10 @@ export const createHomeBaseTabStoreFunc = (
         throw e;
       }
     }
-  }, 1000),
+  },
+  500,
+  { leading: false, trailing: true }
+  ),
   async saveHomebaseTabConfig(tabName, config) {
     const localCopy = cloneDeep(
       get().homebase.tabs[tabName].config,
