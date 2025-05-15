@@ -47,13 +47,13 @@ const ProposalListView = ({
           <Avatar>
             <AvatarImage src={daoIcon} alt={title} />
             <AvatarFallback>
-              <AvatarImage
-                src={"public/nouns_yellow_logo.jpg"}
-                alt="DAO Icon"
-              />
+              <AvatarImage src={"/nouns_yellow_logo.jpg"} alt="DAO Icon" />
             </AvatarFallback>
           </Avatar>
-          <CardTitle className="text-xl ml-3" style={{ fontFamily: headingsFont }}>
+          <CardTitle
+            className="text-xl ml-3"
+            style={{ fontFamily: headingsFont }}
+          >
             {title}
           </CardTitle>
         </div>
@@ -77,7 +77,7 @@ const ProposalListView = ({
               headingsFont={headingsFont}
               bodyFont={bodyFont}
             />
-          ),
+          )
         )}
       </div>
     </>
