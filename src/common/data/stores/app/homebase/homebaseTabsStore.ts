@@ -501,33 +501,6 @@ export const createHomeBaseTabStoreFunc = (
   { leading: false, trailing: true },
 ),
 
-      
-      // console.log('Tab config to commit:', {
-      //   tabname,
-      //   timestamp: localCopy.timestamp,
-      //   fidgetCount: Object.keys(localCopy.fidgetInstanceDatums || {}).length
-      // });
-      
-      const file = await get().account.createEncryptedSignedFile(
-        stringify(localCopy),
-        "json",
-        { useRootKey: true, fileName: tabname },
-      );
-      try {
-        await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
-        set((draft) => {
-          draft.homebase.tabs[tabname].remoteConfig = localCopy;
-        }, "commitHomebaseToDatabase");
-      } catch (e) {
-        console.error('Failed to commit tab:', e);
-        throw e;
-      }
-    }
-  },
-  500,
-  { leading: false, trailing: true }
-  ),
-
   saveHomebaseTabConfig: async (tabName: string, config: SpaceConfigSaveDetails) => {
     try {
       // 1 -  merge the caller’s partial patch into a *fresh* copy
