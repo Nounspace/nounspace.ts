@@ -168,21 +168,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     datums: typeof fidgetInstanceDatums,
   ) => {
     return await saveConfig({
-      fidgetInstanceDatums: datums,
+      fidgetInstanceDatums: datums, forceSave: true
     });
   };
 
   const saveTheme = async (newTheme: typeof theme) => {
     return await saveConfig({
-      theme: newTheme,
+      theme: newTheme, forceSave: true
     });
   };
 
   const saveLayout = async (newLayout: PlacedGridItem[]) => {
     return await saveConfig({
-      layoutConfig: {
-        layout: newLayout,
-      },
+      layoutConfig: { layout: newLayout },
+      forceSave: true,
     });
   };
 
@@ -201,10 +200,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Debounced save function
   const debouncedSaveConfig = useCallback(
-    debounce((config) => {
-      saveConfig(config);
-    }, 100),
-    [saveConfig]
+    debounce(
+      (patch) => saveConfig(patch),
+      250,
+      { leading: false, trailing: true },
+    ),
+    [saveConfig],
   );
 
   function unselectFidget() {
