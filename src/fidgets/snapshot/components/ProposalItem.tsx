@@ -175,7 +175,10 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
         <img
           src={avatarUrl}
           alt="Avatar"
-          className="w-16 h-16 rounded-md mr-4 object-cover"
+          width={64}
+          height={64}
+          style={{ width: "auto", height: "auto" }}
+          className="rounded-md mr-4 object-cover"
           onError={handleError}
         />
         <div className="flex flex-col flex-grow">
