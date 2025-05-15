@@ -56,8 +56,15 @@ async function _commitHomebaseTab(tabname: string, get: StoreGet<AppStore>, set:
 
     await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
 
-    set((draft) => { draft.homebase.tabs[tabname].remoteConfig = localCopy; },
-        'commitHomebaseToDatabase');
+    set(
+      draft => {
+        // ✱ Make sure the tab still exists before modifying it
+        const t = draft.homebase.tabs[tabname];
+        if (t) t.remoteConfig = localCopy;
+        else   console.warn('[commit] tab disappeared before write finished:', tabname);
+      },
+      'commitHomebaseToDatabase',
+    );
   })();
 
   await commitInFlight;
