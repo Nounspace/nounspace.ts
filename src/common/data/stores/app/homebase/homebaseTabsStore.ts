@@ -40,8 +40,10 @@ async function _commitHomebaseTab(tabname: string, get: StoreGet<AppStore>, set:
   // ---------------------------------------------------------------
 
   commitInFlight = (async () => {
-    console.log('[commit] now', tabname, new Date().toISOString(),
-                'layoutSize=', get().homebase.tabs[tabname].config?.layoutConfig?.layout?.length);
+  const layoutLen =
+    (get().homebase.tabs[tabname].config as any)?.layoutConfig?.layout?.length;
+
+  console.log('[commit] now', tabname, new Date().toISOString(), 'layoutSize=', layoutLen);
 
     const tab = get().homebase.tabs[tabname];
     if (!tab?.config) return;
