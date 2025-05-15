@@ -135,6 +135,8 @@ type LayoutFidgetSavableConfig<C extends LayoutFidgetConfig> = {
   layoutConfig?: C;
   fidgetTrayContents?: FidgetInstanceData[];
   theme?: UserTheme;
+  /** If true, skip the trailing-debounce and commit immediately. */
+  forceSave?: boolean;
 };
 
 interface LayoutFidgetProps<C extends LayoutFidgetConfig> {
