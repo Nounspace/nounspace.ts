@@ -22,6 +22,7 @@ import {
   isArray,
   mergeWith,
 } from "lodash";
+import type { DebouncedFunc } from 'lodash';
 import { AppStore } from "..";
 import { StoreGet, StoreSet } from "../../createStore";
 
@@ -47,7 +48,9 @@ interface HomeBaseTabStoreActions {
   deleteTab: (tabName: string) => Promise<void>;
   createTab: (tabName: string) => Promise<void>;
   loadHomebaseTab: (tabName: string) => Promise<SpaceConfig | undefined>;
-  commitHomebaseTabToDatabase: (tabName: string) => Promise<void> | undefined;
+  commitHomebaseTabToDatabase: DebouncedFunc<
+    (tabName: string) => Promise<void> | undefined
+  >;
   saveHomebaseTabConfig: (
     tabName: string,
     config: SpaceConfigSaveDetails,
@@ -525,7 +528,7 @@ export const createHomeBaseTabStoreFunc = (
       if (touchesLayoutOrDatums || (config as any).forceSave === true) {
         const commit = get().homebase.commitHomebaseTabToDatabase;
         commit(tabName);       // schedule
-        commit.flush?.();      // run *now*, clear the queue
+        commit.flush();      // run *now*, clear the queue
         return;
       }
       // otherwise, the trailing debounce will flush shortly
