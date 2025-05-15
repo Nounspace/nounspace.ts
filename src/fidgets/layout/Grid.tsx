@@ -168,14 +168,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     datums: typeof fidgetInstanceDatums,
   ) => {
     return await saveConfig({
-      fidgetInstanceDatums: datums, forceSave: true
+      fidgetInstanceDatums: datums,
     });
   };
 
+
   const saveTheme = async (newTheme: typeof theme) => {
-    return await saveConfig({
-      theme: newTheme, forceSave: true
-    });
+    return await saveConfig({ theme: newTheme });
   };
 
   const saveLayout = async (newLayout: PlacedGridItem[]) => {
