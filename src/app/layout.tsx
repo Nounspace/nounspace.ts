@@ -42,7 +42,7 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(defaultFrame),
+    "fc:frame": JSON.stringify(defaultFrame),
   },
 };
 
@@ -56,18 +56,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <Head>
-        <meta
-          name="fc:frame"
-          content={JSON.stringify(defaultFrame)}
-        />
+        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
       </Head>
       <body>
         <SpeedInsights />
-        <Providers>
-          {sidebarLayout(children)}
-        </Providers>
+        <Providers>{sidebarLayout(children)}</Providers>
       </body>
     </html>
   );
@@ -81,7 +76,7 @@ const sidebarLayout = (page: React.ReactNode) => {
           <div className="mx-auto transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-            {page}
+          {page}
         </div>
       </div>
     </>
