@@ -465,8 +465,9 @@ export const createHomeBaseTabStoreFunc = (
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
   },
-  commitHomebaseTabToDatabase: debounce(async (tabname, immediate = false) => {
-    // console.log('Committing tab to database:', { tabname });
+  commitHomebaseTabToDatabase: debounce(
+    async (tabname) => {
+      console.log('[commit] now', tabname, new Date().toISOString());
     const tab = get().homebase.tabs[tabname];
     if (tab && tab.config) {
       const localCopy = cloneDeep(tab.config);
@@ -522,7 +523,10 @@ export const createHomeBaseTabStoreFunc = (
         (config as any).layoutConfig?.layout !== undefined;
   
       if (touchesLayoutOrDatums || (config as any).forceSave === true) {
-        return get().homebase.commitHomebaseTabToDatabase(tabName);   // ← one commit
+        const commit = get().homebase.commitHomebaseTabToDatabase;
+        commit(tabName);       // schedule
+        commit.flush?.();      // run *now*, clear the queue
+        return;
       }
       // otherwise, the trailing debounce will flush shortly
     } catch (err) {
