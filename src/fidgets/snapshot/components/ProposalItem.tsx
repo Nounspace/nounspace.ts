@@ -17,15 +17,19 @@ import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
 interface ProposalItemProps {
   proposal: any;
   space: string;
-  headingsFont?: string;
-  bodyFont?: string;
+  headingsFont: string;
+  headingsColor: string;
+  bodyFont: string;
+  bodyColor: string;
 }
 
 const ProposalItem: React.FC<ProposalItemProps> = ({ 
   proposal, 
   space, 
-  headingsFont = "var(--user-theme-headings-font)",
-  bodyFont = "var(--user-theme-font)"
+  headingsFont,
+  headingsColor,
+  bodyFont,
+  bodyColor,
 }) => {
   const extractImageUrl = (markdown: string): string | null => {
     const imageRegex = /!\[.*?\]\((.*?)\)/;

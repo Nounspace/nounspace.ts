@@ -1,7 +1,6 @@
 import { Button } from "@/common/components/atoms/button";
 import { CardContent } from "@/common/components/atoms/card";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
@@ -20,6 +19,8 @@ export type snapShotSettings = {
   scale: number;
   headingsFontFamily?: string;
   fontFamily?: string;
+  fontColor?: string | any;
+  headingsFontColor?: string | any;
 } & FidgetSettingsStyle;
 
 export const snapshotConfig: FidgetProperties = {
@@ -45,7 +46,7 @@ export const snapshotConfig: FidgetProperties = {
       fieldName: "headingsFontFamily",
       displayName: "Headings Font Family",
       displayNameHint: "Font used for proposal titles. Select 'Theme Headings Font' to inherit from the theme.",
-      default: "var(--user-theme-headings-font)",
+      default: "Theme Headings Font",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -55,10 +56,10 @@ export const snapshotConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
       displayName: "Font Family",
       displayNameHint: "Font used for proposal text. Select 'Theme Font' to inherit from the theme.",
-      default: "var(--user-theme-font)",
+      default: "Theme Font",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -80,6 +81,24 @@ export const snapshotConfig: FidgetProperties = {
             themeVariable="var(--user-theme-font-color)"
             defaultColor="#000000"
             colorType="font color"
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "headingsFontColor",
+      displayName: "Headings Font Color",
+      displayNameHint: "Color used for headings and proposal titles.",
+      default: "var(--user-theme-headings-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings font color"
           />
         </WithMargin>
       ),
@@ -140,24 +159,52 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
       : settings.fontFamily || "var(--user-theme-font)";
   };
 
-  const bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  const getHeadingsFontColor = () => {
+    if (settings.headingsFontColor &&
+      settings.headingsFontColor.toString() !== "var(--user-theme-headings-font-color)") {
+      return settings.headingsFontColor;
+    }
+
+    return '#000000';
+  };
+
+  const getBodyFontColor = () => {
+    if (settings.fontColor &&
+      settings.fontColor.toString() !== "var(--user-theme-font-color)") {
+      return settings.fontColor;
+    }
+
+    return '#333333';
+  };
+
 
 
   return (
-    <div className="size-full" >
+    <div className="size-full">
       <CardContent className="size-full overflow-hidden p-4 flex flex-col">
-        <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily(), color: bodyFontColor, }}>
+        <h1
+          className="text-2xl font-bold mb-4"
+          style={{
+            fontFamily: getHeadingsFontFamily(),
+            color: getHeadingsFontColor()
+          }}
+        >
           {settings["snapshot ens"]} proposals
         </h1>
-        {error && <p className="text-red-500">{error}</p>}
-        <div className="grid gap-2 overflow-auto" style={{ fontFamily: getBodyFontFamily(), color: bodyFontColor, }}>
+        {error && <p className="text-red-500" style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}>{error}</p>}
+        <div
+          className="grid gap-2 overflow-auto"
+          style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}
+        >
           {proposals.map((proposal) => (
             <ProposalItem
               key={proposal.id}
               proposal={proposal}
-              // isExpanded={expandedProposalId === proposal.id}
-              // onToggleExpand={handleToggleExpand}
               space={settings["snapshot ens"]}
+              headingsFont={getHeadingsFontFamily()}
+              headingsColor={getHeadingsFontColor()}
+              bodyFont={getBodyFontFamily()}
+              bodyColor={getBodyFontColor()}
             />
           ))}
         </div>
@@ -166,6 +213,7 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             variant="primary"
             onClick={handlePrevious}
             disabled={skip === 0}
+            style={{ fontFamily: getBodyFontFamily() }}
           >
             <FaAngleLeft /> Previous
           </Button>
@@ -173,6 +221,7 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             variant="primary"
             onClick={handleNext}
             disabled={proposals.length < first}
+            style={{ fontFamily: getBodyFontFamily() }}
           >
             Next <FaAngleRight />
           </Button>
