@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
 
+// TODO: FIX BUTTON LABELS
+
 // --- Type Definitions ---
 interface FrameData {
   image: string | null;
@@ -50,6 +52,7 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     .map((match) => {
       const index = parseInt(match[1]);
       const label = match[2] || match[3] || "Button";
+      console.log("Button found:", { index, label });
       return { index, label, action: "post" };
     })
     .sort((a, b) => a.index - b.index);
@@ -74,11 +77,15 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   }
   const title: string | null = titleMatch ? titleMatch[1] || titleMatch[2] || null : null;
   const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || postUrlMatch[2] || url : url;
-
+  // console.log button labels
+  buttons.forEach((button) => {
+    const buttonLabel = button.label || "Open";
+    console.log("Button label:", buttonLabel);
+  });
   return {
     image: imageUrl,
     title,
-    buttons: buttons.length > 0 ? buttons.map((b) => ({ label: b.label, action: b.action })) : [{ label: "Continue", action: "post" }],
+    buttons: buttons.length > 0 ? buttons.map((b) => ({ label: b.label, action: b.action })) : [{ label: "Open", action: "post" }],
     inputText: !!inputTextMatch,
     postUrl,
   };
@@ -124,7 +131,7 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
                   ? fcFrame.button
                   : [fcFrame.button];
                 frameData.buttons = buttons.map((btn: any) => ({
-                  label: btn.title || btn.label || "Continue",
+                  label: btn.title || btn.label || "Open",
                   action: btn.action?.type || "post",
                 }));
               }
@@ -180,7 +187,7 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
 
       if (frame.buttons && frame.buttons.length > 0) {
         frameData.buttons = frame.buttons.map((btn: { label?: string; action?: string }) => ({
-          label: btn.label || "Continue",
+          label: btn.label || "Open",
           action: btn.action || "post",
         }));
       }
@@ -209,7 +216,7 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
 
       if (frame.buttons && frame.buttons.length > 0) {
         frameData.buttons = frame.buttons.map((btn: { label?: string; action?: string }) => ({
-          label: btn.label || "Continue",
+          label: btn.label || "Open",
           action: btn.action || "post",
         }));
       }
@@ -225,7 +232,7 @@ function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData 
   }
 
   if (frameData.buttons.length === 0) {
-    let defaultLabel = "Continue";
+    let defaultLabel = "Open";
 
     if (
       frameData.title?.toLowerCase().includes("read") ||
@@ -293,7 +300,7 @@ export async function GET(request: NextRequest): Promise<Response> {
     }
 
     if (!frameData.buttons || frameData.buttons.length === 0) {
-      frameData.buttons = [{ label: "Continue", action: "post" }];
+      frameData.buttons = [{ label: "Open", action: "post" }];
     }
 
     if (fid) {
@@ -357,7 +364,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     if (!frameData.buttons || frameData.buttons.length === 0) {
-      frameData.buttons = [{ label: "Continue", action: "post" }];
+      frameData.buttons = [{ label: "Open", action: "post" }];
     }
 
     return NextResponse.json(frameData);

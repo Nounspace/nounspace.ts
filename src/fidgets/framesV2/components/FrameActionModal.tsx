@@ -47,15 +47,17 @@ export default function FrameActionModal({
     buttons: [],
     error: null,
   });
-
   // Get the original button label from the current frame data
+
+  // TODO: FIX BUTTON LABELS
+
   const getOriginalButtonLabel = (): string => {
     if (!currentFrameData?.buttons || !buttonIndex || buttonIndex < 1) {
-      return "Continue";
+      return "Open";
     }
 
     const btn = currentFrameData.buttons[buttonIndex - 1];
-    return btn?.label || "Continue";
+    return btn?.label || "Open";
   };
 
   useEffect(() => {
@@ -106,7 +108,6 @@ export default function FrameActionModal({
         }
 
         const data = await response.json();
-        console.log("Frame action response:", data);
 
         setFrameData({
           image: data.image || null,
@@ -148,15 +149,20 @@ export default function FrameActionModal({
       overlay
     >
       {/* Content */}
-      <div className="flex-1 overflow-auto" style={{ minHeight: 200 }}>
+      <div
+        className="flex-1 overflow-auto"
+        style={{ minHeight: "90vh ", padding: "-20px" }}
+        // hide scrollbar
+      >
         {loading ? (
-          <div className="flex items-center justify-center h-64 bg-gray-50">
-            <p className="text-gray-500">
-              Processing {getOriginalButtonLabel()} action...
-            </p>
+          <div
+            className="flex items-center justify-center h-full w-full bg-gray-50"
+            style={{ minHeight: "100%" }}
+          >
+            <p className="text-gray-500">Loading...</p>
           </div>
         ) : frameData.error ? (
-          <div className="p-6 text-red-500">
+          <div className="flex items-center justify-center h-full bg-gray-50">
             <p>{frameData.error}</p>
           </div>
         ) : frameData.postUrl ? (
@@ -164,7 +170,7 @@ export default function FrameActionModal({
             <iframe
               ref={iframeRef}
               src={frameData.postUrl}
-              style={{ width: "100%", height: "100%", border: "none" }}
+              style={{ width: "100%", height: "90vh", border: "none" }}
               title="Frame Content"
             />
           </div>
@@ -196,14 +202,14 @@ export default function FrameActionModal({
         )}
       </div>
       {/* Footer */}
-      <div className="border-t border-gray-200 pt-3 flex justify-end gap-2 mt-2">
+      {/* <div className="border-t border-gray-200 pt-3 flex justify-end gap-2 mt-2">
         <button
           onClick={onClose}
           className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition"
         >
           Close
         </button>
-      </div>
+      </div> */}
     </Modal>
   );
 }
