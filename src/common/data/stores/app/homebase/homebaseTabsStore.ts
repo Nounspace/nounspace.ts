@@ -26,6 +26,33 @@ import type { DebouncedFunc } from 'lodash';
 import { AppStore } from "..";
 import { StoreGet, StoreSet } from "../../createStore";
 
+/** Write the entire tab config to storage immediately (no debounce) */
+async function _commitHomebaseTab(
+  tabname: string,
+  get: StoreGet<AppStore>,
+  set: StoreSet<AppStore>,
+) {
+  console.log('[commit] now', tabname, new Date().toISOString());
+
+  const tab = get().homebase.tabs[tabname];
+  if (!tab?.config) return;
+
+  const localCopy = cloneDeep(tab.config);
+  const file = await get().account.createEncryptedSignedFile(
+    stringify(localCopy),
+    'json',
+    { useRootKey: true, fileName: tabname },
+  );
+
+  await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
+
+  set(
+    (draft) => { draft.homebase.tabs[tabname].remoteConfig = localCopy; },
+    'commitHomebaseToDatabase',
+  );
+}
+
+
 interface HomeBaseTabStoreState {
   tabs: {
     [tabName: string]: {
@@ -469,11 +496,11 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   commitHomebaseTabToDatabase: debounce(
-    async (tabname) => {
-      console.log('[commit] now', tabname, new Date().toISOString());
-    const tab = get().homebase.tabs[tabname];
-    if (tab && tab.config) {
-      const localCopy = cloneDeep(tab.config);
+  (tabname: string) => _commitHomebaseTab(tabname, get, set),
+  500,
+  { leading: false, trailing: true },
+),
+
       
       // console.log('Tab config to commit:', {
       //   tabname,
@@ -526,9 +553,7 @@ export const createHomeBaseTabStoreFunc = (
         (config as any).layoutConfig?.layout !== undefined;
   
       if (touchesLayoutOrDatums || (config as any).forceSave === true) {
-        const commit = get().homebase.commitHomebaseTabToDatabase;
-        commit(tabName);       // schedule
-        commit.flush();      // run *now*, clear the queue
+        await _commitHomebaseTab(tabName, get, set);   // ← direct write
         return;
       }
       // otherwise, the trailing debounce will flush shortly
