@@ -496,25 +496,45 @@ export const createHomeBaseTabStoreFunc = (
   500,
   { leading: false, trailing: true }
   ),
-  async saveHomebaseTabConfig(tabName, config) {
-    const localCopy = cloneDeep(
-      get().homebase.tabs[tabName].config,
-    ) as SpaceConfig;
-    mergeWith(localCopy, config, (objValue, srcValue) => {
-      if (isArray(srcValue)) return srcValue;
-      if (typeof srcValue === 'object' && srcValue !== null) {
-        // For objects, return the source value to replace the target completely
-        return srcValue;
+
+  saveHomebaseTabConfig: async (tabName: string, config: SpaceConfigSaveDetails) => {
+    try {
+      // 1 -  merge the caller’s partial patch into a *fresh* copy
+      const next = cloneDeep(get().homebase.tabs[tabName].config) as SpaceConfig;
+      mergeWith(next, config, (obj, src) => {
+        if (isArray(src)) return src;          // arrays → replace
+        if (typeof src === "object" && src) {  // objects → replace
+          return src;
+        }
+      });
+  
+      // 2 -  put the merged result into local state synchronously
+      set(
+        (draft) => { draft.homebase.tabs[tabName].config = next; },
+        `saveHomebaseTab:${tabName}`,
+        false,
+      );
+  
+      //3 -  decide whether to commit **immediately** or let the
+      //     trailing-only debounce handle it
+      const touchesLayoutOrDatums =
+        config.fidgetInstanceDatums !== undefined ||
+        (config as any).layoutConfig?.layout !== undefined;
+  
+      if (touchesLayoutOrDatums || (config as any).forceSave === true) {
+        return get().homebase.commitHomebaseTabToDatabase(tabName);   // ← one commit
       }
-    });
-    set(
-      (draft) => {
-        draft.homebase.tabs[tabName].config = localCopy;
-      },
-      `saveHomebaseTab:${tabName}`,
-      false,
-    );
+      // otherwise, the trailing debounce will flush shortly
+    } catch (err) {
+      console.error(`Error saving homebase tab ${tabName}:`, err);
+      showTooltipError(
+        "Error Saving Layout",
+        "Failed to save your changes. Please try again."
+      );
+      throw err;
+    }
   },
+  
   async resetHomebaseTabConfig(tabName) {
     // console.log('Resetting tab config:', { tabName });
     const currentTabInfo = get().homebase.tabs[tabName];
