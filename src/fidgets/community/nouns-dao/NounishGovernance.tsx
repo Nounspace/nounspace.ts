@@ -5,8 +5,8 @@ import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
-  NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
+  NOUNSBUILD_PROPOSALS_QUERY,
 } from "@/common/lib/utils/queries";
 import { wagmiConfig } from "@/common/providers/Wagmi";
 import { NOUNS_DAO } from "@/constants/basedDaos";
@@ -53,6 +53,19 @@ export const nounishGovernanceConfig: FidgetProperties = {
         </WithMargin>
       ),
       group: "settings",
+    },
+    {
+      fieldName: "fontFamily",
+      displayName: "font Family",
+      displayNameHint: "Selecione a fonte do texto do fidget",
+      default: "var(--user-theme-font)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
     },
     {
       fieldName: "fontColor",
@@ -155,9 +168,11 @@ export const NounishGovernance: React.FC<
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
 
-
-    const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
-    const bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
+  let bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  if (!bodyFontColor || bodyFontColor === "var(--user-theme-font-color)") {
+    bodyFontColor = "#000000";
+  }
 
   return (
     <div
@@ -176,8 +191,7 @@ export const NounishGovernance: React.FC<
               currentBlock={currentBlock}
               loading={listLoading}
               versions={[]}
-              bodyFont={bodyFontFamily}
-              headingsFont={bodyFontFamily}
+
             />
           ) : (
             <NounsProposalDetailView
@@ -186,8 +200,7 @@ export const NounishGovernance: React.FC<
               goBack={handleGoBack}
               currentBlock={currentBlock}
               loading={listLoading}
-              bodyFont={bodyFontFamily}
-              headingsFont={bodyFontFamily}
+
             />
           )
         ) : (
@@ -199,8 +212,7 @@ export const NounishGovernance: React.FC<
             isBuilderSubgraph={isBuilderSubgraph}
             title={selectedDao.name}
             daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
-            bodyFont={bodyFontFamily}
-            headingsFont={bodyFontFamily}
+
           />
         )}
       </CardContent>
