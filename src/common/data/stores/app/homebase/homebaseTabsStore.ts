@@ -522,6 +522,7 @@ export const createHomeBaseTabStoreFunc = (
 ),
 
   saveHomebaseTabConfig: async (tabName: string, config: SpaceConfigSaveDetails) => {
+    if (!get().homebase.tabs[tabName]) return;
     try {
       // 1 -  merge the caller’s partial patch into a *fresh* copy
       const next = cloneDeep(get().homebase.tabs[tabName].config) as SpaceConfig;
