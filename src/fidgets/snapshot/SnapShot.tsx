@@ -213,7 +213,6 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             variant="primary"
             onClick={handlePrevious}
             disabled={skip === 0}
-            style={{ fontFamily: getBodyFontFamily() }}
           >
             <FaAngleLeft /> Previous
           </Button>
@@ -221,7 +220,6 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             variant="primary"
             onClick={handleNext}
             disabled={proposals.length < first}
-            style={{ fontFamily: getBodyFontFamily() }}
           >
             Next <FaAngleRight />
           </Button>
