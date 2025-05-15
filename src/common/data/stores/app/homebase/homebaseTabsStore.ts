@@ -26,31 +26,42 @@ import type { DebouncedFunc } from 'lodash';
 import { AppStore } from "..";
 import { StoreGet, StoreSet } from "../../createStore";
 
-/** Write the entire tab config to storage immediately (no debounce) */
-async function _commitHomebaseTab(
-  tabname: string,
-  get: StoreGet<AppStore>,
-  set: StoreSet<AppStore>,
-) {
-  console.log('[commit] now', tabname, new Date().toISOString());
+let commitInFlight: Promise<void> | null = null;
+let nextCommitRequested = false;
 
-  const tab = get().homebase.tabs[tabname];
-  if (!tab?.config) return;
+async function _commitHomebaseTab(tabname: string, get: StoreGet<AppStore>, set: StoreSet<AppStore>) {
+  // ----- coalescing / serialising logic --------------------------
+  if (commitInFlight) {
+    nextCommitRequested = true;      // ask for another round
+    await commitInFlight;            // wait for the current write
+    if (!nextCommitRequested) return;  // another write already handled us
+    nextCommitRequested = false;     // we'll do it now
+  }
+  // ---------------------------------------------------------------
 
-  const localCopy = cloneDeep(tab.config);
-  const file = await get().account.createEncryptedSignedFile(
-    stringify(localCopy),
-    'json',
-    { useRootKey: true, fileName: tabname },
-  );
+  commitInFlight = (async () => {
+    console.log('[commit] now', tabname, new Date().toISOString(),
+                'layoutSize=', get().homebase.tabs[tabname].config?.layoutConfig?.layout?.length);
 
-  await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
+    const tab = get().homebase.tabs[tabname];
+    if (!tab?.config) return;
 
-  set(
-    (draft) => { draft.homebase.tabs[tabname].remoteConfig = localCopy; },
-    'commitHomebaseToDatabase',
-  );
+    const localCopy = cloneDeep(tab.config);
+    const file = await get().account.createEncryptedSignedFile(
+      stringify(localCopy), 'json',
+      { useRootKey: true, fileName: tabname },
+    );
+
+    await axiosBackend.post(`/api/space/homebase/tabs/${tabname}`, file);
+
+    set((draft) => { draft.homebase.tabs[tabname].remoteConfig = localCopy; },
+        'commitHomebaseToDatabase');
+  })();
+
+  await commitInFlight;
+  commitInFlight = null;
 }
+
 
 
 interface HomeBaseTabStoreState {
