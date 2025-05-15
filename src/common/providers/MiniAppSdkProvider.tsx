@@ -46,8 +46,8 @@ export const MiniAppSdkProvider: React.FC<{ children: React.ReactNode }> = ({
         // Get initial frame context - it's a Promise
         const initialFrameContext = await frameSdk.context;
 
-        console.log("Frame SDK initialized successfully.", initialFrameContext);
-        
+        // console.log("Frame SDK initialized successfully.", initialFrameContext);
+
         setState((prev) => ({
           ...prev,
           sdk: frameSdk,

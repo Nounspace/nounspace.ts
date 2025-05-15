@@ -29,6 +29,7 @@ const BrandHeader = () => {
                 alt="Nounspace Logo"
                 width={60}
                 height={40}
+                style={{ height: "auto" }}
               />
             </TooltipTrigger>
           </Link>
