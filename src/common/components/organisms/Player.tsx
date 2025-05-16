@@ -162,6 +162,7 @@ export const Player: React.FC<PlayerProps> = ({ url, shrunk = false }) => {
               alt="Music thumbnail"
               fill
               sizes="64px"
+              priority
             />
           ) : (
             <div className="w-full h-full bg-gray-300"></div>
