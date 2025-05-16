@@ -57,7 +57,7 @@ export const nounishGovernanceConfig: FidgetProperties = {
     {
       fieldName: "fontFamily",
       displayName: "font Family",
-      displayNameHint: "Selecione a fonte do texto do fidget",
+      displayNameHint: "Select the font for the fidget text",
       default: "var(--user-theme-font)",
       required: false,
       inputSelector: (props) => (
