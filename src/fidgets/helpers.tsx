@@ -16,7 +16,12 @@ export const validateMobileDisplayName = (value: string): boolean => {
 };
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className={mergeClasses("pt-2.5")}>
+  <div
+    className={mergeClasses(
+      //Aplica menos preenchimento em telas pequenas
+      "pt-2.5 sm:pt-2.5 xs:pt-1.5 md:pt-2.5 lg:pt-2.5"
+    )}
+  >
     {children}
   </div>
 );
