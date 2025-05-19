@@ -51,6 +51,7 @@ const ConsolidatedMediaContent: React.FC<ConsolidatedMediaContentProps> = ({
                 selectedFidgetID=""
                 removeFidget={dummyFunctions.removeFidget}
                 minimizeFidget={dummyFunctions.minimizeFidget}
+                flushPendingSaves={dummyFunctions.flushPendingSaves}
               />
             </div>
           </div>

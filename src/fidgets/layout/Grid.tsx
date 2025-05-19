@@ -208,6 +208,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     [saveConfig],
   );
 
+  const flushPendingSaves = useCallback(() => {
+    debouncedSaveConfig.flush();
+  }, [debouncedSaveConfig]);
+
   function unselectFidget() {
     setSelectedFidgetID("");
     setCurrentFidgetSettings(<></>);
@@ -567,6 +571,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                     setCurrentFidgetSettings={setCurrentFidgetSettings}
                     setSelectedFidgetID={setSelectedFidgetID}
                     selectedFidgetID={selectedFidgetID}
+                    flushPendingSaves={flushPendingSaves}
                     bundle={{
                       ...fidgetDatum,
                       properties: fidgetModule.properties,
