@@ -498,19 +498,21 @@ export const createHomeBaseTabStoreFunc = (
       // });
       
       set((draft) => {
-        draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
-        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
+        const tabState = draft.homebase.tabs[tabName];
+        tabState.remoteConfig = cloneDeep(spaceConfig);
+        if (tabState.config === undefined) {
+          tabState.config = cloneDeep(spaceConfig);
+        }
       }, `loadHomebaseTab:${tabName}-found`);
       return spaceConfig;
     } catch (e) {
       // console.log('Failed to load tab config, using default:', { tabName });
       set((draft) => {
-        draft.homebase.tabs[tabName].config = cloneDeep(
-          INITIAL_HOMEBASE_CONFIG,
-        );
-        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(
-          INITIAL_HOMEBASE_CONFIG,
-        );
+        const tabState = draft.homebase.tabs[tabName];
+        tabState.remoteConfig = cloneDeep(INITIAL_HOMEBASE_CONFIG);
+        if (tabState.config === undefined) {
+          tabState.config = cloneDeep(INITIAL_HOMEBASE_CONFIG);
+        }
       }, "loadHomebase-default");
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);
     }
