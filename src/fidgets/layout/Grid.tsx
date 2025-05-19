@@ -33,6 +33,9 @@ import {
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
+import { v4 as uuidv4 } from "uuid";
+
+const ENABLE_GRID_LOGS = process.env.NEXT_PUBLIC_ENABLE_GRID_LOGS === "true";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -178,23 +181,56 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   };
 
   const saveLayout = async (newLayout: PlacedGridItem[]) => {
-    return await saveConfig({
+    const actionId = uuidv4();
+    if (ENABLE_GRID_LOGS) {
+      console.log("[Grid] saveLayout before", {
+        actionId,
+        datumKeys: Object.keys(fidgetInstanceDatums),
+        layoutLength: layoutConfig.layout.length,
+      });
+    }
+    const result = await saveConfig({
       layoutConfig: { layout: newLayout },
       forceSave: true,
     });
+    if (ENABLE_GRID_LOGS) {
+      console.log("[Grid] saveLayout after", {
+        actionId,
+        datumKeys: Object.keys(fidgetInstanceDatums),
+        layoutLength: newLayout.length,
+      });
+    }
+    return result;
   };
 
   const saveFidgetConfig = useCallback(
     (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
+      const actionId = uuidv4();
+      if (ENABLE_GRID_LOGS) {
+        console.log("[Grid] saveFidgetConfig before", {
+          actionId,
+          datumKeys: Object.keys(fidgetInstanceDatums),
+          layoutLength: layoutConfig.layout.length,
+        });
+      }
+      const updated = {
         ...fidgetInstanceDatums,
         [id]: {
           ...fidgetInstanceDatums[id],
           config: newInstanceConfig,
         },
-      });
+      };
+      const result = await saveFidgetInstanceDatums(updated);
+      if (ENABLE_GRID_LOGS) {
+        console.log("[Grid] saveFidgetConfig after", {
+          actionId,
+          datumKeys: Object.keys(updated),
+          layoutLength: layoutConfig.layout.length,
+        });
+      }
+      return result;
     },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+    [fidgetInstanceDatums, saveFidgetInstanceDatums, layoutConfig.layout.length],
   );
 
   // Debounced save function
@@ -371,9 +407,24 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       inEditMode &&
       newLayout.length === layoutConfig.layout.length
     ) {
+      const actionId = uuidv4();
+      if (ENABLE_GRID_LOGS) {
+        console.log("[Grid] saveLayoutConditional before", {
+          actionId,
+          datumKeys: Object.keys(fidgetInstanceDatums),
+          layoutLength: layoutConfig.layout.length,
+        });
+      }
       debouncedSaveConfig({
-        layoutConfig: { layout: newLayout }
+        layoutConfig: { layout: newLayout },
       });
+      if (ENABLE_GRID_LOGS) {
+        console.log("[Grid] saveLayoutConditional after", {
+          actionId,
+          datumKeys: Object.keys(fidgetInstanceDatums),
+          layoutLength: newLayout.length,
+        });
+      }
     }
   }
 
