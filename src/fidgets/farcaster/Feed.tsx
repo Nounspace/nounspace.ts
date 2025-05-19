@@ -19,7 +19,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
@@ -67,10 +67,6 @@ export const FilterTypeSelector: React.FC<{
     />
   );
 };
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
@@ -199,7 +195,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       default: "light",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
       displayName: "Font Family",
       displayNameHint: "Font used for the body text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
@@ -283,7 +279,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) => settings?.selectPlatform?.name === "X",
     },
     {
-      fieldName: "fidget Shadow",
+      fieldName: "fidgetShadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",

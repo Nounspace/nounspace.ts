@@ -6,12 +6,8 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 export type ChatFidgetSettings = {
   roomName: string;

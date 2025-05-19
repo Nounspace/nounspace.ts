@@ -8,7 +8,7 @@ import {
 } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
-import { defaultStyleFields, ErrorWrapper, transformUrl } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
 import React, { useEffect, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
@@ -23,10 +23,6 @@ const DISALLOW_URL_PATTERNS = [
   /<script/i,
   /%3Cscript/i,
 ];
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Web Embed",
