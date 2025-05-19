@@ -30,9 +30,13 @@ export interface EditorPanelProps {
   fidgetTrayContents: FidgetInstanceData[];
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  saveFidgetInstanceDatums(newFidgetInstanceDatums: {
-    [key: string]: FidgetInstanceData;
-  }): Promise<void>;
+  saveFidgetInstanceDatums(
+    updater:
+      | { [key: string]: FidgetInstanceData }
+      | ((current: { [key: string]: FidgetInstanceData }) => {
+          [key: string]: FidgetInstanceData;
+        }),
+  ): Promise<void>;
   removeFidget(fidgetId: string): void;
   isPickingFidget: boolean;
   setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
@@ -92,8 +96,10 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
 
     // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
+    saveFidgetInstanceDatums((current) => ({
+      ...current,
+      [newFidgetInstanceData.id]: newFidgetInstanceData,
+    }));
 
     setIsPickingFidget(false);
 
