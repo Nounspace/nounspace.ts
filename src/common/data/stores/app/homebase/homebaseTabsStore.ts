@@ -40,12 +40,10 @@ async function _commitHomebaseTab(tabname: string, get: StoreGet<AppStore>, set:
   // ---------------------------------------------------------------
 
   commitInFlight = (async () => {
-  const layoutLen =
-    (get().homebase.tabs[tabname].config as any)?.layoutConfig?.layout?.length;
-
-  console.log('[commit] now', tabname, new Date().toISOString(), 'layoutSize=', layoutLen);
-
     const tab = get().homebase.tabs[tabname];
+    const layoutLen = tab?.config?.layoutConfig?.layout?.length;
+
+    console.log('[commit] now', tabname, new Date().toISOString(), 'layoutSize=', layoutLen);
     if (!tab?.config) return;
 
     const localCopy = cloneDeep(tab.config);
