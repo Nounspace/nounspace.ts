@@ -43,6 +43,7 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
         selectedFidgetID=""
         removeFidget={dummyFunctions.removeFidget}
         minimizeFidget={dummyFunctions.minimizeFidget}
+        flushPendingSaves={dummyFunctions.flushPendingSaves}
       />
     </div>
   );

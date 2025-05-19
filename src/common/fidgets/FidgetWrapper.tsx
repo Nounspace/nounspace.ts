@@ -35,6 +35,7 @@ export type FidgetWrapperProps = {
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  flushPendingSaves?: () => void;
 };
 
 export const getSettingsWithDefaults = (
@@ -63,12 +64,16 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
+  flushPendingSaves,
 }: FidgetWrapperProps) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
 
   function onClickEdit() {
+    if (flushPendingSaves) {
+      flushPendingSaves();
+    }
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
       <FidgetSettingsEditor
