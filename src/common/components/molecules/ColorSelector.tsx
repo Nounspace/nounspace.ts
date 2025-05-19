@@ -1,13 +1,13 @@
-import React, { useState, useCallback } from "react";
+import { Button } from "@/common/components/atoms/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { Button } from "@/common/components/atoms/button";
 import { Color } from "@/common/lib/theme";
-import ColorPicker from "react-best-gradient-color-picker";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import React, { useCallback, useMemo, useState } from "react";
+import ColorPicker from "react-best-gradient-color-picker";
 
 export type ColorSelectorProps = {
   value: Color;
@@ -23,6 +23,19 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
   innerClassName,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
+
+  const resolvedValue = useMemo(() => {
+    if (typeof window !== "undefined" && value?.startsWith?.("var(--")) {
+      const varName = value.match(/var\((--[^)]+)\)/)?.[1];
+      if (varName) {
+        const computed = getComputedStyle(document.documentElement)
+          .getPropertyValue(varName)
+          .trim();
+        if (computed) return computed;
+      }
+    }
+    return value;
+  }, [value]);
 
   const _onChange = useCallback<(val: string) => void>(
     (val) => {
@@ -43,13 +56,13 @@ export const ColorSelector: React.FC<ColorSelectorProps> = ({
         >
           <div
             className={mergeClasses("flex-1 rounded-[6px]", innerClassName)}
-            style={{ background: value }}
+            style={{ background: resolvedValue }}
           />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2" align="start">
         <ColorPicker
-          value={value}
+          value={resolvedValue}
           onChange={_onChange}
           width={250}
           height={150}

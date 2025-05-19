@@ -413,11 +413,11 @@ export default function PublicSpace({
               "Profile",
               getSpacePageUrl("Profile")
             );
-            console.log("User space registration result:", {
-              success: !!newSpaceId,
-              newSpaceId,
-              currentUserFid,
-            });
+            // console.log("User space registration result:", {
+            //   success: !!newSpaceId,
+            //   newSpaceId,
+            //   currentUserFid,
+            // });
 
             revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
