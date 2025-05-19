@@ -230,6 +230,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function selectFidget(bundle: FidgetBundle) {
+    flushPendingSaves();
     const settingsWithDefaults = getSettingsWithDefaults(
       bundle.config.settings,
       bundle.properties,
