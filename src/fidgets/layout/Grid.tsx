@@ -33,9 +33,12 @@ import {
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
+
 import { v4 as uuidv4 } from "uuid";
 
 const ENABLE_GRID_LOGS = process.env.NEXT_PUBLIC_ENABLE_GRID_LOGS === "true";
+
+import { updateFidgetInstanceDatums } from "./updateFidgetInstanceDatums";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -168,8 +171,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   };
 
   const saveFidgetInstanceDatums = async (
-    datums: typeof fidgetInstanceDatums,
+    updater:
+      | typeof fidgetInstanceDatums
+      | ((current: typeof fidgetInstanceDatums) => typeof fidgetInstanceDatums),
   ) => {
+    const datums =
+      typeof updater === "function" ? updater(fidgetInstanceDatums) : updater;
     return await saveConfig({
       fidgetInstanceDatums: datums,
     });
@@ -205,6 +212,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   const saveFidgetConfig = useCallback(
     (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+
       const actionId = uuidv4();
       if (ENABLE_GRID_LOGS) {
         console.log("[Grid] saveFidgetConfig before", {
@@ -231,6 +239,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       return result;
     },
     [fidgetInstanceDatums, saveFidgetInstanceDatums, layoutConfig.layout.length],
+
+      return await saveFidgetInstanceDatums((current) =>
+        updateFidgetInstanceDatums(current, id, newInstanceConfig),
+      );
+    },
+    [saveFidgetInstanceDatums],
+
   );
 
   // Debounced save function
@@ -312,10 +327,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
-    saveFidgetInstanceDatums({
-      ...fidgetInstanceDatums,
+    saveFidgetInstanceDatums((current) => ({
+      ...current,
       [fidgetData.id]: fidgetData,
-    });
+    }));
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
@@ -434,6 +449,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
    */
   const addFidgetToGrid = (fidget: FidgetBundle): boolean => {
     const { fidgetType, id } = fidget;
+
+    // Prevent duplicates
+    const alreadyPlaced = layoutConfig.layout.some((item) => item.i === id);
+    if (alreadyPlaced) {
+      toast("Fidget is already placed on the grid.", { duration: 2000 });
+      return false;
+    }
     const fidgetProps = CompleteFidgets[fidgetType].properties;
     const minW = fidgetProps.size.minWidth;
     const minH = fidgetProps.size.minHeight;
