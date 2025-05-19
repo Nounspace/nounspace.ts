@@ -51,6 +51,7 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  mobile?: boolean;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -64,7 +65,7 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, mobile = false }) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -81,9 +82,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const isNotificationsPage = pathname === "/notifications";
   const isExplorerPage = pathname === "/explore";
 
-  const [shrunk, setShrunk] = useState(true);
+  const [shrunk, setShrunk] = useState(mobile ? false : true);
 
   const toggleSidebar = () => {
+    if (mobile) return;
     setShrunk((prev) => !prev);
   };
 
@@ -188,7 +190,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
+      className={mergeClasses(
+        "border-r-2 bg-white",
+        mobile
+          ? "w-[270px]"
+          : "w-full transition-transform -translate-x-full sm:translate-x-0"
+      )}
       aria-label="Sidebar"
     >
       <Modal
@@ -200,24 +207,35 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div
+        className={mergeClasses(
+          "pt-12 pb-12 h-full",
+          mobile ? "block" : "md:block hidden"
+        )}
+      >
         <div
           className={mergeClasses(
-            "flex flex-col h-full ml-auto transition-all duration-300 relative",
-            shrunk ? "w-[90px]" : "w-[270px]"
+            "flex flex-col h-full transition-all duration-300 relative",
+            mobile
+              ? "w-[270px]"
+              : shrunk
+                ? "w-[90px] ml-auto"
+                : "w-[270px] ml-auto"
           )}
         >
-          <button
-            onClick={toggleSidebar}
-            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
-            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {shrunk ? (
-              <FaChevronRight size={14} />
-            ) : (
-              <FaChevronLeft size={14} />
-            )}
-          </button>
+          {!mobile && (
+            <button
+              onClick={toggleSidebar}
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {shrunk ? (
+                <FaChevronRight size={14} />
+              ) : (
+                <FaChevronLeft size={14} />
+              )}
+            </button>
+          )}
 
           <BrandHeader />
           <div
