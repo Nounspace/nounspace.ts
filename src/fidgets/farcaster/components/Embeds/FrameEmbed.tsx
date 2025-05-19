@@ -183,6 +183,23 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
     };
   };
 
+  const signerState = {
+    hasSigner: !isLoadingSigner,
+    isLoadingSigner,
+    signFrameAction,
+    onSignerlessFramePress: async () => {
+      console.error(
+        "User is not signed into farcaster and so cannot use frames!"
+      );
+      return Promise.resolve();
+    },
+    specification: "farcaster" as const,
+    signer: null,
+    logout: function (): Promise<void> {
+      throw new Error("Function not implemented.");
+    },
+  } as const;
+
   const frameState = useFrame({
     homeframeUrl: url,
     frameActionProxy: "/frames",
@@ -190,34 +207,7 @@ const FrameEmbed: React.FC<{ url: string; showError?: boolean }> = ({
     frameContext: fallbackFrameContext,
     connectedAddress: undefined,
     dangerousSkipSigning: false,
-    signerState: {
-      hasSigner: !isLoadingSigner,
-      isLoadingSigner,
-      signFrameAction,
-      onSignerlessFramePress: async () => {
-        console.error(
-          "User is not signed into farcaster and so cannot use frames!"
-        );
-        return Promise.resolve();
-      },
-      specification: "farcaster", // Add this property
-      signer: null,
-      logout: function (): Promise<void> {
-        throw new Error("Function not implemented.");
-      },
-      withContext: (context: FarcasterFrameContext, overrides) => {
-        return {
-          frameContext: {
-            ...context,
-            ...(overrides || {}),
-          },
-          signerState: {
-            ...frameState.signerState,
-            specification: "farcaster", // Ensure this property is included
-          },
-        };
-      },
-    } as (typeof frameState)["signerState"], // Type assertion to bypass type error
+    signerState,
   });
 
   if (
