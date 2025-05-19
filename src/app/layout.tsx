@@ -3,7 +3,7 @@ import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
-import ClientNavbarWrapper from "@/common/components/organisms/ClientNavbarWrapper";
+import ClientHeaderWrapper from "@/common/components/organisms/ClientHeaderWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
@@ -43,7 +43,7 @@ export const metadata = {
     apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(defaultFrame),
+    "fc:frame": JSON.stringify(defaultFrame),
   },
 };
 
@@ -59,16 +59,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Head>
-        <meta
-          name="fc:frame"
-          content={JSON.stringify(defaultFrame)}
-        />
+        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
       </Head>
       <body>
         <SpeedInsights />
-        <Providers>
-          {sidebarLayout(children)}
-        </Providers>
+        <Providers>{sidebarLayout(children)}</Providers>
       </body>
     </html>
   );
@@ -80,9 +75,9 @@ const sidebarLayout = (page: React.ReactNode) => {
       <div className="min-h-screen max-w-screen h-screen w-screen flex flex-col">
         {/* App Navigation Bar */}
         <div className="w-full flex-shrink-0">
-          <ClientNavbarWrapper />
+          <ClientHeaderWrapper />
         </div>
-        
+
         {/* Main Content with Sidebar */}
         <div className="flex w-full h-full flex-grow">
           <div className="mx-auto transition-all duration-100 ease-out z-10">

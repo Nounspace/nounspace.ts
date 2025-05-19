@@ -51,6 +51,7 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  showOnMobile?: boolean;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -64,7 +65,11 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  showOnMobile = false,
+}) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -188,7 +193,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
+      className={mergeClasses(
+        "w-full border-r-2 bg-white",
+        showOnMobile
+          ? "translate-x-0"
+          : "transition-transform -translate-x-full sm:translate-x-0"
+      )}
       aria-label="Sidebar"
     >
       <Modal
@@ -200,7 +210,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div className={mergeClasses(
+        "pt-12 pb-12 h-full",
+        showOnMobile ? "block" : "md:block hidden"
+      )}>
         <div
           className={mergeClasses(
             "flex flex-col h-full ml-auto transition-all duration-300 relative",
