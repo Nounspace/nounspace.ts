@@ -383,6 +383,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
    */
   const addFidgetToGrid = (fidget: FidgetBundle): boolean => {
     const { fidgetType, id } = fidget;
+
+    // Prevent duplicates
+    const alreadyPlaced = layoutConfig.layout.some((item) => item.i === id);
+    if (alreadyPlaced) {
+      toast("Fidget is already placed on the grid.", { duration: 2000 });
+      return false;
+    }
     const fidgetProps = CompleteFidgets[fidgetType].properties;
     const minW = fidgetProps.size.minWidth;
     const minH = fidgetProps.size.minHeight;
