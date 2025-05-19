@@ -1,11 +1,12 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+import FontSelector from "@/common/components/molecules/FontSelector";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
-  NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
+  NOUNSBUILD_PROPOSALS_QUERY,
 } from "@/common/lib/utils/queries";
 import { wagmiConfig } from "@/common/providers/Wagmi";
 import { NOUNS_DAO } from "@/constants/basedDaos";
@@ -46,18 +47,40 @@ export const nounishGovernanceConfig: FidgetProperties = {
         graphUrl: NOUNS_DAO,
       },
       required: false,
-      inputSelector: DaoSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <DaoSelector {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Adjust the size of the governance display",
-      default: 1,
+      fieldName: "fontFamily",
+      displayName: "font Family",
+      displayNameHint: "Select the font for the fidget text",
+      default: "var(--user-theme-font)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ImageScaleSlider {...props} />
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      displayName: "Font Color",
+      displayNameHint: "Color used for the text input (body text)",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
         </WithMargin>
       ),
       group: "style",
@@ -145,18 +168,21 @@ export const NounishGovernance: React.FC<
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
 
+  const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
+  let bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  if (!bodyFontColor || bodyFontColor === "var(--user-theme-font-color)") {
+    bodyFontColor = "#000000";
+  }
+
   return (
     <div
       className="size-full"
       style={{
-          overflow: "auto",
-          scrollbarWidth: "none",
-          transform: `scale(${settings.scale || 1})`,
-          transformOrigin: "0 0",
-
+        fontFamily: bodyFontFamily,
+        color: bodyFontColor,
       }}
     >
-      <CardContent className="size-full overflow-scroll p-4">
+      <CardContent className="size-full overflow-scroll p-4" >
         {proposalId && selectedProposal ? (
           isBuilderSubgraph ? (
             <BuilderProposalDetailView
@@ -165,6 +191,7 @@ export const NounishGovernance: React.FC<
               currentBlock={currentBlock}
               loading={listLoading}
               versions={[]}
+
             />
           ) : (
             <NounsProposalDetailView
@@ -173,6 +200,7 @@ export const NounishGovernance: React.FC<
               goBack={handleGoBack}
               currentBlock={currentBlock}
               loading={listLoading}
+
             />
           )
         ) : (
@@ -184,6 +212,7 @@ export const NounishGovernance: React.FC<
             isBuilderSubgraph={isBuilderSubgraph}
             title={selectedDao.name}
             daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
+
           />
         )}
       </CardContent>

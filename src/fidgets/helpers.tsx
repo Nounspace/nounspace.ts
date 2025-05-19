@@ -6,6 +6,7 @@ import React from "react";
 
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { type FidgetFieldConfig } from "@/common/fidgets";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 export const MOBILE_DISPLAY_NAME_MAX_LENGTH = 10;
 
@@ -15,7 +16,14 @@ export const validateMobileDisplayName = (value: string): boolean => {
 };
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
+  <div
+    className={mergeClasses(
+      //Aplica menos preenchimento em telas pequenas
+      "pt-2.5 sm:pt-2.5 xs:pt-1.5 md:pt-2.5 lg:pt-2.5"
+    )}
+  >
+    {children}
+  </div>
 );
 
 
@@ -23,6 +31,7 @@ export const mobileStyleSettings = [
   {
     fieldName: "showOnMobile",
     displayName: "Show on Mobile",
+    displayNameHint: "Toggle whether this Fidget should be visible on mobile devices.",
     default: true,
     required: false,
     inputSelector: (props) => (
@@ -52,7 +61,7 @@ export const defaultStyleFields = [
   {
     fieldName: "background",
     displayName: "Background",
-    displayNameHint: "Color used for the background of the Image Fidget",
+    displayNameHint: "Color used for the background of the Fidget.",
     default: "var(--user-theme-fidget-background)",
     required: false,
     inputSelector: (props) => (
@@ -70,12 +79,15 @@ export const defaultStyleFields = [
   {
     fieldName: "fidgetBorderWidth",
     displayName: "Fidget Border Width",
-    displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
+    displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
     default: "var(--user-theme-fidget-border-width)",
     required: false,
     inputSelector: (props) => (
       <WithMargin>
-        <BorderSelector {...props} />
+        <BorderSelector
+          {...props}
+          hideGlobalSettings={false}
+        />
       </WithMargin>
     ),
     group: "style",
@@ -99,14 +111,17 @@ export const defaultStyleFields = [
     group: "style",
   },
   {
-    fieldName: "fidget Shadow",
+    fieldName: "fidgetShadow",
     displayName: "Fidget Shadow",
     displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
     default: "var(--user-theme-fidget-shadow)",
     required: false,
     inputSelector: (props) => (
       <WithMargin>
-        <ShadowSelector {...props} />
+        <ShadowSelector
+          {...props}
+          hideGlobalSettings={false}
+        />
       </WithMargin>
     ),
     group: "style",
@@ -115,27 +130,21 @@ export const defaultStyleFields = [
 
 export const transformUrl = (url: string): string => {
   if (!url) return "";
-  
   if (url.includes('/embed/') || url.includes('player.vimeo.com/video/')) {
     return url;
   }
-  
-  const youtubeRegex = 
+  const youtubeRegex =
     /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&].*)?/;
   const youtubeMatch = url.match(youtubeRegex);
-  
   if (youtubeMatch && youtubeMatch[1]) {
     return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
   }
-  
-  const vimeoRegex = 
+  const vimeoRegex =
     /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:[^/]*)\/videos\/|)(\d+)(?:|\/\?|$)/;
   const vimeoMatch = url.match(vimeoRegex);
-  
   if (vimeoMatch && vimeoMatch[1]) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
-  
   return url;
 };
 
