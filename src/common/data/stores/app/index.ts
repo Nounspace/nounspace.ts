@@ -80,8 +80,11 @@ export function createAppStore() {
   });
 }
 
-const { useStore: useAppStore, provider: AppStoreProvider } =
-  createStoreBindings<AppStore>("AppStore", createAppStore);
+const {
+  useStore: useAppStore,
+  provider: AppStoreProvider,
+  context: AppStoreContext,
+} = createStoreBindings<AppStore>("AppStore", createAppStore);
 
 function useLogout() {
   const { logout: privyLogout } = usePrivy();
@@ -97,4 +100,4 @@ function useLogout() {
   return logout;
 }
 
-export { useAppStore, AppStoreProvider, useLogout };
+export { useAppStore, AppStoreProvider, AppStoreContext, useLogout };
