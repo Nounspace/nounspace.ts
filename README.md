@@ -1,6 +1,6 @@
 # nounspace
 
-**Highly customizable [Farcaster]([url](https://farcaster.xyz/)) client, initially funded by a grant from [Nouns DAO](https://nouns.wtf/).** Customize the look, sound, content, and functionality of your public profile space and personal feed/homebase with **Themes**, **Tabs**, and a growing library of mini-apps called **Fidgets**.
+**Highly customizable [Farcaster](https://farcaster.xyz/) client, initially funded by a grant from [Nouns DAO](https://nouns.wtf/).** Customize the look, sound, content, and functionality of your public profile space and personal feed/homebase with **Themes**, **Tabs**, and a growing library of mini-apps called **Fidgets**.
 
 
 Forked from [herocast](https://github.com/hellno/herocast/) in April 2024.
