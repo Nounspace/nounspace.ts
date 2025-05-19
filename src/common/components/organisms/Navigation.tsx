@@ -52,6 +52,7 @@ type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
   mobile?: boolean;
+  onNavigate?: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -65,7 +66,12 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, mobile = false }) => {
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  mobile = false,
+  onNavigate,
+}) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -135,6 +141,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, mobile = fa
     openInNewTab = false,
     badgeText = null,
   }) => {
+    const handleClick = useCallback(() => {
+      onClick?.();
+      onNavigate?.();
+    }, [onClick, onNavigate]);
     return (
       <li>
         <Link
@@ -144,7 +154,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, mobile = fa
             href === pathname ? "bg-gray-100" : "",
             shrunk ? "justify-center" : ""
           )}
-          onClick={onClick}
+          onClick={handleClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
