@@ -34,7 +34,12 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   f. get a Youtube API key https://developers.google.com/youtube/v3 -> 'YOUTUBE_API_KEY' <br>
   g. get your Farcaster account FID and mnemonic -> `NEXT_PUBLIC_APP_FID` + `APP_MNENOMIC`<br>
   h. launch local copy of Supabase with `supabase start` (in the root directory of this repo), use the info provided -> <br>
- `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
+`API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
+
+8. Run the test suite
+   ```bash
+   yarn test
+   ```
 
 ## Contributing and making Fidgets
 
