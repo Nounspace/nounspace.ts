@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
+import React, { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
@@ -34,6 +34,7 @@ import RocketIcon from "../atoms/icons/RocketIcon";
 import ExploreIcon from "../atoms/icons/ExploreIcon";
 import LogoutIcon from "../atoms/icons/LogoutIcon";
 import LoginIcon from "../atoms/icons/LoginIcon";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
 type NavItemProps = {
   label: string;
@@ -46,11 +47,14 @@ type NavItemProps = {
   onClick?: () => void;
 };
 
-type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
+type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab"> & {
+  closeOnClick?: boolean;
+};
 
 type NavProps = {
   isEditable: boolean;
   enterEditMode: () => void;
+  onNavigate?: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -64,7 +68,7 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, onNavigate }) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -81,7 +85,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const isNotificationsPage = pathname === "/notifications";
   const isExplorerPage = pathname === "/explore";
 
-  const [shrunk, setShrunk] = useState(true);
+  const isMobile = useIsMobile();
+  const [shrunk, setShrunk] = useState(!isMobile);
+
+  useEffect(() => {
+    setShrunk(!isMobile);
+  }, [isMobile]);
 
   const toggleSidebar = () => {
     setShrunk((prev) => !prev);
@@ -142,7 +151,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             href === pathname ? "bg-gray-100" : "",
             shrunk ? "justify-center" : ""
           )}
-          onClick={onClick}
+          onClick={() => {
+            onClick?.();
+            onNavigate?.();
+          }}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
@@ -160,6 +172,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     onClick,
     disable = false,
     badgeText = null,
+    closeOnClick = false,
   }) => {
     return (
       <li>
@@ -170,7 +183,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             "hover:bg-gray-100 dark:hover:bg-gray-700",
             shrunk ? "justify-center" : ""
           )}
-          onClick={onClick}
+          onClick={() => {
+            onClick?.();
+            if (closeOnClick) onNavigate?.();
+          }}
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
@@ -207,17 +223,19 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             shrunk ? "w-[90px]" : "w-[270px]"
           )}
         >
-          <button
-            onClick={toggleSidebar}
-            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
-            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {shrunk ? (
-              <FaChevronRight size={14} />
-            ) : (
-              <FaChevronLeft size={14} />
-            )}
-          </button>
+          {!isMobile && (
+            <button
+              onClick={toggleSidebar}
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {shrunk ? (
+                <FaChevronRight size={14} />
+              ) : (
+                <FaChevronLeft size={14} />
+              )}
+            </button>
+          )}
 
           <BrandHeader />
           <div
@@ -287,6 +305,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     label={"Logout"}
                     Icon={LogoutIcon}
                     onClick={handleLogout}
+                    closeOnClick
                   />
                 )}
                 {!isLoggedIn && (
