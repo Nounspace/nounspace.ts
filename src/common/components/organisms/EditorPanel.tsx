@@ -91,9 +91,12 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
     // Generate new fidget instance
     const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
 
-    // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
+    // Create a new instance datum object so we don't mutate props
+    const updatedFidgetInstanceDatums = {
+      ...fidgetInstanceDatums,
+      [newFidgetInstanceData.id]: newFidgetInstanceData,
+    };
+    saveFidgetInstanceDatums(updatedFidgetInstanceDatums);
 
     setIsPickingFidget(false);
 
