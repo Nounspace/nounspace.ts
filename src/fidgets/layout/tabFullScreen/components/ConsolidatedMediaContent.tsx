@@ -20,24 +20,24 @@ const ConsolidatedMediaContent: React.FC<ConsolidatedMediaContentProps> = ({
   mediaFidgetIds,
   fidgetBundles,
   theme,
-  saveFidgetConfig
+  saveFidgetConfig,
 }) => {
   if (mediaFidgetIds.length === 0) return null;
-  
+
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto pb-16">
       {mediaFidgetIds.map((fidgetId) => {
         const bundle = fidgetBundles[fidgetId];
         if (!bundle) return null;
-        
-        const aspectRatioClass = 
-          bundle.properties.fidgetName === "Image" ? 
-          "aspect-[4/3] w-full overflow-hidden" : 
-          "aspect-square w-full overflow-hidden";
-        
+
+        const aspectRatioClass =
+          bundle.properties.fidgetName === "Image"
+            ? "aspect-[4/3] w-full overflow-hidden"
+            : "aspect-square w-full overflow-hidden";
+
         return (
-          <div 
-            key={fidgetId} 
+          <div
+            key={fidgetId}
             className={`${aspectRatioClass} relative rounded-lg`}
           >
             <div className="absolute inset-0">
@@ -46,7 +46,10 @@ const ConsolidatedMediaContent: React.FC<ConsolidatedMediaContentProps> = ({
                 context={{ theme }}
                 bundle={bundle}
                 saveConfig={saveFidgetConfig(fidgetId)}
-                setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
+                flushPendingSaves={dummyFunctions.flushPendingSaves}
+                setCurrentFidgetSettings={
+                  dummyFunctions.setCurrentFidgetSettings
+                }
                 setSelectedFidgetID={dummyFunctions.setSelectedFidgetID}
                 selectedFidgetID=""
                 removeFidget={dummyFunctions.removeFidget}

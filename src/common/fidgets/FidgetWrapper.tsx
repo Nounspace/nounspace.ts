@@ -30,6 +30,7 @@ export type FidgetWrapperProps = {
   bundle: FidgetBundle;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
+  flushPendingSaves: () => void;
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
@@ -58,6 +59,7 @@ export function FidgetWrapper({
   fidget,
   bundle,
   saveConfig,
+  flushPendingSaves,
   setCurrentFidgetSettings,
   setSelectedFidgetID,
   selectedFidgetID,
@@ -69,6 +71,7 @@ export function FidgetWrapper({
   }));
 
   function onClickEdit() {
+    flushPendingSaves();
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
       <FidgetSettingsEditor
@@ -186,7 +189,7 @@ export function FidgetWrapper({
             : "size-full overflow-hidden"
         }
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
