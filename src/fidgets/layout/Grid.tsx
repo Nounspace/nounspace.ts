@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
   useRef,
+  useContext,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -34,6 +35,7 @@ import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
 import { updateFidgetInstanceDatums } from "./updateFidgetInstanceDatums";
+import { AppStoreContext } from "@/common/data/stores/app";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -136,6 +138,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   hasFeed,
   fid,
 }) => {
+  const store = useContext(AppStoreContext);
+
+  if (!store) {
+    throw new Error("AppStoreContext not found");
+  }
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
@@ -170,8 +177,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       | typeof fidgetInstanceDatums
       | ((current: typeof fidgetInstanceDatums) => typeof fidgetInstanceDatums),
   ) => {
+    const existingDatums =
+      store.getState().homebase.homebaseConfig?.fidgetInstanceDatums ||
+      fidgetInstanceDatums;
     const datums =
-      typeof updater === "function" ? updater(fidgetInstanceDatums) : updater;
+      typeof updater === "function" ? updater(existingDatums) : updater;
     return await saveConfig({
       fidgetInstanceDatums: datums,
     });
@@ -221,6 +231,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function selectFidget(bundle: FidgetBundle) {
+    flushPendingSaves();
     const settingsWithDefaults = getSettingsWithDefaults(
       bundle.config.settings,
       bundle.properties,
