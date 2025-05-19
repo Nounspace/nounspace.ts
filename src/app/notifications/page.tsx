@@ -33,6 +33,7 @@ import moment from "moment";
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { formatTimeAgo } from "@/common/lib/utils/date";
+import { FaHeart } from "react-icons/fa";
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -258,19 +259,30 @@ const LikeNotificationRow: NotificationRowProps = ({
         relatedUsers={likedByUsers}
         descriptionSuffix="liked your cast"
       />
-      <CastBody
-        cast={notification.cast!}
-        channel={null}
-        isEmbed={false}
-        showChannel={false}
-        hideEmbeds={false}
-        castTextStyle={{}}
-        hideReactions={false}
-        renderRecastBadge={false}
-        userFid={fid}
-        isDetailView={false}
-        onSelectCast={onSelect}
-      />
+      <div className="flex items-start gap-2 text-left ml-1">
+        <div className="flex-shrink-0 p-1.5 rounded-full bg-red-500/20 mt-0.5">
+          <FaHeart className="text-red-500 w-3 h-3" />
+        </div>
+        <CastBody
+          cast={notification.cast!}
+          channel={null}
+          isEmbed={false}
+          showChannel={false}
+          hideEmbeds={false}
+          castTextStyle={{
+            fontSize: "12px",
+            color: "#71767B",
+            lineHeight: "1.2",
+            fontWeight: "normal",
+            textAlign: "left"
+          }}
+          hideReactions={false}
+          renderRecastBadge={false}
+          userFid={fid}
+          isDetailView={false}
+          onSelectCast={onSelect}
+        />
+      </div>
     </div>
   );
 };
