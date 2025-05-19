@@ -202,7 +202,7 @@ export const getSignedKeyRequestMetadataFromAppAccount = async (
   signerPublicKey: `0x${string}`,
   deadline: bigint | number,
 ) => {
-  const appAccount = mnemonicToAccount(process.env.NEXT_PUBLIC_APP_MNENOMIC!);
+  const appAccount = mnemonicToAccount(process.env.NEXT_PUBLIC_APP_MNEMONIC!);
   const fid = BigInt(process.env.NEXT_PUBLIC_APP_FID!);
 
   const signature = await appAccount.signTypedData({
