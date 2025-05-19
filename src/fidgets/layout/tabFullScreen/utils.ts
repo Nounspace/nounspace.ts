@@ -5,12 +5,12 @@ import { CompleteFidgets } from "@/fidgets";
  * Checks if a fidget is a media-type fidget (text, gallery, video)
  */
 export const isMediaFidget = (fidgetType: string): boolean => {
-  return ['text', 'gallery', 'Video'].includes(fidgetType);
+  return ["text", "gallery", "Video"].includes(fidgetType);
 };
 
 /**
  * Gets the appropriate display name for a fidget based on settings and context
- * 
+ *
  * @param fidgetData The fidget instance data
  * @param isMobile Whether the display is on mobile
  * @param specialId Optional special ID for consolidated views
@@ -25,27 +25,32 @@ export const getFidgetDisplayName = (
   specialId?: string,
   customTabNames?: string[],
   fidgetIds?: string[],
-  fidgetIdIndex?: number
+  fidgetIdIndex?: number,
 ): string => {
   // Handle special consolidated views
-  if (specialId === 'consolidated-media') {
+  if (specialId === "consolidated-media") {
     return "Media";
   }
-  
-  if (specialId === 'consolidated-pinned') {
+
+  if (specialId === "consolidated-pinned") {
     return "Pinned";
   }
-  
-  if (!fidgetData) return 'Unknown';
-  
+
+  if (!fidgetData) return "Unknown";
+
   // Use custom tab name if available
-  if (customTabNames && fidgetIds && typeof fidgetIdIndex === 'number' && fidgetIdIndex >= 0) {
+  if (
+    customTabNames &&
+    fidgetIds &&
+    typeof fidgetIdIndex === "number" &&
+    fidgetIdIndex >= 0
+  ) {
     const customName = customTabNames[fidgetIdIndex];
     if (customName) return customName;
   }
-  
+
   const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-  if (!fidgetModule) return 'Unknown';
+  if (!fidgetModule) return "Unknown";
 
   if (isMobile) {
     // First check for user-defined custom mobile display name
@@ -57,7 +62,7 @@ export const getFidgetDisplayName = (
       return fidgetModule.properties.mobileFidgetName;
     }
   }
-  
+
   return fidgetModule.properties.fidgetName;
 };
 
@@ -72,19 +77,19 @@ export const shouldShowMobileSettings = (fidgetType: string): boolean => {
  * Checks if a fidget is a pinned cast
  */
 export const isPinnedCast = (
-  fidgetId: string, 
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+  fidgetId: string,
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
 ): boolean => {
   const fidgetData = fidgetInstanceDatums[fidgetId];
-  return fidgetData?.fidgetType === 'cast';
+  return fidgetData?.fidgetType === "cast";
 };
 
 /**
  * Creates a FidgetBundle object from a FidgetInstanceData
  */
 export const createFidgetBundle = (
-  fidgetData: FidgetInstanceData, 
-  isEditable: boolean = false
+  fidgetData: FidgetInstanceData,
+  isEditable: boolean = false,
 ): FidgetBundle | null => {
   if (!fidgetData) return null;
 
@@ -104,29 +109,29 @@ export const createFidgetBundle = (
 export const processTabFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
 ): string[] => {
   if (!isMobile) {
     // On desktop, use all fidgets as is
-    return fidgetIds.filter(id => {
+    return fidgetIds.filter((id) => {
       const fidgetData = fidgetInstanceDatums[id];
       return !!fidgetData;
     });
   }
-  
+
   // For mobile, process and potentially consolidate media fidgets
   const mediaFidgetIds: string[] = [];
   const pinnedCastIds: string[] = [];
   const nonMediaFidgetIds: string[] = [];
-  
+
   // First separate media, pinned casts, and non-media fidgets
-  fidgetIds.forEach(id => {
+  fidgetIds.forEach((id) => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return;
-    
+
     // Skip fidgets that should be hidden on mobile
     if (fidgetData.config.settings.showOnMobile === false) return;
-    
+
     if (isPinnedCast(id, fidgetInstanceDatums)) {
       pinnedCastIds.push(id);
     } else if (isMediaFidget(fidgetData.fidgetType)) {
@@ -135,23 +140,23 @@ export const processTabFidgetIds = (
       nonMediaFidgetIds.push(id);
     }
   });
-  
+
   const consolidatedIds: string[] = [];
-  
+
   // If we have multiple pinned casts, return them under a special id
   if (pinnedCastIds.length > 1) {
-    consolidatedIds.push('consolidated-pinned');
+    consolidatedIds.push("consolidated-pinned");
   } else {
     consolidatedIds.push(...pinnedCastIds);
   }
-  
+
   // If we have multiple media fidgets, add them under a special id
   if (mediaFidgetIds.length > 1) {
-    consolidatedIds.push('consolidated-media');
+    consolidatedIds.push("consolidated-media");
   } else {
     consolidatedIds.push(...mediaFidgetIds);
   }
-  
+
   return [...consolidatedIds, ...nonMediaFidgetIds];
 };
 
@@ -161,19 +166,19 @@ export const processTabFidgetIds = (
 export const getValidFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
 ): string[] => {
-  return fidgetIds.filter(id => {
+  return fidgetIds.filter((id) => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return false;
-    
+
     // On mobile, check showOnMobile setting
     if (isMobile) {
       const showOnMobile = fidgetData.config.settings.showOnMobile;
       // If showOnMobile is explicitly false, hide the fidget
       if (showOnMobile === false) return false;
     }
-    
+
     return true;
   });
 };
@@ -183,9 +188,9 @@ export const getValidFidgetIds = (
  */
 export const getMediaFidgetIds = (
   fidgetIds: string[],
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
 ): string[] => {
-  return fidgetIds.filter(id => {
+  return fidgetIds.filter((id) => {
     const fidgetData = fidgetInstanceDatums[id];
     return isMediaFidget(fidgetData.fidgetType);
   });
@@ -196,9 +201,9 @@ export const getMediaFidgetIds = (
  */
 export const getPinnedCastIds = (
   fidgetIds: string[],
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
 ): string[] => {
-  return fidgetIds.filter(id => isPinnedCast(id, fidgetInstanceDatums));
+  return fidgetIds.filter((id) => isPinnedCast(id, fidgetInstanceDatums));
 };
 
 /**
@@ -209,4 +214,5 @@ export const dummyFunctions = {
   setSelectedFidgetID: () => {},
   removeFidget: () => {},
   minimizeFidget: () => {},
+  flushPendingSaves: () => {},
 };

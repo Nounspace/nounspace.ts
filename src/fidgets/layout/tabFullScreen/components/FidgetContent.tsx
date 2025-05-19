@@ -23,21 +23,26 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
   theme,
   saveFidgetConfig,
   isMobile,
-  mobilePadding
-}) => {  
+  mobilePadding,
+}) => {
   return (
     <div
       className="h-full w-full"
-      style={isMobile ? { 
-        paddingInline: `${mobilePadding}px`, 
-        paddingTop: `${mobilePadding - 16}px`,
-      } : {}}
+      style={
+        isMobile
+          ? {
+              paddingInline: `${mobilePadding}px`,
+              paddingTop: `${mobilePadding - 16}px`,
+            }
+          : {}
+      }
     >
       <FidgetWrapper
         fidget={CompleteFidgets[fidgetBundle.fidgetType]?.fidget}
         context={{ theme }}
         bundle={fidgetBundle}
         saveConfig={saveFidgetConfig(fidgetId)}
+        flushPendingSaves={dummyFunctions.flushPendingSaves}
         setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
         setSelectedFidgetID={dummyFunctions.setSelectedFidgetID}
         selectedFidgetID=""
