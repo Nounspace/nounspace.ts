@@ -41,7 +41,8 @@ async function _commitHomebaseTab(tabname: string, get: StoreGet<AppStore>, set:
 
   commitInFlight = (async () => {
     const tab = get().homebase.tabs[tabname];
-    const layoutLen = tab?.config?.layoutConfig?.layout?.length;
+    const layoutLen =
+      tab?.config?.layoutDetails?.layoutConfig?.layout?.length;
 
     console.log('[commit] now', tabname, new Date().toISOString(), 'layoutSize=', layoutLen);
     if (!tab?.config) return;
@@ -544,7 +545,7 @@ export const createHomeBaseTabStoreFunc = (
       //     trailing-only debounce handle it
       const touchesLayoutOrDatums =
         config.fidgetInstanceDatums !== undefined ||
-        (config as any).layoutConfig?.layout !== undefined;
+        config.layoutDetails?.layoutConfig?.layout !== undefined;
   
       if (touchesLayoutOrDatums || (config as any).forceSave === true) {
         await _commitHomebaseTab(tabName, get, set);   // ← direct write
