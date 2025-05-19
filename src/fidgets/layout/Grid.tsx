@@ -35,6 +35,7 @@ import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
 import { updateFidgetInstanceDatums } from "./updateFidgetInstanceDatums";
+
 import { AppStoreContext } from "@/common/data/stores/app";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
@@ -138,10 +139,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   hasFeed,
   fid,
 }) => {
+
   const store = useContext(AppStoreContext);
   if (!store) {
     throw new Error("AppStoreContext is not available");
   }
+
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
