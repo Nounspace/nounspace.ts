@@ -64,9 +64,9 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
 
@@ -179,7 +179,7 @@ function TabBar({
     }
   }
 
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
 
   return (
     <TooltipProvider>
