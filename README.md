@@ -32,7 +32,7 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   d. get a CoinGecko API key https://www.coingecko.com/en/api -> 'COINGECKO_API_KEY' <br>
   e. get a Clanker API key https://github.com/clanker-devco/DOCS -> 'CLANKER_API_KEY' (dev portal coming soon; request a key from the nounspace or Clanker team for now) <br>
   f. get a Youtube API key https://developers.google.com/youtube/v3 -> 'YOUTUBE_API_KEY' <br>
-  g. get your Farcaster account FID and mnemonic -> `NEXT_PUBLIC_APP_FID` + `APP_MNENOMIC`<br>
+  g. get your Farcaster account FID and mnemonic -> `NEXT_PUBLIC_APP_FID` + `APP_MNEMONIC`<br>
   h. launch local copy of Supabase with `supabase start` (in the root directory of this repo), use the info provided -> <br>
 `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
