@@ -1,4 +1,10 @@
-# Nounspace Copilot Instructions
+# Nounspace Codex Instructions
+
+## Codex Guidelines
+- Follow the directory and component patterns described below.
+- Write strict TypeScript with clear interfaces and avoid `any`.
+- After making changes, run `npm run lint` and `npm run check-types`. If these commands fail due to missing dependencies, note the failure in your summary.
+- Keep commit messages concise and descriptive.
 
 ## Project Overview
 Nounspace is a highly customizable [Farcaster](https://farcaster.xyz/) client, initially funded by a grant from [Nouns DAO](https://nouns.wtf/). The application allows users to customize their profile space and personal feed with Themes, Tabs, and mini-applications called Fidgets.
