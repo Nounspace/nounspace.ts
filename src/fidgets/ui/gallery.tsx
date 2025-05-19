@@ -24,7 +24,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { Color } from "@/common/lib/theme";
-import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
 import React, { CSSProperties, useEffect, useState } from "react";
 
 export type GalleryFidgetSettings = {
@@ -39,10 +39,6 @@ export type GalleryFidgetSettings = {
   nftSelector: AlchemyNftSelectorValue;
   badgeColor: Color;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const galleryConfig: FidgetProperties = {
   fidgetName: "Image",

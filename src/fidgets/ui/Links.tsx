@@ -12,7 +12,6 @@ import {
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import LinksInput from "@/common/components/molecules/LinksInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import TextInput from "@/common/components/molecules/TextInput";
@@ -23,7 +22,7 @@ import SwitchButton, {
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
 import { BsLink45Deg } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 
 export type Link = {
   text: string;
@@ -43,11 +42,8 @@ export type LinkFidgetSettings = {
   headingsFontFamily: string;
   fontFamily: string;
   scale: number;
+  fidgetShadow: string;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 export const linkConfig: FidgetProperties = {
   fidgetName: "Links",
@@ -55,19 +51,6 @@ export const linkConfig: FidgetProperties = {
   mobileIcon: <BsLink45Deg size={26} />,
   fields: [
     ...mobileStyleSettings,
-    {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the image size.",
-      default: 1,
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ImageScaleSlider {...props} />
-        </WithMargin>
-      ),
-      group: "style",
-    },
     {
       fieldName: "title",
       displayName: "Title",
@@ -118,7 +101,7 @@ export const linkConfig: FidgetProperties = {
       fieldName: "headingsFontFamily",
       displayName: "HeadingsFontFamily",
       displayNameHint: "Font used for the title and link text. Set to Theme Font to inherit the Title Font from the Theme.",
-      default: "Londrina Solid",
+      default: "var(--user-theme-headings-font)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
@@ -128,7 +111,7 @@ export const linkConfig: FidgetProperties = {
       group: "style",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
       displayName: "Font Family",
       displayNameHint: "Font used for the description text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "Theme Font",
@@ -184,12 +167,12 @@ export const linkConfig: FidgetProperties = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-         <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
         </WithMargin>
       ),
       group: "style",
@@ -202,12 +185,12 @@ export const linkConfig: FidgetProperties = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-         <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
         </WithMargin>
       ),
       group: "style",
@@ -220,38 +203,44 @@ export const linkConfig: FidgetProperties = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <BorderSelector {...props} />
+          <BorderSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
         </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderColor",
-      displayName: "FidgetBorderColor",
+      displayName: "Fidget Border Color",
       displayNameHint: "Color of the Fidget's Border.",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-         <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-border-color)"
+            defaultColor="#000000"
+            colorType="border color"
+          />
         </WithMargin>
       ),
       group: "style",
     },
     {
-      fieldName: "fidget Shadow",
+      fieldName: "fidgetShadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ShadowSelector {...props} />
+          <ShadowSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
         </WithMargin>
       ),
       group: "style",
@@ -324,23 +313,9 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 
   return (
     <div
-      style={{
-        fontFamily: getFontFamily(),
-        background: settings.background,
-        height: "100%",
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
-        padding: "0.5rem",
-        borderRadius: "1rem",
-        transform: `scale(${settings.scale})`,
-        transformOrigin: "0 0",
-      }}
     >
       {settings?.title && (
-        <CardHeader className="p-1 pl-2">
+        <CardHeader className="p-4">
           <CardTitle
             className="text-2xl font-bold"
             style={{
@@ -363,23 +338,11 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
               rel="noopener noreferrer"
             >
               <CardContent
-                style={{
-                  background: settings.itemBackground,
-                  wordWrap: "break-word",
-                  maxHeight: "200px",
-                  height: "auto",
-                  display: "flex",
-                  flexDirection: isGridView ? "column" : "row",
-                  padding: isGridView ? "1rem" : "0.5rem",
-                  margin: isGridView ? "0.25rem" : "0.5rem",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  transition: "transform 0.3s",
-                }}
+
                 className={
                   isGridView
-                    ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-                    : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                    ? "p-4 flex flex-col items-start justify-between m-1 hover:scale-105"
+                    : "p-2 flex items-center justify-between m-2 hover:scale-105"
                 }
                 key={index}
               >

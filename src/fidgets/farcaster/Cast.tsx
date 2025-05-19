@@ -8,7 +8,7 @@ import {
 import { isUndefined } from "lodash";
 import React from "react";
 import { BsFillPinFill, BsPin } from "react-icons/bs";
-import { defaultStyleFields } from "../helpers";
+import { defaultStyleFields, WithMargin } from "../helpers";
 import EmbededCast from "./components/Embeds/EmbededCast";
 
 type CastFidgetSettings = {
@@ -17,10 +17,6 @@ type CastFidgetSettings = {
   castUrl?: string;
   useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const castFidgetProperties: FidgetProperties = {
   fidgetName: "Pinned Cast",

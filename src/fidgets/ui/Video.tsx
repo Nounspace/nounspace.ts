@@ -9,17 +9,13 @@ import {
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
-import { defaultStyleFields, ErrorWrapper, transformUrl } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
 import React from "react";
 
 export type VideoFidgetSettings = {
   url: string;
   size: number;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const DISALLOW_URL_PATTERNS = [
   /javascript:/i,

@@ -8,7 +8,7 @@ import {
   FidgetModule,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import { getDexScreenerUrl, getGeckoIframe } from "@/common/lib/utils/links";
@@ -35,14 +35,26 @@ const frameConfig: FidgetProperties = {
       fieldName: "chain",
       required: true,
       default: { id: "8453", name: "base" },
-      inputSelector: ChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ChainSelector
+            {...props}
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "token",
       required: true,
       default: "0x0DF1B77aAFEc59E926315e5234db3Fdea419d4E4",
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput
+            {...props}
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
@@ -56,7 +68,13 @@ const frameConfig: FidgetProperties = {
     {
       fieldName: "dataSource",
       displayName: "Data Source",
-      inputSelector: MarketDataSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <MarketDataSelector
+            {...props}
+          />
+        </WithMargin>
+      ),
       required: true,
       group: "settings",
       default: "geckoterminal",

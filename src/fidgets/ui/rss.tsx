@@ -14,7 +14,7 @@ import React, { useEffect, useState } from "react";
 import { BsRss, BsRssFill } from "react-icons/bs";
 import ReactMarkdown from "react-markdown";
 import RSSParser from "rss-parser";
-import { defaultStyleFields } from "../helpers";
+import { defaultStyleFields, WithMargin } from "../helpers";
 
 export type RSSFidgetSettings = {
   title?: string;
@@ -22,11 +22,6 @@ export type RSSFidgetSettings = {
   scale: number;
   useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
-
 
 export const rssConfig: FidgetProperties = {
   fidgetName: "RSS",
@@ -46,19 +41,6 @@ export const rssConfig: FidgetProperties = {
         </WithMargin>
       ),
       group: "settings",
-    },
-    {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Drag the slider to adjust the size.",
-      default: 1,
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ImageScaleSlider {...props} />
-        </WithMargin>
-      ),
-      group: "style",
     },
     {
       fieldName: "font Family",
@@ -126,42 +108,6 @@ export const rssConfig: FidgetProperties = {
     },
     ...defaultStyleFields,
     {
-      fieldName: "itemBackground",
-      displayName: "ItemBackground",
-      displayNameHint: "Color used for the background of each RSS item",
-      default: "var(--user-theme-fidget-background)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ThemeColorSelector
-            {...props}
-            themeVariable="var(--user-theme-fidget-background)"
-            defaultColor="#FFFFFF"
-            colorType="background"
-          />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "itemBorderColor",
-      displayName: "ItemBorderColor",
-      displayNameHint: "Color used for the border of each RSS item",
-      default: "var(--user-theme-fidget-border-color)",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
       fieldName: "css",
       displayName: "CSS",
       displayNameHint: "Add custom CSS to further customize the appearance",
@@ -212,22 +158,6 @@ export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
 
   return (
     <div
-      style={{
-        background: settings.useDefaultColors
-          ? 'var(--user-theme-fidget-background)'
-          : settings.background,
-        color: settings.useDefaultColors
-          ? 'var(--user-theme-font-color)'
-          : settings.fontColor,
-        height: "100%",
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
-        transform: `scale(${settings.scale})`,
-        transformOrigin: "0 0",
-      }}
     >
       {rssFeed?.title && (
         <CardHeader className="p-2 ml-5">

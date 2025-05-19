@@ -1,7 +1,6 @@
 import { Button } from "@/common/components/atoms/button";
 import { CardContent } from "@/common/components/atoms/card";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
@@ -10,6 +9,7 @@ import React, { useState } from "react";
 import { BsFillLightningChargeFill } from "react-icons/bs";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import ProposalItem from "./components/ProposalItem";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 
 export type snapShotSettings = {
   subgraphUrl: string;
@@ -19,6 +19,8 @@ export type snapShotSettings = {
   scale: number;
   headingsFontFamily?: string;
   fontFamily?: string;
+  fontColor?: string | any;
+  headingsFontColor?: string | any;
 } & FidgetSettingsStyle;
 
 export const snapshotConfig: FidgetProperties = {
@@ -28,39 +30,78 @@ export const snapshotConfig: FidgetProperties = {
   icon: 0x26a1,
   fields: [
     {
-      fieldName: "scale",
-      displayName: "Scale",
-      displayNameHint: "Adjust the size of the governance display",
-      default: 1,
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ImageScaleSlider {...props} />
-        </WithMargin>
-      ),
-      group: "style",
-    },
-    {
       fieldName: "snapshot ens",
       displayName: "Snapshot ENS",
       displayNameHint: "Enter the ENS name of the Snapshot space (e.g. 'gnars.eth')",
       default: "gnars.eth",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "headingsFontFamily",
+      displayName: "Headings Font Family",
+      displayNameHint: "Font used for proposal titles. Select 'Theme Headings Font' to inherit from the theme.",
       default: "Theme Headings Font",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
+      displayName: "Font Family",
+      displayNameHint: "Font used for proposal text. Select 'Theme Font' to inherit from the theme.",
       default: "Theme Font",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      displayName: "Font Color",
+      displayNameHint: "Color used for proposal text.",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "headingsFontColor",
+      displayName: "Headings Font Color",
+      displayNameHint: "Color used for headings and proposal titles.",
+      default: "var(--user-theme-headings-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings font color"
+          />
+        </WithMargin>
+      ),
       group: "style",
     },
 
@@ -118,31 +159,52 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
       : settings.fontFamily || "var(--user-theme-font)";
   };
 
-  const scale = typeof settings.scale === 'number' && !isNaN(settings.scale)
-    ? settings.scale
-    : 1;
+  const getHeadingsFontColor = () => {
+    if (settings.headingsFontColor &&
+      settings.headingsFontColor.toString() !== "var(--user-theme-headings-font-color)") {
+      return settings.headingsFontColor;
+    }
 
-  const containerStyle: React.CSSProperties = {
-    overflow: "auto",
-    transform: `scale(${scale})`,
-    transformOrigin: "0 0",
+    return '#000000';
   };
 
+  const getBodyFontColor = () => {
+    if (settings.fontColor &&
+      settings.fontColor.toString() !== "var(--user-theme-font-color)") {
+      return settings.fontColor;
+    }
+
+    return '#333333';
+  };
+
+
+
   return (
-    <div className="size-full" style={containerStyle}>
+    <div className="size-full">
       <CardContent className="size-full overflow-hidden p-4 flex flex-col">
-        <h1 className="text-2xl font-bold mb-4" style={{ fontFamily: getHeadingsFontFamily() }}>
+        <h1
+          className="text-2xl font-bold mb-4"
+          style={{
+            fontFamily: getHeadingsFontFamily(),
+            color: getHeadingsFontColor()
+          }}
+        >
           {settings["snapshot ens"]} proposals
         </h1>
-        {error && <p className="text-red-500">{error}</p>}
-        <div className="grid gap-2 overflow-auto" style={{ fontFamily: getBodyFontFamily() }}>
+        {error && <p className="text-red-500" style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}>{error}</p>}
+        <div
+          className="grid gap-2 overflow-auto"
+          style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}
+        >
           {proposals.map((proposal) => (
             <ProposalItem
               key={proposal.id}
               proposal={proposal}
-              // isExpanded={expandedProposalId === proposal.id}
-              // onToggleExpand={handleToggleExpand}
               space={settings["snapshot ens"]}
+              headingsFont={getHeadingsFontFamily()}
+              headingsColor={getHeadingsFontColor()}
+              bodyFont={getBodyFontFamily()}
+              bodyColor={getBodyFontColor()}
             />
           ))}
         </div>
