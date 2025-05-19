@@ -33,6 +33,7 @@ import {
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
+import { updateFidgetInstanceDatums } from "./updateFidgetInstanceDatums";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -165,8 +166,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   };
 
   const saveFidgetInstanceDatums = async (
-    datums: typeof fidgetInstanceDatums,
+    updater:
+      | typeof fidgetInstanceDatums
+      | ((current: typeof fidgetInstanceDatums) => typeof fidgetInstanceDatums),
   ) => {
+    const datums =
+      typeof updater === "function" ? updater(fidgetInstanceDatums) : updater;
     return await saveConfig({
       fidgetInstanceDatums: datums,
     });
@@ -186,15 +191,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   const saveFidgetConfig = useCallback(
     (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
-          config: newInstanceConfig,
-        },
-      });
+      return await saveFidgetInstanceDatums((current) =>
+        updateFidgetInstanceDatums(current, id, newInstanceConfig),
+      );
     },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+    [saveFidgetInstanceDatums],
   );
 
   // Debounced save function
@@ -276,10 +277,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
-    saveFidgetInstanceDatums({
-      ...fidgetInstanceDatums,
+    saveFidgetInstanceDatums((current) => ({
+      ...current,
       [fidgetData.id]: fidgetData,
-    });
+    }));
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
