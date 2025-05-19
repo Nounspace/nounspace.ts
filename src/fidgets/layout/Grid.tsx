@@ -153,6 +153,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
+  const saveId = useRef(0);
+
   const gridDetails = useMemo(
     () => makeGridDetails(hasProfile, hasFeed),
     [hasProfile, hasFeed],
@@ -169,6 +171,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   ) => {
     return await saveConfig({
       fidgetInstanceDatums: datums,
+      debugSaveId: saveId.current,
     });
   };
 
@@ -179,15 +182,28 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   };
 
   const saveLayout = async (newLayout: PlacedGridItem[]) => {
+    saveId.current += 1;
+    console.log("saveLayout", {
+      saveId: saveId.current,
+      layoutIds: newLayout.map((i) => i.i),
+      fidgetKeys: Object.keys(fidgetInstanceDatums),
+    });
     return await saveConfig({
       layoutConfig: {
         layout: newLayout,
       },
+      debugSaveId: saveId.current,
     });
   };
 
   const saveFidgetConfig = useCallback(
     (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+      saveId.current += 1;
+      console.log("saveFidgetConfig", {
+        saveId: saveId.current,
+        layoutIds: layoutConfig.layout.map((i) => i.i),
+        fidgetKeys: Object.keys(fidgetInstanceDatums),
+      });
       return await saveFidgetInstanceDatums({
         ...fidgetInstanceDatums,
         [id]: {
@@ -196,15 +212,21 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         },
       });
     },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+    [fidgetInstanceDatums, saveFidgetInstanceDatums, layoutConfig.layout],
   );
 
   // Debounced save function
   const debouncedSaveConfig = useCallback(
     debounce((config) => {
-      saveConfig(config);
+      saveId.current += 1;
+      console.log("debouncedSaveConfig", {
+        saveId: saveId.current,
+        layoutIds: layoutConfig.layout.map((i) => i.i),
+        fidgetKeys: Object.keys(fidgetInstanceDatums),
+      });
+      saveConfig({ ...config, debugSaveId: saveId.current });
     }, 100),
-    [saveConfig]
+    [saveConfig, layoutConfig.layout, fidgetInstanceDatums]
   );
 
   function unselectFidget() {
@@ -276,6 +298,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
+    saveId.current += 1;
+    console.log("saveFidgetConfig", {
+      saveId: saveId.current,
+      layoutIds: layoutConfig.layout.map((i) => i.i),
+      fidgetKeys: Object.keys(fidgetInstanceDatums),
+    });
     saveFidgetInstanceDatums({
       ...fidgetInstanceDatums,
       [fidgetData.id]: fidgetData,
@@ -330,6 +358,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       // New set of instances - use computed property name to remove the correct fidget
       const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
 
+      saveId.current += 1;
+      console.log("saveFidgetConfig", {
+        saveId: saveId.current,
+        layoutIds: layoutConfig.layout.map((i) => i.i),
+        fidgetKeys: Object.keys(newFidgetInstanceDatums),
+      });
       saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 

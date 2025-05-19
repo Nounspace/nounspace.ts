@@ -132,7 +132,7 @@ interface SpaceActions {
   saveLocalSpaceTab: (
     spaceId: string,
     tabName: string,
-    config: UpdatableDatabaseWritableSpaceSaveConfig,
+    config: UpdatableDatabaseWritableSpaceSaveConfig & { debugSaveId?: number },
     newName?: string,
   ) => Promise<void>;
   loadEditableSpaces: () => Promise<Record<SpaceId, string>>;
@@ -309,25 +309,22 @@ export const createSpaceStoreFunc = (
       throw error; // Stops the execution of the function
     }
 
-    console.log("NewConfig", config);
-    let localCopy;
-    // If the tab doesn't exist yet, use the new config directly
-    if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
-      localCopy = cloneDeep(config);
-    } else {
-      // Otherwise merge with existing config
-      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-      mergeWith(localCopy, config, (objValue, srcValue) => {
-        if (isArray(srcValue)) return srcValue;
-        if (typeof srcValue === 'object' && srcValue !== null) {
-          // For objects, return the source value to replace the target completely
-          return srcValue;
-        }
-      });
-      console.log("localCopy", localCopy);
-    }
+    const { debugSaveId, ...configWithoutDebug } = config as any;
 
     set((draft) => {
+      const existing = draft.space.localSpaces[spaceId]?.tabs[tabName];
+      let localCopy = existing ? cloneDeep(existing) : ({} as any);
+      if (existing) {
+        mergeWith(localCopy, configWithoutDebug, (objValue, srcValue) => {
+          if (isArray(srcValue)) return srcValue;
+          if (typeof srcValue === 'object' && srcValue !== null) {
+            return srcValue;
+          }
+        });
+      } else {
+        localCopy = cloneDeep(configWithoutDebug);
+      }
+
       if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
         draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
         draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
@@ -337,6 +334,11 @@ export const createSpaceStoreFunc = (
       }
       const newTimestamp = moment().toISOString();
       draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+      console.log("saveLocalSpaceTab", {
+        saveId: debugSaveId,
+        layoutIds: localCopy.layoutConfig?.layout.map((i: any) => i.i),
+        fidgetKeys: Object.keys(localCopy.fidgetInstanceDatums || {}),
+      });
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: debounce(
