@@ -177,7 +177,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
-
   const saveTheme = async (newTheme: typeof theme) => {
     return await saveConfig({ theme: newTheme });
   };
@@ -200,13 +199,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Debounced save function
   const debouncedSaveConfig = useCallback(
-    debounce(
-      (patch) => saveConfig(patch),
-      250,
-      { leading: false, trailing: true },
-    ),
+    debounce((patch) => saveConfig(patch), 250, {
+      leading: false,
+      trailing: true,
+    }),
     [saveConfig],
   );
+
+  const flushPendingSaves = useCallback(() => {
+    debouncedSaveConfig.flush();
+  }, [debouncedSaveConfig]);
 
   function unselectFidget() {
     setSelectedFidgetID("");
@@ -327,28 +329,35 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     saveLayout(newLayout);
   }
 
-  function removeFidgetFromInstanceDatums(fidgetId: string){
-      // New set of instances - use computed property name to remove the correct fidget
-      const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
+  function removeFidgetFromInstanceDatums(fidgetId: string) {
+    // New set of instances - use computed property name to remove the correct fidget
+    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
+      fidgetInstanceDatums;
 
-      saveFidgetInstanceDatums(newFidgetInstanceDatums);
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {
     unselectFidget();
 
     // Create new state objects
-    const newLayout = layoutConfig.layout.filter(item => item.i !== fidgetId);
-    const newTrayContents = fidgetTrayContents.filter(fidget => fidget.id !== fidgetId);
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
-    
+    const newLayout = layoutConfig.layout.filter((item) => item.i !== fidgetId);
+    const newTrayContents = fidgetTrayContents.filter(
+      (fidget) => fidget.id !== fidgetId,
+    );
+    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
+      fidgetInstanceDatums;
+
     console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
     // Only save if we have fidgets left or if we're removing the last one
-    if (Object.keys(newFidgetInstanceDatums).length > 0 || newLayout.length === 0) {
+    if (
+      Object.keys(newFidgetInstanceDatums).length > 0 ||
+      newLayout.length === 0
+    ) {
       debouncedSaveConfig({
         layoutConfig: { layout: newLayout },
         fidgetTrayContents: newTrayContents,
-        fidgetInstanceDatums: newFidgetInstanceDatums
+        fidgetInstanceDatums: newFidgetInstanceDatums,
       });
     }
   }
@@ -373,7 +382,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       newLayout.length === layoutConfig.layout.length
     ) {
       debouncedSaveConfig({
-        layoutConfig: { layout: newLayout }
+        layoutConfig: { layout: newLayout },
       });
     }
   }
@@ -435,7 +444,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           // Save both layout and fidgetInstanceDatums in a single operation
           debouncedSaveConfig({
             layoutConfig: { layout: [...layoutConfig.layout, newItem] },
-            fidgetInstanceDatums: { ...fidgetInstanceDatums, [id]: fidget }
+            fidgetInstanceDatums: { ...fidgetInstanceDatums, [id]: fidget },
           });
 
           analytics.track(AnalyticsEvent.ADD_FIDGET, {
@@ -564,6 +573,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                     removeFidget={removeFidget}
                     minimizeFidget={moveFidgetFromGridToTray}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}
+                    flushPendingSaves={flushPendingSaves}
                     setCurrentFidgetSettings={setCurrentFidgetSettings}
                     setSelectedFidgetID={setSelectedFidgetID}
                     selectedFidgetID={selectedFidgetID}

@@ -20,26 +20,24 @@ const ConsolidatedPinnedContent: React.FC<ConsolidatedPinnedContentProps> = ({
   pinnedCastIds,
   fidgetBundles,
   theme,
-  saveFidgetConfig
+  saveFidgetConfig,
 }) => {
   if (pinnedCastIds.length === 0) return null;
-  
+
   return (
     <div className="flex flex-col gap-4 h-full overflow-y-auto pb-16">
       {pinnedCastIds.map((fidgetId) => {
         const bundle = fidgetBundles[fidgetId];
         if (!bundle) return null;
-        
+
         return (
-          <div 
-            key={fidgetId} 
-            className="w-full h-fit"
-          >
+          <div key={fidgetId} className="w-full h-fit">
             <FidgetWrapper
               fidget={CompleteFidgets[bundle.fidgetType]?.fidget}
               context={{ theme }}
               bundle={bundle}
               saveConfig={saveFidgetConfig(fidgetId)}
+              flushPendingSaves={dummyFunctions.flushPendingSaves}
               setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
               setSelectedFidgetID={dummyFunctions.setSelectedFidgetID}
               selectedFidgetID=""
