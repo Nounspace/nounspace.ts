@@ -15,3 +15,8 @@ test('updateFidgetInstanceDatums only updates specified id', () => {
   assert.deepStrictEqual(updated.b.config, newConfig);
   assert.strictEqual(Object.keys(updated).length, 2);
 });
+
+test('updateFidgetInstanceDatums ignores missing id', () => {
+  const updated = updateFidgetInstanceDatums({ ...initialDatums }, 'missing', newConfig);
+  assert.deepStrictEqual(updated, { ...initialDatums });
+});
