@@ -58,10 +58,14 @@ const _fetchAndFormat = async (
     ];
   } catch (e) {
     const _isAxiosError = isAxiosError(e);
-    const status = (_isAxiosError && e.response!.data.status) || 500;
-    const message =
-      (_isAxiosError && e.response!.data.message) ||
-      "An unknown error occurred";
+    // Defensively check that a response exists before accessing its data
+    let status = 500;
+    let message = "An unknown error occurred";
+
+    if (_isAxiosError && e.response) {
+      status = e.response.data?.status ?? 500;
+      message = e.response.data?.message ?? message;
+    }
     return [
       status,
       {
