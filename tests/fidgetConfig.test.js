@@ -20,3 +20,21 @@ test('updateFidgetInstanceDatums ignores missing id', () => {
   const updated = updateFidgetInstanceDatums({ ...initialDatums }, 'missing', newConfig);
   assert.deepStrictEqual(updated, { ...initialDatums });
 });
+
+test('add then edit retains id', () => {
+  let datums = { ...initialDatums };
+
+  const saveFidgetInstanceDatums = (updater) => {
+    datums = typeof updater === 'function' ? updater(datums) : updater;
+  };
+
+  const newDatum = { id: 'c', fidgetType: 'baz', config: { settings: {}, editable: true, data: {} } };
+
+  // Add
+  saveFidgetInstanceDatums((current) => ({ ...current, c: newDatum }));
+
+  // Edit immediately
+  saveFidgetInstanceDatums((current) => updateFidgetInstanceDatums(current, 'c', newConfig));
+
+  assert.ok(datums.c);
+});
