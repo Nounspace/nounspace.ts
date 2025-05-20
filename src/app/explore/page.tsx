@@ -52,8 +52,8 @@ export default async function Explore() {
   const tokens = await fetchTokens(1);
 
   return (
-    <div className="min-h-screen max-w-screen max-h-screen h-screen w-screen p-5 overflow-y-scroll">
-      <Tabs defaultValue="spaces" className="max-h-full">
+    <div className="min-h-screen w-screen p-5">
+      <Tabs defaultValue="spaces">
         <TabsList className={tabListClasses}>
           <TabsTrigger value="spaces" className={tabTriggerClasses}>
             Spaces
@@ -63,8 +63,8 @@ export default async function Explore() {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="spaces" className={tabContentClasses}>
-          <div className="flex w-full h-full">
-            <div className="w-full transition-all duration-100 ease-out h-full grid grid-rows-[auto_1fr]">
+          <div className="flex w-full">
+            <div className="w-full transition-all duration-100 ease-out grid grid-rows-[auto_1fr]">
               <ExploreHeader
                 title="Explore Featured Spaces"
                 image="/images/rainforest.png"
@@ -79,7 +79,7 @@ export default async function Explore() {
           </div>
         </TabsContent>
         <TabsContent value="tokens" className={tabContentClasses}>
-          <div className="transition-all duration-100 ease-out max-h-full overflow-y-scroll grid grid-rows-[auto_1fr]">
+          <div className="transition-all duration-100 ease-out grid grid-rows-[auto_1fr]">
             <ExploreHeader
               title="Explore Clanker Tokens"
               image="/images/clanker_galaxy.png"
