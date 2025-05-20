@@ -19,13 +19,13 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mobileStyleSettings } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
+import { mobileStyleSettings } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
@@ -45,6 +45,7 @@ export type FeedFidgetSettings = {
   Xhandle: string;
   style: string;
   useDefaultColors?: boolean;
+  membersOnly?: boolean;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
@@ -311,6 +312,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
 
 export const FEED_TYPES = [
   { name: "Following", value: FeedType.Following },
+  { name: "For you", value: "for_you" }, 
+  { name: "Trending", value: "trending" }, 
   { name: "Filter", value: FeedType.Filter },
 ];
 
@@ -320,7 +323,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     Xhandle,
     style,
   } = settings;
-  const { feedType, users, channel, filterType, keyword } = settings;
+  const { feedType, users, channel, filterType, keyword, membersOnly } = settings;
   const { fid } = useFarcasterSigner("feed");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [prevFeedType, setPrevFeedType] = useState(feedType);
@@ -342,6 +345,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         filterType,
         fids: users,
         channel,
+        ...(feedType === FeedType.Filter && filterType === 
+          FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
   const threadStackRef = React.useRef(useLifoQueue<string>());

@@ -6,8 +6,8 @@ import {
   FilterType,
 } from "@neynar/nodejs-sdk/build/api";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import axiosBackend from "../api/backend";
 import { isUndefined } from "lodash";
+import axiosBackend from "../api/backend";
 
 export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
   return useQuery({
@@ -67,15 +67,17 @@ export const useGetCasts = ({
   filterType,
   fids,
   channel,
+  membersOnly,
 }: {
   feedType: FeedType;
   fid: number;
   filterType: FilterType;
   fids?: string;
   channel?: string;
+  membersOnly?: boolean;
 }) => {
   return useInfiniteQuery({
-    queryKey: ["channelCasts", feedType, fid, filterType, fids, channel],
+    queryKey: ["channelCasts", feedType, fid, filterType, fids, channel, membersOnly],
     staleTime: 1000 * 60 * 1,
     queryFn: async ({ pageParam: cursor }) => {
       const params: any = {
@@ -86,6 +88,7 @@ export const useGetCasts = ({
         channel_id: channel,
         fids,
         filter_type: filterType,
+        ...(membersOnly !== undefined ? { membersOnly } : {}),
       };
       const { data } = await axiosBackend.get<FeedResponse>(
         "/api/farcaster/neynar/feed",
