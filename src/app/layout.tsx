@@ -3,10 +3,10 @@ import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
-import ClientHeaderWrapper from "@/common/components/organisms/ClientHeaderWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 
 export const metadata = {
   title: "Nounspace",
@@ -75,7 +75,7 @@ const sidebarLayout = (page: React.ReactNode) => {
       <div className="min-h-screen max-w-screen h-screen w-screen flex flex-col">
         {/* App Navigation Bar */}
         <div className="w-full flex-shrink-0 md:hidden">
-          <ClientHeaderWrapper />
+          <ClientMobileHeaderWrapper />
         </div>
 
         {/* Main Content with Sidebar */}
