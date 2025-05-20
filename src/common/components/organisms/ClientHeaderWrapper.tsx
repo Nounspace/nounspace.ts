@@ -7,7 +7,8 @@ import ClientMobileHeaderWrapper from "./ClientMobileHeaderWrapper";
 
 const ClientHeaderWrapper: React.FC = () => {
   const isMobile = useIsMobile();
-  return isMobile ? <ClientMobileHeaderWrapper /> : <ClientNavbarWrapper />;
+  // return isMobile ? <ClientMobileHeaderWrapper /> : <ClientNavbarWrapper />;
+  return <ClientMobileHeaderWrapper />;
 };
 
 export default ClientHeaderWrapper;
