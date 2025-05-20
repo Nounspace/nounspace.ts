@@ -16,9 +16,9 @@ export default function SpaceLoading({ hasProfile, hasFeed }) {
 
   return (
     <>
-      <div className="user-theme-background w-full h-full relative flex-col">
+      <div className="user-theme-background w-full min-h-screen relative flex-col">
         <div className="w-full transition-all duration-100 ease-out">
-          <div className="h-full flex flex-col">
+          <div className="flex flex-col min-h-screen">
             <div className="flex-1 grid-container grow">
               <div
                 className="relative grid-overlap w-full h-full opacity-50"
