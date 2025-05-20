@@ -194,7 +194,12 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
+      {/*
+       * Ensure the tab bar container does not remain fixed when scrolling on
+       * mobile. Explicitly use `static` positioning so it can scroll out of
+       * view on pages like the homepage.
+       */}
+      <div className="static flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
