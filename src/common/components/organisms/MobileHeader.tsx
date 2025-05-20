@@ -12,8 +12,8 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { CgProfile } from "react-icons/cg";
-import LoginIcon from "../atoms/icons/LoginIcon";
 import { useSidebarContext } from "./Sidebar";
+import { LogIn } from "lucide-react";
 
 const MobileHeader: React.FC = () => {
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
@@ -85,7 +85,7 @@ const MobileHeader: React.FC = () => {
           </button>
         ) : (
           <Button variant="primary" size="sm" onClick={openLogin} withIcon>
-            <LoginIcon />
+            <LogIn size={16} />
             Sign In
           </Button>
         )}
