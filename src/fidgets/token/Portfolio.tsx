@@ -29,7 +29,7 @@ const portfolioProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "trackType",
-      displayName: "Wallet(\u200Bs) to track",
+      displayName: "Wallet(\u2060s) to track",
       default: "farcaster",
       required: true,
       inputSelector: (props) => (
@@ -61,7 +61,7 @@ const portfolioProperties: FidgetProperties = {
     },
     {
       fieldName: "walletAddresses",
-      displayName: "Address(\u200Bes)",
+      displayName: "Address(\u2060es)",
       default: "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5",
       required: false,
       disabledIf: (settings) => settings.trackType !== "address",
