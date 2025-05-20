@@ -13,16 +13,12 @@ import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import React from "react";
 import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
   url: string;
 } & FidgetSettingsStyle;
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const frameProperties: FidgetProperties = {
   fidgetName: "Farcaster Frame",
@@ -78,13 +74,16 @@ const frameProperties: FidgetProperties = {
       fieldName: "fidgetBorderWidth",
       displayName: "Fidget Border Width",
       displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
-      default: "transparent",
+      default: "var(--user-theme-fidget-border-width)",
       required: false,
       inputSelector: (props) => (
-        <WithMargin>
-          <BorderSelector {...props} />
-        </WithMargin>
-      ),
+           <WithMargin>
+            <BorderSelector 
+             {...props} 
+             hideGlobalSettings={false}
+           />
+           </WithMargin>
+         ),
       group: "style",
     },
     {
@@ -106,16 +105,19 @@ const frameProperties: FidgetProperties = {
       default: "var(--user-theme-fidget-border-color)",
     },
     {
-      fieldName: "fidget Shadow",
+      fieldName: "fidgetShadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow effect. Use Theme Shadow to inherit from Theme",
-      default: "none",
-      required: false,
-      inputSelector: (props) => (
-        <WithMargin>
-          <ShadowSelector {...props} />
-        </WithMargin>
-      ),
+      default: "var(--user-theme-fidget-shadow)",
+         required: false,
+         inputSelector: (props) => (
+           <WithMargin>
+             <ShadowSelector
+              {...props} 
+              hideGlobalSettings={false}
+            />
+           </WithMargin>
+         ),
       group: "style",
     },
   ],
