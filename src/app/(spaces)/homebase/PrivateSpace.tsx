@@ -227,11 +227,11 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   // If not logged in, show a loading state with the login modal
   if (!isLoggedIn) {
     return (
-      <div className="user-theme-background w-full h-full relative flex-col">
+      <div className="user-theme-background w-full min-h-screen relative flex-col">
         <div className="w-full transition-all duration-100 ease-out">
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col min-h-screen">
             <TabBarSkeleton />
-            <div className="flex h-full">
+            <div className="flex">
               <div className={"grow"}>
                 <SpaceLoading hasProfile={false} hasFeed={tabName === "Feed"} />
               </div>

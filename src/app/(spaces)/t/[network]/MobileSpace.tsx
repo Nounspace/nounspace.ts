@@ -167,17 +167,17 @@ export const MobileContractDefinedSpace = ({
   };
 
   return (
-    <div className="h-full w-full flex flex-col">
+    <div className="w-full flex flex-col min-h-screen">
       <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
         <TokenDataHeader />
       </div>
-      <div className="flex-1">
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Price" && "hidden",
-          )}
-        >
+        <div className="flex-1">
+          <div
+            className={cn(
+              "w-full flex-1 overflow-hidden",
+              tab !== "Price" && "hidden",
+            )}
+          >
           <iframe
             src={getGeckoIframe(
               contractAddress as Address,
@@ -188,12 +188,12 @@ export const MobileContractDefinedSpace = ({
             className="size-full"
           />
         </div>
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Swaps" && "hidden",
-          )}
-        >
+          <div
+            className={cn(
+              "w-full flex-1 overflow-hidden",
+              tab !== "Swaps" && "hidden",
+            )}
+          >
           <iframe
             src={getMatchaUrl(
               contractAddress as Address,
@@ -204,12 +204,12 @@ export const MobileContractDefinedSpace = ({
             className="size-full"
           />
         </div>
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Chat" && "hidden",
-          )}
-        >
+          <div
+            className={cn(
+              "w-full flex-1 overflow-hidden",
+              tab !== "Chat" && "hidden",
+            )}
+          >
           <iframe
             src={`https://chat-fidget.vercel.app/?room=${contractAddress}&viewport=mobile`}
             title="Chat Widget"

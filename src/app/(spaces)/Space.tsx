@@ -170,10 +170,10 @@ export default function Space({
   [config?.layoutDetails?.layoutConfig]);
 
   return (
-    <div className="user-theme-background w-full h-full relative flex-col">
+    <div className="user-theme-background w-full min-h-screen relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col min-h-screen">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
           </div>
@@ -185,12 +185,12 @@ export default function Space({
             <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
           </div>
 
-          <div className={isMobile ? "w-full h-full" : "flex h-full"}>
+          <div className={isMobile ? "w-full" : "flex"}>
             {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+              <div className="w-6/12">{feed}</div>
             ) : null}
 
-            <div className={isMobile ? "w-full h-full" : "grow"}>
+            <div className={isMobile ? "w-full" : "grow"}>
               <Suspense
                 fallback={
                   <SpaceLoading

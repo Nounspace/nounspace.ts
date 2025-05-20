@@ -100,7 +100,7 @@ const MobileView: React.FC<MobileViewProps> = ({
   // Conditional rendering after all hooks have been called
   if (processedFidgetIds.length === 0) {
     return (
-      <div className="flex items-center justify-center h-full w-full text-gray-500">
+      <div className="flex items-center justify-center min-h-screen w-full text-gray-500">
         <div className="text-center p-4">
           <h3 className="text-lg font-medium mb-2">No fidgets available</h3>
           <p className="text-sm text-gray-400">Add some fidgets to see them here</p>
@@ -110,32 +110,32 @@ const MobileView: React.FC<MobileViewProps> = ({
   }
   
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col min-h-screen relative">
       {/* Main content area with padding-bottom to make space for fixed navbar */}
-      <div 
-        className="w-full h-full overflow-hidden" 
-        style={{ 
+      <div
+        className="w-full flex-grow overflow-hidden"
+        style={{
           paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
         }}
       >
-        <Tabs 
+        <Tabs
           value={selectedTab}
-          className="w-full h-full"
+          className="w-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="relative z-40">
             {/* Special case for consolidated media tab */}
             {mediaFidgetIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-media" 
+              <TabsContent
+                key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full block"
+                className="w-full block"
                 style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
-                  className="h-full w-full"
-                  style={{ 
-                    paddingInline: `${MOBILE_PADDING}px`, 
+                  className="w-full"
+                  style={{
+                    paddingInline: `${MOBILE_PADDING}px`,
                     paddingTop: `${MOBILE_PADDING - 16}px`,
                   }}
                 >
@@ -151,16 +151,16 @@ const MobileView: React.FC<MobileViewProps> = ({
 
             {/* Special case for consolidated pinned tab */}
             {pinnedCastIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-pinned" 
+              <TabsContent
+                key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full block"
+                className="w-full block"
                 style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
-                  className="h-full w-full"
-                  style={{ 
-                    paddingInline: `${MOBILE_PADDING}px`, 
+                  className="w-full"
+                  style={{
+                    paddingInline: `${MOBILE_PADDING}px`,
                     paddingTop: `${MOBILE_PADDING - 16}px`,
                   }}
                 >
@@ -188,10 +188,10 @@ const MobileView: React.FC<MobileViewProps> = ({
                 if (!bundle) return null;
                 
                 return (
-                  <TabsContent 
-                    key={fidgetId} 
+                  <TabsContent
+                    key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
+                    className="w-full block"
                     style={{ visibility: 'visible', display: 'block' }}
                   >
                     <FidgetContent
