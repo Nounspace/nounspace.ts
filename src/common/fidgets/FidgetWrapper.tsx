@@ -30,7 +30,7 @@ export type FidgetWrapperProps = {
   bundle: FidgetBundle;
   context?: FidgetRenderContext;
   saveConfig: (conf: FidgetConfig) => Promise<void>;
-  flushPendingSaves: () => void;
+  flushPendingSaves: () => Promise<void> | void;
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
@@ -70,8 +70,8 @@ export function FidgetWrapper({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
 
-  function onClickEdit() {
-    flushPendingSaves();
+  async function onClickEdit() {
+    await flushPendingSaves();
     setSelectedFidgetID(bundle.id);
     setCurrentFidgetSettings(
       <FidgetSettingsEditor

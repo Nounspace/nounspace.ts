@@ -41,7 +41,7 @@ export interface EditorPanelProps {
   isPickingFidget: boolean;
   setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
   openFidgetPicker(): void;
-  selectFidget(fidgetBundle: FidgetBundle): void;
+  selectFidget(fidgetBundle: FidgetBundle): Promise<void>;
   addFidgetToGrid(fidget: FidgetInstanceData): boolean;
 }
 
