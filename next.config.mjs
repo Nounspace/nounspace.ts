@@ -1,4 +1,5 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
+import { createRequire } from "node:module";
 import packageInfo from "./package.json" with { type: "json" };
 
 const withBundleAnalyzer = bundlerAnalyzer({
@@ -90,6 +91,15 @@ const nextConfig = {
   //     },
   //   ];
   // },
+  webpack: (config) => {
+    const require = createRequire(import.meta.url);
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@noble/hashes/sha2": require.resolve("@noble/hashes/sha256.js"),
+    };
+    return config;
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);
