@@ -25,7 +25,7 @@ const BrandHeader = () => {
             <TooltipTrigger asChild>
               <Image
                 src="/images/noggles.svg"
-                className="h-13 me-3 mb-4"
+                className="h-13 me-3 "
                 alt="Nounspace Logo"
                 width={60}
                 height={40}
