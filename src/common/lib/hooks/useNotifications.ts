@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { NotificationsResponse } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { NotificationsResponse } from "@neynar/nodejs-sdk/build/api";
 import { useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import axiosBackend from "@/common/data/api/backend";

@@ -5,7 +5,7 @@ import requestHandler, {
   NounspaceResponse,
 } from "@/common/data/api/requestHandler";
 import neynar from "@/common/data/api/neynar";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { User } from "@neynar/nodejs-sdk/build/api";
 import { flatMap } from "lodash";
 
 const QuerySchema = z.object({
@@ -75,7 +75,9 @@ const _fetchAndFormat = async (
 const _searchUsersByUsername =
   (params: z.infer<typeof QuerySchema>) =>
   async (): Promise<UserSearchResult> => {
-    const response = await neynar.searchUser(params!.q, params!.viewerFid, {
+    const response = await neynar.searchUser({ 
+      q:params!.q, 
+      viewerFid:params!.viewerFid, 
       limit: params!.limit,
       cursor: params!.cursor,
     });
@@ -89,7 +91,7 @@ const _searchUsersByFids =
   (params: z.infer<typeof QuerySchema>) =>
   async (): Promise<UserSearchResult> => {
     const fids = [Number.parseInt(params!.q)];
-    const response = await neynar.fetchBulkUsers(fids);
+    const response = await neynar.fetchBulkUsers({fids});
     return {
       users: response.users,
       cursor: null,
@@ -99,7 +101,7 @@ const _searchUsersByFids =
 const _searchUsersByAddr =
   (params: z.infer<typeof QuerySchema>) =>
   async (): Promise<UserSearchResult> => {
-    const response = await neynar.fetchBulkUsersByEthereumAddress([params!.q]);
+    const response = await neynar.fetchBulkUsersByEthOrSolAddress({addresses: [params!.q]});
     return {
       users: flatMap(response, (x) => x),
       cursor: null,
@@ -159,3 +161,5 @@ const get = async (req: NextApiRequest, res: NextApiResponse) => {
 export default requestHandler({
   get: get,
 });
+
+export { QuerySchema, _isMaybeFid, _isMaybeAddress, _validateQueryParams };

@@ -1,18 +1,16 @@
-import React, { useEffect } from "react";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { isValidUrl } from "@/common/lib/utils/url";
-import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl } from "@/fidgets/helpers";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { ErrorWrapper } from "@/fidgets/helpers";
+import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { isValidUrl } from "@/common/lib/utils/url";
+import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
+import React from "react";
 
 export type VideoFidgetSettings = {
   url: string;
@@ -32,16 +30,28 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste any YouTube or Vimeo URL and it will be automatically converted",
       required: true,
-      default: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
-      inputSelector: TextInput,
+      default: "https://www.youtube.com/watch?v=lOzCA7bZG_k", 
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     ...defaultStyleFields,
     {
       fieldName: "size",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
       required: false,
-      inputSelector: IFrameWidthSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IFrameWidthSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
   ],
