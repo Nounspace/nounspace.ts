@@ -1,7 +1,6 @@
 import BorderSelector from "@/common/components/molecules/BorderSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
-import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import {
@@ -13,6 +12,8 @@ import {
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import React from "react";
+import { BsAspectRatio, BsAspectRatioFill } from "react-icons/bs";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import FrameEmbed from "./components/Embeds/FrameEmbed";
 
 export type FrameFidgetSettings = {
@@ -28,51 +29,95 @@ const frameProperties: FidgetProperties = {
     ...mobileStyleSettings,
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste the URL to the Frame you want to embed.",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "Scale",
+      displayName: "Scale",
+      displayNameHint: "Drag the slider to adjust the image size.",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ImageScaleSlider {...props} />
+        </WithMargin>
+      ),
+      default: 1,
+      group: "style",
     },
     {
       fieldName: "background",
       displayName: "Background",
+      displayNameHint: "Color used for the background of the Fidget",
       required: false,
       inputSelector: (props) => (
+        <WithMargin>
         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-background-color)"
           defaultColor="#FFFFFF"
           colorType="background"
         />
+      </WithMargin>
       ),
       group: "style",
       default: "var(--user-theme-fidget-background)",
     },
     {
       fieldName: "fidgetBorderWidth",
-      default: "transparent",
+      displayName: "Fidget Border Width",
+      displayNameHint: "Width of the border. Use Theme Border to inherit from Theme",
+      default: "var(--user-theme-fidget-border-width)",
       required: false,
-      inputSelector: BorderSelector,
+      inputSelector: (props) => (
+           <WithMargin>
+            <BorderSelector 
+             {...props} 
+             hideGlobalSettings={false}
+           />
+           </WithMargin>
+         ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderColor",
       displayName: "Border Color",
+      displayNameHint: "Color of the Fidget's Border.",
       required: false,
       inputSelector: (props) => (
+        <WithMargin>
         <ThemeColorSelector
           {...props}
           themeVariable="var(--user-theme-fidget-border-color)"
           defaultColor="#000000"
           colorType="border color"
         />
+      </WithMargin>
       ),
       group: "style",
       default: "var(--user-theme-fidget-border-color)",
     },
     {
       fieldName: "fidgetShadow",
-      default: "none",
-      required: false,
-      inputSelector: ShadowSelector,
+      displayName: "Fidget Shadow",
+      displayNameHint: "Shadow effect. Use Theme Shadow to inherit from Theme",
+      default: "var(--user-theme-fidget-shadow)",
+         required: false,
+         inputSelector: (props) => (
+           <WithMargin>
+             <ShadowSelector
+              {...props} 
+              hideGlobalSettings={false}
+            />
+           </WithMargin>
+         ),
       group: "style",
     },
   ],

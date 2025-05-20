@@ -12,8 +12,8 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { CgProfile } from "react-icons/cg";
-import LoginIcon from "../atoms/icons/LoginIcon";
 import { useSidebarContext } from "./Sidebar";
+import { LogIn } from "lucide-react";
 
 const MobileHeader: React.FC = () => {
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
@@ -66,7 +66,7 @@ const MobileHeader: React.FC = () => {
   const isLoggedIn = getIsAccountReady();
 
   return (
-    <header className="relative flex items-center justify-between h-14 px-4 border-b bg-white">
+    <header className="relative flex items-center justify-between h-14 px-4 border-b bg-white z-50">
       <div className="flex items-center gap-2">
         {isLoggedIn ? (
           <button
@@ -85,7 +85,7 @@ const MobileHeader: React.FC = () => {
           </button>
         ) : (
           <Button variant="primary" size="sm" onClick={openLogin} withIcon>
-            <LoginIcon />
+            <LogIn size={16} />
             Sign In
           </Button>
         )}

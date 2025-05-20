@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from "react";
+import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
-  FidgetProperties,
   FidgetModule,
+  FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { isValidUrl } from "@/common/lib/utils/url";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
-import { transformUrl, ErrorWrapper } from "@/fidgets/helpers";
+import { isValidUrl } from "@/common/lib/utils/url";
+import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
+import React, { useEffect, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
 export type IFrameFidgetSettings = {
@@ -34,15 +33,27 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "url",
+      displayName: "URL",
+      displayNameHint: "Paste the URL of the webpage you'd like to embed",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
-    ...defaultStyleFields,
+   ...defaultStyleFields,
     {
       fieldName: "size",
+      displayName: "Size",
+      displayNameHint: "Drag the slider to adjust the zoom level.",
       required: false,
-      inputSelector: IFrameWidthSlider,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IFrameWidthSlider {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
   ],

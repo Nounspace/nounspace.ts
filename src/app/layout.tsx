@@ -3,10 +3,10 @@ import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
-import ClientHeaderWrapper from "@/common/components/organisms/ClientHeaderWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 
 export const metadata = {
   title: "Nounspace",
@@ -57,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <Head>
         <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
       </Head>
@@ -74,13 +74,13 @@ const sidebarLayout = (page: React.ReactNode) => {
     <>
       <div className="min-h-screen max-w-screen w-screen flex flex-col">
         {/* App Navigation Bar */}
-        <div className="w-full flex-shrink-0">
-          <ClientHeaderWrapper />
+        <div className="w-full flex-shrink-0 md:hidden">
+          <ClientMobileHeaderWrapper />
         </div>
 
         {/* Main Content with Sidebar */}
         <div className="flex w-full h-full flex-grow">
-          <div className="mx-auto transition-all duration-100 ease-out z-10">
+          <div className="mx-auto transition-all duration-100 ease-out z-10 hidden md:block">
             <ClientSidebarWrapper />
           </div>
           {page}

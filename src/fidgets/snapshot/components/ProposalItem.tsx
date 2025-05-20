@@ -17,15 +17,19 @@ import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
 interface ProposalItemProps {
   proposal: any;
   space: string;
-  headingsFont?: string;
-  bodyFont?: string;
+  headingsFont: string;
+  headingsColor: string;
+  bodyFont: string;
+  bodyColor: string;
 }
 
 const ProposalItem: React.FC<ProposalItemProps> = ({ 
   proposal, 
   space, 
-  headingsFont = "var(--user-theme-headings-font)",
-  bodyFont = "var(--user-theme-font)"
+  headingsFont,
+  headingsColor,
+  bodyFont,
+  bodyColor,
 }) => {
   const extractImageUrl = (markdown: string): string | null => {
     const imageRegex = /!\[.*?\]\((.*?)\)/;
@@ -171,7 +175,10 @@ const ProposalItem: React.FC<ProposalItemProps> = ({
         <img
           src={avatarUrl}
           alt="Avatar"
-          className="w-16 h-16 rounded-md mr-4 object-cover"
+          width={64}
+          height={64}
+          style={{ width: "auto", height: "auto" }}
+          className="rounded-md mr-4 object-cover"
           onError={handleError}
         />
         <div className="flex flex-col flex-grow">

@@ -180,36 +180,40 @@ function TabBar({
   }
 
   const isLoggedIn = getIsAccountReady();
+  
+   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
+    
+    switchTabTo(tabName, true);
+  }, [switchTabTo]);
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:min-h-16 overflow-y-scroll w-full z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        {pageType === "proposal" && (
-          <div className="flex flex-row justify-start overflow-y-scroll w-full z-30 bg-white">
-            <ProposalDataHeader />
-          </div>
-        )}
-        <div className="flex flex-row justify-start self-end h-16 overflow-y-scroll w-full z-70 bg-white pr-8 md:pr-0">
+        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
           {tabList && (
             <Reorder.Group
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
-              className="flex flex-row gap-5 md:gap-4 grow items-start m-4 tabs"
+              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
               values={tabList}
             >
               <AnimatePresence initial={false}>
                 {map(
-                  inHome
-                    ? ["Welcome", ...tabList]
-                    : inHomebase
-                      ? ["Feed", ...tabList]
-                      : tabList,
+                    inHomebase
+                    ? ["Feed", ...tabList]
+                    : tabList,
                   (tabName: string) => {
                     return (
                       <Tab
@@ -218,7 +222,7 @@ function TabBar({
                         tabName={tabName}
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
-                        onClick={() => {}}
+                        onClick={() => handleTabClick(tabName)}  
                         removeable={isEditableTab(tabName)}
                         draggable={inEditMode}
                         renameable={isEditableTab(tabName)}

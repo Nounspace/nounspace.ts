@@ -25,6 +25,8 @@ import {
   NOUNISH_LOWFI_META,
   NOUNISH_LOWFI_URL,
 } from "@/constants/nounishLowfi";
+import { FaPause, FaPlay } from "react-icons/fa";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 type ContentMetadata = {
   title?: string | null;
@@ -33,6 +35,7 @@ type ContentMetadata = {
 };
 export type PlayerProps = {
   url: string | string[];
+  shrunk?: boolean;
 };
 
 const getToggleIcon = ({ playing, started, ready }): [IconType, string] => {
@@ -45,7 +48,7 @@ const getToggleIcon = ({ playing, started, ready }): [IconType, string] => {
   }
 };
 
-export const Player: React.FC<PlayerProps> = ({ url }) => {
+export const Player: React.FC<PlayerProps> = ({ url, shrunk = false }) => {
   const hasWindow = useHasWindow();
   const playerRef = useRef<ReactPlayer | null>(null);
   const [muted, setMuted] = useState(true);
@@ -58,6 +61,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     started,
     ready,
   });
+  const [isHovering, setIsHovering] = useState(false);
 
   const getMetadata = async (_url: string | string[]) => {
     // Handle array of URLs by taking the first one
@@ -74,7 +78,7 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
       const url = new URL(videoUrl);
       const contractName = url.searchParams.get("contractName");
       const contractAddress = url.searchParams.get(
-        "contractAddress",
+        "contractAddress"
       ) as Address;
       const thumbnailUrl = url.searchParams.get("thumbnailUrl");
       const chain = url.searchParams.get("chain") as AlchemyNetwork;
@@ -143,17 +147,77 @@ export const Player: React.FC<PlayerProps> = ({ url }) => {
     onUnstarted: onUnstarted,
   };
 
+  if (shrunk) {
+    return (
+      <>
+        <div
+          className="relative w-16 h-16 mx-auto overflow-hidden rounded-lg cursor-pointer"
+          onClick={playing ? onPause : onPlay}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          {metadata?.thumbnail ? (
+            <Image
+              src={metadata.thumbnail}
+              alt="Music thumbnail"
+              fill
+              sizes="64px"
+              priority
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-300"></div>
+          )}
+
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+            {!ready ? (
+              <LiaCircleNotchSolid
+                className="text-white animate-spin drop-shadow-md"
+                size={24}
+              />
+            ) : (
+              <div
+                className={mergeClasses(
+                  "transition-transform duration-200",
+                  isHovering ? "scale-110" : "scale-100"
+                )}
+              >
+                {playing ? (
+                  <FaPause className="text-white drop-shadow-md" size={24} />
+                ) : (
+                  <FaPlay className="text-white drop-shadow-md" size={24} />
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        {hasWindow && (
+          <ReactPlayer
+            className="hidden"
+            url={url}
+            ref={playerRef}
+            playing={playing}
+            loop={true}
+            light={false}
+            controls={false}
+            muted={muted}
+            config={{
+              youtube: youtubeConfig,
+            }}
+            onReady={onReady}
+            onStart={onStart}
+            onPause={onPause}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <div className="flex items-center border border-gray-200 rounded-full md:rounded-lg overflow-hidden">
         <div className="overflow-hidden relative w-8 h-8 md:w-16 md:h-auto ml-2 md:ml-auto flex-shrink-0 self-center md:self-stretch rounded-lg md:rounded-none">
           {metadata?.thumbnail && (
-            <Image
-              src={metadata?.thumbnail}
-              alt="poster"
-              layout="fill"
-              objectFit="cover"
-            />
+            <Image src={metadata?.thumbnail} alt="poster" fill sizes="64px" />
           )}
         </div>
         <div className="flex items-center pl-2 p-1 md:p-2 gap-2 flex-auto overflow-hidden">

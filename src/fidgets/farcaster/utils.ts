@@ -27,8 +27,22 @@ import { Address, encodeAbiParameters } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
-import { ModProtocolCastAddBody } from "./components/CreateCast";
+// import { ModProtocolCastAddBody } from "./components/CreateCast";
 import { type Channel } from "@mod-protocol/farcaster";
+
+type FarcasterUrlEmbed = {
+  url: string;
+};
+type FarcasterCastIdEmbed = {
+  castId: {
+      fid: number;
+      hash: Uint8Array;
+  };
+};
+export type FarcasterEmbed = FarcasterCastIdEmbed | FarcasterUrlEmbed;
+export function isFarcasterUrlEmbed(embed: FarcasterEmbed): embed is FarcasterUrlEmbed {
+  return (embed as FarcasterUrlEmbed).url !== undefined;
+}
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
   "0x00000000FcB080a4D6c39a9354dA9EB9bC104cd7";
@@ -133,36 +147,16 @@ export const unfollowUser = async (
 };
 
 export const submitCast = async (
-  unsignedCastBody: ModProtocolCastAddBody,
+  signedCastMessage: Message,
   fid: number,
   signer: Signer,
 ) => {
   try {
-    const castAddMessageResp = await makeCastAdd(
-      unsignedCastBody,
-      { fid, network: FarcasterNetwork.MAINNET }, // Ensure the network and fid are correct
-      signer,
-    );
-
-    // Check if cast creation was successful
-    if (!castAddMessageResp.isOk()) {
-      console.error("makeCastAdd failed with error:", castAddMessageResp.error); // Log the error returned
-      return false;
-    }
-
-    // Submit the created message to the backend
-    const backendResponse = await submitMessageToBackend(
-      castAddMessageResp.value,
-    );
-
+    const backendResponse = await submitMessageToBackend(signedCastMessage);
     if (!backendResponse) {
-      console.error(
-        "submitMessageToBackend failed, response:",
-        backendResponse,
-      );
+      console.error("submitMessageToBackend failed");
       return false;
     }
-
     return backendResponse;
   } catch (error) {
     console.error("Error in submitCast:", error);
@@ -208,7 +202,7 @@ export const getSignedKeyRequestMetadataFromAppAccount = async (
   signerPublicKey: `0x${string}`,
   deadline: bigint | number,
 ) => {
-  const appAccount = mnemonicToAccount(process.env.NEXT_PUBLIC_APP_MNENOMIC!);
+  const appAccount = mnemonicToAccount(process.env.NEXT_PUBLIC_APP_MNEMONIC!);
   const fid = BigInt(process.env.NEXT_PUBLIC_APP_FID!);
 
   const signature = await appAccount.signTypedData({

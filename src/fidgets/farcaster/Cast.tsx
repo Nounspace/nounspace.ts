@@ -5,10 +5,10 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { defaultStyleFields } from "@/fidgets/helpers";
-import { BsFillPinFill, BsPin } from "react-icons/bs";
 import { isUndefined } from "lodash";
 import React from "react";
+import { BsFillPinFill, BsPin } from "react-icons/bs";
+import { defaultStyleFields, WithMargin } from "../helpers";
 import EmbededCast from "./components/Embeds/EmbededCast";
 
 type CastFidgetSettings = {
@@ -26,19 +26,40 @@ const castFidgetProperties: FidgetProperties = {
   mobileIconSelected: <BsFillPinFill size={22} />,
   fields: [
     {
-      fieldName: "castHash",
+      fieldName: "castUrl",
+      displayName: "Cast URL",
+      displayNameHint: "Copy and paste the URL of a cast from Warpcast's share button. This is the easiest way to pin a cast.",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "castHash",
+      displayName: "Cast Hash",
+      displayNameHint: "Copy and paste the hash from a cast's ellipsis menu on Warpcast. Then input the caster's FID.",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
     },
     {
       fieldName: "casterFid",
+      displayName: "Caster FID",
+      displayNameHint: "Copy and paste the FID from the caster's profile About section. Then input the Cast Hash if you haven't already.",
       required: false,
-      inputSelector: TextInput,
-    },
-    {
-      fieldName: "castUrl",
-      required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
     },
     ...defaultStyleFields,
   ],
@@ -54,20 +75,20 @@ const Cast: React.FC<FidgetArgs<CastFidgetSettings>> = ({
   settings,
 }) => {
   const { castHash, casterFid, castUrl } = settings;
-  
+
   const castId =
     !isUndefined(castHash) && !isUndefined(casterFid)
       ? { hash: castHash, fid: casterFid }
       : undefined;
 
   if (isUndefined(castUrl) && isUndefined(castId)) {
-    return "Must Cast URL or both Caster FID and Cast Hash";
+    return "Must input either Cast URL or both Caster FID and Cast Hash";
   }
 
   return (
     <div
       style={{
-        background: settings.useDefaultColors 
+        background: settings.useDefaultColors
           ? 'var(--user-theme-fidget-background)'
           : settings.background,
         borderColor: settings.useDefaultColors

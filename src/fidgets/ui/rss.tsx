@@ -5,23 +5,25 @@ import {
 } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
-import { BsRss, BsRssFill } from "react-icons/bs";
 import React, { useEffect, useState } from "react";
+import { BsRss, BsRssFill } from "react-icons/bs";
 import ReactMarkdown from "react-markdown";
 import RSSParser from "rss-parser";
-import { defaultStyleFields } from "../helpers";
+import { defaultStyleFields, WithMargin } from "../helpers";
 
-export type TextFidgetSettings = {
+export type RSSFidgetSettings = {
   title?: string;
   rssUrl: string;
+  scale: number;
   useDefaultColors?: boolean;
 } & FidgetSettingsStyle;
 
-export const textConfig: FidgetProperties = {
+export const rssConfig: FidgetProperties = {
   fidgetName: "RSS",
   icon: 0x1f6f0,
   mobileIcon: <BsRss size={20} />,
@@ -29,88 +31,93 @@ export const textConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "rssUrl",
+      displayName: "RSS Feed URL",
+      displayNameHint: "Enter the URL of the RSS feed you want to display.",
       default: "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
-      fieldName: "fontFamily",
+      fieldName: "font Family",
+      displayName: "Font Family",
+      displayNameHint: "Font used for the content text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "fontColor",
+      displayName: "FontColor",
+      displayNameHint: "Color used for the content text",
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+
       ),
       group: "style",
     },
     {
       fieldName: "headingsFontFamily",
+      displayName: "HeadingsFontFamily",
+      displayNameHint: "Font used for titles. Set to Theme Font to inherit the Title Font from the Theme.",
       default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "headingsFontColor",
+      displayName: "HeadingsFontColor",
+      displayNameHint: "Color used for titles",
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-headings-font-color)"
-          defaultColor="#000000"
-          colorType="headings color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings color"
+          />
+        </WithMargin>
+
       ),
       group: "style",
     },
-
     ...defaultStyleFields,
     {
-      fieldName: "itemBackground",
-      default: "var(--user-theme-fidget-background)",
-      required: false,
-      inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
-      ),
-      group: "style",
-    },
-    {
-      fieldName: "itemBorderColor",
-      default: "var(--user-theme-fidget-border-color)",
-      required: false,
-      inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
-      ),
-      group: "style",
-    },
-    {
       fieldName: "css",
+      displayName: "CSS",
+      displayNameHint: "Add custom CSS to further customize the appearance",
       default: "",
       required: false,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "code",
     },
   ],
@@ -122,7 +129,7 @@ export const textConfig: FidgetProperties = {
   },
 };
 
-export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
+export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
   const [rssItems, setRssItems] = useState<any[]>([]);
   const [rssFeed, setRssFeed] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -151,20 +158,6 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
 
   return (
     <div
-      style={{
-        background: settings.useDefaultColors 
-          ? 'var(--user-theme-fidget-background)' 
-          : settings.background,
-        color: settings.useDefaultColors 
-          ? 'var(--user-theme-font-color)' 
-          : settings.fontColor,
-        height: "100%",
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
-      }}
     >
       {rssFeed?.title && (
         <CardHeader className="p-2 ml-5">
@@ -272,5 +265,5 @@ export const Rss: React.FC<FidgetArgs<TextFidgetSettings>> = ({ settings }) => {
 
 export default {
   fidget: Rss,
-  properties: textConfig,
-} as FidgetModule<FidgetArgs<TextFidgetSettings>>;
+  properties: rssConfig,
+} as FidgetModule<FidgetArgs<RSSFidgetSettings>>;

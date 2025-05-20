@@ -8,7 +8,7 @@ import {
   Notification,
   NotificationTypeEnum,
   User,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+} from "@neynar/nodejs-sdk/build/api";
 import {
   Tabs,
   TabsList,
@@ -32,7 +32,7 @@ import {
 import moment from "moment";
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { formatTimeAgo } from "@/common/lib/utils/date";
+import { FaHeart } from "react-icons/fa";
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -87,53 +87,47 @@ const NotificationHeader = ({
   relatedUsers,
   descriptionSuffix,
   maxAvatarsToDisplay = 8,
+  leftIcon = null,
 }: {
   notification: Notification;
   relatedUsers: User[];
   descriptionSuffix: string;
   maxAvatarsToDisplay?: number;
+  leftIcon?: React.ReactNode;
 }) => {
   const numAvatarsNotShown = Math.max(
     0,
     relatedUsers.length - maxAvatarsToDisplay,
   );
 
-  const relativeDateString = useMemo(() => {
-    return formatTimeAgo(
-      moment.utc(notification.most_recent_timestamp).toDate(),
-    );
-  }, [notification.most_recent_timestamp]);
-
   return (
-    <div className="flex gap-2 flex-wrap">
-      {relatedUsers.length > 0 ? (
-        <div className="flex gap-x-1 pl-[20px]">
-          {relatedUsers
-            .slice(0, maxAvatarsToDisplay)
-            .map((user: User, i: number) => (
-              <CastAvatar
-                user={user}
-                key={i}
-                className="ml-[-20px] outline outline-2 outline-white"
-              />
-            ))}
-          {numAvatarsNotShown < 0 ? (
-            <div className="ml-[-20px] outline outline-2 outline-white rounded-full size-10 tracking-tighter text-gray-500 flex items-center justify-center bg-gray-200 text-xs font-bold">
+    <div className="flex flex-col gap-1 flex-wrap items-start w-full">
+      {relatedUsers.length > 0 && (
+        <div className="flex gap-x-1 items-center mb-1 pl-12">
+          {leftIcon && (
+            <span className="flex items-center justify-center text-red-500 mr-1">
+              {leftIcon}
+            </span>
+          )}
+          {relatedUsers.slice(0, maxAvatarsToDisplay).map((user: User, i: number) => (
+            <CastAvatar
+              user={user}
+              key={i}
+              className="outline outline-2 outline-white"
+            />
+          ))}
+          {numAvatarsNotShown < 0 && (
+            <div className="outline outline-2 outline-white rounded-full size-10 tracking-tighter text-gray-500 flex items-center justify-center bg-gray-200 text-xs font-bold">
               +{numAvatarsNotShown}
             </div>
-          ) : null}
+          )}
         </div>
-      ) : null}
-      <div>
-        <p className="text-base leading-[1.3]">
+      )}
+      <div className="w-full">
+        <p className="text-base leading-[1.3] text-left m-0 p-0 pl-12">
           <FormattedUsersText users={relatedUsers} />
           {` ${descriptionSuffix}`}
         </p>
-        {relativeDateString && (
-          <p className="tracking-tight text-sm leading-[1.3] truncate gap-1 opacity-60 font-normal">
-            {relativeDateString}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -257,20 +251,29 @@ const LikeNotificationRow: NotificationRowProps = ({
         notification={notification}
         relatedUsers={likedByUsers}
         descriptionSuffix="liked your cast"
+        leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <CastBody
-        cast={notification.cast!}
-        channel={null}
-        isEmbed={false}
-        showChannel={false}
-        hideEmbeds={false}
-        castTextStyle={{}}
-        hideReactions={false}
-        renderRecastBadge={false}
-        userFid={fid}
-        isDetailView={false}
-        onSelectCast={onSelect}
-      />
+      <div className="ml-12 w-full">
+        <CastBody
+          cast={notification.cast!}
+          channel={null}
+          isEmbed={false}
+          showChannel={false}
+          hideEmbeds={false}
+          castTextStyle={{
+            fontSize: "14px",
+            color: "#71767B",
+            lineHeight: "1.3",
+            fontWeight: "normal",
+            textAlign: "left",
+          }}
+          hideReactions={false}
+          renderRecastBadge={false}
+          userFid={fid}
+          isDetailView={false}
+          onSelectCast={onSelect}
+        />
+      </div>
     </div>
   );
 };

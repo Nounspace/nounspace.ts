@@ -17,7 +17,7 @@ import {
   CastWithInteractions,
   EmbedUrl,
   User,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+} from "@neynar/nodejs-sdk/build/api";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { ReactionType } from "@farcaster/core";
