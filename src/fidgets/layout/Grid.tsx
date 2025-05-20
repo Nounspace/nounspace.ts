@@ -216,7 +216,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // Debounced save function stored in a ref to ensure one instance
   const debouncedSaveConfigRef = useRef(
     debounce((patch: Parameters<typeof saveConfig>[0]) => {
-      saveConfigRef.current(patch);
+      return saveConfigRef.current(patch);
     }, 250, {
       leading: false,
       trailing: true,
@@ -224,7 +224,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   );
 
   const flushPendingSaves = useCallback(() => {
-    debouncedSaveConfigRef.current.flush();
+    return debouncedSaveConfigRef.current.flush();
   }, []);
 
   function unselectFidget() {
@@ -237,8 +237,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     unselectFidget();
   }
 
-  function selectFidget(bundle: FidgetBundle) {
-    flushPendingSaves();
+  async function selectFidget(bundle: FidgetBundle) {
+    await flushPendingSaves();
     const settingsWithDefaults = getSettingsWithDefaults(
       bundle.config.settings,
       bundle.properties,

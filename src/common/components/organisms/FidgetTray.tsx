@@ -21,7 +21,7 @@ export interface FidgetTrayProps {
   removeFidget(fidgetId: string): void;
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
   selectedFidgetID: string | null;
-  selectFidget: (fidgetBundle: FidgetBundle) => void;
+  selectFidget: (fidgetBundle: FidgetBundle) => Promise<void>;
 }
 
 export const FidgetTray: React.FC<FidgetTrayProps> = ({
