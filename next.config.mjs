@@ -75,15 +75,6 @@ const nextConfig = {
       },
     ];
   },
-
-  webpack: (config) => {
-    config.resolve = config.resolve || {};
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      "@noble/hashes/sha2": require.resolve("@noble/hashes/sha256.js"),
-    };
-    return config;
-  },
   
   // async headers() {
   //   return [
