@@ -73,10 +73,10 @@ const Navigation: React.FC<NavProps> = ({
   onNavigate,
 }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
-      getIsLoggedIn: state.getIsAccountReady,
+      getIsAccountReady: state.getIsAccountReady,
       getIsInitializing: state.getIsInitializing,
     })
   );
@@ -111,7 +111,7 @@ const Navigation: React.FC<NavProps> = ({
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);

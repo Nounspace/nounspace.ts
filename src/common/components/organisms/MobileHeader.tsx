@@ -16,9 +16,9 @@ import LoginIcon from "../atoms/icons/LoginIcon";
 import { useSidebarContext } from "./Sidebar";
 
 const MobileHeader: React.FC = () => {
-  const { setModalOpen, getIsLoggedIn } = useAppStore((state) => ({
+  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
   }));
 
   const { setEditMode, sidebarEditable } = useSidebarContext();
@@ -53,7 +53,7 @@ const MobileHeader: React.FC = () => {
     };
   }, []);
 
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
 
   return (
     <header className="relative flex items-center justify-between h-14 px-4 border-b bg-white">
