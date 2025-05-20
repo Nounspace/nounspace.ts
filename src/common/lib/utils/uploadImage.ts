@@ -4,31 +4,29 @@ export async function uploadImage(file: File): Promise<string | null> {
     return null;
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-  if (!apiKey) {
-    console.error("ImgBB API key is not configured");
-    return null;
-  }
-
-  const formData = new FormData();
-  formData.append("image", file);
+  const reader = new FileReader();
+  const base64 = await new Promise<string>((resolve, reject) => {
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
 
   try {
-    const response = await fetch(
-      `https://api.imgbb.com/1/upload?key=${apiKey}`,
-      {
-        method: "POST",
-        body: formData,
+    const response = await fetch("/api/images/upload", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    );
+      body: JSON.stringify({ image: base64 }),
+    });
 
-    const data = await response.json();
-    if (data.success) {
-      return data.data.display_url || data.data.url;
+    if (!response.ok) {
+      console.error("Failed to upload image", await response.text());
+      return null;
     }
 
-    console.error("Failed to upload image", data.error);
-    return null;
+    const data = (await response.json()) as { url?: string };
+    return data.url || null;
   } catch (err) {
     console.error("Error uploading image:", err);
     return null;
