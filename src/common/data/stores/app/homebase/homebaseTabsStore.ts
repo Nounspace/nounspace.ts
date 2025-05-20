@@ -139,7 +139,10 @@ export const createHomeBaseTabStoreFunc = (
         `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}`,
       );
     try {
-      const { data } = await axios.get<Blob>(publicUrl, {
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
+      const { data } = await axios.get<Blob>(urlWithParam, {
         responseType: "blob",
         headers: {
           "Cache-Control": "no-cache",
