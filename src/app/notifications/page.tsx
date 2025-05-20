@@ -424,7 +424,7 @@ function NotificationsPageContent() {
   );
 
   return (
-    <div className="w-full max-h-screen overflow-auto">
+    <div className="w-full min-h-screen">
       <Tabs value={tab} onValueChange={onTabChange} className="min-h-full">
         <div className="py-4 px-4 border-b">
           <h1 className="text-xl font-bold mb-6">Notifications</h1>
