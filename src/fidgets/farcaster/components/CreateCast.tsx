@@ -4,6 +4,7 @@ import {
   makeCastAdd,
   FarcasterNetwork,
   CastAddBody,
+  Embed,
 } from "@farcaster/core";
 
 import { useEditor, EditorContent } from "@mod-protocol/react-editor";
@@ -151,7 +152,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         e.preventDefault();
         const url = await uploadImage(file);
         if (url) {
-          addEmbed({ url });
+          addEmbed({ url } as Embed);
         }
       }
     }
