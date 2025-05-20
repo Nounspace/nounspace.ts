@@ -66,7 +66,7 @@ const MobileHeader: React.FC = () => {
   const isLoggedIn = getIsAccountReady();
 
   return (
-    <header className="relative flex items-center justify-between h-14 px-4 border-b bg-white">
+    <header className="relative flex items-center justify-between h-14 px-4 border-b bg-white z-50">
       <div className="flex items-center gap-2">
         {isLoggedIn ? (
           <button
