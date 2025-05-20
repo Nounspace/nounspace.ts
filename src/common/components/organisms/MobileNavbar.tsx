@@ -25,7 +25,7 @@ interface MobileNavbarProps {
 }
 
 /**
- * A responsive mobile navigation bar that displays as a fixed bar at the bottom of the screen
+ * A responsive mobile navigation bar that sits at the bottom of the screen
  * with scrollable tabs. Features accessibility support and theme integration.
  * 
  * @param props.tabs - Array of tab items to render
@@ -297,7 +297,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       value={selected}
       onValueChange={onSelect}
       className={mergeClasses(
-        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-50",
+        "w-full h-[72px] bg-white border-t border-gray-200 z-50",
         className
       )}
       style={{

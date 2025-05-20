@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent } from "@/common/components/atoms/tabs";
-import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
+import { MOBILE_PADDING } from "@/constants/layout";
 import { FidgetConfig, FidgetBundle, FidgetInstanceData } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import { createFidgetBundle } from "@/fidgets/layout/tabFullScreen/utils";
@@ -111,13 +111,8 @@ const MobileView: React.FC<MobileViewProps> = ({
   
   return (
     <div className="flex flex-col h-full relative">
-      {/* Main content area with padding-bottom to make space for fixed navbar */}
-      <div 
-        className="w-full h-full overflow-hidden" 
-        style={{ 
-          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
-        }}
-      >
+      {/* Main content area */}
+      <div className="w-full h-full overflow-hidden">
         <Tabs 
           value={selectedTab}
           className="w-full h-full"
