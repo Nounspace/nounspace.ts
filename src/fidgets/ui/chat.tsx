@@ -6,7 +6,7 @@ import {
   FidgetProperties,
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
-import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
+import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
 import { BsChatDots, BsChatDotsFill } from "react-icons/bs";
 
 export type ChatFidgetSettings = {
@@ -22,9 +22,15 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "roomName",
+      displayName: "Room Name",
       default: "0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab",
+      displayNameHint: "Enter a name or contract address for the chat room",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     ...defaultStyleFields,

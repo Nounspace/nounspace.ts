@@ -1,4 +1,3 @@
-import { FilterType } from "@neynar/nodejs-sdk";
 import { useQuery } from "@tanstack/react-query";
 import TextInput from "@/common/components/molecules/TextInput";
 import React, { useMemo } from "react";
@@ -6,9 +5,10 @@ import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import { isWebUrl } from "@/common/lib/utils/urls";
 import axiosBackend from "@/common/data/api/backend";
 import {
+  FilterType,
   ChannelResponse,
   FeedResponse,
-} from "@neynar/nodejs-sdk/build/neynar-api/v2";
+} from "@neynar/nodejs-sdk/build/api";
 
 // TO DO: Make this into a Feed that is configured to filter to a specific channel that is selectable in settings
 

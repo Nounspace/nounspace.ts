@@ -333,6 +333,7 @@ const Navigation: React.FC<NavProps> = ({
             >
               <Player
                 url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL}
+                shrunk={shrunk}
               />
             </div>
             {isLoggedIn && (

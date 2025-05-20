@@ -22,7 +22,7 @@ import SwitchButton, {
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import React from "react";
 import { BsLink45Deg } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 
 export type Link = {
   text: string;
@@ -41,6 +41,8 @@ export type LinkFidgetSettings = {
   HeaderColor: string;
   headingsFontFamily: string;
   fontFamily: string;
+  scale: number;
+  fidgetShadow: string;
 } & FidgetSettingsStyle;
 
 export const linkConfig: FidgetProperties = {
@@ -51,13 +53,21 @@ export const linkConfig: FidgetProperties = {
     ...mobileStyleSettings,
     {
       fieldName: "title",
+      displayName: "Title",
+      displayNameHint: "Add a title to display above your list of links.",
       default: "My Links",
       required: false,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "links",
+      displayName: "Links",
+      displayNameHint: "Input the URL then add optional details to each link such as Icon, Title, and Description.",
       default: [
         {
           text: "Nouns",
@@ -67,119 +77,185 @@ export const linkConfig: FidgetProperties = {
         },
       ],
       required: true,
-      inputSelector: LinksInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <LinksInput {...props} />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
       fieldName: "viewMode",
+      displayName: "View Mode",
+      displayNameHint: "Choose between grid or list layout for displaying your links.",
       default: "list",
       required: false,
-      inputSelector: SwitchButton,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SwitchButton {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "headingsFontFamily",
-      default: "Theme Headings Font",
+      displayName: "HeadingsFontFamily",
+      displayNameHint: "Font used for the title and link text. Set to Theme Font to inherit the Title Font from the Theme.",
+      default: "var(--user-theme-headings-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "fontFamily",
+      displayName: "Font Family",
+      displayNameHint: "Font used for the description text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "Theme Font",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "HeaderColor",
+      displayName: "HeaderColor",
+      displayNameHint: "Color used for the title and link text.",
       default: "var(--user-theme-headings-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-headings-font-color)"
-          defaultColor="#000000"
-          colorType="headings color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-headings-font-color)"
+            defaultColor="#000000"
+            colorType="headings color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "DescriptionColor",
+      displayName: "DescriptionColor",
+      displayNameHint: "Color used for the description text.",
       default: "var(--user-theme-font-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-font-color)"
-          defaultColor="#000000"
-          colorType="font color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "itemBackground",
+      displayName: "ItemBackground",
+      displayNameHint: "Color used for the background of each individual link item.",
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "background",
+      displayName: "Background",
+      displayNameHint: "Color used for the background of the Fidget",
       default: "var(--user-theme-fidget-background)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-background)"
-          defaultColor="#FFFFFF"
-          colorType="background color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-background)"
+            defaultColor="#FFFFFF"
+            colorType="background"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderWidth",
+      displayName: "Fidget Border Width",
+      displayNameHint: "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
       default: "var(--user-theme-fidget-border-width)",
       required: false,
-      inputSelector: BorderSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <BorderSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "fidgetBorderColor",
+      displayName: "Fidget Border Color",
+      displayNameHint: "Color of the Fidget's Border.",
       default: "var(--user-theme-fidget-border-color)",
       required: false,
       inputSelector: (props) => (
-        <ThemeColorSelector
-          {...props}
-          themeVariable="var(--user-theme-fidget-border-color)"
-          defaultColor="#000000"
-          colorType="border color"
-        />
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-fidget-border-color)"
+            defaultColor="#000000"
+            colorType="border color"
+          />
+        </WithMargin>
       ),
       group: "style",
     },
     {
       fieldName: "fidgetShadow",
+      displayName: "Fidget Shadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
-      inputSelector: ShadowSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ShadowSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
+        </WithMargin>
+      ),
       group: "style",
     },
     {
       fieldName: "css",
+      displayName: "CSS",
+      displayNameHint: "Add custom CSS to further customize the appearance of your links.",
       default: "",
       required: false,
-      inputSelector: CSSInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CSSInput {...props} />
+        </WithMargin>
+      ),
       group: "code",
     },
   ],
@@ -211,12 +287,11 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
       value.includes("Theme Font");
   };
 
-  // Combined function to get the source of the headers
   const getHeadingsFontFamily = () => {
     if (isThemeHeadingsFont(settings.headingsFontFamily)) {
       return "var(--user-theme-headings-font)";
     }
-    
+
     if (settings.headingsFontFamily === "Londrina Solid") {
       const root = document.documentElement;
       const themeFont = getComputedStyle(root).getPropertyValue('--user-theme-headings-font').trim();
@@ -224,7 +299,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
         return themeFont;
       }
     }
-    
+
     return settings.headingsFontFamily;
   };
 
@@ -238,21 +313,9 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
 
   return (
     <div
-      style={{
-        fontFamily: getFontFamily(),
-        background: settings.background,
-        height: "100%",
-        borderWidth: settings.fidgetBorderWidth,
-        borderColor: settings.fidgetBorderColor,
-        boxShadow: settings.fidgetShadow,
-        overflow: "auto",
-        scrollbarWidth: "none",
-        padding: "0.5rem",
-        borderRadius: "1rem",
-      }}
     >
       {settings?.title && (
-        <CardHeader className="p-1 pl-2">
+        <CardHeader className="p-4">
           <CardTitle
             className="text-2xl font-bold"
             style={{
@@ -275,23 +338,11 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
               rel="noopener noreferrer"
             >
               <CardContent
-                style={{
-                  background: settings.itemBackground,
-                  wordWrap: "break-word",
-                  maxHeight: "200px",
-                  height: "auto",
-                  display: "flex",
-                  flexDirection: isGridView ? "column" : "row",
-                  padding: isGridView ? "1rem" : "0.5rem",
-                  margin: isGridView ? "0.25rem" : "0.5rem",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  transition: "transform 0.3s",
-                }}
+
                 className={
                   isGridView
-                    ? "p-4 flex flex-col items-start justify-between m-1 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
-                    : "p-2 flex items-center justify-between m-2 bg-gradient-to-r from-gray-100 to-gray-300 rounded-md hover:scale-105"
+                    ? "p-4 flex flex-col items-start justify-between m-1 hover:scale-105"
+                    : "p-2 flex items-center justify-between m-2 hover:scale-105"
                 }
                 key={index}
               >

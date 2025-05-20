@@ -1,5 +1,5 @@
 import requestHandler from "@/common/data/api/requestHandler";
-import { FeedType } from "@neynar/nodejs-sdk";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
 import { isArray, isNil } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
-import { User } from "@neynar/nodejs-sdk/build/neynar-api/v2";
+import { User } from "@neynar/nodejs-sdk/build/api";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import {
   Command,

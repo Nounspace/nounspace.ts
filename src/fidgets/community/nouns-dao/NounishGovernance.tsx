@@ -1,18 +1,19 @@
 import { CardContent } from "@/common/components/atoms/card";
 import { DaoSelector } from "@/common/components/molecules/DaoSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
+import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
 import useGraphqlQuery from "@/common/lib/hooks/useGraphqlQuery";
 import {
-  NOUNSBUILD_PROPOSALS_QUERY,
   NOUNS_PROPOSALS_QUERY,
+  NOUNSBUILD_PROPOSALS_QUERY,
 } from "@/common/lib/utils/queries";
 import { wagmiConfig } from "@/common/providers/Wagmi";
 import { NOUNS_DAO } from "@/constants/basedDaos";
 import BuilderProposalDetailView from "@/fidgets/community/nouns-dao/components/BuilderProposalDetailView";
 import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/NounsProposalDetailView";
 import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
-import { defaultStyleFields } from "@/fidgets/helpers";
+import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import React, { useEffect, useMemo, useState } from "react";
 import { getBlock } from "wagmi/actions";
 
@@ -25,6 +26,7 @@ export type NounishGovernanceSettings = {
     graphUrl: string;
     icon: string;
   };
+  scale: number;
   headingsFontFamily?: string;
   fontFamily?: string;
 } & FidgetSettingsStyle;
@@ -37,26 +39,50 @@ export const nounishGovernanceConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "selectedDao",
+      displayName: "Select DAO",
+      displayNameHint: "Choose from available Nounish communities and BuilderDAOs",
       default: {
         name: "Nouns DAO",
         contract: "", // nouns dao does not need a contract address
         graphUrl: NOUNS_DAO,
       },
       required: false,
-      inputSelector: DaoSelector,
-    },
-    {
-      fieldName: "headingsFontFamily",
-      default: "Theme Headings Font",
-      required: false,
-      inputSelector: FontSelector,
-      group: "style",
+      inputSelector: (props) => (
+        <WithMargin>
+          <DaoSelector {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
     },
     {
       fieldName: "fontFamily",
-      default: "Theme Font",
+      displayName: "font Family",
+      displayNameHint: "Select the font for the fidget text",
+      default: "var(--user-theme-font)",
       required: false,
-      inputSelector: FontSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "fontColor",
+      displayName: "Font Color",
+      displayNameHint: "Color used for the text input (body text)",
+      default: "var(--user-theme-font-color)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ThemeColorSelector
+            {...props}
+            themeVariable="var(--user-theme-font-color)"
+            defaultColor="#000000"
+            colorType="font color"
+          />
+        </WithMargin>
+      ),
       group: "style",
     },
     ...defaultStyleFields,
@@ -124,18 +150,6 @@ export const NounishGovernance: React.FC<
     fetchBlockNumber();
   }, []);
 
-  const getHeadingsFontFamily = () => {
-    return settings.headingsFontFamily === "Theme Headings Font" 
-      ? "var(--user-theme-headings-font)" 
-      : settings.headingsFontFamily || "var(--user-theme-headings-font)";
-  };
-
-  const getBodyFontFamily = () => {
-    return settings.fontFamily === "Theme Font" 
-      ? "var(--user-theme-font)" 
-      : settings.fontFamily || "var(--user-theme-font)";
-  };
-
   if (listError) {
     return <div>Error loading data</div>;
   }
@@ -153,44 +167,56 @@ export const NounishGovernance: React.FC<
       (proposal) => proposal.proposalId === proposalId,
     )
     : proposalsData?.proposals.find((proposal) => proposal.id === proposalId);
+
+  const bodyFontFamily = settings.fontFamily || "var(--user-theme-font)";
+  let bodyFontColor = settings.fontColor || "var(--user-theme-font-color)";
+  if (!bodyFontColor || bodyFontColor === "var(--user-theme-font-color)") {
+    bodyFontColor = "#000000";
+  }
+
   return (
-    <CardContent className="size-full overflow-scroll p-4" style={{ fontFamily: getBodyFontFamily() }}>
-      {proposalId && selectedProposal ? (
-        isBuilderSubgraph ? (
-          <BuilderProposalDetailView
-            proposal={selectedProposal}
-            goBack={handleGoBack}
-            currentBlock={currentBlock}
-            loading={listLoading}
-            versions={[]}
-            headingsFont={getHeadingsFontFamily()}
-            bodyFont={getBodyFontFamily()}
-          />
+    <div
+      className="size-full"
+      style={{
+        fontFamily: bodyFontFamily,
+        color: bodyFontColor,
+      }}
+    >
+      <CardContent className="size-full overflow-scroll p-4" >
+        {proposalId && selectedProposal ? (
+          isBuilderSubgraph ? (
+            <BuilderProposalDetailView
+              proposal={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+              versions={[]}
+
+            />
+          ) : (
+            <NounsProposalDetailView
+              proposal={selectedProposal}
+              versions={selectedProposal}
+              goBack={handleGoBack}
+              currentBlock={currentBlock}
+              loading={listLoading}
+
+            />
+          )
         ) : (
-          <NounsProposalDetailView
-            proposal={selectedProposal}
-            versions={selectedProposal}
-            goBack={handleGoBack}
+          <ProposalListView
+            proposals={proposalsData?.proposals || []}
             currentBlock={currentBlock}
+            setProposal={handleSetProposal}
             loading={listLoading}
-            headingsFont={getHeadingsFontFamily()}
-            bodyFont={getBodyFontFamily()}
+            isBuilderSubgraph={isBuilderSubgraph}
+            title={selectedDao.name}
+            daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
+
           />
-        )
-      ) : (
-        <ProposalListView
-          proposals={proposalsData?.proposals || []}
-          currentBlock={currentBlock}
-          setProposal={handleSetProposal}
-          loading={listLoading}
-          isBuilderSubgraph={isBuilderSubgraph}
-          title={selectedDao.name}
-          daoIcon={selectedDao.icon || "/images/nouns_yellow_logo.jpg"}
-          headingsFont={getHeadingsFontFamily()}
-          bodyFont={getBodyFontFamily()}
-        />
-      )}
-    </CardContent>
+        )}
+      </CardContent>
+    </div>
   );
 };
 
