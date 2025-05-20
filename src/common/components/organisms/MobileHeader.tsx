@@ -35,23 +35,33 @@ const MobileHeader: React.FC = () => {
   const enterEditMode = useCallback(() => setEditMode(true), [setEditMode]);
 
   useEffect(() => {
+    const EDGE_THRESHOLD = 20;
     let startX: number | null = null;
+
     function handleTouchStart(e: TouchEvent) {
-      startX = e.touches[0].clientX;
+      const x = e.touches[0].clientX;
+      if (x <= EDGE_THRESHOLD) {
+        startX = x;
+      }
     }
+
     function handleTouchEnd(e: TouchEvent) {
-      if (startX !== null && e.changedTouches[0].clientX - startX > 50) {
-        setNavOpen(true);
+      if (startX !== null) {
+        const deltaX = e.changedTouches[0].clientX - startX;
+        if (deltaX > 50) {
+          setNavOpen(true);
+        }
       }
       startX = null;
     }
+
     document.addEventListener("touchstart", handleTouchStart);
     document.addEventListener("touchend", handleTouchEnd);
     return () => {
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, []);
+  }, [setNavOpen]);
 
   const isLoggedIn = getIsAccountReady();
 
