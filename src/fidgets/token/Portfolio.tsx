@@ -29,13 +29,13 @@ const portfolioProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "trackType",
-      displayName: "Wallet(\u2060s) to track",
+      displayName: "Wallet(s) to track",
       default: "farcaster",
       required: true,
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
-            className="normal-case"
+            className="[&_label]:normal-case"
             {...props}
             settings={[
               { name: "Farcaster username", value: "farcaster" },
@@ -54,20 +54,26 @@ const portfolioProperties: FidgetProperties = {
       disabledIf: (settings) => settings.trackType !== "farcaster",
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput {...props} />
+          <TextInput
+            {...props}
+            className="[&_label]:normal-case"
+          />
         </WithMargin>
       ),
       group: "settings",
     },
     {
       fieldName: "walletAddresses",
-      displayName: "Address(\u2060es)",
+      displayName: "Address(es)",
       default: "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5",
       required: false,
       disabledIf: (settings) => settings.trackType !== "address",
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput {...props} />
+          <TextInput
+            {...props}
+            className="[&_label]:normal-case"
+          />
         </WithMargin>
       ),
       group: "settings",
@@ -75,9 +81,9 @@ const portfolioProperties: FidgetProperties = {
     ...styleFields,
   ],
   size: {
-    minHeight: 2,
+    minHeight: 3,
     maxHeight: 36,
-    minWidth: 2,
+    minWidth: 3,
     maxWidth: 36,
   },
 };
