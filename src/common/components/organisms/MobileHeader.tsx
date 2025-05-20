@@ -12,6 +12,7 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { CgProfile } from "react-icons/cg";
+import { RiQuillPenAiLine } from "react-icons/ri";
 import { useSidebarContext } from "./Sidebar";
 import { LogIn, Menu } from "lucide-react";
 
@@ -95,12 +96,12 @@ const MobileHeader: React.FC = () => {
       <div className="flex items-center gap-2">
         {isLoggedIn ? (
           <Button
-            variant="secondary"
+            variant="primary"
             size="icon"
             onClick={() => setCastOpen(true)}
             aria-label="Cast"
           >
-            <span className="text-lg font-bold">+</span>
+            <RiQuillPenAiLine className="w-5 h-5 text-white" />
           </Button>
         ) : (
           <Button variant="primary" size="sm" onClick={openLogin} withIcon>
