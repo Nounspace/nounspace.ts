@@ -206,6 +206,7 @@ function TabBar({
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
+              onReorderEnd={commitTabOrder}
               className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
               values={tabList}
             >
