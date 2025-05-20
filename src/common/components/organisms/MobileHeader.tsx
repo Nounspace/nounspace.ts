@@ -12,9 +12,9 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { CgProfile } from "react-icons/cg";
-import { RiQuillPenAiLine } from "react-icons/ri";
 import { useSidebarContext } from "./Sidebar";
 import { LogIn, Menu } from "lucide-react";
+import { RiQuillPenLine } from "react-icons/ri";
 
 const MobileHeader: React.FC = () => {
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
@@ -101,7 +101,7 @@ const MobileHeader: React.FC = () => {
             onClick={() => setCastOpen(true)}
             aria-label="Cast"
           >
-            <RiQuillPenAiLine className="w-5 h-5 text-white" />
+            <RiQuillPenLine className="w-5 h-5 text-white" />
           </Button>
         ) : (
           <Button variant="primary" size="sm" onClick={openLogin} withIcon>
