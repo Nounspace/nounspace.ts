@@ -29,8 +29,7 @@ const portfolioProperties: FidgetProperties = {
   fields: [
     {
       fieldName: "trackType",
-      // wrap in a span that removes the inherited `capitalize`
-      displayName: <span className="normal-case">Wallet(s) to track</span>,
+      displayName: "Wallet(\u200Bs) to track",
       default: "farcaster",
       required: true,
       inputSelector: (props) => (
@@ -55,20 +54,20 @@ const portfolioProperties: FidgetProperties = {
       disabledIf: (settings) => settings.trackType !== "farcaster",
       inputSelector: (props) => (
         <WithMargin>
-           <TextInput {...props} className="normal-case" />
+          <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
     },
     {
       fieldName: "walletAddresses",
-      displayName: "Address(es)",
+      displayName: "Address(\u200Bes)",
       default: "0x06AE622bF2029Db79Bdebd38F723f1f33f95F6C5",
       required: false,
       disabledIf: (settings) => settings.trackType !== "address",
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput {...props} className="normal-case" />
+          <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
