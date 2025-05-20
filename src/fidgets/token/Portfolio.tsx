@@ -35,8 +35,8 @@ const portfolioProperties: FidgetProperties = {
       inputSelector: (props) => (
         <WithMargin>
           <SettingsSelector
-            className="[&_label]:normal-case"
             {...props}
+            className="[&_label]:!normal-case"
             settings={[
               { name: "Farcaster username", value: "farcaster" },
               { name: "Wallet Address(es)", value: "address" },
@@ -56,7 +56,7 @@ const portfolioProperties: FidgetProperties = {
         <WithMargin>
           <TextInput
             {...props}
-            className="[&_label]:normal-case"
+            className="[&_label]:!normal-case"
           />
         </WithMargin>
       ),
@@ -72,7 +72,7 @@ const portfolioProperties: FidgetProperties = {
         <WithMargin>
           <TextInput
             {...props}
-            className="[&_label]:normal-case"
+            className="[&_label]:!normal-case"
           />
         </WithMargin>
       ),
