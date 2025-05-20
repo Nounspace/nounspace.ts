@@ -12,8 +12,9 @@ import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { CgProfile } from "react-icons/cg";
+import { RiQuillPenAiLine } from "react-icons/ri";
 import { useSidebarContext } from "./Sidebar";
-import { LogIn } from "lucide-react";
+import { LogIn, Menu } from "lucide-react";
 
 const MobileHeader: React.FC = () => {
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
@@ -84,23 +85,31 @@ const MobileHeader: React.FC = () => {
             )}
           </button>
         ) : (
-          <Button variant="primary" size="sm" onClick={openLogin} withIcon>
-            <LogIn size={16} />
-            Sign In
+          <Button variant="ghost" size="icon" onClick={openNav} aria-label="Menu">
+            <Menu className="w-5 h-5" />
           </Button>
         )}
       </div>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <BrandHeader />
       </div>
-      <Button
-        variant="secondary"
-        size="icon"
-        onClick={() => setCastOpen(true)}
-        aria-label="Cast"
-      >
-        <span className="text-lg font-bold">+</span>
-      </Button>
+      <div className="flex items-center gap-2">
+        {isLoggedIn ? (
+          <Button
+            variant="primary"
+            size="icon"
+            onClick={() => setCastOpen(true)}
+            aria-label="Cast"
+          >
+            <RiQuillPenAiLine className="w-5 h-5 text-white" />
+          </Button>
+        ) : (
+          <Button variant="primary" size="sm" onClick={openLogin} withIcon>
+            <LogIn size={16} />
+            Sign In
+          </Button>
+        )}
+      </div>
       <Drawer
         open={navOpen}
         onOpenChange={(open) => {
