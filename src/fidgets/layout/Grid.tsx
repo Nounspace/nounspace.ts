@@ -179,8 +179,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       | typeof fidgetInstanceDatums
       | ((current: typeof fidgetInstanceDatums) => typeof fidgetInstanceDatums),
   ) => {
-    const datums =
-      typeof updater === "function" ? updater(fidgetInstanceDatums) : updater;
+    const currentDatums =
+      store.getState().homebase.homebaseConfig?.fidgetInstanceDatums ??
+      fidgetInstanceDatums;
+    const datums = typeof updater === "function" ? updater(currentDatums) : updater;
     return await saveConfig({
       fidgetInstanceDatums: datums,
     });
