@@ -61,6 +61,7 @@ import { Address, formatUnits, zeroAddress } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { base } from "viem/chains";
 // import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
+import { uploadImage } from "@/common/lib/utils/uploadImage";
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
@@ -139,6 +140,22 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const handlePaste = async (
+    e: React.ClipboardEvent<HTMLDivElement>,
+  ): Promise<void> => {
+    const items = Array.from(e.clipboardData.items);
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (!file) continue;
+        e.preventDefault();
+        const url = await uploadImage(file);
+        if (url) {
+          addEmbed({ url });
+        }
+      }
+    }
+  };
 
   const { isBannerClosed, closeBanner } = useBannerStore();
   const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
@@ -519,6 +536,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <EditorContent
               editor={editor}
               autoFocus
+              onPaste={handlePaste}
               className="w-full h-full min-h-[150px] opacity-80"
             />
             {/* <div className="z-50">
