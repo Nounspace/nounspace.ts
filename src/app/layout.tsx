@@ -72,7 +72,7 @@ export default function RootLayout({
 const sidebarLayout = (page: React.ReactNode) => {
   return (
     <>
-      <div className="min-h-screen max-w-screen h-screen w-screen flex flex-col">
+      <div className="min-h-screen max-w-screen w-screen flex flex-col">
         {/* App Navigation Bar */}
         <div className="w-full flex-shrink-0 md:hidden">
           <ClientMobileHeaderWrapper />

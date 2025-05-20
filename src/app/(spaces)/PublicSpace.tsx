@@ -421,7 +421,7 @@ export default function PublicSpace({
 
             revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
-            router.replace(newUrl, { scroll: false });
+            router.replace(newUrl);
           }
 
           if (newSpaceId) {
@@ -448,7 +448,7 @@ export default function PublicSpace({
             // Update the URL to include the new space ID
             revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
-            router.replace(newUrl, { scroll: false });
+            router.replace(newUrl);
           }
         } catch (error) {
           console.error("Error during space registration:", error);
@@ -555,7 +555,7 @@ export default function PublicSpace({
       await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
     }
     // Update the URL without triggering a full navigation
-    router.push(getSpacePageUrl(tabName), { scroll: false });
+    router.push(getSpacePageUrl(tabName));
   }
 
   const { editMode } = useSidebarContext();
