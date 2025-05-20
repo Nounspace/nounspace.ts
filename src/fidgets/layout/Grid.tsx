@@ -206,18 +206,26 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     [saveFidgetInstanceDatums],
   );
 
-  // Debounced save function
-  const debouncedSaveConfig = useCallback(
-    debounce((patch) => saveConfig(patch), 250, {
+  // Hold the latest saveConfig in a ref so the debounced function
+  // always calls the most recent version without recreating it
+  const saveConfigRef = useRef(saveConfig);
+  useEffect(() => {
+    saveConfigRef.current = saveConfig;
+  }, [saveConfig]);
+
+  // Debounced save function stored in a ref to ensure one instance
+  const debouncedSaveConfigRef = useRef(
+    debounce((patch: Parameters<typeof saveConfig>[0]) => {
+      saveConfigRef.current(patch);
+    }, 250, {
       leading: false,
       trailing: true,
     }),
-    [saveConfig],
   );
 
   const flushPendingSaves = useCallback(() => {
-    debouncedSaveConfig.flush();
-  }, [debouncedSaveConfig]);
+    debouncedSaveConfigRef.current.flush();
+  }, []);
 
   function unselectFidget() {
     setSelectedFidgetID("");
@@ -364,7 +372,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       Object.keys(newFidgetInstanceDatums).length > 0 ||
       newLayout.length === 0
     ) {
-      debouncedSaveConfig({
+      debouncedSaveConfigRef.current({
         layoutConfig: { layout: newLayout },
         fidgetTrayContents: newTrayContents,
         fidgetInstanceDatums: newFidgetInstanceDatums,
@@ -391,7 +399,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       inEditMode &&
       newLayout.length === layoutConfig.layout.length
     ) {
-      debouncedSaveConfig({
+      debouncedSaveConfigRef.current({
         layoutConfig: { layout: newLayout },
       });
     }
@@ -459,7 +467,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           };
 
           // Save both layout and fidgetInstanceDatums in a single operation
-          debouncedSaveConfig({
+          debouncedSaveConfigRef.current({
             layoutConfig: { layout: [...existingLayout, newItem] },
             fidgetInstanceDatums: { ...existingDatums, [id]: fidget },
           });
