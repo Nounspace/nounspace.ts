@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import BrandHeader from "../molecules/BrandHeader";
 import { Button } from "../atoms/button";
-import { Dialog, DialogContent } from "../atoms/dialog";
+import { Drawer, DrawerContent } from "../atoms/drawer";
 import Modal from "../molecules/Modal";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import Navigation from "./Navigation";
@@ -80,7 +80,7 @@ const MobileHeader: React.FC = () => {
           </Button>
         )}
       </div>
-      <div className="absolute left-1/2 -translate-x-1/2">
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <BrandHeader />
       </div>
       <Button
@@ -91,18 +91,27 @@ const MobileHeader: React.FC = () => {
       >
         <span className="text-lg font-bold">+</span>
       </Button>
-      <Dialog open={navOpen} onOpenChange={setNavOpen}>
-        <DialogContent
-          className="p-0 max-w-none w-[270px] h-full rounded-none left-0 top-0 translate-x-0 translate-y-0"
-          showCloseButton={false}
-        >
+      <Drawer
+        open={navOpen}
+        onOpenChange={(open) => {
+          setNavOpen(open);
+          if (!open) {
+            window.scrollTo({ top: 0 });
+          }
+        }}
+      >
+        <DrawerContent className="p-0" showCloseButton={false}>
           <Navigation
             isEditable={sidebarEditable}
             enterEditMode={enterEditMode}
             mobile
+            onNavigate={() => {
+              setNavOpen(false);
+              window.scrollTo({ top: 0 });
+            }}
           />
-        </DialogContent>
-      </Dialog>
+        </DrawerContent>
+      </Drawer>
       <Modal
         open={castOpen}
         setOpen={setCastOpen}
