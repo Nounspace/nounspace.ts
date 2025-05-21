@@ -33,6 +33,7 @@ const frameConfig: FidgetProperties = {
   fields: [
     {
       fieldName: "chain",
+      displayName: "Chain",
       required: true,
       default: { id: "8453", name: "base" },
       inputSelector: (props) => (
@@ -46,6 +47,7 @@ const frameConfig: FidgetProperties = {
     },
     {
       fieldName: "token",
+      displayName: "Token",
       required: true,
       default: "0x0DF1B77aAFEc59E926315e5234db3Fdea419d4E4",
       inputSelector: (props) => (
