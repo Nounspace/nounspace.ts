@@ -47,6 +47,7 @@ import { AppStore } from "..";
 import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
 import { StoreGet, StoreSet } from "../../createStore";
+import { removeOverlappingGridItems } from "@/common/lib/utils/layout";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -648,7 +649,8 @@ export const createSpaceStoreFunc = (
 
         const localTab = draft.space.localSpaces[spaceId].tabs[tabName];
 
-        // Compare timestamps if local tab exists
+        let configToUse = remoteUpdatableSpaceConfig;
+
         if (
           !isUndefined(localTab) &&
           localTab.timestamp &&
@@ -657,26 +659,16 @@ export const createSpaceStoreFunc = (
           const localTimestamp = moment(localTab.timestamp);
           const remoteTimestamp = moment(remoteUpdatableSpaceConfig.timestamp);
 
-          if (remoteTimestamp.isAfter(localTimestamp)) {
-            // Remote is newer, update both local and remote
-            draft.space.remoteSpaces[spaceId].tabs[tabName] =
-              remoteUpdatableSpaceConfig;
-            draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
-              remoteUpdatableSpaceConfig,
-            );
-          } else {
-            // Local is newer or same age, keep local data
-            draft.space.remoteSpaces[spaceId].tabs[tabName] =
-              cloneDeep(localTab);
-          }
-        } else {
-          // No local tab, create it with remote data
-          draft.space.remoteSpaces[spaceId].tabs[tabName] =
-            remoteUpdatableSpaceConfig;
-          draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(
-            remoteUpdatableSpaceConfig,
-          );
+          configToUse = remoteTimestamp.isAfter(localTimestamp)
+            ? remoteUpdatableSpaceConfig
+            : cloneDeep(localTab);
         }
+
+        removeOverlappingGridItems(configToUse);
+
+        draft.space.remoteSpaces[spaceId].tabs[tabName] = configToUse;
+        draft.space.localSpaces[spaceId].tabs[tabName] = cloneDeep(configToUse);
+
 
         // Update timestamps
         const newTimestamp = moment().toISOString();
