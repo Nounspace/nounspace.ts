@@ -291,9 +291,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions, ensuring it's not part of a URL
-      // const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.-]+)(?=\s|$)/g;
+      // Regex to match @username mentions, even if followed by punctuation
+      const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -311,8 +310,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
       );
 
       let mentionsToFids: { [key: string]: string } = {};
-      let mentionsPositions: number[] = [];
-      let mentionsText = text; // Initialize mentionsText with current text
+      // Positions of each mention in the text
+      const mentionsPositions: number[] = usernamesWithPositions.map(
+        (u) => u.position,
+      );
+      const mentionsText = text; // Keep the original text intact
 
       if (uniqueUsernames.length > 0) {
         try {
@@ -338,41 +340,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
-          mentionsPositions = [];
-          // const currentTextIndex = 0;
-          // const finalText = text;
-          const mentions = [];
-          mentionsText = text;
-
-          for (let i = 0; i < mentionsText.length; i++) {
-            if (
-              mentionsText[i] === "@" &&
-              ((mentionsText[i - 1] !== "/" &&
-                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
-                mentionsText[i - 1] === undefined)
-            ) {
-              let mentionIndex = i + 1;
-              while (
-                mentionIndex < mentionsText.length &&
-                mentionsText[mentionIndex] !== " " &&
-                mentionsText[mentionIndex] !== "\n"
-              )
-                mentionIndex++;
-              const mention = mentionsText.substring(i + 1, mentionIndex);
-              const position = i;
-              mentionsPositions.push(position);
-              mentionsText = mentionsText.replace(`@${mention}`, "");
-            }
+          if (
+            Object.keys(mentionsToFids).length !== mentionsPositions.length &&
+            mentionsPositions.length > 0
+          ) {
+            console.error(
+              "Mismatch between mentions and their positions:",
+              mentionsToFids,
+              mentionsPositions,
+            );
           }
-
-          if (mentions.length > 10)
-            if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-              console.error(
-                "Mismatch between mentions and their positions:",
-                mentionsToFids,
-                mentionsPositions,
-              );
-            }
         } catch (error) {
           console.error("Error fetching FIDs:", error);
         }
