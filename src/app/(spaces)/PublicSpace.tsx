@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  Suspense,
+} from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
+import SpaceLoading from "./SpaceLoading";
 import { SpaceConfigSaveDetails } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -17,7 +25,30 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
+
+function useLoadingSuspense(shouldSuspend: boolean) {
+  const promiseRef = useRef<Promise<void> | null>(null);
+  const resolverRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!shouldSuspend && promiseRef.current) {
+      resolverRef.current?.();
+      resolverRef.current = null;
+      promiseRef.current = null;
+    }
+  }, [shouldSuspend]);
+
+  if (shouldSuspend) {
+    if (!promiseRef.current) {
+      promiseRef.current = new Promise<void>((resolve) => {
+        resolverRef.current = resolve;
+      });
+    }
+    throw promiseRef.current;
+  }
+}
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
@@ -38,7 +69,7 @@ interface PublicSpaceProps {
   pageType?: SpacePageType;
 }
 
-export default function PublicSpace({
+function PublicSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   initialConfig,
@@ -216,40 +247,26 @@ export default function PublicSpace({
     localSpaces,
   ]);
 
-  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
-  useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+  const initialLoadPromiseRef = useRef<Promise<void> | null>(null);
 
-    console.log("Loading space tab:", {
-      currentSpaceId,
-      currentTabName,
-      loading,
-    });
-
-    if (!isNil(currentSpaceId)) {
-      setLoading(true);
-      // First, load the space tab order
-      loadSpaceTabOrder(currentSpaceId)
-        .then(() => {
-          console.log("Loaded space tab order");
-          return loadEditableSpaces();
-        })
-        .then(() => {
-          console.log("Loaded editable spaces");
-          // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
-        })
-        .then(() => {
-          console.log("Loaded space tab");
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error loading space:", error);
-          setLoading(false);
-        });
-    }
-  }, [getCurrentSpaceId, getCurrentTabName]);
+  if (
+    loading &&
+    !initialLoadPromiseRef.current &&
+    !isNil(providedSpaceId)
+  ) {
+    initialLoadPromiseRef.current = (async () => {
+      try {
+        await loadSpaceTabOrder(providedSpaceId);
+        await loadEditableSpaces();
+        await loadSpaceTab(providedSpaceId, decodeURIComponent(providedTabName));
+      } catch (error) {
+        console.error("Error loading space:", error);
+      } finally {
+        setLoading(false);
+        initialLoadPromiseRef.current = null;
+      }
+    })();
+  }
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
@@ -264,6 +281,12 @@ export default function PublicSpace({
     },
     [localSpaces, getCurrentTabName, loadSpaceTab]
   );
+
+  useEffect(() => {
+    if (!loading && !isNil(providedSpaceId)) {
+      loadRemainingTabs(providedSpaceId);
+    }
+  }, [loading, providedSpaceId, loadRemainingTabs]);
 
   // Checks if the user is signed into Farcaster
   useEffect(() => {
@@ -648,6 +671,8 @@ export default function PublicSpace({
     console.warn("Profile component is undefined");
   }
 
+  useLoadingSuspense(loading && !isNil(providedSpaceId));
+
   return (
     <SpacePage
       key={getCurrentSpaceId() + providedTabName}
@@ -658,5 +683,16 @@ export default function PublicSpace({
       tabBar={tabBar}
       profile={profile ?? undefined}
     />
+  );
+}
+
+export default function PublicSpace(props: PublicSpaceProps) {
+  const isMobile = useIsMobile();
+  return (
+    <Suspense
+      fallback={<SpaceLoading hasProfile hasFeed={!isMobile} />}
+    >
+      <PublicSpaceContent {...props} />
+    </Suspense>
   );
 }
