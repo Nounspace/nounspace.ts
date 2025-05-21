@@ -138,6 +138,8 @@ export default function Space({
     removedFidgetIds.forEach(id => {
       delete cleanedFidgetInstanceDatums[id];
     });
+    
+    let settingsChanged = false;
 
     // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
     Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
@@ -146,21 +148,16 @@ export default function Space({
       if (settings && "fidget Shadow" in settings) {
         settings.fidgetShadow = settings["fidget Shadow"];
         delete settings["fidget Shadow"];
+        settingsChanged = true;
       }
       if (settings && "fidget Shadow" in settings) {
         settings.fidgetShadow = settings["fidget Shadow"];
         delete settings["fidget Shadow"];
+        settingsChanged = true;
       }
     });
 
-    // Check if any settings were changed
-    const settingsChanged = Object.keys(cleanedFidgetInstanceDatums).some(id => {
-      const originalDatum = config.fidgetInstanceDatums[id];
-      const cleanedDatum = cleanedFidgetInstanceDatums[id];
-      return JSON.stringify(originalDatum.config?.settings) !== JSON.stringify(cleanedDatum.config?.settings);
-    });
-
-    // Clear instance datums that are no longer in the layout
+    // Make Queued Changes
     if (removedFidgetIds.length > 0 || 
       cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
       item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
