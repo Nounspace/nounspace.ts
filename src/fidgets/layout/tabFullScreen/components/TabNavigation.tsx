@@ -188,7 +188,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div
+      className="relative w-full h-full"
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
       <TabsList 
         ref={tabsListRef}
         className={`
@@ -205,9 +209,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           const fidgetName = getFidgetName(fidgetId);
           
           return (
-            <TabsTrigger 
-              key={fidgetId} 
+            <TabsTrigger
+              key={fidgetId}
               value={fidgetId}
+              onClick={(e) => e.stopPropagation()}
               className={`
                 flex flex-col items-center justify-center
                 min-w-[72px] h-full py-2 px-0
