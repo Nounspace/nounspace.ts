@@ -506,6 +506,54 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   };
 
+  const handlePasteImage = useCallback(
+    async (e: React.ClipboardEvent<HTMLDivElement>) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const imgBBApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      for (const item of items) {
+        if (item.kind === "file" && item.type.startsWith("image/")) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (!file) continue;
+          if (file.size > 5 * 1024 * 1024) {
+            console.error("File size exceeds 5MB limit");
+            return;
+          }
+          if (!imgBBApiKey) {
+            console.error("ImgBB API key is not configured");
+            return;
+          }
+          const formData = new FormData();
+          formData.append("image", file);
+          try {
+            const response = await fetch(
+              `https://api.imgbb.com/1/upload?key=${imgBBApiKey}`,
+              {
+                method: "POST",
+                body: formData,
+              },
+            );
+            const data = await response.json();
+            if (data.success) {
+              const imageUrl: string = data.data.display_url || data.data.url;
+              const embed: FarcasterEmbed = { url: imageUrl };
+              addEmbed(embed);
+            } else {
+              console.error(
+                "Failed to upload image:",
+                data.error?.message || "Unknown error",
+              );
+            }
+          } catch (err) {
+            console.error("Error uploading image:", err);
+          }
+        }
+      }
+    },
+    [addEmbed],
+  );
+
   return (
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
@@ -519,6 +567,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <EditorContent
               editor={editor}
               autoFocus
+              onPaste={handlePasteImage}
               className="w-full h-full min-h-[150px] opacity-80"
             />
             {/* <div className="z-50">
