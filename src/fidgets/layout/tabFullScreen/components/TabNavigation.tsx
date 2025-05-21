@@ -205,9 +205,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           const fidgetName = getFidgetName(fidgetId);
           
           return (
-            <TabsTrigger 
-              key={fidgetId} 
+            <TabsTrigger
+              key={fidgetId}
               value={fidgetId}
+              onClick={(e) => e.stopPropagation()}
               className={`
                 flex flex-col items-center justify-center
                 min-w-[72px] h-full py-2 px-0
