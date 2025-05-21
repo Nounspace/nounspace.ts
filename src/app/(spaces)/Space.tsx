@@ -134,26 +134,37 @@ export default function Space({
       !isNil(feed)
     );
 
-    
+    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+    removedFidgetIds.forEach(id => {
+      delete cleanedFidgetInstanceDatums[id];
+    });
+
+    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+      const datum = cleanedFidgetInstanceDatums[id];
+      const settings = datum.config?.settings as Record<string, unknown>;
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+      }
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+      }
+    });
+
+    // Check if any settings were changed
+    const settingsChanged = Object.keys(cleanedFidgetInstanceDatums).some(id => {
+      const originalDatum = config.fidgetInstanceDatums[id];
+      const cleanedDatum = cleanedFidgetInstanceDatums[id];
+      return JSON.stringify(originalDatum.config?.settings) !== JSON.stringify(cleanedDatum.config?.settings);
+    });
 
     // Clear instance datums that are no longer in the layout
     if (removedFidgetIds.length > 0 || 
       cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-      item.y !== config.layoutDetails.layoutConfig.layout[i].y)) {
-      const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      removedFidgetIds.forEach(id => {
-        delete cleanedFidgetInstanceDatums[id];
-      });
-
-      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-        const datum = cleanedFidgetInstanceDatums[id];
-        const settings = datum.config?.settings as Record<string, unknown>;
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-        }
-      });
+      item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
+      settingsChanged) {
 
       saveConfig({
         layoutDetails: {
