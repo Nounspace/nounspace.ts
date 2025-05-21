@@ -237,12 +237,13 @@ export const createHomeBaseTabStoreFunc = (
           });
         }, "loadTabNames");
 
-        // Load remote state for any tabs that don't have it
-        for (const tabName of validTabNames) {
+        // Load remote state for any tabs that don't have it. Don't block on
+        // these network requests so the feed can render quickly.
+        validTabNames.forEach((tabName) => {
           if (!get().homebase.tabs[tabName]?.remoteConfig) {
-            await get().homebase.loadHomebaseTab(tabName);
+            void get().homebase.loadHomebaseTab(tabName);
           }
-        }
+        });
 
         return validTabNames;
       }
