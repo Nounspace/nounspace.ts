@@ -553,6 +553,7 @@ export default function PublicSpace({
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
       await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
+      await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
     }
     // Update the URL without triggering a full navigation
     router.push(getSpacePageUrl(tabName), { scroll: false });
