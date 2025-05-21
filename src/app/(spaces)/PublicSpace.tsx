@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  Suspense,
+} from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
+import SpaceLoading from "./SpaceLoading";
 import { SpaceConfigSaveDetails } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -17,7 +25,30 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
+
+function useLoadingSuspense(shouldSuspend: boolean) {
+  const promiseRef = useRef<Promise<void> | null>(null);
+  const resolverRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!shouldSuspend && promiseRef.current) {
+      resolverRef.current?.();
+      resolverRef.current = null;
+      promiseRef.current = null;
+    }
+  }, [shouldSuspend]);
+
+  if (shouldSuspend) {
+    if (!promiseRef.current) {
+      promiseRef.current = new Promise<void>((resolve) => {
+        resolverRef.current = resolve;
+      });
+    }
+    throw promiseRef.current;
+  }
+}
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
@@ -38,7 +69,7 @@ interface PublicSpaceProps {
   pageType?: SpacePageType;
 }
 
-export default function PublicSpace({
+function PublicSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   initialConfig,
@@ -62,6 +93,7 @@ export default function PublicSpace({
 
   const router = useRouter();
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  useLoadingSuspense(loading && !isNil(providedSpaceId));
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
@@ -105,6 +137,14 @@ export default function PublicSpace({
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
   }));
+
+  // Subscribe to current space and tab for reactivity
+  const currentSpaceId = useAppStore(
+    (state) => state.currentSpace.currentSpaceId,
+  );
+  const currentTabName = useAppStore(
+    (state) => state.currentSpace.currentTabName,
+  );
 
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -218,9 +258,6 @@ export default function PublicSpace({
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
-
     console.log("Loading space tab:", {
       currentSpaceId,
       currentTabName,
@@ -249,20 +286,20 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName]);
+  }, [currentSpaceId, currentTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      const currentTabName = getCurrentTabName();
+      const currentTab = getCurrentTabName();
       const tabOrder = localSpaces[spaceId]?.order || [];
       for (const tabName of tabOrder) {
-        if (tabName !== currentTabName) {
+        if (tabName !== currentTab) {
           await loadSpaceTab(spaceId, tabName);
         }
       }
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab]
+    [localSpaces, currentTabName, loadSpaceTab]
   );
 
   // Checks if the user is signed into Farcaster
@@ -465,8 +502,8 @@ export default function PublicSpace({
     isTokenPage,
     contractAddress,
     tokenData?.network,
-    getCurrentSpaceId,
-    getCurrentTabName,
+    currentSpaceId,
+    currentTabName,
     localSpaces,
   ]);
 
@@ -499,7 +536,7 @@ export default function PublicSpace({
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [getCurrentSpaceId, getCurrentTabName]
+    [currentSpaceId, currentTabName]
   );
 
   const commitConfig = useCallback(async () => {
@@ -513,7 +550,7 @@ export default function PublicSpace({
 
     if (isNil(currentSpaceId)) return;
     commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
-  }, [getCurrentSpaceId, getCurrentTabName, tokenData?.network]);
+  }, [currentSpaceId, currentTabName, tokenData?.network]);
 
   const resetConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
@@ -537,7 +574,7 @@ export default function PublicSpace({
         remoteSpaces[currentSpaceId].tabs[currentTabName]
       );
     }
-  }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
+  }, [currentSpaceId, initialConfig, remoteSpaces, currentTabName]);
 
   // Common tab management
   async function switchTabTo(tabName: string, shouldSave: boolean = true) {
@@ -658,5 +695,16 @@ export default function PublicSpace({
       tabBar={tabBar}
       profile={profile ?? undefined}
     />
+  );
+}
+
+export default function PublicSpace(props: PublicSpaceProps) {
+  const isMobile = useIsMobile();
+  return (
+    <Suspense
+      fallback={<SpaceLoading hasProfile hasFeed={!isMobile} />}
+    >
+      <PublicSpaceContent {...props} />
+    </Suspense>
   );
 }
