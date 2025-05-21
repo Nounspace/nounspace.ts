@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  Suspense,
+} from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpacePage from "./SpacePage";
+import SpaceLoading from "./SpaceLoading";
 import { SpaceConfigSaveDetails } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -38,7 +47,35 @@ interface PublicSpaceProps {
   pageType?: SpacePageType;
 }
 
-export default function PublicSpace({
+function PublicSpaceSkeleton({
+  isTokenPage,
+  spaceOwnerFid,
+  pageType,
+}: {
+  isTokenPage?: boolean;
+  spaceOwnerFid?: number;
+  pageType?: SpacePageType;
+}) {
+  return (
+    <div className="user-theme-background w-full h-full relative flex-col">
+      <div className="w-full transition-all duration-100 ease-out">
+        <div className="flex flex-col h-full">
+          <TabBarSkeleton />
+          <div className="flex h-full">
+            <div className="grow">
+              <SpaceLoading
+                hasProfile={!isTokenPage && !!spaceOwnerFid && pageType !== "proposal"}
+                hasFeed={false}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PublicSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   initialConfig,
@@ -64,6 +101,7 @@ export default function PublicSpace({
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+  const loadPromiseRef = useRef<Promise<void> | null>(null);
   const { wallets } = useWallets();
 
   const {
@@ -146,7 +184,7 @@ export default function PublicSpace({
     (userFid: number) => {
       return editabilityCheck.isEditable;
     },
-    [editabilityCheck]
+    [editabilityCheck],
   );
 
   // Determine the page type if not explicitly provided
@@ -164,14 +202,14 @@ export default function PublicSpace({
   useEffect(() => {
     console.log(
       "Setting current space and tab for page type:",
-      resolvedPageType
+      resolvedPageType,
     );
 
     if (resolvedPageType === "token" && contractAddress && tokenData?.network) {
       const existingSpace = Object.values(localSpaces).find(
         (space) =>
           space.contractAddress === contractAddress &&
-          space.network === tokenData.network
+          space.network === tokenData.network,
       );
 
       if (existingSpace) {
@@ -186,7 +224,7 @@ export default function PublicSpace({
       }
     } else if (resolvedPageType === "person" && spaceOwnerFid) {
       const existingSpace = Object.values(localSpaces).find(
-        (space) => space.fid === spaceOwnerFid
+        (space) => space.fid === spaceOwnerFid,
       );
 
       if (existingSpace) {
@@ -229,15 +267,13 @@ export default function PublicSpace({
 
     if (!isNil(currentSpaceId)) {
       setLoading(true);
-      // First, load the space tab order
-      loadSpaceTabOrder(currentSpaceId)
+      const p = loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
           return loadEditableSpaces();
         })
         .then(() => {
           console.log("Loaded editable spaces");
-          // Load the specific tab
           return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
         })
         .then(() => {
@@ -248,6 +284,7 @@ export default function PublicSpace({
           console.error("Error loading space:", error);
           setLoading(false);
         });
+      loadPromiseRef.current = p;
     }
   }, [getCurrentSpaceId, getCurrentTabName]);
 
@@ -262,14 +299,14 @@ export default function PublicSpace({
         }
       }
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab]
+    [localSpaces, getCurrentTabName, loadSpaceTab],
   );
 
   // Checks if the user is signed into Farcaster
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
       setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
       );
     });
   }, [authManagerLastUpdatedAt]);
@@ -292,6 +329,14 @@ export default function PublicSpace({
   const currentConfig = getCurrentSpaceConfig();
   if (!currentConfig) {
     console.error("Current space config is undefined");
+  }
+
+  const currentTabName = getCurrentTabName();
+  if (loading || !currentConfig?.tabs[currentTabName ?? "Profile"]) {
+    if (loadPromiseRef.current) {
+      throw loadPromiseRef.current;
+    }
+    throw new Promise(() => {});
   }
 
   const config = {
@@ -357,7 +402,7 @@ export default function PublicSpace({
             const existingSpace = Object.values(localSpaces).find(
               (space) =>
                 space.contractAddress === contractAddress &&
-                space.network === tokenData.network
+                space.network === tokenData.network,
             );
 
             if (existingSpace) {
@@ -372,7 +417,7 @@ export default function PublicSpace({
             }
           } else if (!isTokenPage) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) => space.fid === currentUserFid
+              (space) => space.fid === currentUserFid,
             );
 
             if (existingSpace) {
@@ -397,7 +442,7 @@ export default function PublicSpace({
               "Profile",
               currentUserFid,
               initialConfig,
-              tokenData.network
+              tokenData.network,
             );
             console.log("Contract space registration result:", {
               success: !!newSpaceId,
@@ -411,7 +456,7 @@ export default function PublicSpace({
             newSpaceId = await registerSpaceFid(
               currentUserFid,
               "Profile",
-              getSpacePageUrl("Profile")
+              getSpacePageUrl("Profile"),
             );
             console.log("User space registration result:", {
               success: !!newSpaceId,
@@ -499,7 +544,7 @@ export default function PublicSpace({
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [getCurrentSpaceId, getCurrentTabName]
+    [getCurrentSpaceId, getCurrentTabName],
   );
 
   const commitConfig = useCallback(async () => {
@@ -534,7 +579,7 @@ export default function PublicSpace({
       saveLocalSpaceTab(
         currentSpaceId,
         currentTabName,
-        remoteSpaces[currentSpaceId].tabs[currentTabName]
+        remoteSpaces[currentSpaceId].tabs[currentTabName],
       );
     }
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
@@ -586,7 +631,7 @@ export default function PublicSpace({
           ? deleteSpaceTab(
               currentSpaceId,
               tabName,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -597,7 +642,7 @@ export default function PublicSpace({
               currentSpaceId,
               tabName,
               INITIAL_SPACE_CONFIG_EMPTY,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -609,7 +654,7 @@ export default function PublicSpace({
             currentSpaceId,
             oldName,
             resolvedConfig,
-            newName
+            newName,
           );
         }
         return undefined;
@@ -625,7 +670,7 @@ export default function PublicSpace({
         return currentSpaceId
           ? commitSpaceTabOrder(
               currentSpaceId,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -657,5 +702,21 @@ export default function PublicSpace({
       tabBar={tabBar}
       profile={profile ?? undefined}
     />
+  );
+}
+
+export default function PublicSpace(props: PublicSpaceProps) {
+  return (
+    <Suspense
+      fallback={
+        <PublicSpaceSkeleton
+          isTokenPage={props.isTokenPage}
+          spaceOwnerFid={props.spaceOwnerFid}
+          pageType={props.pageType}
+        />
+      }
+    >
+      <PublicSpaceContent {...props} />
+    </Suspense>
   );
 }
