@@ -19,7 +19,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
@@ -45,6 +45,7 @@ export type FeedFidgetSettings = {
   Xhandle: string;
   style: string;
   useDefaultColors?: boolean;
+  membersOnly?: boolean;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
@@ -67,10 +68,6 @@ export const FilterTypeSelector: React.FC<{
     />
   );
 };
-
-export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
-  <div className="mb-3 pt-3">{children}</div>
-);
 
 const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   fidgetName: "Feed",
@@ -199,7 +196,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       default: "light",
     },
     {
-      fieldName: "font Family",
+      fieldName: "fontFamily",
       displayName: "Font Family",
       displayNameHint: "Font used for the body text. Set to Theme Font to inherit the Body Font from the Theme.",
       default: "var(--user-theme-font)",
@@ -283,7 +280,7 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) => settings?.selectPlatform?.name === "X",
     },
     {
-      fieldName: "fidget Shadow",
+      fieldName: "fidgetShadow",
       displayName: "Fidget Shadow",
       displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
@@ -311,6 +308,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
 
 export const FEED_TYPES = [
   { name: "Following", value: FeedType.Following },
+  { name: "For you", value: "for_you" }, 
+  { name: "Trending", value: "trending" }, 
   { name: "Filter", value: FeedType.Filter },
 ];
 
@@ -320,7 +319,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     Xhandle,
     style,
   } = settings;
-  const { feedType, users, channel, filterType, keyword } = settings;
+  const { feedType, users, channel, filterType, keyword, membersOnly } = settings;
   const { fid } = useFarcasterSigner("feed");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [prevFeedType, setPrevFeedType] = useState(feedType);
@@ -342,6 +341,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         filterType,
         fids: users,
         channel,
+        ...(feedType === FeedType.Filter && filterType === 
+          FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
   const threadStackRef = React.useRef(useLifoQueue<string>());

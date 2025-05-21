@@ -9,7 +9,8 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { BsArrowRepeat } from "react-icons/bs";
-import { mobileStyleSettings } from "../helpers";
+import { mobileStyleSettings, WithMargin } from "../helpers";
+import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 
 type MatchaFidgetSettings = {
   defaultSellToken: string;
@@ -31,61 +32,76 @@ const matchaProperties: FidgetProperties = {
   fields: [
     ...mobileStyleSettings,
     {
-      fieldName: "defaultSellToken",
+      fieldName: "Default Sell Token",
       default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput
+            {...props}
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
-      fieldName: "defaultBuyToken",
+      fieldName: "Default Buy Token",
       default: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       required: true,
-      inputSelector: TextInput,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
-      fieldName: "fromChain",
+      fieldName: "From Chain",
       default: { id: "8453", name: "Base" },
       required: false,
-      inputSelector: ChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ChainSelector
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
     {
-      fieldName: "toChain",
+      fieldName: "fidgetShadow",
+      displayName: "Fidget Shadow",
+      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+      default: "var(--user-theme-fidget-shadow)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ShadowSelector
+            {...props}
+            hideGlobalSettings={false}
+          />
+        </WithMargin>
+      ),
+      group: "style",
+    },
+    {
+      fieldName: "To Chain",
       default: { id: "8453", name: "Base" },
       required: false,
-      inputSelector: ChainSelector,
+      inputSelector: (props) => (
+        <WithMargin>
+          <ChainSelector
+            {...props}
+
+          />
+        </WithMargin>
+      ),
       group: "settings",
     },
-    // {
-    //   fieldName: "optionalFeeRecipient",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: TextInput,
-    //   group: "settings",
-    // },
-    // {
-    //   fieldName: "background",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: SimpleColorSelector,
-    //   group: "style",
-    // },
-    // {
-    //   fieldName: "fontFamily",
-    //   default: "Londrina Solid",
-    //   required: false,
-    //   inputSelector: FontSelector,
-    //   group: "style",
-    // },
-    // {
-    //   fieldName: "fontColor",
-    //   default: "",
-    //   required: false,
-    //   inputSelector: SimpleColorSelector,
-    //   group: "style",
-    // },
     {
       fieldName: "size",
       required: false,
