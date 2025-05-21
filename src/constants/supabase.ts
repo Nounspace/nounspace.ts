@@ -19,5 +19,5 @@ export function homebaseTabsPath(identityPublicKey: string, tabName: string) {
 }
 
 export function homebaseTabOrderPath(key: string) {
-  return `${homebasePath(key)}TabOrder`;
+  return `${homebasePath(key)}/tabOrder`;
 }
