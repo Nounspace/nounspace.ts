@@ -4,6 +4,7 @@ import {
 } from "@/app/(spaces)/Space";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
+import { sanitizeSpaceConfig } from "@/common/lib/utils/sanitizeSpaceConfig";
 import {
   analytics,
   AnalyticsEvent,
@@ -616,9 +617,15 @@ export const createSpaceStoreFunc = (
 
       // Parse the file data and decrypt it
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const remoteSpaceConfig = JSON.parse(
+      const rawSpaceConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
+
+      const { sanitized, hasChanges } = sanitizeSpaceConfig(
+        rawSpaceConfig as unknown as SpaceConfig,
+      );
+
+      const remoteSpaceConfig = sanitized as DatabaseWritableSpaceConfig;
 
       // Prepare the remote space config for updating, including privacy status
       const remoteUpdatableSpaceConfig = {
@@ -683,6 +690,10 @@ export const createSpaceStoreFunc = (
         draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
         draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
       }, "loadSpaceTab");
+
+      if (hasChanges) {
+        void get().space.commitSpaceTabToDatabase(spaceId, tabName);
+      }
     } catch (e) {
       console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
     }
