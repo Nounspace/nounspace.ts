@@ -43,6 +43,7 @@ import {
   mergeWith
 } from "lodash";
 import moment from "moment";
+import { sanitizeSpaceConfig } from "@/common/lib/utils/sanitizeSpaceConfig";
 import { AppStore } from "..";
 import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
@@ -620,9 +621,14 @@ export const createSpaceStoreFunc = (
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as DatabaseWritableSpaceConfig;
 
+      const { sanitized, hasChanges } = sanitizeSpaceConfig(
+        remoteSpaceConfig as unknown as SpaceConfig,
+      );
+      const sanitizedConfig = sanitized as unknown as DatabaseWritableSpaceConfig;
+
       // Prepare the remote space config for updating, including privacy status
       const remoteUpdatableSpaceConfig = {
-        ...remoteSpaceConfig,
+        ...sanitizedConfig,
         isPrivate: fileData.isEncrypted,
       };
 
@@ -683,6 +689,10 @@ export const createSpaceStoreFunc = (
         draft.space.remoteSpaces[spaceId].updatedAt = newTimestamp;
         draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
       }, "loadSpaceTab");
+
+      if (hasChanges) {
+        void get().space.commitSpaceTabToDatabase(spaceId, tabName);
+      }
     } catch (e) {
       console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
     }
