@@ -11,6 +11,7 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/app/(spaces)/Space";
+import { sanitizeSpaceConfig } from "@/common/lib/utils/sanitizeSpaceConfig";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
   analytics,
@@ -65,31 +66,37 @@ export const createHomeBaseStoreFunc = (
         },
       });
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const spaceConfig = JSON.parse(
+      const rawConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
+      const { sanitized, hasChanges } = sanitizeSpaceConfig(rawConfig);
       
       const currentHomebase = get().homebase.homebaseConfig;
       if (
-        (spaceConfig &&
-          spaceConfig.timestamp &&
+        (sanitized &&
+          sanitized.timestamp &&
           currentHomebase &&
           currentHomebase.timestamp &&
-          moment(spaceConfig.timestamp).isAfter(
+          moment(sanitized.timestamp).isAfter(
             moment(currentHomebase.timestamp),
           )) ||
-        (spaceConfig &&
-          isUndefined(spaceConfig.timestamp) &&
+        (sanitized &&
+          isUndefined(sanitized.timestamp) &&
           currentHomebase &&
           currentHomebase.timestamp)
       ) {
         return cloneDeep(currentHomebase);
       }
       set((draft) => {
-        draft.homebase.homebaseConfig = cloneDeep(spaceConfig);
-        draft.homebase.remoteHomebaseConfig = cloneDeep(spaceConfig);
+        draft.homebase.homebaseConfig = cloneDeep(sanitized);
+        draft.homebase.remoteHomebaseConfig = cloneDeep(sanitized);
       }, "loadHomebase-found");
-      return spaceConfig;
+
+      if (hasChanges) {
+        void get().homebase.commitHomebaseToDatabase();
+      }
+
+      return sanitized;
     } catch (e) {
       set((draft) => {
         draft.homebase.homebaseConfig = {

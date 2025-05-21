@@ -13,6 +13,7 @@ import {
 } from "@/pages/api/space/homebase/tabs";
 import axios from "axios";
 import stringify from "fast-json-stable-stringify";
+import { sanitizeSpaceConfig } from "@/common/lib/utils/sanitizeSpaceConfig";
 import {
   clone,
   cloneDeep,
@@ -438,21 +439,28 @@ export const createHomeBaseTabStoreFunc = (
         },
       });
       const fileData = JSON.parse(await data.text()) as SignedFile;
-      const spaceConfig = JSON.parse(
+      const rawConfig = JSON.parse(
         await get().account.decryptEncryptedSignedFile(fileData),
       ) as SpaceConfig;
+
+      const { sanitized, hasChanges } = sanitizeSpaceConfig(rawConfig);
       
       // console.log('Loaded homebase tab config:', {
       //   tabName,
-      //   timestamp: spaceConfig.timestamp,
-      //   fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length
+      //   timestamp: sanitized.timestamp,
+      //   fidgetCount: Object.keys(sanitized.fidgetInstanceDatums || {}).length
       // });
-      
+
       set((draft) => {
-        draft.homebase.tabs[tabName].config = cloneDeep(spaceConfig);
-        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(spaceConfig);
+        draft.homebase.tabs[tabName].config = cloneDeep(sanitized);
+        draft.homebase.tabs[tabName].remoteConfig = cloneDeep(sanitized);
       }, `loadHomebaseTab:${tabName}-found`);
-      return spaceConfig;
+
+      if (hasChanges) {
+        void get().homebase.commitHomebaseTabToDatabase(tabName);
+      }
+
+      return sanitized;
     } catch (e) {
       // console.log('Failed to load tab config, using default:', { tabName });
       set((draft) => {
