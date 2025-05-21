@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  Suspense,
+} from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+import PublicSpaceSkeleton from "./PublicSpaceSkeleton";
 import SpacePage from "./SpacePage";
+import SpaceLoading from "./SpaceLoading";
 import { SpaceConfigSaveDetails } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -18,6 +27,28 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
+
+const tabLoadPromises = new Map<string, Promise<void>>();
+
+function preloadSpaceTab(
+  spaceId: string,
+  tabName: string,
+  loadSpaceTabOrder: (spaceId: string) => Promise<void>,
+  loadEditableSpaces: () => Promise<void>,
+  loadSpaceTab: (spaceId: string, tabName: string) => Promise<void>,
+) {
+  const key = `${spaceId}:${tabName}`;
+  if (!tabLoadPromises.has(key)) {
+    const p = loadSpaceTabOrder(spaceId)
+      .then(() => loadEditableSpaces())
+      .then(() => loadSpaceTab(spaceId, tabName))
+      .then(() => {
+        tabLoadPromises.delete(key);
+      });
+    tabLoadPromises.set(key, p);
+  }
+  return tabLoadPromises.get(key)!;
+}
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
@@ -38,7 +69,7 @@ interface PublicSpaceProps {
   pageType?: SpacePageType;
 }
 
-export default function PublicSpace({
+function PublicSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   initialConfig,
@@ -146,7 +177,7 @@ export default function PublicSpace({
     (userFid: number) => {
       return editabilityCheck.isEditable;
     },
-    [editabilityCheck]
+    [editabilityCheck],
   );
 
   // Determine the page type if not explicitly provided
@@ -164,14 +195,14 @@ export default function PublicSpace({
   useEffect(() => {
     console.log(
       "Setting current space and tab for page type:",
-      resolvedPageType
+      resolvedPageType,
     );
 
     if (resolvedPageType === "token" && contractAddress && tokenData?.network) {
       const existingSpace = Object.values(localSpaces).find(
         (space) =>
           space.contractAddress === contractAddress &&
-          space.network === tokenData.network
+          space.network === tokenData.network,
       );
 
       if (existingSpace) {
@@ -186,7 +217,7 @@ export default function PublicSpace({
       }
     } else if (resolvedPageType === "person" && spaceOwnerFid) {
       const existingSpace = Object.values(localSpaces).find(
-        (space) => space.fid === spaceOwnerFid
+        (space) => space.fid === spaceOwnerFid,
       );
 
       if (existingSpace) {
@@ -216,38 +247,24 @@ export default function PublicSpace({
     localSpaces,
   ]);
 
-  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
+  // Preload the current tab when the space or tab changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName();
 
-    console.log("Loading space tab:", {
-      currentSpaceId,
-      currentTabName,
-      loading,
-    });
-
     if (!isNil(currentSpaceId)) {
       setLoading(true);
-      // First, load the space tab order
-      loadSpaceTabOrder(currentSpaceId)
-        .then(() => {
-          console.log("Loaded space tab order");
-          return loadEditableSpaces();
-        })
-        .then(() => {
-          console.log("Loaded editable spaces");
-          // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
-        })
-        .then(() => {
-          console.log("Loaded space tab");
-          setLoading(false);
-        })
+      preloadSpaceTab(
+        currentSpaceId,
+        currentTabName ?? "Profile",
+        loadSpaceTabOrder,
+        loadEditableSpaces,
+        loadSpaceTab,
+      )
         .catch((error) => {
           console.error("Error loading space:", error);
-          setLoading(false);
-        });
+        })
+        .finally(() => setLoading(false));
     }
   }, [getCurrentSpaceId, getCurrentTabName]);
 
@@ -262,14 +279,14 @@ export default function PublicSpace({
         }
       }
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab]
+    [localSpaces, getCurrentTabName, loadSpaceTab],
   );
 
   // Checks if the user is signed into Farcaster
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
       setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
       );
     });
   }, [authManagerLastUpdatedAt]);
@@ -292,6 +309,20 @@ export default function PublicSpace({
   const currentConfig = getCurrentSpaceConfig();
   if (!currentConfig) {
     console.error("Current space config is undefined");
+  }
+
+  const currentTabName = getCurrentTabName();
+  if (
+    !isNil(getCurrentSpaceId()) &&
+    !currentConfig?.tabs[currentTabName ?? "Profile"]
+  ) {
+    throw preloadSpaceTab(
+      getCurrentSpaceId()!,
+      currentTabName ?? "Profile",
+      loadSpaceTabOrder,
+      loadEditableSpaces,
+      loadSpaceTab,
+    );
   }
 
   const config = {
@@ -357,7 +388,7 @@ export default function PublicSpace({
             const existingSpace = Object.values(localSpaces).find(
               (space) =>
                 space.contractAddress === contractAddress &&
-                space.network === tokenData.network
+                space.network === tokenData.network,
             );
 
             if (existingSpace) {
@@ -372,7 +403,7 @@ export default function PublicSpace({
             }
           } else if (!isTokenPage) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) => space.fid === currentUserFid
+              (space) => space.fid === currentUserFid,
             );
 
             if (existingSpace) {
@@ -397,7 +428,7 @@ export default function PublicSpace({
               "Profile",
               currentUserFid,
               initialConfig,
-              tokenData.network
+              tokenData.network,
             );
             console.log("Contract space registration result:", {
               success: !!newSpaceId,
@@ -411,7 +442,7 @@ export default function PublicSpace({
             newSpaceId = await registerSpaceFid(
               currentUserFid,
               "Profile",
-              getSpacePageUrl("Profile")
+              getSpacePageUrl("Profile"),
             );
             console.log("User space registration result:", {
               success: !!newSpaceId,
@@ -499,7 +530,7 @@ export default function PublicSpace({
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [getCurrentSpaceId, getCurrentTabName]
+    [getCurrentSpaceId, getCurrentTabName],
   );
 
   const commitConfig = useCallback(async () => {
@@ -534,7 +565,7 @@ export default function PublicSpace({
       saveLocalSpaceTab(
         currentSpaceId,
         currentTabName,
-        remoteSpaces[currentSpaceId].tabs[currentTabName]
+        remoteSpaces[currentSpaceId].tabs[currentTabName],
       );
     }
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
@@ -586,7 +617,7 @@ export default function PublicSpace({
           ? deleteSpaceTab(
               currentSpaceId,
               tabName,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -597,7 +628,7 @@ export default function PublicSpace({
               currentSpaceId,
               tabName,
               INITIAL_SPACE_CONFIG_EMPTY,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -609,7 +640,7 @@ export default function PublicSpace({
             currentSpaceId,
             oldName,
             resolvedConfig,
-            newName
+            newName,
           );
         }
         return undefined;
@@ -625,7 +656,7 @@ export default function PublicSpace({
         return currentSpaceId
           ? commitSpaceTabOrder(
               currentSpaceId,
-              tokenData?.network as EtherScanChainName
+              tokenData?.network as EtherScanChainName,
             )
           : undefined;
       }}
@@ -657,5 +688,21 @@ export default function PublicSpace({
       tabBar={tabBar}
       profile={profile ?? undefined}
     />
+  );
+}
+
+export default function PublicSpace(props: PublicSpaceProps) {
+  return (
+    <Suspense
+      fallback={
+        <PublicSpaceSkeleton
+          isTokenPage={props.isTokenPage}
+          spaceOwnerFid={props.spaceOwnerFid}
+          pageType={props.pageType}
+        />
+      }
+    >
+      <PublicSpaceContent {...props} />
+    </Suspense>
   );
 }
