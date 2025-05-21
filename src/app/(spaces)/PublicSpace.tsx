@@ -1,11 +1,19 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  Suspense,
+} from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
+import SpaceLoading from "./SpaceLoading";
 import { SpaceConfigSaveDetails } from "./Space";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -17,7 +25,30 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
+
+function useLoadingSuspense(shouldSuspend: boolean) {
+  const promiseRef = useRef<Promise<void> | null>(null);
+  const resolverRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (!shouldSuspend && promiseRef.current) {
+      resolverRef.current?.();
+      resolverRef.current = null;
+      promiseRef.current = null;
+    }
+  }, [shouldSuspend]);
+
+  if (shouldSuspend) {
+    if (!promiseRef.current) {
+      promiseRef.current = new Promise<void>((resolve) => {
+        resolverRef.current = resolve;
+      });
+    }
+    throw promiseRef.current;
+  }
+}
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
@@ -38,7 +69,7 @@ interface PublicSpaceProps {
   pageType?: SpacePageType;
 }
 
-export default function PublicSpace({
+function PublicSpaceContent({
   spaceId: providedSpaceId,
   tabName: providedTabName,
   initialConfig,
@@ -62,6 +93,7 @@ export default function PublicSpace({
 
   const router = useRouter();
   const [loading, setLoading] = useState(!isNil(providedSpaceId));
+  useLoadingSuspense(loading && !isNil(providedSpaceId));
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
@@ -69,8 +101,10 @@ export default function PublicSpace({
   const {
     getCurrentSpaceId,
     setCurrentSpaceId,
+    currentSpaceId,
     getCurrentTabName,
     setCurrentTabName,
+    currentTabName,
     loadEditableSpaces,
     localSpaces,
     remoteSpaces,
@@ -88,8 +122,10 @@ export default function PublicSpace({
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    currentSpaceId: state.currentSpace.currentSpaceId,
     getCurrentTabName: state.currentSpace.getCurrentTabName,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
+    currentTabName: state.currentSpace.currentTabName,
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
@@ -216,21 +252,21 @@ export default function PublicSpace({
     localSpaces,
   ]);
 
-  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
+  // Loads and sets up the user's space tab when the current space or tab changes
   useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentSpaceIdValue = getCurrentSpaceId();
+    const currentTabNameValue = getCurrentTabName();
 
     console.log("Loading space tab:", {
-      currentSpaceId,
-      currentTabName,
+      currentSpaceId: currentSpaceIdValue,
+      currentTabName: currentTabNameValue,
       loading,
     });
 
-    if (!isNil(currentSpaceId)) {
+    if (!isNil(currentSpaceIdValue)) {
       setLoading(true);
       // First, load the space tab order
-      loadSpaceTabOrder(currentSpaceId)
+      loadSpaceTabOrder(currentSpaceIdValue)
         .then(() => {
           console.log("Loaded space tab order");
           return loadEditableSpaces();
@@ -238,7 +274,7 @@ export default function PublicSpace({
         .then(() => {
           console.log("Loaded editable spaces");
           // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
+          return loadSpaceTab(currentSpaceIdValue, currentTabNameValue ?? "Profile");
         })
         .then(() => {
           console.log("Loaded space tab");
@@ -249,7 +285,7 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName]);
+  }, [currentSpaceId, currentTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
@@ -658,5 +694,16 @@ export default function PublicSpace({
       tabBar={tabBar}
       profile={profile ?? undefined}
     />
+  );
+}
+
+export default function PublicSpace(props: PublicSpaceProps) {
+  const isMobile = useIsMobile();
+  return (
+    <Suspense
+      fallback={<SpaceLoading hasProfile hasFeed={!isMobile} />}
+    >
+      <PublicSpaceContent {...props} />
+    </Suspense>
   );
 }
