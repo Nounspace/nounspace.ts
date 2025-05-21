@@ -183,7 +183,7 @@ export const createHomeBaseTabStoreFunc = (
         { useRootKey: true },
       );
       try {
-        await axiosBackend.post(`/api/space/homebase/tabOrder/`, file);
+        await axiosBackend.post(`/api/space/homebase/tabOrder`, file);
         set((draft) => {
           draft.homebase.tabOrdering.remote = localCopy;
         }, "commitHomebaseTabOrderToDatabase");
