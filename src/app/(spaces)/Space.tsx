@@ -17,6 +17,8 @@ import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { PlacedGridItem } from "@/fidgets/layout/Grid";
+import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -122,6 +124,49 @@ export default function Space({
           commitConfig();
         });
       }
+    }
+
+    // Check for and handle overlapping fidgets
+    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+      config.layoutDetails.layoutConfig.layout,
+      config.fidgetInstanceDatums,
+      !isNil(profile),
+      !isNil(feed)
+    );
+
+    
+
+    // Clear instance datums that are no longer in the layout
+    if (removedFidgetIds.length > 0 || 
+      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
+      item.y !== config.layoutDetails.layoutConfig.layout[i].y)) {
+      const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+      removedFidgetIds.forEach(id => {
+        delete cleanedFidgetInstanceDatums[id];
+      });
+
+      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+        const datum = cleanedFidgetInstanceDatums[id];
+        const settings = datum.config?.settings as Record<string, unknown>;
+        if (settings && "fidget Shadow" in settings) {
+          settings.fidgetShadow = settings["fidget Shadow"];
+          delete settings["fidget Shadow"];
+        }
+      });
+
+      saveConfig({
+        layoutDetails: {
+          layoutConfig: {
+            ...config.layoutDetails.layoutConfig,
+            layout: cleanedLayout,
+          },
+        },
+        fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+        timestamp: new Date().toISOString(),
+      }).then(() => {
+        commitConfig();
+      });
     }
 
     // Mark cleanup as complete
