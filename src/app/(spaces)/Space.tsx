@@ -103,6 +103,18 @@ export default function Space({
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
+    // Identify layout items that reference missing fidget data
+    const orphanedLayoutItems = config.layoutDetails.layoutConfig.layout.filter(
+      (item) => !config.fidgetInstanceDatums[item.i]
+    );
+
+    // Remove orphaned layout items
+    const layoutWithoutOrphans = config.layoutDetails.layoutConfig.layout.filter(
+      (item) => !!config.fidgetInstanceDatums[item.i]
+    );
+
+    const orphanedIds = orphanedLayoutItems.map((item) => item.i);
+
     // Find unused fidgets
     const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
       (id) => !layoutFidgetIds.has(id)
@@ -126,43 +138,67 @@ export default function Space({
       }
     }
 
-    // Check for and handle overlapping fidgets
-    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
-      config.layoutDetails.layoutConfig.layout,
+    // Check for and handle overlapping fidgets on the filtered layout
+    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } = cleanupLayout(
+      layoutWithoutOrphans,
       config.fidgetInstanceDatums,
       !isNil(profile),
       !isNil(feed)
     );
 
+    const cleanedLayout = cleanedAfterOverlap;
+    const allRemovedIds = [...removedFidgetIds, ...orphanedIds];
+
     const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    removedFidgetIds.forEach(id => {
+    allRemovedIds.forEach(id => {
       delete cleanedFidgetInstanceDatums[id];
     });
     
     let settingsChanged = false;
+    let datumFieldsUpdated = false;
 
-    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+    // Normalize configuration keys and ensure required fields
     Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
       const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown>;
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
+      const settings = datum.config?.settings as Record<string, unknown> | undefined;
+
+      if (settings) {
+        const keyMap: Record<string, string> = {
+          "fidget Shadow": "fidgetShadow",
+          "font Color": "fontColor",
+        };
+        Object.entries(keyMap).forEach(([oldKey, newKey]) => {
+          if (oldKey in settings) {
+            settings[newKey] = settings[oldKey];
+            delete settings[oldKey];
+            settingsChanged = true;
+          }
+        });
       }
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
+
+      if (!datum.fidgetType || !datum.id) {
+        cleanedFidgetInstanceDatums[id] = {
+          ...datum,
+          fidgetType: datum.fidgetType || id.split(":")[0],
+          id: datum.id || id,
+        };
+        datumFieldsUpdated = true;
       }
     });
 
     // Make Queued Changes
-    if (removedFidgetIds.length > 0 || 
-      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-      item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-      settingsChanged) {
+    const layoutChanged =
+      cleanedLayout.length !== config.layoutDetails.layoutConfig.layout.length ||
+      cleanedLayout.some(
+        (item, i) =>
+          item.x !== config.layoutDetails.layoutConfig.layout[i]?.x ||
+          item.y !== config.layoutDetails.layoutConfig.layout[i]?.y ||
+          item.i !== config.layoutDetails.layoutConfig.layout[i]?.i ||
+          item.w !== config.layoutDetails.layoutConfig.layout[i]?.w ||
+          item.h !== config.layoutDetails.layoutConfig.layout[i]?.h
+      );
 
+    if (allRemovedIds.length > 0 || layoutChanged || settingsChanged || datumFieldsUpdated) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
