@@ -103,6 +103,18 @@ export default function Space({
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
+    // Identify layout items that reference missing fidget data
+    const orphanedLayoutItems = config.layoutDetails.layoutConfig.layout.filter(
+      (item) => !config.fidgetInstanceDatums[item.i]
+    );
+
+    // Remove orphaned layout items
+    let layoutWithoutOrphans = config.layoutDetails.layoutConfig.layout.filter(
+      (item) => !!config.fidgetInstanceDatums[item.i]
+    );
+
+    const orphanedIds = orphanedLayoutItems.map((item) => item.i);
+
     // Find unused fidgets
     const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
       (id) => !layoutFidgetIds.has(id)
@@ -126,16 +138,19 @@ export default function Space({
       }
     }
 
-    // Check for and handle overlapping fidgets
-    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
-      config.layoutDetails.layoutConfig.layout,
+    // Check for and handle overlapping fidgets on the filtered layout
+    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } = cleanupLayout(
+      layoutWithoutOrphans,
       config.fidgetInstanceDatums,
       !isNil(profile),
       !isNil(feed)
     );
 
+    const cleanedLayout = cleanedAfterOverlap;
+    const allRemovedIds = [...removedFidgetIds, ...orphanedIds];
+
     const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    removedFidgetIds.forEach(id => {
+    allRemovedIds.forEach(id => {
       delete cleanedFidgetInstanceDatums[id];
     });
     
@@ -158,11 +173,18 @@ export default function Space({
     });
 
     // Make Queued Changes
-    if (removedFidgetIds.length > 0 || 
-      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-      item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-      settingsChanged) {
+    const layoutChanged =
+      cleanedLayout.length !== config.layoutDetails.layoutConfig.layout.length ||
+      cleanedLayout.some(
+        (item, i) =>
+          item.x !== config.layoutDetails.layoutConfig.layout[i]?.x ||
+          item.y !== config.layoutDetails.layoutConfig.layout[i]?.y ||
+          item.i !== config.layoutDetails.layoutConfig.layout[i]?.i ||
+          item.w !== config.layoutDetails.layoutConfig.layout[i]?.w ||
+          item.h !== config.layoutDetails.layoutConfig.layout[i]?.h
+      );
 
+    if (allRemovedIds.length > 0 || layoutChanged || settingsChanged) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
