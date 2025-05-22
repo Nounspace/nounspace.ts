@@ -87,21 +87,15 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
 
     // console.log('Not editable: No matching ownership conditions met for token space');
   } else {
-    // For profile spaces, just check FID match
-    // console.log('Checking profile space editability');
+    // For profile/proposal spaces, check FID or wallet address match
     if (spaceOwnerFid && currentUserFid === spaceOwnerFid) {
-      // console.log('Editable: User owns profile space', {
-      //   currentUserFid,
-      //   spaceOwnerFid,
-      // });
       return { isEditable: true, isLoading: false };
     }
-    // console.log('Not editable: FIDs do not match for profile space', {
-    //   currentUserFid,
-    //   spaceOwnerFid,
-    // });
+    if (spaceOwnerAddress && wallets.some(w => w.address?.toLowerCase() === spaceOwnerAddress?.toLowerCase())) {
+      return { isEditable: true, isLoading: false };
+    }
   }
 
   // console.log('Final result: Not editable');
   return { isEditable: false, isLoading: false };
-}; 
+};
