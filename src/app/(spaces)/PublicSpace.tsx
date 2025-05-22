@@ -86,6 +86,7 @@ export default function PublicSpace({
     deleteSpaceTab,
     registerSpaceFid,
     registerSpaceContract,
+    registerProposalSpace,
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
@@ -105,6 +106,7 @@ export default function PublicSpace({
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
+    registerProposalSpace: state.space.registerProposalSpace,
   }));
 
   const {
@@ -210,7 +212,21 @@ export default function PublicSpace({
       }
     } else if (resolvedPageType === "proposal") {
       console.log("Handling proposal page logic...");
-      // Add specific logic for proposal pages here
+      // Register proposal space in the database with proposer info
+      const registerProposalSpaceHandler = async () => {
+        try {
+          // Use providedSpaceId as the unique identifier for the proposal space
+          const proposalSpaceId = providedSpaceId || "";
+          if (!proposalSpaceId) throw new Error("Proposal spaceId is required");
+          await registerProposalSpace(proposalSpaceId);
+          setCurrentSpaceId(proposalSpaceId);
+          setCurrentTabName(decodeURIComponent(providedTabName));
+        } catch (error) {
+          console.error("Error registering proposal space:", error);
+        }
+      };
+      registerProposalSpaceHandler();
+      return;
     }
 
     // If no existing space found locally, use the provided spaceId
