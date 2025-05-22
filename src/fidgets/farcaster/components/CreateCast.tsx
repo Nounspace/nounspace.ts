@@ -388,14 +388,38 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }
     }
 
-    const mentions = draft.mentionsToFids
-      ? Object.values(draft.mentionsToFids).map(Number)
-      : [];
-    const mentionsPositions = draft.mentionsPositions || [];
+    // Recompute mentions and their positions from the final text to ensure
+    // both arrays match in length and order. This prevents duplicated mentions
+    // when publishing.
+    const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
+    const mentionMatches = [...draft.text.matchAll(usernamePattern)];
+    const mentions: number[] = [];
+    const mentionsPositions: number[] = [];
+    let finalText = draft.text;
+    let offset = 0;
+    for (const match of mentionMatches) {
+      const username = match[1];
+      const fid = draft.mentionsToFids?.[username];
+      if (!fid) continue;
+
+      const baseIndex = match.index! + match[0].indexOf("@");
+      const adjustedIndex = baseIndex + offset;
+
+      if (finalText[adjustedIndex] !== "@") {
+        finalText =
+          finalText.slice(0, adjustedIndex) +
+          "@" +
+          finalText.slice(adjustedIndex);
+        offset += 1;
+      }
+
+      mentions.push(Number(fid));
+      mentionsPositions.push(adjustedIndex);
+    }
 
     const castBody: CastAddBody = {
       type: CastType.CAST,
-      text: draft.text,
+      text: finalText,
       embeds: draft.embeds || [],
       embedsDeprecated: [],
       parentUrl: draft.parentUrl || undefined,
