@@ -4,7 +4,6 @@ import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
 export const metadata = {
@@ -57,9 +56,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head>
-        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
-      </Head>
       <body>
         <SpeedInsights />
         <Providers>{sidebarLayout(children)}</Providers>
