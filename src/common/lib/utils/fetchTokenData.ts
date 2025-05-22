@@ -87,6 +87,14 @@ export async function fetchTokenData(
       }
     }
 
+    let priceChange: string | null = null;
+    for (const pool of result.included) {
+      if (pool.attributes?.price_change_percentage?.h24) {
+        priceChange = pool.attributes.price_change_percentage.h24;
+        break;
+      }
+    }
+
     // Calculate market cap if not available
     if (!marketCap && token.price_usd) {
       const totalSupply = token.total_supply;
@@ -115,6 +123,7 @@ export async function fetchTokenData(
     return {
       ...token,
       market_cap_usd: marketCap,
+      priceChange,
     };
   } catch (error) {
     // console.error("Error fetching token data:", error);
