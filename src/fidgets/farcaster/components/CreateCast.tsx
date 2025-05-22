@@ -310,11 +310,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
       );
 
       let mentionsToFids: { [key: string]: string } = {};
-      // Positions of each mention in the text
-      const mentionsPositions: number[] = usernamesWithPositions.map(
-        (u) => u.position,
-      );
-      const mentionsText = text; // Keep the original text intact
+
+      // Remove mentions from the text while tracking their positions so the
+      // sanitized text aligns with the positions used for publishing.
+      let mentionsText = text;
+      const mentionsPositions: number[] = [];
+      let offset = 0;
+      for (const { username, position } of usernamesWithPositions) {
+        const adjustedPos = position - offset;
+        mentionsPositions.push(adjustedPos);
+        mentionsText =
+          mentionsText.slice(0, adjustedPos) +
+          mentionsText.slice(adjustedPos + username.length + 1);
+        offset += username.length + 1;
+      }
 
       if (uniqueUsernames.length > 0) {
         try {
