@@ -59,7 +59,8 @@ const channelFidgetProperties: FidgetProperties = {
   fidgetName: "Farcaster Channels",
   fields: [
     {
-      fieldName: "Channel Feed",
+      fieldName: "channel",
+      displayName: "Channel Feed",
       default: "A channel Feed!",
       required: true,
       inputSelector: TextInput,
