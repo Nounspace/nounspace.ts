@@ -635,6 +635,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           <div className="flex flex-row pt-0 justify-end">
             <Button
               size="lg"
+              variant="primary"
               type="submit"
               className="line-clamp-1 min-w-40 max-w-xs truncate"
               disabled={isPublishing || isLoadingSigner}
