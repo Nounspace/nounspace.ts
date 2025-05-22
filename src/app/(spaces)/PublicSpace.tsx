@@ -133,7 +133,12 @@ export default function PublicSpace({
       spaceOwnerAddress,
       walletAddresses: wallets.map((w) => w.address),
       // Show if any wallet matches the spaceOwnerAddress
-      ownsSpaceOwnerAddress: spaceOwnerAddress && wallets.some(w => w.address?.toLowerCase() === spaceOwnerAddress?.toLowerCase()),
+      ownsSpaceOwnerAddress:
+        spaceOwnerAddress &&
+        wallets.some(
+          (w) =>
+            w.address?.toLowerCase() === spaceOwnerAddress?.toLowerCase()
+        ),
     });
 
     return checker;
