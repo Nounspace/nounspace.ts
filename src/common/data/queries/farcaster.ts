@@ -6,6 +6,7 @@ import {
   FilterType,
 } from "@neynar/nodejs-sdk/build/api";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { isUndefined } from "lodash";
 import axiosBackend from "../api/backend";
 
@@ -123,5 +124,23 @@ export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage?.next?.cursor ?? undefined,
+  });
+};
+
+export const useFidFromUsername = (username?: string) => {
+  return useQuery({
+    queryKey: ["fid-from-username", username],
+    enabled: !!username && username.length > 0,
+    queryFn: async () => {
+      if (!username) return undefined;
+      const res = await axios.get(
+        `/api/farcaster/neynar/getFids?usernames=${encodeURIComponent(username)}`,
+      );
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data[0].fid;
+      }
+      return undefined;
+    },
+    staleTime: 1000 * 60 * 2,
   });
 };
