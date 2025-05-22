@@ -103,86 +103,66 @@ export default function Space({
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
-    // Identify layout items that reference missing fidget data
-    const orphanedLayoutItems = config.layoutDetails.layoutConfig.layout.filter(
-      (item) => !config.fidgetInstanceDatums[item.i]
-    );
-
-    // Remove orphaned layout items
-    const layoutWithoutOrphans = config.layoutDetails.layoutConfig.layout.filter(
-      (item) => !!config.fidgetInstanceDatums[item.i]
-    );
-
-    const orphanedIds = orphanedLayoutItems.map((item) => item.i);
-
-    // Find unused fidgets
-    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-      (id) => !layoutFidgetIds.has(id)
-    );
-
-    // Remove unused fidgets
-    if (unusedFidgetIds.length > 0) {
+       // Find unused fidgets
+       const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+        (id) => !layoutFidgetIds.has(id)
+      );
+      // Remove unused fidgets
+      if (unusedFidgetIds.length > 0) {
+        const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+        unusedFidgetIds.forEach((id) => {
+          delete cleanedFidgetInstanceDatums[id];
+        });
+        // Only save if we have fidgets left
+        if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
+          saveConfig({
+            fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+            timestamp: new Date().toISOString(),
+          }).then(() => {
+            commitConfig();
+          });
+        }
+      }
+  
+      // Check for and handle overlapping fidgets
+      const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+        config.layoutDetails.layoutConfig.layout,
+        config.fidgetInstanceDatums,
+        !isNil(profile),
+        !isNil(feed)
+      );
+  
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      unusedFidgetIds.forEach((id) => {
+      removedFidgetIds.forEach(id => {
         delete cleanedFidgetInstanceDatums[id];
       });
-
-      // Only save if we have fidgets left
-      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
+  
+      let settingsChanged = false;
+      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+        const datum = cleanedFidgetInstanceDatums[id];
+        const settings = datum.config?.settings as Record<string, unknown>;
+        if (settings && "fidget Shadow" in settings) {
+          settings.fidgetShadow = settings["fidget Shadow"];
+          delete settings["fidget Shadow"];
+          settingsChanged = true;
+        }
+        if (settings && "fidget Shadow" in settings) {
+          settings.fidgetShadow = settings["fidget Shadow"];
+          delete settings["fidget Shadow"];
+          settingsChanged = true;
+        }
+      });
+  
+      // Make Queued Changes
+      if (removedFidgetIds.length > 0 || 
+        cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
+        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
+        settingsChanged) {
+  
         saveConfig({
-          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-          timestamp: new Date().toISOString(),
-        }).then(() => {
-          commitConfig();
-        });
-      }
-    }
-
-    // Check for and handle overlapping fidgets on the filtered layout
-    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } = cleanupLayout(
-      layoutWithoutOrphans,
-      config.fidgetInstanceDatums,
-      !isNil(profile),
-      !isNil(feed)
-    );
-
-    const cleanedLayout = cleanedAfterOverlap;
-    const allRemovedIds = [...removedFidgetIds, ...orphanedIds];
-
-    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    allRemovedIds.forEach(id => {
-      delete cleanedFidgetInstanceDatums[id];
-    });
-    
-    let settingsChanged = false;
-
-    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-      const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown>;
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
-      }
-    });
-
-    // Make Queued Changes
-    const layoutChanged =
-      cleanedLayout.length !== config.layoutDetails.layoutConfig.layout.length ||
-      cleanedLayout.some(
-        (item, i) =>
-          item.x !== config.layoutDetails.layoutConfig.layout[i]?.x ||
-          item.y !== config.layoutDetails.layoutConfig.layout[i]?.y ||
-          item.i !== config.layoutDetails.layoutConfig.layout[i]?.i ||
-          item.w !== config.layoutDetails.layoutConfig.layout[i]?.w ||
-          item.h !== config.layoutDetails.layoutConfig.layout[i]?.h
-      );
-
-    if (allRemovedIds.length > 0 || layoutChanged || settingsChanged) {
-      saveConfig({
-        layoutDetails: {
-          layoutConfig: {
+          layoutDetails: {
+            layoutConfig: {
             ...config.layoutDetails.layoutConfig,
             layout: cleanedLayout,
           },
