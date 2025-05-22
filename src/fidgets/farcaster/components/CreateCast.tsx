@@ -388,14 +388,35 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }
     }
 
-    const mentions = draft.mentionsToFids
-      ? Object.values(draft.mentionsToFids).map(Number)
-      : [];
-    const mentionsPositions = draft.mentionsPositions || [];
+    // Build sanitized text and capture mention positions so mentions are not
+    // duplicated in the final cast body. The editor text still contains
+    // "@username" strings, but the Farcaster message expects them to be
+    // inserted based on positions.
+    const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
+    const mentions: number[] = [];
+    const mentionsPositions: number[] = [];
+    let sanitizedText = "";
+    let lastIndex = 0;
+
+    for (const match of draft.text.matchAll(usernamePattern)) {
+      const atIndex = match.index! + match[0].indexOf("@");
+      const endIndex = atIndex + match[0].slice(match[0].indexOf("@") + 1).length + 1;
+      sanitizedText += draft.text.slice(lastIndex, atIndex);
+      const username = match[1];
+      const fid = draft.mentionsToFids?.[username];
+      if (fid) {
+        mentions.push(Number(fid));
+        mentionsPositions.push(sanitizedText.length);
+      }
+      lastIndex = endIndex;
+    }
+
+    sanitizedText += draft.text.slice(lastIndex);
 
     const castBody: CastAddBody = {
       type: CastType.CAST,
-      text: draft.text,
+      // Use sanitizedText so mentions are inserted exactly once by Farcaster
+      text: sanitizedText,
       embeds: draft.embeds || [],
       embedsDeprecated: [],
       parentUrl: draft.parentUrl || undefined,
