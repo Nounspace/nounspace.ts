@@ -33,6 +33,7 @@ const matchaProperties: FidgetProperties = {
     ...mobileStyleSettings,
     {
       fieldName: "defaultSellToken",
+      displayName: "Default Sell Token",
       default: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       required: true,
       inputSelector: (props) => (
@@ -46,6 +47,7 @@ const matchaProperties: FidgetProperties = {
     },
     {
       fieldName: "defaultBuyToken",
+      displayName: "Default Buy Token",
       default: "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
       required: true,
       inputSelector: (props) => (
@@ -60,6 +62,7 @@ const matchaProperties: FidgetProperties = {
     },
     {
       fieldName: "fromChain",
+      displayName: "Sell Chain",
       default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: (props) => (
@@ -90,6 +93,7 @@ const matchaProperties: FidgetProperties = {
     },
     {
       fieldName: "toChain",
+      displayName: "Buy Chain",
       default: { id: "8453", name: "Base" },
       required: false,
       inputSelector: (props) => (
