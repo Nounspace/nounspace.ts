@@ -635,8 +635,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
           <div className="flex flex-row pt-0 justify-end">
             <Button
               size="lg"
+              variant="primary"
               type="submit"
-              className="line-clamp-1 min-w-40 max-w-xs truncate"
+              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
               disabled={isPublishing || isLoadingSigner}
             >
               {getButtonText()}
