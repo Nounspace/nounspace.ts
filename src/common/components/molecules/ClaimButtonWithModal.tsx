@@ -8,6 +8,7 @@ import {
   TooltipProvider,
 } from "../atoms/tooltip";
 import { useToken } from "@/common/providers/TokenProvider";
+import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { Address } from "viem";
 
 interface ClaimButtonWithModalProps {
@@ -18,9 +19,28 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   contractAddress,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
-  const { tokenData } = useToken();
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+
+  // Try proposal context first, fallback to token context only if not in proposal context
+  let symbol = "";
+  let isProposalPage = false;
+  let proposalId: string | undefined = undefined;
+  try {
+    const { proposalData } = useProposalContext();
+    if (proposalData) {
+      symbol = proposalData.title || proposalData.id || "Proposal";
+      isProposalPage = true;
+      proposalId = proposalData.id;
+    }
+  } catch {
+    // Not in proposal context, try token context
+    try {
+      const { tokenData } = useToken();
+      symbol = tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    } catch {
+      // Not in token context either
+      symbol = "";
+    }
+  }
 
   const handleClaimClick = () => {
     setModalOpenState(true);
@@ -45,8 +65,11 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Log in with the Farcaster account that deployed ${symbol} to
-            customize this space.
+            {isProposalPage
+              ? `Log in with the Farcaster account that created this proposal to customize this space.`
+              : symbol
+                ? `Log in with the Farcaster account that deployed ${symbol} to customize this space.`
+                : `Log in with the Farcaster account to customize this space.`}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -54,6 +77,7 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
         isModalOpen={isModalOpen}
         handleModalClose={handleModalClose}
         tokenSymbol={symbol}
+        proposalId={proposalId}
       />
     </TooltipProvider>
   );
