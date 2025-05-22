@@ -9,6 +9,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import {
+  useFidFromUsername,
   useGetCasts,
   useGetCastsByKeyword,
 } from "@/common/data/queries/farcaster";
@@ -19,13 +20,13 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mobileStyleSettings, WithMargin } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
@@ -39,6 +40,7 @@ export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
   users?: string;
+  username?: string; 
   channel?: string;
   keyword?: string;
   selectPlatform: Platform;
@@ -131,6 +133,23 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       group: "settings",
     },
     {
+      fieldName: "username",
+      displayName: "Username",
+      displayNameHint: "Input a Farcaster username to display a feed of that user's casts.",
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Users ||
+        settings?.selectPlatform?.name === "X",
+      default: "",
+      group: "settings",
+    },
+    {
       fieldName: "users",
       displayName: "FID",
       displayNameHint: "Input an FID to display a feed of that user's casts.",
@@ -143,7 +162,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Users ||
-        settings?.selectPlatform?.name === "X",
+        settings?.selectPlatform?.name === "X" ||
+        !!(settings.username && settings.username.length > 0),
       default: "",
       group: "settings",
     },
@@ -319,10 +339,18 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     Xhandle,
     style,
   } = settings;
-  const { feedType, users, channel, filterType, keyword, membersOnly } = settings;
+  const { feedType, users, username, channel, filterType, keyword, membersOnly } = settings;
   const { fid } = useFarcasterSigner("feed");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [prevFeedType, setPrevFeedType] = useState(feedType);
+
+  const { data: usernameFid } = useFidFromUsername(
+    filterType === FilterType.Users && username ? username : undefined
+  );
+
+  const effectiveFids = filterType === FilterType.Users && usernameFid
+    ? usernameFid.toString()
+    : users;
 
   const {
     data,
@@ -339,7 +367,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         feedType,
         fid,
         filterType,
-        fids: users,
+        fids: effectiveFids,
         channel,
         ...(feedType === FeedType.Filter && filterType === 
           FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
