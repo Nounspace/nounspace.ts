@@ -112,6 +112,17 @@ export function ThemeSettingsEditor({
     saveFidgetInstanceDatums(newDatums);
   };
 
+  const handleReorderMiniApps = (apps: MiniApp[]) => {
+    const newDatums: { [key: string]: FidgetInstanceData } = {};
+    apps.forEach(app => {
+      const datum = fidgetInstanceDatums[app.id];
+      if (datum) {
+        newDatums[app.id] = datum;
+      }
+    });
+    saveFidgetInstanceDatums(newDatums);
+  };
+
   function themePropSetter<_T extends string>(property: string): (value: string) => void {
     return (value: string): void => {
       const newTheme = {
@@ -362,6 +373,7 @@ export function ThemeSettingsEditor({
                   <MobileSettings
                     miniApps={miniApps}
                     onUpdateMiniApp={handleUpdateMiniApp}
+                    onReorder={handleReorderMiniApps}
                   />
                 </TabsContent>
               </Tabs>
