@@ -53,7 +53,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
           >
             <button
               key={fidgetId}
-              className="group w-full h-10 flex items-center gap-2 p-1 bg-transparent transform-gpu transition-transform will-change-transform hover:scale-[1.02]"
+              className="group w-full h-10 flex items-center gap-2 p-1 bg-transparent transform-gpu transition-transform will-change-transform hover:scale-[1.04]"
               onClick={() => addFidget(fidgetId, fidgetModule)}
             >
               <Card className="w-full h-full bg-[#F3F4F6] flex items-center p-1 rounded-lg">
