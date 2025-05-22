@@ -289,85 +289,63 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
+      const currentText = text;
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match @username mentions, even if followed by punctuation
       const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
 
-      // The working copy of the text for position calculation
-      const workingText = text;
+      const usernamesWithPositions = [...currentText.matchAll(usernamePattern)].map(
+        (match) => ({
+          username: match[1],
+          position: match.index! + match[0].indexOf("@"),
+        }),
+      );
 
-      // Extract mentions and their positions from the original text
-      const usernamesWithPositions = [
-        ...workingText.matchAll(usernamePattern),
-      ].map((match) => ({
-        username: match[1],
-        position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
+      const mentionsPositions = usernamesWithPositions.map((u) => u.position);
+
+      // Immediately update draft with the latest text and positions
+      setDraft((prevDraft) => ({
+        ...prevDraft,
+        text: currentText,
+        embeds: newEmbeds,
+        parentUrl: channel?.parent_url || undefined,
+        mentionsPositions,
       }));
 
       const uniqueUsernames = Array.from(
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
-      let mentionsToFids: { [key: string]: string } = {};
-      // Positions of each mention in the text
-      const mentionsPositions: number[] = usernamesWithPositions.map(
-        (u) => u.position,
-      );
-      const mentionsText = text; // Keep the original text intact
-
-      if (uniqueUsernames.length > 0) {
-        try {
-          // Fetch the FIDs for the mentioned users
-          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
-
-          const query = encodeURIComponent(uniqueUsernames.join(","));
-          // console.log(query);
-          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-          const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
-
-          if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce(
-              (acc, mention) => {
-                if (mention && mention.username && mention.fid) {
-                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
-                }
-                return acc;
-              },
-              {} as { [key: string]: string },
-            );
-          }
-
-          if (
-            Object.keys(mentionsToFids).length !== mentionsPositions.length &&
-            mentionsPositions.length > 0
-          ) {
-            console.error(
-              "Mismatch between mentions and their positions:",
-              mentionsToFids,
-              mentionsPositions,
-            );
-          }
-        } catch (error) {
-          console.error("Error fetching FIDs:", error);
-        }
+      if (uniqueUsernames.length === 0) {
+        setDraft((prevDraft) => ({ ...prevDraft, mentionsToFids: {} }));
+        return;
       }
 
-      // Update the draft regardless of mentions
-      setDraft((prevDraft) => {
-        const updatedDraft = {
-          ...prevDraft,
-          text: mentionsText,
-          embeds: newEmbeds,
-          parentUrl: channel?.parent_url || undefined,
-          mentionsToFids,
-          mentionsPositions,
-        };
-        // console.log("Updated Draft before posting:", updatedDraft);
-        return updatedDraft;
-      });
+      try {
+        const query = encodeURIComponent(uniqueUsernames.join(","));
+        const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+        const fetchedMentions = await res.json();
+
+        if (Array.isArray(fetchedMentions)) {
+          const mentionsToFids = fetchedMentions.reduce(
+            (acc, mention) => {
+              if (mention && mention.username && mention.fid) {
+                acc[mention.username] = mention.fid.toString();
+              }
+              return acc;
+            },
+            {} as { [key: string]: string },
+          );
+
+          // Only update if text hasn't changed while we were fetching
+          if (getText() === currentText) {
+            setDraft((prevDraft) => ({ ...prevDraft, mentionsToFids }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching FIDs:", error);
+      }
     };
 
     fetchMentionsAndSetDraft();
@@ -388,10 +366,21 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }
     }
 
-    const mentions = draft.mentionsToFids
-      ? Object.values(draft.mentionsToFids).map(Number)
-      : [];
-    const mentionsPositions = draft.mentionsPositions || [];
+    // Recompute mentions and their positions from the final text to ensure
+    // both arrays match in length and order. This prevents duplicated mentions
+    // when publishing.
+    const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
+    const mentionMatches = [...draft.text.matchAll(usernamePattern)];
+    const mentions: number[] = [];
+    const mentionsPositions: number[] = [];
+    for (const match of mentionMatches) {
+      const username = match[1];
+      const fid = draft.mentionsToFids?.[username];
+      if (fid) {
+        mentions.push(Number(fid));
+        mentionsPositions.push(match.index! + match[0].indexOf("@"));
+      }
+    }
 
     const castBody: CastAddBody = {
       type: CastType.CAST,
