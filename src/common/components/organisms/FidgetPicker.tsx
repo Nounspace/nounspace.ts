@@ -53,7 +53,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
           >
             <button
               key={fidgetId}
-              className="w-32 h-32 flex flex-col items-center justify-center p-2"
+              className="w-full h-8 flex items-center gap-2 p-1"
               onClick={() => addFidget(fidgetId, fidgetModule)}
               style={{ transform: "scale(1)", transition: "transform 0.3s" }}
               onMouseEnter={(e) => {
@@ -63,21 +63,19 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
                 e.currentTarget.style.transform = "scale(1)";
               }}
             >
-              <Card className="w-full h-full bg-[#F3F4F6] flex flex-col items-center justify-center p-1">
-                <CardContent className="overflow-hidden flex flex-col items-center justify-center p-1">
-                  <div className="flex items-center justify-center w-14 h-12 mb-2">
-                    {" "}
+              <Card className="w-full h-full bg-[#F3F4F6] flex items-center p-1">
+                <CardContent className="overflow-hidden flex items-center gap-2 p-0">
+                  <div className="flex items-center justify-center w-5 h-5">
                     {/* Icon Container */}
                     <span
-                      className="text-2xl leading-none" // Consistent icon size
+                      className="text-sm leading-none"
                       role="img"
                       aria-label={fidgetModule.properties.fidgetName}
                     >
                       {String.fromCodePoint(fidgetModule.properties.icon)}
                     </span>
                   </div>
-                  <span className="text-sm text-black text-center leading-none">
-                    {" "}
+                  <span className="text-xs text-black text-left leading-none">
                     {/* Text Container */}
                     {fidgetModule.properties.fidgetName}
                   </span>
@@ -100,7 +98,7 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
       </div>
       <section
         id="Fidgets"
-        className="mx-auto grid grid-cols-1 lg:grid-cols-2 md:grid-cols-1"
+        className="mx-auto grid grid-cols-1 gap-1"
       >
         {generateFidgetCards()}
       </section>
