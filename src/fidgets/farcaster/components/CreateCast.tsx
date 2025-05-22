@@ -81,6 +81,34 @@ const onError = (err) => {
   }
 };
 
+/**
+ * Deduplicate adjacent mentions in the provided text. Some editor
+ * configurations occasionally output the same <code>@username</code>
+ * token twice in a row. This helper collapses those duplicates to
+ * ensure the text sent to Farcaster is clean and mention positions are
+ * calculated correctly.
+ */
+export const deduplicateAdjacentMentions = (text: string): string => {
+  const mentionRegex = /@([a-zA-Z0-9_.-]+)/g;
+  let result = "";
+  let lastIndex = 0;
+  let prevEnd = -1;
+  let prevMention = "";
+  for (const match of text.matchAll(mentionRegex)) {
+    const start = match.index ?? 0;
+    result += text.slice(lastIndex, start);
+    const mentionText = match[0];
+    if (start !== prevEnd || mentionText !== prevMention) {
+      result += mentionText;
+    }
+    prevEnd = start + mentionText.length;
+    prevMention = mentionText;
+    lastIndex = prevEnd;
+  }
+  result += text.slice(lastIndex);
+  return result;
+};
+
 export type ParentCastIdType = {
   fid: number;
   hash: Uint8Array;
@@ -291,11 +319,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
+      // Clean up any duplicated mentions before processing
+      const sanitizedText = deduplicateAdjacentMentions(text);
+
       // Regex to match @username mentions, even if followed by punctuation
       const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
 
       // The working copy of the text for position calculation
-      const workingText = text;
+      const workingText = sanitizedText;
 
       // Extract mentions and their positions from the original text
       const usernamesWithPositions = [
@@ -314,7 +345,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const mentionsPositions: number[] = usernamesWithPositions.map(
         (u) => u.position,
       );
-      const mentionsText = text; // Keep the original text intact
+      const mentionsText = sanitizedText;
 
       if (uniqueUsernames.length > 0) {
         try {
@@ -388,14 +419,29 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }
     }
 
-    const mentions = draft.mentionsToFids
-      ? Object.values(draft.mentionsToFids).map(Number)
-      : [];
-    const mentionsPositions = draft.mentionsPositions || [];
+    // Sanitize the text again to remove any accidental duplicated mentions
+    // before constructing the final cast payload.
+    const sanitizedText = deduplicateAdjacentMentions(draft.text);
+
+    // Recompute mentions and their positions from the sanitized text to ensure
+    // both arrays match in length and order. This prevents duplicated mentions
+    // when publishing.
+    const usernamePattern = /(?:^|[^a-zA-Z0-9_.-])@([a-zA-Z0-9_.-]+)/g;
+    const mentionMatches = [...sanitizedText.matchAll(usernamePattern)];
+    const mentions: number[] = [];
+    const mentionsPositions: number[] = [];
+    for (const match of mentionMatches) {
+      const username = match[1];
+      const fid = draft.mentionsToFids?.[username];
+      if (fid) {
+        mentions.push(Number(fid));
+        mentionsPositions.push(match.index! + match[0].indexOf("@"));
+      }
+    }
 
     const castBody: CastAddBody = {
       type: CastType.CAST,
-      text: draft.text,
+      text: sanitizedText,
       embeds: draft.embeds || [],
       embedsDeprecated: [],
       parentUrl: draft.parentUrl || undefined,
