@@ -5,9 +5,10 @@ import MiniAppSettings, { MiniApp } from '../molecules/MiniAppSettings'
 interface MobileSettingsProps {
   miniApps: MiniApp[]
   onUpdateMiniApp: (app: MiniApp) => void
+  onReorder?: (apps: MiniApp[]) => void
 }
 
-export function MobileSettings({ miniApps, onUpdateMiniApp }: MobileSettingsProps) {
+export function MobileSettings({ miniApps, onUpdateMiniApp, onReorder }: MobileSettingsProps) {
   const [items, setItems] = useState<MiniApp[]>([])
 
   useEffect(() => {
@@ -20,6 +21,9 @@ export function MobileSettings({ miniApps, onUpdateMiniApp }: MobileSettingsProp
     newOrder.forEach((item, index) => {
       onUpdateMiniApp({ ...item, order: index + 1 })
     })
+    if (onReorder) {
+      onReorder(newOrder)
+    }
   }
 
   return (
