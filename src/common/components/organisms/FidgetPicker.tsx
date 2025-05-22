@@ -53,29 +53,22 @@ export const FidgetPicker: React.FC<FidgetPickerProps> = ({
           >
             <button
               key={fidgetId}
-              className="w-full h-10 flex items-center gap-2 p-1"
+              className="group w-full h-10 flex items-center gap-2 p-1 bg-transparent transform-gpu transition-transform will-change-transform hover:scale-[1.02]"
               onClick={() => addFidget(fidgetId, fidgetModule)}
-              style={{ transform: "scale(1)", transition: "transform 0.3s" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.02)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-              }}
             >
               <Card className="w-full h-full bg-[#F3F4F6] flex items-center p-1 rounded-lg">
                 <CardContent className="overflow-hidden flex items-center gap-2 p-0 pl-2">
                   <div className="flex items-center justify-center w-5 h-5">
                     {/* Icon Container */}
                     <span
-                      className="text-sm leading-none text-black"
+                      className="text-sm leading-none text-black group-hover:text-black"
                       role="img"
                       aria-label={fidgetModule.properties.fidgetName}
                     >
                       {String.fromCodePoint(fidgetModule.properties.icon)}
                     </span>
                   </div>
-                  <span className="text-xs text-black text-left leading-none">
+                  <span className="text-xs text-black text-left leading-none group-hover:text-black">
                     {/* Text Container */}
                     {fidgetModule.properties.fidgetName}
                   </span>
