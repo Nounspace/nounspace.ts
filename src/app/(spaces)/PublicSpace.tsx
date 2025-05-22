@@ -57,7 +57,8 @@ export default function PublicSpace({
     tabName: providedTabName,
     isTokenPage,
     contractAddress,
-    pageType, // Log the page type
+    pageType,
+    spaceOwnerFid // Log the page type
   });
 
   const router = useRouter();
@@ -123,12 +124,16 @@ export default function PublicSpace({
       isTokenPage,
     });
 
+    // Enhanced debug log for editability
     console.log("Editability check:", {
       isEditable: checker.isEditable,
       isLoading: checker.isLoading,
       currentUserFid,
       spaceOwnerFid,
       spaceOwnerAddress,
+      walletAddresses: wallets.map((w) => w.address),
+      // Show if any wallet matches the spaceOwnerAddress
+      ownsSpaceOwnerAddress: spaceOwnerAddress && wallets.some(w => w.address?.toLowerCase() === spaceOwnerAddress?.toLowerCase()),
     });
 
     return checker;
@@ -154,9 +159,9 @@ export default function PublicSpace({
     if (pageType) return pageType;
     if (isTokenPage) return "token";
     if (spaceOwnerFid) return "person";
-    if (providedSpaceId?.startsWith("proposal:")) return "proposal";
+    if (providedSpaceId?.startsWith("proposal:") || pageType === "proposal" || !!spaceOwnerAddress) return "proposal";
     return "person"; // Default to person page
-  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
+  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId, spaceOwnerAddress]);
 
   console.log("Resolved page type:", resolvedPageType);
 

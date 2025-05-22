@@ -13,24 +13,26 @@ export interface ProposalPageSpaceProps {
   proposalId: string | null;
   proposalData?: ProposalData;
   owningIdentities?: string[];
+  proposerFid?: number | undefined | null;
 }
 
 const ProposalDefinedSpace = ({
   spaceId,
   tabName,
   proposalId,
+  proposerFid,
 }: ProposalPageSpaceProps) => {
   const { proposalData } = useProposalContext();
-  const ownerId = proposalData?.proposer.id;
+  const ownerId = proposalData?.proposer?.id;
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
       createInitalProposalSpaceConfigForProposalId(
         proposalId as Address,
         ownerId as Address,
-        proposalData?.proposer.id as Address
+        proposalData?.proposer?.id as Address
       ),
-    [proposalId, proposalData]
+    [proposalId, ownerId, proposalData]
   );
 
   const getSpacePageUrl = (tabName: string) => `/p/${proposalId}/${tabName}`;
@@ -38,12 +40,12 @@ const ProposalDefinedSpace = ({
   return (
     <div className="w-full">
       <PublicSpace
-        spaceId={spaceId || ""} // Ensure spaceId is a string
-        tabName={tabName || "Profile"} // Ensure tabName is a string
+        spaceId={spaceId || ""}
+        tabName={tabName || "Profile"}
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
-        spaceOwnerFid={1}
+        spaceOwnerFid={proposerFid  || 1}
         spaceOwnerAddress={ownerId}
         pageType="proposal"
       />
