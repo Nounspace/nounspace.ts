@@ -36,7 +36,13 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   h. launch local copy of Supabase with `supabase start` (in the root directory of this repo), use the info provided -> <br>
 `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-8. Run the test suite
+8. Run the setup script
+```bash
+./setup.sh
+```
+The script will attempt to start Supabase automatically if Docker is running; otherwise it will skip this step.
+
+9. Run the test suite
    ```bash
    yarn test
    ```
