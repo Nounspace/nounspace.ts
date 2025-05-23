@@ -39,33 +39,55 @@ export default async function GET(
   });
 }
 
-const TokenCard = ({ data }: { data: TokenCardData }) => (
-  <div
-    style={{
-      width: "100%",
-      height: "100%",
-      padding: "40px",
-      display: "flex",
-      alignItems: "center",
-      background: "white",
-      gap: "32px",
-      fontFamily: "Arial, sans-serif",
-    }}
-  >
-    {data.imageUrl && (
-      <img
-        src={data.imageUrl}
-        width="160"
-        height="160"
-        style={{ borderRadius: "80px" }}
-      />
-    )}
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
-      <span style={{ fontSize: "42px", color: "#555" }}>{data.symbol}</span>
-      <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
-      <span style={{ fontSize: "28px" }}>Market Cap: {data.marketCap}</span>
-      <span style={{ fontSize: "28px" }}>24h Change: {data.priceChange}%</span>
+const TokenCard = ({ data }: { data: TokenCardData }) => {
+  const marketCapNumber = Number(data.marketCap);
+  const formattedMarketCap = Number.isFinite(marketCapNumber)
+    ? `$${marketCapNumber.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : data.marketCap;
+
+  const priceChangeNumber = Number(data.priceChange);
+  const priceChangeColor = Number.isFinite(priceChangeNumber)
+    ? priceChangeNumber >= 0
+      ? "green"
+      : "red"
+    : "#000";
+  const formattedPriceChange = Number.isFinite(priceChangeNumber)
+    ? priceChangeNumber.toFixed(2)
+    : data.priceChange;
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        padding: "40px",
+        display: "flex",
+        alignItems: "center",
+        background: "white",
+        gap: "32px",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      {data.imageUrl && (
+        <img
+          src={data.imageUrl}
+          width="160"
+          height="160"
+          style={{ borderRadius: "80px" }}
+        />
+      )}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
+        <span style={{ fontSize: "42px", color: "#555" }}>{`$${data.symbol}`}</span>
+        <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
+        <span style={{ fontSize: "28px" }}>Market Cap: {formattedMarketCap}</span>
+        <span style={{ fontSize: "28px", color: priceChangeColor }}>
+          24h Change: {formattedPriceChange}%
+        </span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
