@@ -336,7 +336,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   width="auto"
                   className={mergeClasses(
                     "flex items-center justify-center",
-                    shrunk ? "w-12 h-12" : "h-10",
+                    shrunk ? "w-12 h-12" : "h-16",
                   )}
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
