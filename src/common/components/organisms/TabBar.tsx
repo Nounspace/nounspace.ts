@@ -1,13 +1,15 @@
 "use client";
 import React from "react";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
+import { useSidebarContext } from "./Sidebar";
 import { TooltipProvider } from "../atoms/tooltip";
+import { Button } from "../atoms/button";
 import TokenDataHeader from "./TokenDataHeader";
 import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
@@ -69,6 +71,8 @@ function TabBar({
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
+
+  const { setEditMode, sidebarEditable } = useSidebarContext();
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -194,7 +198,7 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white relative">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
@@ -238,6 +242,18 @@ function TabBar({
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
+        )}
+        {!inEditMode && !isMobile && isLoggedIn && sidebarEditable && (
+          <Button
+            onClick={() => setEditMode(true)}
+            size="icon"
+            variant="secondary"
+            className="absolute right-2 top-2 z-infinity"
+          >
+            <div className="flex items-center p-1">
+              <FaPaintbrush />
+            </div>
+          </Button>
         )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
