@@ -35,7 +35,7 @@ const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const pinataJwt = process.env.NEXT_PUBLIC_PINATA_JWT;
+  const pinataJwt = process.env.PINATA_JWT;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
