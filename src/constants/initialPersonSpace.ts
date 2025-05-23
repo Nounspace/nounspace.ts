@@ -50,7 +50,7 @@ const createIntialPersonSpaceConfigForFid = (
     },
   };
   config.layoutDetails.layoutConfig.layout.push({
-    w: 5,
+    w: 6,
     h: 8,
     x: 0,
     y: 0,
@@ -63,10 +63,10 @@ const createIntialPersonSpaceConfigForFid = (
     static: false,
   });
   config.layoutDetails.layoutConfig.layout.push({
-    w: 5,
-    h: 6,
-    x: 0,
-    y: 8,
+    w: 6,
+    h: 8,
+    x: 7,
+    y: 0,
     i: "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e",
     minW: 3,
     maxW: 36,
