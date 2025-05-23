@@ -52,8 +52,8 @@ export type StoreSet<T> = MutativeConfigSetFunction<T>;
 export type StoreGet<T> = () => T;
 
 export function createStore<T>(
-  store: any,
-  persistArgs: PersistOptions<any, any>,
+  store: MatativeConfig<T>,
+  persistArgs: PersistOptions<T>,
 ) {
   return create<T>()(devtools(persist(mutative(store), persistArgs)));
 }
