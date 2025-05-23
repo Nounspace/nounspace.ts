@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
+import logger from "@/common/lib/logger";
 import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { format } from "date-fns";
 import { Address } from "viem";
@@ -29,7 +30,7 @@ const AddressDisplay = ({ address }: { address: Address }) => {
 
 const ProposalDataHeader: React.FC = () => {
   const { proposalData } = useProposalContext();
-  console.log("DEBUG: proposalData", proposalData);
+  logger.debug("DEBUG: proposalData", proposalData);
   
   if (!proposalData) {
     return (
