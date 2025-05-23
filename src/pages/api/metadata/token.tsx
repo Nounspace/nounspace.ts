@@ -53,7 +53,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
     ? priceChangeNumber >= 0
       ? "green"
       : "red"
-    : "#000";
+    : "white";
   const formattedPriceChange = Number.isFinite(priceChangeNumber)
     ? priceChangeNumber.toFixed(2)
     : data.priceChange;
@@ -67,7 +67,8 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        background: "white",
+        background: "black",
+        color: "white",
         gap: "32px",
         fontFamily: "Arial, sans-serif",
       }}
@@ -89,7 +90,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
         }}
       >
         <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
-        <span style={{ fontSize: "42px", color: "#555" }}>{`$${data.symbol}`}</span>
+        <span style={{ fontSize: "42px", color: "white" }}>{`$${data.symbol}`}</span>
         <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
         <span style={{ fontSize: "28px" }}>Market Cap: {formattedMarketCap}</span>
         <span style={{ fontSize: "28px", color: priceChangeColor }}>
