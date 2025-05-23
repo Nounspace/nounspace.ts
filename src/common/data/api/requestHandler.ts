@@ -1,19 +1,19 @@
 import { isUndefined, keys, map } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
-type ResponseError = {
+interface ResponseError {
   message?: string;
-  [key: string]: any;
-};
+  [key: string]: unknown;
+}
 
-export type NounspaceResponse<
-  D = any,
+export interface NounspaceResponse<
+  D = unknown,
   E extends ResponseError = ResponseError,
-> = {
+> {
   result: "success" | "error";
   error?: E;
   value?: D;
-};
+}
 
 type HandlerFunction<R extends NounspaceResponse = NounspaceResponse> = (
   req: NextApiRequest,
