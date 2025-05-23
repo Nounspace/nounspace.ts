@@ -244,16 +244,17 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {!inEditMode && !isMobile && isLoggedIn && sidebarEditable && (
-          <Button
-            onClick={() => setEditMode(true)}
-            size="icon"
-            variant="secondary"
-            className="absolute right-2 top-2 z-infinity"
-          >
-            <div className="flex items-center p-1">
+          <div className="absolute right-2 top-2 z-infinity bg-white rounded-md p-1">
+            <Button
+              onClick={() => setEditMode(true)}
+              size="md"
+              variant="secondary"
+              withIcon
+            >
               <FaPaintbrush />
-            </div>
-          </Button>
+              <span className="whitespace-nowrap">Customize</span>
+            </Button>
+          </div>
         )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
