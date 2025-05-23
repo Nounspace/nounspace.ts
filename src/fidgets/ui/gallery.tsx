@@ -11,7 +11,7 @@ import AlchemyNftSelector, {
 } from "@/common/components/molecules/AlchemyNFTSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
-import ImgBBUploader from "@/common/components/molecules/ImgBBUploader";
+import PinataUploader from "@/common/components/molecules/PinataUploader";
 import MediaSourceSelector, {
   MediaSource,
   MediaSourceTypes,
@@ -74,7 +74,7 @@ const galleryConfig: FidgetProperties = {
         return (
           <WithMargin>
             <div className="flex flex-col gap-4">
-              <ImgBBUploader onImageUploaded={handleImageUploaded} />
+              <PinataUploader onImageUploaded={handleImageUploaded} />
             </div>
           </WithMargin>
         );

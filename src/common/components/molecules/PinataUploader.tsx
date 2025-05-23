@@ -25,17 +25,17 @@ const ImageIcon = () => (
   </svg>
 );
 
-interface ImgBBUploaderProps {
+interface PinataUploaderProps {
   onImageUploaded: (url: string) => void;
 }
 
-const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
+const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const imgBBApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+  const pinataJwt = process.env.NEXT_PUBLIC_PINATA_JWT;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -48,8 +48,8 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
       return;
     }
 
-    if (!imgBBApiKey) {
-      setError("ImgBB API key is not configured");
+    if (!pinataJwt) {
+      setError("Pinata JWT is not configured");
       return;
     }
 
@@ -58,17 +58,27 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
 
     try {
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append("file", file);
 
-      const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgBBApiKey}`, {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${pinataJwt}`,
+          },
+          body: formData,
+        },
+      );
 
-      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
+      }
 
-      if (data.success) {
-        const imageUrl = data.data.display_url || data.data.url;
+      const data = (await response.json()) as { IpfsHash?: string };
+
+      if (data.IpfsHash) {
+        const imageUrl = `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
         setUploadedUrl(imageUrl);
         onImageUploaded(imageUrl);
 
@@ -76,7 +86,7 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
           window.handleGalleryImageUpload(imageUrl);
         }
       } else {
-        setError("Failed to upload image: " + (data.error?.message || "Unknown error"));
+        setError("Failed to upload image");
       }
     } catch (err) {
       console.error("Error uploading image:", err);
@@ -94,10 +104,7 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
   };
 
   return (
-    <div
-      className="flex flex-col gap-4"
-      onSubmit={(e) => e.preventDefault()}
-    >
+    <div className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <input
           ref={fileInputRef}
@@ -126,9 +133,7 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
           )}
         </Button>
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <p className="text-xs text-muted-foreground mt-1">
-          Maximum file size: 5MB
-        </p>
+        <p className="text-xs text-muted-foreground mt-1">Maximum file size: 5MB</p>
       </div>
 
       {uploadedUrl && (
@@ -147,4 +152,4 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
   );
 };
 
-export default ImgBBUploader; 
+export default PinataUploader;
