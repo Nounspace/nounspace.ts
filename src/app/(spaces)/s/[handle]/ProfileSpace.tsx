@@ -25,7 +25,10 @@ export const ProfileSpace = ({
     return <SpaceNotFound />;
   }
 
-  const INITIAL_PERSONAL_SPACE_CONFIG = createIntialPersonSpaceConfigForFid(spaceOwnerFid);
+  const INITIAL_PERSONAL_SPACE_CONFIG = createIntialPersonSpaceConfigForFid(
+    spaceOwnerFid,
+    spaceOwnerUsername ?? undefined,
+  );
 
   const getSpacePageUrl = (tabName: string) => {
     if (!spaceOwnerUsername) return '#';
