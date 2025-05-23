@@ -248,11 +248,10 @@ function TabBar({
             onClick={() => setEditMode(true)}
             size="icon"
             variant="secondary"
-            className="absolute right-2 top-2 z-infinity"
+            className="absolute right-2 top-2 z-infinity bg-white flex items-center px-2"
           >
-            <div className="flex items-center p-1">
-              <FaPaintbrush />
-            </div>
+            <FaPaintbrush />
+            <span className="ml-2">Customize</span>
           </Button>
         )}
         {inEditMode ? (
