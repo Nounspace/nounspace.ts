@@ -26,7 +26,7 @@ const ImageIcon = () => (
 );
 
 interface PinataUploaderProps {
-  onImageUploaded: (url: string) => void;
+  onImageUploaded: (url: string, file?: File) => void;
 }
 
 const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
@@ -80,7 +80,7 @@ const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
       if (data.IpfsHash) {
         const imageUrl = `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
         setUploadedUrl(imageUrl);
-        onImageUploaded(imageUrl);
+        onImageUploaded(imageUrl, file);
 
         if (window.handleGalleryImageUpload) {
           window.handleGalleryImageUpload(imageUrl);
