@@ -62,9 +62,20 @@ export async function generateMetadata({
     : `${WEBSITE_URL}/t/${network}/${contractAddress}`;
     
   // Create token frame with the symbol if available
+  const params = new URLSearchParams({
+    name,
+    symbol,
+    imageUrl,
+    address: contractAddress,
+    marketCap,
+    priceChange,
+  });
+
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/token?${params.toString()}`;
+
   const tokenFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: ogImageUrl,
     button: {
       title: symbol ? `Visit ${symbol}` : "Visit Token Space",
       action: {
