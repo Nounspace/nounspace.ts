@@ -54,6 +54,7 @@ import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
 import { XCircle } from "lucide-react";
+import PinataUploader from "@/common/components/molecules/PinataUploader";
 import { useBannerStore } from "@/stores/bannerStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { useBalance } from "wagmi";
@@ -157,6 +158,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     hasNogs: state.account.hasNogs,
   }));
   const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
+  const [showImageUploader, setShowImageUploader] = useState(false);
 
   useEffect(() => {
     const fetchInitialChannels = async () => {
@@ -506,6 +508,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   };
 
+  const handleImageUploaded = (url: string, file?: File) => {
+    addEmbed({
+      url,
+      metadata: { mimeType: file?.type ?? "image/png" },
+      status: "loaded",
+    });
+    setShowImageUploader(false);
+  };
+
   return (
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
@@ -559,7 +570,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             type="button"
             variant="outline"
             disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
+            onClick={() => setShowImageUploader(true)}
           >
             <PhotoIcon className="mr-1 w-5 h-5" />
             Add
@@ -628,6 +639,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   onAddEmbedAction={handleAddEmbed(addEmbed)}
                 />
               </div>
+            </PopoverContent>
+          </Popover>
+          <Popover
+            open={showImageUploader}
+            onOpenChange={setShowImageUploader}
+          >
+            <PopoverTrigger></PopoverTrigger>
+            <PopoverContent className="w-[300px]">
+              <PinataUploader onImageUploaded={handleImageUploaded} />
             </PopoverContent>
           </Popover>
           <CastLengthUIIndicator getText={getText} />
