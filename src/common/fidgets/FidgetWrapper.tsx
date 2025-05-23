@@ -38,17 +38,18 @@ export type FidgetWrapperProps = {
 };
 
 export const getSettingsWithDefaults = (
-  settings: FidgetSettings,
+  settings: FidgetSettings | undefined,
   config: FidgetProperties,
 ): FidgetSettings => {
+  const safeSettings = settings ?? {};
   return reduce(
     config.fields,
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
-        f.fieldName in settings
-          ? settings[f.fieldName]
-          : f.default || undefined,
+        f.fieldName in safeSettings
+          ? safeSettings[f.fieldName]
+          : f.default ?? undefined,
     }),
     {},
   );
