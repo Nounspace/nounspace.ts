@@ -86,7 +86,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
           display: "flex",
           flexDirection: "column",
           gap: "12px",
-          paddingLeft: "60px",
+          paddingLeft: "80px",
         }}
       >
         <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
