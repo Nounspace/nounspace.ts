@@ -18,6 +18,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa6";
+import { RiQuillPenAiLine } from "react-icons/ri";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -334,7 +335,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
-                  {shrunk && <span className="text-lg font-bold">+</span>}
+                  {shrunk && (
+                    <span className="text-lg font-bold">
+                      <RiQuillPenAiLine />
+                    </span>
+                  )}
                 </Button>
               </div>
             )}
