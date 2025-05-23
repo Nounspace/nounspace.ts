@@ -11,7 +11,9 @@ import AlchemyNftSelector, {
 } from "@/common/components/molecules/AlchemyNFTSelector";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
-import PinataUploader from "@/common/components/molecules/PinataUploader";
+import PinataUploader, {
+  UploadedImageInfo,
+} from "@/common/components/molecules/PinataUploader";
 import MediaSourceSelector, {
   MediaSource,
   MediaSourceTypes,
@@ -62,12 +64,12 @@ const galleryConfig: FidgetProperties = {
       inputSelector: ({ updateSettings }) => {
         const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
 
-        const handleImageUploaded = (Upload: string) => {
-          console.log("Image uploaded, URL:", Upload);
-          setLocalImageUrl(Upload);
+        const handleImageUploaded = (upload: UploadedImageInfo) => {
+          console.log("Image uploaded, URL:", upload.url);
+          setLocalImageUrl(upload.url);
           updateSettings?.({
-            uploadedImage: Upload,
-            imageUrl: Upload
+            uploadedImage: upload.url,
+            imageUrl: upload.url
           });
         };
 

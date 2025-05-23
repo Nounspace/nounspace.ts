@@ -1,4 +1,5 @@
 import { Button } from "@/common/components/atoms/button";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { Loader2 } from "lucide-react";
 import React, { useRef, useState } from "react";
 
@@ -25,11 +26,22 @@ const ImageIcon = () => (
   </svg>
 );
 
-interface PinataUploaderProps {
-  onImageUploaded: (url: string) => void;
+export interface UploadedImageInfo {
+  url: string;
+  file: File;
 }
 
-const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
+interface PinataUploaderProps {
+  onImageUploaded: (info: UploadedImageInfo) => void;
+  showPreview?: boolean;
+  buttonClassName?: string;
+}
+
+const PinataUploader: React.FC<PinataUploaderProps> = ({
+  onImageUploaded,
+  showPreview = true,
+  buttonClassName,
+}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
@@ -80,7 +92,7 @@ const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
       if (data.IpfsHash) {
         const imageUrl = `https://gateway.pinata.cloud/ipfs/${data.IpfsHash}`;
         setUploadedUrl(imageUrl);
-        onImageUploaded(imageUrl);
+        onImageUploaded({ url: imageUrl, file });
 
         if (window.handleGalleryImageUpload) {
           window.handleGalleryImageUpload(imageUrl);
@@ -117,7 +129,7 @@ const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
         <Button
           variant="outline"
           onClick={handleButtonClick}
-          className="w-full"
+          className={mergeClasses("w-full", buttonClassName)}
           disabled={isUploading}
         >
           {isUploading ? (
@@ -136,7 +148,7 @@ const PinataUploader: React.FC<PinataUploaderProps> = ({ onImageUploaded }) => {
         <p className="text-xs text-muted-foreground mt-1">Maximum file size: 5MB</p>
       </div>
 
-      {uploadedUrl && (
+      {showPreview && uploadedUrl && (
         <div className="flex flex-col gap-2">
           <p className="text-sm text-green-500">Image uploaded successfully!</p>
           <div className="relative h-40 w-full overflow-hidden rounded-md border">

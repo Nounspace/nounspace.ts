@@ -54,6 +54,9 @@ import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
 import { XCircle } from "lucide-react";
+import PinataUploader, {
+  UploadedImageInfo,
+} from "@/common/components/molecules/PinataUploader";
 import { useBannerStore } from "@/stores/bannerStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { useBalance } from "wagmi";
@@ -506,6 +509,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   };
 
+  const handlePinataImageUpload = (upload: UploadedImageInfo) => {
+    addEmbed({
+      url: upload.url,
+      status: "loading",
+      metadata: { mimeType: upload.file.type },
+    });
+  };
+
   return (
     <div
       className="flex flex-col items-start min-w-full w-full h-full"
@@ -564,6 +575,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             <PhotoIcon className="mr-1 w-5 h-5" />
             Add
           </Button>
+          <PinataUploader
+            onImageUploaded={handlePinataImageUpload}
+            showPreview={false}
+            buttonClassName="h-10"
+          />
           <Button
             className="h-10"
             type="button"
