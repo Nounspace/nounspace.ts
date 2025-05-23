@@ -17,6 +17,7 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import logger from "@/common/lib/logger";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -52,7 +53,7 @@ export default function PublicSpace({
   tokenData,
   pageType, // New prop
 }: PublicSpaceProps) {
-  console.log("PublicSpace mounted:", {
+  logger.debug("PublicSpace mounted:", {
     spaceId: providedSpaceId,
     tabName: providedTabName,
     isTokenPage,
@@ -123,7 +124,7 @@ export default function PublicSpace({
       isTokenPage,
     });
 
-    console.log("Editability check:", {
+    logger.debug("Editability check:", {
       isEditable: checker.isEditable,
       isLoading: checker.isLoading,
       currentUserFid,
@@ -158,11 +159,11 @@ export default function PublicSpace({
     return "person"; // Default to person page
   }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
 
-  console.log("Resolved page type:", resolvedPageType);
+  logger.debug("Resolved page type:", resolvedPageType);
 
   // Sets the current space and tab name on initial load
   useEffect(() => {
-    console.log(
+    logger.debug(
       "Setting current space and tab for page type:",
       resolvedPageType
     );
@@ -175,7 +176,7 @@ export default function PublicSpace({
       );
 
       if (existingSpace) {
-        console.log("Found existing token space:", {
+        logger.debug("Found existing token space:", {
           spaceId: existingSpace.id,
           contractAddress,
           network: tokenData.network,
@@ -190,7 +191,7 @@ export default function PublicSpace({
       );
 
       if (existingSpace) {
-        console.log("Found existing user space:", {
+        logger.debug("Found existing user space:", {
           spaceId: existingSpace.id,
           spaceOwnerFid,
         });
@@ -199,7 +200,7 @@ export default function PublicSpace({
         return;
       }
     } else if (resolvedPageType === "proposal") {
-      console.log("Handling proposal page logic...");
+      logger.debug("Handling proposal page logic...");
       // Add specific logic for proposal pages here
     }
 
@@ -221,7 +222,7 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName();
 
-    console.log("Loading space tab:", {
+    logger.debug("Loading space tab:", {
       currentSpaceId,
       currentTabName,
       loading,
@@ -232,16 +233,16 @@ export default function PublicSpace({
       // First, load the space tab order
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
-          console.log("Loaded space tab order");
+          logger.debug("Loaded space tab order");
           return loadEditableSpaces();
         })
         .then(() => {
-          console.log("Loaded editable spaces");
+          logger.debug("Loaded editable spaces");
           // Load the specific tab
           return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
         })
         .then(() => {
-          console.log("Loaded space tab");
+          logger.debug("Loaded space tab");
           setLoading(false);
         })
         .catch((error) => {
@@ -320,7 +321,7 @@ export default function PublicSpace({
   // Update the space registration effect to use the new editability check
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    console.log("Space registration check:", {
+    logger.debug("Space registration check:", {
       isEditable: editabilityCheck.isEditable,
       isLoading: editabilityCheck.isLoading,
       spaceId: currentSpaceId,
@@ -339,7 +340,7 @@ export default function PublicSpace({
       !loading &&
       !editabilityCheck.isLoading
     ) {
-      console.log("Space registration conditions met:", {
+      logger.debug("Space registration conditions met:", {
         isEditable: editabilityCheck.isEditable,
         spaceId: currentSpaceId,
         currentUserFid,
@@ -361,7 +362,7 @@ export default function PublicSpace({
             );
 
             if (existingSpace) {
-              console.log("Found existing space in local cache:", {
+              logger.debug("Found existing space in local cache:", {
                 spaceId: existingSpace.id,
                 contractAddress,
                 network: tokenData.network,
@@ -376,7 +377,7 @@ export default function PublicSpace({
             );
 
             if (existingSpace) {
-              console.log("Found existing user space in local cache:", {
+              logger.debug("Found existing user space in local cache:", {
                 spaceId: existingSpace.id,
                 currentUserFid,
               });
@@ -387,7 +388,7 @@ export default function PublicSpace({
           }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
-            console.log("Attempting to register contract space:", {
+            logger.debug("Attempting to register contract space:", {
               contractAddress,
               currentUserFid,
               network: tokenData.network,
@@ -399,13 +400,13 @@ export default function PublicSpace({
               initialConfig,
               tokenData.network
             );
-            console.log("Contract space registration result:", {
+            logger.debug("Contract space registration result:", {
               success: !!newSpaceId,
               newSpaceId,
               contractAddress,
             });
           } else if (!isTokenPage) {
-            console.log("Attempting to register user space:", {
+            logger.debug("Attempting to register user space:", {
               currentUserFid,
             });
             newSpaceId = await registerSpaceFid(
@@ -413,7 +414,7 @@ export default function PublicSpace({
               "Profile",
               getSpacePageUrl("Profile")
             );
-            // console.log("User space registration result:", {
+            // logger.debug("User space registration result:", {
             //   success: !!newSpaceId,
             //   newSpaceId,
             //   currentUserFid,
@@ -475,7 +476,7 @@ export default function PublicSpace({
       const currentSpaceId = getCurrentSpaceId();
       const currentTabName = getCurrentTabName() ?? "Profile";
 
-      console.log("Saving space config:", {
+      logger.debug("Saving space config:", {
         spaceId: currentSpaceId,
         tabName: currentTabName,
         fidgetCount: Object.keys(spaceConfig.fidgetInstanceDatums || {}).length,
@@ -506,7 +507,7 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    console.log("Committing space config:", {
+    logger.debug("Committing space config:", {
       spaceId: currentSpaceId,
       tabName: currentTabName,
     });
@@ -519,7 +520,7 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    console.log("Resetting space config:", {
+    logger.debug("Resetting space config:", {
       spaceId: currentSpaceId,
       tabName: currentTabName,
     });
@@ -544,7 +545,7 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    console.log("Switching tab:", {
+    logger.debug("Switching tab:", {
       from: currentTabName,
       to: tabName,
       shouldSave,
