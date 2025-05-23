@@ -79,7 +79,14 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
           style={{ borderRadius: "80px" }}
         />
       )}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          paddingLeft: "20px",
+        }}
+      >
         <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
         <span style={{ fontSize: "42px", color: "#555" }}>{`$${data.symbol}`}</span>
         <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
