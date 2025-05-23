@@ -334,7 +334,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   onClick={openCastModal}
                   variant="primary"
                   width="auto"
-                  className="flex items-center justify-center w-12 h-12"
+                  className={mergeClasses(
+                    "flex items-center justify-center",
+                    shrunk ? "w-12 h-12" : "h-10",
+                  )}
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
                   {shrunk && (
