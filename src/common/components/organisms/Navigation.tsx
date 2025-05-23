@@ -18,7 +18,9 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa6";
-import { RiQuillPenAiLine } from "react-icons/ri";
+// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
+// is `RiQuillPenLine`. Update the import to prevent build errors.
+import { RiQuillPenLine } from "react-icons/ri";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -337,7 +339,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
                   {shrunk && (
                     <span className="text-lg font-bold">
-                      <RiQuillPenAiLine />
+                      <RiQuillPenLine />
                     </span>
                   )}
                 </Button>
