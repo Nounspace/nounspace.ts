@@ -65,7 +65,8 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
         height: "100%",
         padding: "40px",
         display: "flex",
-        alignItems: "center",
+        flexDirection: "column",
+        alignItems: "flex-start",
         background: "white",
         gap: "32px",
         fontFamily: "Arial, sans-serif",
@@ -76,7 +77,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
           src={data.imageUrl}
           width="160"
           height="160"
-          style={{ borderRadius: "80px" }}
+          style={{ borderRadius: "80px", alignSelf: "center" }}
         />
       )}
       <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
