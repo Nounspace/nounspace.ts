@@ -5,13 +5,11 @@ import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { Address } from "viem";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 import { useProposalContext } from "@/common/providers/ProposalProvider";
-import { ProposalData } from "./utils";
 
 export interface ProposalPageSpaceProps {
   spaceId?: string | null;
   tabName?: string | null;
   proposalId: string | null;
-  proposalData?: ProposalData;
   owningIdentities?: string[];
   proposerFid?: number | undefined | null;
 }
@@ -45,7 +43,7 @@ const ProposalDefinedSpace = ({
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
-        spaceOwnerFid={proposerFid  || 1}
+        spaceOwnerFid={proposerFid || 1}
         spaceOwnerAddress={ownerId}
         pageType="proposal"
       />
