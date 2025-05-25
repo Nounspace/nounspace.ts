@@ -11,28 +11,38 @@ export default async function WrapperProposalPrimarySpace({ params }) {
   const proposalId = params?.proposalId as string;
   const proposalData = await loadProposalData(proposalId || "0");
 
-  // Fetch proposer FID using Neynar bulk-by-address endpoint
-  let proposerFid: number | null = null;
+  // Fetch proposer FID using our API route
+  let fid: number | null = null;
   try {
-    const apiKey = process.env.NEYNAR_API_KEY || "<api-key>"; // Replace with your actual key or env var
     const address = proposalData?.proposer?.id;
     if (address) {
+      const baseUrl = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
       const res = await fetch(
-        `https://api.neynar.com/v2/farcaster/user/bulk-by-address?addresses=${address}`,
-        { method: "GET", headers: { "x-api-key": apiKey } }
+        `${baseUrl}/api/farcaster/proposer-fid?address=${encodeURIComponent(address)}`,
+        {
+          method: "GET",
+          next: { revalidate: 300 }, // Cache for 5 minutes
+        }
       );
-      const data = await res.json();
-      if (data && data[address] && data[address].length > 0) {
-        proposerFid = data[address][0].fid;
+
+      if (res.ok) {
+        const data = await res.json();
+        fid = data.proposerFid;
+      } else {
+        console.error(
+          "[DEBUG] API error fetching proposer FID:",
+          res.status,
+          res.statusText
+        );
       }
     }
   } catch (err) {
-    console.error("[DEBUG] Error fetching proposer FID from Neynar:", err);
+    console.error("[DEBUG] Error fetching proposer FID:", err);
   }
+  // Only pass the props ProposalDefinedSpace actually expects
   const props = {
-    ...proposalData,
     proposalId,
-    proposerFid,
+    fid,
   };
 
   return (
@@ -44,4 +54,3 @@ export default async function WrapperProposalPrimarySpace({ params }) {
     </ProposalProvider>
   );
 }
-
