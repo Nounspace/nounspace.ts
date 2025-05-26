@@ -72,7 +72,7 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: Mini
   }
   return (
     <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="py-1">
+      <div className="py-2 px-2">
         <div className="flex items-center gap-2 mb-3">
           <div
             className="cursor-move p-1 hover:bg-gray-100 rounded shrink-0"
