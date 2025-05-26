@@ -17,7 +17,6 @@ import {
   RegisterNewSpaceResponse,
   SpaceRegistrationContract,
   SpaceRegistrationFid,
-  SpaceRegistrationProposer,
 } from "@/pages/api/space/registry";
 import {
   UnsignedUpdateTabOrderRequest,
@@ -175,7 +174,7 @@ interface SpaceActions {
     network: EtherScanChainName,
   ) => Promise<string | undefined>;
   registerProposalSpace: (
-    proposalId: string,
+    payload: RegisterProposalSpacePayload
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -276,9 +275,14 @@ export const createSpaceStoreFunc = (
       );
       
       try {
+        // Determine if this is a proposal space by checking the spaceName
+        const editableName = get().space.editableSpaces[spaceId];
+        const isProposalSpace = editableName && editableName.startsWith("proposal - ");
+        // Only include network if not a proposal space
+        const payload = isProposalSpace ? { ...file } : { ...file, network };
         await axiosBackend.post(
           `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
-          { ...file, network },
+          payload,
         );
         
         set((draft) => {
@@ -848,6 +852,13 @@ export const createSpaceStoreFunc = (
     initialConfig,
     network,
   ) => {
+    console.debug('[registerSpaceContract] payload', {
+      address,
+      name,
+      tokenOwnerFid,
+      initialConfig,
+      network,
+    });
     try {
       // First check local spaces for matching contract
       const existingSpace = Object.values(get().space.localSpaces).find(
@@ -972,7 +983,10 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (payload: RegisterProposalSpacePayload) => {
+    console.debug('[registerProposalSpace] payload', payload);
+    // Use 'fid' for DB compatibility
+    const { proposalId, spaceId, fid, connectedFid } = payload;
     try {
       // Check if a space already exists for this proposal
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -987,7 +1001,13 @@ export const createSpaceStoreFunc = (
 
       if (existingSpaces.value) {
         const existingSpace = existingSpaces.value.spaces.find(
-          (space) => space.proposalId === proposalId
+          (space) => {
+            if (space.spaceName && space.spaceName.startsWith("proposal - ")) {
+              const spaceInfoProposalId = space.spaceName.replace("proposal - ", "");
+              return spaceInfoProposalId === proposalId;
+            }
+            return false;
+          }
         );
         if (existingSpace) {
           return existingSpace.spaceId;
@@ -995,11 +1015,12 @@ export const createSpaceStoreFunc = (
       }
 
       // Register a new space for the proposal
-      const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
+      const unsignedRegistration = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `proposal - ${proposalId}`,
         timestamp: moment().toISOString(),
-        proposalId,
+        fid, // Use 'fid' instead of 'proposerFID'
+        spaceId,
       };
       const registration = signSignable(
         unsignedRegistration,
@@ -1014,7 +1035,7 @@ export const createSpaceStoreFunc = (
 
       // Initialize the space with proper structure
       set((draft) => {
-        draft.space.editableSpaces[newSpaceId] = `Proposal-${proposalId}`;
+        draft.space.editableSpaces[newSpaceId] = `Nouns Prop ${proposalId}`;
         draft.space.localSpaces[newSpaceId] = {
           id: newSpaceId,
           updatedAt: moment().toISOString(),
@@ -1024,15 +1045,14 @@ export const createSpaceStoreFunc = (
         };
       });
 
-      // Create and commit the initial "Overview" tab
+      // Create and commit the initial "Nouns Prop {proposalId}" tab
       await get().space.createSpaceTab(
         newSpaceId,
-        "Overview",
+        `Nouns Prop ${proposalId}`,
         INITIAL_SPACE_CONFIG_EMPTY
       );
 
-
-      // TODO: Install analytics again after proposal space is working 
+      // Optionally track analytics here
       // analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
       //   type: "proposal",
       //   spaceId: newSpaceId,
@@ -1091,3 +1111,10 @@ export const partializedSpaceStore = (state: AppStore): SpaceState => ({
   editableSpaces: state.space.editableSpaces,
   localSpaces: state.space.localSpaces,
 });
+
+export type RegisterProposalSpacePayload = {
+  proposalId: string;
+  spaceId: string;
+  fid: number;
+  connectedFid?: number | null;
+};
