@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
-    "@emotion/react": "^11.11.4",
+    "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.11.5",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
