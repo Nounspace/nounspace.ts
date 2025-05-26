@@ -86,6 +86,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const { proposalData } = useProposalContext();
 
   const {
     getCurrentSpaceId,
@@ -107,6 +108,7 @@ export default function PublicSpace({
     registerSpaceFid,
     registerSpaceContract,
     registerProposalSpace,
+    editableSpaces,
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
@@ -127,6 +129,7 @@ export default function PublicSpace({
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
     registerProposalSpace: state.space.registerProposalSpace,
+    editableSpaces: state.space.editableSpaces,
   }));
 
   const {
@@ -202,6 +205,12 @@ export default function PublicSpace({
 
   console.log("Resolved page type:", resolvedPageType);
 
+  const proposalId = useMemo(() => {
+    return pageType === "proposal"
+      ? proposalData?.id || providedSpaceId || ""
+      : providedSpaceId || "";
+  }, [pageType, proposalData?.id, providedSpaceId]);
+
   // Cache these values ONCE per render to avoid infinite loops
   const currentSpaceId = getCurrentSpaceId();
   const currentTabName = getCurrentTabName();
@@ -238,52 +247,63 @@ export default function PublicSpace({
         return;
       }
     } else if (resolvedPageType === "proposal") {
-      // Only register once per proposalId
-      if (
-        providedSpaceId &&
-        proposalRegistrationRef.current !== providedSpaceId &&
+      const existingSpaceId = Object.keys(editableSpaces).find((id) => {
+        const name = editableSpaces[id];
+        return (
+          name?.startsWith("proposal - ") &&
+          name.replace("proposal - ", "") === proposalId
+        );
+      });
+
+      if (existingSpaceId) {
+        if (currentSpaceId !== existingSpaceId)
+          setCurrentSpaceId(existingSpaceId);
+        if (currentTabName !== decodeURIComponent(providedTabName))
+          setCurrentTabName(decodeURIComponent(providedTabName));
+      } else if (
+        proposalId &&
+        proposalRegistrationRef.current !== proposalId &&
         spaceOwnerAddress &&
-        spaceOwnerFid
+        spaceOwnerFid &&
+        currentUserFid === spaceOwnerFid
       ) {
         const registerProposalSpaceHandler = async () => {
           try {
             console.debug("Starting proposal space registration", {
-              providedSpaceId,
+              proposalId,
               spaceOwnerAddress,
               spaceOwnerFid,
             });
 
-            // Define proposalSpaceId based on providedSpaceId
-            const proposalSpaceId = providedSpaceId;
+            const proposalSpaceId = uuidv4();
 
-            // Ensure editable spaces are loaded
             await loadEditableSpaces();
 
-            // Register the proposal space if not already registered
-            await registerProposalSpace({
-              proposalId: providedSpaceId,
+            const registeredId = await registerProposalSpace({
+              proposalId,
               spaceId: proposalSpaceId,
               fid: spaceOwnerFid,
+              proposerAddress: spaceOwnerAddress,
             });
+
+            const finalSpaceId = registeredId ?? proposalSpaceId;
 
             console.debug("Proposal space registered successfully", {
-              proposalSpaceId,
+              finalSpaceId,
             });
+            proposalRegistrationRef.current = finalSpaceId;
 
-            // Load the space tab order and the default tab
-            await loadSpaceTabOrder(proposalSpaceId);
+            await loadSpaceTabOrder(finalSpaceId);
             await loadSpaceTab(
-              proposalSpaceId,
+              finalSpaceId,
               decodeURIComponent(providedTabName) || "Profile"
             );
 
-            // Update the current space ID in the state
-            setCurrentSpaceId(proposalSpaceId);
+            setCurrentSpaceId(finalSpaceId);
             console.debug("Updated currentSpaceId in state", {
-              currentSpaceId: proposalSpaceId,
+              currentSpaceId: finalSpaceId,
             });
 
-            // Force navigation to the new space's canonical URL
             const newUrl = getSpacePageUrl(
               decodeURIComponent(providedTabName) || "Profile"
             );
@@ -310,6 +330,8 @@ export default function PublicSpace({
     spaceOwnerFid,
     localSpaces,
     spaceOwnerAddress,
+    editableSpaces,
+    proposalId,
     currentSpaceId,
     currentTabName,
     setCurrentSpaceId,
@@ -693,7 +715,7 @@ export default function PublicSpace({
 
   // Extract proposal-specific props if this is a proposal page
   const proposalIdProp =
-    pageType === "proposal" ? providedSpaceId || "" : undefined;
+    pageType === "proposal" ? proposalId || "" : undefined;
 
   const tabBar = (
     <TabBar
