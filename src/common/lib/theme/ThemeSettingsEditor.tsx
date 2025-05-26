@@ -262,7 +262,7 @@ export function ThemeSettingsEditor({
                 <TabsContent value="space" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Headings</h4>
+                      <h4 className="text-sm">Heading Font</h4>
                       <ThemeSettingsTooltip text="The primary, or header font that Fidgets can inherit." />
                     </div>
                     <div className="flex items-center gap-1">
@@ -283,7 +283,7 @@ export function ThemeSettingsEditor({
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Body</h4>
+                      <h4 className="text-sm">Body Font</h4>
                       <ThemeSettingsTooltip text="The secondary, or body font that Fidgets can inherit." />
                     </div>
                     <div className="flex items-center gap-1">
@@ -303,7 +303,6 @@ export function ThemeSettingsEditor({
                     </div>
                   </div>
                   <div className="flex flex-col gap-1 mt-4">
-                    <h4 className="text-sm font-bold my-2">Space Settings</h4>
                     <div className="flex flex-row gap-1">
                       <h4 className="text-sm">Background color</h4>
                       <ThemeSettingsTooltip text="Set a solid background or gradient color. You can also add custom backgrounds with HTML/CSS on the Generate section." />
@@ -319,61 +318,62 @@ export function ThemeSettingsEditor({
                     backgroundHTML={backgroundHTML}
                     onChange={themePropSetter<string>("backgroundHTML")}
                   />
+                  <div className="grid gap-2 mt-4">
+                    <div className="flex flex-row gap-1">
+                      <h4 className="text-sm">Music</h4>
+                      <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
+                    </div>
+                    <VideoSelector
+                      initialVideoURL={theme.properties.musicURL}
+                      onVideoSelect={themePropSetter("musicURL")}
+                    />
+                  </div>
                 </TabsContent>
                 {/* Fidgets */}
                 <TabsContent value="fidgets" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold my-2">Fidget Settings</h4>
-                    <div className="flex flex-col gap-1">
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Background color</h5>
-                          <ThemeSettingsTooltip text="Set the default background color for all Fidgets on your Space." />
-                        </div>
-                        <ColorSelector
-                          className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
-                          innerClassName="rounded-full"
-                          value={fidgetBackground as Color}
-                          onChange={themePropSetter<Color>("fidgetBackground")}
-                        />
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Border</h5>
-                          <ThemeSettingsTooltip text="Set the default border width and color for all Fidgets on your Space." />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ColorSelector
-                            className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                            innerClassName="rounded-full"
-                            value={fidgetBorderColor as Color}
-                            onChange={themePropSetter<Color>(
-                              "fidgetBorderColor",
-                            )}
-                          />
-                          <BorderSelector
-                            className="ring-0 focus:ring-0 border-0 shadow-none"
-                            value={fidgetBorderWidth as string}
-                            onChange={themePropSetter<string>(
-                              "fidgetBorderWidth",
-                            )}
-                            hideGlobalSettings
-                          />
-                        </div>
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Shadow</h5>
-                          <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
-                        </div>
-                        <ShadowSelector
-                          className="ring-0 focus:ring-0 border-0 shadow-none"
-                          value={fidgetShadow as string}
-                          onChange={themePropSetter<string>("fidgetShadow")}
-                          hideGlobalSettings
-                        />
-                      </div>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Background color</h5>
+                      <ThemeSettingsTooltip text="Set the default background color for all Fidgets on your Space." />
                     </div>
+                    <ColorSelector
+                      className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
+                      innerClassName="rounded-full"
+                      value={fidgetBackground as Color}
+                      onChange={themePropSetter<Color>("fidgetBackground")}
+                    />
+                  </div>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Border</h5>
+                      <ThemeSettingsTooltip text="Set the default border width and color for all Fidgets on your Space." />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ColorSelector
+                        className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                        innerClassName="rounded-full"
+                        value={fidgetBorderColor as Color}
+                        onChange={themePropSetter<Color>("fidgetBorderColor")}
+                      />
+                      <BorderSelector
+                        className="ring-0 focus:ring-0 border-0 shadow-none"
+                        value={fidgetBorderWidth as string}
+                        onChange={themePropSetter<string>("fidgetBorderWidth")}
+                        hideGlobalSettings
+                      />
+                    </div>
+                  </div>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Shadow</h5>
+                      <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
+                    </div>
+                    <ShadowSelector
+                      className="ring-0 focus:ring-0 border-0 shadow-none"
+                      value={fidgetShadow as string}
+                      onChange={themePropSetter<string>("fidgetShadow")}
+                      hideGlobalSettings
+                    />
                   </div>
                 </TabsContent>
                 {/* Mobile */}
@@ -385,17 +385,6 @@ export function ThemeSettingsEditor({
                   />
                 </TabsContent>
               </Tabs>
-            </div>
-
-            <div className="grid gap-2 mt-4">
-              <div className="flex flex-row gap-1">
-                <h4 className="text-sm">Music</h4>
-                <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
-              </div>
-              <VideoSelector
-                initialVideoURL={theme.properties.musicURL}
-                onVideoSelect={themePropSetter("musicURL")}
-              />
             </div>
           </div>
         </div>
