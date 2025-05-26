@@ -50,12 +50,11 @@ export function MobileSettings({
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-lg font-semibold mb-2">Edit</h2>
-      <div className="mb-6">
-        <h3 className="text-md font-medium mb-1">Mobile Settings</h3>
-        <p className="text-sm text-gray-500 mb-4">Configure how fidgets appear on mobile</p>
-      </div>
+    <div className="p-2">
+      <p className="text-sm text-gray-500 mb-4">
+        Drag fidgets to reorder them in the mobile nav, and customize their
+        visibility, display name, and icon.
+      </p>
       <Reorder.Group axis="y" values={items} onReorder={handleReorder} className="space-y-3">
         {items.map((miniApp) => (
           <DraggableMiniApp
