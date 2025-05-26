@@ -55,7 +55,12 @@ export function MobileSettings({
         Drag fidgets to reorder them in the mobile nav, and customize their
         visibility, display name, and icon.
       </p>
-      <Reorder.Group axis="y" values={items} onReorder={handleReorder} className="space-y-3">
+      <Reorder.Group
+        axis="y"
+        values={items}
+        onReorder={handleReorder}
+        className="flex flex-col"
+      >
         {items.map((miniApp) => (
           <DraggableMiniApp
             key={miniApp.id}
