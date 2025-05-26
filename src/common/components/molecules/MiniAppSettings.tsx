@@ -72,7 +72,7 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: Mini
   }
   return (
     <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="p-3">
+      <div className="py-2 px-2">
         <div className="flex items-center gap-2 mb-3">
           <div
             className="cursor-move p-1 hover:bg-gray-100 rounded shrink-0"
@@ -97,7 +97,7 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: Mini
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <label className="block text-xs text-gray-500 mb-1">Name</label>
+            <label className="block text-xs text-gray-500 mb-1">Display Name</label>
             <input
               type="text"
               value={miniApp.mobileDisplayName}
