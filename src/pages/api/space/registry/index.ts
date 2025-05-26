@@ -36,20 +36,15 @@ export interface SpaceRegistrationFid extends SpaceRegistrationBase {
   fid: number;
 }
 
-export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
-  proposalId: string;
-}
-
 export type SpaceRegistration =
   | SpaceRegistrationContract
   | SpaceRegistrationFid
-  | SpaceRegistrationProposer;
 
 type SpaceInfo = SpaceRegistrationBase & {
   spaceId: string;
   fid: number | null;
-  contractAddress: string | null;
-  network: string | null;
+  contractAddress?: string | null;
+  network?: string | null;
   proposalId?: string | null;
 };
 
@@ -80,13 +75,7 @@ function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistration
   );
 }
 
-// Update the type guard to handle SpaceRegistrationProposer
-function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistrationProposer {
-  return (
-    isSpaceRegistration(maybe) &&
-    typeof maybe["proposalId"] === "string"
-  );
-}
+
 
 export type RegisterNewSpaceResponse = NounspaceResponse<SpaceInfo>;
 
@@ -158,6 +147,22 @@ async function registerNewSpace(
 ) {
   const registration = req.body;
 
+  // Log the entire request body and types of relevant fields for debugging
+  console.log('[API] Received proposal registration payload:', req.body);
+  if (req.body) {
+    console.log('[API] spaceName:', req.body.spaceName, typeof req.body.spaceName);
+    // proposerFID is only relevant for proposal registration, not token registration
+    if (typeof req.body.proposerFID !== 'undefined') {
+      console.log('[API] proposerFID:', req.body.proposerFID, typeof req.body.proposerFID);
+    }
+    if (typeof req.body.connectedFid !== 'undefined') {
+      console.log('[API] connectedFid:', req.body.connectedFid, typeof req.body.connectedFid);
+    }
+    if (typeof req.body.connectedEthAddress !== 'undefined') {
+      console.log('[API] connectedEthAddress:', req.body.connectedEthAddress, typeof req.body.connectedEthAddress);
+    }
+  }
+
   if (!isSpaceRegistration(registration)) {
     console.error("Invalid space registration:", registration);
     res.status(400).json({
@@ -217,8 +222,6 @@ async function registerNewSpace(
       });
       return;
     }
-  } else if (isSpaceRegistrationProposer(registration)) {
-    // Handle proposer-specific logic if needed
   }
 
   if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {

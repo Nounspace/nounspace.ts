@@ -57,23 +57,51 @@ async function updateSpace(
   incReq: NextApiRequest,
   res: NextApiResponse<NounspaceResponse>,
 ): Promise<void> {
-  const req = incReq.body;
+  const requestBody = incReq.body;
   const spaceId = incReq.query.spaceId as string;
-  const tabName = incReq.query.tabId as string;
-  const network = req.network ? (req.network as string) : undefined;
-  if (network) delete req.network;
+  const tabIdFromQuery = incReq.query.tabId as string; // This is the oldTabName / current tabId
 
-  if (!isSignedFile(req)) {
+  const network = requestBody.network ? (requestBody.network as string) : undefined;
+
+  // Create the file object for validation and use, excluding 'network'
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { network: _network, ...signedFilePayloadUntyped } = requestBody;
+  const signedFilePayload = signedFilePayloadUntyped as UpdateSpaceTabRequest;
+
+
+  if (!isSignedFile(signedFilePayload)) {
     res.status(400).json({
       result: "error",
       error: {
         message:
-          "Config must contain publicKey, fileData, fileType, isEncrypted, and timestamp",
+          "Request body must be a valid SignedFile (publicKey, fileData, fileType, isEncrypted, timestamp, signature).",
       },
     });
     return;
   }
-  if (!validateSignable(req)) {
+
+  // Additional checks for UpdateSpaceTabRequest specifics
+  if (typeof signedFilePayload.fileName !== 'string') {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message: "fileName is missing or not a string in the tab data.",
+      },
+    });
+    return;
+  }
+
+  if (signedFilePayload.isEncrypted !== false) {
+    res.status(400).json({
+      result: "error",
+      error: {
+        message: "Tab data must not be encrypted (isEncrypted should be false).",
+      },
+    });
+    return;
+  }
+
+  if (!validateSignable(signedFilePayload)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -82,42 +110,50 @@ async function updateSpace(
     });
     return;
   }
-  if (!(await identityCanModifySpace(req.publicKey, spaceId, network))) {
+
+  if (!(await identityCanModifySpace(signedFilePayload.publicKey, spaceId, network))) {
     res.status(400).json({
       result: "error",
       error: {
-        message: `Identity ${req.publicKey} cannot update space ${spaceId}`,
+        message: `Identity ${signedFilePayload.publicKey} cannot update space ${spaceId}`,
       },
     });
     return;
   }
-  if (req.fileName !== tabName) {
+
+  // tabIdFromQuery is the old/current name from the URL.
+  // signedFilePayload.fileName is the new name from the payload.
+  if (signedFilePayload.fileName !== tabIdFromQuery) {
+    // This means the tab name has changed.
     const supabase = createSupabaseServerClient();
-    const { error } = await supabase.storage
+    const { error: moveError } = await supabase.storage
       .from("spaces")
-      .move(`${spaceId}/tabs/${tabName}`, `${spaceId}/tabs/${req.fileName}`);
-    if (error) {
+      .move(`${spaceId}/tabs/${tabIdFromQuery}`, `${spaceId}/tabs/${signedFilePayload.fileName}`);
+    if (moveError) {
       res.status(500).json({
         result: "error",
         error: {
-          message: error.message,
+          message: `Failed to rename tab: ${moveError.message}`,
         },
       });
       return;
     }
   }
+
   const supabase = createSupabaseServerClient();
-  const { error } = await supabase.storage
+  // Always use the (potentially new) fileName from the payload for the update path.
+  const { error: updateError } = await supabase.storage
     .from("spaces")
     .update(
-      `${spaceId}/tabs/${req.fileName}`,
-      new Blob([stringify(req)], { type: "application/json" }),
+      `${spaceId}/tabs/${signedFilePayload.fileName}`,
+      new Blob([stringify(signedFilePayload)], { type: "application/json" }),
     );
-  if (error) {
+
+  if (updateError) {
     res.status(500).json({
       result: "error",
       error: {
-        message: error.message,
+        message: updateError.message,
       },
     });
     return;
