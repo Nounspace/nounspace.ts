@@ -3,24 +3,22 @@ import { useAppStore } from "../stores/app";
 
 export const useHomebaseTabConfig = (tabName: string) => {
   const loadTab = useAppStore((state) => state.homebase.loadHomebaseTab);
-  return useQuery<void>({
+  return useQuery({
     queryKey: ["homebase-tab-config", tabName],
     suspense: true,
-    queryFn: async () => {
-      await loadTab(tabName);
-    },
+    queryFn: async () => loadTab(tabName),
   });
 };
 
 export const useSpaceTabConfig = (spaceId: string | null, tabName: string) => {
   const loadTab = useAppStore((state) => state.space.loadSpaceTab);
-  return useQuery<void>({
+  return useQuery({
     queryKey: ["space-tab-config", spaceId, tabName],
     enabled: !!spaceId,
     suspense: true,
     queryFn: async () => {
-      if (!spaceId) return;
-      await loadTab(spaceId, tabName);
+      if (!spaceId) return undefined;
+      return loadTab(spaceId, tabName);
     },
   });
 };
