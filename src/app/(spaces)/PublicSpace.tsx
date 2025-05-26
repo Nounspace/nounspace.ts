@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
@@ -17,6 +17,8 @@ import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import SpaceLoading from "./SpaceLoading";
+import { useSpaceTabConfig } from "@/common/data/queries/spaceConfig";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -647,16 +649,27 @@ export default function PublicSpace({
   if (!profile) {
     console.warn("Profile component is undefined");
   }
+  const TabContent = () => {
+    useSpaceTabConfig(getCurrentSpaceId(), providedTabName);
+
+    return (
+      <SpacePage
+        key={getCurrentSpaceId() + providedTabName}
+        config={memoizedConfig}
+        saveConfig={saveConfig}
+        commitConfig={commitConfig}
+        resetConfig={resetConfig}
+        tabBar={tabBar}
+        profile={profile ?? undefined}
+      />
+    );
+  };
 
   return (
-    <SpacePage
-      key={getCurrentSpaceId() + providedTabName}
-      config={memoizedConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-      tabBar={tabBar}
-      profile={profile ?? undefined}
-    />
+    <Suspense
+      fallback={<SpaceLoading hasProfile={!!profile} hasFeed={false} />}
+    >
+      <TabContent />
+    </Suspense>
   );
 }

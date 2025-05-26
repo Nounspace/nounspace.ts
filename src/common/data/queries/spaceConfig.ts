@@ -1,0 +1,28 @@
+import { useQuery } from "@tanstack/react-query";
+import { useAppStore } from "../stores/app";
+
+export const useHomebaseTabConfig = (tabName: string) => {
+  const loadTab = useAppStore((state) => state.homebase.loadHomebaseTab);
+  return useQuery({
+    queryKey: ["homebase-tab-config", tabName],
+    suspense: true,
+    queryFn: async () => {
+      await loadTab(tabName);
+      return null;
+    },
+  });
+};
+
+export const useSpaceTabConfig = (spaceId: string | null, tabName: string) => {
+  const loadTab = useAppStore((state) => state.space.loadSpaceTab);
+  return useQuery({
+    queryKey: ["space-tab-config", spaceId, tabName],
+    enabled: !!spaceId,
+    suspense: true,
+    queryFn: async () => {
+      if (!spaceId) return null;
+      await loadTab(spaceId, tabName);
+      return null;
+    },
+  });
+};
