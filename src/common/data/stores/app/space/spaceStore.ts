@@ -12,6 +12,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
 } from "@/constants/initialPersonSpace";
+import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -29,6 +30,7 @@ import {
 import { UnsignedDeleteSpaceTabRequest } from "@/pages/api/space/registry/[spaceId]/tabs/[tabId]";
 import axios from "axios";
 import stringify from "fast-json-stable-stringify";
+import type { Address } from "viem";
 import {
   cloneDeep,
   debounce,
@@ -986,7 +988,7 @@ export const createSpaceStoreFunc = (
   registerProposalSpace: async (payload: RegisterProposalSpacePayload) => {
     console.debug('[registerProposalSpace] payload', payload);
     // Use 'fid' for DB compatibility
-    const { proposalId, spaceId, fid, connectedFid } = payload;
+    const { proposalId, spaceId, fid, proposerAddress } = payload;
     try {
       // Check if a space already exists for this proposal
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -1046,10 +1048,15 @@ export const createSpaceStoreFunc = (
       });
 
       // Create and commit the initial "Nouns Prop {proposalId}" tab
+      const initialConfig = createInitalProposalSpaceConfigForProposalId(
+        proposalId as Address,
+        (proposerAddress ?? "0x0000000000000000000000000000000000000000") as Address,
+        proposerAddress as Address | undefined,
+      );
       await get().space.createSpaceTab(
         newSpaceId,
         `Nouns Prop ${proposalId}`,
-        INITIAL_SPACE_CONFIG_EMPTY
+        initialConfig
       );
 
       // Optionally track analytics here
@@ -1117,4 +1124,5 @@ export type RegisterProposalSpacePayload = {
   spaceId: string;
   fid: number;
   connectedFid?: number | null;
+  proposerAddress?: Address;
 };
