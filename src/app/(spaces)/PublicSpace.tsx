@@ -243,7 +243,8 @@ export default function PublicSpace({
         providedSpaceId &&
         proposalRegistrationRef.current !== providedSpaceId &&
         spaceOwnerAddress &&
-        spaceOwnerFid
+        spaceOwnerFid &&
+        currentUserFid === spaceOwnerFid
       ) {
         const registerProposalSpaceHandler = async () => {
           try {
@@ -264,11 +265,13 @@ export default function PublicSpace({
               proposalId: providedSpaceId,
               spaceId: proposalSpaceId,
               fid: spaceOwnerFid,
+              proposerAddress: spaceOwnerAddress,
             });
 
             console.debug("Proposal space registered successfully", {
               proposalSpaceId,
             });
+            proposalRegistrationRef.current = proposalSpaceId;
 
             // Load the space tab order and the default tab
             await loadSpaceTabOrder(proposalSpaceId);
@@ -442,7 +445,8 @@ export default function PublicSpace({
       isNil(currentSpaceId) &&
       !isNil(currentUserFid) &&
       !loading &&
-      !editabilityCheck.isLoading
+      !editabilityCheck.isLoading &&
+      pageType !== "proposal"
     ) {
       console.log("Space registration conditions met:", {
         isEditable: editabilityCheck.isEditable,
