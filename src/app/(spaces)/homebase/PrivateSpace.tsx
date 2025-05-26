@@ -183,46 +183,48 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     />
   ), [tabName, tabOrdering.local, editMode]);
 
-  // Define the arguments for the SpacePage component
-  const args: SpacePageArgs = useMemo(() => ({
-    config: (() => {
-      const { timestamp, ...restConfig } = {
-        ...((tabName === "Feed" 
-            ? homebaseConfig 
-            : tabConfigs[tabName]?.config)
-            ?? INITIAL_SPACE_CONFIG_EMPTY),
-        isEditable: true,
-      };
-      return restConfig;
-    })(),
-    saveConfig: saveConfigHandler,
-    commitConfig: commitConfigHandler,
-    resetConfig: resetConfigHandler,
-    tabBar: tabBar,
-    feed: tabName === "Feed" && currentFid ? (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any,
-        }}
-        saveData={async () => noop()}
-        data={{}}
-      />
-    ) : undefined,
-  }), [
-    tabName,
-    tabName === "Feed" 
-      ? homebaseConfig 
-      : tabConfigs[tabName]?.config,
-    tabOrdering.local,
-    editMode
-  ]);
+  const TabContent = () => {
+    useHomebaseTabConfig(tabName);
+
+    const args: SpacePageArgs = useMemo(() => ({
+      config: (() => {
+        const { timestamp, ...restConfig } = {
+          ...((tabName === "Feed"
+              ? homebaseConfig
+              : tabConfigs[tabName]?.config) ?? INITIAL_SPACE_CONFIG_EMPTY),
+          isEditable: true,
+        };
+        return restConfig;
+      })(),
+      saveConfig: saveConfigHandler,
+      commitConfig: commitConfigHandler,
+      resetConfig: resetConfigHandler,
+      tabBar: tabBar,
+      feed: tabName === "Feed" && currentFid ? (
+        <FeedModule.fidget
+          settings={{
+            feedType: FeedType.Following,
+            users: "",
+            filterType: FilterType.Users,
+            selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+            Xhandle: "",
+            style: "",
+            fontFamily: "var(--user-theme-font)",
+            fontColor: "var(--user-theme-font-color)" as any,
+          }}
+          saveData={async () => noop()}
+          data={{}}
+        />
+      ) : undefined,
+    }), [
+      tabName,
+      tabName === "Feed" ? homebaseConfig : tabConfigs[tabName]?.config,
+      tabOrdering.local,
+      editMode,
+    ]);
+
+    return <SpacePage key={tabName} {...args} />;
+  };
 
   // If not logged in, show a loading state with the login modal
   if (!isLoggedIn) {
@@ -242,9 +244,15 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     );
   }
 
-  // Render the SpacePage component with the defined arguments
+  // Render the SpacePage component within Suspense
   return (
-    <SpacePage key={tabName} {...args} />
+    <Suspense
+      fallback={
+        <SpaceLoading hasProfile={false} hasFeed={tabName === "Feed"} />
+      }
+    >
+      <TabContent />
+    </Suspense>
   );
 }
 
