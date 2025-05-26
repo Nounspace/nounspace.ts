@@ -9,6 +9,10 @@ import { loadProposalData } from "../utils";
 
 export default async function WrapperProposalPrimarySpace({ params }) {
   const proposalId = params?.proposalId as string;
+  const tabName = params?.tabname
+    ? decodeURIComponent(params.tabname as string)
+    : `Nouns Prop ${proposalId}`;
+  const spaceId = proposalId;
   const proposalData = await loadProposalData(proposalId || "0");
 
   // Fetch proposer FID using our API route
@@ -43,6 +47,8 @@ export default async function WrapperProposalPrimarySpace({ params }) {
   const props = {
     proposalId,
     fid,
+    spaceId,
+    tabName,
   };
 
   return (

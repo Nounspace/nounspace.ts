@@ -38,8 +38,8 @@ const ProposalDefinedSpace = ({
   return (
     <div className="w-full">
       <PublicSpace
-        spaceId={spaceId || ""}
-        tabName={tabName || "Profile"}
+        spaceId={spaceId || proposalId || ""}
+        tabName={tabName || `Nouns Prop ${proposalId}`}
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
