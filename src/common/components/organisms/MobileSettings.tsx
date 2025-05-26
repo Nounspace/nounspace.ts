@@ -50,7 +50,7 @@ export function MobileSettings({
   }
 
   return (
-    <div className="p-4">
+    <div className="p-2">
       <p className="text-sm text-gray-500 mb-4">
         Drag fidgets to reorder them in the mobile nav, and customize their
         visibility, display name, and icon.
