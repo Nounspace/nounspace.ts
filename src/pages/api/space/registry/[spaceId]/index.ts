@@ -137,19 +137,21 @@ export async function identitiesCanModifySpace(
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
-    .select("contractAddress")
+    .select("contractAddress, fid, identityPublicKey")
     .eq("spaceId", spaceId);
   if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
     return [];
-  const contractAddress = first(spaceRegistrationData)!.contractAddress;
-  if (!isNull(contractAddress)) {
+  const registration = first(spaceRegistrationData)!;
+  if (!isNull(registration.contractAddress)) {
     return await loadIdentitiesOwningContractSpace(
-      contractAddress,
+      registration.contractAddress,
       String(network),
     );
-  } else {
+  }
+  if (!isNull(registration.fid)) {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
   }
+  return [registration.identityPublicKey];
 }
 
 async function spacePublicKeys(req: NextApiRequest, res: NextApiResponse) {
