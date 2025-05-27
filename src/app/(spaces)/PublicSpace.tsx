@@ -353,6 +353,7 @@ export default function PublicSpace({
       editabilityCheck.isEditable &&
       currentSpaceId &&
       !editableSpaces[currentSpaceId] &&
+      !localSpaces[currentSpaceId] &&
       !isNil(currentUserFid) &&
       !loading &&
       !editabilityCheck.isLoading
@@ -492,6 +493,7 @@ export default function PublicSpace({
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
+    editableSpaces,
   ]);
 
   const saveConfig = useCallback(
