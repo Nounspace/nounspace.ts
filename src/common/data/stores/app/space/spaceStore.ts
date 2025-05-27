@@ -163,6 +163,12 @@ interface SpaceActions {
     spaceId: string,
     network?: EtherScanChainName,
   ) => Promise<void> | undefined;
+  initializeLocalProposalSpace: (
+    spaceId: string,
+    proposalId: string,
+    tabName: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">
+  ) => void;
   registerSpaceFid: (
     fid: number,
     name: string,
@@ -597,6 +603,43 @@ export const createSpaceStoreFunc = (
     },
     1000,
   ),
+  initializeLocalProposalSpace: (
+    spaceId,
+    proposalId,
+    tabName,
+    initialConfig,
+  ) => {
+    const baseConfig: UpdatableSpaceConfig = {
+      ...cloneDeep(initialConfig),
+      theme: {
+        ...cloneDeep(initialConfig.theme),
+        id: `${spaceId}-${tabName}-theme`,
+        name: `${spaceId}-${tabName}-theme`,
+      },
+      isPrivate: false,
+      timestamp: moment().toISOString(),
+    };
+
+    set(
+      (draft) => {
+        draft.space.editableSpaces[spaceId] = `proposal - ${proposalId}`;
+        draft.space.localSpaces[spaceId] = {
+          id: spaceId,
+          updatedAt: moment().toISOString(),
+          tabs: { [tabName]: cloneDeep(baseConfig) },
+          order: [tabName],
+          changedNames: {},
+        };
+        draft.space.remoteSpaces[spaceId] = {
+          id: spaceId,
+          updatedAt: moment().toISOString(),
+          tabs: { [tabName]: cloneDeep(baseConfig) },
+          order: [tabName],
+        };
+      },
+      "initializeLocalProposalSpace",
+    );
+  },
   loadSpaceTab: async (spaceId, tabName, fid) => {
     const supabase = createClient();
     try {
