@@ -210,6 +210,18 @@ export default function PublicSpace({
         return;
       }
     } else if (resolvedPageType === "proposal" && proposalId) {
+      const existingSpace = Object.values(localSpaces).find(
+        (space) => space.proposalId === proposalId,
+      );
+
+      if (existingSpace) {
+        setCurrentSpaceId(existingSpace.id);
+        setCurrentTabName(
+          providedTabName ? decodeURIComponent(providedTabName) : "Overview",
+        );
+        return;
+      }
+
       const generatedId = `proposal:${proposalId}`;
       setCurrentSpaceId(generatedId);
       setCurrentTabName(
@@ -230,6 +242,7 @@ export default function PublicSpace({
     contractAddress,
     tokenData?.network,
     spaceOwnerFid,
+    proposalId,
     localSpaces,
   ]);
 
@@ -424,7 +437,7 @@ export default function PublicSpace({
             });
           } else if (resolvedPageType === "proposal" && proposalId) {
             console.log("Attempting to register proposal space:", { proposalId });
-            newSpaceId = await registerProposalSpace(proposalId);
+            newSpaceId = await registerProposalSpace(proposalId, initialConfig);
             console.log("Proposal space registration result:", newSpaceId);
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {
