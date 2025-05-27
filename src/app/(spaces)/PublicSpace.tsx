@@ -342,7 +342,8 @@ export default function PublicSpace({
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName =
+      getCurrentTabName() || decodeURIComponent(providedTabName);
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -722,9 +723,13 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={currentTabName ?? "Profile"}
+      currentTab={
+        currentTabName || decodeURIComponent(providedTabName) || "Profile"
+      }
       tabList={
-        currentSpaceId ? localSpaces[currentSpaceId]?.order : ["Profile"]
+        currentSpaceId
+          ? localSpaces[currentSpaceId]?.order
+          : [decodeURIComponent(providedTabName)]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
