@@ -94,6 +94,7 @@ interface CachedSpace {
   orderUpdatedAt?: string;
   contractAddress?: string | null;
   network?: string | null;
+  proposalId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -1021,12 +1022,14 @@ export const createSpaceStoreFunc = (
           tabs: {},
           order: [],
           changedNames: {},
+          proposalId,
         };
         draft.space.remoteSpaces[newSpaceId] = {
           id: newSpaceId,
           updatedAt: moment().toISOString(),
           tabs: {},
           order: [],
+          proposalId,
         };
       });
 
