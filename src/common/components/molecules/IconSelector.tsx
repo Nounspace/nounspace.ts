@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { SearchIcon, UploadIcon } from 'lucide-react'
 import { createPortal } from 'react-dom'
+import * as FaIcons from 'react-icons/fa6'
+import type { IconType } from 'react-icons'
+import ImgBBUploader from './ImgBBUploader'
 
 interface IconSelectorProps {
   onSelectIcon: (icon: string) => void
@@ -15,21 +18,21 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const iconLibrary = [
-    'RssIcon',
-    'VoteIcon',
-    'ImageIcon',
-    'HomeIcon',
-    'GiftIcon',
-    'UserIcon',
-    'SettingsIcon',
-    'BellIcon',
-    'CalendarIcon',
-    'MessageIcon',
-    'FileIcon',
-    'FolderIcon',
-    'StarIcon',
-    'HeartIcon',
-    'ShareIcon',
+    'FaRss',
+    'FaVoteYea',
+    'FaImage',
+    'FaHouse',
+    'FaGift',
+    'FaUser',
+    'FaGear',
+    'FaBell',
+    'FaCalendar',
+    'FaEnvelope',
+    'FaFile',
+    'FaFolder',
+    'FaStar',
+    'FaHeart',
+    'FaShareNodes',
   ]
   const filteredIcons = iconLibrary.filter((icon) =>
     icon.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -108,20 +111,23 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
       {activeTab === 'library' ? (
         <div className="p-3 grid grid-cols-5 gap-2">
           {filteredIcons.length > 0 ? (
-            filteredIcons.map((icon) => (
-              <button
-                key={icon}
-                onClick={() => handleIconSelect(icon)}
-                className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 rounded-md"
-              >
-                <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mb-1">
-                  {icon.charAt(0)}
-                </div>
-                <span className="text-xs text-gray-600 truncate w-full text-center">
-                  {icon}
-                </span>
-              </button>
-            ))
+            filteredIcons.map((icon) => {
+              const Icon = (FaIcons as Record<string, IconType>)[icon] as IconType
+              return (
+                <button
+                  key={icon}
+                  onClick={() => handleIconSelect(icon)}
+                  className="flex flex-col items-center justify-center p-2 hover:bg-gray-100 rounded-md"
+                >
+                  <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center mb-1">
+                    {Icon ? <Icon className="w-5 h-5" /> : icon.charAt(0)}
+                  </div>
+                  <span className="text-xs text-gray-600 truncate w-full text-center">
+                    {icon}
+                  </span>
+                </button>
+              )
+            })
           ) : (
             <div className="col-span-5 py-4 text-center text-gray-500">No icons found</div>
           )}
@@ -134,10 +140,7 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
           <p className="text-sm text-gray-600 mb-4 text-center">
             Upload a custom icon (SVG, PNG, or JPG)
           </p>
-          <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md">
-            <span>Upload Icon</span>
-            <input type="file" className="hidden" accept="image/*" />
-          </label>
+          <ImgBBUploader onImageUploaded={handleIconSelect} />
         </div>
       )}
     </div>,
