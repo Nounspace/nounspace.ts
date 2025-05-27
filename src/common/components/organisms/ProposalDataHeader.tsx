@@ -60,7 +60,7 @@ const ProposalDataHeader: React.FC = () => {
   return (
     <div className="mt-2 flex flex-col md:flex-row items-start md:items-center justify-between px-3 md:px-4 py-2 w-full border-r-2 border-r-gray-200">
       <div className="flex flex-col">
-        <h1 className="text-xl font-bold text-black">{title}</h1>
+        <h1 className="text-xl font-bold text-black">Prop {id}: {title}</h1>
         <div className="text-sm text-gray-500">
           Proposed by <AddressDisplay address={proposer} /> at {formattedDate}
           {signers && signers.length > 0 && (
