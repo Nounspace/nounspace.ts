@@ -311,10 +311,15 @@ export default function PublicSpace({
     console.error("Current space config is undefined");
   }
 
+  const fallbackConfig =
+    getCurrentTabName() === "Overview" || getCurrentTabName() === "Profile"
+      ? initialConfig
+      : INITIAL_SPACE_CONFIG_EMPTY;
+
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
       ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
-      : { ...initialConfig }),
+      : { ...fallbackConfig }),
     isEditable,
   };
 
