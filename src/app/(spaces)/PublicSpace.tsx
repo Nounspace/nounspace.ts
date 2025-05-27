@@ -223,7 +223,7 @@ export default function PublicSpace({
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName = getCurrentTabName() ?? "Profile";
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -232,8 +232,17 @@ export default function PublicSpace({
     });
 
     if (!isNil(currentSpaceId)) {
-      setLoading(true);
-      // First, load the space tab order
+      const hasCachedTab = !!localSpaces[currentSpaceId]?.tabs[currentTabName];
+      const hasCachedOrder =
+        !!localSpaces[currentSpaceId]?.order &&
+        localSpaces[currentSpaceId].order.length > 0;
+
+      if (!hasCachedTab || !hasCachedOrder) {
+        setLoading(true);
+      } else {
+        setLoading(false);
+      }
+
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
@@ -241,8 +250,7 @@ export default function PublicSpace({
         })
         .then(() => {
           console.log("Loaded editable spaces");
-          // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
+          return loadSpaceTab(currentSpaceId, currentTabName);
         })
         .then(() => {
           console.log("Loaded space tab");
@@ -253,7 +261,7 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName]);
+  }, [getCurrentSpaceId, getCurrentTabName, localSpaces]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
