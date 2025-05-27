@@ -70,6 +70,12 @@ export default function PublicSpace({
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
 
+  const currentSpaceId = useAppStore(
+    (state) => state.currentSpace.currentSpaceId,
+  );
+  const currentTabName =
+    useAppStore((state) => state.currentSpace.currentTabName) ?? "Profile";
+
   const {
     getCurrentSpaceId,
     setCurrentSpaceId,
@@ -222,9 +228,6 @@ export default function PublicSpace({
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
-
     console.log("Loading space tab:", {
       currentSpaceId,
       currentTabName,
@@ -232,8 +235,17 @@ export default function PublicSpace({
     });
 
     if (!isNil(currentSpaceId)) {
-      setLoading(true);
-      // First, load the space tab order
+      const hasCachedTab = !!localSpaces[currentSpaceId]?.tabs[currentTabName];
+      const hasCachedOrder =
+        !!localSpaces[currentSpaceId]?.order &&
+        localSpaces[currentSpaceId].order.length > 0;
+
+      if (!hasCachedTab || !hasCachedOrder) {
+        setLoading(true);
+      } else {
+        setLoading(false);
+      }
+
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
@@ -241,8 +253,7 @@ export default function PublicSpace({
         })
         .then(() => {
           console.log("Loaded editable spaces");
-          // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
+          return loadSpaceTab(currentSpaceId, currentTabName);
         })
         .then(() => {
           console.log("Loaded space tab");
@@ -253,7 +264,7 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName]);
+  }, [currentSpaceId, currentTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
