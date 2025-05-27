@@ -997,7 +997,7 @@ export const createSpaceStoreFunc = (
       // Register a new space for the proposal
       const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `Nouns Prop ${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
       };
@@ -1014,13 +1014,19 @@ export const createSpaceStoreFunc = (
 
       // Initialize the space with proper structure
       set((draft) => {
-        draft.space.editableSpaces[newSpaceId] = `Proposal-${proposalId}`;
+        draft.space.editableSpaces[newSpaceId] = `Nouns Prop ${proposalId}`;
         draft.space.localSpaces[newSpaceId] = {
           id: newSpaceId,
           updatedAt: moment().toISOString(),
           tabs: {},
           order: [],
           changedNames: {},
+        };
+        draft.space.remoteSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
         };
       });
 
