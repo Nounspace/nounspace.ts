@@ -243,9 +243,7 @@ function TabBar({
           !getIsInitializing() &&
           !isLoggedIn &&
           !isMobile && (
-            <ClaimButtonWithModal
-              contractAddress={isTokenPage ? contractAddress : undefined}
-            />
+            <ClaimButtonWithModal />
           )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
