@@ -203,6 +203,11 @@ function TabBar({
             <TokenDataHeader />
           </div>
         )}
+        {pageType === "proposal" && (
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
+            <ProposalDataHeader />
+          </div>
+        )}
         <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
           {tabs && (
             <Reorder.Group
