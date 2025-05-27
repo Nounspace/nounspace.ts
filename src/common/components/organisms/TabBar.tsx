@@ -192,6 +192,9 @@ function TabBar({
 
   const isLoggedIn = getIsLoggedIn();
 
+  const defaultTab = pageType === "proposal" ? "Overview" : "Profile";
+  const tabs = tabList && tabList.length > 0 ? tabList : [defaultTab];
+
   return (
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
@@ -201,19 +204,19 @@ function TabBar({
           </div>
         )}
         <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
-          {tabList && (
+          {tabs && (
             <Reorder.Group
               as="ol"
               axis="x"
               onReorder={updateTabOrder}
               className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
-              values={tabList}
+              values={tabs}
             >
               <AnimatePresence initial={false}>
                 {map(
                     inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
+                    ? ["Feed", ...tabs]
+                    : tabs,
                   (tabName: string) => {
                     return (
                       <Tab
@@ -236,9 +239,14 @@ function TabBar({
             </Reorder.Group>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
-          <ClaimButtonWithModal contractAddress={contractAddress} />
-        )}
+        {(isTokenPage || pageType === "proposal") &&
+          !getIsInitializing() &&
+          !isLoggedIn &&
+          !isMobile && (
+            <ClaimButtonWithModal
+              contractAddress={isTokenPage ? contractAddress : undefined}
+            />
+          )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
