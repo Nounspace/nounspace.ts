@@ -7,20 +7,29 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "../atoms/tooltip";
-import { useToken } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 
 interface ClaimButtonWithModalProps {
   contractAddress?: Address;
+  tokenSymbol?: string;
 }
 
 const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   contractAddress,
+  tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
-  const { tokenData } = useToken();
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  let symbol = tokenSymbol || "";
+  try {
+    const { tokenData } = useToken();
+    symbol =
+      symbol ||
+      tokenData?.clankerData?.symbol ||
+      tokenData?.geckoData?.symbol ||
+      "";
+  } catch (err) {
+    // Token context is optional; ignore if not available
+  }
 
   const handleClaimClick = () => {
     setModalOpenState(true);
@@ -45,8 +54,9 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Log in with the Farcaster account that deployed ${symbol} to
-            customize this space.
+            {symbol
+              ? `Log in with the Farcaster account that deployed ${symbol} to customize this space.`
+              : 'Log in with Farcaster to customize this space.'}
           </TooltipContent>
         </Tooltip>
       </div>
