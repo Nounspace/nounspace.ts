@@ -236,9 +236,14 @@ function TabBar({
             </Reorder.Group>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
-          <ClaimButtonWithModal contractAddress={contractAddress} />
-        )}
+        {(isTokenPage || pageType === "proposal") &&
+          !getIsInitializing() &&
+          !isLoggedIn &&
+          !isMobile && (
+            <ClaimButtonWithModal
+              contractAddress={isTokenPage ? contractAddress : undefined}
+            />
+          )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
