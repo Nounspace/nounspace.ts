@@ -269,8 +269,10 @@ async function listModifiableSpaces(
   }
   const { data, error } = await createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("*, fidRegistrations!inner (fid, identityPublicKey)")
-    .filter("fidRegistrations.identityPublicKey", "eq", identity);
+    .select("*, fidRegistrations(fid, identityPublicKey)")
+    .or(
+      `fidRegistrations.identityPublicKey.eq.${identity},identityPublicKey.eq.${identity}`,
+    );
 
   if (error) {
     console.error("Error fetching modifiable spaces:", error.message);

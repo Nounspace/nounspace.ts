@@ -128,28 +128,34 @@ export async function identitiesCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  // console.log(
-  //   "Checking identities that can modify space",
-  //   stringify(spaceId),
-  //   network,
-  //   "network",
-  // );
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
-    .select("contractAddress")
+    .select("contractAddress,fid,identityPublicKey")
     .eq("spaceId", spaceId);
-  if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
+
+  if (spaceRegistrationData === null || spaceRegistrationData.length === 0) {
     return [];
-  const contractAddress = first(spaceRegistrationData)!.contractAddress;
+  }
+
+  const {
+    contractAddress,
+    fid,
+    identityPublicKey,
+  } = first(spaceRegistrationData)!;
+
   if (!isNull(contractAddress)) {
     return await loadIdentitiesOwningContractSpace(
       contractAddress,
       String(network),
     );
-  } else {
+  }
+
+  if (!isNull(fid)) {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
   }
+
+  return [identityPublicKey];
 }
 
 async function spacePublicKeys(req: NextApiRequest, res: NextApiResponse) {
