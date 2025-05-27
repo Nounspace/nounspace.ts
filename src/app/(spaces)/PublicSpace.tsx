@@ -36,6 +36,7 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  proposalId?: string;
 }
 
 export default function PublicSpace({
@@ -51,6 +52,7 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
   pageType, // New prop
+  proposalId,
 }: PublicSpaceProps) {
   console.log("PublicSpace mounted:", {
     spaceId: providedSpaceId,
@@ -85,6 +87,7 @@ export default function PublicSpace({
     deleteSpaceTab,
     registerSpaceFid,
     registerSpaceContract,
+    registerProposalSpace,
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
@@ -104,6 +107,7 @@ export default function PublicSpace({
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
+    registerProposalSpace: state.space.registerProposalSpace,
   }));
 
   const {
@@ -120,7 +124,7 @@ export default function PublicSpace({
       spaceOwnerAddress,
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
-      isTokenPage,
+      isTokenPage: isTokenPage || pageType === "proposal",
     });
 
     console.log("Editability check:", {
@@ -139,6 +143,7 @@ export default function PublicSpace({
     tokenData,
     wallets,
     isTokenPage,
+    pageType,
   ]);
 
   // Internal isEditable function
@@ -198,9 +203,11 @@ export default function PublicSpace({
         setCurrentTabName(decodeURIComponent(providedTabName));
         return;
       }
-    } else if (resolvedPageType === "proposal") {
-      console.log("Handling proposal page logic...");
-      // Add specific logic for proposal pages here
+    } else if (resolvedPageType === "proposal" && proposalId) {
+      const generatedId = `proposal:${proposalId}`;
+      setCurrentSpaceId(generatedId);
+      setCurrentTabName(decodeURIComponent(providedTabName) || "Overview");
+      return;
     }
 
     // If no existing space found locally, use the provided spaceId
@@ -404,6 +411,10 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress,
             });
+          } else if (resolvedPageType === "proposal" && proposalId) {
+            console.log("Attempting to register proposal space:", { proposalId });
+            newSpaceId = await registerProposalSpace(proposalId);
+            console.log("Proposal space registration result:", newSpaceId);
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {
               currentUserFid,
@@ -427,17 +438,18 @@ export default function PublicSpace({
           if (newSpaceId) {
             // Set both spaceId and currentSpaceId atomically
             setCurrentSpaceId(newSpaceId);
-            setCurrentTabName("Profile");
+            const defaultTab = resolvedPageType === "proposal" ? "Overview" : "Profile";
+            setCurrentTabName(defaultTab);
 
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
             await loadEditableSpaces(); // First load
-            await loadSpaceTab(newSpaceId, "Profile");
+            await loadSpaceTab(newSpaceId, defaultTab);
 
             // Load remaining tabs
             const tabOrder = localSpaces[newSpaceId]?.order || [];
             for (const tabName of tabOrder) {
-              if (tabName !== "Profile") {
+              if (tabName !== defaultTab) {
                 await loadSpaceTab(newSpaceId, tabName);
               }
             }
@@ -446,8 +458,8 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            revalidatePath(getSpacePageUrl("Profile"));
-            const newUrl = getSpacePageUrl("Profile");
+            revalidatePath(getSpacePageUrl(defaultTab));
+            const newUrl = getSpacePageUrl(defaultTab);
             router.replace(newUrl, { scroll: false });
           }
         } catch (error) {
@@ -465,6 +477,7 @@ export default function PublicSpace({
     isTokenPage,
     contractAddress,
     tokenData?.network,
+    proposalId,
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,

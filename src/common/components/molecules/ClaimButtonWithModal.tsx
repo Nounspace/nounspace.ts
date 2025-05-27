@@ -12,15 +12,20 @@ import { Address } from "viem";
 
 interface ClaimButtonWithModalProps {
   contractAddress?: Address;
+  tokenSymbol?: string;
 }
 
 const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   contractAddress,
+  tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
   const { tokenData } = useToken();
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenSymbol ||
+    tokenData?.clankerData?.symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
 
   const handleClaimClick = () => {
     setModalOpenState(true);
@@ -45,8 +50,9 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            Log in with the Farcaster account that deployed ${symbol} to
-            customize this space.
+            {symbol
+              ? `Log in with the Farcaster account that deployed ${symbol} to customize this space.`
+              : 'Log in with Farcaster to customize this space.'}
           </TooltipContent>
         </Tooltip>
       </div>
