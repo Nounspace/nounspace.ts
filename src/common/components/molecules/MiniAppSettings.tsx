@@ -3,7 +3,15 @@ import { DragControls } from 'framer-motion'
 import { IconSelector } from './IconSelector'
 import { EyeIcon, EyeOffIcon, GripVerticalIcon } from 'lucide-react'
 import * as FaIcons from 'react-icons/fa6'
+import * as BsIcons from 'react-icons/bs'
+import * as GiIcons from 'react-icons/gi'
 import type { IconType } from 'react-icons'
+
+const ICON_PACK: Record<string, IconType> = {
+  ...FaIcons,
+  ...BsIcons,
+  ...GiIcons,
+}
 
 export interface MiniApp {
   id: string | number
@@ -52,7 +60,7 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls, orderN
       )
     }
 
-    const Icon = (FaIcons as Record<string, IconType>)[iconName] as IconType
+    const Icon = ICON_PACK[iconName] as IconType | undefined
     if (Icon) {
       return <Icon className="w-6 h-6" />
     }

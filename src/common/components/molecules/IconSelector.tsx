@@ -2,8 +2,17 @@ import React, { useEffect, useState, useRef } from 'react'
 import { SearchIcon, UploadIcon } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import * as FaIcons from 'react-icons/fa6'
+import * as BsIcons from 'react-icons/bs'
+import * as GiIcons from 'react-icons/gi'
 import type { IconType } from 'react-icons'
+import { DEFAULT_FIDGET_ICON_MAP } from '@/constants/mobileFidgetIcons'
 import ImgBBUploader from './ImgBBUploader'
+
+const ICON_PACK: Record<string, IconType> = {
+  ...FaIcons,
+  ...BsIcons,
+  ...GiIcons,
+}
 
 interface IconSelectorProps {
   onSelectIcon: (icon: string) => void
@@ -33,8 +42,10 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
     'FaStar',
     'FaHeart',
     'FaShareNodes',
+    ...Object.values(DEFAULT_FIDGET_ICON_MAP),
   ]
-  const filteredIcons = iconLibrary.filter((icon) =>
+  const uniqueIcons = Array.from(new Set(iconLibrary))
+  const filteredIcons = uniqueIcons.filter((icon) =>
     icon.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
@@ -112,7 +123,7 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
         <div className="p-3 grid grid-cols-5 gap-2">
           {filteredIcons.length > 0 ? (
             filteredIcons.map((icon) => {
-              const Icon = (FaIcons as Record<string, IconType>)[icon] as IconType
+              const Icon = ICON_PACK[icon] as IconType | undefined
               return (
                 <button
                   key={icon}
