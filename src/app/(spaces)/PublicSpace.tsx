@@ -75,6 +75,7 @@ export default function PublicSpace({
     setCurrentTabName,
     loadEditableSpaces,
     localSpaces,
+    editableSpaces,
     remoteSpaces,
     loadSpaceTab,
     saveLocalSpaceTab,
@@ -95,6 +96,7 @@ export default function PublicSpace({
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
+    editableSpaces: state.space.editableSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
     getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
     loadSpaceTab: state.space.loadSpaceTab,
@@ -349,7 +351,8 @@ export default function PublicSpace({
     // Only proceed with registration if we're sure the space doesn't exist and FID is linked
     if (
       editabilityCheck.isEditable &&
-      isNil(currentSpaceId) &&
+      currentSpaceId &&
+      !editableSpaces[currentSpaceId] &&
       !isNil(currentUserFid) &&
       !loading &&
       !editabilityCheck.isLoading

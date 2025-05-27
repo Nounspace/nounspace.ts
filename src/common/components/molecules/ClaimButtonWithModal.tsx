@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Button } from "../atoms/button";
 import ClaimModal from "./ClaimModal";
@@ -7,20 +9,18 @@ import {
   TooltipContent,
   TooltipProvider,
 } from "../atoms/tooltip";
-import { useToken } from "@/common/providers/TokenProvider";
-import { Address } from "viem";
+import { TokenContext } from "@/common/providers/TokenProvider";
 
 interface ClaimButtonWithModalProps {
-  contractAddress?: Address;
   tokenSymbol?: string;
 }
 
 const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
-  contractAddress,
   tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
-  const { tokenData } = useToken();
+  const tokenContext = React.useContext(TokenContext);
+  const tokenData = tokenContext?.tokenData;
   const symbol =
     tokenSymbol ||
     tokenData?.clankerData?.symbol ||

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Modal from "../molecules/Modal";
 import { Button } from "../atoms/button";
