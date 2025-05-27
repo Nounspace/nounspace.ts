@@ -63,10 +63,17 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     }
 
     // Check if user owns the wallet address (doesn't require clankerData)
-    if (spaceOwnerAddress && wallets.some(w => w.address === spaceOwnerAddress)) {
+    if (
+      spaceOwnerAddress &&
+      wallets.some(
+        (w) => w.address.toLowerCase() === spaceOwnerAddress.toLowerCase(),
+      )
+    ) {
       // console.log('Editable: User owns by address', {
       //   spaceOwnerAddress,
-      //   matchingWallet: wallets.find(w => w.address === spaceOwnerAddress),
+      //   matchingWallet: wallets.find(
+      //     (w) => w.address.toLowerCase() === spaceOwnerAddress.toLowerCase(),
+      //   ),
       // });
       return { isEditable: true, isLoading: false };
     }
