@@ -103,7 +103,7 @@ const NotificationHeader = ({
   return (
     <div className="flex flex-col gap-1 flex-wrap items-start w-full">
       {relatedUsers.length > 0 && (
-        <div className="flex gap-x-1 items-center mb-1 pl-12">
+        <div className="flex gap-x-1 items-center mb-1 pl-4">
           {leftIcon && (
             <span className="flex items-center justify-center text-red-500 mr-1">
               {leftIcon}
@@ -124,7 +124,7 @@ const NotificationHeader = ({
         </div>
       )}
       <div className="w-full">
-        <p className="text-base leading-[1.3] text-left m-0 p-0 pl-12">
+        <p className="text-base leading-[1.3] text-left m-0 p-0 pl-4">
           <FormattedUsersText users={relatedUsers} />
           {` ${descriptionSuffix}`}
         </p>
@@ -137,18 +137,33 @@ const MentionNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
+  const mentionedByUser = notification.cast?.author ? [notification.cast.author] : [];
+
   return (
-    <CastRow
-      cast={notification.cast!}
-      key={notification.cast!.hash}
-      showChannel={false}
-      isFocused={false}
-      isReply={false}
-      hasReplies={false}
-      onSelect={onSelect}
-      hideReactions={false}
-      className="border-b-0 px-0 py-0 hover:bg-transparent"
-    />
+    <div className="flex flex-col gap-2">
+      <NotificationHeader
+        notification={notification}
+        relatedUsers={mentionedByUser}
+        descriptionSuffix="mentioned you"
+      />
+      <div className="ml-4 w-full">
+        <CastRow
+          cast={notification.cast!}
+          key={notification.cast!.hash}
+          showChannel={false}
+          isFocused={false}
+          isEmbed={true}
+          isReply={false}
+          hasReplies={false}
+          onSelect={onSelect}
+          hideReactions={false}
+          className="border-b-0 px-0 pb-0 hover:bg-transparent"
+          castTextStyle={{
+            fontSize: "16px",
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
@@ -185,21 +200,23 @@ const RecastNotificationRow: NotificationRowProps = ({
         relatedUsers={recastedByUsers}
         descriptionSuffix="recasted your cast"
       />
-      <CastRow
-        cast={notification.cast!}
-        key={notification.cast!.hash}
-        showChannel={false}
-        isFocused={false}
-        isEmbed={true}
-        isReply={false}
-        hasReplies={false}
-        onSelect={onSelect}
-        hideReactions={false}
-        className="border-b-0 px-0 pb-0 hover:bg-transparent"
-        castTextStyle={{
-          fontSize: "16px",
-        }}
-      />
+      <div className="ml-4 w-full">
+        <CastRow
+          cast={notification.cast!}
+          key={notification.cast!.hash}
+          showChannel={false}
+          isFocused={false}
+          isEmbed={true}
+          isReply={false}
+          hasReplies={false}
+          onSelect={onSelect}
+          hideReactions={false}
+          className="border-b-0 px-0 pb-0 hover:bg-transparent"
+          castTextStyle={{
+            fontSize: "16px",
+          }}
+        />
+      </div>
     </div>
   );
 };
@@ -208,29 +225,33 @@ const ReplyNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
-  const fid = useCurrentFid();
-  const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0;
-  const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1);
-  const replyingToUsername = replyingTo?.users?.length
-    ? replyingTo.users[0].username
-    : undefined;
+  const repliedByUser = notification.cast?.author ? [notification.cast.author] : [];
 
   return (
-    <CastRow
-      cast={notification.cast!}
-      key={notification.cast!.hash}
-      showChannel={false}
-      isFocused={false}
-      isReply={true}
-      hasReplies={replyHasReplies}
-      onSelect={onSelect}
-      hideReactions={false}
-      replyingToUsername={replyingToUsername}
-      className="border-b-0 p-0 hover:bg-transparent"
-      castTextStyle={{
-        fontSize: "16px",
-      }}
-    />
+    <div className="flex flex-col gap-2">
+      <NotificationHeader
+        notification={notification}
+        relatedUsers={repliedByUser}
+        descriptionSuffix="replied to your cast"
+      />
+      <div className="ml-4 w-full">
+        <CastRow
+          cast={notification.cast!}
+          key={notification.cast!.hash}
+          showChannel={false}
+          isFocused={false}
+          isEmbed={true}
+          isReply={true}
+          hasReplies={(notification?.cast?.replies?.count ?? 0) > 0}
+          onSelect={onSelect}
+          hideReactions={false}
+          className="border-b-0 px-0 pb-0 hover:bg-transparent"
+          castTextStyle={{
+            fontSize: "16px",
+          }}
+        />
+      </div>
+    </div>
   );
 };
 
@@ -253,7 +274,7 @@ const LikeNotificationRow: NotificationRowProps = ({
         descriptionSuffix="liked your cast"
         leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <div className="ml-12 w-full">
+      <div className="ml-4 w-full">
         <CastBody
           cast={notification.cast!}
           channel={null}
@@ -461,8 +482,8 @@ function NotificationsPageContent() {
                       );
                     },
                   )}
-              </React.Fragment>
-            ))}
+                </React.Fragment>
+              ))}
             </Suspense>
           </div>
           {error && (
