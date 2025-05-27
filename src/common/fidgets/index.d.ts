@@ -20,6 +20,8 @@ export type FidgetSettings = {
 export type FidgetSettingsStyle = {
   showOnMobile?: boolean;
   customMobileDisplayName?: string;
+  mobileIconName?: string;
+  mobileOrder?: number;
   background?: Color;
   fontFamily?: FontFamily;
   fontColor?: Color;

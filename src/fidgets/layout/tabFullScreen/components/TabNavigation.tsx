@@ -2,6 +2,8 @@ import React, { useMemo, useRef, useState, useEffect } from "react";
 import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
+import * as FaIcons from "react-icons/fa6";
+import type { IconType } from "react-icons";
 import { CompleteFidgets } from "@/fidgets";
 import { getFidgetDisplayName } from "../utils";
 import { usePathname } from "next/navigation";
@@ -167,11 +169,22 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
     // On mobile, use custom mobile icons if available
     if (isMobile) {
-      const isSelected = selectedTab === fidgetId;
+      const customIcon = fidgetDatum.config.settings.mobileIconName as string | undefined
+      if (customIcon) {
+        if (customIcon.startsWith('http')) {
+          return <img src={customIcon} alt="icon" className="w-5 h-5" />
+        }
+        const Icon = (FaIcons as Record<string, IconType>)[customIcon] as IconType
+        if (Icon) {
+          return <Icon className="text-xl" />
+        }
+      }
+
+      const isSelected = selectedTab === fidgetId
       if (isSelected && fidgetModule.properties.mobileIconSelected) {
-        return fidgetModule.properties.mobileIconSelected;
+        return fidgetModule.properties.mobileIconSelected
       } else if (fidgetModule.properties.mobileIcon) {
-        return fidgetModule.properties.mobileIcon;
+        return fidgetModule.properties.mobileIcon
       }
     }
     

@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react'
 import { DragControls } from 'framer-motion'
 import { IconSelector } from './IconSelector'
 import { EyeIcon, EyeOffIcon, GripVerticalIcon } from 'lucide-react'
+import * as FaIcons from 'react-icons/fa6'
+import type { IconType } from 'react-icons'
 
 export interface MiniApp {
   id: string | number
@@ -38,38 +40,26 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls, orderN
   }
 
   const getIconComponent = (iconName: string) => {
-    const IconMap: Record<string, React.ReactNode> = {
-      RssIcon: (
-        <div className="w-6 h-6 bg-blue-100 text-blue-600 flex items-center justify-center rounded">
-          RSS
-        </div>
-      ),
-      VoteIcon: (
-        <div className="w-6 h-6 bg-purple-100 text-purple-600 flex items-center justify-center rounded">
-          V
-        </div>
-      ),
-      ImageIcon: (
-        <div className="w-6 h-6 bg-green-100 text-green-600 flex items-center justify-center rounded">
-          I
-        </div>
-      ),
-      HomeIcon: (
-        <div className="w-6 h-6 bg-yellow-100 text-yellow-600 flex items-center justify-center rounded">
-          H
-        </div>
-      ),
-      GiftIcon: (
-        <div className="w-6 h-6 bg-red-100 text-red-600 flex items-center justify-center rounded">
-          G
-        </div>
-      ),
-    }
-    return (
-      IconMap[iconName] || (
+    if (!iconName) {
+      return (
         <div className="w-6 h-6 bg-gray-100 flex items-center justify-center rounded">?</div>
       )
-    );
+    }
+
+    if (iconName.startsWith('http')) {
+      return (
+        <img src={iconName} alt="icon" className="w-6 h-6 rounded object-contain" />
+      )
+    }
+
+    const Icon = (FaIcons as Record<string, IconType>)[iconName] as IconType
+    if (Icon) {
+      return <Icon className="w-6 h-6" />
+    }
+
+    return (
+      <div className="w-6 h-6 bg-gray-100 flex items-center justify-center rounded">?</div>
+    )
   }
   return (
     <div className="py-2 border-y">
