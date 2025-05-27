@@ -11,9 +11,11 @@ interface MobileSettingsProps {
 function DraggableMiniApp({
   miniApp,
   onUpdateMiniApp,
+  orderNumber,
 }: {
   miniApp: MiniApp
   onUpdateMiniApp: (app: MiniApp) => void
+  orderNumber?: number
 }) {
   const controls = useDragControls()
   return (
@@ -27,6 +29,7 @@ function DraggableMiniApp({
         miniApp={miniApp}
         onUpdateMiniApp={onUpdateMiniApp}
         dragControls={controls}
+        orderNumber={orderNumber}
       />
     </Reorder.Item>
   )
@@ -49,8 +52,15 @@ export function MobileSettings({
     onReorderMiniApps(newOrder)
   }
 
+  const visibleOrderMap: Record<string | number, number> = {}
+  items
+    .filter((app) => app.displayOnMobile)
+    .forEach((app, index) => {
+      visibleOrderMap[app.id] = index + 1
+    })
+
   return (
-    <div className="p-2">
+    <div className="px-2 pt-1 pb-2">
       <p className="text-sm text-gray-500 mb-4">
         Drag fidgets to reorder them in the mobile nav, and customize their
         visibility, display name, and icon.
@@ -66,6 +76,7 @@ export function MobileSettings({
             key={miniApp.id}
             miniApp={miniApp}
             onUpdateMiniApp={onUpdateMiniApp}
+            orderNumber={visibleOrderMap[miniApp.id]}
           />
         ))}
       </Reorder.Group>

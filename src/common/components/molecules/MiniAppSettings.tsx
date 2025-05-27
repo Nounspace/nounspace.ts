@@ -17,9 +17,10 @@ interface MiniAppSettingsProps {
   miniApp: MiniApp
   onUpdateMiniApp: (app: MiniApp) => void
   dragControls?: DragControls
+  orderNumber?: number
 }
 
-export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: MiniAppSettingsProps) {
+export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls, orderNumber }: MiniAppSettingsProps) {
   const [isIconSelectorOpen, setIsIconSelectorOpen] = useState(false)
   const iconButtonRef = useRef<HTMLButtonElement>(null)
 
@@ -71,8 +72,8 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: Mini
     );
   }
   return (
-    <div className="py-2 border-b last:border-b-0">
-      <div className="px-2">
+    <div className="py-2 border-y">
+      <div className="px-1">
         <div className="flex items-center gap-2 mb-2">
           <div
             className="cursor-move p-1 hover:bg-gray-100 rounded shrink-0"
@@ -81,6 +82,9 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls }: Mini
           >
             <GripVerticalIcon className="h-4 w-4 text-gray-400" />
           </div>
+          <span className="text-xs text-gray-400 w-4 text-center">
+            {orderNumber ?? "-"}
+          </span>
           <div className="text-sm text-gray-500 truncate flex-1">
             {miniApp.context}
           </div>
