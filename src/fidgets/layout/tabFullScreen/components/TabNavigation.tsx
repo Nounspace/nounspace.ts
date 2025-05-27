@@ -3,9 +3,17 @@ import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
 import * as FaIcons from "react-icons/fa6";
+import * as BsIcons from "react-icons/bs";
+import * as GiIcons from "react-icons/gi";
 import type { IconType } from "react-icons";
 import { CompleteFidgets } from "@/fidgets";
 import { getFidgetDisplayName } from "../utils";
+
+const ICON_PACK: Record<string, IconType> = {
+  ...FaIcons,
+  ...BsIcons,
+  ...GiIcons,
+};
 import { usePathname } from "next/navigation";
 
 interface TabNavigationProps {
@@ -174,7 +182,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         if (customIcon.startsWith('http')) {
           return <img src={customIcon} alt="icon" className="w-5 h-5" />
         }
-        const Icon = (FaIcons as Record<string, IconType>)[customIcon] as IconType
+        const Icon = ICON_PACK[customIcon] as IconType | undefined
         if (Icon) {
           return <Icon className="text-xl" />
         }
