@@ -48,6 +48,7 @@ import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
 import { CompleteFidgets } from "@/fidgets";
+import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
 import MobileSettings from "@/common/components/organisms/MobileSettings";
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 
@@ -75,6 +76,7 @@ export function ThemeSettingsEditor({
   const miniApps = useMemo<MiniApp[]>(() => {
     return Object.values(fidgetInstanceDatums).map((d, i) => {
       const props = CompleteFidgets[d.fidgetType]?.properties;
+      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
       return {
         id: d.id,
         name: d.fidgetType,
@@ -84,7 +86,7 @@ export function ThemeSettingsEditor({
           props?.fidgetName,
         context: props?.fidgetName,
         order: (d.config.settings.mobileOrder as number) || i + 1,
-        icon: (d.config.settings.mobileIconName as string) || 'HomeIcon',
+        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
         displayOnMobile: d.config.settings.showOnMobile !== false,
       };
     });
