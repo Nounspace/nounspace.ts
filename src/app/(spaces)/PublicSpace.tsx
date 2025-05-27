@@ -86,7 +86,12 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
-  const { proposalData } = useProposalContext();
+  let proposalData;
+  try {
+    proposalData = useProposalContext().proposalData;
+  } catch {
+    proposalData = undefined;
+  }
 
   const {
     getCurrentSpaceId,
@@ -277,6 +282,15 @@ export default function PublicSpace({
 
             const proposalSpaceId = uuidv4();
 
+            // Optimistically create a local space so edits persist before
+            // registration completes
+            setCurrentSpaceId(proposalSpaceId);
+            await createSpaceTab(
+              proposalSpaceId,
+              decodeURIComponent(providedTabName) || "Profile",
+              initialConfig,
+            );
+
             await loadEditableSpaces();
 
             const registeredId = await registerProposalSpace({
@@ -336,13 +350,15 @@ export default function PublicSpace({
     currentTabName,
     setCurrentSpaceId,
     setCurrentTabName,
-    registerProposalSpace,
-  ]);
+      registerProposalSpace,
+      createSpaceTab,
+    ]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName =
+      getCurrentTabName() || decodeURIComponent(providedTabName);
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -704,14 +720,8 @@ export default function PublicSpace({
   const { editMode } = useSidebarContext();
 
   // Extract proposer address from proposal context if this is a proposal page
-  let proposerAddress: string | undefined = undefined;
-  if (pageType === "proposal") {
-    try {
-      proposerAddress = useProposalContext()?.proposalData?.proposer?.id;
-    } catch (e) {
-      proposerAddress = undefined;
-    }
-  }
+  const proposerAddress: string | undefined =
+    pageType === "proposal" ? proposalData?.proposer?.id : undefined;
 
   // Extract proposal-specific props if this is a proposal page
   const proposalIdProp =
@@ -722,9 +732,13 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={currentTabName ?? "Profile"}
+      currentTab={
+        currentTabName || decodeURIComponent(providedTabName) || "Profile"
+      }
       tabList={
-        currentSpaceId ? localSpaces[currentSpaceId]?.order : ["Profile"]
+        currentSpaceId
+          ? localSpaces[currentSpaceId]?.order
+          : [decodeURIComponent(providedTabName)]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
