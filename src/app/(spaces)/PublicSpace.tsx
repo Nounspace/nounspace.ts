@@ -277,6 +277,19 @@ export default function PublicSpace({
 
             const proposalSpaceId = uuidv4();
 
+            // Immediately set the current space and tab to allow editing while
+            // registration completes in the background
+            setCurrentSpaceId(proposalSpaceId);
+            setCurrentTabName(
+              decodeURIComponent(providedTabName) || `Nouns Prop ${proposalId}`,
+            );
+
+            // Optimistically create the initial local tab so edits are saved
+            await saveLocalSpaceTab(proposalSpaceId, decodeURIComponent(providedTabName) || `Nouns Prop ${proposalId}`, {
+              ...initialConfig,
+              isPrivate: false,
+            });
+
             await loadEditableSpaces();
 
             const registeredId = await registerProposalSpace({
@@ -342,7 +355,8 @@ export default function PublicSpace({
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName =
+      getCurrentTabName() || decodeURIComponent(providedTabName);
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -722,9 +736,13 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={currentTabName ?? "Profile"}
+      currentTab={
+        currentTabName || decodeURIComponent(providedTabName) || "Profile"
+      }
       tabList={
-        currentSpaceId ? localSpaces[currentSpaceId]?.order : ["Profile"]
+        currentSpaceId
+          ? localSpaces[currentSpaceId]?.order
+          : [decodeURIComponent(providedTabName)]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
