@@ -223,7 +223,7 @@ export default function PublicSpace({
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName = getCurrentTabName() ?? "Profile";
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -232,8 +232,12 @@ export default function PublicSpace({
     });
 
     if (!isNil(currentSpaceId)) {
-      setLoading(true);
-      // First, load the space tab order
+      if (!hasCachedTab || !hasCachedOrder) {
+        setLoading(true);
+      } else {
+        setLoading(false);
+      }
+
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
@@ -241,8 +245,7 @@ export default function PublicSpace({
         })
         .then(() => {
           console.log("Loaded editable spaces");
-          // Load the specific tab
-          return loadSpaceTab(currentSpaceId, currentTabName ?? "Profile");
+          return loadSpaceTab(currentSpaceId, currentTabName);
         })
         .then(() => {
           console.log("Loaded space tab");
@@ -299,6 +302,16 @@ export default function PublicSpace({
   }
 
   const currentTabName = getCurrentTabName();
+  const currentSpaceId = getCurrentSpaceId();
+  const hasCachedTab =
+    currentSpaceId && currentTabName
+      ? !!localSpaces[currentSpaceId]?.tabs[currentTabName]
+      : false;
+  const hasCachedOrder =
+    currentSpaceId && currentSpaceId in localSpaces
+      ? !!localSpaces[currentSpaceId].order &&
+        localSpaces[currentSpaceId].order.length > 0
+      : false;
 
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
@@ -654,7 +667,9 @@ export default function PublicSpace({
   }
 
   const shouldShowSkeleton =
-    loading && providedSpaceId !== null && providedSpaceId !== "";
+    (!hasCachedTab || !hasCachedOrder || loading) &&
+    providedSpaceId !== null &&
+    providedSpaceId !== "";
 
   if (shouldShowSkeleton) {
     return (
