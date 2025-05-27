@@ -309,8 +309,6 @@ export default function PublicSpace({
     console.error("Current space config is undefined");
   }
 
-  const currentTabName = getCurrentTabName();
-
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
       ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
