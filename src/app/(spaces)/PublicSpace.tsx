@@ -424,7 +424,7 @@ export default function PublicSpace({
             });
           } else if (resolvedPageType === "proposal" && proposalId) {
             console.log("Attempting to register proposal space:", { proposalId });
-            newSpaceId = await registerProposalSpace(proposalId);
+            newSpaceId = await registerProposalSpace(proposalId, currentUserFid ?? undefined);
             console.log("Proposal space registration result:", newSpaceId);
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {

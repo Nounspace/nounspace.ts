@@ -38,6 +38,7 @@ export interface SpaceRegistrationFid extends SpaceRegistrationBase {
 
 export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
   proposalId: string;
+  fid?: number;
 }
 
 export type SpaceRegistration =
@@ -84,7 +85,8 @@ function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistration
 function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistrationProposer {
   return (
     isSpaceRegistration(maybe) &&
-    typeof maybe["proposalId"] === "string"
+    typeof maybe["proposalId"] === "string" &&
+    (isUndefined(maybe["fid"]) || typeof maybe["fid"] === "number" || typeof maybe["fid"] === "string")
   );
 }
 
@@ -218,7 +220,24 @@ async function registerNewSpace(
       return;
     }
   } else if (isSpaceRegistrationProposer(registration)) {
-    // Handle proposer-specific logic if needed
+    if (
+      !isUndefined(registration.fid) &&
+      !(await identityCanRegisterForFid(
+        registration.identityPublicKey,
+        Number(registration.fid),
+      ))
+    ) {
+      console.error(
+        `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
+      );
+      res.status(400).json({
+        result: "error",
+        error: {
+          message: `Identity ${registration.identityPublicKey} cannot manage spaces for fid ${registration.fid}`,
+        },
+      });
+      return;
+    }
   }
 
   if ("tokenOwnerFid" in registration && registration.tokenOwnerFid) {

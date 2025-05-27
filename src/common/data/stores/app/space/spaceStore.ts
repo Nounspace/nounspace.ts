@@ -176,6 +176,7 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    fid?: number,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -972,7 +973,7 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (proposalId, fid) => {
     try {
       // Check if a space already exists for this proposal
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -1000,6 +1001,7 @@ export const createSpaceStoreFunc = (
         spaceName: `Nouns Prop ${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
+        fid,
       };
       const registration = signSignable(
         unsignedRegistration,
