@@ -108,6 +108,7 @@ export default function PublicSpace({
     registerSpaceFid,
     registerSpaceContract,
     registerProposalSpace,
+    initializeLocalProposalSpace,
     editableSpaces,
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
@@ -129,6 +130,7 @@ export default function PublicSpace({
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
     registerProposalSpace: state.space.registerProposalSpace,
+    initializeLocalProposalSpace: state.space.initializeLocalProposalSpace,
     editableSpaces: state.space.editableSpaces,
   }));
 
@@ -276,6 +278,17 @@ export default function PublicSpace({
             });
 
             const proposalSpaceId = uuidv4();
+            const tabNameDecoded =
+              decodeURIComponent(providedTabName) || `Nouns Prop ${proposalId}`;
+
+            initializeLocalProposalSpace(
+              proposalSpaceId,
+              proposalId,
+              tabNameDecoded,
+              initialConfig,
+            );
+            setCurrentSpaceId(proposalSpaceId);
+            setCurrentTabName(tabNameDecoded);
 
             await loadEditableSpaces();
 
@@ -293,20 +306,7 @@ export default function PublicSpace({
             });
             proposalRegistrationRef.current = finalSpaceId;
 
-            await loadSpaceTabOrder(finalSpaceId);
-            await loadSpaceTab(
-              finalSpaceId,
-              decodeURIComponent(providedTabName) || "Profile"
-            );
-
-            setCurrentSpaceId(finalSpaceId);
-            console.debug("Updated currentSpaceId in state", {
-              currentSpaceId: finalSpaceId,
-            });
-
-            const newUrl = getSpacePageUrl(
-              decodeURIComponent(providedTabName) || "Profile"
-            );
+            const newUrl = getSpacePageUrl(tabNameDecoded);
             router.replace(newUrl, { scroll: false });
             setLoading(false);
           } catch (error) {
@@ -337,12 +337,14 @@ export default function PublicSpace({
     setCurrentSpaceId,
     setCurrentTabName,
     registerProposalSpace,
+    initializeLocalProposalSpace,
   ]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName();
+    const currentTabName =
+      getCurrentTabName() || decodeURIComponent(providedTabName);
 
     console.log("Loading space tab:", {
       currentSpaceId,
@@ -722,9 +724,13 @@ export default function PublicSpace({
       isTokenPage={isTokenPage}
       pageType={pageType}
       inHomebase={false}
-      currentTab={currentTabName ?? "Profile"}
+      currentTab={
+        currentTabName || decodeURIComponent(providedTabName) || "Profile"
+      }
       tabList={
-        currentSpaceId ? localSpaces[currentSpaceId]?.order : ["Profile"]
+        currentSpaceId
+          ? localSpaces[currentSpaceId]?.order
+          : [decodeURIComponent(providedTabName)]
       }
       contractAddress={contractAddress as Address}
       switchTabTo={switchTabTo}
