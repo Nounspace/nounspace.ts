@@ -349,7 +349,7 @@ export default function PublicSpace({
     // Only proceed with registration if we're sure the space doesn't exist and FID is linked
     if (
       editabilityCheck.isEditable &&
-      isNil(currentSpaceId) &&
+      (!currentSpaceId || !localSpaces[currentSpaceId]) &&
       !isNil(currentUserFid) &&
       !loading &&
       !editabilityCheck.isLoading
