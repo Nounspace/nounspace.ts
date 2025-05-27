@@ -137,6 +137,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Real image upload function for imgBB
   async function uploadImageToImgBB(file: File): Promise<string> {
@@ -172,12 +173,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
     const file = e.dataTransfer.files[0];
     if (!file.type.startsWith("image/")) return;
-    // Real upload to imgBB
+    setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
       addEmbed({ url, status: "loaded" });
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -208,11 +211,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
         console.log('Clipboard item', i, 'type:', item.type, file);
         if (file && file.type.startsWith("image/")) {
           e.preventDefault();
+          setIsUploadingImage(true);
           try {
             const url = await uploadImageToImgBB(file);
             addEmbed({ url, status: "loaded" });
           } catch (err) {
             alert("Error uploading image: " + (err as Error).message);
+          } finally {
+            setIsUploadingImage(false);
           }
         }
       }
@@ -609,6 +615,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
               </div>
             )}
+            {isUploadingImage && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
+                <Spinner style={{ width: "40px", height: "40px" }} />
+                <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+              </div>
+            )}
             <EditorContent
               ref={editorContentRef}
               editor={editor}
@@ -623,11 +635,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   console.log('Clipboard item', i, 'type:', item.type, file);
                   if (file && file.type.startsWith("image/")) {
                     e.preventDefault();
+                    setIsUploadingImage(true);
                     try {
                       const url = await uploadImageToImgBB(file);
                       addEmbed({ url, status: "loaded" });
                     } catch (err) {
                       alert("Error uploading image: " + (err as Error).message);
+                    } finally {
+                      setIsUploadingImage(false);
                     }
                   }
                 }
@@ -796,7 +811,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (
             <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : embed.castId.hash}`}
+              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
             >
               {renderEmbedForUrl(embed, true)}
             </div>
