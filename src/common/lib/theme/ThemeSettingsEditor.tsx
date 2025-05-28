@@ -58,7 +58,7 @@ export type ThemeSettingsEditorArgs = {
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  fidgetInstanceDatums?: { [key: string]: FidgetInstanceData };
   saveFidgetInstanceDatums: (datums: { [key: string]: FidgetInstanceData }) => Promise<void>;
 };
 
@@ -83,7 +83,8 @@ export function ThemeSettingsEditor({
   useEffect(() => () => setMobilePreview(false), [setMobilePreview]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
-    return Object.values(fidgetInstanceDatums).map((d, i) => {
+    const datums = fidgetInstanceDatums ?? {};
+    return Object.values(datums).map((d, i) => {
       const props = CompleteFidgets[d.fidgetType]?.properties;
       const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
       return {
@@ -102,10 +103,11 @@ export function ThemeSettingsEditor({
   }, [fidgetInstanceDatums]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
-    const datum = fidgetInstanceDatums[app.id];
+    const datums = fidgetInstanceDatums ?? {};
+    const datum = datums[app.id];
     if (!datum) return;
     const newDatums = {
-      ...fidgetInstanceDatums,
+      ...datums,
       [app.id]: {
         ...datum,
         config: {
@@ -124,9 +126,10 @@ export function ThemeSettingsEditor({
   };
 
   const handleReorderMiniApps = (apps: MiniApp[]) => {
+    const datums = fidgetInstanceDatums ?? {};
     const newDatums: { [key: string]: FidgetInstanceData } = {};
     apps.forEach((app, index) => {
-      const datum = fidgetInstanceDatums[app.id];
+      const datum = datums[app.id];
       if (!datum) return;
       newDatums[app.id] = {
         ...datum,
