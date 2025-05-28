@@ -209,7 +209,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full min-h-[72px]">
       <TabsList 
         ref={tabsListRef}
         className={`
