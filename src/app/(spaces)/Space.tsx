@@ -21,7 +21,7 @@ import { MOBILE_BREAKPOINT } from "@/common/lib/hooks/useIsMobile";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
-import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { cleanupLayout } from "@/common/lib/utils/gridCleanup";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -80,7 +80,8 @@ export default function Space({
   const isMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
   const { width } = useWindowSize();
-  const showMobileContainer = mobilePreview && (width ? width >= MOBILE_BREAKPOINT : false);
+  const isViewportMobile = width ? width < MOBILE_BREAKPOINT : false;
+  const showMobileContainer = mobilePreview && !isViewportMobile;
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -106,69 +107,73 @@ export default function Space({
 
     // Get fidget IDs from layout
     const layoutFidgetIds = new Set(
-      config.layoutDetails.layoutConfig.layout.map((item) => item.i)
+      config.layoutDetails.layoutConfig.layout.map((item) => item.i),
     );
 
-       // Find unused fidgets
-       const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-        (id) => !layoutFidgetIds.has(id)
-      );
-      // Remove unused fidgets
-      if (unusedFidgetIds.length > 0) {
-        const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-        unusedFidgetIds.forEach((id) => {
-          delete cleanedFidgetInstanceDatums[id];
-        });
-        // Only save if we have fidgets left
-        if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
-          saveConfig({
-            fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-            timestamp: new Date().toISOString(),
-          }).then(() => {
-            commitConfig();
-          });
-        }
-      }
-  
-      // Check for and handle overlapping fidgets
-      const { cleanedLayout, removedFidgetIds } = cleanupLayout(
-        config.layoutDetails.layoutConfig.layout,
-        config.fidgetInstanceDatums,
-        !isNil(profile),
-        !isNil(feed)
-      );
-  
+    // Find unused fidgets
+    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+      (id) => !layoutFidgetIds.has(id),
+    );
+    // Remove unused fidgets
+    if (unusedFidgetIds.length > 0) {
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      removedFidgetIds.forEach(id => {
+      unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
-  
-      let settingsChanged = false;
-      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-        const datum = cleanedFidgetInstanceDatums[id];
-        const settings = datum.config?.settings as Record<string, unknown>;
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-      });
-  
-      // Make Queued Changes
-      if (removedFidgetIds.length > 0 || 
-        cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-        settingsChanged) {
-  
+      // Only save if we have fidgets left
+      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
         saveConfig({
-          layoutDetails: {
-            layoutConfig: {
+          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+          timestamp: new Date().toISOString(),
+        }).then(() => {
+          commitConfig();
+        });
+      }
+    }
+
+    // Check for and handle overlapping fidgets
+    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+      config.layoutDetails.layoutConfig.layout,
+      config.fidgetInstanceDatums,
+      !isNil(profile),
+      !isNil(feed),
+    );
+
+    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+    removedFidgetIds.forEach((id) => {
+      delete cleanedFidgetInstanceDatums[id];
+    });
+
+    let settingsChanged = false;
+    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+      const datum = cleanedFidgetInstanceDatums[id];
+      const settings = datum.config?.settings as Record<string, unknown>;
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+    });
+
+    // Make Queued Changes
+    if (
+      removedFidgetIds.length > 0 ||
+      cleanedLayout.some(
+        (item, i) =>
+          item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
+          item.y !== config.layoutDetails.layoutConfig.layout[i].y,
+      ) ||
+      settingsChanged
+    ) {
+      saveConfig({
+        layoutDetails: {
+          layoutConfig: {
             ...config.layoutDetails.layoutConfig,
             layout: cleanedLayout,
           },
@@ -259,7 +264,7 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !isMobile && editMode, // No edit mode on mobile
+      inEditMode: editMode && !isViewportMobile,
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
