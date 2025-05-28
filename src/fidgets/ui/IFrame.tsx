@@ -1,4 +1,5 @@
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
+import IframeScrollPositionSlider from "@/common/components/molecules/IframeScrollPositionSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import {
   FidgetArgs,
@@ -15,6 +16,7 @@ import { BsCloud, BsCloudFill } from "react-icons/bs";
 export type IFrameFidgetSettings = {
   url: string;
   size: number;
+  scrollPosition: number;
 } & FidgetSettingsStyle;
 
 const DISALLOW_URL_PATTERNS = [
@@ -56,6 +58,19 @@ const frameConfig: FidgetProperties = {
       ),
       group: "style",
     },
+    {
+      fieldName: "scrollPosition",
+      displayName: "Initial Scroll Position",
+      displayNameHint: "Set the starting scroll position of the website.",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <IframeScrollPositionSlider {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+      default: 0,
+    },
   ],
   size: {
     minHeight: 2,
@@ -66,7 +81,7 @@ const frameConfig: FidgetProperties = {
 };
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
-  settings: { url, size = 1 },
+  settings: { url, size = 1, scrollPosition = 0 },
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,11 +90,11 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     url?: string;
     iframelyHtml?: string | null;
   } | null>(null);
-
   const isValid = isValidUrl(url);
   const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
   const scaleValue = size;
+
 
   useEffect(() => {
     async function checkEmbedInfo() {
@@ -154,7 +169,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
           title="IFrame Fidget"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           style={{
-            transform: `scale(${scaleValue})`,
+            transform: `translateY(-${scrollPosition}px) scale(${scaleValue})`,
             transformOrigin: "0 0",
             width: `${100 / scaleValue}%`,
             height: `${100 / scaleValue}%`,
