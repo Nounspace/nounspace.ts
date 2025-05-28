@@ -3,7 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import MiniAppSettings, { MiniApp } from '../molecules/MiniAppSettings'
 
 interface MobileSettingsProps {
-  miniApps: MiniApp[]
+  miniApps?: MiniApp[]
   onUpdateMiniApp: (app: MiniApp) => void
   onReorderMiniApps: (apps: MiniApp[]) => void
 }
@@ -43,7 +43,7 @@ export function MobileSettings({
   const [items, setItems] = useState<MiniApp[]>([])
 
   useEffect(() => {
-    const sorted = [...miniApps].sort((a, b) => a.order - b.order)
+    const sorted = [...(miniApps ?? [])].sort((a, b) => a.order - b.order)
     setItems(sorted)
   }, [miniApps])
 

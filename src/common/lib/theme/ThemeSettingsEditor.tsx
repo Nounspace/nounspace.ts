@@ -83,7 +83,7 @@ export function ThemeSettingsEditor({
   useEffect(() => () => setMobilePreview(false), [setMobilePreview]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
-    return Object.values(fidgetInstanceDatums).map((d, i) => {
+    return Object.values(fidgetInstanceDatums ?? {}).map((d, i) => {
       const props = CompleteFidgets[d.fidgetType]?.properties;
       const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
       return {
@@ -102,10 +102,11 @@ export function ThemeSettingsEditor({
   }, [fidgetInstanceDatums]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
-    const datum = fidgetInstanceDatums[app.id];
+    if (!fidgetInstanceDatums) return;
+    const datum = fidgetInstanceDatums?.[app.id];
     if (!datum) return;
     const newDatums = {
-      ...fidgetInstanceDatums,
+      ...(fidgetInstanceDatums ?? {}),
       [app.id]: {
         ...datum,
         config: {
@@ -125,8 +126,9 @@ export function ThemeSettingsEditor({
 
   const handleReorderMiniApps = (apps: MiniApp[]) => {
     const newDatums: { [key: string]: FidgetInstanceData } = {};
+    if (!fidgetInstanceDatums) return;
     apps.forEach((app, index) => {
-      const datum = fidgetInstanceDatums[app.id];
+      const datum = fidgetInstanceDatums?.[app.id];
       if (!datum) return;
       newDatums[app.id] = {
         ...datum,
