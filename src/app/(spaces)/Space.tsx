@@ -17,6 +17,7 @@ import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 
@@ -75,6 +76,7 @@ export default function Space({
 }: SpaceArgs) {
   // Use the useIsMobile hook instead of duplicating logic
   const isMobile = useIsMobile();
+  const { forceMobile } = useMobilePreview();
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -280,7 +282,7 @@ export default function Space({
     console.error("LayoutFidget is undefined");
   }
 
-  return (
+  const spaceContent = (
     <div className="user-theme-background w-full h-full relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
@@ -340,4 +342,16 @@ export default function Space({
       </div>
     </div>
   );
+
+  if (editMode && forceMobile) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <div style={{ width: 390, height: 844 }} className="relative">
+          {spaceContent}
+        </div>
+      </div>
+    );
+  }
+
+  return spaceContent;
 }
