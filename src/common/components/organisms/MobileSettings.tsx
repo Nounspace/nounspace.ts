@@ -43,6 +43,10 @@ export function MobileSettings({
   const [items, setItems] = useState<MiniApp[]>([])
 
   useEffect(() => {
+    if (!miniApps) {
+      setItems([])
+      return
+    }
     const sorted = [...miniApps].sort((a, b) => a.order - b.order)
     setItems(sorted)
   }, [miniApps])
