@@ -21,24 +21,37 @@ export default function SpacePage({
   profile,
   feed,
 }: SpacePageArgs) {
-  const { editMode, setEditMode, setSidebarEditable, portalRef } =
-    useSidebarContext();
+  const {
+    editMode,
+    setEditMode,
+    setSidebarEditable,
+    portalRef,
+    mobilePreview,
+  } = useSidebarContext();
 
-  return (
-    <>
-      <Space
-        config={config}
-        saveConfig={saveConfig}
-        commitConfig={commitConfig}
-        resetConfig={resetConfig}
-        tabBar={tabBar}
-        profile={profile}
-        feed={feed}
-        setEditMode={setEditMode}
-        editMode={editMode}
-        setSidebarEditable={setSidebarEditable}
-        portalRef={portalRef}
-      />
-    </>
+  const spaceElement = (
+    <Space
+      config={config}
+      saveConfig={saveConfig}
+      commitConfig={commitConfig}
+      resetConfig={resetConfig}
+      tabBar={tabBar}
+      profile={profile}
+      feed={feed}
+      setEditMode={setEditMode}
+      editMode={editMode}
+      setSidebarEditable={setSidebarEditable}
+      portalRef={portalRef}
+    />
+  );
+
+  return mobilePreview ? (
+    <div className="flex items-center justify-center w-full h-full">
+      <div className="w-[390px] h-[844px] border overflow-hidden relative">
+        {spaceElement}
+      </div>
+    </div>
+  ) : (
+    <>{spaceElement}</>
   );
 }

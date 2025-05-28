@@ -18,7 +18,8 @@ import SpaceLoading from "./SpaceLoading";
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
-import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { cleanupLayout } from "@/common/lib/utils/gridCleanup";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -75,6 +76,7 @@ export default function Space({
 }: SpaceArgs) {
   // Use the useIsMobile hook instead of duplicating logic
   const isMobile = useIsMobile();
+  const { mobilePreview } = useSidebarContext();
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -282,7 +284,14 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      <CustomHTMLBackground
+        html={config.theme?.properties.backgroundHTML}
+        className={
+          mobilePreview
+            ? "absolute inset-0 pointer-events-none"
+            : undefined
+        }
+      />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
