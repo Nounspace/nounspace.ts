@@ -1,4 +1,5 @@
 import useWindowSize from './useWindowSize';
+import { useSidebarContext } from '@/common/components/organisms/Sidebar';
 
 // Mobile breakpoint (in pixels)
 export const MOBILE_BREAKPOINT = 768;
@@ -8,8 +9,9 @@ export const MOBILE_BREAKPOINT = 768;
  * @returns boolean indicating if the viewport is mobile-sized
  */
 export function useIsMobile(): boolean {
+  const { mobilePreview } = useSidebarContext();
   const { width } = useWindowSize();
-  return width ? width < MOBILE_BREAKPOINT : false;
+  return mobilePreview || (width ? width < MOBILE_BREAKPOINT : false);
 }
 
 export default useIsMobile;
