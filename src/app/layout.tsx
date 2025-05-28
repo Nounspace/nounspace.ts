@@ -73,10 +73,12 @@ const sidebarLayout = (page: React.ReactNode) => {
     <>
       <div className="min-h-screen max-w-screen h-screen w-screen">
         <div className="flex w-full h-full">
-          <div className="mx-auto transition-all duration-100 ease-out z-10">
+          <div className="shrink-0 transition-all duration-100 ease-out z-10">
             <Sidebar />
           </div>
-          {page}
+          <div className="flex-1">
+            {page}
+          </div>
         </div>
       </div>
     </>
