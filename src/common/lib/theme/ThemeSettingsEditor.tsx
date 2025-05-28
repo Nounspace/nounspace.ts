@@ -72,8 +72,10 @@ export function ThemeSettingsEditor({
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
-  const [tabValue, setTabValue] = useState("space");
-  const { setMobilePreview } = useMobilePreview();
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const [tabValue, setTabValue] = useState(
+    mobilePreview ? "mobile" : "space",
+  );
 
   useEffect(() => {
     setMobilePreview(tabValue === "mobile");
