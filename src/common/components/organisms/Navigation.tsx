@@ -203,7 +203,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
       <div className="pt-12 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
-            "flex flex-col h-full ml-auto transition-all duration-300 relative",
+            "flex flex-col h-full transition-all duration-300 relative",
             shrunk ? "w-[90px]" : "w-[270px]"
           )}
         >
