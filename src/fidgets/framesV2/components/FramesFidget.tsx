@@ -59,8 +59,8 @@ const frameConfig: FidgetProperties = {
     {
       fieldName: "title",
       displayName: "Title",
-      displayNameHint: "Optional title to display above the Frame.",
-      default: "Frame Action",
+      displayNameHint: "Optional title to display above the Mini App.",
+      default: "",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
