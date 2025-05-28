@@ -239,7 +239,7 @@ function TabBar({
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
-        {inEditMode ? (
+        {inEditMode && !isMobile ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
