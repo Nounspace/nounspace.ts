@@ -346,17 +346,27 @@ export default function Space({
     </div>
   );
 
+  if (showMobileContainer) {
+    return (
+      <div className="flex justify-center w-full h-full">
+        <div className="user-theme-background relative z-0 w-[390px] h-[844px] flex flex-col overflow-hidden">
+          <CustomHTMLBackground
+            html={config.theme?.properties.backgroundHTML}
+            className="absolute inset-0 pointer-events-none size-full"
+          />
+          <div className="w-full h-full overflow-y-auto transition-all duration-100 ease-out">
+            {mainContent}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
-        {showMobileContainer ? (
-          <div className="flex justify-center">
-            <div className="w-[390px] h-[844px]">{mainContent}</div>
-          </div>
-        ) : (
-          mainContent
-        )}
+        {mainContent}
       </div>
     </div>
   );
