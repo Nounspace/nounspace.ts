@@ -281,8 +281,11 @@ export default function Space({
   }
 
   return (
-    <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+    <div className="user-theme-background w-full h-full relative flex-col overflow-hidden">
+      <CustomHTMLBackground
+        html={config.theme?.properties.backgroundHTML}
+        className="absolute inset-0 pointer-events-none"
+      />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>

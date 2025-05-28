@@ -9,7 +9,7 @@ const NavigationSkeleton: React.FC = () => {
       aria-label="Sidebar Skeleton"
     >
       <div className="pt-12 pb-12 h-full md:block hidden">
-        <div className="flex flex-col h-full w-[270px] ml-auto">
+        <div className="flex flex-col h-full w-[270px]">
           <div className="flex flex-col text-lg font-medium pb-3 px-4 overflow-auto">
             <div className="flex-auto">
               <ul className="space-y-2">
