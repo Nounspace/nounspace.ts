@@ -42,17 +42,22 @@ export default function SpacePage({
       editMode={editMode}
       setSidebarEditable={setSidebarEditable}
       portalRef={portalRef}
+      mobilePreview={mobilePreview}
     />
   );
 
   return (
     <div
       className={
-        mobilePreview ? "flex items-center justify-center w-full h-full" : ""
+        mobilePreview ? "flex items-center justify-center w-full h-full" : "w-full h-full"
       }
     >
       <div
-        className={mobilePreview ? "w-[390px] h-[844px] border" : "w-full h-full"}
+        className={
+          mobilePreview
+            ? "relative w-[390px] h-[844px] border overflow-hidden"
+            : "w-full h-full"
+        }
       >
         {spaceElement}
       </div>

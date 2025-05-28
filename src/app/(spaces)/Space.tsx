@@ -58,6 +58,7 @@ type SpaceArgs = {
   editMode: boolean;
   setSidebarEditable: (v: boolean) => void;
   portalRef: React.RefObject<HTMLDivElement>;
+  mobilePreview?: boolean;
 };
 
 export default function Space({
@@ -72,9 +73,10 @@ export default function Space({
   editMode,
   setSidebarEditable,
   portalRef,
+  mobilePreview = false,
 }: SpaceArgs) {
-  // Use the useIsMobile hook instead of duplicating logic
-  const isMobile = useIsMobile();
+  // Use the useIsMobile hook with override for mobile preview
+  const isMobile = mobilePreview || useIsMobile();
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -282,7 +284,14 @@ export default function Space({
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      <CustomHTMLBackground
+        html={config.theme?.properties.backgroundHTML}
+        className={
+          mobilePreview
+            ? "absolute inset-0 pointer-events-none"
+            : "fixed size-full pointer-events-none"
+        }
+      />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
