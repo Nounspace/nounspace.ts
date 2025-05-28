@@ -323,7 +323,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                     onClick={turnOnEditMode}
                     size="icon"
                     variant="secondary"
-                    className="flex items-center justify-center w-12 h-12"
                   >
                     <div className="flex items-center p-1">
                       <FaPaintbrush />
@@ -334,7 +333,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   onClick={openCastModal}
                   variant="primary"
                   width="auto"
-                  className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
                   {shrunk && (
