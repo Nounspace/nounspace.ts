@@ -1,6 +1,7 @@
-import React, { ReactNode, Suspense } from "react";
+import React, { ReactNode } from "react";
 import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 
 export type SpacePageArgs = {
   config: SpaceConfig;
@@ -23,22 +24,33 @@ export default function SpacePage({
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
+  const { forceMobile } = useMobilePreview();
+
+  const spaceElement = (
+    <Space
+      config={config}
+      saveConfig={saveConfig}
+      commitConfig={commitConfig}
+      resetConfig={resetConfig}
+      tabBar={tabBar}
+      profile={profile}
+      feed={feed}
+      setEditMode={setEditMode}
+      editMode={editMode}
+      setSidebarEditable={setSidebarEditable}
+      portalRef={portalRef}
+    />
+  );
 
   return (
-    <>
-      <Space
-        config={config}
-        saveConfig={saveConfig}
-        commitConfig={commitConfig}
-        resetConfig={resetConfig}
-        tabBar={tabBar}
-        profile={profile}
-        feed={feed}
-        setEditMode={setEditMode}
-        editMode={editMode}
-        setSidebarEditable={setSidebarEditable}
-        portalRef={portalRef}
-      />
-    </>
+    editMode && forceMobile ? (
+      <div className="flex items-center justify-center w-full h-screen">
+        <div className="w-[390px] h-[844px] overflow-hidden">
+          {spaceElement}
+        </div>
+      </div>
+    ) : (
+      spaceElement
+    )
   );
 }
