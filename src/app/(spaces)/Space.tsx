@@ -1,5 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
+import { createPortal } from "react-dom";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -10,6 +11,7 @@ import {
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
@@ -341,22 +343,56 @@ export default function Space({
   );
 
   return (
-    <div className="user-theme-background w-full h-full relative flex-col">
-      <div className="w-full transition-all duration-100 ease-out">
-        {showMobileContainer ? (
-          <div className="flex justify-center">
-            <div className="w-[390px] h-[844px] relative overflow-hidden">
+    <>
+      {showMobileContainer && editMode && portalRef.current
+        ? createPortal(
+            <aside
+              id="logo-sidebar"
+              className="h-screen flex-row flex bg-white"
+              aria-label="Sidebar"
+            >
+              <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+                <ThemeSettingsEditor
+                  theme={config.theme}
+                  saveTheme={(newTheme) =>
+                    saveLocalConfig({ theme: newTheme })
+                  }
+                  saveExitEditMode={saveExitEditMode}
+                  cancelExitEditMode={cancelExitEditMode}
+                  fidgetInstanceDatums={config.fidgetInstanceDatums}
+                  saveFidgetInstanceDatums={(datums) =>
+                    saveLocalConfig({ fidgetInstanceDatums: datums })
+                  }
+                />
+              </div>
+            </aside>,
+            portalRef.current,
+          )
+        : null}
+      <div
+        className={`w-full h-full relative flex-col ${
+          showMobileContainer ? "" : "user-theme-background"
+        }`}
+      >
+        <div className="w-full transition-all duration-100 ease-out">
+          {showMobileContainer ? (
+            <div className="flex justify-center">
+              <div className="user-theme-background w-[390px] h-[844px] relative overflow-hidden">
+                <CustomHTMLBackground
+                  html={config.theme?.properties.backgroundHTML}
+                  className="absolute inset-0 pointer-events-none"
+                />
+                {mainContent}
+              </div>
+            </div>
+          ) : (
+            <>
               <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
               {mainContent}
-            </div>
-          </div>
-        ) : (
-          <>
-            <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-            {mainContent}
-          </>
-        )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
