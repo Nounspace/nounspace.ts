@@ -17,6 +17,8 @@ export type SidebarContextValue = {
   setEditMode: (value: boolean) => void;
   sidebarEditable: boolean;
   setSidebarEditable: (value: boolean) => void;
+  mobilePreview: boolean;
+  setMobilePreview: (value: boolean) => void;
   portalRef: React.RefObject<HTMLDivElement>;
 };
 
@@ -29,6 +31,7 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
 }) => {
   const [editMode, setEditMode] = useState(false);
   const [sidebarEditable, setSidebarEditable] = useState(false);
+  const [mobilePreview, setMobilePreview] = useState(false);
   const portalRef = useRef<HTMLDivElement>(null);
 
   const value = useMemo(
@@ -37,9 +40,11 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
       setEditMode,
       sidebarEditable,
       setSidebarEditable,
+      mobilePreview,
+      setMobilePreview,
       portalRef,
     }),
-    [editMode, sidebarEditable, portalRef],
+    [editMode, sidebarEditable, mobilePreview, portalRef],
   );
 
   return (
