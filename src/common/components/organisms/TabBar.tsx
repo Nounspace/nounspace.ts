@@ -12,6 +12,7 @@ import TokenDataHeader from "./TokenDataHeader";
 import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 
 interface TabBarProps {
@@ -63,6 +64,7 @@ function TabBar({
   pageType
 }: TabBarProps) {
   const isMobile = useIsMobile();
+  const { mobilePreview } = useMobilePreview();
 
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
@@ -239,7 +241,7 @@ function TabBar({
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
-        {inEditMode ? (
+        {inEditMode && !mobilePreview ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
