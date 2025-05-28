@@ -1,4 +1,5 @@
-import useWindowSize from './useWindowSize';
+import useWindowSize from "./useWindowSize";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 
 // Mobile breakpoint (in pixels)
 export const MOBILE_BREAKPOINT = 768;
@@ -9,7 +10,8 @@ export const MOBILE_BREAKPOINT = 768;
  */
 export function useIsMobile(): boolean {
   const { width } = useWindowSize();
-  return width ? width < MOBILE_BREAKPOINT : false;
+  const { forceMobile } = useMobilePreview();
+  return forceMobile || (width ? width < MOBILE_BREAKPOINT : false);
 }
 
 export default useIsMobile;
