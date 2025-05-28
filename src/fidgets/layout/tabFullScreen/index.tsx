@@ -159,14 +159,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Main content area with padding-bottom to make space for fixed tabs */}
-      <div 
-        className="w-full h-full overflow-hidden" 
-        style={{ 
-          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+      {/* Main content area with fixed height to keep tab bar visible */}
+      <div
+        className="w-full h-full overflow-hidden"
+        style={{
+          height:
+            processedFidgetIds.length > 1
+              ? `calc(100% - ${TAB_HEIGHT}px)`
+              : '100%',
         }}
       >
-        <Tabs 
+        <Tabs
           value={selectedTab}
           className="w-full h-full"
           onValueChange={setSelectedTab}
@@ -174,10 +177,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           <div className="relative z-40 h-full">
             {/* Special case for consolidated media tab */}
             {isMobile && mediaFidgetIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-media" 
+              <TabsContent
+                key="consolidated-media"
                 value="consolidated-media"
                 className="h-full w-full block"
+                forceMount
                 style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
@@ -199,10 +203,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
             {/* Special case for consolidated pinned tab */}
             {isMobile && pinnedCastIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-pinned" 
+              <TabsContent
+                key="consolidated-pinned"
                 value="consolidated-pinned"
                 className="h-full w-full block"
+                forceMount
                 style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
@@ -237,10 +242,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 
                 // Only render the content for the selected tab
                 return (
-                  <TabsContent 
-                    key={fidgetId} 
+                  <TabsContent
+                    key={fidgetId}
                     value={fidgetId}
                     className="h-full w-full block"
+                    forceMount
                     style={{ visibility: 'visible', display: 'block' }}
                   >
                     <FidgetContent
