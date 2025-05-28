@@ -17,6 +17,7 @@ import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 
@@ -74,7 +75,10 @@ export default function Space({
   portalRef,
 }: SpaceArgs) {
   // Use the useIsMobile hook instead of duplicating logic
-  const isMobile = useIsMobile();
+  const viewportMobile = useIsMobile();
+  const { mobilePreview } = useMobilePreview();
+  const isMobile = viewportMobile || mobilePreview;
+  const showMobileContainer = mobilePreview && !viewportMobile;
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -253,7 +257,7 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !isMobile && editMode, // No edit mode on mobile
+      inEditMode: !viewportMobile && editMode, // No edit mode on mobile screens
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -270,6 +274,7 @@ export default function Space({
     config.tabNames,
     config.fid,
     isMobile,
+    viewportMobile,
     editMode,
     portalRef,
     profile,
@@ -280,63 +285,77 @@ export default function Space({
     console.error("LayoutFidget is undefined");
   }
 
+  const mainContent = (
+    <div className="flex flex-col h-full">
+      <div style={{ position: "fixed", zIndex: 9999 }}>
+        <InfoToast />
+      </div>
+      {!isUndefined(profile) ? (
+        <div className="z-50 bg-white md:h-40">{profile}</div>
+      ) : null}
+
+      <div className="relative">
+        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+        {isMobile && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
+            }}
+          />
+        )}
+      </div>
+
+      <div className={isMobile ? "w-full h-full" : "flex h-full"}>
+        {!isUndefined(feed) && !isMobile ? (
+          <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+        ) : null}
+
+        <div className={isMobile ? "w-full h-full" : "grow"}>
+          <Suspense
+            fallback={
+              <SpaceLoading
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+              />
+            }
+          >
+            {LayoutFidget ? (
+              <LayoutFidget
+                layoutConfig={{ ...layoutConfig }}
+                {...layoutFidgetProps}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <SpaceLoading
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
+                />
+              </div>
+            )}
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
-        <div className="flex flex-col h-full">
-          <div style={{ position: "fixed", zIndex: 9999 }}>
-            <InfoToast />
-          </div>
-          {!isUndefined(profile) ? (
-            <div className="z-50 bg-white md:h-40">{profile}</div>
-          ) : null}
-
-          <div className="relative">
-            <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
-            {/* Gradient overlay for tabs on mobile */}
-            {isMobile && (
-              <div
-                className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
-                }}
-              />
-            )}
-          </div>
-
-          <div className={isMobile ? "w-full h-full" : "flex h-full"}>
-            {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
-            ) : null}
-
-            <div className={isMobile ? "w-full h-full" : "grow"}>
-              <Suspense
-                fallback={
-                  <SpaceLoading
-                    hasProfile={!isNil(profile)}
-                    hasFeed={!isNil(feed)}
-                  />
-                }
-              >
-                {LayoutFidget ? (
-                  <LayoutFidget
-                    layoutConfig={{ ...layoutConfig }}
-                    {...layoutFidgetProps}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <SpaceLoading
-                      hasProfile={!isNil(profile)}
-                      hasFeed={!isNil(feed)}
-                    />
-                  </div>
-                )}
-              </Suspense>
+        {showMobileContainer ? (
+          <div className="flex justify-center">
+            <div className="w-[390px] h-[844px] relative overflow-hidden">
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
             </div>
           </div>
-        </div>
+        ) : (
+          <>
+            <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+            {mainContent}
+          </>
+        )}
       </div>
     </div>
   );
