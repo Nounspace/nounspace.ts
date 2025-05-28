@@ -2,6 +2,9 @@ import React, { useState, useMemo, useEffect } from "react";
 import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import { MOBILE_BREAKPOINT } from "@/common/lib/hooks/useIsMobile";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { usePathname } from "next/navigation";
 import { 
   FidgetBundle, 
@@ -44,6 +47,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   tabNames,
 }) => {
   const isMobile = useIsMobile();
+  const { mobilePreview } = useMobilePreview();
+  const { width } = useWindowSize();
+  const useAbsoluteNav = mobilePreview && width ? width >= MOBILE_BREAKPOINT : false;
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
   const isHomePath = pathname?.startsWith('/home');
@@ -255,8 +261,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
-            <div 
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white"
+            <div
+              className={`${useAbsoluteNav ? 'absolute' : 'fixed'} bottom-0 left-0 right-0 z-50 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation 

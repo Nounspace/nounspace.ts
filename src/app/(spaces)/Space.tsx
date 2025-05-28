@@ -1,5 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
+import { createPortal } from "react-dom";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -17,8 +18,12 @@ import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { MOBILE_BREAKPOINT } from "@/common/lib/hooks/useIsMobile";
+import useWindowSize from "@/common/lib/hooks/useWindowSize";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -74,7 +79,11 @@ export default function Space({
   portalRef,
 }: SpaceArgs) {
   // Use the useIsMobile hook instead of duplicating logic
-  const isMobile = useIsMobile();
+  const isMobileLayout = useIsMobile();
+  const { mobilePreview } = useMobilePreview();
+  const { width } = useWindowSize();
+  const isViewportMobile = width ? width < MOBILE_BREAKPOINT : false;
+  const showMobileContainer = mobilePreview && !isViewportMobile;
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -208,7 +217,7 @@ export default function Space({
 
   // Memoize the LayoutFidget component selection based on mobile state
   const LayoutFidget = useMemo(() => {
-    if (isMobile) {
+    if (isMobileLayout) {
       // Use TabFullScreen for mobile
       return LayoutFidgets["tabFullScreen"];
     } else {
@@ -220,11 +229,11 @@ export default function Space({
           : "grid";
       return LayoutFidgets[layoutFidgetKey];
     }
-  }, [isMobile, config?.layoutDetails?.layoutFidget]);
+  }, [isMobileLayout, config?.layoutDetails?.layoutFidget]);
 
   // Memoize the layoutConfig to prevent unnecessary re-renders
   const layoutConfig = useMemo(() => {
-    if (isMobile) {
+    if (isMobileLayout) {
       // Extract fidget IDs from the current config to use in TabFullScreen
       const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
 
@@ -242,7 +251,7 @@ export default function Space({
       );
     }
   }, [
-    isMobile,
+    isMobileLayout,
     config?.layoutDetails?.layoutConfig,
     config?.fidgetInstanceDatums,
   ]);
@@ -253,12 +262,12 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !isMobile && editMode, // No edit mode on mobile
+      inEditMode: !isViewportMobile && editMode,
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
       saveConfig: saveLocalConfig,
-      hasProfile: !isMobile && !isNil(profile),
+      hasProfile: !isViewportMobile && !isNil(profile),
       hasFeed: !isNil(feed),
       tabNames: config.tabNames,
       fid: config.fid,
@@ -269,75 +278,104 @@ export default function Space({
     config.fidgetTrayContents,
     config.tabNames,
     config.fid,
-    isMobile,
+    isViewportMobile,
     editMode,
     portalRef,
     profile,
     feed,
   ]);
 
+  const mobileEditorPortal = useMemo(() => {
+    if (mobilePreview && editMode && portalRef.current) {
+      return createPortal(
+        <ThemeSettingsEditor
+          theme={config.theme}
+          saveTheme={(t) => saveLocalConfig({ theme: t })}
+          saveExitEditMode={saveExitEditMode}
+          cancelExitEditMode={cancelExitEditMode}
+          fidgetInstanceDatums={config.fidgetInstanceDatums}
+          saveFidgetInstanceDatums={(d) =>
+            saveLocalConfig({ fidgetInstanceDatums: d })
+          }
+        />,
+        portalRef.current,
+      );
+    }
+    return null;
+  }, [mobilePreview, editMode, portalRef, config.theme, config.fidgetInstanceDatums]);
+
   if (!LayoutFidget) {
     console.error("LayoutFidget is undefined");
   }
+
+  const mainContent = (
+    <div className="flex flex-col h-full">
+      <div style={{ position: "fixed", zIndex: 9999 }}>
+        <InfoToast />
+      </div>
+      {!isUndefined(profile) ? (
+        <div className="z-50 bg-white md:h-40">{profile}</div>
+      ) : null}
+
+      <div className="relative">
+        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+        {isMobileLayout && (
+          <div
+            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
+            }}
+          />
+        )}
+      </div>
+
+      <div className={isMobileLayout ? "w-full h-full" : "flex h-full"}>
+        {!isUndefined(feed) && !isMobileLayout ? (
+          <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+        ) : null}
+
+        <div className={isMobileLayout ? "w-full h-full" : "grow"}>
+          <Suspense
+            fallback={
+              <SpaceLoading
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+              />
+            }
+          >
+            {LayoutFidget ? (
+              <LayoutFidget
+                layoutConfig={{ ...layoutConfig }}
+                {...layoutFidgetProps}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <SpaceLoading
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
+                />
+              </div>
+            )}
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full transition-all duration-100 ease-out">
-        <div className="flex flex-col h-full">
-          <div style={{ position: "fixed", zIndex: 9999 }}>
-            <InfoToast />
+        {showMobileContainer ? (
+          <div className="flex justify-center">
+            <div className="relative w-[390px] h-[844px]">{mainContent}</div>
           </div>
-          {!isUndefined(profile) ? (
-            <div className="z-50 bg-white md:h-40">{profile}</div>
-          ) : null}
-
-          <div className="relative">
-            <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
-            {/* Gradient overlay for tabs on mobile */}
-            {isMobile && (
-              <div
-                className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
-                }}
-              />
-            )}
-          </div>
-
-          <div className={isMobile ? "w-full h-full" : "flex h-full"}>
-            {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
-            ) : null}
-
-            <div className={isMobile ? "w-full h-full" : "grow"}>
-              <Suspense
-                fallback={
-                  <SpaceLoading
-                    hasProfile={!isNil(profile)}
-                    hasFeed={!isNil(feed)}
-                  />
-                }
-              >
-                {LayoutFidget ? (
-                  <LayoutFidget
-                    layoutConfig={{ ...layoutConfig }}
-                    {...layoutFidgetProps}
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <SpaceLoading
-                      hasProfile={!isNil(profile)}
-                      hasFeed={!isNil(feed)}
-                    />
-                  </div>
-                )}
-              </Suspense>
-            </div>
-          </div>
-        </div>
+        ) : (
+          mainContent
+        )}
       </div>
+      {mobileEditorPortal}
     </div>
   );
 }
