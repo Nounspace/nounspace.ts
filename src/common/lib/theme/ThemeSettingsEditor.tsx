@@ -41,6 +41,7 @@ import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useRef, useState, useMemo } from "react";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
@@ -72,6 +73,12 @@ export function ThemeSettingsEditor({
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("space");
+  const { setForceMobile } = useMobilePreview();
+
+  useEffect(() => {
+    setForceMobile(tabValue === "mobile");
+    return () => setForceMobile(false);
+  }, [tabValue, setForceMobile]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
     return Object.values(fidgetInstanceDatums).map((d, i) => {
