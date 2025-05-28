@@ -17,6 +17,7 @@ import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 
@@ -280,9 +281,14 @@ export default function Space({
     console.error("LayoutFidget is undefined");
   }
 
+  const { mobilePreview } = useSidebarContext();
+
   return (
     <div className="user-theme-background w-full h-full relative flex-col">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+      <CustomHTMLBackground
+        html={config.theme?.properties.backgroundHTML}
+        className={mobilePreview ? "absolute inset-0 pointer-events-none" : undefined}
+      />
       <div className="w-full transition-all duration-100 ease-out">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
