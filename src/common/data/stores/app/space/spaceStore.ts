@@ -94,6 +94,7 @@ interface CachedSpace {
   orderUpdatedAt?: string;
   contractAddress?: string | null;
   network?: string | null;
+  proposalId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -176,6 +177,7 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -972,7 +974,7 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (proposalId, initialConfig) => {
     try {
       // Check if a space already exists for this proposal
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -997,7 +999,7 @@ export const createSpaceStoreFunc = (
       // Register a new space for the proposal
       const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `Nouns Prop ${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
       };
@@ -1014,13 +1016,21 @@ export const createSpaceStoreFunc = (
 
       // Initialize the space with proper structure
       set((draft) => {
-        draft.space.editableSpaces[newSpaceId] = `Proposal-${proposalId}`;
+        draft.space.editableSpaces[newSpaceId] = `Nouns Prop ${proposalId}`;
         draft.space.localSpaces[newSpaceId] = {
           id: newSpaceId,
           updatedAt: moment().toISOString(),
           tabs: {},
           order: [],
           changedNames: {},
+          proposalId,
+        };
+        draft.space.remoteSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          proposalId,
         };
       });
 
@@ -1028,7 +1038,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Overview",
-        INITIAL_SPACE_CONFIG_EMPTY
+        initialConfig ?? INITIAL_SPACE_CONFIG_EMPTY
       );
 
 

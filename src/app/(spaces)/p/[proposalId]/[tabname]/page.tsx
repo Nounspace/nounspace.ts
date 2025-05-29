@@ -9,11 +9,13 @@ import { loadProposalData } from "../utils";
 
 export default async function WrapperProposalPrimarySpace({ params }) {
   const proposalId = params?.proposalId as string;
+  const tabName = params?.tabname as string | undefined;
   const proposalData = await loadProposalData(proposalId || "0");
 
   const props = {
     ...proposalData,
     proposalId,
+    tabName,
   };
 
   return (
