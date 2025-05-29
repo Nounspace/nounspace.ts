@@ -20,7 +20,7 @@ import { Channel } from "../types";
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;
   onSelect: (value: Channel) => void;
-  value: Channel;
+  value: Channel | null;
   initialChannels?: Channel[];
 };
 
@@ -62,14 +62,16 @@ export function ChannelPicker(props: Props) {
           aria-expanded={open}
           className="flex items-center px-4 py-2"
         >
-          <img
-            src={value.image_url ?? ""}
-            alt={value.name}
-            width={24}
-            height={24}
-            className="mr-2 -ml-2"
-          />
-          {value.name}
+          {value?.image_url && (
+            <img
+              src={value.image_url}
+              alt={value?.name ?? ""}
+              width={24}
+              height={24}
+              className="mr-2 -ml-2"
+            />
+          )}
+          {value?.name ?? "Select Channel"}
           <CaretDownIcon className="-mr-2 ml-2" />
         </Button>
       </PopoverTrigger>
