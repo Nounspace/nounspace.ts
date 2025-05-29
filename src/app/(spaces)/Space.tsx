@@ -378,6 +378,14 @@ export default function Space({
           showMobileContainer ? "" : "user-theme-background"
         }`}
       >
+        {showMobileContainer && (
+          <Image
+            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
+            alt="Mobile preview background"
+            fill
+            className="object-cover pointer-events-none select-none -z-10"
+          />
+        )}
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
