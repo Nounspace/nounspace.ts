@@ -5,7 +5,8 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Mention from "@tiptap/extension-mention";
 import Link from "@tiptap/extension-link";
 import suggestion from "@tiptap/suggestion";
-import { Channel, FarcasterEmbed } from "./types";
+import { Channel } from "./types";
+import { FarcasterEmbed } from "./utils";
 
 interface UseTiptapEditorProps {
   onSubmit: () => Promise<boolean>;
