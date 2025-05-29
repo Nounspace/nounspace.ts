@@ -104,7 +104,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
         <span style={{ fontSize: "28px" }}>
           Price: {formattedPrice}{" "}
           <span style={{ color: priceChangeColor }}>
-            ({formattedPriceChange}% 24h)
+            {formattedPriceChange}%
           </span>
         </span>
         <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
