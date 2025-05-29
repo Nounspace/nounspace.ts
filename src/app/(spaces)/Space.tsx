@@ -79,7 +79,7 @@ export default function Space({
 }: SpaceArgs) {
   // Use the useIsMobile hook instead of duplicating logic
   const viewportMobile = useIsMobile();
-  const { mobilePreview } = useMobilePreview();
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
   const isMobile = viewportMobile || mobilePreview;
   const showMobileContainer = mobilePreview && !viewportMobile;
 
@@ -188,11 +188,13 @@ export default function Space({
   function saveExitEditMode() {
     commitConfig();
     setEditMode(false);
+    setMobilePreview(false);
   }
 
   function cancelExitEditMode() {
     resetConfig();
     setEditMode(false);
+    setMobilePreview(false);
   }
 
   async function saveLocalConfig({
