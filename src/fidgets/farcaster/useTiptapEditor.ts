@@ -4,7 +4,6 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import Mention from "@tiptap/extension-mention";
 import Link from "@tiptap/extension-link";
-import suggestion from "@tiptap/suggestion";
 import { Channel } from "./types";
 import { FarcasterEmbed } from "./utils";
 
@@ -22,9 +21,10 @@ export function useTiptapEditor({ onSubmit }: UseTiptapEditorProps) {
       Link,
       Placeholder,
       Mention.configure({
-        suggestion: suggestion({
+        // Provide SuggestionOptions directly rather than the plugin instance
+        suggestion: {
           items: () => [],
-        }),
+        },
       }),
     ],
   });
