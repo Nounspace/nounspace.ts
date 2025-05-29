@@ -7,7 +7,7 @@ export default function LoadingSidebar() {
       className="h-full flex-row flex bg-white transition-transform -translate-x-full sm:translate-x-0"
       aria-label="Sidebar"
     >
-      <div className="flex-1 w-[270px] h-full pt-7 flex-col flex px-4 py-4 overflow-y-hidden border-r">
+      <div className="flex-1 w-[270px] h-full pt-6 flex-col flex px-4 py-4 overflow-y-hidden border-r">
         <div className="h-full flex-col">
           <div className="text-lg font-medium">
             <ul className="space-y-2"></ul>
