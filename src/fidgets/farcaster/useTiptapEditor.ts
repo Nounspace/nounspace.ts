@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { useEditor as useTiptap } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import Link from "@tiptap/extension-link";
-import Mention from "@tiptap/extension-mention";
 import { Channel, FarcasterEmbed } from "./types";
 
 interface UseTiptapEditorProps {
@@ -14,7 +12,7 @@ export function useTiptapEditor({ onSubmit }: UseTiptapEditorProps) {
   const [channel, setChannel] = useState<Channel | null>(null);
 
   const editor = useTiptap({
-    extensions: [StarterKit, Link, Mention],
+    extensions: [StarterKit],
   });
 
   const getText = () => editor?.getText() ?? "";
