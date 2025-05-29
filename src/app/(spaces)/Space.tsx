@@ -20,6 +20,7 @@ import SpaceLoading from "./SpaceLoading";
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import Image from "next/image";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 import { TAB_HEIGHT } from "@/constants/layout";
@@ -380,15 +381,26 @@ export default function Space({
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
-              <div
-                className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
-                style={{ paddingBottom: `${TAB_HEIGHT}px` }}
-              >
-                <CustomHTMLBackground
-                  html={config.theme?.properties.backgroundHTML}
-                  className="absolute inset-0 pointer-events-none"
+              <div className="relative">
+                <Image
+                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
+                  alt="Phone mockup"
+                  width={430}
+                  height={930}
+                  className="pointer-events-none select-none"
                 />
-                {mainContent}
+                <div className="absolute top-[44px] left-[20px]">
+                  <div
+                    className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
+                    style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+                  >
+                    <CustomHTMLBackground
+                      html={config.theme?.properties.backgroundHTML}
+                      className="absolute inset-0 pointer-events-none"
+                    />
+                    {mainContent}
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
