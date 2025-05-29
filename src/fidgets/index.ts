@@ -26,6 +26,7 @@ export const CompleteFidgets = {
   //
   example:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Example : undefined,
+  FramesV2: FramesFidget,
   profile:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
@@ -49,7 +50,6 @@ export const CompleteFidgets = {
   Market: marketData,
   Portfolio: Portfolio,
   Chat: chat,
-  FramesV2: FramesFidget,
 };
 
 export const LayoutFidgets = {

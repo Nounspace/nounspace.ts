@@ -21,6 +21,11 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
    On Mac OS, for example:
    ```bash
    brew install supabase/tap/supabase
+   
+   On Linux:
+   install docker
+   install supabase
+   npx supabase init
 4. Install dependencies
    ```bash
    yarn install
@@ -36,10 +41,19 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
   h. launch local copy of Supabase with `supabase start` (in the root directory of this repo), use the info provided -> <br>
 `API URL`:`NEXT_PUBLIC_SUPABASE_URL` + `anon key`:`NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-8. Run the test suite
+8. Run the setup script
+```bash
+./setup.sh
+```
+The script will attempt to start Supabase automatically if Docker is running; otherwise it will skip this step.
+
+9. Run the test suite
    ```bash
    yarn test
    ```
+
+9. cp .env.development.local .env.local
+10. yarn build
 
 ## Contributing and making Fidgets
 

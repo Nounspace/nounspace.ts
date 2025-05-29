@@ -8,6 +8,7 @@ interface FrameRendererProps {
   frameUrl: string;
   isConnected?: boolean;
   fid?: number | null;
+  collapsed?: boolean;
 }
 
 interface FrameMetadata {
@@ -24,6 +25,7 @@ export default function FrameRenderer({
   frameUrl,
   isConnected = false,
   fid = null,
+  collapsed = false,
 }: FrameRendererProps) {
   const [frameData, setFrameData] = useState<FrameMetadata>({
     image: null,
@@ -36,7 +38,7 @@ export default function FrameRenderer({
   const [inputValue, setInputValue] = useState("");
   const [imgError, setImgError] = useState(false);
 
-  // Modal state for button actions
+  // Modal state for button actions (only used when collapsed)
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeButton, setActiveButton] = useState<number | null>(null);
 
@@ -206,6 +208,19 @@ export default function FrameRenderer({
         }}
       >
         <p>Error: {frameData.error}</p>
+      </div>
+    );
+  }
+
+  if (!collapsed && frameData.postUrl) {
+    return (
+      <div style={{ width: "100%", height: "100%" }}>
+        <iframe
+          src={frameData.postUrl}
+          title={frameData.title || "Frame"}
+          style={{ width: "100%", height: "100%", border: "none" }}
+          className="size-full"
+        />
       </div>
     );
   }
