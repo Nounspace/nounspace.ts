@@ -311,9 +311,14 @@ export const createSpaceStoreFunc = (
 
     console.log("NewConfig", config);
     let localCopy;
+    const newTimestamp = moment().toISOString();
+
     // If the tab doesn't exist yet, use the new config directly
     if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
-      localCopy = cloneDeep(config);
+      localCopy = {
+        ...cloneDeep(config),
+        timestamp: newTimestamp,
+      };
     } else {
       // Otherwise merge with existing config
       localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
@@ -324,6 +329,7 @@ export const createSpaceStoreFunc = (
           return srcValue;
         }
       });
+      localCopy.timestamp = newTimestamp;
       console.log("localCopy", localCopy);
     }
 
@@ -335,8 +341,8 @@ export const createSpaceStoreFunc = (
       } else {
         draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
       }
-      const newTimestamp = moment().toISOString();
-      draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+      const newSpaceTimestamp = moment().toISOString();
+      draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: debounce(
