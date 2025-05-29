@@ -380,15 +380,26 @@ export default function Space({
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
-              <div
-                className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
-                style={{ paddingBottom: `${TAB_HEIGHT}px` }}
-              >
-                <CustomHTMLBackground
-                  html={config.theme?.properties.backgroundHTML}
-                  className="absolute inset-0 pointer-events-none"
+              <div className="relative">
+                <img
+                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
+                  alt="Phone mockup"
+                  width={430}
+                  height={930}
+                  className="pointer-events-none select-none"
                 />
-                {mainContent}
+                <div className="absolute top-[44px] left-[20px]">
+                  <div
+                    className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
+                    style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+                  >
+                    <CustomHTMLBackground
+                      html={config.theme?.properties.backgroundHTML}
+                      className="absolute inset-0 pointer-events-none"
+                    />
+                    {mainContent}
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
