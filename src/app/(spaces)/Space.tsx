@@ -22,6 +22,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { TAB_HEIGHT } from "@/constants/layout";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -377,7 +378,10 @@ export default function Space({
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
-              <div className="user-theme-background w-[390px] h-[844px] relative overflow-hidden">
+              <div
+                className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
+                style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+              >
                 <CustomHTMLBackground
                   html={config.theme?.properties.backgroundHTML}
                   className="absolute inset-0 pointer-events-none"
