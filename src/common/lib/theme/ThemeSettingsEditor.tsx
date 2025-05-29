@@ -51,6 +51,7 @@ import { CompleteFidgets } from "@/fidgets";
 import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
 import MobileSettings from "@/common/components/organisms/MobileSettings";
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -71,7 +72,14 @@ export function ThemeSettingsEditor({
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
-  const [tabValue, setTabValue] = useState("space");
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const [tabValue, setTabValue] = useState(
+    mobilePreview ? "mobile" : "space",
+  );
+
+  useEffect(() => {
+    setMobilePreview(tabValue === "mobile");
+  }, [tabValue, setMobilePreview]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
     return Object.values(fidgetInstanceDatums).map((d, i) => {

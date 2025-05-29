@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { usePathname } from "next/navigation";
 import { 
   FidgetBundle, 
@@ -43,7 +44,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   saveConfig,
   tabNames,
 }) => {
-  const isMobile = useIsMobile();
+  const viewportMobile = useIsMobile();
+  const { mobilePreview } = useMobilePreview();
+  const isMobile = viewportMobile || mobilePreview;
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
   const isHomePath = pathname?.startsWith('/home');
@@ -156,14 +159,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Main content area with padding-bottom to make space for fixed tabs */}
-      <div 
-        className="w-full h-full overflow-hidden" 
-        style={{ 
-          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+      {/* Main content area with fixed height to keep tab bar visible */}
+      <div
+        className="w-full h-full overflow-hidden"
+        style={{
+          height:
+            processedFidgetIds.length > 1
+              ? `calc(100% - ${TAB_HEIGHT}px)`
+              : '100%',
         }}
       >
-        <Tabs 
+        <Tabs
           value={selectedTab}
           className="w-full h-full"
           onValueChange={setSelectedTab}
@@ -171,11 +177,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           <div className="relative z-40 h-full">
             {/* Special case for consolidated media tab */}
             {isMobile && mediaFidgetIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-media" 
+              <TabsContent
+                key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full block"
-                style={{ visibility: 'visible', display: 'block' }}
+                className="h-full w-full data-[state=inactive]:hidden"
+                forceMount
               >
                 <div
                   className="h-full w-full"
@@ -196,11 +202,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
             {/* Special case for consolidated pinned tab */}
             {isMobile && pinnedCastIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-pinned" 
+              <TabsContent
+                key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full block"
-                style={{ visibility: 'visible', display: 'block' }}
+                className="h-full w-full data-[state=inactive]:hidden"
+                forceMount
               >
                 <div
                   className="h-full w-full"
@@ -234,11 +240,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 
                 // Only render the content for the selected tab
                 return (
-                  <TabsContent 
-                    key={fidgetId} 
+                  <TabsContent
+                    key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
-                    style={{ visibility: 'visible', display: 'block' }}
+                    className="h-full w-full data-[state=inactive]:hidden"
+                    forceMount
                   >
                     <FidgetContent
                       fidgetId={fidgetId}
@@ -255,11 +261,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
-            <div 
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white"
+            <div
+              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-50 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
-              <TabNavigation 
+              <TabNavigation
                 processedFidgetIds={orderedFidgetIds}
                 selectedTab={selectedTab}
                 fidgetInstanceDatums={fidgetInstanceDatums}
