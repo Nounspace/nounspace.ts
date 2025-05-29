@@ -103,8 +103,3 @@ dist/
 
 # Visual Studio settings
 .vscode
-# Patch files
-*.patch
-*.diff
-*diff.txt
-*patch.txt
