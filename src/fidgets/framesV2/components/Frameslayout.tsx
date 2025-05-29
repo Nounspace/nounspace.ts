@@ -14,6 +14,7 @@ const Frameslayout: React.FC<FrameslayoutProps> = ({
   title,
   headingFont,
 }) => {
+
   if (!frameUrl || !frameUrl.startsWith("http")) {
     return null;
   }

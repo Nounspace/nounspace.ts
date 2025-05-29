@@ -25,8 +25,8 @@ export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
 );
 
 const frameConfig: FidgetProperties = {
-  fidgetName: "FramesV2",
-  mobileFidgetName: "Frame",
+  fidgetName: "Farcaster Mini App",
+  mobileFidgetName: "Mini App",
   icon: 0x1f310, // 🌐
   mobileIcon: <BsCloud size={24} />,
   mobileIconSelected: <BsCloudFill size={24} />,
@@ -69,6 +69,7 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
+
     ...defaultStyleFields,
     {
       fieldName: "headingFont",

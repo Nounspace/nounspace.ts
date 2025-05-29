@@ -501,7 +501,8 @@ const BackgroundGenerator = ({
       ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
       : internalBackgroundHTML;
 
-    console.log(`inputText: ${inputText}`);
+    if (process.env.NODE_ENV !== "production")
+      console.log(`inputText: ${inputText}`);
       
     handleGenerateBackground(inputText);
   };

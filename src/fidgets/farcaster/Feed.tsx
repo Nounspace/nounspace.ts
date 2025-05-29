@@ -40,7 +40,7 @@ export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
   users?: string;
-  username?: string; 
+  username?: string;
   channel?: string;
   keyword?: string;
   selectPlatform: Platform;
@@ -453,8 +453,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
     if (isError) {
       return (
-        <div className="p-4 text-center">
-          <p>Error loading feed. Please try again.</p>
+        <div className="h-full w-full flex justify-center items-center">
+          <Loading />
         </div>
       );
     }
@@ -465,7 +465,20 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         : data.pages.some(page => page.casts?.length > 0)
     );
 
+    const filtroInformado = (
+      (filterType === FilterType.Users && (effectiveFids || username)) ||
+      (filterType === FilterType.Channel && channel) ||
+      (filterType === FilterType.Keyword && keyword)
+    );
+
     if (!hasData) {
+      if (!filtroInformado) {
+        return (
+          <div className="h-full w-full flex justify-center items-center">
+            <Loading />
+          </div>
+        );
+      }
       return (
         <div className="p-4 text-center">
           <p>No content found with these filter settings</p>
@@ -528,11 +541,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
               </div>
             ) : hasNextPage ? (
               "Fetch More Data"
-            ) : (
-              <div className="h-full w-full flex flex-col justify-center items-center">
-                <Loading />
-              </div>
-            )}
+            ) : null}
           </div>
         )}
       </>
