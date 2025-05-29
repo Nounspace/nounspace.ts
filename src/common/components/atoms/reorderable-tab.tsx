@@ -45,7 +45,11 @@ export const Tab = ({
       onPointerDown={onClick}
       dragListener={draggable}
     >
-      <Link href={getSpacePageUrl(tabName)}>
+      <Link
+        href={getSpacePageUrl(tabName)}
+        draggable={false}
+        onDragStart={(e) => e.preventDefault()}
+      >
         <div
           className={`static flex md:p-2 items-center transition-colors duration-300 group 
             ${

@@ -116,13 +116,11 @@ export const createHomeBaseTabStoreFunc = (
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
   updateTabOrdering(newOrdering, commit = false) {
-    // console.log('Updating tab ordering:', {
-    //   newOrder: newOrdering,
-    //   commit
-    // });
-    
+    const filtered = newOrdering.filter((name, index) => {
+      return name !== "Feed" && newOrdering.indexOf(name) === index;
+    });
     set((draft) => {
-      draft.homebase.tabOrdering.local = newOrdering;
+      draft.homebase.tabOrdering.local = filtered;
     }, "updateTabOrdering");
     if (commit) {
       get().homebase.commitTabOrderingToDatabase();
@@ -139,7 +137,10 @@ export const createHomeBaseTabStoreFunc = (
         `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}`,
       );
     try {
-      const { data } = await axios.get<Blob>(publicUrl, {
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
+      const { data } = await axios.get<Blob>(urlWithParam, {
         responseType: "blob",
         headers: {
           "Cache-Control": "no-cache",
@@ -170,7 +171,11 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   commitTabOrderingToDatabase: debounce(async () => {
-    const localCopy = cloneDeep(get().homebase.tabOrdering.local);
+    const localCopy = cloneDeep(
+      get().homebase.tabOrdering.local.filter((name, i, arr) =>
+        name !== "Feed" && arr.indexOf(name) === i,
+      ),
+    );
     if (localCopy) {
       // console.log('Committing tab ordering to database:', {
       //   tabCount: localCopy.length,
