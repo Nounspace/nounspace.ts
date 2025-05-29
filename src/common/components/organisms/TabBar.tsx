@@ -200,7 +200,7 @@ function TabBar({
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
+        <div className={`flex w-full flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll`}>
           {tabList && (
             <Reorder.Group
               as="ol"
