@@ -21,6 +21,11 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
    On Mac OS, for example:
    ```bash
    brew install supabase/tap/supabase
+   
+   On Linux:
+   install docker
+   install supabase
+   npx supabase init
 4. Install dependencies
    ```bash
    yarn install
@@ -40,6 +45,9 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
    ```bash
    yarn test
    ```
+
+9. cp .env.development.local .env.local
+10. yarn build
 
 ## Contributing and making Fidgets
 
