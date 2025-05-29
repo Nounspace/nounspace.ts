@@ -389,7 +389,7 @@ export default function Space({
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
-              <div className="relative">
+              <div className="relative overflow-hidden">
                 <Image
                   src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
                   alt="Phone mockup"
@@ -398,10 +398,7 @@ export default function Space({
                   className="pointer-events-none select-none"
                 />
                 <div className="absolute top-[44px] left-[20px]">
-                  <div
-                    className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
-                    style={{ paddingBottom: `${TAB_HEIGHT}px` }}
-                  >
+                  <div className="user-theme-background w-[390px] h-[844px] relative overflow-hidden">
                     <CustomHTMLBackground
                       html={config.theme?.properties.backgroundHTML}
                       className="absolute inset-0 pointer-events-none"
