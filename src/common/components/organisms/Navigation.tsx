@@ -13,7 +13,6 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
 import {
-  FaPaintbrush,
   FaDiscord,
   FaChevronLeft,
   FaChevronRight,
@@ -53,7 +52,6 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
-  enterEditMode: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -67,7 +65,7 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -93,10 +91,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   function handleLogout() {
     router.push("/home");
     logout();
-  }
-
-  function turnOnEditMode() {
-    enterEditMode();
   }
 
   const openModal = () => setModalOpen(true);
@@ -318,18 +312,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   shrunk ? "flex-col gap-1" : ""
                 )}
               >
-                {!isNotificationsPage && !isExplorerPage && isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                    className="flex items-center justify-center w-12 h-12"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
-                  </Button>
-                )}
                 <Button
                   onClick={openCastModal}
                   variant="primary"
