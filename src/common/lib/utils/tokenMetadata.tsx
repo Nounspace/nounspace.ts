@@ -8,6 +8,7 @@ export type TokenMetadata = {
   imageUrl?: string;
   contractAddress?: string;
   marketCap?: string;
+  price?: string;
   priceChange?: string;
   network?: string;
 };
@@ -25,6 +26,7 @@ export const getTokenMetadataStructure = (
     imageUrl,
     contractAddress,
     marketCap,
+    price,
     priceChange,
     network,
   } = token;
@@ -41,6 +43,7 @@ export const getTokenMetadataStructure = (
     imageUrl: imageUrl || "",
     address: contractAddress || "",
     marketCap: marketCap || "",
+    price: price || "",
     priceChange: priceChange || "",
   });
 
@@ -61,9 +64,10 @@ export const getTokenMetadataStructure = (
     },
   };
 
-  if (marketCap || priceChange) {
+  if (marketCap || priceChange || price) {
     const descParts: string[] = [];
     if (marketCap) descParts.push(`Market Cap: $${marketCap}`);
+    if (price) descParts.push(`Price: ${price}`);
     if (priceChange) descParts.push(`24h: ${priceChange}%`);
     const description = descParts.join(" | ");
     merge(metadata, {
