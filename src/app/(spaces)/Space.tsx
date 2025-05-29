@@ -391,8 +391,7 @@ export default function Space({
                 />
                 <div className="absolute top-[44px] left-[20px]">
                   <div
-                    className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
-                    style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+                    className="user-theme-background w-[390px] h-[844px] relative overflow-hidden"
                   >
                     <CustomHTMLBackground
                       html={config.theme?.properties.backgroundHTML}
