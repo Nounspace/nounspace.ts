@@ -203,7 +203,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div className="pt-7 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
             "flex flex-col h-full ml-auto transition-all duration-300 relative",
