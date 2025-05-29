@@ -180,9 +180,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full block"
+                className="h-full w-full"
                 forceMount
-                style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
                   className="h-full w-full"
@@ -206,9 +205,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full block"
+                className="h-full w-full"
                 forceMount
-                style={{ visibility: 'visible', display: 'block' }}
               >
                 <div
                   className="h-full w-full"
@@ -245,9 +243,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   <TabsContent
                     key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
+                    className="h-full w-full"
                     forceMount
-                    style={{ visibility: 'visible', display: 'block' }}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}

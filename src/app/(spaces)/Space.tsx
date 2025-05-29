@@ -379,8 +379,7 @@ export default function Space({
           {showMobileContainer ? (
             <div className="flex justify-center">
               <div
-                className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
-                style={{ paddingBottom: `${TAB_HEIGHT}px` }}
+                className="user-theme-background w-[390px] h-[844px] relative overflow-hidden"
               >
                 <CustomHTMLBackground
                   html={config.theme?.properties.backgroundHTML}
