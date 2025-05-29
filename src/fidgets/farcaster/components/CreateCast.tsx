@@ -15,7 +15,6 @@ import {
   handleSetInput,
 } from "@mod-protocol/core";
 import {
-  getFarcasterMentions,
   //     formatPlaintextToHubCastMessage,
   //     getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
@@ -31,6 +30,10 @@ import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
 import { MentionList } from "./mentionList";
+import axiosBackend from "@/common/data/api/backend";
+import { NounspaceResponse } from "@/common/data/api/requestHandler";
+import { User } from "@neynar/nodejs-sdk/build/api";
+import { FarcasterMention } from "@mod-protocol/farcaster";
 
 import { ChannelPicker } from "./channelPicker";
 import {
@@ -66,7 +69,32 @@ const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
-const getMentions = getFarcasterMentions(API_URL);
+
+type SearchUsersResponse = NounspaceResponse<{
+  users: User[];
+  cursor?: string | null;
+}>;
+
+const getMentions = async (query: string): Promise<FarcasterMention[]> => {
+  if (!query) return [];
+  try {
+    const res = await axiosBackend.get<SearchUsersResponse>(
+      "/api/search/users",
+      {
+        params: { q: query, limit: 5 },
+      },
+    );
+    return (res.data.value?.users || []).map((u) => ({
+      fid: u.fid,
+      username: u.username,
+      display_name: u.display_name,
+      avatar_url: u.pfp_url,
+    }));
+  } catch (err) {
+    console.error("Error fetching mentions", err);
+    return [];
+  }
+};
 
 const debouncedGetMentions = debounce(getMentions, 200, {
   leading: true,
