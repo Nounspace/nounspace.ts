@@ -377,7 +377,9 @@ export default function Space({
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex justify-center">
-              <div className="user-theme-background w-[390px] h-[844px] relative overflow-hidden">
+              <div
+                className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
+              >
                 <CustomHTMLBackground
                   html={config.theme?.properties.backgroundHTML}
                   className="absolute inset-0 pointer-events-none"
