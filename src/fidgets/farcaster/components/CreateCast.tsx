@@ -6,40 +6,16 @@ import {
   CastAddBody,
 } from "@farcaster/core";
 
-import { useEditor, EditorContent } from "@mod-protocol/react-editor";
-import {
-  ModManifest,
-  fetchUrlMetadata,
-  handleAddEmbed,
-  handleOpenFile,
-  handleSetInput,
-} from "@mod-protocol/core";
-import {
-  getFarcasterMentions,
-  //     formatPlaintextToHubCastMessage,
-  //     getMentionFidsByUsernames,
-} from "@mod-protocol/farcaster";
-import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
-import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
-import { CreationMod } from "@mod-protocol/react";
-import { creationMods } from "@mod-protocol/mod-registry";
-import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
+import { useTiptapEditor } from "../useTiptapEditor";
+import { EditorContent } from "@tiptap/react";
+import { CastLengthIndicator } from "./CastLengthIndicator";
 
 
 import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
-import { MentionList } from "./mentionList";
 
 import { ChannelPicker } from "./channelPicker";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/common/components/atoms/popover";
 import { renderEmbedForUrl } from "./Embeds";
-import { PhotoIcon } from "@heroicons/react/20/solid";
 import { CastType, Signer } from "@farcaster/core";
 import { useFarcasterSigner } from "..";
 import {
@@ -53,7 +29,6 @@ import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import Spinner from "@/common/components/atoms/spinner";
-import { XCircle } from "lucide-react";
 import { useBannerStore } from "@/stores/bannerStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { useBalance } from "wagmi";
@@ -65,21 +40,6 @@ import { base } from "viem/chains";
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
-const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
-const getMentions = getFarcasterMentions(API_URL);
-
-const debouncedGetMentions = debounce(getMentions, 200, {
-  leading: true,
-  trailing: false,
-});
-const getUrlMetadata = fetchUrlMetadata(API_URL);
-
-const onError = (err) => {
-  console.error(err);
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
-    window.alert(err.message);
-  }
-};
 
 export type ParentCastIdType = {
   fid: number;
@@ -121,7 +81,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
   afterSubmit = () => { },
 }) => {
-  const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
     text: "",
@@ -245,24 +204,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     getChannel,
     handleSubmit,
     setText,
-  } = useEditor({
-    fetchUrlMetadata: getUrlMetadata,
-    onError,
+  } = useTiptapEditor({
     onSubmit: onSubmitPost,
-    linkClassName: "text-blue-300",
-    renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetChannels,
-      RenderList: ChannelList,
-    }),
-    renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetMentions,
-      RenderList: MentionList,
-    }),
-    editorOptions: {
-      parseOptions: {
-        preserveWhitespace: "full",
-      },
-    },
   });
 
   useEffect(() => {
@@ -557,16 +500,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
           <Button
             className="h-10"
             type="button"
-            variant="outline"
-            disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
-          >
-            <PhotoIcon className="mr-1 w-5 h-5" />
-            Add
-          </Button>
-          <Button
-            className="h-10"
-            type="button"
             variant="ghost"
             disabled={isPublishing}
             onClick={() => handleEnhanceCast(text)}
@@ -604,33 +537,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
               open={isPickingEmoji}
             />
           </div>
-          <Popover
-            open={!!currentMod}
-            onOpenChange={(op: boolean) => {
-              if (!op) setCurrentMod(null);
-            }}
-          >
-            <PopoverTrigger></PopoverTrigger>
-            <PopoverContent className="w-[300px]">
-              <div className="space-y-4">
-                <h4 className="font-medium leading-none">{currentMod?.name}</h4>
-                <hr />
-                <CreationMod
-                  input={text}
-                  embeds={embeds}
-                  api={API_URL}
-                  variant="creation"
-                  manifest={currentMod!}
-                  renderers={renderers}
-                  onOpenFileAction={handleOpenFile}
-                  onExitAction={() => setCurrentMod(null)}
-                  onSetInputAction={handleSetInput(setText)}
-                  onAddEmbedAction={handleAddEmbed(addEmbed)}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
-          <CastLengthUIIndicator getText={getText} />
+          {/* Removed CreationMod integration */}
+          <CastLengthIndicator getText={getText} />
           <div className="grow"></div>
           <div className="flex flex-row pt-0 justify-end">
             <Button

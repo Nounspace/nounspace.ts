@@ -5,7 +5,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { FarcasterMention } from "@mod-protocol/farcaster";
+import { FarcasterMention } from "../types";
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { debounce } from "lodash";
