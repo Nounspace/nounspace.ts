@@ -19,7 +19,7 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
     if (!fid || fid === "-1") {
       return res.status(400).json({ error: "Invalid or missing FID for 'For you' feed. Please log in to access this feature." });
     }
-    console.log("[Neynar for_you] params:", { fid, cursor, limit }); options = {
+    options = {
       method: "GET",
       url,
       headers: {
