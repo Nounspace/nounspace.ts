@@ -1,5 +1,9 @@
 import React from "react";
-import { FidgetArgs, FidgetProperties, FidgetModule } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetProperties,
+  FidgetModule,
+} from "@/common/fidgets";
 import CreateCastComponent from "./components/CreateCast";
 
 export type CreateCastFidgetSettings = object;
@@ -16,10 +20,12 @@ const createCastProperties: FidgetProperties = {
   icon: 0x270f, // ✏️
 };
 
+// ✅ Main Fidget Component
 const CreateCast: React.FC<FidgetArgs<CreateCastFidgetSettings>> = () => {
-  return <CreateCastComponent />;
+  return <CreateCastComponent afterSubmit={() => {}} />;
 };
 
+// ✅ Export Fidget Module
 const exp = {
   fidget: CreateCast,
   properties: createCastProperties,

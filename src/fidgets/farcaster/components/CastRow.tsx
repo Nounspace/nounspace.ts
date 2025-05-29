@@ -22,7 +22,8 @@ import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
-import CreateCast, { DraftType } from "./CreateCast";
+// import CreateCast, { DraftType } from "./CreateCast";
+import CreateCast from "./CreateCast";
 import Modal from "@/common/components/molecules/Modal";
 import FarcasterLinkify from "./linkify";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
@@ -252,7 +253,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   };
 
   const [showModal, setShowModal] = useState(false);
-  const [replyCastDraft, setReplyCastDraft] = useState<Partial<DraftType>>();
+  // const [replyCastDraft, setReplyCastDraft] = useState<Partial<DraftType>>();
   type ReplyCastType = "reply" | "quote";
   const [replyCastType, setReplyCastType] = useState<ReplyCastType>();
 
@@ -377,9 +378,9 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       return;
     }
 
-    setReplyCastDraft({
-      parentCastId: { fid: cast.author.fid, hash: parentCastHash },
-    });
+    // setReplyCastDraft({
+    //   parentCastId: { fid: cast.author.fid, hash: parentCastHash },
+    // });
     setReplyCastType("reply");
     setShowModal(true);
   };
@@ -389,9 +390,9 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       username: cast.author.username,
       castId: cast.hash,
     });
-    setReplyCastDraft({
-      embeds: [{ castId }],
-    });
+    // setReplyCastDraft({
+    //   embeds: [{ castId }],
+    // });
     setReplyCastType("quote");
     setShowModal(true);
   };
@@ -416,9 +417,9 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         <div className="mb-4">
           {replyCastType === "reply" ? <CastRow cast={cast} isEmbed /> : null}
         </div>
-        <div className="flex">
+        {/* <div className="flex">
           <CreateCast initialDraft={replyCastDraft} />
-        </div>
+        </div> */}
       </Modal>
       <div className="-ml-1.5 flex space-x-3">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
