@@ -12,6 +12,7 @@ interface TokenCardData {
   imageUrl: string;
   address: string;
   marketCap: string;
+  price: string;
   priceChange: string;
 }
 
@@ -30,6 +31,7 @@ export default async function GET(
     imageUrl: params.get("imageUrl") || "",
     address: params.get("address") || "",
     marketCap: params.get("marketCap") || "",
+    price: params.get("price") || "",
     priceChange: params.get("priceChange") || "",
   };
 
@@ -47,6 +49,14 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
         maximumFractionDigits: 2,
       })}`
     : data.marketCap;
+
+  const priceNumber = Number(data.price);
+  const formattedPrice = Number.isFinite(priceNumber)
+    ? `$${priceNumber.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`
+    : data.price;
 
   const priceChangeNumber = Number(data.priceChange);
   const priceChangeColor = Number.isFinite(priceChangeNumber)
@@ -91,6 +101,7 @@ const TokenCard = ({ data }: { data: TokenCardData }) => {
       >
         <span style={{ fontSize: "56px", fontWeight: "bold" }}>{data.name}</span>
         <span style={{ fontSize: "42px", color: "white" }}>{`$${data.symbol}`}</span>
+        <span style={{ fontSize: "28px" }}>Price: {formattedPrice}</span>
         <span style={{ fontSize: "28px" }}>Address: {data.address}</span>
         <span style={{ fontSize: "28px" }}>Market Cap: {formattedMarketCap}</span>
         <span style={{ fontSize: "28px", color: priceChangeColor }}>

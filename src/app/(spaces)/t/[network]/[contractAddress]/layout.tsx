@@ -68,6 +68,7 @@ export async function generateMetadata({
     imageUrl,
     address: contractAddress,
     marketCap,
+    price,
     priceChange,
   });
 
@@ -95,6 +96,7 @@ export async function generateMetadata({
     imageUrl,
     contractAddress,
     marketCap,
+    price,
     priceChange,
     network,
   });
