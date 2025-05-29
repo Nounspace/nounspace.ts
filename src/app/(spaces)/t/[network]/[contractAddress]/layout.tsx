@@ -45,10 +45,17 @@ export async function generateMetadata({
     marketCap = tokenData?.market_cap_usd || "";
     priceChange = tokenData?.priceChange || "";
     
-    // Get price from tokenData
-    price = tokenData?.price_usd 
-      ? `$${Number(tokenData.price_usd).toFixed(2)}` 
-      : "";
+    // Format price with extra precision for small values
+    if (tokenData?.price_usd) {
+      const priceNumber = Number(tokenData.price_usd);
+      const formatted = priceNumber.toLocaleString(undefined, {
+        minimumFractionDigits: priceNumber < 0.01 ? 4 : 2,
+        maximumFractionDigits: priceNumber < 0.01 ? 6 : 2,
+      });
+      price = `$${formatted}`;
+    } else {
+      price = "";
+    }
   } catch (error) {
     console.error("Error fetching token data for frame metadata:", error);
   }
@@ -68,6 +75,7 @@ export async function generateMetadata({
     imageUrl,
     address: contractAddress,
     marketCap,
+    price,
     priceChange,
   });
 
@@ -95,6 +103,7 @@ export async function generateMetadata({
     imageUrl,
     contractAddress,
     marketCap,
+    price,
     priceChange,
     network,
   });
