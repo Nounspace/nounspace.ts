@@ -398,7 +398,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         new Set(usernamesWithPositions.map((u) => u.username))
       );
 
-      let mentionsToFids: { [key: string]: string } = {};
+      const mentionsToFids: { [key: string]: string } = {};
       let mentionsPositions: number[] = [];
       let mentionsText = text;
 
