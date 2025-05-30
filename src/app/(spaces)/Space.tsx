@@ -401,7 +401,7 @@ export default function Space({
                   </div>
                 </div>
                 <Image
-                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+                  src="https://i.ibb.co/5W7k3JnH/Smartphone-Mock-simple.png"
                   alt="Phone mockup"
                   width={344}
                   height={744}
