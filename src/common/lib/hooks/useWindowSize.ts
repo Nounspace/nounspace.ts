@@ -12,19 +12,21 @@ export default function useWindowSize() {
     };
   }
 
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions(),
-  );
-
-  function handleResize() {
-    setWindowDimensions(getWindowDimensions());
-  }
+  const [windowDimensions, setWindowDimensions] = useState(() => ({
+    width: null as number | null,
+    height: null as number | null,
+  }));
 
   useEffect(() => {
-    if (hasWindow) {
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
+    if (!hasWindow) return;
+
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
     }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [hasWindow]);
 
   return windowDimensions;
