@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import React, { useState, useCallback } from "react";
 import { PhotoIcon } from "@heroicons/react/24/solid";
 import ExpandOnClick from "@/common/components/molecules/ExpandOnClick";
@@ -25,9 +24,10 @@ const CreateCastImage = ({ url }: { url: string }) => {
 
     return (
         <ExpandOnClick>
+            <div className="m-0.5">
             <img
                 className={mergeClasses(
-                    "object-contain size-full max-h-[200px]", // Adjusted max height
+                    "object-cover size-full max-h-[500px]",
                     isLoading && "hidden",
                 )}
                 src={url}
@@ -37,6 +37,7 @@ const CreateCastImage = ({ url }: { url: string }) => {
                 alt=""
             />
             {isLoading && <LoadingPlaceholder />}
+            </div>
         </ExpandOnClick>
     );
 };

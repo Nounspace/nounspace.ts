@@ -7,16 +7,16 @@ import {
 import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import {
+  Embed,
   ModManifest,
   fetchUrlMetadata,
   handleAddEmbed,
   handleOpenFile,
-  handleSetInput,
+  handleSetInput
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
 } from "@mod-protocol/farcaster";
-import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -39,7 +39,6 @@ import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
-import { PhotoIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
@@ -58,7 +57,7 @@ import {
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 // import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
-
+import ImgBBUploader from "@/common/components/molecules/ImgBBUploader";
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
@@ -111,6 +110,29 @@ type CreateCastProps = {
 // > & {
 //   type: CastType;
 // };
+
+// Helper function to ensure that embeds have the 'status' property
+const ensureEmbedsWithStatus = (embeds: FarcasterEmbed[] = []): Embed[] => {
+  return embeds.map(embed => {
+    if (isFarcasterUrlEmbed(embed)) {
+      if ('status' in embed) {
+        return embed as unknown as Embed;
+      }
+      return {
+        ...embed,
+        status: "loaded"
+      };
+    } else {
+      if ('status' in embed) {
+        return embed as unknown as Embed;
+      }
+      return {
+        ...embed,
+        status: "loaded"
+      };
+    }
+  });
+};
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
@@ -681,16 +703,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
               )}
             </div>
           )}
-          <Button
-            className="h-10"
-            type="button"
-            variant="outline"
-            disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
-          >
-            <PhotoIcon className="mr-1 w-5 h-5" />
-            Add
-          </Button>
+          <div className="max-w-[200px]">
+            <ImgBBUploader
+              onImageUploaded={(url) => {
+                if (url) {
+                  addEmbed({ url, status: "loaded" });
+                }
+              }}
+              showSuccessMessage={false}
+            />
+          </div>
           <Button
             className="h-10"
             type="button"
@@ -810,13 +832,32 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
-          {map(draft.embeds, (embed) => (
-            <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
-            >
-              {renderEmbedForUrl(embed, true)}
-            </div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {map(draft.embeds, (embed, index) => (
+              <div
+                key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
+                className="relative"
+              >
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const newEmbeds = [...(draft.embeds || [])];
+                    newEmbeds.splice(index, 1);
+                    setEmbeds(ensureEmbedsWithStatus(newEmbeds));
+                    setDraft((prev) => ({ ...prev, embeds: newEmbeds }));
+                  }}
+                  className="absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600 transition-colors z-10 shadow-sm"
+                  aria-label="Remove embed"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+                {renderEmbedForUrl(embed, true)}
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

@@ -26,13 +26,19 @@ const ImageIcon = () => (
 );
 
 interface ImgBBUploaderProps {
-  onImageUploaded: (url: string) => void;
+  onImageUploaded: (url: string | null) => void;
+  showSuccessMessage?: boolean;
+  initialImage?: string | null;
 }
 
-const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
+const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ 
+  onImageUploaded, 
+  showSuccessMessage = true,
+  initialImage = null
+}) => {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(initialImage);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const imgBBApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -131,16 +137,9 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({ onImageUploaded }) => {
         </p>
       </div>
 
-      {uploadedUrl && (
+      {uploadedUrl && showSuccessMessage && (
         <div className="flex flex-col gap-2">
           <p className="text-sm text-green-500">Image uploaded successfully!</p>
-          <div className="relative h-40 w-full overflow-hidden rounded-md border">
-            <img
-              src={uploadedUrl}
-              alt="Uploaded"
-              className="h-full w-full object-contain"
-            />
-          </div>
         </div>
       )}
     </div>
