@@ -1,11 +1,9 @@
-// import neynar from "@/common/data/api/neynar";
 import {
   CastAddBody,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -13,9 +11,7 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import {
-  getFarcasterMentions,
-} from "@mod-protocol/farcaster";
+import { getFarcasterMentions } from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
@@ -23,13 +19,9 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
-
-
 import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
-
 import {
   Popover,
   PopoverContent,
@@ -57,11 +49,8 @@ import {
 } from "../utils";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
-// import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
-
-// Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 const getMentions = getFarcasterMentions(API_URL);
 
@@ -104,13 +93,6 @@ type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
   afterSubmit?: () => void;
 };
-
-// export type ModProtocolCastAddBody = Exclude<
-//   Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
-//   false
-// > & {
-//   type: CastType;
-// };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
@@ -380,19 +362,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions, ensuring it's not part of a URL
-      // const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.-]+)(?=\s|$)/g;
+      const usernamePattern =
+        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9_.-]*[a-zA-Z0-9])?)(?=\s|[.,!?)]|$)/g;
 
-      // The working copy of the text for position calculation
-      const workingText = text;
+      // Step 1: Find all mentions and their positions
+      const matches = [...text.matchAll(usernamePattern)];
 
-      // Extract mentions and their positions from the original text
-      const usernamesWithPositions = [
-        ...workingText.matchAll(usernamePattern),
-      ].map((match) => ({
+      const usernamesWithPositions = matches.map((match) => ({
+        fullMatch: match[0],
         username: match[1],
-        position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
+        position: match.index! + match[0].indexOf("@"), // Exact "@" position
       }));
 
       const uniqueUsernames = Array.from(
@@ -401,85 +380,49 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       let mentionsToFids: { [key: string]: string } = {};
       let mentionsPositions: number[] = [];
-      let mentionsText = text; // Initialize mentionsText with current text
+      let mentionsText = text;
 
       if (uniqueUsernames.length > 0) {
         try {
-          // Fetch the FIDs for the mentioned users
-          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
-
           const query = encodeURIComponent(uniqueUsernames.join(","));
-          // console.log(query);
           const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
           const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
 
           if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce(
-              (acc, mention) => {
-                if (mention && mention.username && mention.fid) {
-                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
-                }
-                return acc;
-              },
-              {} as { [key: string]: string },
-            );
+            mentionsToFids = fetchedMentions.reduce((acc, mention) => {
+              if (mention && mention.username && mention.fid) {
+                acc[mention.username] = mention.fid.toString();
+              }
+              return acc;
+            }, {} as { [key: string]: string });
           }
 
+          // Step 2: Remove mentions from the text and record their original positions
+          // Important: Work from right to left to avoid index shift!
           mentionsPositions = [];
-          // const currentTextIndex = 0;
-          // const finalText = text;
-          const mentions = [];
-          mentionsText = text;
+          for (let i = usernamesWithPositions.length - 1; i >= 0; i--) {
+            const { fullMatch, username, position } = usernamesWithPositions[i];
 
-          for (let i = 0; i < mentionsText.length; i++) {
-            if (
-              mentionsText[i] === "@" &&
-              ((mentionsText[i - 1] !== "/" &&
-                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
-                mentionsText[i - 1] === undefined)
-            ) {
-              let mentionIndex = i + 1;
-              while (
-                mentionIndex < mentionsText.length &&
-                mentionsText[mentionIndex] !== " " &&
-                mentionsText[mentionIndex] !== "\n"
-              )
-                mentionIndex++;
-              const mention = mentionsText.substring(i + 1, mentionIndex);
-              const position = i;
-              mentionsPositions.push(position);
-              mentionsText = mentionsText.replace(`@${mention}`, "");
+            if (mentionsToFids[username]) {
+              mentionsPositions.unshift(position); // preserve order
+              mentionsText =
+                mentionsText.slice(0, position) +
+                mentionsText.slice(position + fullMatch.length);
             }
           }
-
-          if (mentions.length > 10)
-            if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-              console.error(
-                "Mismatch between mentions and their positions:",
-                mentionsToFids,
-                mentionsPositions,
-              );
-            }
         } catch (error) {
           console.error("Error fetching FIDs:", error);
         }
       }
 
-      // Update the draft regardless of mentions
-      setDraft((prevDraft) => {
-        const updatedDraft = {
-          ...prevDraft,
-          text: mentionsText,
-          embeds: newEmbeds,
-          parentUrl: channel?.parent_url || undefined,
-          mentionsToFids,
-          mentionsPositions,
-        };
-        // console.log("Updated Draft before posting:", updatedDraft);
-        return updatedDraft;
-      });
+      setDraft((prevDraft) => ({
+        ...prevDraft,
+        text: mentionsText,
+        embeds: newEmbeds,
+        parentUrl: channel?.parent_url || undefined,
+        mentionsToFids,
+        mentionsPositions,
+      }));
     };
 
     fetchMentionsAndSetDraft();
@@ -648,13 +591,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 }
               }}
             />
-            {/* <div className="z-50">
-              <EmbedsEditor
-                embeds={embeds}
-                setEmbeds={setEmbeds}
-                RichEmbed={() => <div />}
-              />
-            </div> */}
           </div>
         )}
 
