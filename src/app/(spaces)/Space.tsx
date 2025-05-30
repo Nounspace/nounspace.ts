@@ -374,7 +374,7 @@ export default function Space({
           )
         : null}
       <div
-        className={`w-full h-full relative flex-col ${
+        className={`w-full h-full relative flex flex-col items-center justify-center ${
           showMobileContainer ? "" : "user-theme-background"
         }`}
       >
@@ -388,14 +388,14 @@ export default function Space({
         )}
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
-            <div className="flex justify-center">
+            <div className="flex justify-center items-center h-full">
               <div className="relative">
                 <Image
                   src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
                   alt="Phone mockup"
                   width={344}
                   height={744}
-                  className="pointer-events-none select-none"
+                  className="relative pointer-events-none select-none z-10"
                 />
                 <div className="absolute top-[35px] left-[16px]">
                   <div
