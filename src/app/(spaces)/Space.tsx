@@ -393,13 +393,13 @@ export default function Space({
                 <Image
                   src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
                   alt="Phone mockup"
-                  width={430}
-                  height={930}
+                  width={344}
+                  height={744}
                   className="pointer-events-none select-none"
                 />
-                <div className="absolute top-[44px] left-[20px]">
+                <div className="absolute top-[35px] left-[16px]">
                   <div
-                    className="user-theme-background w-[390px] h-[844px] relative overflow-auto"
+                    className="user-theme-background w-[312px] h-[675px] relative overflow-auto"
                     style={{ paddingBottom: `${TAB_HEIGHT}px` }}
                   >
                     <CustomHTMLBackground
