@@ -2,11 +2,11 @@ import neynar from "@/common/data/api/neynar";
 
 import {
   DEBUG_PROMPTS,
-  MAX_TRENDING_TWEETS,
+  MAX_TRENDING_CASTS,
   MODEL_TEMPERATURE_CREATIVE,
   TODAY_TIME_DATE,
   USERS_CASTS_CHRONOLOGICALLY,
-  USE_USER_PAST_TWEETS,
+  USE_USER_PAST_CASTS,
   VENICE_API_KEY,
   VENICE_MODEL,
 } from "./config";
@@ -14,7 +14,7 @@ import { CREATE_PROMPT, ENHANCE_PROMPT, SYSTEM_PROMPT } from "./prompts";
 import { TrendingTimeWindow } from "@neynar/nodejs-sdk/build/api";
 
 //
-// Process Trending Casts array and return a string with the top MAX_TRENDING_TWEETS casts
+// Process Trending Casts array and return a string with the top MAX_TRENDING_CASTS casts
 //
 function processTrendingCasts(casts: any) {
   let trendingCasts = casts.casts.map((cast) => {
@@ -23,7 +23,7 @@ function processTrendingCasts(casts: any) {
     return `<trending_tweet>\n@${username}: ${text}\n</trending_tweet>\n\n`;
   });
 
-  trendingCasts = trendingCasts.slice(0, MAX_TRENDING_TWEETS);
+  trendingCasts = trendingCasts.slice(0, MAX_TRENDING_CASTS);
   return trendingCasts.join("");
 }
 
@@ -40,20 +40,19 @@ export async function POST(request: Request) {
   }
 
   // get values
-  // if USE_USER_PAST_TWEETS
+  // if USE_USER_PAST_CASTS
   // get user past casts as examples
-  let user_past_tweets;
+  let user_past_casts;
   let userCasts: any;
-  if (USE_USER_PAST_TWEETS) {
+  if (USE_USER_PAST_CASTS) {
     if (USERS_CASTS_CHRONOLOGICALLY) {
       userCasts = await neynar.fetchCastsForUser({
         fid: userFid,
         viewerFid: userFid,
-        limit: 5,
+        limit: MAX_TRENDING_CASTS,
       });
-      userCasts = userCasts.result;
     } else {
-      userCasts = await neynar.fetchPopularCastsByUser(userFid);
+      userCasts = await neynar.fetchPopularCastsByUser({fid: userFid});
     }
 
     const exampleCastsText = userCasts.casts?.length
@@ -62,7 +61,7 @@ export async function POST(request: Request) {
         .join("\n")
       : "";
 
-    user_past_tweets = `
+    user_past_casts = `
 # Users past tweets:
 <USER_PAST_TWEETS>
 ${exampleCastsText}
@@ -78,7 +77,7 @@ ${exampleCastsText}
   // Fill in the appropriate values
   const viewerFid = userFid;
   const timeWindow: TrendingTimeWindow = "24h";
-  const limit = MAX_TRENDING_TWEETS;
+  const limit = MAX_TRENDING_CASTS;
   //const channelId =
   //const parentUrl =
   //const provider =
@@ -106,7 +105,7 @@ ${exampleCastsText}
     const user_prompt =
       PROMPT.replace("{TRENDING_FEED}", trendingCasts).replace(
         "{USER_TWEETS}",
-        user_past_tweets || "",
+        user_past_casts || "",
       ) + userCast;
 
     // use for debug
