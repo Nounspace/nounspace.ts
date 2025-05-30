@@ -50,7 +50,7 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      setError("File size exceeds 5MB limit");
+      setError("File size exceeds 5MB");
       return;
     }
 
@@ -131,10 +131,9 @@ const ImgBBUploader: React.FC<ImgBBUploaderProps> = ({
             </>
           )}
         </Button>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-        <p className="text-xs text-muted-foreground mt-1">
-          Maximum file size: 5MB
-        </p>
+       {error === "File size exceeds 5MB" && (
+        <p className="text-red-500 text-sm whitespace-nowrap">{error}</p>
+      )}
       </div>
 
       {uploadedUrl && showSuccessMessage && (
