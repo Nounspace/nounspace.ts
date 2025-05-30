@@ -51,7 +51,6 @@ export async function POST(request: Request) {
         viewerFid: userFid,
         limit: 5,
       });
-      userCasts = userCasts.result;
     } else {
       userCasts = await neynar.fetchPopularCastsByUser(userFid);
     }
