@@ -338,7 +338,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fetchUrlMetadata: getUrlMetadata,
     onError,
     onSubmit: onSubmitPost,
-    linkClassName: "text-blue-300",
+    linkClassName: "text-blue-800",
     renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
       getResults: debouncedGetChannels,
       RenderList: ChannelList,
