@@ -1,26 +1,30 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Tabs, TabsContent } from "@/common/components/atoms/tabs";
-import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
-import { FidgetConfig, FidgetBundle, FidgetInstanceData } from "@/common/fidgets";
-import { UserTheme } from "@/common/lib/theme";
-import { createFidgetBundle } from "@/fidgets/layout/tabFullScreen/utils";
-import { CompleteFidgets } from "@/fidgets";
-import MobileNavbar from "@/common/components/organisms/MobileNavbar";
-import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils";
-import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds";
+import React, { useState, useEffect, useMemo } from "react"
+import { Tabs, TabsContent } from "@/common/components/atoms/tabs"
+import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout"
+import {
+  FidgetConfig,
+  FidgetBundle,
+  FidgetInstanceData,
+} from "@/common/fidgets"
+import { UserTheme } from "@/common/lib/theme"
+import { createFidgetBundle } from "@/fidgets/layout/tabFullScreen/utils"
+import { CompleteFidgets } from "@/fidgets"
+import MobileNavbar from "@/common/components/organisms/MobileNavbar"
+import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils"
+import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds"
 
 // Import the content components
-import ConsolidatedMediaContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedMediaContent";
-import ConsolidatedPinnedContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedPinnedContent";
-import FidgetContent from "@/fidgets/layout/tabFullScreen/components/FidgetContent";
+import ConsolidatedMediaContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedMediaContent"
+import ConsolidatedPinnedContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedPinnedContent"
+import FidgetContent from "@/fidgets/layout/tabFullScreen/components/FidgetContent"
 
 type MobileViewProps = {
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  layoutFidgetIds: string[];
-  theme: UserTheme;
-  saveConfig: (config: any) => Promise<void>;
-  tabNames?: string[];
-};
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+  layoutFidgetIds: string[]
+  theme: UserTheme
+  saveConfig: (config: any) => Promise<void>
+  tabNames?: string[]
+}
 
 /**
  * MobileView component that handles the mobile-specific layout for Space
@@ -33,69 +37,88 @@ const MobileView: React.FC<MobileViewProps> = ({
   saveConfig,
   tabNames,
 }) => {
-  const isMobile = true; // This component is always for mobile
-  
+  const isMobile = true // This component is always for mobile
+
   // Use the unified hook to process fidget IDs
   const {
     validFidgetIds,
     processedFidgetIds,
     mediaFidgetIds,
     pinnedCastIds,
-    orderedFidgetIds
-  } = useProcessedFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile);
-  
+    orderedFidgetIds,
+  } = useProcessedFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile)
+
   // Create tab items for the MobileNavbar
-  const tabItems = useMemo(() => 
-    createTabItemsFromFidgetIds(orderedFidgetIds, fidgetInstanceDatums, tabNames),
-  [orderedFidgetIds, fidgetInstanceDatums, tabNames]);
-  
+  const tabItems = useMemo(
+    () =>
+      createTabItemsFromFidgetIds(
+        orderedFidgetIds,
+        fidgetInstanceDatums,
+        tabNames
+      ),
+    [orderedFidgetIds, fidgetInstanceDatums, tabNames]
+  )
+
   // Initialize with the first fidget ID
   const [selectedTab, setSelectedTab] = useState(
     orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
-  );
-  
+  )
+
   // Update selected tab when orderedFidgetIds changes
   useEffect(() => {
     // If there are no fidget IDs, do nothing
-    if (orderedFidgetIds.length === 0) return;
-    
+    if (orderedFidgetIds.length === 0) return
+
     // If current selection is invalid or no tab is selected, select the first one
-    if (!orderedFidgetIds.includes(selectedTab) && orderedFidgetIds.length > 0) {
-      setSelectedTab(orderedFidgetIds[0]);
+    if (
+      !orderedFidgetIds.includes(selectedTab) &&
+      orderedFidgetIds.length > 0
+    ) {
+      setSelectedTab(orderedFidgetIds[0])
     } else if (orderedFidgetIds.length === 0) {
-      setSelectedTab(""); // Clear selection if no tabs
+      setSelectedTab("") // Clear selection if no tabs
     }
-  }, [orderedFidgetIds, selectedTab]);
-  
+  }, [orderedFidgetIds, selectedTab])
+
+  // Reset scroll position when switching between tabs on mobile
+  useEffect(() => {
+    if (selectedTab) {
+      // Reset scroll position to top when switching tabs
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }, [selectedTab])
+
   // Create bundles for all fidgets
   const fidgetBundles = useMemo(() => {
-    const bundles: Record<string, FidgetBundle> = {};
-    
-    validFidgetIds.forEach(id => {
-      const fidgetData = fidgetInstanceDatums[id];
-      if (!fidgetData) return;
-      
-      const bundle = createFidgetBundle(fidgetData, false);
+    const bundles: Record<string, FidgetBundle> = {}
+
+    validFidgetIds.forEach((id) => {
+      const fidgetData = fidgetInstanceDatums[id]
+      if (!fidgetData) return
+
+      const bundle = createFidgetBundle(fidgetData, false)
       if (bundle) {
-        bundles[id] = bundle;
+        bundles[id] = bundle
       }
-    });
-    
-    return bundles;
-  }, [validFidgetIds, fidgetInstanceDatums]);
-  
+    })
+
+    return bundles
+  }, [validFidgetIds, fidgetInstanceDatums])
+
   // Configuration saving function
-  const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {
-    return saveConfig({
-      fidgetInstanceDatums: {
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
-          config: newConfig,
+  const saveFidgetConfig =
+    (id: string) =>
+    (newConfig: FidgetConfig): Promise<void> => {
+      return saveConfig({
+        fidgetInstanceDatums: {
+          ...fidgetInstanceDatums,
+          [id]: {
+            ...fidgetInstanceDatums[id],
+            config: newConfig,
+          },
         },
-      },
-    });
-  };
+      })
+    }
 
   // Conditional rendering after all hooks have been called
   if (processedFidgetIds.length === 0) {
@@ -103,22 +126,25 @@ const MobileView: React.FC<MobileViewProps> = ({
       <div className="flex items-center justify-center h-full w-full text-gray-500">
         <div className="text-center p-4">
           <h3 className="text-lg font-medium mb-2">No fidgets available</h3>
-          <p className="text-sm text-gray-400">Add some fidgets to see them here</p>
+          <p className="text-sm text-gray-400">
+            Add some fidgets to see them here
+          </p>
         </div>
       </div>
-    );
+    )
   }
-  
+
   return (
     <div className="flex flex-col h-full relative">
       {/* Main content area with padding-bottom to make space for fixed navbar */}
-      <div 
-        className="w-full h-full overflow-hidden" 
-        style={{ 
-          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+      <div
+        className="w-full h-full overflow-hidden"
+        style={{
+          paddingBottom:
+            processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : "0",
         }}
       >
-        <Tabs 
+        <Tabs
           value={selectedTab}
           className="w-full h-full"
           onValueChange={setSelectedTab}
@@ -126,20 +152,20 @@ const MobileView: React.FC<MobileViewProps> = ({
           <div className="relative z-40 h-full">
             {/* Special case for consolidated media tab */}
             {mediaFidgetIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-media" 
+              <TabsContent
+                key="consolidated-media"
                 value="consolidated-media"
                 className="h-full w-full block"
-                style={{ visibility: 'visible', display: 'block' }}
+                style={{ visibility: "visible", display: "block" }}
               >
                 <div
                   className="h-full w-full"
-                  style={{ 
-                    paddingInline: `${MOBILE_PADDING}px`, 
+                  style={{
+                    paddingInline: `${MOBILE_PADDING}px`,
                     paddingTop: `${MOBILE_PADDING - 16}px`,
                   }}
                 >
-                  <ConsolidatedMediaContent 
+                  <ConsolidatedMediaContent
                     mediaFidgetIds={mediaFidgetIds}
                     fidgetBundles={fidgetBundles}
                     theme={theme}
@@ -151,20 +177,20 @@ const MobileView: React.FC<MobileViewProps> = ({
 
             {/* Special case for consolidated pinned tab */}
             {pinnedCastIds.length > 1 && (
-              <TabsContent 
-                key="consolidated-pinned" 
+              <TabsContent
+                key="consolidated-pinned"
                 value="consolidated-pinned"
                 className="h-full w-full block"
-                style={{ visibility: 'visible', display: 'block' }}
+                style={{ visibility: "visible", display: "block" }}
               >
                 <div
                   className="h-full w-full"
-                  style={{ 
-                    paddingInline: `${MOBILE_PADDING}px`, 
+                  style={{
+                    paddingInline: `${MOBILE_PADDING}px`,
                     paddingTop: `${MOBILE_PADDING - 16}px`,
                   }}
                 >
-                  <ConsolidatedPinnedContent 
+                  <ConsolidatedPinnedContent
                     pinnedCastIds={pinnedCastIds}
                     fidgetBundles={fidgetBundles}
                     theme={theme}
@@ -173,26 +199,31 @@ const MobileView: React.FC<MobileViewProps> = ({
                 </div>
               </TabsContent>
             )}
-            
+
             {/* Regular non-consolidated tabs */}
             {processedFidgetIds
-              .filter(id => id !== 'consolidated-media' && id !== 'consolidated-pinned')
+              .filter(
+                (id) =>
+                  id !== "consolidated-media" && id !== "consolidated-pinned"
+              )
               .map((fidgetId) => {
-                const fidgetDatum = fidgetInstanceDatums[fidgetId];
-                if (!fidgetDatum) return null;
-                
-                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-                if (!fidgetModule) return null;
-                
-                const bundle = fidgetBundles[fidgetId] || createFidgetBundle(fidgetDatum, false);
-                if (!bundle) return null;
-                
+                const fidgetDatum = fidgetInstanceDatums[fidgetId]
+                if (!fidgetDatum) return null
+
+                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType]
+                if (!fidgetModule) return null
+
+                const bundle =
+                  fidgetBundles[fidgetId] ||
+                  createFidgetBundle(fidgetDatum, false)
+                if (!bundle) return null
+
                 return (
-                  <TabsContent 
-                    key={fidgetId} 
+                  <TabsContent
+                    key={fidgetId}
                     value={fidgetId}
                     className="h-full w-full block"
-                    style={{ visibility: 'visible', display: 'block' }}
+                    style={{ visibility: "visible", display: "block" }}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}
@@ -203,12 +234,12 @@ const MobileView: React.FC<MobileViewProps> = ({
                       mobilePadding={MOBILE_PADDING}
                     />
                   </TabsContent>
-                );
-            })}
+                )
+              })}
           </div>
         </Tabs>
       </div>
-      
+
       {/* Mobile Navbar at bottom of screen */}
       {processedFidgetIds.length > 1 && (
         <MobileNavbar
@@ -221,7 +252,7 @@ const MobileView: React.FC<MobileViewProps> = ({
         />
       )}
     </div>
-  );
-};
+  )
+}
 
-export default MobileView;
+export default MobileView
