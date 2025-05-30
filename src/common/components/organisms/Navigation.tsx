@@ -69,13 +69,9 @@ const NavIconBadge = ({ children }) => {
 
 const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
-    (state) => ({
-      setModalOpen: state.setup.setModalOpen,
-      getIsLoggedIn: state.getIsAccountReady,
-      getIsInitializing: state.getIsInitializing,
-    })
-  );
+  const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
+  const isLoggedIn = useAppStore((state) => state.getIsAccountReady());
+  const isInitializing = useAppStore((state) => state.getIsInitializing());
   const userTheme: UserTheme = useUserTheme();
 
   const logout = useLogout();
@@ -106,8 +102,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
-  const isLoggedIn = getIsLoggedIn();
-  const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
