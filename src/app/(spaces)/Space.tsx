@@ -380,7 +380,7 @@ export default function Space({
       >
         {showMobileContainer && (
           <Image
-            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
+            src="https://i.ibb.co/mrvFkWhM/Smartphone-mock-1.png"
             alt="Mobile preview background"
             fill
             className="object-cover pointer-events-none select-none -z-10"
