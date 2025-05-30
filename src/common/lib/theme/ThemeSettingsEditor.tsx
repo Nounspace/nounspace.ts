@@ -23,6 +23,7 @@ import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
+import { FidgetInstanceData } from "@/common/fidgets";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
@@ -39,19 +40,25 @@ import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
 import { Address, formatUnits, zeroAddress } from "viem";
 import { base } from "viem/chains";
 import { useBalance } from "wagmi";
+import { CompleteFidgets } from "@/fidgets";
+import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
+import MobileSettings from "@/common/components/organisms/MobileSettings";
+import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  saveFidgetInstanceDatums: (datums: { [key: string]: FidgetInstanceData }) => Promise<void>;
 };
 
 export function ThemeSettingsEditor({
@@ -59,10 +66,72 @@ export function ThemeSettingsEditor({
   saveTheme,
   saveExitEditMode,
   cancelExitEditMode,
+  fidgetInstanceDatums,
+  saveFidgetInstanceDatums,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
-  const [tabValue, setTabValue] = useState("fonts");
+  const [tabValue, setTabValue] = useState("space");
+
+  const miniApps = useMemo<MiniApp[]>(() => {
+    return Object.values(fidgetInstanceDatums).map((d, i) => {
+      const props = CompleteFidgets[d.fidgetType]?.properties;
+      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
+      return {
+        id: d.id,
+        name: d.fidgetType,
+        mobileDisplayName:
+          (d.config.settings.customMobileDisplayName as string) ||
+          props?.mobileFidgetName ||
+          props?.fidgetName,
+        context: props?.fidgetName,
+        order: (d.config.settings.mobileOrder as number) || i + 1,
+        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
+        displayOnMobile: d.config.settings.showOnMobile !== false,
+      };
+    });
+  }, [fidgetInstanceDatums]);
+
+  const handleUpdateMiniApp = (app: MiniApp) => {
+    const datum = fidgetInstanceDatums[app.id];
+    if (!datum) return;
+    const newDatums = {
+      ...fidgetInstanceDatums,
+      [app.id]: {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+            customMobileDisplayName: app.mobileDisplayName,
+            mobileIconName: app.icon,
+            showOnMobile: app.displayOnMobile,
+            mobileOrder: app.order,
+          },
+        },
+      },
+    };
+    saveFidgetInstanceDatums(newDatums);
+  };
+
+  const handleReorderMiniApps = (apps: MiniApp[]) => {
+    const newDatums: { [key: string]: FidgetInstanceData } = {};
+    apps.forEach((app, index) => {
+      const datum = fidgetInstanceDatums[app.id];
+      if (!datum) return;
+      newDatums[app.id] = {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+            mobileOrder: index + 1,
+          },
+        },
+      };
+    });
+    saveFidgetInstanceDatums(newDatums);
+  };
 
   function themePropSetter<_T extends string>(property: string): (value: string) => void {
     return (value: string): void => {
@@ -181,21 +250,21 @@ export function ThemeSettingsEditor({
               <Tabs value={tabValue} onValueChange={setTabValue}>
                 {/* controlled Tabs */}
                 <TabsList className={tabListClasses}>
-                  <TabsTrigger value="style" className={tabTriggerClasses}>
-                    Style
+                  <TabsTrigger value="space" className={tabTriggerClasses}>
+                    Space
                   </TabsTrigger>
-                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
-                    Fonts
+                  <TabsTrigger value="fidgets" className={tabTriggerClasses}>
+                    Fidgets
                   </TabsTrigger>
-                  <TabsTrigger value="code" className={tabTriggerClasses}>
-                    Code
+                  <TabsTrigger value="mobile" className={tabTriggerClasses}>
+                    Mobile
                   </TabsTrigger>
                 </TabsList>
-                {/* Fonts */}
-                <TabsContent value="fonts" className={tabContentClasses}>
+                {/* Space */}
+                <TabsContent value="space" className={tabContentClasses}>
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Headings</h4>
+                      <h4 className="text-sm">Heading Font</h4>
                       <ThemeSettingsTooltip text="The primary, or header font that Fidgets can inherit." />
                     </div>
                     <div className="flex items-center gap-1">
@@ -216,7 +285,7 @@ export function ThemeSettingsEditor({
                   </div>
                   <div className="flex flex-col gap-1">
                     <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Body</h4>
+                      <h4 className="text-sm">Body Font</h4>
                       <ThemeSettingsTooltip text="The secondary, or body font that Fidgets can inherit." />
                     </div>
                     <div className="flex items-center gap-1">
@@ -235,14 +304,10 @@ export function ThemeSettingsEditor({
                       />
                     </div>
                   </div>
-                </TabsContent>
-                {/* Style */}
-                <TabsContent value="style" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold my-2">Space Settings</h4>
+                  <div className="flex flex-col gap-1 mt-4">
                     <div className="flex flex-row gap-1">
                       <h4 className="text-sm">Background color</h4>
-                      <ThemeSettingsTooltip text="Set a solid background or gradient color. You can also add custom backgrounds with HTML/CSS on the Code tab." />
+                      <ThemeSettingsTooltip text="Set a solid background or gradient color. You can also add custom backgrounds with HTML/CSS on the Generate section." />
                     </div>
                     <ColorSelector
                       className="rounded-full overflow-hidden w-6 h-6 shrink-0"
@@ -251,97 +316,82 @@ export function ThemeSettingsEditor({
                       onChange={themePropSetter<Color>("background")}
                     />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold my-2">Fidget Settings</h4>
-                    <div className="flex flex-col gap-1">
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Background color</h5>
-                          <ThemeSettingsTooltip text="Set the default background color for all Fidgets on your Space." />
-                        </div>
-                        <ColorSelector
-                          className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
-                          innerClassName="rounded-full"
-                          value={fidgetBackground as Color}
-                          onChange={themePropSetter<Color>("fidgetBackground")}
-                        />
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Border</h5>
-                          <ThemeSettingsTooltip text="Set the default border width and color for all Fidgets on your Space." />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ColorSelector
-                            className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                            innerClassName="rounded-full"
-                            value={fidgetBorderColor as Color}
-                            onChange={themePropSetter<Color>(
-                              "fidgetBorderColor",
-                            )}
-                          />
-                          <BorderSelector
-                            className="ring-0 focus:ring-0 border-0 shadow-none"
-                            value={fidgetBorderWidth as string}
-                            onChange={themePropSetter<string>(
-                              "fidgetBorderWidth",
-                            )}
-                            hideGlobalSettings
-                          />
-                        </div>
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Shadow</h5>
-                          <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
-                        </div>
-                        <ShadowSelector
-                          className="ring-0 focus:ring-0 border-0 shadow-none"
-                          value={fidgetShadow as string}
-                          onChange={themePropSetter<string>("fidgetShadow")}
-                          hideGlobalSettings
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                {/* Code */}
-                <TabsContent value="code" className={tabContentClasses}>
                   <BackgroundGenerator
                     backgroundHTML={backgroundHTML}
                     onChange={themePropSetter<string>("backgroundHTML")}
                   />
+                  <div className="grid gap-2 mt-4">
+                    <div className="flex flex-row gap-1">
+                      <h4 className="text-sm">Music</h4>
+                      <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
+                    </div>
+                    <VideoSelector
+                      initialVideoURL={theme.properties.musicURL}
+                      onVideoSelect={themePropSetter("musicURL")}
+                    />
+                  </div>
+                </TabsContent>
+                {/* Fidgets */}
+                <TabsContent value="fidgets" className={tabContentClasses}>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Background color</h5>
+                      <ThemeSettingsTooltip text="Set the default background color for all Fidgets on your Space." />
+                    </div>
+                    <ColorSelector
+                      className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
+                      innerClassName="rounded-full"
+                      value={fidgetBackground as Color}
+                      onChange={themePropSetter<Color>("fidgetBackground")}
+                    />
+                  </div>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Border</h5>
+                      <ThemeSettingsTooltip text="Set the default border width and color for all Fidgets on your Space." />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ColorSelector
+                        className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+                        innerClassName="rounded-full"
+                        value={fidgetBorderColor as Color}
+                        onChange={themePropSetter<Color>("fidgetBorderColor")}
+                      />
+                      <BorderSelector
+                        className="ring-0 focus:ring-0 border-0 shadow-none"
+                        value={fidgetBorderWidth as string}
+                        onChange={themePropSetter<string>("fidgetBorderWidth")}
+                        hideGlobalSettings
+                      />
+                    </div>
+                  </div>
+                  <div className="">
+                    <div className="flex flex-row gap-1">
+                      <h5 className="text-sm">Shadow</h5>
+                      <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
+                    </div>
+                    <ShadowSelector
+                      className="ring-0 focus:ring-0 border-0 shadow-none"
+                      value={fidgetShadow as string}
+                      onChange={themePropSetter<string>("fidgetShadow")}
+                      hideGlobalSettings
+                    />
+                  </div>
+                </TabsContent>
+                {/* Mobile */}
+                <TabsContent value="mobile" className={tabContentClasses}>
+                  <MobileSettings
+                    miniApps={miniApps}
+                    onUpdateMiniApp={handleUpdateMiniApp}
+                    onReorderMiniApps={handleReorderMiniApps}
+                  />
                 </TabsContent>
               </Tabs>
-            </div>
-
-            <div className="grid gap-2 mt-4">
-              <div className="flex flex-row gap-1">
-                <h4 className="text-sm">Music</h4>
-                <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
-              </div>
-              <VideoSelector
-                initialVideoURL={theme.properties.musicURL}
-                onVideoSelect={themePropSetter("musicURL")}
-              />
             </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          {tabValue === "fonts" && (
-            <div
-              className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
-              onClick={() => setTabValue("code")}
-            >
-              <p>
-                <span className="font-bold">New!</span> Create a custom
-                background with a prompt.
-              </p>
-              {/* <HiOutlineSparkles size={32} /> */}
-              <SparklesIcon className="size-8" />
-            </div>
-          )}
 
           {/* Actions */}
           <div className="shrink-0 flex flex-col gap-3 pb-8">

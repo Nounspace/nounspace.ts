@@ -69,7 +69,7 @@ export function VideoSelector({
 
       {selectedVideo && (
         <div className="mt-4">
-          <h5>Selected Song:</h5>
+          <h5 className="text-sm">Selected Song:</h5>
           <Player url={selectedVideo} />
         </div>
       )}
