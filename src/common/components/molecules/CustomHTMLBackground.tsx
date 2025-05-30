@@ -12,7 +12,7 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
 }) => {
   // todo: more robust sanitization
   const sanitizedHtml = useMemo(() => {
-    return DOMPurify.sanitize(html, {
+    const sanitized = DOMPurify.sanitize(html, {
       FORCE_BODY: true,
       SAFE_FOR_TEMPLATES: false,
       USE_PROFILES: {
@@ -21,6 +21,12 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
       },
       ALLOWED_TAGS: ["style"],
     });
+
+    // ensure iframe content always fills its container
+    const baseStyles =
+      "<style>html,body{margin:0;height:100%;width:100%;}</style>";
+
+    return `${baseStyles}${sanitized}`;
   }, [html]);
 
   return sanitizedHtml ? (
