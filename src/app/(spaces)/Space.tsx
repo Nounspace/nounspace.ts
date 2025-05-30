@@ -391,7 +391,7 @@ export default function Space({
             <div className="flex justify-center">
               <div className="relative">
                 <Image
-                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
+                  src="https://i.ibb.co/mrvFkWhM/Smartphone-mock-1.png"
                   alt="Phone mockup"
                   width={344}
                   height={744}
