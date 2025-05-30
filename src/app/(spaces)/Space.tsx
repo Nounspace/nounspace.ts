@@ -21,6 +21,7 @@ import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import Image from "next/image";
+import MobilePreviewBackground from "@/common/components/molecules/MobilePreviewBackground";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 import { TAB_HEIGHT } from "@/constants/layout";
@@ -381,12 +382,7 @@ export default function Space({
         }`}
       >
         {showMobileContainer && (
-          <Image
-            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
-            alt="Mobile preview background"
-            fill
-            className="object-cover pointer-events-none select-none -z-10"
-          />
+          <MobilePreviewBackground className="fixed inset-0 pointer-events-none select-none -z-10" />
         )}
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
@@ -405,7 +401,7 @@ export default function Space({
                   </div>
                 </div>
                 <Image
-                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
+                  src="https://i.ibb.co/5W7k3JnH/Smartphone-Mock-simple.png"
                   alt="Phone mockup"
                   width={344}
                   height={744}
