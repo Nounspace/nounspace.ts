@@ -243,6 +243,10 @@ export default function PublicSpace({
         .then(() => {
           console.log("Loaded space tab");
           setLoading(false);
+          // Preload other tabs in the background
+          if (currentSpaceId) {
+            void loadRemainingTabs(currentSpaceId);
+          }
         })
         .catch((error) => {
           console.error("Error loading space:", error);
@@ -256,11 +260,11 @@ export default function PublicSpace({
     async (spaceId: string) => {
       const currentTabName = getCurrentTabName();
       const tabOrder = localSpaces[spaceId]?.order || [];
-      for (const tabName of tabOrder) {
-        if (tabName !== currentTabName) {
-          await loadSpaceTab(spaceId, tabName);
-        }
-      }
+      await Promise.all(
+        tabOrder
+          .filter((tabName) => tabName !== currentTabName)
+          .map((tabName) => loadSpaceTab(spaceId, tabName)),
+      );
     },
     [localSpaces, getCurrentTabName, loadSpaceTab]
   );
