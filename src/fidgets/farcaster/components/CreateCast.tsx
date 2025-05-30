@@ -62,9 +62,9 @@ const getUrlMetadata = fetchUrlMetadata(API_URL);
 
 const onError = (err) => {
   console.error(err);
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
-    window.alert(err.message);
-  }
+  // if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
+  //   // window.alert(err.message);
+  // }
 };
 
 export type ParentCastIdType = {
@@ -95,6 +95,9 @@ type CreateCastProps = {
 };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
+
+// Module-level cache of resolved usernames → FIDs
+const mentionFidCache = new Map<string, string>();
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
@@ -374,59 +377,76 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const fetchMentionsAndSetDraft = async () => {
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
+      // Updated regex: supports ENS-style usernames and extra trailing punctuation like ; or :
       const usernamePattern =
-        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9_.-]*[a-zA-Z0-9])?)(?=\s|[.,!?)]|$)/g;
+        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=\s|[.,!?;:)]|$)/g;
 
-      // Step 1: Find all mentions and their positions
+      console.group("Mention Parsing");
+
+      // Step 1: Parse mentions from the text
       const matches = [...text.matchAll(usernamePattern)];
 
       const usernamesWithPositions = matches.map((match) => ({
         fullMatch: match[0],
         username: match[1],
-        position: match.index! + match[0].indexOf("@"), // Exact "@" position
+        position: match.index! + match[0].indexOf("@"), // exact position of "@"
       }));
 
+      console.log("Parsed mentions from text:", usernamesWithPositions);
+
       const uniqueUsernames = Array.from(
-        new Set(usernamesWithPositions.map((u) => u.username)),
+        new Set(usernamesWithPositions.map((u) => u.username))
       );
 
       let mentionsToFids: { [key: string]: string } = {};
       let mentionsPositions: number[] = [];
       let mentionsText = text;
 
+      // Step 2: Fetch FIDs for each username individually, with error handling
       if (uniqueUsernames.length > 0) {
-        try {
-          const query = encodeURIComponent(uniqueUsernames.join(","));
-          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-          const fetchedMentions = await res.json();
-
-          if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce((acc, mention) => {
-              if (mention && mention.username && mention.fid) {
-                acc[mention.username] = mention.fid.toString();
-              }
-              return acc;
-            }, {} as { [key: string]: string });
+        for (const username of uniqueUsernames) {
+          if (mentionFidCache.has(username)) {
+            mentionsToFids[username] = mentionFidCache.get(username)!;
+            continue;
           }
 
-          // Step 2: Remove mentions from the text and record their original positions
-          // Important: Work from right to left to avoid index shift!
-          mentionsPositions = [];
-          for (let i = usernamesWithPositions.length - 1; i >= 0; i--) {
-            const { fullMatch, username, position } = usernamesWithPositions[i];
+          try {
+            const query = encodeURIComponent(username);
+            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+            const fetched = await res.json();
 
-            if (mentionsToFids[username]) {
-              mentionsPositions.unshift(position); // preserve order
-              mentionsText =
-                mentionsText.slice(0, position) +
-                mentionsText.slice(position + fullMatch.length);
+            if (Array.isArray(fetched) && fetched[0]?.fid) {
+              const fid = fetched[0].fid.toString();
+              mentionsToFids[username] = fid;
+              mentionFidCache.set(username, fid); // ✅ cache it
+            } else {
+              console.warn(`Username "${username}" not found or invalid response.`, fetched);
             }
+          } catch (err) {
+            console.error(`Failed to fetch FID for "${username}"`, err);
           }
-        } catch (error) {
-          console.error("Error fetching FIDs:", error);
+        }
+
+        console.log("Resolved mentions to FIDs:", mentionsToFids);
+
+        // Step 3: Remove resolved mentions from the text and track positions
+        // Important: Iterate right to left to avoid index shifting
+        mentionsPositions = [];
+        for (let i = usernamesWithPositions.length - 1; i >= 0; i--) {
+          const { fullMatch, username, position } = usernamesWithPositions[i];
+
+          if (mentionsToFids[username]) {
+            mentionsPositions.unshift(position); // maintain original order
+            mentionsText =
+              mentionsText.slice(0, position) +
+              mentionsText.slice(position + fullMatch.length);
+          }
         }
       }
 
+      console.groupEnd();
+
+      // Step 4: Update the draft with cleaned text and mention metadata
       setDraft((prevDraft) => ({
         ...prevDraft,
         text: mentionsText,
@@ -582,12 +602,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
               onPaste={async (e) => {
-                console.log('onPaste fired', e);
+                // console.log('onPaste fired', e);
                 if (!e.clipboardData || !e.clipboardData.items) return;
                 for (let i = 0; i < e.clipboardData.items.length; i++) {
                   const item = e.clipboardData.items[i];
                   const file = item.getAsFile();
-                  console.log('Clipboard item', i, 'type:', item.type, file);
+                  // console.log('Clipboard item', i, 'type:', item.type, file);
                   if (file && file.type.startsWith("image/")) {
                     e.preventDefault();
                     setIsUploadingImage(true);
