@@ -375,7 +375,9 @@ export default function Space({
         : null}
       <div
         className={`w-full h-full relative flex-col ${
-          showMobileContainer ? "" : "user-theme-background"
+          showMobileContainer
+            ? "flex items-center justify-center"
+            : "user-theme-background"
         }`}
       >
         {showMobileContainer && (
@@ -388,16 +390,9 @@ export default function Space({
         )}
         <div className="w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
-            <div className="flex justify-center">
-              <div className="relative">
-                <Image
-                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
-                  alt="Phone mockup"
-                  width={344}
-                  height={744}
-                  className="pointer-events-none select-none"
-                />
-                <div className="absolute top-[35px] left-[16px]">
+            <div className="flex items-center justify-center h-full">
+              <div className="relative w-[344px] h-[744px]">
+                <div className="absolute top-[35px] left-[16px] z-0">
                   <div
                     className="user-theme-background w-[312px] h-[675px] relative overflow-auto"
                     style={{ paddingBottom: `${TAB_HEIGHT}px` }}
@@ -409,6 +404,13 @@ export default function Space({
                     {mainContent}
                   </div>
                 </div>
+                <Image
+                  src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
+                  alt="Phone mockup"
+                  width={344}
+                  height={744}
+                  className="pointer-events-none select-none absolute inset-0 z-10"
+                />
               </div>
             </div>
           ) : (
