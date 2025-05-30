@@ -249,17 +249,29 @@ const CreateCast: React.FC<CreateCastProps> = ({
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
-    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer)) {
-      console.error(
-        "Submission failed: Missing text or embeds, or signer is undefined.",
-        {
-          draftText: draft?.text,
-          draftEmbedsLength: draft?.embeds?.length,
-          signerUndefined: isUndefined(signer),
-        },
-      );
+    if (!draft?.text) {
+      console.error("Submission failed: Draft text is missing.", {
+        draftText: draft?.text,
+      });
+    }
+
+    if (!draft?.embeds?.length) {
+      console.error("Submission failed: Draft embeds are empty or missing.", {
+        draftEmbedsLength: draft?.embeds?.length,
+      });
+    }
+
+    if (isUndefined(signer)) {
+      console.error("Submission failed: Signer is undefined.", {
+        signerUndefined: true,
+      });
+    }
+
+    // Short circuit if any are invalid
+    if (!draft?.text && !draft?.embeds?.length || isUndefined(signer)) {
       return false;
     }
+
 
     // Delay submission only if there are mentions and they are not resolved
     if (
