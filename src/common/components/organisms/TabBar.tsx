@@ -64,11 +64,9 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
-    setModalOpen: state.setup.setModalOpen,
-    getIsLoggedIn: state.getIsAccountReady,
-    getIsInitializing: state.getIsInitializing,
-  }));
+  const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
+  const isLoggedIn = useAppStore((state) => state.getIsAccountReady());
+  const isInitializing = useAppStore((state) => state.getIsInitializing());
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -190,7 +188,6 @@ function TabBar({
     switchTabTo(tabName, true);
   }, [switchTabTo]);
 
-  const isLoggedIn = getIsLoggedIn();
 
   return (
     <TooltipProvider>
@@ -236,7 +233,7 @@ function TabBar({
             </Reorder.Group>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
+        {isTokenPage && !isInitializing && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode ? (

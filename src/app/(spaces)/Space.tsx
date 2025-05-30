@@ -12,7 +12,6 @@ import { UserTheme } from "@/common/lib/theme";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { LayoutFidgets } from "@/fidgets";
@@ -332,7 +331,7 @@ export default function Space({
           ) : null}
 
           <div className="relative">
-            <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+            {tabBar}
             {/* Gradient overlay for tabs on mobile */}
             {isMobile && (
               <div
