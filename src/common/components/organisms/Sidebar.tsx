@@ -8,6 +8,8 @@ import React, {
   useMemo,
 } from "react";
 import Navigation from "./Navigation";
+import NavigationSkeleton from "./NavigationSkeleton";
+import { useAppStore } from "@/common/data/stores/app";
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };
@@ -54,6 +56,10 @@ export const useSidebarContext = (): SidebarContextValue => {
 export const Sidebar: React.FC<SidebarProps> = () => {
   const { editMode, setEditMode, sidebarEditable, portalRef } =
     useSidebarContext();
+  const { getIsInitializing } = useAppStore((state) => ({
+    getIsInitializing: state.getIsInitializing,
+  }));
+  const isInitializing = getIsInitializing();
 
   function enterEditMode() {
     setEditMode(true);
@@ -63,10 +69,14 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
       <div className={editMode ? "hidden" : "md:flex mx-auto h-full hidden"}>
-        <Navigation
-          isEditable={sidebarEditable}
-          enterEditMode={enterEditMode}
-        />
+        {isInitializing ? (
+          <NavigationSkeleton />
+        ) : (
+          <Navigation
+            isEditable={sidebarEditable}
+            enterEditMode={enterEditMode}
+          />
+        )}
       </div>
     </>
   );
