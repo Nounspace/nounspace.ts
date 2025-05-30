@@ -405,6 +405,7 @@ export default function Space({
                     <CustomHTMLBackground
                       html={config.theme?.properties.backgroundHTML}
                       className="absolute inset-0 pointer-events-none"
+                      style={{ bottom: `-${TAB_HEIGHT}px` }}
                     />
                     {mainContent}
                   </div>

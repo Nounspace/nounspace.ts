@@ -4,11 +4,13 @@ import DOMPurify from "isomorphic-dompurify";
 type CustomHTMLBackgroundProps = {
   html: string;
   className?: string;
+  style?: React.CSSProperties;
 };
 
 const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
   html,
   className = "fixed size-full pointer-events-none",
+  style,
 }) => {
   // todo: more robust sanitization
   const sanitizedHtml = useMemo(() => {
@@ -28,6 +30,7 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
       title="Custom Background"
       srcDoc={sanitizedHtml}
       className={className}
+      style={style}
       sandbox="" // disallows scripts
     />
   ) : null;
