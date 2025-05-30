@@ -386,16 +386,16 @@ export default function Space({
             className="object-cover pointer-events-none select-none -z-10"
           />
         )}
-        <div className="w-full transition-all duration-100 ease-out">
+        <div className="relative w-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
-            <div className="flex justify-center">
-              <div className="relative">
+            <div className="absolute inset-0 flex justify-center">
+              <div className="relative top-1/2 -translate-y-1/2">
                 <Image
                   src="https://i.ibb.co/zW7k3HKk/Chat-GPT-Image-May-29-2025-12-17-27-PM.png"
                   alt="Phone mockup"
                   width={344}
                   height={744}
-                  className="pointer-events-none select-none"
+                  className="pointer-events-none select-none z-10"
                 />
                 <div className="absolute top-[35px] left-[16px]">
                   <div
