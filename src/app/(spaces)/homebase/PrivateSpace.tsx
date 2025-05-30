@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, lazy } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -14,9 +14,7 @@ import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
-
-// Lazy load the TabBar component to improve performance
-const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
+import TabBar from "@/common/components/organisms/TabBar";
 
 // Main component for the private space
 function PrivateSpace({ tabName }: { tabName: string }) {
