@@ -74,7 +74,13 @@ const galleryConfig: FidgetProperties = {
         return (
           <WithMargin>
             <div className="flex flex-col gap-4">
-              <ImgBBUploader onImageUploaded={handleImageUploaded} />
+              <ImgBBUploader 
+                onImageUploaded={(url) => {
+                  if (url) {
+                    handleImageUploaded(url);
+                  }
+                }}
+              />
             </div>
           </WithMargin>
         );
