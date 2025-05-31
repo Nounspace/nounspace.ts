@@ -1,6 +1,7 @@
 "use client";
-import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
-import { createPortal } from "react-dom";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import InfoToast from "@/common/components/organisms/InfoBanner";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -10,19 +11,16 @@ import {
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
-import InfoToast from "@/common/components/organisms/InfoBanner";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
-import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
-import { TAB_HEIGHT } from "@/constants/layout";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { LayoutFidgets } from "@/fidgets";
 import Image from "next/image";
 
 export type SpaceFidgetConfig = {
@@ -111,66 +109,66 @@ export default function Space({
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
-       // Find unused fidgets
-       const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-        (id) => !layoutFidgetIds.has(id)
-      );
-      // Remove unused fidgets
-      if (unusedFidgetIds.length > 0) {
-        const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-        unusedFidgetIds.forEach((id) => {
-          delete cleanedFidgetInstanceDatums[id];
-        });
-        // Only save if we have fidgets left
-        if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
-          saveConfig({
-            fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-            timestamp: new Date().toISOString(),
-          }).then(() => {
-            commitConfig();
-          });
-        }
-      }
-  
-      // Check for and handle overlapping fidgets
-      const { cleanedLayout, removedFidgetIds } = cleanupLayout(
-        config.layoutDetails.layoutConfig.layout,
-        config.fidgetInstanceDatums,
-        !isNil(profile),
-        !isNil(feed)
-      );
-  
+    // Find unused fidgets
+    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+      (id) => !layoutFidgetIds.has(id)
+    );
+    // Remove unused fidgets
+    if (unusedFidgetIds.length > 0) {
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      removedFidgetIds.forEach(id => {
+      unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
-  
-      let settingsChanged = false;
-      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-        const datum = cleanedFidgetInstanceDatums[id];
-        const settings = datum.config?.settings as Record<string, unknown>;
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-      });
-  
-      // Make Queued Changes
-      if (removedFidgetIds.length > 0 || 
-        cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-        settingsChanged) {
-  
+      // Only save if we have fidgets left
+      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
         saveConfig({
-          layoutDetails: {
-            layoutConfig: {
+          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+          timestamp: new Date().toISOString(),
+        }).then(() => {
+          commitConfig();
+        });
+      }
+    }
+
+    // Check for and handle overlapping fidgets
+    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+      config.layoutDetails.layoutConfig.layout,
+      config.fidgetInstanceDatums,
+      !isNil(profile),
+      !isNil(feed)
+    );
+
+    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+    removedFidgetIds.forEach(id => {
+      delete cleanedFidgetInstanceDatums[id];
+    });
+
+    let settingsChanged = false;
+    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+      const datum = cleanedFidgetInstanceDatums[id];
+      const settings = datum.config?.settings as Record<string, unknown>;
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+    });
+
+    // Make Queued Changes
+    if (removedFidgetIds.length > 0 ||
+      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
+        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
+      settingsChanged) {
+
+      saveConfig({
+        layoutDetails: {
+          layoutConfig: {
             ...config.layoutDetails.layoutConfig,
             layout: cleanedLayout,
           },
@@ -207,8 +205,8 @@ export default function Space({
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
-            layoutConfig,
-          }
+          layoutConfig,
+        }
         : undefined,
       theme,
       fidgetInstanceDatums,
@@ -225,7 +223,7 @@ export default function Space({
       // Use the configured layout for desktop or fallback to "grid"
       const layoutFidgetKey =
         config?.layoutDetails?.layoutFidget &&
-        LayoutFidgets[config.layoutDetails.layoutFidget]
+          LayoutFidgets[config.layoutDetails.layoutFidget]
           ? config.layoutDetails.layoutFidget
           : "grid";
       return LayoutFidgets[layoutFidgetKey];
@@ -302,7 +300,7 @@ export default function Space({
 
       <div className="relative">
         {!isMobile && (
-        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+          <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
         )}
         {isMobile && !showMobileContainer && (
           <div
@@ -352,31 +350,33 @@ export default function Space({
     <>
       {showMobileContainer && editMode && portalRef.current
         ? createPortal(
-            <aside
-              id="logo-sidebar"
-              className="h-screen flex-row flex bg-white"
-              aria-label="Sidebar"
-            >
-              <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
-                <ThemeSettingsEditor
-                  theme={config.theme}
-                  saveTheme={(newTheme) =>
-                    saveLocalConfig({ theme: newTheme })
-                  }
-                  saveExitEditMode={saveExitEditMode}
-                  cancelExitEditMode={cancelExitEditMode}
-                  fidgetInstanceDatums={config.fidgetInstanceDatums}
-                  saveFidgetInstanceDatums={(datums) =>
-                    saveLocalConfig({ fidgetInstanceDatums: datums })
-                  }
-                />
-              </div>
-            </aside>,
-            portalRef.current,
-          )
+          <aside
+            id="logo-sidebar"
+            className="h-screen flex-row flex bg-white"
+            aria-label="Sidebar"
+          >
+            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+              <ThemeSettingsEditor
+                theme={config.theme}
+                saveTheme={(newTheme) =>
+                  saveLocalConfig({ theme: newTheme })
+                }
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                saveFidgetInstanceDatums={(datums) =>
+                  saveLocalConfig({ fidgetInstanceDatums: datums })
+                }
+              />
+            </div>
+          </aside>,
+          portalRef.current,
+        )
         : null}
       <div
-        className={`w-full h-full relative flex-col ${showMobileContainer ? "" : "user-theme-background"
+        className={`w-full h-full relative flex-col ${showMobileContainer
+            ? "flex items-center justify-center"
+            : "user-theme-background"
           }`}
       >
         {showMobileContainer && (
