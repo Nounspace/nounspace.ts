@@ -107,6 +107,19 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     } else {
       await loadTab(tabName);
     }
+
+    // After the current tab is loaded, preload other tabs in the background
+    void loadRemainingTabs();
+  }
+
+  // Preload all tabs except the current one
+  async function loadRemainingTabs() {
+    const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
+    await Promise.all(
+      otherTabs.map((name) =>
+        name === "Feed" ? loadFeedConfig() : loadTab(name),
+      ),
+    );
   }
 
   // Function to switch to a different tab
