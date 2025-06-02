@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import PrivateSpace from "../../PrivateSpace";
+import PrivateSpace from "../../../PrivateSpace";
 
 const HomebaseCastPage = () => {
   const params = useParams<{ caster: string; castHash: string }>();
