@@ -20,7 +20,6 @@ import SpaceLoading from "./SpaceLoading";
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import Image from "next/image";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 import { TAB_HEIGHT } from "@/constants/layout";
