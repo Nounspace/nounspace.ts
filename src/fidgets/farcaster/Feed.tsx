@@ -9,6 +9,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import ThemeSelector from "@/common/components/molecules/ThemeSelector";
 import {
+  useFidFromUsername,
   useGetCasts,
   useGetCastsByKeyword,
 } from "@/common/data/queries/farcaster";
@@ -19,13 +20,13 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { mobileStyleSettings, WithMargin } from "../helpers";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
+import { mobileStyleSettings, WithMargin } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
 
@@ -39,12 +40,14 @@ export type FeedFidgetSettings = {
   feedType: FeedType;
   filterType: FilterType;
   users?: string;
+  username?: string;
   channel?: string;
   keyword?: string;
   selectPlatform: Platform;
   Xhandle: string;
   style: string;
   useDefaultColors?: boolean;
+  membersOnly?: boolean;
 } & FidgetSettingsStyle;
 
 const FILTER_TYPES = [
@@ -130,6 +133,23 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       group: "settings",
     },
     {
+      fieldName: "username",
+      displayName: "Username",
+      displayNameHint: "Input a Farcaster username to display a feed of that user's casts.",
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      required: false,
+      disabledIf: (settings) =>
+        settings.feedType !== FeedType.Filter ||
+        settings.filterType !== FilterType.Users ||
+        settings?.selectPlatform?.name === "X",
+      default: "",
+      group: "settings",
+    },
+    {
       fieldName: "users",
       displayName: "FID",
       displayNameHint: "Input an FID to display a feed of that user's casts.",
@@ -142,7 +162,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
       disabledIf: (settings) =>
         settings.feedType !== FeedType.Filter ||
         settings.filterType !== FilterType.Users ||
-        settings?.selectPlatform?.name === "X",
+        settings?.selectPlatform?.name === "X" ||
+        !!(settings.username && settings.username.length > 0),
       default: "",
       group: "settings",
     },
@@ -307,6 +328,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
 
 export const FEED_TYPES = [
   { name: "Following", value: FeedType.Following },
+  { name: "For you", value: "for_you" }, 
+  { name: "Trending", value: "trending" }, 
   { name: "Filter", value: FeedType.Filter },
 ];
 
@@ -316,10 +339,18 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     Xhandle,
     style,
   } = settings;
-  const { feedType, users, channel, filterType, keyword } = settings;
+  const { feedType, users, username, channel, filterType, keyword, membersOnly } = settings;
   const { fid } = useFarcasterSigner("feed");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [prevFeedType, setPrevFeedType] = useState(feedType);
+
+  const { data: usernameFid } = useFidFromUsername(
+    filterType === FilterType.Users && username ? username : undefined
+  );
+
+  const effectiveFids = filterType === FilterType.Users && usernameFid
+    ? usernameFid.toString()
+    : users;
 
   const {
     data,
@@ -336,8 +367,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         feedType,
         fid,
         filterType,
-        fids: users,
+        fids: effectiveFids,
         channel,
+        ...(feedType === FeedType.Filter && filterType === 
+          FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
   const threadStackRef = React.useRef(useLifoQueue<string>());
@@ -420,8 +453,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
     if (isError) {
       return (
-        <div className="p-4 text-center">
-          <p>Error loading feed. Please try again.</p>
+        <div className="h-full w-full flex justify-center items-center">
+          <Loading />
         </div>
       );
     }
@@ -432,7 +465,20 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         : data.pages.some(page => page.casts?.length > 0)
     );
 
+    const filtroInformado = (
+      (filterType === FilterType.Users && (effectiveFids || username)) ||
+      (filterType === FilterType.Channel && channel) ||
+      (filterType === FilterType.Keyword && keyword)
+    );
+
     if (!hasData) {
+      if (!filtroInformado) {
+        return (
+          <div className="h-full w-full flex justify-center items-center">
+            <Loading />
+          </div>
+        );
+      }
       return (
         <div className="p-4 text-center">
           <p>No content found with these filter settings</p>
@@ -495,11 +541,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
               </div>
             ) : hasNextPage ? (
               "Fetch More Data"
-            ) : (
-              <div className="h-full w-full flex flex-col justify-center items-center">
-                <Loading />
-              </div>
-            )}
+            ) : null}
           </div>
         )}
       </>

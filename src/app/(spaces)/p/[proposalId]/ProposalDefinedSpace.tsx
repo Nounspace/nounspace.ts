@@ -28,9 +28,9 @@ const ProposalDefinedSpace = ({
       createInitalProposalSpaceConfigForProposalId(
         proposalId as Address,
         ownerId as Address,
-        proposalData?.proposer.id as Address
+        proposalData?.proposer.id as Address,
       ),
-    [proposalId, proposalData]
+    [proposalId, proposalData],
   );
 
   const getSpacePageUrl = (tabName: string) => `/p/${proposalId}/${tabName}`;
@@ -38,8 +38,8 @@ const ProposalDefinedSpace = ({
   return (
     <div className="w-full">
       <PublicSpace
-        spaceId={spaceId || ""} // Ensure spaceId is a string
-        tabName={tabName || "Profile"} // Ensure tabName is a string
+        spaceId={spaceId ?? null}
+        tabName={tabName || "Profile"}
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}

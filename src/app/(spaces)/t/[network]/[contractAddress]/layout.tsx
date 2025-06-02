@@ -2,6 +2,7 @@ import { WEBSITE_URL } from "@/constants/app";
 import { Metadata } from "next/types";
 import React from "react";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
+import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
 // Default metadata (used as fallback)
@@ -23,6 +24,10 @@ export async function generateMetadata({
   // Try to fetch token data using fetchMasterToken
   let symbol = "";
   let price = "";
+  let name = "";
+  let imageUrl = "";
+  let marketCap = "";
+  let priceChange = "";
   
   try {
     const tokenData = await fetchTokenData(
@@ -35,11 +40,22 @@ export async function generateMetadata({
     
     // Get symbol and price from tokenData
     symbol = tokenData?.symbol || "";
+    name = tokenData?.name || "";
+    imageUrl = tokenData?.image_url || "";
+    marketCap = tokenData?.market_cap_usd || "";
+    priceChange = tokenData?.priceChange || "";
     
-    // Get price from tokenData
-    price = tokenData?.price_usd 
-      ? `$${Number(tokenData.price_usd).toFixed(2)}` 
-      : "";
+    // Format price with extra precision for small values
+    if (tokenData?.price_usd) {
+      const priceNumber = Number(tokenData.price_usd);
+      const formatted = priceNumber.toLocaleString(undefined, {
+        minimumFractionDigits: priceNumber < 0.01 ? 4 : 2,
+        maximumFractionDigits: priceNumber < 0.01 ? 6 : 2,
+      });
+      price = `$${formatted}`;
+    } else {
+      price = "";
+    }
   } catch (error) {
     console.error("Error fetching token data for frame metadata:", error);
   }
@@ -53,9 +69,21 @@ export async function generateMetadata({
     : `${WEBSITE_URL}/t/${network}/${contractAddress}`;
     
   // Create token frame with the symbol if available
+  const params = new URLSearchParams({
+    name,
+    symbol,
+    imageUrl,
+    address: contractAddress,
+    marketCap,
+    price,
+    priceChange,
+  });
+
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/token?${params.toString()}`;
+
   const tokenFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: ogImageUrl,
     button: {
       title: symbol ? `Visit ${symbol}` : "Visit Token Space",
       action: {
@@ -69,14 +97,26 @@ export async function generateMetadata({
   };
   
   // Create metadata object with token data if available
+  const tokenMetadata = getTokenMetadataStructure({
+    name,
+    symbol,
+    imageUrl,
+    contractAddress,
+    marketCap,
+    price,
+    priceChange,
+    network,
+  });
+
   const metadataWithFrame = {
+    ...tokenMetadata,
     title: symbol ? `${symbol} ${price ? `- ${price}` : ""} | Nounspace` : "Token Space | Nounspace",
-    description: symbol 
+    description: symbol
       ? `${symbol} ${price ? `(${price})` : ""} token information and trading on Nounspace, the customizable web3 social app built on Farcaster.`
       : "Token information and trading on Nounspace, the customizable web3 social app built on Farcaster.",
     other: {
       "fc:frame": JSON.stringify(tokenFrame),
-    }
+    },
   };
   
   return metadataWithFrame;

@@ -13,11 +13,13 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
 import {
-  FaPaintbrush,
   FaDiscord,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa6";
+// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
+// is `RiQuillPenLine`. Update the import to prevent build errors.
+import { RiQuillPenLine } from "react-icons/ri";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -50,7 +52,6 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
-  enterEditMode: () => void;
   mobile?: boolean;
   onNavigate?: () => void;
 };
@@ -98,10 +99,6 @@ const Navigation: React.FC<NavProps> = ({
   function handleLogout() {
     router.push("/home");
     logout();
-  }
-
-  function turnOnEditMode() {
-    enterEditMode();
   }
 
   const openModal = () => setModalOpen(true);
@@ -343,18 +340,6 @@ const Navigation: React.FC<NavProps> = ({
                   shrunk ? "flex-col gap-1" : ""
                 )}
               >
-                {!isNotificationsPage && !isExplorerPage && isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                    className="flex items-center justify-center w-12 h-12"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
-                  </Button>
-                )}
                 <Button
                   onClick={openCastModal}
                   variant="primary"
@@ -362,7 +347,11 @@ const Navigation: React.FC<NavProps> = ({
                   className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
-                  {shrunk && <span className="text-lg font-bold">+</span>}
+                  {shrunk && (
+                    <span className="text-lg font-bold">
+                      <RiQuillPenLine />
+                    </span>
+                  )}
                 </Button>
               </div>
             )}

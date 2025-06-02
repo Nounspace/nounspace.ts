@@ -312,8 +312,7 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
   };
 
   return (
-    <div
-    >
+    <div className="flex flex-col h-full">
       {settings?.title && (
         <CardHeader className="p-4">
           <CardTitle
@@ -327,8 +326,12 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
           </CardTitle>
         </CardHeader>
       )}
-
-      <div className={isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col"}>
+      <div
+        className={
+          (isGridView ? "grid grid-cols-3 gap-4" : "flex flex-col") +
+          " overflow-y-auto flex-grow"
+        }
+      >
         {links.length > 0 &&
           links.map((link, index) => (
             <a

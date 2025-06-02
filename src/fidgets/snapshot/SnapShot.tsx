@@ -11,11 +11,11 @@ import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import ProposalItem from "./components/ProposalItem";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 
-export type snapShotSettings = {
+export type SnapShotSettings = {
   subgraphUrl: string;
   daoContractAddress: string;
-  "snapshot ens": string;
-  "snapshot space": string;
+  snapshotEns: string;
+  snapshotSpace: string;
   scale: number;
   headingsFontFamily?: string;
   fontFamily?: string;
@@ -30,7 +30,7 @@ export const snapshotConfig: FidgetProperties = {
   icon: 0x26a1,
   fields: [
     {
-      fieldName: "snapshot ens",
+      fieldName: "snapshotEns",
       displayName: "Snapshot ENS",
       displayNameHint: "Enter the ENS name of the Snapshot space (e.g. 'gnars.eth')",
       default: "gnars.eth",
@@ -115,7 +115,7 @@ export const snapshotConfig: FidgetProperties = {
   },
 };
 
-export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
+export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
   settings,
 }) => {
   // const [expandedProposalId, setExpandedProposalId] = useState<string | null>(
@@ -125,12 +125,12 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
   const first = 5;
 
   const { proposals, error } = useSnapshotProposals({
-    ens: settings["snapshot ens"],
+    ens: settings.snapshotEns,
     skip,
     first,
   });
   // const { snapShotInfo } = useSnapShotInfo({
-  //   ens: settings["snapshot ens"],
+  //   ens: settings.snapshotEns,
   // });
 
   // const handleToggleExpand = (proposalId: string) => {
@@ -189,7 +189,7 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             color: getHeadingsFontColor()
           }}
         >
-          {settings["snapshot ens"]} proposals
+          {settings.snapshotEns} proposals
         </h1>
         {error && <p className="text-red-500" style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}>{error}</p>}
         <div
@@ -200,7 +200,7 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
             <ProposalItem
               key={proposal.id}
               proposal={proposal}
-              space={settings["snapshot ens"]}
+              space={settings.snapshotEns}
               headingsFont={getHeadingsFontFamily()}
               headingsColor={getHeadingsFontColor()}
               bodyFont={getBodyFontFamily()}
@@ -232,4 +232,4 @@ export const SnapShot: React.FC<FidgetArgs<snapShotSettings>> = ({
 export default {
   fidget: SnapShot,
   properties: snapshotConfig,
-} as FidgetModule<FidgetArgs<snapShotSettings>>;
+} as FidgetModule<FidgetArgs<SnapShotSettings>>;

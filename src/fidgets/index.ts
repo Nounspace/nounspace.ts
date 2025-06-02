@@ -16,14 +16,17 @@ import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
 import marketData from "./token/marketData";
+import Portfolio from "./token/Portfolio";
 import chat from "./ui/chat";
 import TabFullScreen from "./layout/tabFullScreen";
+import FramesFidget from "./framesV2/components/FramesFidget";
 // import iframely from "./ui/iframely";
 
 export const CompleteFidgets = {
   //
   example:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Example : undefined,
+  FramesV2: FramesFidget,
   profile:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
   // Farcaster
@@ -45,6 +48,7 @@ export const CompleteFidgets = {
   Rss: rss,
   Video: VideoFidget,
   Market: marketData,
+  Portfolio: Portfolio,
   Chat: chat,
 };
 

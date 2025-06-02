@@ -116,11 +116,6 @@ export const createHomeBaseTabStoreFunc = (
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
   updateTabOrdering(newOrdering, commit = false) {
-    // console.log('Updating tab ordering:', {
-    //   newOrder: newOrdering,
-    //   commit
-    // });
-    
     set((draft) => {
       draft.homebase.tabOrdering.local = newOrdering;
     }, "updateTabOrdering");
@@ -139,7 +134,10 @@ export const createHomeBaseTabStoreFunc = (
         `${homebaseTabOrderPath(get().account.currentSpaceIdentityPublicKey!)}`,
       );
     try {
-      const { data } = await axios.get<Blob>(publicUrl, {
+      const t = Math.random().toString(36).substring(2);
+      const urlWithParam = `${publicUrl}?t=${t}`;
+
+      const { data } = await axios.get<Blob>(urlWithParam, {
         responseType: "blob",
         headers: {
           "Cache-Control": "no-cache",
@@ -170,7 +168,11 @@ export const createHomeBaseTabStoreFunc = (
     }
   },
   commitTabOrderingToDatabase: debounce(async () => {
-    const localCopy = cloneDeep(get().homebase.tabOrdering.local);
+    const localCopy = cloneDeep(
+      get().homebase.tabOrdering.local.filter((name, i, arr) =>
+        name !== "Feed" && arr.indexOf(name) === i,
+      ),
+    );
     if (localCopy) {
       // console.log('Committing tab ordering to database:', {
       //   tabCount: localCopy.length,
@@ -237,12 +239,13 @@ export const createHomeBaseTabStoreFunc = (
           });
         }, "loadTabNames");
 
-        // Load remote state for any tabs that don't have it
-        for (const tabName of validTabNames) {
+        // Load remote state for any tabs that don't have it. Don't block on
+        // these network requests so the feed can render quickly.
+        validTabNames.forEach((tabName) => {
           if (!get().homebase.tabs[tabName]?.remoteConfig) {
-            await get().homebase.loadHomebaseTab(tabName);
+            void get().homebase.loadHomebaseTab(tabName);
           }
-        }
+        });
 
         return validTabNames;
       }

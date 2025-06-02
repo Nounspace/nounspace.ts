@@ -8,35 +8,63 @@ async function loadCasts(req: NextApiRequest, res: NextApiResponse) {
   const feedType =
     isNil(req.query.feedType) || isArray(req.query.feedType)
       ? FeedType.Following
-      : (req.query.feedType as FeedType);
+      : (req.query.feedType as string);
 
-  const options: AxiosRequestConfig = {
-    method: "GET",
-    url: "https://api.neynar.com/v2/farcaster/feed",
-    headers: {
-      accept: "application/json",
-      api_key: process.env.NEYNAR_API_KEY!,
-    },
-    params: {
-      ...req.query,
-      feed_type: feedType,
-    },
-  };
+  let url = "https://api.neynar.com/v2/farcaster/feed";
+  const params = { ...req.query };
+  let options: AxiosRequestConfig;
+  if (feedType === "for_you") {
+    url = "https://api.neynar.com/v2/farcaster/feed/for_you";
+    const { fid, cursor, limit } = params;
+    if (!fid || fid === "-1") {
+      return res.status(400).json({ error: "Invalid or missing FID for 'For you' feed. Please log in to access this feature." });
+    }
+    options = {
+      method: "GET",
+      url,
+      headers: {
+        accept: "application/json",
+        api_key: process.env.NEYNAR_API_KEY!,
+      },
+      params: { fid, cursor, limit },
+    };
+  } else if (feedType === "trending") {
+    url = "https://api.neynar.com/v2/farcaster/feed/trending";
+    const { cursor, limit } = params;
+    options = {
+      method: "GET",
+      url,
+      headers: {
+        accept: "application/json",
+        api_key: process.env.NEYNAR_API_KEY!,
+      },
+      params: { cursor, limit },
+    };
+  } else {
+    options = {
+      method: "GET",
+      url,
+      headers: {
+        accept: "application/json",
+        api_key: process.env.NEYNAR_API_KEY!,
+      },
+      params: { ...params, feed_type: feedType },
+    };
+  }
 
   try {
     const { data } = await axios.request(options);
     if (data.status && data.status !== 200) {
       return res.status(data.status).json(data);
     }
-
     res.status(200).json(data);
   } catch (e) {
     if (isAxiosError(e)) {
       res
-        .status(e.response!.data.status || 500)
-        .json(e.response!.data || "An unknown error occurred");
+        .status(e.response?.data?.status || 500)
+        .json(e.response?.data || { error: e.message });
     } else {
-      res.status(500).json("An unknown error occurred");
+      res.status(500).json({ error: (e as Error).message });
     }
   }
 }
