@@ -17,6 +17,7 @@ import {
 } from ".";
 import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
 import StashIcon from "../components/atoms/icons/Stash";
+import { useGlobalFidgetStyle } from "../providers/GlobalFidgetStyleProvider";
 import {
   Tooltip,
   TooltipContent,
@@ -67,6 +68,7 @@ export function FidgetWrapper({
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
+  const { borderRadius, spacing } = useGlobalFidgetStyle();
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -186,7 +188,7 @@ export function FidgetWrapper({
             : "size-full overflow-hidden"
         }
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
@@ -198,6 +200,8 @@ export function FidgetWrapper({
           boxShadow: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
+          borderRadius,
+          padding: spacing,
         }}
       >
         {bundle.config.editable && (

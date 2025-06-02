@@ -24,6 +24,8 @@ import {
 import React, { useEffect, useMemo, useState } from "react";
 import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
 import BackArrowIcon from "../atoms/icons/BackArrow";
+import { Slider } from "@mui/material";
+import { useGlobalFidgetStyle } from "@/common/providers/GlobalFidgetStyleProvider";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -156,6 +158,8 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   removeFidget,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
+  const { borderRadius, spacing, setBorderRadius, setSpacing } =
+    useGlobalFidgetStyle();
 
   useEffect(() => {
     setState(settings);
@@ -238,6 +242,32 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
               </TabsContent>
             )}
           </Tabs>
+        </div>
+      </div>
+
+      <div className="border-t pt-4 mt-4">
+        <h2 className="text-md font-semibold mb-2">Change All Borders & Spacing</h2>
+        <div className="flex flex-col gap-4">
+          <label className="flex flex-col">
+            <span className="text-sm mb-1">Border Radius</span>
+            <Slider
+              value={borderRadius}
+              min={0}
+              max={32}
+              step={1}
+              onChange={(_, v) => setBorderRadius(v as number)}
+            />
+          </label>
+          <label className="flex flex-col">
+            <span className="text-sm mb-1">Spacing</span>
+            <Slider
+              value={spacing}
+              min={0}
+              max={32}
+              step={1}
+              onChange={(_, v) => setSpacing(v as number)}
+            />
+          </label>
         </div>
       </div>
 
