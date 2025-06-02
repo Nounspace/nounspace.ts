@@ -7,7 +7,6 @@ import Privy from "./Privy";
 import AuthenticatorProvider from "./AutheticatorProvider";
 import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
-import GlobalFidgetStyleProvider from "./GlobalFidgetStyleProvider";
 import LoggedInStateProvider from "./LoggedInStateProvider";
 import AnalyticsProvider from "./AnalyticsProvider";
 import VersionCheckProivder from "./VersionCheckProvider";
@@ -24,9 +23,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
             <Theme>
               <AppStoreProvider>
                 <UserThemeProvider>
-                  <GlobalFidgetStyleProvider>
-                    <AuthenticatorProvider>
-                      <LoggedInStateProvider>
+                  <AuthenticatorProvider>
+                    <LoggedInStateProvider>
                         <SidebarContextProvider>
                           <AnalyticsProvider>
                             <MiniAppSdkProvider>
@@ -36,7 +34,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         </SidebarContextProvider>
                       </LoggedInStateProvider>
                     </AuthenticatorProvider>
-                  </GlobalFidgetStyleProvider>
                 </UserThemeProvider>
               </AppStoreProvider>
             </Theme>

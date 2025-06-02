@@ -209,4 +209,5 @@ export const dummyFunctions = {
   setSelectedFidgetID: () => {},
   removeFidget: () => {},
   minimizeFidget: () => {},
+  saveTheme: async () => {},
 };

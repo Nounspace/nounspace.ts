@@ -35,7 +35,6 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
     >
       <FidgetWrapper
         fidget={CompleteFidgets[fidgetBundle.fidgetType]?.fidget}
-        context={{ theme }}
         bundle={fidgetBundle}
         saveConfig={saveFidgetConfig(fidgetId)}
         setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
@@ -43,6 +42,8 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
         selectedFidgetID=""
         removeFidget={dummyFunctions.removeFidget}
         minimizeFidget={dummyFunctions.minimizeFidget}
+        theme={theme}
+        saveTheme={dummyFunctions.saveTheme}
       />
     </div>
   );

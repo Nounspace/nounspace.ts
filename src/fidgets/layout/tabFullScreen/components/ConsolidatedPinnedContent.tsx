@@ -37,7 +37,6 @@ const ConsolidatedPinnedContent: React.FC<ConsolidatedPinnedContentProps> = ({
           >
             <FidgetWrapper
               fidget={CompleteFidgets[bundle.fidgetType]?.fidget}
-              context={{ theme }}
               bundle={bundle}
               saveConfig={saveFidgetConfig(fidgetId)}
               setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
@@ -45,6 +44,8 @@ const ConsolidatedPinnedContent: React.FC<ConsolidatedPinnedContentProps> = ({
               selectedFidgetID=""
               removeFidget={dummyFunctions.removeFidget}
               minimizeFidget={dummyFunctions.minimizeFidget}
+              theme={theme}
+              saveTheme={dummyFunctions.saveTheme}
             />
           </div>
         );
