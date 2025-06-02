@@ -183,11 +183,11 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
             : "size-full overflow-hidden"
         }
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
@@ -199,6 +199,7 @@ export function FidgetWrapper({
           boxShadow: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
+          borderRadius: 'var(--user-theme-fidget-border-radius)',
         }}
       >
         {bundle.config.editable && (
