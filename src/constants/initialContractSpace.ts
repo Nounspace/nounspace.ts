@@ -421,6 +421,8 @@ export const createInitialContractSpaceConfigForAddress = (
       fidgetBorderColor: "#eeeeee", // equivalent to rgba(238, 238, 238, 1)
       fidgetBorderWidth: "0",
       fidgetShadow: "none",
+      fidgetBorderRadius: "8px",
+      fidgetSpacing: "16",
       font: "Inter",
       fontColor: "#000000",
       headingsFont: "Inter",

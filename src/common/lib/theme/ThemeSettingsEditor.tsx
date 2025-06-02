@@ -19,6 +19,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import { Slider } from "@mui/material";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
@@ -110,6 +111,8 @@ export function ThemeSettingsEditor({
     fidgetBorderWidth,
     fidgetBorderColor,
     fidgetShadow,
+    fidgetBorderRadius,
+    fidgetSpacing,
   } = theme.properties;
 
   function saveAndClose() {
@@ -295,12 +298,48 @@ export function ThemeSettingsEditor({
                           <h5 className="text-sm">Shadow</h5>
                           <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
                         </div>
-                        <ShadowSelector
+                      <ShadowSelector
                           className="ring-0 focus:ring-0 border-0 shadow-none"
                           value={fidgetShadow as string}
                           onChange={themePropSetter<string>("fidgetShadow")}
                           hideGlobalSettings
                         />
+                      </div>
+                      <div>
+                        <div className="flex flex-row gap-1">
+                          <h5 className="text-sm">Change All Borders & Spacing</h5>
+                          <ThemeSettingsTooltip text="Set border radius and spacing for all Fidgets on this tab." />
+                        </div>
+                        <div className="flex flex-col gap-2 p-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs w-24">Border Radius</span>
+                            <Slider
+                              value={parseInt(fidgetBorderRadius as string)}
+                              min={0}
+                              max={30}
+                              step={1}
+                              onChange={(_, value) =>
+                                themePropSetter<string>("fidgetBorderRadius")(
+                                  `${value}px`,
+                                )
+                              }
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs w-24">Spacing</span>
+                            <Slider
+                              value={parseInt(fidgetSpacing as string)}
+                              min={0}
+                              max={32}
+                              step={1}
+                              onChange={(_, value) =>
+                                themePropSetter<string>("fidgetSpacing")(
+                                  `${value}`,
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

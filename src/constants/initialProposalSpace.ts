@@ -385,6 +385,8 @@ export const createInitalProposalSpaceConfigForProposalId = (
       fidgetBorderColor: "#eeeeee",
       fidgetBorderWidth: "1px",
       fidgetShadow: "none",
+      fidgetBorderRadius: "8px",
+      fidgetSpacing: "16",
       font: "Inter",
       fontColor: "#000000",
       headingsFont: "Londrina Solid",
