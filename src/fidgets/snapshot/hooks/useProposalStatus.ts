@@ -29,27 +29,6 @@ export const useProposalStatus = ({ proposal, spaceQuorum }: UseProposalStatusPr
   return useMemo(() => {
     const now = Date.now() / 1000;
     
-    // Debug logging to understand the proposal data structure
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Proposal Debug Data:', {
-        id: proposal.id || 'N/A',
-        type: proposal.type,
-        state: proposal.state,
-        start: proposal.start,
-        end: proposal.end,
-        scores: proposal.scores,
-        scores_total: proposal.scores_total,
-        space: proposal.space,
-        spaceQuorum,
-        now: now,
-        timeStatus: {
-          isPending: now < proposal.start,
-          isActive: now >= proposal.start && now <= proposal.end,
-          isEnded: now > proposal.end
-        }
-      });
-    }
-    
     // Check time-based status first
     if (now < proposal.start) {
       return "Pending";
@@ -121,20 +100,6 @@ function calculateFinalStatus(
     
     // Additional check: ensure winning choice has meaningful support
     const hasMinimumSupport = totalVotes > 0 && winningVotes > 0;
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Final Status Calculation:', {
-        type,
-        scores,
-        totalVotes,
-        winningChoice,
-        winningVotes,
-        hasMinimumSupport,
-        meetsQuorum,
-        spaceQuorum,
-        isPassed: isPassed && hasMinimumSupport && meetsQuorum
-      });
-    }
     
     return (isPassed && hasMinimumSupport && meetsQuorum) ? "Passed" : "Failed";
   }

@@ -29,16 +29,6 @@ export const useSpaceQuorum = (spaceEns: string): QuorumSettings => {
       quorumType: votingQuorum ? 'voting' : filtersMinScore ? 'filters' : undefined
     };
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Space Quorum Settings:', {
-        space: spaceEns,
-        snapShotInfo,
-        voting: space.voting,
-        filters: space.filters,
-        calculated: result
-      });
-    }
-    
     return result;
   }, [snapShotInfo, error, spaceEns]);
 };
