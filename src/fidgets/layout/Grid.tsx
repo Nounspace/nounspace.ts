@@ -61,7 +61,11 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
+const makeGridDetails = (
+  hasProfile: boolean,
+  hasFeed: boolean,
+  spacing: number,
+) => ({
   items: 0,
   isDroppable: true,
   isBounded: false,
@@ -73,8 +77,8 @@ const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
-  margin: [16, 16],
-  containerPadding: [16, 16],
+  margin: [spacing, spacing],
+  containerPadding: [spacing, spacing],
 });
 
 type GridDetails = ReturnType<typeof makeGridDetails>;
@@ -153,8 +157,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
   const gridDetails = useMemo(
-    () => makeGridDetails(hasProfile, hasFeed),
-    [hasProfile, hasFeed],
+    () =>
+      makeGridDetails(
+        hasProfile,
+        hasFeed,
+        Number(theme.properties.fidgetSpacing ?? "16"),
+      ),
+    [hasProfile, hasFeed, theme.properties.fidgetSpacing],
   );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
@@ -257,14 +266,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // 64 = 4rem = magic number here is the height of the tabs bar above the grid
     // 160 = 10rem = magic number for the profile height
     const magicBase = hasProfile ? 64 + 160 : 64;
+    const spacing = Number(theme.properties.fidgetSpacing ?? "16");
     return height
-      ? (height -
-          magicBase -
-          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
-          gridDetails.containerPadding[0] * 2) /
+      ?
+          (height -
+            magicBase -
+            spacing * (gridDetails.maxRows - 1) -
+            spacing * 2) /
           gridDetails.maxRows
       : gridDetails.rowHeight;
-  }, [height, hasProfile]);
+  }, [height, hasProfile, theme.properties.fidgetSpacing, gridDetails.maxRows, gridDetails.rowHeight]);
 
   function handleDrop(
     _layout: PlacedGridItem[],
