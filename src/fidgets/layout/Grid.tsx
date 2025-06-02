@@ -95,6 +95,7 @@ const Gridlines: React.FC<GridDetails> = ({
   margin,
   containerPadding,
 }) => {
+  const { borderRadius } = useGlobalFidgetStyle();
   return (
     <div
       className="relative grid-overlap w-full h-full opacity-50"
@@ -111,11 +112,11 @@ const Gridlines: React.FC<GridDetails> = ({
     >
       {[...Array(cols * maxRows)].map((_, i) => (
         <div
-          className="rounded-lg"
           key={i}
           style={{
             backgroundColor: "rgba(200, 227, 248, 0.5)",
             outline: "2px dashed rgba(200, 227, 248, 0.3)",
+            borderRadius,
           }}
         />
       ))}
@@ -543,7 +544,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   key={gridItem.i}
                   className={`grid-item ${
                     selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 outline-sky-600"
+                      ? "outline outline-4 outline-offset-1 outline-sky-600 z-20"
                       : ""
                   }`}
                   style={{ borderRadius }}
