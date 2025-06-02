@@ -20,6 +20,7 @@ import SpaceLoading from "./SpaceLoading";
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import Image from "next/image";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 import { TAB_HEIGHT } from "@/constants/layout";
@@ -375,95 +376,97 @@ export default function Space({
             portalRef.current,
           )
         : null}
-      <div
-        className={`w-full h-full relative flex-col ${showMobileContainer ? "" : "user-theme-background"
-          }`}
-      >
-        {showMobileContainer && (
-          <Image
-            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
-            alt="Mobile preview background"
-            fill
-            className="object-cover pointer-events-none select-none -z-10"
-          />
-        )}
-        <div className="w-full transition-all duration-100 ease-out">
-          {showMobileContainer ? (
-            <div className="flex justify-center">
-              <div className="relative">
-                <Image
-                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-                  alt="Phone mockup"
-                  width={344}
-                  height={744}
-                  className="pointer-events-none select-none"
-                />
-                <div className="absolute top-[10px] left-[16px]">
-                  <div
-                    className="user-theme-background w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: 'white',
-                      transform: 'scale(1.0)',
-                      transformOrigin: 'top left'
-                    }}
-                  >
-                    <CustomHTMLBackground
-                      html={config.theme?.properties.backgroundHTML}
-                      className="absolute inset-0 pointer-events-none"
-                    />
-                    <div className="relative w-full h-full flex flex-col">
-                      <div className="w-full bg-white ">
+     <div
+  className={`w-full h-full relative flex-col ${
+    showMobileContainer
+      ? "flex items-center justify-center"
+      : "user-theme-background"
+  }`}
+>
+  {showMobileContainer && (
+    <Image
+      src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
+      alt="Mobile preview background"
+      fill
+      className="object-cover pointer-events-none select-none -z-10"
+    />
+  )}
+  <div className="w-full transition-all duration-100 ease-out">
+    {showMobileContainer ? (
+      <div className="flex items-center justify-center h-full">
+        <div className="relative w-[344px] h-[744px]">
+          <div className="absolute top-[10px] left-[16px] z-0">
+            <div
+              className="user-theme-background w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: 'white',
+                transform: 'scale(1.0)',
+                transformOrigin: 'top left'
+              }}
+            >
+              <CustomHTMLBackground
+                html={config.theme?.properties.backgroundHTML}
+                className="absolute inset-0 pointer-events-none"
+              />
+              <div className="relative w-full h-full flex flex-col">
+                <div className="w-full bg-white">
+                  {!isUndefined(profile) ? (
+                   <div className="z-50 md:min-h-40">
+                      {profile}
+                    </div>
+                  ) : null}
 
-                        {!isUndefined(profile) ? (
-                         <div className="z-50 md:min-h-40">
-                            {profile}
-                            </div>
-                        ) : null}
-
-                        <div className="border-b">
-                          <div className="flex">
-                            {tabBar}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 w-full overflow-auto">
-                        <Suspense fallback={
-                          <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                          />
-                        }>
-                          {LayoutFidget ? (
-                            <LayoutFidget
-                              layoutConfig={{ ...layoutConfig }}
-                              {...layoutFidgetProps}
-                            />
-                          ) : (
-                            <div className="flex items-center justify-center h-full">
-                              <SpaceLoading
-                                hasProfile={!isNil(profile)}
-                                hasFeed={!isNil(feed)}
-                              />
-                            </div>
-                          )}
-                        </Suspense>
-                      </div>
+                  <div className="border-b">
+                    <div className="flex">
+                      {tabBar}
                     </div>
                   </div>
                 </div>
+
+                <div className="flex-1 w-full overflow-auto">
+                  <Suspense fallback={
+                    <SpaceLoading
+                      hasProfile={!isNil(profile)}
+                      hasFeed={!isNil(feed)}
+                    />
+                  }>
+                    {LayoutFidget ? (
+                      <LayoutFidget
+                        layoutConfig={{ ...layoutConfig }}
+                        {...layoutFidgetProps}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <SpaceLoading
+                          hasProfile={!isNil(profile)}
+                          hasFeed={!isNil(feed)}
+                        />
+                      </div>
+                    )}
+                  </Suspense>
+                </div>
               </div>
             </div>
-          ) : (
-            <>
-              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-              {mainContent}
-            </>
-          )}
+          </div>
+          <Image
+            src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+            alt="Phone mockup"
+            width={344}
+            height={744}
+            className="pointer-events-none select-none absolute inset-0 z-10"
+          />
         </div>
       </div>
+    ) : (
+      <>
+        <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+        {mainContent}
+      </>
+    )}
+  </div>
+</div>
     </>
   );
 }
