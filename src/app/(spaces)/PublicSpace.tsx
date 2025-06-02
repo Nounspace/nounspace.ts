@@ -7,6 +7,7 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import SpacePage from "./SpacePage";
 import { SpaceConfigSaveDetails } from "./Space";
+import { FidgetInstanceData } from "@/common/fidgets";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useWallets } from "@privy-io/react-auth";
@@ -484,17 +485,21 @@ export default function PublicSpace({
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
+      const orderedDatums = spaceConfig.fidgetInstanceDatums
+        ? (Object.fromEntries(
+            Object.values(spaceConfig.fidgetInstanceDatums)
+              .sort(
+                (a, b) =>
+                  ((a.config.settings.mobileOrder as number) ?? 0) -
+                  ((b.config.settings.mobileOrder as number) ?? 0),
+              )
+              .map((d) => [d.id, d]),
+          ) as { [key: string]: FidgetInstanceData })
+        : undefined;
+
       const saveableConfig = {
         ...spaceConfig,
-        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
-          ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-              },
-            }))
-          : undefined,
+        fidgetInstanceDatums: orderedDatums,
         isPrivate: false,
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
