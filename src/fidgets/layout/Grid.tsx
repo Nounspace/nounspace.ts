@@ -32,6 +32,7 @@ import {
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
+import { useGlobalFidgetStyle } from "@/common/providers/GlobalFidgetStyleProvider";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -61,7 +62,11 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
+const makeGridDetails = (
+  hasProfile: boolean,
+  hasFeed: boolean,
+  spacing: number,
+) => ({
   items: 0,
   isDroppable: true,
   isBounded: false,
@@ -73,8 +78,8 @@ const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
-  margin: [16, 16],
-  containerPadding: [16, 16],
+  margin: [spacing, spacing],
+  containerPadding: [spacing, spacing],
 });
 
 type GridDetails = ReturnType<typeof makeGridDetails>;
@@ -152,9 +157,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
+  const { spacing } = useGlobalFidgetStyle();
   const gridDetails = useMemo(
-    () => makeGridDetails(hasProfile, hasFeed),
-    [hasProfile, hasFeed],
+    () => makeGridDetails(hasProfile, hasFeed, spacing),
+    [hasProfile, hasFeed, spacing],
   );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
@@ -264,7 +270,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           gridDetails.containerPadding[0] * 2) /
           gridDetails.maxRows
       : gridDetails.rowHeight;
-  }, [height, hasProfile]);
+  }, [height, hasProfile, gridDetails]);
 
   function handleDrop(
     _layout: PlacedGridItem[],
