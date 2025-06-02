@@ -17,7 +17,7 @@ import {
 } from ".";
 import GrabHandleIcon from "../components/atoms/icons/GrabHandle";
 import StashIcon from "../components/atoms/icons/Stash";
-import { useGlobalFidgetStyle } from "../providers/GlobalFidgetStyleProvider";
+import { ThemeSettings } from "@/common/lib/theme";
 import {
   Tooltip,
   TooltipContent,
@@ -36,6 +36,8 @@ export type FidgetWrapperProps = {
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  theme: ThemeSettings;
+  saveTheme: (theme: ThemeSettings) => Promise<void>;
 };
 
 export const getSettingsWithDefaults = (
@@ -64,11 +66,14 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
+  theme,
+  saveTheme,
 }: FidgetWrapperProps) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
-  const { borderRadius, spacing } = useGlobalFidgetStyle();
+  const { fidgetBorderRadius: borderRadius, gridSpacing: spacing } =
+    theme.properties;
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -80,6 +85,8 @@ export function FidgetWrapper({
         onSave={onSave}
         unselect={unselect}
         removeFidget={removeFidget}
+        theme={theme}
+        saveTheme={saveTheme}
       />,
     );
   }
