@@ -52,6 +52,7 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
+  enterEditMode?: () => void;
   mobile?: boolean;
   onNavigate?: () => void;
 };
