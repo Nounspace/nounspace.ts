@@ -202,11 +202,13 @@ function TabBar({
         )}
         <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
           {tabList && (
-            <Reorder.Group<string>
+            <Reorder.Group
               as="ol"
               axis="x"
-              onReorder={updateTabOrder}
-              onDragEnd={commitTabOrder}
+              onReorder={async (newOrder) => {
+                await updateTabOrder(newOrder);
+                await commitTabOrder();
+              }}
               className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
               values={tabList}
             >
