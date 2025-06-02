@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -146,6 +147,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     w: number;
     h: number;
   }>();
+  const fidgetInstanceDatumsRef = useRef(fidgetInstanceDatums);
+  useEffect(() => {
+    fidgetInstanceDatumsRef.current = fidgetInstanceDatums;
+  }, [fidgetInstanceDatums]);
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
   const [currentFidgetSettings, setCurrentFidgetSettings] =
@@ -186,16 +191,18 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   };
 
   const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
-          config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+    (id: string) =>
+      async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+        const currentDatums = fidgetInstanceDatumsRef.current;
+        return await saveFidgetInstanceDatums({
+          ...currentDatums,
+          [id]: {
+            ...currentDatums[id],
+            config: newInstanceConfig,
+          },
+        });
+      },
+    [saveFidgetInstanceDatums],
   );
 
   // Debounced save function
@@ -275,10 +282,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
-    saveFidgetInstanceDatums({
-      ...fidgetInstanceDatums,
+    const newDatums = {
+      ...fidgetInstanceDatumsRef.current,
       [fidgetData.id]: fidgetData,
-    });
+    };
+    fidgetInstanceDatumsRef.current = newDatums;
+    saveFidgetInstanceDatums(newDatums);
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
