@@ -544,7 +544,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   key={gridItem.i}
                   className={`grid-item ${
                     selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 outline-sky-600 z-20"
+                      ? "outline outline-4 outline-offset-[-4px] outline-sky-600 z-20"
                       : ""
                   }`}
                   style={{ borderRadius }}
