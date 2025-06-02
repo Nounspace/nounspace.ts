@@ -25,7 +25,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
 import BackArrowIcon from "../atoms/icons/BackArrow";
 import { Slider } from "@mui/material";
-import { useGlobalFidgetStyle } from "@/common/providers/GlobalFidgetStyleProvider";
+import { ThemeSettings } from "@/common/lib/theme";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
@@ -34,6 +34,8 @@ export type FidgetSettingsEditorProps = {
   onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
+  theme: ThemeSettings;
+  saveTheme: (theme: ThemeSettings) => Promise<void>;
 };
 
 type FidgetSettingsRowProps = {
@@ -156,14 +158,23 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   onSave,
   unselect,
   removeFidget,
+  theme,
+  saveTheme,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
-  const { borderRadius, spacing, setBorderRadius, setSpacing } =
-    useGlobalFidgetStyle();
+  const [borderRadius, setBorderRadius] = useState<number>(
+    theme.properties.fidgetBorderRadius,
+  );
+  const [spacing, setSpacing] = useState<number>(theme.properties.gridSpacing);
 
   useEffect(() => {
     setState(settings);
   }, [settings, fidgetId]);
+
+  useEffect(() => {
+    setBorderRadius(theme.properties.fidgetBorderRadius);
+    setSpacing(theme.properties.gridSpacing);
+  }, [theme.properties.fidgetBorderRadius, theme.properties.gridSpacing]);
 
   const _onSave = (e) => {
     e.preventDefault();
@@ -255,7 +266,17 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
               min={0}
               max={32}
               step={1}
-              onChange={(_, v) => setBorderRadius(v as number)}
+              onChange={(_, v) => {
+                const val = v as number;
+                setBorderRadius(val);
+                saveTheme({
+                  ...theme,
+                  properties: {
+                    ...theme.properties,
+                    fidgetBorderRadius: val,
+                  },
+                });
+              }}
             />
           </label>
           <label className="flex flex-col">
@@ -265,7 +286,17 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
               min={0}
               max={32}
               step={1}
-              onChange={(_, v) => setSpacing(v as number)}
+              onChange={(_, v) => {
+                const val = v as number;
+                setSpacing(val);
+                saveTheme({
+                  ...theme,
+                  properties: {
+                    ...theme.properties,
+                    gridSpacing: val,
+                  },
+                });
+              }}
             />
           </label>
         </div>
