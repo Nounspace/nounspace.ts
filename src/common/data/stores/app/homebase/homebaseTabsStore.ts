@@ -116,11 +116,8 @@ export const createHomeBaseTabStoreFunc = (
 ): HomeBaseTabStore => ({
   ...homeBaseStoreDefaults,
   updateTabOrdering(newOrdering, commit = false) {
-    const filtered = newOrdering.filter((name, index) => {
-      return name !== "Feed" && newOrdering.indexOf(name) === index;
-    });
     set((draft) => {
-      draft.homebase.tabOrdering.local = filtered;
+      draft.homebase.tabOrdering.local = newOrdering;
     }, "updateTabOrdering");
     if (commit) {
       get().homebase.commitTabOrderingToDatabase();
