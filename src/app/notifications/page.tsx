@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
@@ -45,7 +46,7 @@ const TAB_OPTIONS = {
 
 export type NotificationRowProps = React.FC<{
   notification: Notification;
-  onSelect: (castHash: string) => void;
+  onSelect: (castHash: string, username: string) => void;
   isUnseen?: boolean;
 }>;
 
@@ -374,13 +375,18 @@ function NotificationsPageContent() {
     identityPublicKey,
   );
 
+  const router = useRouter();
+
   const onTabChange = useCallback((value: string) => {
     setTab(value);
   }, []);
 
-  const onSelectNotification = useCallback(() => {
-    // console.log("@TODO: navigateToCastDetail"); // TODO
-  }, []);
+  const onSelectNotification = useCallback(
+    (hash: string, username: string) => {
+      router.push(`/homebase/c/${username}/${hash}`);
+    },
+    [router],
+  );
 
   const filterByType = useCallback(
     (_notifications: Notification[]): Notification[] => {
