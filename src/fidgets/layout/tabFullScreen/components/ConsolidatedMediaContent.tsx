@@ -43,7 +43,6 @@ const ConsolidatedMediaContent: React.FC<ConsolidatedMediaContentProps> = ({
             <div className="absolute inset-0">
               <FidgetWrapper
                 fidget={CompleteFidgets[bundle.fidgetType]?.fidget}
-                context={{ theme }}
                 bundle={bundle}
                 saveConfig={saveFidgetConfig(fidgetId)}
                 setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
@@ -51,6 +50,8 @@ const ConsolidatedMediaContent: React.FC<ConsolidatedMediaContentProps> = ({
                 selectedFidgetID=""
                 removeFidget={dummyFunctions.removeFidget}
                 minimizeFidget={dummyFunctions.minimizeFidget}
+                theme={theme}
+                saveTheme={dummyFunctions.saveTheme}
               />
             </div>
           </div>
