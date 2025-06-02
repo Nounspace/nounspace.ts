@@ -19,6 +19,7 @@ import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import NumberSlider from "@/common/components/molecules/NumberSlider";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
@@ -110,6 +111,8 @@ export function ThemeSettingsEditor({
     fidgetBorderWidth,
     fidgetBorderColor,
     fidgetShadow,
+    fidgetBorderRadius,
+    fidgetSpacing,
   } = theme.properties;
 
   function saveAndClose() {
@@ -250,6 +253,39 @@ export function ThemeSettingsEditor({
                       value={background as Color}
                       onChange={themePropSetter<Color>("background")}
                     />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <h4 className="text-sm font-bold my-2">Change All Borders &amp; Spacing</h4>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex flex-row gap-1 items-center">
+                        <h5 className="text-sm">Border Radius</h5>
+                        <ThemeSettingsTooltip text="Set the border radius for all Fidgets on this tab." />
+                      </div>
+                      <NumberSlider
+                        min={0}
+                        max={30}
+                        step={1}
+                        value={parseInt(fidgetBorderRadius)}
+                        onChange={(v) =>
+                          themePropSetter<string>("fidgetBorderRadius")(
+                            `${v}px`,
+                          )
+                        }
+                      />
+                      <div className="flex flex-row gap-1 items-center">
+                        <h5 className="text-sm">Spacing</h5>
+                        <ThemeSettingsTooltip text="Set the spacing between Fidgets on this tab." />
+                      </div>
+                      <NumberSlider
+                        min={0}
+                        max={40}
+                        step={1}
+                        value={parseInt(fidgetSpacing)}
+                        onChange={(v) =>
+                          themePropSetter<string>("fidgetSpacing")(`${v}`)
+                        }
+                      />
+                    </div>
                   </div>
                   <div className="flex flex-col gap-1">
                     <h4 className="text-sm font-bold my-2">Fidget Settings</h4>
