@@ -417,7 +417,9 @@ export default function Space({
                       <div className="w-full bg-white ">
 
                         {!isUndefined(profile) ? (
-                          <div className="z-50 bg-white md:h-40">{profile}</div>
+                         <div className="z-50 md:min-h-40">
+                            {profile}
+                            </div>
                         ) : null}
 
                         <div className="border-b">

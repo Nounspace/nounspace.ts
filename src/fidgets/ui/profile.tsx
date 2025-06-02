@@ -131,59 +131,67 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   const hasLocation = location.length > 0;
 
   return (
-    <div className="flex flex-row items-start gap-3 p-3 sm:p-4 justify-start">
-      <div className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14">
-        {user.pfp_url ? (
-          <img
-            className="aspect-square rounded-full max-h-full object-cover"
-            src={user.pfp_url}
-          />
-        ) : (
-          <CgProfile className="text-gray-200 dark:text-gray-700 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>
-        )}
-      </div>
-      <div className="flex flex-col w-full items-start">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <span className="text-sm sm:text-base md:text-lg font-bold leading-tight">
-              {user.display_name || user.username}
-            </span>
-            <small className="block text-[10px] sm:text-xs md:text-sm text-slate-500 leading-tight">
-              @{user.username}
-            </small>
-          </div>
-          {user.viewer_context && fid !== viewerFid && (
-            <Button
-              onClick={toggleFollowing}
-              variant={
-                user.viewer_context?.following ? "secondary" : "primary"
-              }
-              disabled={actionStatus === "loading"}
-              className="text-[10px] sm:text-xs md:text-sm mt-2 sm:mt-0"
-            >
-              {actionStatus === "loading"
-                ? "Loading..."
-                : user.viewer_context?.following
-                  ? "Unfollow"
-                  : "Follow"}
-            </Button>
+    <div className="flex flex-col items-start gap-2 p-2.5 sm:gap-3 sm:p-4 justify-start">
+      <div className="flex flex-row items-start w-full">
+        <div className="h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0">
+          {user.pfp_url ? (
+            <img
+              className="aspect-square rounded-full max-h-full object-cover"
+              src={user.pfp_url}
+              alt={`${user.display_name || user.username}'s profile picture`}
+            />
+          ) : (
+            <CgProfile className="text-gray-200 dark:text-gray-700 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>
           )}
         </div>
+        <div className="flex flex-col ml-2 items-start overflow-hidden">
+          <div className="flex flex-col w-full sm:flex-row sm:items-center sm:justify-between">
+            <div className="max-w-[calc(100%-80px)] sm:max-w-full overflow-hidden">
+              <span className="text-base sm:text-base md:text-lg font-bold leading-tight truncate block">
+                {user.display_name || user.username}
+              </span>
+              <small className="block text-xs sm:text-xs md:text-sm text-slate-500 leading-tight truncate">
+                @{user.username}
+              </small>
+            </div>
+            {user.viewer_context && fid !== viewerFid && (
+              <Button
+                onClick={toggleFollowing}
+                variant={
+                  user.viewer_context?.following ? "secondary" : "primary"
+                }
+                disabled={actionStatus === "loading"}
+                className="text-xs sm:text-xs md:text-sm mt-2 sm:mt-0 px-3 py-1 sm:px-4 sm:py-1.5"
+              >
+                {actionStatus === "loading"
+                  ? "Loading..."
+                  : user.viewer_context?.following
+                    ? "Unfollow"
+                    : "Follow"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
 
-        <p className="text-[10px] sm:text-xs md:text-sm mt-2 text-slate-700 text-left w-full block">
-          <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
-        </p>
-
-        <div className="flex flex-wrap items-center text-[10px] sm:text-xs md:text-sm mt-2 gap-3 text-slate-500">
-          <p>
-            <span className="font-bold">{user.following_count}</span> Following
+      <div className="flex flex-col w-full items-start pl-[13px] sm:pl-[13px] md:pl-[15px]">
+        {user.profile.bio.text && (
+          <p className="text-xs sm:text-xs md:text-sm text-slate-700 text-left max-w-[220px] sm:max-w-[300px] md:max-w-[400px] block break-words">
+            <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
           </p>
-          <p>
-            <span className="font-bold">{user.follower_count}</span> Followers
+        )}
+
+        <div className="flex flex-wrap items-center text-xs sm:text-xs md:text-sm mt-2 gap-2 sm:gap-3 text-slate-500">
+          <p className="flex items-center">
+            <span className="font-bold mr-1">{user.following_count}</span> Following
+          </p>
+          <p className="flex items-center">
+            <span className="font-bold mr-1">{user.follower_count}</span> Followers
           </p>
           {hasLocation && (
             <p className="flex items-center gap-1">
-              <IoLocationOutline /> {location}
+              <IoLocationOutline className="flex-shrink-0" />
+              <span className="truncate max-w-full">{location}</span>
             </p>
           )}
         </div>
