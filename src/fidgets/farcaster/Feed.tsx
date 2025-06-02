@@ -23,6 +23,7 @@ import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
@@ -35,6 +36,10 @@ export enum FilterType {
   Users = "fids",
   Keyword = "keyword",
 }
+
+export type FeedFidgetData = {
+  initialHash?: string;
+};
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
@@ -333,7 +338,7 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
-const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
+const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settings, data }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
@@ -373,6 +378,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
+  const router = useRouter();
   const threadStackRef = React.useRef(useLifoQueue<string>());
   const threadStack = threadStackRef.current;
 
@@ -403,11 +409,23 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
   useEffect(() => {
     threadStack.clear();
-  }, [settings, threadStack]);
+    if (data?.initialHash) {
+      threadStack.push(data.initialHash);
+    }
+  }, [settings, threadStack, data?.initialHash]);
 
-  const onSelectCast = useCallback((hash: string) => {
-    threadStack.push(hash);
-  }, [threadStack]);
+  const onSelectCast = useCallback(
+    (hash: string, username: string) => {
+      threadStack.push(hash);
+      router.push(`/homebase/${username}/${hash}`);
+    },
+    [threadStack, router],
+  );
+
+  const handleBack = useCallback(() => {
+    threadStack.pop();
+    router.push(`/homebase`);
+  }, [threadStack, router]);
 
   const renderThread = () => (
     <CastThreadView
@@ -415,7 +433,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         hash: threadStack.last || "",
         author: { fid },
       }}
-      onBack={threadStack.pop}
+      onBack={handleBack}
       onSelect={onSelectCast}
     />
   );
@@ -579,6 +597,6 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 const exp = {
   fidget: Feed,
   properties: feedProperties,
-} as FidgetModule<FidgetArgs<FeedFidgetSettings>>;
+} as FidgetModule<FidgetArgs<FeedFidgetSettings, FeedFidgetData>>;
 
 export default exp;

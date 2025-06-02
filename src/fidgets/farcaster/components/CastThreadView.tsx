@@ -12,7 +12,7 @@ import ScrollToIndex from "@/common/components/molecules/ScrollToIndex";
 type CastThreadViewProps = {
   cast: { hash: string; author?: { fid: number } };
   onBack?: () => void;
-  onSelect?: (hash: string) => void;
+  onSelect?: (hash: string, username: string) => void;
   viewerFid?: number;
 };
 
@@ -42,7 +42,7 @@ export const CastThreadView = ({
       isFocused: false,
       isReply: idx !== 0,
       hasReplies: true,
-      onSelect: onSelect,
+      onSelect: (hash: string) => onSelect?.(hash, cast.author.username),
     })),
     focusedCast && {
       cast: focusedCast,
@@ -51,7 +51,7 @@ export const CastThreadView = ({
       isFocused: true,
       isReply: parentCasts.length > 0,
       hasReplies: replyCasts.length > 0,
-      onSelect: onSelect,
+      onSelect: (hash: string) => onSelect?.(hash, focusedCast.author.username),
     },
     ...replyCasts.map((cast, idx) => ({
       cast: cast,
@@ -60,7 +60,7 @@ export const CastThreadView = ({
       isFocused: false,
       isReply: false,
       hasReplies: false,
-      onSelect: onSelect,
+      onSelect: (hash: string) => onSelect?.(hash, cast.author.username),
     })),
   ].filter((c) => c);
 
