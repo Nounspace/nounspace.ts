@@ -503,7 +503,7 @@ export default function PublicSpace({
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [getCurrentSpaceId, getCurrentTabName]
+    [getCurrentSpaceId, getCurrentTabName, config.fidgetInstanceDatums]
   );
 
   const commitConfig = useCallback(async () => {
