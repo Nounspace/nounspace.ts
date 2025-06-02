@@ -84,7 +84,7 @@
     "@snapshot-labs/snapshot.js": "^0.11.38",
     "@standard-crypto/farcaster-js-hub-rest": "^1.3.0",
     "@supabase/ssr": "^0.3.0",
-    "@supabase/supabase-js": "^2.44.1",
+    "@supabase/supabase-js": "^2.49.9",
     "@tailwindcss/forms": "^0.5.4",
     "@tailwindcss/typography": "^0.5.10",
     "@tanstack/react-query": "^5.40.0",
