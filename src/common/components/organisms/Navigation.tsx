@@ -203,7 +203,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div className="pt-5 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
             "flex flex-col h-full ml-auto transition-all duration-300 relative",
@@ -212,7 +212,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         >
           <button
             onClick={toggleSidebar}
-            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+            className="absolute right-0 top-[30px] transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
             aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
           >
             {shrunk ? (
