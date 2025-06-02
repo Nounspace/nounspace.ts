@@ -275,6 +275,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       e.dataTransfer.getData("text/plain"),
     );
 
+    saveFidgetInstanceDatums({
+      ...fidgetInstanceDatums,
+      [fidgetData.id]: fidgetData,
+    });
+
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
       x: item.x,
@@ -288,11 +293,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       resizeHandles: resizeDirections,
     };
 
-    // Save both layout and fidget data in a single operation
-    debouncedSaveConfig({
-      layoutConfig: { layout: [...layoutConfig.layout, newItem] },
-      fidgetInstanceDatums: { ...fidgetInstanceDatums, [fidgetData.id]: fidgetData }
-    });
+    saveLayout([...layoutConfig.layout, newItem]);
 
     removeFidgetFromTray(fidgetData.id);
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
