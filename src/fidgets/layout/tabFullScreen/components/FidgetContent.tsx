@@ -27,13 +27,10 @@ const FidgetContent: React.FC<FidgetContentProps> = ({
 }) => {  
   return (
     <div
-      className="h-full w-full overflow-auto"
+      className="h-full w-full"
       style={isMobile ? { 
         paddingInline: `${mobilePadding}px`, 
         paddingTop: `${mobilePadding - 16}px`,
-        position: "relative",
-        height: "100%",
-        width: "100%"
       } : {}}
     >
       <FidgetWrapper
