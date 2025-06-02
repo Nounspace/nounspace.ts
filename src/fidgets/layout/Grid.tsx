@@ -157,7 +157,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  const { spacing } = useGlobalFidgetStyle();
+  const { spacing, borderRadius } = useGlobalFidgetStyle();
   const gridDetails = useMemo(
     () => makeGridDetails(hasProfile, hasFeed, spacing),
     [hasProfile, hasFeed, spacing],
@@ -543,9 +543,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   key={gridItem.i}
                   className={`grid-item ${
                     selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 rounded-2xl outline-sky-600"
+                      ? "outline outline-4 outline-offset-1 outline-sky-600"
                       : ""
                   }`}
+                  style={{ borderRadius }}
                 >
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
