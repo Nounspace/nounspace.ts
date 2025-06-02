@@ -9,6 +9,7 @@ interface FrameRendererProps {
   isConnected?: boolean;
   fid?: number | null;
   collapsed?: boolean;
+  customTitle?: string;
 }
 
 interface FrameMetadata {
@@ -26,6 +27,7 @@ export default function FrameRenderer({
   isConnected = false,
   fid = null,
   collapsed = false,
+  customTitle,
 }: FrameRendererProps) {
   const [frameData, setFrameData] = useState<FrameMetadata>({
     image: null,
@@ -359,6 +361,7 @@ export default function FrameRenderer({
         buttonIndex={activeButton || 1}
         fid={fid || 20721}
         currentFrameData={frameData}
+        modalTitle={customTitle}
       />
     </div>
   );

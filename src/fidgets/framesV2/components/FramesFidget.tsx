@@ -1,5 +1,6 @@
 import React from "react";
 import TextInput from "@/common/components/molecules/TextInput";
+import FontSelector from "@/common/components/molecules/FontSelector";
 import {
   FidgetArgs,
   FidgetModule,
@@ -15,6 +16,8 @@ import Frameslayout from "./Frameslayout";
 export type FramesFidgetSettings = {
   url: string;
   collapsed?: boolean;
+  title?: string;
+  headingFont?: string;
 } & FidgetSettingsStyle;
 
 export const WithMargin: React.FC<React.PropsWithChildren> = ({ children }) => (
@@ -53,7 +56,35 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
+    {
+      fieldName: "title",
+      displayName: "Title",
+      displayNameHint: "Optional title to display above the Mini App.",
+      default: "",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <TextInput {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+
     ...defaultStyleFields,
+    {
+      fieldName: "headingFont",
+      displayName: "Heading Font",
+      displayNameHint:
+        "Font used for the title. Set to Theme Font to inherit the Title Font from the Theme.",
+      default: "var(--user-theme-headings-font)",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <FontSelector {...props} />
+        </WithMargin>
+      ),
+      group: "style",
+    },
   ],
   size: {
     minHeight: 2,
@@ -64,7 +95,7 @@ const frameConfig: FidgetProperties = {
 };
 
 const FramesFidget: React.FC<FidgetArgs<FramesFidgetSettings>> = ({
-  settings: { url, collapsed = false },
+  settings: { url, collapsed = false, title, headingFont },
 }) => {
   if (!url) {
     return (
@@ -75,7 +106,14 @@ const FramesFidget: React.FC<FidgetArgs<FramesFidgetSettings>> = ({
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
   // Pass the URL and collapsed state as props to Frameslayout
-  return <Frameslayout frameUrl={url} collapsed={collapsed} />;
+  return (
+    <Frameslayout
+      frameUrl={url}
+      collapsed={collapsed}
+      title={title}
+      headingFont={headingFont}
+    />
+  );
 };
 
 export default {
