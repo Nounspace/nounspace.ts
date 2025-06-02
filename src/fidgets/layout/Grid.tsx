@@ -61,7 +61,12 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
+const makeGridDetails = (
+  hasProfile: boolean,
+  hasFeed: boolean,
+  spacing: number,
+  borderRadius: string,
+) => ({
   items: 0,
   isDroppable: true,
   isBounded: false,
@@ -73,8 +78,9 @@ const makeGridDetails = (hasProfile: boolean, hasFeed: boolean) => ({
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
-  margin: [16, 16],
-  containerPadding: [16, 16],
+  margin: [spacing, spacing],
+  containerPadding: [spacing, spacing],
+  borderRadius,
 });
 
 type GridDetails = ReturnType<typeof makeGridDetails>;
@@ -89,6 +95,7 @@ const Gridlines: React.FC<GridDetails> = ({
   rowHeight,
   margin,
   containerPadding,
+  borderRadius,
 }) => {
   return (
     <div
@@ -106,9 +113,10 @@ const Gridlines: React.FC<GridDetails> = ({
     >
       {[...Array(cols * maxRows)].map((_, i) => (
         <div
-          className="rounded-lg"
+          className=""
           key={i}
           style={{
+            borderRadius,
             backgroundColor: "rgba(200, 227, 248, 0.5)",
             outline: "2px dashed rgba(200, 227, 248, 0.3)",
           }}
@@ -153,8 +161,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
   const gridDetails = useMemo(
-    () => makeGridDetails(hasProfile, hasFeed),
-    [hasProfile, hasFeed],
+    () =>
+      makeGridDetails(
+        hasProfile,
+        hasFeed,
+        parseInt(theme.properties.fidgetSpacing ?? "16"),
+        theme.properties.fidgetBorderRadius ?? "16px",
+      ),
+    [hasProfile, hasFeed, theme.properties.fidgetSpacing, theme.properties.fidgetBorderRadius],
   );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
@@ -520,7 +534,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             onLayoutChange={saveLayoutConditional}
             className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
             style={{
-              height: rowHeight * gridDetails.maxRows + "px",
+              height:
+                rowHeight * gridDetails.maxRows +
+                gridDetails.margin[1] * (gridDetails.maxRows - 1) +
+                gridDetails.containerPadding[1] * 2 +
+                "px",
               // Add transition for opacity
               transition: "opacity 0.2s ease-in",
               opacity: itemsVisible ? 1 : 0,
@@ -538,9 +556,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   key={gridItem.i}
                   className={`grid-item ${
                     selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 rounded-2xl outline-sky-600"
+                      ? "outline outline-4 outline-offset-1 outline-sky-600"
                       : ""
                   }`}
+                  style={{
+                    borderRadius: selectedFidgetID === gridItem.i ? 'var(--user-theme-fidget-border-radius)' : undefined,
+                  }}
                 >
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
