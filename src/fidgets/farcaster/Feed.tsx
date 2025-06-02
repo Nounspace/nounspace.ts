@@ -417,7 +417,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
   const onSelectCast = useCallback(
     (hash: string, username: string) => {
       threadStack.push(hash);
-      router.push(`/homebase/${username}/${hash}`);
+      router.push(`/homebase/c/${username}/${hash}`);
     },
     [threadStack, router],
   );
