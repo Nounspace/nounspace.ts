@@ -212,7 +212,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         >
           <button
             onClick={toggleSidebar}
-            className="absolute right-0 top-[31px] transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+            className="absolute right-0 top-[30px] transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
             aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
           >
             {shrunk ? (
