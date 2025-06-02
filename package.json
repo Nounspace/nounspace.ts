@@ -37,7 +37,7 @@
     "@emotion/styled": "^11.14.0",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
-    "@farcaster/frame-sdk": "^0.0.36",
+    "@farcaster/frame-sdk": "^0.0.53",
     "@farcaster/hub-web": "^0.8.12",
     "@frames.js/render": "^0.2.18",
     "@googleapis/youtube": "^18.0.0",
