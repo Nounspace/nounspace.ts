@@ -27,7 +27,8 @@ interface TokenContextProps {
   isLoading: boolean;
 }
 
-const TokenContext = createContext<TokenContextProps | undefined>(undefined);
+export const TokenContext =
+  createContext<TokenContextProps | undefined>(undefined);
 
 interface TokenProviderProps {
   children: ReactNode;
