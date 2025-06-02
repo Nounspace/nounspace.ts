@@ -484,17 +484,31 @@ export default function PublicSpace({
       if (isNil(currentSpaceId)) {
         throw new Error("Cannot save config until space is registered");
       }
+      let orderedDatums: typeof spaceConfig.fidgetInstanceDatums | undefined;
+      if (spaceConfig.fidgetInstanceDatums) {
+        orderedDatums = Object.fromEntries(
+          Object.values(spaceConfig.fidgetInstanceDatums)
+            .sort(
+              (a, b) =>
+                ((a.config.settings.mobileOrder as number) ?? 0) -
+                ((b.config.settings.mobileOrder as number) ?? 0),
+            )
+            .map((d) => [
+              d.id,
+              {
+                ...d,
+                config: {
+                  settings: d.config.settings,
+                  editable: d.config.editable,
+                },
+              },
+            ]),
+        );
+      }
+
       const saveableConfig = {
         ...spaceConfig,
-        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
-          ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-              },
-            }))
-          : undefined,
+        fidgetInstanceDatums: orderedDatums,
         isPrivate: false,
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
