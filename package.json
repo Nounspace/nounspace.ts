@@ -34,7 +34,7 @@
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
     "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.11.5",
+    "@emotion/styled": "^11.14.0",
     "@farcaster/auth-kit": "^0.2.1",
     "@farcaster/core": "^0.14.11",
     "@farcaster/frame-sdk": "^0.0.36",
