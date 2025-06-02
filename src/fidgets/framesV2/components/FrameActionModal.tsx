@@ -22,6 +22,7 @@ interface FrameActionModalProps {
   buttonIndex?: number;
   fid?: number;
   currentFrameData?: FrameMetadata; // Add this prop to receive frame data from parent
+  modalTitle?: string;
 }
 
 export default function FrameActionModal({
@@ -31,6 +32,7 @@ export default function FrameActionModal({
   buttonIndex = 1,
   fid = 20721,
   currentFrameData,
+  modalTitle,
 }: FrameActionModalProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export default function FrameActionModal({
       setOpen={(open) => {
         if (!open) onClose();
       }}
-      title={frameData.title || "Frame Action"}
+      title={modalTitle}
       showClose
       overlay
     >
