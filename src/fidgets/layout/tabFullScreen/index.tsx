@@ -225,8 +225,17 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   <TabsContent
                     key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
-                    style={{ visibility: "visible", display: "block" }}
+                    className="h-full w-full"
+                    style={{ 
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      visibility: selectedTab === fidgetId ? "visible" : "hidden",
+                      display: selectedTab === fidgetId ? "block" : "none",
+                      zIndex: selectedTab === fidgetId ? 1 : 0
+                    }}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}

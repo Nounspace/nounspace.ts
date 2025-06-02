@@ -66,24 +66,18 @@ const MobileView: React.FC<MobileViewProps> = ({
 
   // Update selected tab when orderedFidgetIds changes
   useEffect(() => {
-    // If there are no fidget IDs, do nothing
     if (orderedFidgetIds.length === 0) return
 
-    // If current selection is invalid or no tab is selected, select the first one
-    if (
-      !orderedFidgetIds.includes(selectedTab) &&
-      orderedFidgetIds.length > 0
-    ) {
+    if (!orderedFidgetIds.includes(selectedTab) && orderedFidgetIds.length > 0) {
       setSelectedTab(orderedFidgetIds[0])
     } else if (orderedFidgetIds.length === 0) {
-      setSelectedTab("") // Clear selection if no tabs
+      setSelectedTab("")
     }
   }, [orderedFidgetIds, selectedTab])
 
   // Reset scroll position when switching between tabs on mobile
   useEffect(() => {
     if (selectedTab) {
-      // Reset scroll position to top when switching tabs
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }, [selectedTab])
@@ -120,6 +114,22 @@ const MobileView: React.FC<MobileViewProps> = ({
       })
     }
 
+  // Common styles for tab content
+  const getTabContentStyle = (isSelected: boolean) => ({
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    display: isSelected ? "block" : "none",
+  })
+
+  // Common styles for content wrapper
+  const contentWrapperStyle = {
+    paddingInline: `${MOBILE_PADDING}px`,
+    paddingTop: `${MOBILE_PADDING - 16}px`,
+  }
+
   // Conditional rendering after all hooks have been called
   if (processedFidgetIds.length === 0) {
     return (
@@ -136,12 +146,10 @@ const MobileView: React.FC<MobileViewProps> = ({
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Main content area with padding-bottom to make space for fixed navbar */}
       <div
         className="w-full h-full overflow-hidden"
         style={{
-          paddingBottom:
-            processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : "0",
+          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : "0",
         }}
       >
         <Tabs
@@ -149,22 +157,16 @@ const MobileView: React.FC<MobileViewProps> = ({
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="relative h-full">
             {/* Special case for consolidated media tab */}
             {mediaFidgetIds.length > 1 && (
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full block"
-                style={{ visibility: "visible", display: "block" }}
+                className="h-full w-full"
+                style={getTabContentStyle(selectedTab === "consolidated-media")}
               >
-                <div
-                  className="h-full w-full"
-                  style={{
-                    paddingInline: `${MOBILE_PADDING}px`,
-                    paddingTop: `${MOBILE_PADDING - 16}px`,
-                  }}
-                >
+                <div className="h-full w-full" style={contentWrapperStyle}>
                   <ConsolidatedMediaContent
                     mediaFidgetIds={mediaFidgetIds}
                     fidgetBundles={fidgetBundles}
@@ -180,16 +182,10 @@ const MobileView: React.FC<MobileViewProps> = ({
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full block"
-                style={{ visibility: "visible", display: "block" }}
+                className="h-full w-full"
+                style={getTabContentStyle(selectedTab === "consolidated-pinned")}
               >
-                <div
-                  className="h-full w-full"
-                  style={{
-                    paddingInline: `${MOBILE_PADDING}px`,
-                    paddingTop: `${MOBILE_PADDING - 16}px`,
-                  }}
-                >
+                <div className="h-full w-full" style={contentWrapperStyle}>
                   <ConsolidatedPinnedContent
                     pinnedCastIds={pinnedCastIds}
                     fidgetBundles={fidgetBundles}
@@ -222,8 +218,8 @@ const MobileView: React.FC<MobileViewProps> = ({
                   <TabsContent
                     key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
-                    style={{ visibility: "visible", display: "block" }}
+                    className="h-full w-full"
+                    style={getTabContentStyle(selectedTab === fidgetId)}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}
