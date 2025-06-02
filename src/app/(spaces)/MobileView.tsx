@@ -149,9 +149,9 @@ const MobileView: React.FC<MobileViewProps> = ({
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="h-full w-full">
             {/* Special case for consolidated media tab */}
-            {mediaFidgetIds.length > 1 && (
+            {mediaFidgetIds.length > 1 && selectedTab === "consolidated-media" && (
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
@@ -176,7 +176,7 @@ const MobileView: React.FC<MobileViewProps> = ({
             )}
 
             {/* Special case for consolidated pinned tab */}
-            {pinnedCastIds.length > 1 && (
+            {pinnedCastIds.length > 1 && selectedTab === "consolidated-pinned" && (
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
@@ -207,6 +207,8 @@ const MobileView: React.FC<MobileViewProps> = ({
                   id !== "consolidated-media" && id !== "consolidated-pinned"
               )
               .map((fidgetId) => {
+                if (selectedTab !== fidgetId) return null
+                
                 const fidgetDatum = fidgetInstanceDatums[fidgetId]
                 if (!fidgetDatum) return null
 
