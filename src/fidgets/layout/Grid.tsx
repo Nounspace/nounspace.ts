@@ -32,7 +32,6 @@ import {
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
-import { useGlobalFidgetStyle } from "@/common/providers/GlobalFidgetStyleProvider";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -88,14 +87,14 @@ type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
 const ReactGridLayout = WidthProvider(RGL);
 
-const Gridlines: React.FC<GridDetails> = ({
+const Gridlines: React.FC<GridDetails & { borderRadius: number }> = ({
   maxRows,
   cols,
   rowHeight,
   margin,
   containerPadding,
+  borderRadius,
 }) => {
-  const { borderRadius } = useGlobalFidgetStyle();
   return (
     <div
       className="relative grid-overlap w-full h-full opacity-50"
@@ -158,7 +157,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
-  const { spacing, borderRadius } = useGlobalFidgetStyle();
+  const { gridSpacing: spacing, fidgetBorderRadius: borderRadius } =
+    theme.properties;
   const gridDetails = useMemo(
     () => makeGridDetails(hasProfile, hasFeed, spacing),
     [hasProfile, hasFeed, spacing],
@@ -510,7 +510,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           </button>
         )}
         <div className="flex-1 grid-container grow">
-          {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
+          {inEditMode && (
+            <Gridlines
+              {...gridDetails}
+              rowHeight={rowHeight}
+              borderRadius={borderRadius}
+            />
+          )}
 
           <ReactGridLayout
             {...gridDetails}
@@ -558,6 +564,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                     setCurrentFidgetSettings={setCurrentFidgetSettings}
                     setSelectedFidgetID={setSelectedFidgetID}
                     selectedFidgetID={selectedFidgetID}
+                    theme={theme}
+                    saveTheme={saveTheme}
                     bundle={{
                       ...fidgetDatum,
                       properties: fidgetModule.properties,
