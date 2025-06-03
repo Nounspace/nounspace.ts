@@ -23,6 +23,7 @@ import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 import Image from "next/image";
 
+
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
   fidgetType: string;
@@ -391,11 +392,12 @@ export default function Space({
                 html={config.theme?.properties.backgroundHTML}
                 className="absolute inset-0 pointer-events-none w-full h-full"
               />
+                <div className="flex-1 w-full overflow-auto " >
               <div className="relative w-full h-full flex flex-col">
               <div className="w-full bg-white">
                 
                   {!isUndefined(profile) ? (
-                    <div className="z-50">
+                    <div>
                       {profile}
                     </div>
                   ) : null}
@@ -408,7 +410,7 @@ export default function Space({
 
                       </div>
 
-                      <div className="flex-1 w-full overflow-auto " >
+                    
                         <Suspense fallback={
                           <SpaceLoading
                             hasProfile={!isNil(profile)}
