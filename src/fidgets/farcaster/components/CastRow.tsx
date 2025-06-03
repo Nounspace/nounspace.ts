@@ -32,6 +32,8 @@ import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { FaReply } from "react-icons/fa6";
+import { IoMdShare } from "react-icons/io";
+import { toast } from "sonner";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -420,7 +422,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div className="-ml-1.5 flex space-x-3">
+      <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
           const isActive = get(reactionInfo, "isActive", false);
           const icon = getIconForCastReactionType(
@@ -468,6 +470,17 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             /{cast.channel.name}
           </div>
         )}
+        <div
+          className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
+          onClick={(e) => {
+            e.stopPropagation();
+            const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
+            navigator.clipboard.writeText(url);
+            toast("Link copied to clipboard.");
+          }}
+        >
+          <IoMdShare className="w-4 h-4" aria-hidden="true" />
+        </div>
       </div>
     </>
   );
