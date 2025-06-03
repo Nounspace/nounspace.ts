@@ -14,7 +14,7 @@ import {
   handleSetInput,
 } from "@mod-protocol/core";
 import {
-  getFarcasterMentions,
+  FarcasterMention,
 } from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
@@ -63,9 +63,29 @@ const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
-const getMentions = getFarcasterMentions(API_URL);
 
-const debouncedGetMentions = debounce(getMentions, 200, {
+const fetchNeynarMentions = async (
+  query: string,
+): Promise<FarcasterMention[]> => {
+  try {
+    const res = await fetch(
+      `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
+    );
+    const data = await res.json();
+    const users = data?.value?.users || [];
+    return users.map((user: any) => ({
+      fid: user.fid,
+      username: user.username,
+      display_name: user.display_name,
+      avatar_url: user.pfp_url,
+    }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+};
+
+const debouncedGetMentions = debounce(fetchNeynarMentions, 200, {
   leading: true,
   trailing: false,
 });
