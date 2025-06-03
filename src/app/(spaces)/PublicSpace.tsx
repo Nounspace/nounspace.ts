@@ -217,7 +217,6 @@ export default function PublicSpace({
     contractAddress,
     tokenData?.network,
     spaceOwnerFid,
-    localSpaces,
   ]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
@@ -237,12 +236,12 @@ export default function PublicSpace({
         !!localSpaces[currentSpaceId]?.order &&
         localSpaces[currentSpaceId].order.length > 0;
 
-      if (!hasCachedTab || !hasCachedOrder) {
-        setLoading(true);
-      } else {
+      if (hasCachedTab && hasCachedOrder) {
         setLoading(false);
+        return;
       }
 
+      setLoading(true);
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
@@ -265,7 +264,7 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName, localSpaces]);
+  }, [getCurrentSpaceId, getCurrentTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
