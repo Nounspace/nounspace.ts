@@ -117,42 +117,57 @@ export const processTabFidgetIds = (
   // For mobile, process and potentially consolidate media fidgets
   const mediaFidgetIds: string[] = [];
   const pinnedCastIds: string[] = [];
-  const nonMediaFidgetIds: string[] = [];
-  
-  // First separate media, pinned casts, and non-media fidgets
+
+  // First gather info about media and pinned casts
   fidgetIds.forEach(id => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return;
-    
-    // Skip fidgets that should be hidden on mobile
-    if (fidgetData.config.settings.showOnMobile === false) return;
-    
+
     if (isPinnedCast(id, fidgetInstanceDatums)) {
       pinnedCastIds.push(id);
     } else if (isMediaFidget(fidgetData.fidgetType)) {
       mediaFidgetIds.push(id);
-    } else {
-      nonMediaFidgetIds.push(id);
     }
   });
-  
-  const consolidatedIds: string[] = [];
-  
-  // If we have multiple pinned casts, return them under a special id
-  if (pinnedCastIds.length > 1) {
-    consolidatedIds.push('consolidated-pinned');
-  } else {
-    consolidatedIds.push(...pinnedCastIds);
-  }
-  
-  // If we have multiple media fidgets, add them under a special id
-  if (mediaFidgetIds.length > 1) {
-    consolidatedIds.push('consolidated-media');
-  } else {
-    consolidatedIds.push(...mediaFidgetIds);
-  }
-  
-  return [...consolidatedIds, ...nonMediaFidgetIds];
+
+  const multiplePinned = pinnedCastIds.length > 1;
+  const multipleMedia = mediaFidgetIds.length > 1;
+
+  const result: string[] = [];
+  const seen = new Set<string>();
+
+  // Build result array preserving original order
+  fidgetIds.forEach(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    if (!fidgetData) return;
+
+    // Skip fidgets hidden on mobile
+    if (fidgetData.config.settings.showOnMobile === false) return;
+
+    if (isPinnedCast(id, fidgetInstanceDatums)) {
+      if (multiplePinned) {
+        if (!seen.has('consolidated-pinned')) {
+          result.push('consolidated-pinned');
+          seen.add('consolidated-pinned');
+        }
+      } else {
+        result.push(id);
+      }
+    } else if (isMediaFidget(fidgetData.fidgetType)) {
+      if (multipleMedia) {
+        if (!seen.has('consolidated-media')) {
+          result.push('consolidated-media');
+          seen.add('consolidated-media');
+        }
+      } else {
+        result.push(id);
+      }
+    } else {
+      result.push(id);
+    }
+  });
+
+  return result;
 };
 
 /**
