@@ -171,9 +171,6 @@ export default function PublicSpace({
       resolvedPageType,
     );
 
-    // Get current space ID to check if it's already set correctly
-    const currentSpaceId = getCurrentSpaceId();
-
     if (resolvedPageType === "token" && contractAddress && tokenData?.network) {
       const existingSpace = Object.values(localSpaces).find(
         (space) =>
@@ -187,11 +184,8 @@ export default function PublicSpace({
           contractAddress,
           network: tokenData.network,
         });
-        // Only update if different to prevent loops
-        if (currentSpaceId !== existingSpace.id) {
-          setCurrentSpaceId(existingSpace.id);
-          setCurrentTabName(decodeURIComponent(providedTabName));
-        }
+        setCurrentSpaceId(existingSpace.id);
+        setCurrentTabName(decodeURIComponent(providedTabName));
         return;
       }
     } else if (resolvedPageType === "person" && spaceOwnerFid) {
@@ -204,11 +198,8 @@ export default function PublicSpace({
           spaceId: existingSpace.id,
           spaceOwnerFid,
         });
-        // Only update if different to prevent loops
-        if (currentSpaceId !== existingSpace.id) {
-          setCurrentSpaceId(existingSpace.id);
-          setCurrentTabName(decodeURIComponent(providedTabName));
-        }
+        setCurrentSpaceId(existingSpace.id);
+        setCurrentTabName(decodeURIComponent(providedTabName));
         return;
       }
     } else if (resolvedPageType === "proposal") {
@@ -217,11 +208,8 @@ export default function PublicSpace({
     }
 
     // If no existing space found locally, use the provided spaceId
-    // Only update if different to prevent loops
-    if (currentSpaceId !== providedSpaceId) {
-      setCurrentSpaceId(providedSpaceId);
-      setCurrentTabName(decodeURIComponent(providedTabName));
-    }
+    setCurrentSpaceId(providedSpaceId);
+    setCurrentTabName(decodeURIComponent(providedTabName));
   }, [
     resolvedPageType,
     providedSpaceId,
@@ -230,7 +218,6 @@ export default function PublicSpace({
     tokenData?.network,
     spaceOwnerFid,
     localSpaces,
-    getCurrentSpaceId,
   ]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
@@ -250,34 +237,33 @@ export default function PublicSpace({
         !!localSpaces[currentSpaceId]?.order &&
         localSpaces[currentSpaceId].order.length > 0;
 
-      // Only load if we don't have cached data
       if (!hasCachedTab || !hasCachedOrder) {
         setLoading(true);
-
-        loadSpaceTabOrder(currentSpaceId)
-          .then(() => {
-            console.log("Loaded space tab order");
-            return loadEditableSpaces();
-          })
-          .then(() => {
-            console.log("Loaded editable spaces");
-            return loadSpaceTab(currentSpaceId, currentTabName);
-          })
-          .then(() => {
-            console.log("Loaded space tab");
-            setLoading(false);
-            // Preload other tabs in the background
-            if (currentSpaceId) {
-              void loadRemainingTabs(currentSpaceId);
-            }
-          })
-          .catch((error) => {
-            console.error("Error loading space:", error);
-            setLoading(false);
-          });
       } else {
         setLoading(false);
       }
+
+      loadSpaceTabOrder(currentSpaceId)
+        .then(() => {
+          console.log("Loaded space tab order");
+          return loadEditableSpaces();
+        })
+        .then(() => {
+          console.log("Loaded editable spaces");
+          return loadSpaceTab(currentSpaceId, currentTabName);
+        })
+        .then(() => {
+          console.log("Loaded space tab");
+          setLoading(false);
+          // Preload other tabs in the background
+          if (currentSpaceId) {
+            void loadRemainingTabs(currentSpaceId);
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading space:", error);
+          setLoading(false);
+        });
     }
   }, [getCurrentSpaceId, getCurrentTabName, localSpaces]);
 
@@ -285,16 +271,14 @@ export default function PublicSpace({
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
       const currentTabName = getCurrentTabName();
-      // Access localSpaces directly from store instead of dependency
-      const currentLocalSpaces = localSpaces;
-      const tabOrder = currentLocalSpaces[spaceId]?.order || [];
+      const tabOrder = localSpaces[spaceId]?.order || [];
       await Promise.all(
         tabOrder
           .filter((tabName) => tabName !== currentTabName)
           .map((tabName) => loadSpaceTab(spaceId, tabName)),
       );
     },
-    [getCurrentTabName, loadSpaceTab, localSpaces],
+    [localSpaces, getCurrentTabName, loadSpaceTab],
   );
 
   // Checks if the user is signed into Farcaster
