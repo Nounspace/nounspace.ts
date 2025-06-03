@@ -56,9 +56,25 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     getValidFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
   [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
-  const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+  const processedFidgetIds = useMemo(
+    () => processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
+    [layoutConfig.layout, fidgetInstanceDatums, isMobile],
+  );
+
+  // Reorder fidget IDs based on the mobileOrder setting when on mobile
+  const mobileOrderedFidgetIds = useMemo(() => {
+    if (!isMobile) return processedFidgetIds;
+
+    const idsWithOrder = processedFidgetIds.map((id, idx) => {
+      const order =
+        fidgetInstanceDatums[id]?.config?.settings?.mobileOrder ?? idx + 1;
+      return { id, order };
+    });
+
+    idsWithOrder.sort((a, b) => a.order - b.order);
+
+    return idsWithOrder.map((item) => item.id);
+  }, [isMobile, processedFidgetIds, fidgetInstanceDatums]);
   
   const mediaFidgetIds = useMemo(() => 
     getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),
@@ -95,13 +111,13 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   
   // Get ordered fidget IDs with feed prioritized (except in homebase)
   const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    
+    if (!mobileOrderedFidgetIds || mobileOrderedFidgetIds.length <= 1) return mobileOrderedFidgetIds;
+
     // If we're in homebase or home path, don't reorder
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
+    if (isHomebasePath || isHomePath) return mobileOrderedFidgetIds;
+
     // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
+    const reorderedIds = [...mobileOrderedFidgetIds];
     
     // Sort the array to move feed fidgets to the beginning
     reorderedIds.sort((a, b) => {
@@ -114,7 +130,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     });
     
     return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath]);
+  }, [mobileOrderedFidgetIds, fidgetInstanceDatums, isHomebasePath, isHomePath]);
 
   // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
