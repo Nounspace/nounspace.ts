@@ -184,12 +184,16 @@ export function FidgetWrapper({
         </button>
       </div>
       <Card
-        className={
-          selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
-            : "size-full overflow-hidden"
-        }
+        className="size-full overflow-hidden"
         style={{
+          outline:
+            selectedFidgetID === bundle.id
+              ? "4px solid rgb(2 132 199)" /* sky-600 */
+              : undefined,
+          outlineOffset:
+            selectedFidgetID === bundle.id
+              ? -parseInt(themeProps?.fidgetBorderWidth ?? "0")
+              : undefined,
           background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,

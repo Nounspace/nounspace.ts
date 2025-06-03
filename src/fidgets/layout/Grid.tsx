@@ -561,12 +561,18 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               return (
                 <div
                   key={gridItem.i}
-                  className={`grid-item ${
-                    selectedFidgetID === gridItem.i
-                      ? "outline outline-4 outline-offset-1 outline-sky-600"
-                      : ""
-                  }`}
-                  style={{ borderRadius: gridDetails.borderRadius }}
+                  className="grid-item"
+                  style={{
+                    borderRadius: gridDetails.borderRadius,
+                    outline:
+                      selectedFidgetID === gridItem.i
+                        ? "4px solid rgb(2 132 199)" /* sky-600 */
+                        : undefined,
+                    outlineOffset:
+                      selectedFidgetID === gridItem.i
+                        ? -parseInt(theme.properties.fidgetBorderWidth ?? "0")
+                        : undefined,
+                  }}
                 >
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
