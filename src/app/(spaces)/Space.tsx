@@ -131,7 +131,6 @@ export default function Space({
           });
         }
       }
-  
       // Check for and handle overlapping fidgets
       const { cleanedLayout, removedFidgetIds } = cleanupLayout(
         config.layoutDetails.layoutConfig.layout,
@@ -139,12 +138,10 @@ export default function Space({
         !isNil(profile),
         !isNil(feed)
       );
-  
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
       removedFidgetIds.forEach(id => {
         delete cleanedFidgetInstanceDatums[id];
       });
-  
       let settingsChanged = false;
       // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
       Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
@@ -161,13 +158,11 @@ export default function Space({
           settingsChanged = true;
         }
       });
-  
       // Make Queued Changes
       if (removedFidgetIds.length > 0 || 
         cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
         item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
         settingsChanged) {
-  
         saveConfig({
           layoutDetails: {
             layoutConfig: {
@@ -376,11 +371,13 @@ export default function Space({
           )
         : null}
      <div
-  className={`w-full h-full relative flex-col ${
-    showMobileContainer
-      ? "flex items-center justify-center"
-      : "user-theme-background"
-  }`}
+  className={`w-full h-full relative flex-col ${showMobileContainer
+          ? "flex items-center justify-center"
+          : "user-theme-background"
+          }`}
+        style={{
+          backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background
+        }}
 >
   {showMobileContainer && (
     <Image
@@ -396,76 +393,77 @@ export default function Space({
         <div className="relative w-[344px] h-[744px]">
           <div className="absolute top-[10px] left-[16px] z-0">
             <div
-              className="user-theme-background w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+              className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                backgroundColor: 'white',
+                backgroundColor: config.theme?.properties.background || 'white',
                 transform: 'scale(1.0)',
                 transformOrigin: 'top left'
               }}
             >
               <CustomHTMLBackground
                 html={config.theme?.properties.backgroundHTML}
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0 pointer-events-none w-full h-full"
               />
               <div className="relative w-full h-full flex flex-col">
-                <div className="w-full bg-white">
+              <div className="w-full bg-white">
                   {!isUndefined(profile) ? (
-                   <div className="z-50 md:min-h-40">
-                      {profile}
-                    </div>
-                  ) : null}
 
-                  <div className="border-b">
-                    <div className="flex">
-                      {tabBar}
+                    <div className="z-50 md:min-h-40">
+                            {profile}
+                          </div>
+                        ) : null}
+                        <div className="border-b">
+                          <div className="flex">
+                            {tabBar}
+                          </div>
+                        </div>
+
+                      </div>
+
+                      <div className="flex-1 w-full overflow-auto" >
+                        <Suspense fallback={
+                          <SpaceLoading
+                            hasProfile={!isNil(profile)}
+                            hasFeed={!isNil(feed)}
+                          />
+                        }>
+                          {LayoutFidget ? (
+                            <LayoutFidget
+                              layoutConfig={{ ...layoutConfig }}
+                              {...layoutFidgetProps}
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center h-full" style={{ backgroundColor: 'transparent' }}>
+                              <SpaceLoading
+                                hasProfile={!isNil(profile)}
+                                hasFeed={!isNil(feed)}
+                              />
+                            </div>
+                          )}
+                        </Suspense>
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex-1 w-full overflow-auto">
-                  <Suspense fallback={
-                    <SpaceLoading
-                      hasProfile={!isNil(profile)}
-                      hasFeed={!isNil(feed)}
-                    />
-                  }>
-                    {LayoutFidget ? (
-                      <LayoutFidget
-                        layoutConfig={{ ...layoutConfig }}
-                        {...layoutFidgetProps}
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <SpaceLoading
-                          hasProfile={!isNil(profile)}
-                          hasFeed={!isNil(feed)}
-                        />
-                      </div>
-                    )}
-                  </Suspense>
-                </div>
+                <Image
+                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+                  alt="Phone mockup"
+                  width={344}
+                  height={744}
+                  className="pointer-events-none select-none absolute inset-0 z-10"
+                />
               </div>
             </div>
-          </div>
-          <Image
-            src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-            alt="Phone mockup"
-            width={344}
-            height={744}
-            className="pointer-events-none select-none absolute inset-0 z-10"
-          />
+          ) : (
+            <>
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
+            </>
+          )}
         </div>
       </div>
-    ) : (
-      <>
-        <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-        {mainContent}
-      </>
-    )}
-  </div>
-</div>
     </>
   );
 }
