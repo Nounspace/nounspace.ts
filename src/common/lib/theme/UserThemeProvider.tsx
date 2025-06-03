@@ -69,6 +69,8 @@ export const UserThemeProvider = ({ children }) => {
     fidgetBorderWidth,
     fidgetBorderColor,
     fidgetShadow,
+    fidgetBorderRadius,
+    gridSpacing,
   } = userTheme.properties;
 
   useEffect(() => {
@@ -121,6 +123,17 @@ export const UserThemeProvider = ({ children }) => {
   useEffect(() => {
     setGlobalStyleProperty("--user-theme-fidget-shadow", fidgetShadow);
   }, [fidgetShadow]);
+
+  useEffect(() => {
+    setGlobalStyleProperty(
+      "--user-theme-fidget-border-radius",
+      fidgetBorderRadius,
+    );
+  }, [fidgetBorderRadius]);
+
+  useEffect(() => {
+    setGlobalStyleProperty("--user-theme-grid-spacing", gridSpacing);
+  }, [gridSpacing]);
 
   return children;
 };

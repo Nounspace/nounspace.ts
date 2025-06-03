@@ -15,6 +15,8 @@ export const defaultUserTheme: UserTheme = {
     fidgetBorderWidth: "1px",
     fidgetBorderColor: "#eeeeee",
     fidgetShadow: "none",
+    fidgetBorderRadius: "12px",
+    gridSpacing: "16",
   },
 };
 

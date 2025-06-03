@@ -49,7 +49,7 @@ export const getSettingsWithDefaults = (
       [f.fieldName]:
         f.fieldName in safeSettings
           ? safeSettings[f.fieldName]
-          : f.default ?? undefined,
+          : (f.default ?? undefined),
     }),
     {},
   );
@@ -58,6 +58,7 @@ export const getSettingsWithDefaults = (
 export function FidgetWrapper({
   fidget,
   bundle,
+  context,
   saveConfig,
   setCurrentFidgetSettings,
   setSelectedFidgetID,
@@ -68,6 +69,8 @@ export function FidgetWrapper({
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
+
+  const themeProps = (context?.theme ?? homebaseConfig?.theme)?.properties;
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -181,13 +184,17 @@ export function FidgetWrapper({
         </button>
       </div>
       <Card
-        className={
-          selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
-            : "size-full overflow-hidden"
-        }
+        className="size-full overflow-hidden"
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          outline:
+            selectedFidgetID === bundle.id
+              ? "4px solid rgb(2 132 199)" /* sky-600 */
+              : undefined,
+          outlineOffset:
+            selectedFidgetID === bundle.id
+              ? -parseInt(themeProps?.fidgetBorderWidth ?? "0")
+              : undefined,
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
@@ -199,12 +206,14 @@ export function FidgetWrapper({
           boxShadow: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
+          borderRadius: themeProps?.fidgetBorderRadius,
         }}
       >
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50"
+            style={{ borderRadius: themeProps?.fidgetBorderRadius }}
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
