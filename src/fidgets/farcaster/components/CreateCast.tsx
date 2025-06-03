@@ -99,9 +99,9 @@ const getUrlMetadata = fetchUrlMetadata(API_URL);
 
 const onError = (err) => {
   console.error(err);
-  // if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
-  //   window.alert(err.message);
-  // }
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
+    window.alert(err.message);
+  }
 };
 
 export type ParentCastIdType = {
@@ -397,8 +397,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
-      console.group("Mention Parsing");
-
+      // console.group("Mention Parsing");
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
@@ -424,7 +423,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
-      console.log("Parsed mentions from text:", usernamesWithPositions);
+      // console.log("Parsed mentions from text:", usernamesWithPositions);
 
       const mentionsToFids: { [key: string]: string } = {};
       const mentionsPositions: number[] = [];
@@ -480,7 +479,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         //   }
 
 
-          console.log("Resolved mentions to FIDs:", mentionsToFids);
+          // console.log("Resolved mentions to FIDs:", mentionsToFids);
 
           let cumulativeOffset = 0;
           const mentionMatches = [...text.matchAll(usernamePattern)];
@@ -519,7 +518,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         // }
       }
 
-      console.groupEnd();
+      // console.groupEnd();
 
       // Update the draft regardless of mentions
       setDraft((prevDraft) => {
@@ -531,7 +530,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        console.log("Updated Draft before posting:", updatedDraft);
+        // console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };
