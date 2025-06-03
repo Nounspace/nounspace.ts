@@ -1,6 +1,15 @@
 import React, { useLayoutEffect, useRef } from "react";
 
-const ScrollToIndex = ({ children, scrollToIndex = 0, extraHeight = 0 }) => {
+type ScrollToIndexProps = {
+  children?: React.ReactNode;
+  scrollToIndex?: number;
+  extraHeight?: number;
+};
+const ScrollToIndex = ({
+  children,
+  scrollToIndex = 0,
+  extraHeight = 0,
+}: ScrollToIndexProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
@@ -24,10 +33,12 @@ const ScrollToIndex = ({ children, scrollToIndex = 0, extraHeight = 0 }) => {
     }
   }, [scrollToIndex]);
 
+  const childArray = React.Children.toArray(children);
+
   return (
     <div ref={containerRef} className="size-full overflow-y-auto relative">
       <div ref={contentRef}>
-        {children?.map((item, index) => (
+        {childArray.map((item, index) => (
           <div key={index} ref={index === scrollToIndex ? targetRef : null}>
             {item}
           </div>

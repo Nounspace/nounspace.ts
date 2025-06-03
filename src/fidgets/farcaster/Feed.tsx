@@ -23,6 +23,7 @@ import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
@@ -35,6 +36,16 @@ export enum FilterType {
   Users = "fids",
   Keyword = "keyword",
 }
+
+export type FeedFidgetData = {
+  initialHash?: string;
+  /**
+   * When true, selecting a cast will update the browser URL to
+   * reflect the selected cast on the homebase feed. This should
+   * only be enabled for the immutable feed on /homebase.
+   */
+  updateUrl?: boolean;
+};
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
@@ -333,7 +344,7 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
-const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
+const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settings, data: initialData }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
@@ -353,7 +364,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     : users;
 
   const {
-    data,
+    data: castPages,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
@@ -373,26 +384,30 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
-  const threadStackRef = React.useRef(useLifoQueue<string>());
-  const threadStack = threadStackRef.current;
+  const router = useRouter();
+  const threadStack = useLifoQueue<string>();
 
   const [ref, inView] = useInView();
+
+  const { push, pop, clear, last } = threadStack;
 
   useEffect(() => {
     if (prevFeedType !== feedType) {
       setIsTransitioning(true);
-      threadStack.clear();
+      clear();
       setTimeout(() => {
-        refetch().then(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        }).catch(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        });
+        refetch()
+          .then(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          })
+          .catch(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          });
       }, 200);
     }
-  }, [feedType, prevFeedType, refetch]);
+  }, [feedType, prevFeedType, refetch, clear]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isTransitioning) {
@@ -402,20 +417,36 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
 
   useEffect(() => {
-    threadStack.clear();
-  }, [settings, threadStack]);
+    clear();
+    if (initialData?.initialHash) {
+      push(initialData.initialHash);
+    }
+  }, [settings, initialData?.initialHash, clear, push]);
 
-  const onSelectCast = useCallback((hash: string) => {
-    threadStack.push(hash);
-  }, [threadStack]);
+  const onSelectCast = useCallback(
+    (hash: string, username: string) => {
+      push(hash);
+      if (initialData?.updateUrl) {
+        router.push(`/homebase/c/${username}/${hash}`);
+      }
+    },
+    [push, router, initialData?.updateUrl],
+  );
+
+  const handleBack = useCallback(() => {
+    pop();
+    if (initialData?.updateUrl) {
+      router.push(`/homebase`);
+    }
+  }, [pop, router, initialData?.updateUrl]);
 
   const renderThread = () => (
     <CastThreadView
       cast={{
-        hash: threadStack.last || "",
+        hash: last || "",
         author: { fid },
       }}
-      onBack={threadStack.pop}
+      onBack={handleBack}
       onSelect={onSelectCast}
     />
   );
@@ -459,10 +490,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       );
     }
 
-    const hasData = data && (
+    const hasData = castPages && (
       filterType === FilterType.Keyword
-        ? data.pages.some(page => page.result.casts?.length > 0)
-        : data.pages.some(page => page.casts?.length > 0)
+        ? castPages.pages.some(page => page.result.casts?.length > 0)
+        : castPages.pages.some(page => page.casts?.length > 0)
     );
 
     const filtroInformado = (
@@ -489,10 +520,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       <>
         {!isPending && (
           <div>
-            {isError ? (
-              <div>Error</div>
-            ) : !isNil(data) ? (
-              data.pages.map((page, pageNum) => (
+              {isError ? (
+                <div>Error</div>
+              ) : !isNil(castPages) ? (
+                castPages.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
                   {filterType === FilterType.Keyword
                     ? page.result.casts?.map(
@@ -548,7 +579,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     );
   };
 
-  const isThreadView = threadStack.last !== undefined;
+  const isThreadView = last !== undefined;
 
   return (
     <div
@@ -579,6 +610,6 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 const exp = {
   fidget: Feed,
   properties: feedProperties,
-} as FidgetModule<FidgetArgs<FeedFidgetSettings>>;
+} as FidgetModule<FidgetArgs<FeedFidgetSettings, FeedFidgetData>>;
 
 export default exp;

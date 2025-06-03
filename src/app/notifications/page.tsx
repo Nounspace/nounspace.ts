@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import { useRouter } from "next/navigation";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
@@ -45,7 +46,7 @@ const TAB_OPTIONS = {
 
 export type NotificationRowProps = React.FC<{
   notification: Notification;
-  onSelect: (castHash: string) => void;
+  onSelect: (castHash: string, username: string) => void;
   isUnseen?: boolean;
 }>;
 
@@ -266,6 +267,20 @@ const LikeNotificationRow: NotificationRowProps = ({
       .map((r) => r.user);
   }, [notification?.reactions]);
 
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      onSelect(notification.cast!.hash, notification.cast!.author.username);
+    },
+    [notification.cast, onSelect],
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <NotificationHeader
@@ -274,7 +289,7 @@ const LikeNotificationRow: NotificationRowProps = ({
         descriptionSuffix="liked your cast"
         leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <div className="ml-4 w-full">
+      <div className="ml-4 w-full cursor-pointer" onClick={handleClick}>
         <CastBody
           cast={notification.cast!}
           channel={null}
@@ -374,13 +389,18 @@ function NotificationsPageContent() {
     identityPublicKey,
   );
 
+  const router = useRouter();
+
   const onTabChange = useCallback((value: string) => {
     setTab(value);
   }, []);
 
-  const onSelectNotification = useCallback(() => {
-    // console.log("@TODO: navigateToCastDetail"); // TODO
-  }, []);
+  const onSelectNotification = useCallback(
+    (hash: string, username: string) => {
+      router.push(`/homebase/c/${username}/${hash}`);
+    },
+    [router],
+  );
 
   const filterByType = useCallback(
     (_notifications: Notification[]): Notification[] => {
