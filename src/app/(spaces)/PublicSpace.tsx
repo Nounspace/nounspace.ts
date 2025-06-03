@@ -237,33 +237,36 @@ export default function PublicSpace({
         !!localSpaces[currentSpaceId]?.order &&
         localSpaces[currentSpaceId].order.length > 0;
 
+      // Only proceed with loading if we're missing cached data
       if (!hasCachedTab || !hasCachedOrder) {
         setLoading(true);
-      } else {
-        setLoading(false);
-      }
 
-      loadSpaceTabOrder(currentSpaceId)
-        .then(() => {
-          console.log("Loaded space tab order");
-          return loadEditableSpaces();
-        })
-        .then(() => {
-          console.log("Loaded editable spaces");
-          return loadSpaceTab(currentSpaceId, currentTabName);
-        })
-        .then(() => {
-          console.log("Loaded space tab");
-          setLoading(false);
-          // Preload other tabs in the background
-          if (currentSpaceId) {
-            void loadRemainingTabs(currentSpaceId);
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading space:", error);
-          setLoading(false);
-        });
+        loadSpaceTabOrder(currentSpaceId)
+          .then(() => {
+            console.log("Loaded space tab order");
+            return loadEditableSpaces();
+          })
+          .then(() => {
+            console.log("Loaded editable spaces");
+            return loadSpaceTab(currentSpaceId, currentTabName);
+          })
+          .then(() => {
+            console.log("Loaded space tab");
+            setLoading(false);
+            // Preload other tabs in the background
+            if (currentSpaceId) {
+              void loadRemainingTabs(currentSpaceId);
+            }
+          })
+          .catch((error) => {
+            console.error("Error loading space:", error);
+            setLoading(false);
+          });
+      } else {
+        // Data is already cached, just ensure loading state is false
+        setLoading(false);
+        console.log("Using cached data for space tab");
+      }
     }
   }, [getCurrentSpaceId, getCurrentTabName, localSpaces]);
 
@@ -338,6 +341,20 @@ export default function PublicSpace({
   // Update the space registration effect to use the new editability check
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
+    
+    // Check if space exists in local cache specifically for the conditions we care about
+    const existingTokenSpace = isTokenPage && contractAddress && tokenData?.network ? 
+      Object.values(localSpaces).find(
+        (space) =>
+          space.contractAddress === contractAddress &&
+          space.network === tokenData.network,
+      ) : null;
+    
+    const existingUserSpace = !isTokenPage ? 
+      Object.values(localSpaces).find(
+        (space) => space.fid === currentUserFid,
+      ) : null;
+    
     console.log("Space registration check:", {
       isEditable: editabilityCheck.isEditable,
       isLoading: editabilityCheck.isLoading,
@@ -347,6 +364,8 @@ export default function PublicSpace({
       isTokenPage,
       contractAddress,
       tokenNetwork: tokenData?.network,
+      existingTokenSpace: existingTokenSpace?.id,
+      existingUserSpace: existingUserSpace?.id,
     });
 
     // Only proceed with registration if we're sure the space doesn't exist and FID is linked
@@ -355,7 +374,9 @@ export default function PublicSpace({
       isNil(currentSpaceId) &&
       !isNil(currentUserFid) &&
       !loading &&
-      !editabilityCheck.isLoading
+      !editabilityCheck.isLoading &&
+      !existingTokenSpace &&
+      !existingUserSpace
     ) {
       console.log("Space registration conditions met:", {
         isEditable: editabilityCheck.isEditable,
@@ -369,40 +390,6 @@ export default function PublicSpace({
       const registerSpace = async () => {
         try {
           let newSpaceId: string | undefined;
-
-          // First check local spaces for existing space
-          if (isTokenPage && contractAddress && tokenData?.network) {
-            const existingSpace = Object.values(localSpaces).find(
-              (space) =>
-                space.contractAddress === contractAddress &&
-                space.network === tokenData.network,
-            );
-
-            if (existingSpace) {
-              console.log("Found existing space in local cache:", {
-                spaceId: existingSpace.id,
-                contractAddress,
-                network: tokenData.network,
-              });
-              setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName("Profile");
-              return;
-            }
-          } else if (!isTokenPage) {
-            const existingSpace = Object.values(localSpaces).find(
-              (space) => space.fid === currentUserFid,
-            );
-
-            if (existingSpace) {
-              console.log("Found existing user space in local cache:", {
-                spaceId: existingSpace.id,
-                currentUserFid,
-              });
-              setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName("Profile");
-              return;
-            }
-          }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
             console.log("Attempting to register contract space:", {
@@ -485,7 +472,16 @@ export default function PublicSpace({
     tokenData?.network,
     getCurrentSpaceId,
     getCurrentTabName,
-    localSpaces,
+    // Only depend on the existence of the specific space we care about
+    isTokenPage && contractAddress && tokenData?.network ? 
+      Object.values(localSpaces).find(space => 
+        space.contractAddress === contractAddress && 
+        space.network === tokenData.network
+      )?.id : null,
+    !isTokenPage ? 
+      Object.values(localSpaces).find(space => 
+        space.fid === currentUserFid
+      )?.id : null,
   ]);
 
   const saveConfig = useCallback(
