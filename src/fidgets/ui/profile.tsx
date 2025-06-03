@@ -125,7 +125,6 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   }
 
   // Extract location if available
-  // DISABLE: @_ts-expect-error > maybe update the neynar package solves this
   const location = user.profile?.location?.address?.city || "";
   const hasLocation = location.length > 0;
 
@@ -179,7 +178,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
         </p>
 
-        <div className="flex flex-wrap items-center text-xs sm:text-xs md:text-sm mt-0.5 mb-0 gap-2 sm:gap-2 text-slate-500">
+        <div className="flex flex-wrap items-center text-xs sm:text-xs md:text-sm mt-0.5 mb-0 gap-2 sm:gap-2 text-black">
           <p className="flex items-center">
             <span className="font-bold mr-1">{user.following_count}</span> Following
           </p>
