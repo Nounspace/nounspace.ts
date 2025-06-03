@@ -236,12 +236,11 @@ export default function PublicSpace({
         !!localSpaces[currentSpaceId]?.order &&
         localSpaces[currentSpaceId].order.length > 0;
 
-      if (hasCachedTab && hasCachedOrder) {
+      if (!hasCachedTab || !hasCachedOrder) {
+        setLoading(true);
+      } else {
         setLoading(false);
-        return;
       }
-
-      setLoading(true);
       loadSpaceTabOrder(currentSpaceId)
         .then(() => {
           console.log("Loaded space tab order");
