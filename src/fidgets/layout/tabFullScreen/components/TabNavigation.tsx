@@ -48,38 +48,8 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
   if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
   
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  const pathname = usePathname();
-  const isHomebasePath = pathname?.startsWith('/homebase');
-  const isHomePath = pathname?.startsWith('/home');
-
-  // Reorder tabs to prioritize feed fidgets
-  const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
-    
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
-    
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, isHomePath]);
+  // Keep the provided order of fidgets
+  const orderedFidgetIds = processedFidgetIds;
 
   // Enhanced scroll handler to calculate gradient opacities based on scroll position
   const handleScroll = () => {
