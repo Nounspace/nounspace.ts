@@ -33,7 +33,7 @@ import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
-import { toast } from "sonner";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -245,6 +245,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
+  const { showToast } = useToastStore();
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -476,7 +477,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             e.stopPropagation();
             const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
             navigator.clipboard.writeText(url);
-            toast("Link copied to clipboard.");
+            showToast("Link copied", 2000);
           }}
         >
           <IoMdShare className="w-4 h-4" aria-hidden="true" />
