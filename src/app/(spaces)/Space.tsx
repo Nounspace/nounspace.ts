@@ -78,7 +78,6 @@ export default function Space({
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
-  // Use the useIsMobile hook instead of duplicating logic
   const viewportMobile = useIsMobile();
   const { mobilePreview, setMobilePreview } = useMobilePreview();
   const isMobile = viewportMobile || mobilePreview;
@@ -88,17 +87,13 @@ export default function Space({
     setSidebarEditable(config.isEditable);
   }, [config.isEditable]);
 
-  // Use a ref to track if cleanup has run
   const cleanupHasRun = React.useRef(false);
 
-  // Clean up unused fidgetInstanceDatums when config is first loaded
   useEffect(() => {
-    // Skip if cleanup has already run
     if (cleanupHasRun.current) {
       return;
     }
 
-    // Skip if config is not loaded
     if (
       !config?.layoutDetails?.layoutConfig?.layout ||
       !config?.fidgetInstanceDatums
@@ -106,22 +101,18 @@ export default function Space({
       return;
     }
 
-    // Get fidget IDs from layout
     const layoutFidgetIds = new Set(
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
-       // Find unused fidgets
        const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
         (id) => !layoutFidgetIds.has(id)
       );
-      // Remove unused fidgets
       if (unusedFidgetIds.length > 0) {
         const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
         unusedFidgetIds.forEach((id) => {
           delete cleanedFidgetInstanceDatums[id];
         });
-        // Only save if we have fidgets left
         if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
           saveConfig({
             fidgetInstanceDatums: cleanedFidgetInstanceDatums,
@@ -179,7 +170,7 @@ export default function Space({
 
     // Mark cleanup as complete
     cleanupHasRun.current = true;
-  }, []); // Run only once on mount
+  }, []); 
 
   function saveExitEditMode() {
     commitConfig();
@@ -214,10 +205,8 @@ export default function Space({
   // Memoize the LayoutFidget component selection based on mobile state
   const LayoutFidget = useMemo(() => {
     if (isMobile) {
-      // Use TabFullScreen for mobile
       return LayoutFidgets["tabFullScreen"];
     } else {
-      // Use the configured layout for desktop or fallback to "grid"
       const layoutFidgetKey =
         config?.layoutDetails?.layoutFidget &&
         LayoutFidgets[config.layoutDetails.layoutFidget]
@@ -230,10 +219,8 @@ export default function Space({
   // Memoize the layoutConfig to prevent unnecessary re-renders
   const layoutConfig = useMemo(() => {
     if (isMobile) {
-      // Extract fidget IDs from the current config to use in TabFullScreen
       const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
 
-      // Create a layout config for TabFullScreen with all available fidget IDs
       return {
         layout: fidgetIds,
         layoutFidget: "tabFullScreen",
@@ -258,7 +245,7 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !viewportMobile && editMode, // No edit mode on mobile screens
+      inEditMode: !viewportMobile && editMode, 
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -388,7 +375,7 @@ export default function Space({
     />
   )}
   <div className="w-full transition-all duration-100 ease-out">
-    {showMobileContainer ? (
+      {showMobileContainer ? (
       <div className="flex items-center justify-center h-full">
         <div className="relative w-[344px] h-[744px]">
           <div className="absolute top-[10px] left-[16px] z-0">
@@ -448,22 +435,22 @@ export default function Space({
                   </div>
                 </div>
                 <Image
-                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-                  alt="Phone mockup"
-                  width={344}
-                  height={744}
-                  className="pointer-events-none select-none absolute inset-0 z-10"
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-              {mainContent}
-            </>
-          )}
+            src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+            alt="Phone mockup"
+            width={344}
+            height={744}
+            className="pointer-events-none select-none absolute inset-0 z-10"
+          />
         </div>
       </div>
+    ) : (
+      <>
+        <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+        {mainContent}
+      </>
+    )}
+  </div>
+</div>
     </>
   );
 }
