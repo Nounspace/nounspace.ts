@@ -160,7 +160,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       <div 
         className="w-full h-full overflow-hidden" 
         style={{ 
-          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : '0',
+          paddingBottom: processedFidgetIds.length > 1 ? `${TAB_HEIGHT + 10}px` : '0',
         }}
       >
         <Tabs 
@@ -255,18 +255,36 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
-            <div 
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white"
-              style={{ height: `${TAB_HEIGHT}px` }}
-            >
-              <TabNavigation 
-                processedFidgetIds={orderedFidgetIds}
-                selectedTab={selectedTab}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                isMobile={isMobile}
-                tabNames={tabNames}
+            <>
+              {/* Invisible backdrop to block touch events behind navigation */}
+              <div 
+                className="fixed bottom-0 left-0 right-0 z-40"
+                style={{ 
+                  height: `${TAB_HEIGHT + 30}px`, // Extended coverage area
+                  pointerEvents: 'auto',
+                  background: 'transparent',
+                  touchAction: 'none', // Block all touch actions
+                }}
+                onTouchStart={(e) => e.preventDefault()}
+                onTouchMove={(e) => e.preventDefault()}
+                onTouchEnd={(e) => e.preventDefault()}
               />
-            </div>
+              <div 
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white"
+                style={{ 
+                  height: `${TAB_HEIGHT}px`,
+                  touchAction: 'manipulation' // Prevent default touch behaviors
+                }}
+              >
+                <TabNavigation 
+                  processedFidgetIds={orderedFidgetIds}
+                  selectedTab={selectedTab}
+                  fidgetInstanceDatums={fidgetInstanceDatums}
+                  isMobile={isMobile}
+                  tabNames={tabNames}
+                />
+              </div>
+            </>
           )}
         </Tabs>
       </div>
