@@ -1,6 +1,7 @@
 "use client";
-import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
-import { createPortal } from "react-dom";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import InfoToast from "@/common/components/organisms/InfoBanner";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -10,17 +11,16 @@ import {
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
-import InfoToast from "@/common/components/organisms/InfoBanner";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
-import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { LayoutFidgets } from "@/fidgets";
 import Image from "next/image";
 
 
@@ -392,23 +392,28 @@ export default function Space({
                 html={config.theme?.properties.backgroundHTML}
                 className="absolute inset-0 pointer-events-none w-full h-full"
               />
-                <div className="flex-1 w-full overflow-auto " >
+                <div className="flex-1 w-full overflow-auto" >
               <div className="relative w-full h-full flex flex-col">
-              <div className="w-full bg-white">
+              <div className="w-full bg-white"> 
                 
                   {!isUndefined(profile) ? (
-                    <div>
+                    <div className="overflow-auto"> 
                       {profile}
                     </div>
                   ) : null}
 
-                        <div className="border-b">
-                          <div className="flex">
-                            {tabBar}
-                          </div>
-                        </div>
+                  <div className="border-b">
+                    <div className="flex">
+                      {tabBar}
+                    </div>
+                  </div>
 
-                      </div>
+                  {!isUndefined(feed) ? (
+                    <div className="overflow-auto h-[calc(100vh-64px)]">
+                      {feed}
+                    </div>
+                  ) : null}
+                </div>
 
                     
                         <Suspense fallback={
