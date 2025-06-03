@@ -453,25 +453,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
           const mentions = [];
           mentionsText = text;
 
-          for (let i = 0; i < mentionsText.length; i++) {
-            if (
-              mentionsText[i] === "@" &&
-              ((mentionsText[i - 1] !== "/" &&
-                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
-                mentionsText[i - 1] === undefined)
-            ) {
-              let mentionIndex = i + 1;
-              while (
-                mentionIndex < mentionsText.length &&
-                mentionsText[mentionIndex] !== " " &&
-                mentionsText[mentionIndex] !== "\n"
-              )
-                mentionIndex++;
-              const mention = mentionsText.substring(i + 1, mentionIndex);
-              const position = i;
-              mentionsPositions.push(position);
-              mentionsText = mentionsText.replace(`@${mention}`, "");
-            }
+          // Use the same regex pattern to find mentions for text replacement
+          const mentionMatches = [...mentionsText.matchAll(usernamePattern)];
+          
+          for (const match of mentionMatches) {
+            const fullMatch = match[0]; // Full match including leading space/parenthesis
+            const username = match[1]; // Just the username
+            const position = match.index! + fullMatch.indexOf("@");
+            
+            mentionsPositions.push(position);
+            // Only replace the @username part, preserving any trailing punctuation
+            mentionsText = mentionsText.replace(`@${username}`, "");
           }
 
           if (mentions.length > 10)
