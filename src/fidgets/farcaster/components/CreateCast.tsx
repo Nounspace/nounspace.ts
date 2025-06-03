@@ -13,9 +13,9 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import {
-  FarcasterMention,
-} from "@mod-protocol/farcaster";
+// import {
+//   FarcasterMention,
+// } from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
@@ -64,10 +64,19 @@ const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 
+type FarcasterMention = {
+  fid: number;
+  display_name: string;
+  username: string;
+  avatar_url: string;
+};
+
 const fetchNeynarMentions = async (
   query: string,
 ): Promise<FarcasterMention[]> => {
   try {
+    if (query == "") return [];
+
     const res = await fetch(
       `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
     );
@@ -93,9 +102,9 @@ const getUrlMetadata = fetchUrlMetadata(API_URL);
 
 const onError = (err) => {
   console.error(err);
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
-    window.alert(err.message);
-  }
+  // if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
+  //   window.alert(err.message);
+  // }
 };
 
 export type ParentCastIdType = {
@@ -124,13 +133,6 @@ type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
   afterSubmit?: () => void;
 };
-
-// export type ModProtocolCastAddBody = Exclude<
-//   Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
-//   false
-// > & {
-//   type: CastType;
-// };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
@@ -398,11 +400,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
+      console.group("Mention Parsing");
+
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
       // Updated to handle punctuation after mentions and parentheses before mentions
-      const usernamePattern = /(?:^|\s|[(])@([a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*)/g;
+      // const usernamePattern = /(?:^|\s|[(])@([a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*)/g;
+
+      // Updated regex: supports ENS-style usernames and extra trailing punctuation like . , ! ? ; :
+      const usernamePattern =
+        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=\s|[.,!?;:)]|$)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -418,6 +426,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const uniqueUsernames = Array.from(
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
+
+      console.log("Parsed mentions from text:", usernamesWithPositions);
 
       let mentionsToFids: { [key: string]: string } = {};
       let mentionsPositions: number[] = [];
@@ -447,26 +457,33 @@ const CreateCast: React.FC<CreateCastProps> = ({
             );
           }
 
-          mentionsPositions = [];
-          // const currentTextIndex = 0;
-          // const finalText = text;
-          const mentions = [];
-          mentionsText = text;
 
-          // Use the same regex pattern to find mentions for text replacement
-          const mentionMatches = [...mentionsText.matchAll(usernamePattern)];
-          
+          console.log("Resolved mentions to FIDs:", mentionsToFids);
+
+          let cumulativeOffset = 0;
+          const mentionMatches = [...text.matchAll(usernamePattern)];
+
           for (const match of mentionMatches) {
-            const fullMatch = match[0]; // Full match including leading space/parenthesis
-            const username = match[1]; // Just the username
-            const position = match.index! + fullMatch.indexOf("@");
-            
-            mentionsPositions.push(position);
-            // Only replace the @username part, preserving any trailing punctuation
-            mentionsText = mentionsText.replace(`@${username}`, "");
+            const fullMatch = match[0]; // e.g. " @bob"
+            const username = match[1];  // "bob"
+            const atIndex = match.index! + fullMatch.indexOf("@");
+
+            // Adjust position based on previous removals
+            const adjustedPosition = atIndex - cumulativeOffset;
+
+            if (mentionsToFids[username]) {
+              mentionsPositions.push(adjustedPosition);
+
+              // Remove `@username` from mentionsText
+              mentionsText = mentionsText.slice(0, adjustedPosition) +
+                mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
+
+              // Update offset so future positions shift correctly
+              cumulativeOffset += username.length + 1;
+            }
           }
 
-          if (mentions.length > 10)
+          if (mentionsPositions.length > 10)
             if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
               console.error(
                 "Mismatch between mentions and their positions:",
@@ -476,8 +493,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
             }
         } catch (error) {
           console.error("Error fetching FIDs:", error);
+          console.groupEnd();
         }
       }
+
+      console.groupEnd();
 
       // Update the draft regardless of mentions
       setDraft((prevDraft) => {
@@ -489,7 +509,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           mentionsToFids,
           mentionsPositions,
         };
-        // console.log("Updated Draft before posting:", updatedDraft);
+        console.log("Updated Draft before posting:", updatedDraft);
         return updatedDraft;
       });
     };
@@ -537,7 +557,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!castAddMessageResp.isOk()) {
       return {
         success: false,
-        message: "Invalid cast data.",
+        message: "Invalid cast data: " + castAddMessageResp.error.message,
       };
     }
 
