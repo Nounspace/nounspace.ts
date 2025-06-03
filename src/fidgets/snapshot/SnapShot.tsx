@@ -15,7 +15,6 @@ import { BsFillLightningChargeFill } from "react-icons/bs";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import ProposalItem from "./components/ProposalItem";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
-import { useFontStyles } from "./hooks/useFontStyles";
 
 export type SnapShotSettings = {
   subgraphUrl: string;
@@ -136,8 +135,20 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
     first,
   });
 
-  // Use the font styles hook
-  const fontStyles = useFontStyles(settings);
+  // Helper function to get CSS variable or fallback to setting value
+  const getFontFamily = useCallback(
+    (setting: string | undefined, themeVariable: string) => {
+      if (
+        !setting ||
+        setting === "Theme Font" ||
+        setting === "Theme Headings Font"
+      ) {
+        return `var(${themeVariable})`;
+      }
+      return setting;
+    },
+    []
+  );
 
   // Memoize navigation handlers
   const handlePrevious = useCallback(() => {
@@ -155,21 +166,25 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
     [proposals.length, first]
   );
 
-  // Memoize the container style
+  // Memoize the container style using CSS variables directly
   const containerStyle = useMemo(
     () => ({
-      fontFamily: fontStyles.bodyFont,
-      color: fontStyles.bodyColor,
+      fontFamily: getFontFamily(settings.fontFamily, "--user-theme-font"),
+      color: settings.fontColor || "var(--user-theme-font-color)",
     }),
-    [fontStyles.bodyFont, fontStyles.bodyColor]
+    [settings.fontFamily, settings.fontColor, getFontFamily]
   );
 
   const headingStyle = useMemo(
     () => ({
-      fontFamily: fontStyles.headingsFont,
-      color: fontStyles.headingsColor,
+      fontFamily: getFontFamily(
+        settings.headingsFontFamily,
+        "--user-theme-headings-font"
+      ),
+      color:
+        settings.headingsFontColor || "var(--user-theme-headings-font-color)",
     }),
-    [fontStyles.headingsFont, fontStyles.headingsColor]
+    [settings.headingsFontFamily, settings.headingsFontColor, getFontFamily]
   );
 
   return (
@@ -189,10 +204,16 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
               key={proposal.id}
               proposal={proposal}
               space={settings.snapshotEns}
-              headingsFont={fontStyles.headingsFont}
-              headingsColor={fontStyles.headingsColor}
-              bodyFont={fontStyles.bodyFont}
-              bodyColor={fontStyles.bodyColor}
+              headingsFont={getFontFamily(
+                settings.headingsFontFamily,
+                "--user-theme-headings-font"
+              )}
+              headingsColor={
+                settings.headingsFontColor ||
+                "var(--user-theme-headings-font-color)"
+              }
+              bodyFont={getFontFamily(settings.fontFamily, "--user-theme-font")}
+              bodyColor={settings.fontColor || "var(--user-theme-font-color)"}
             />
           ))}
         </div>
