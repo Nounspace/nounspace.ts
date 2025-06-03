@@ -4,7 +4,6 @@ import React, {
   useMemo,
   useState,
   useCallback,
-  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -295,6 +294,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     };
 
     saveLayout([...layoutConfig.layout, newItem]);
+
     removeFidgetFromTray(fidgetData.id);
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
       fidgetType: fidgetData.fidgetType,
@@ -472,15 +472,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   }
 
-  const [itemsVisible, setItemsVisible] = useState(false);
-  const initialRenderRef = useRef(true);
-
-  useEffect(() => {
-    if (initialRenderRef.current) {
-      initialRenderRef.current = false;
-      setTimeout(() => setItemsVisible(true), 100);
-    }
-  }, []);
+  const [itemsVisible] = useState(true);
 
   // Log initial config state
   useEffect(() => {

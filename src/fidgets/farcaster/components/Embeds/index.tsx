@@ -26,6 +26,10 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast:
   }
   if (!url) return null;
 
+  if (isImageUrl(url)) {
+    return !isCreateCast ? <ImageEmbed url={url} key={key} /> : <CreateCastImage url={url} key={key} />;
+  }
+
   if (
     url.includes("i.imgur.com") ||
     url.startsWith("https://imagedelivery.net")

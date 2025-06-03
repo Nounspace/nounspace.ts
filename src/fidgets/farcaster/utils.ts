@@ -350,7 +350,6 @@ export const updateUsernameOffchain = async ({
     };
 
     const res = await axios.post(FARCASTER_FNAME_ENDPOINT, payload);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     return res.data;
   } catch (e: any) {

@@ -13,11 +13,13 @@ import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { first } from "lodash";
 import { Button } from "../atoms/button";
 import {
-  FaPaintbrush,
   FaDiscord,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa6";
+// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
+// is `RiQuillPenLine`. Update the import to prevent build errors.
+import { RiQuillPenLine } from "react-icons/ri";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
@@ -50,7 +52,6 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
-  enterEditMode: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -64,7 +65,7 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
@@ -90,10 +91,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   function handleLogout() {
     router.push("/home");
     logout();
-  }
-
-  function turnOnEditMode() {
-    enterEditMode();
   }
 
   const openModal = () => setModalOpen(true);
@@ -200,7 +197,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div className="pt-5 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
             "flex flex-col h-full ml-auto transition-all duration-300 relative",
@@ -209,7 +206,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         >
           <button
             onClick={toggleSidebar}
-            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+            className="absolute right-0 top-[30px] transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
             aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
           >
             {shrunk ? (
@@ -315,18 +312,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   shrunk ? "flex-col gap-1" : ""
                 )}
               >
-                {!isNotificationsPage && !isExplorerPage && isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                    className="flex items-center justify-center w-12 h-12"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
-                  </Button>
-                )}
                 <Button
                   onClick={openCastModal}
                   variant="primary"
@@ -334,7 +319,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
-                  {shrunk && <span className="text-lg font-bold">+</span>}
+                  {shrunk && (
+                    <span className="text-lg font-bold">
+                      <RiQuillPenLine />
+                    </span>
+                  )}
                 </Button>
               </div>
             )}

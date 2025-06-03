@@ -3,9 +3,18 @@ import FrameRenderer from "./FrameRenderer";
 
 interface FrameslayoutProps {
   frameUrl: string;
+  collapsed?: boolean;
+  title?: string;
+  headingFont?: string;
 }
 
-const Frameslayout: React.FC<FrameslayoutProps> = ({ frameUrl }) => {
+const Frameslayout: React.FC<FrameslayoutProps> = ({
+  frameUrl,
+  collapsed = false,
+  title,
+  headingFont,
+}) => {
+
   if (!frameUrl || !frameUrl.startsWith("http")) {
     return null;
   }
@@ -16,6 +25,7 @@ const Frameslayout: React.FC<FrameslayoutProps> = ({ frameUrl }) => {
         height: "100%",
         background: "#fff",
         display: "flex",
+        flexDirection: "column",
         alignItems: "stretch",
         justifyContent: "stretch",
         padding: 0,
@@ -23,7 +33,27 @@ const Frameslayout: React.FC<FrameslayoutProps> = ({ frameUrl }) => {
         overflow: "hidden",
       }}
     >
-      <FrameRenderer frameUrl={frameUrl} isConnected={true} fid={20721} />
+      {!collapsed && title ? (
+        <div style={{ padding: "12px" }}>
+          <h2
+            className="text-xl font-bold"
+            style={{
+              fontFamily: headingFont || "var(--user-theme-headings-font)",
+            }}
+          >
+            {title}
+          </h2>
+        </div>
+      ) : null}
+      <div style={{ flex: 1 }}>
+        <FrameRenderer
+          frameUrl={frameUrl}
+          isConnected={true}
+          fid={20721}
+          collapsed={collapsed}
+          customTitle={title}
+        />
+      </div>
     </div>
   );
 };

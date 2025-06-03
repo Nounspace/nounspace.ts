@@ -1,12 +1,11 @@
 // import neynar from "@/common/data/api/neynar";
-import React, { useCallback, useEffect, useState, useRef } from "react";
 import {
-  makeCastAdd,
-  FarcasterNetwork,
   CastAddBody,
+  FarcasterNetwork,
+  makeCastAdd,
 } from "@farcaster/core";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
-import { useEditor, EditorContent } from "@mod-protocol/react-editor";
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -16,31 +15,38 @@ import {
 } from "@mod-protocol/core";
 import {
   FarcasterMention,
-  //     formatPlaintextToHubCastMessage,
-  //     getMentionFidsByUsernames,
 } from "@mod-protocol/farcaster";
-import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
+import { creationMods } from "@mod-protocol/mod-registry";
+import { CreationMod } from "@mod-protocol/react";
+import { EditorContent, useEditor } from "@mod-protocol/react-editor";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
-import { CreationMod } from "@mod-protocol/react";
-import { creationMods } from "@mod-protocol/mod-registry";
+import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 // import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
 
 
-import { debounce, map, isEmpty, isUndefined } from "lodash";
 import { Button } from "@/common/components/atoms/button";
+import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
 
-import { ChannelPicker } from "./channelPicker";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/common/components/atoms/popover";
-import { renderEmbedForUrl } from "./Embeds";
-import { PhotoIcon } from "@heroicons/react/20/solid";
+import Spinner from "@/common/components/atoms/spinner";
+import { useAppStore } from "@/common/data/stores/app";
+import { useBannerStore } from "@/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
+import { PhotoIcon } from "@heroicons/react/20/solid";
+import { usePrivy } from "@privy-io/react-auth";
+import EmojiPicker, { Theme } from "emoji-picker-react";
+import { GoSmiley } from "react-icons/go";
+import { HiOutlineSparkles } from "react-icons/hi2";
+import { Address, formatUnits, zeroAddress } from "viem";
+import { base } from "viem/chains";
+import { useBalance } from "wagmi";
 import { useFarcasterSigner } from "..";
 import {
   FarcasterEmbed,
@@ -49,17 +55,8 @@ import {
   isFarcasterUrlEmbed,
   submitCast,
 } from "../utils";
-import EmojiPicker, { Theme } from "emoji-picker-react";
-import { GoSmiley } from "react-icons/go";
-import { HiOutlineSparkles } from "react-icons/hi2";
-import Spinner from "@/common/components/atoms/spinner";
-import { XCircle } from "lucide-react";
-import { useBannerStore } from "@/stores/bannerStore";
-import { usePrivy } from "@privy-io/react-auth";
-import { useBalance } from "wagmi";
-import { Address, formatUnits, zeroAddress } from "viem";
-import { useAppStore } from "@/common/data/stores/app";
-import { base } from "viem/chains";
+import { ChannelPicker } from "./channelPicker";
+import { renderEmbedForUrl } from "./Embeds";
 // import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
@@ -159,6 +156,98 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Real image upload function for imgBB
+  async function uploadImageToImgBB(file: File): Promise<string> {
+    const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+    if (!apiKey) throw new Error("imgBB API key not found");
+    // Convert file to base64
+    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(",")[1];
+        resolve(base64);
+      };
+      reader.onerror = error => reject(error);
+    });
+    const imageBase64 = await toBase64(file);
+    const formData = new FormData();
+    formData.append("key", apiKey);
+    formData.append("image", imageBase64);
+    const res = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error("Failed to upload to imgBB");
+    return data.data.url;
+  }
+
+  // Drop handler
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    const file = e.dataTransfer.files[0];
+    if (!file.type.startsWith("image/")) return;
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadImageToImgBB(file);
+      addEmbed({ url, status: "loaded" });
+    } catch (err) {
+      alert("Error uploading image: " + (err as Error).message);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Drag over handler
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  // Drag leave handler
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  // Reference to the EditorContent element to handle paste (Ctrl+V) events
+  const editorContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Effect to add/remove the paste event handler on EditorContent
+    const el = editorContentRef.current;
+    if (!el) return;
+    const handler = async (e: ClipboardEvent) => {
+      if (!e.clipboardData || !e.clipboardData.items) return;
+      for (let i = 0; i < e.clipboardData.items.length; i++) {
+        const item = e.clipboardData.items[i];
+        const file = item.getAsFile();
+        console.log('Clipboard item', i, 'type:', item.type, file);
+        if (file && file.type.startsWith("image/")) {
+          e.preventDefault();
+          setIsUploadingImage(true);
+          try {
+            const url = await uploadImageToImgBB(file);
+            addEmbed({ url, status: "loaded" });
+          } catch (err) {
+            alert("Error uploading image: " + (err as Error).message);
+          } finally {
+            setIsUploadingImage(false);
+          }
+        }
+      }
+    };
+    el.addEventListener("paste", handler as any);
+    return () => {
+      el.removeEventListener("paste", handler as any);
+    };
+  }, [editorContentRef.current]);
 
   const { isBannerClosed, closeBanner } = useBannerStore();
   const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
@@ -535,11 +624,49 @@ const CreateCast: React.FC<CreateCastProps> = ({
         {isPublishing ? (
           <div className="w-full h-full min-h-[150px]">{draft.text}</div>
         ) : (
-          <div className="p-2 border-slate-200 rounded-lg border">
+          <div
+            className={`p-2 border-slate-200 rounded-lg border relative ${isDragging ? "ring-2 ring-blue-400 bg-blue-50" : ""}`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            {isDragging && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
+                <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
+              </div>
+            )}
+            {isUploadingImage && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
+                <Spinner style={{ width: "40px", height: "40px" }} />
+                <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+              </div>
+            )}
             <EditorContent
+              ref={editorContentRef}
               editor={editor}
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
+              onPaste={async (e) => {
+                console.log('onPaste fired', e);
+                if (!e.clipboardData || !e.clipboardData.items) return;
+                for (let i = 0; i < e.clipboardData.items.length; i++) {
+                  const item = e.clipboardData.items[i];
+                  const file = item.getAsFile();
+                  console.log('Clipboard item', i, 'type:', item.type, file);
+                  if (file && file.type.startsWith("image/")) {
+                    e.preventDefault();
+                    setIsUploadingImage(true);
+                    try {
+                      const url = await uploadImageToImgBB(file);
+                      addEmbed({ url, status: "loaded" });
+                    } catch (err) {
+                      alert("Error uploading image: " + (err as Error).message);
+                    } finally {
+                      setIsUploadingImage(false);
+                    }
+                  }
+                }
+              }}
             />
             {/* <div className="z-50">
               <EmbedsEditor
@@ -705,7 +832,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (
             <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : embed.castId.hash}`}
+              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
             >
               {renderEmbedForUrl(embed, true)}
             </div>

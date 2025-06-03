@@ -4,45 +4,40 @@ import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+// import Head from "next/head";
+import type { Metadata } from 'next' // Migrating next/head
 
-export const metadata = {
-  title: "Nounspace",
+export const metadata: Metadata = {
+  title: 'Nounspace',
   description:
-    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
+    'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
   openGraph: {
-    siteName: "Nounspace",
-    title: "Nounspace",
-    type: "website",
+    title: 'Nounspace',
     description:
-      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
-    images: {
-      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
-      type: "image/png",
-      width: 1200,
-      height: 737,
-    },
+      'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
     url: WEBSITE_URL,
+    siteName: 'Nounspace',
+    type: 'website',
+    images: [
+      {
+        url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+        type: 'image/png',
+        width: 1200,
+        height: 737,
+      },
+    ],
   },
   icons: {
     icon: [
-      {
-        url: "/images/favicon.ico",
-      },
-      {
-        url: "/images/favicon-32x32.png",
-        sizes: "32x32",
-      },
-      {
-        url: "/images/favicon-16x16.png",
-        sizes: "16x16",
-      },
+      { url: '/images/favicon.ico' },
+      { url: '/images/favicon-32x32.png', sizes: '32x32' },
+      { url: '/images/favicon-16x16.png', sizes: '16x16' },
     ],
-    apple: "/images/apple-touch-icon.png",
+    apple: '/images/apple-touch-icon.png',
   },
   other: {
-    "fc:frame": JSON.stringify(defaultFrame),
+    'fc:frame': JSON.stringify(defaultFrame),
   },
 };
 
@@ -57,9 +52,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head>
-        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
-      </Head>
       <body>
         <SpeedInsights />
         <Providers>{sidebarLayout(children)}</Providers>
