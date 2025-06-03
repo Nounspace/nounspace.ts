@@ -190,10 +190,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   return (
     <div 
       className="relative w-full h-full"
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      onClick={(e) => e.stopPropagation()}
+      style={{ touchAction: 'manipulation' }}
     >
       <TabsList 
         ref={tabsListRef}
@@ -206,6 +203,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
           rounded-none
         `}
+        style={{ touchAction: 'manipulation' }}
       >
         {orderedFidgetIds.map((fidgetId) => {
           const fidgetName = getFidgetName(fidgetId);
@@ -226,9 +224,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                 transition-opacity duration-200
                 rounded-lg
               `}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
             >
               {getFidgetIcon(fidgetId)}
               <span className="truncate max-w-[80px] line-clamp-1">{fidgetName}</span>
