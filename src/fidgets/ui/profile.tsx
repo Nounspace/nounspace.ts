@@ -127,11 +127,11 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   // Extract location if available
   // DISABLE: @_ts-expect-error > maybe update the neynar package solves this
   const location = user.profile?.location?.address?.city || "";
-  // const location = 'teste';
   const hasLocation = location.length > 0;
 
   return (
     <div className="flex flex-col items-start gap-1 p-2.5 pb-1 sm:gap-2 sm:p-3 sm:pb-1 justify-start">
+
       <div className="flex flex-row items-start w-full">
         <div className="h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0">
           {user.pfp_url ? (
@@ -174,7 +174,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
         </div>
       </div>
 
-      <div className="flex flex-col w-full items-start pl-[13px] sm:pl-[13px] md:pl-[15px]">
+        <div className="flex flex-col w-full items-start pl-[13px] sm:pl-[13px] md:pl-[15px]">
         <p className="text-xs sm:text-xs md:text-sm text-slate-700 text-left max-w-[220px] sm:max-w-[300px] md:max-w-[400px] block break-words">
           <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
         </p>
