@@ -258,6 +258,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
             <div 
               className="fixed bottom-0 left-0 right-0 z-50 bg-white"
               style={{ height: `${TAB_HEIGHT}px` }}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()} 
+              onTouchEnd={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               <TabNavigation 
                 processedFidgetIds={orderedFidgetIds}
