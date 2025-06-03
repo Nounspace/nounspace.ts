@@ -188,7 +188,13 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div 
+      className="relative w-full h-full"
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
       <TabsList 
         ref={tabsListRef}
         className={`
@@ -220,6 +226,9 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
                 transition-opacity duration-200
                 rounded-lg
               `}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
             >
               {getFidgetIcon(fidgetId)}
               <span className="truncate max-w-[80px] line-clamp-1">{fidgetName}</span>
