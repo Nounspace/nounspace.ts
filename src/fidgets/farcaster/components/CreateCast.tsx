@@ -13,9 +13,6 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-// import {
-//   FarcasterMention,
-// } from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
@@ -23,9 +20,6 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
-
-
 import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
@@ -57,7 +51,7 @@ import {
 } from "../utils";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
-// import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
+
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
@@ -70,6 +64,9 @@ type FarcasterMention = {
   username: string;
   avatar_url: string;
 };
+
+// Module-level cache of resolved usernames → FIDs
+const mentionFidCache = new Map<string, string>();
 
 const fetchNeynarMentions = async (
   query: string,
@@ -429,33 +426,58 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       console.log("Parsed mentions from text:", usernamesWithPositions);
 
-      let mentionsToFids: { [key: string]: string } = {};
+      const mentionsToFids: { [key: string]: string } = {};
       const mentionsPositions: number[] = [];
       let mentionsText = text; // Initialize mentionsText with current text
 
       if (uniqueUsernames.length > 0) {
-        try {
-          // Fetch the FIDs for the mentioned users
-          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
 
-          const query = encodeURIComponent(uniqueUsernames.join(","));
-          // console.log(query);
-          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-          const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
-
-          if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce(
-              (acc, mention) => {
-                if (mention && mention.username && mention.fid) {
-                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
-                }
-                return acc;
-              },
-              {} as { [key: string]: string },
-            );
+        for (const username of uniqueUsernames) {
+          if (mentionFidCache.has(username)) {
+            mentionsToFids[username] = mentionFidCache.get(username)!;
+            continue;
           }
+
+          try {
+            const query = encodeURIComponent(username);
+            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+            const fetched = await res.json();
+
+            if (Array.isArray(fetched) && fetched[0]?.fid) {
+              const fid = fetched[0].fid.toString();
+              mentionsToFids[username] = fid;
+              mentionFidCache.set(username, fid); // ✅ cache it
+            } else {
+              mentionFidCache.set(username, ""); // cache bad names as well
+              console.warn(`Username "${username}" not found or invalid response.`, fetched);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch FID for "${username}"`, err);
+          }
+        }
+
+        // try {
+        //   // Fetch the FIDs for the mentioned users
+        //   // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+
+        //   const query = encodeURIComponent(uniqueUsernames.join(","));
+        //   // console.log(query);
+        //   const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+        //   const fetchedMentions = await res.json();
+        //   console.log("fetchedMentions");
+        //   console.log(fetchedMentions);
+
+        //   if (Array.isArray(fetchedMentions)) {
+        //     mentionsToFids = fetchedMentions.reduce(
+        //       (acc, mention) => {
+        //         if (mention && mention.username && mention.fid) {
+        //           acc[mention.username] = mention.fid.toString(); // Convert fid to string
+        //         }
+        //         return acc;
+        //       },
+        //       {} as { [key: string]: string },
+        //     );
+        //   }
 
 
           console.log("Resolved mentions to FIDs:", mentionsToFids);
@@ -491,10 +513,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 mentionsPositions,
               );
             }
-        } catch (error) {
-          console.error("Error fetching FIDs:", error);
-          console.groupEnd();
-        }
+        // } catch (error) {
+        //   console.error("Error fetching FIDs:", error);
+        //   console.groupEnd();
+        // }
       }
 
       console.groupEnd();
@@ -680,13 +702,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 }
               }}
             />
-            {/* <div className="z-50">
-              <EmbedsEditor
-                embeds={embeds}
-                setEmbeds={setEmbeds}
-                RichEmbed={() => <div />}
-              />
-            </div> */}
           </div>
         )}
 
