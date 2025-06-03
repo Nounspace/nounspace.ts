@@ -20,6 +20,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { Slider } from "@mui/material";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
@@ -64,7 +65,9 @@ export function ThemeSettingsEditor({
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("fonts");
 
-  function themePropSetter<_T extends string>(property: string): (value: string) => void {
+  function themePropSetter<_T extends string>(
+    property: string,
+  ): (value: string) => void {
     return (value: string): void => {
       const newTheme = {
         ...theme,
@@ -82,16 +85,20 @@ export function ThemeSettingsEditor({
         const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
         if (fontConfig) {
           document.documentElement.style.setProperty(
-            property === "font" ? "--user-theme-font" : "--user-theme-headings-font",
-            fontConfig.config.style.fontFamily
+            property === "font"
+              ? "--user-theme-font"
+              : "--user-theme-headings-font",
+            fontConfig.config.style.fontFamily,
           );
         }
       }
 
       if (property === "fontColor" || property === "headingsFontColor") {
         document.documentElement.style.setProperty(
-          property === "fontColor" ? "--user-theme-font-color" : "--user-theme-headings-font-color",
-          value
+          property === "fontColor"
+            ? "--user-theme-font-color"
+            : "--user-theme-headings-font-color",
+          value,
         );
       }
 
@@ -110,6 +117,8 @@ export function ThemeSettingsEditor({
     fidgetBorderWidth,
     fidgetBorderColor,
     fidgetShadow,
+    fidgetBorderRadius,
+    gridSpacing,
   } = theme.properties;
 
   function saveAndClose() {
@@ -302,6 +311,38 @@ export function ThemeSettingsEditor({
                           hideGlobalSettings
                         />
                       </div>
+                      <div className="mt-2">
+                        <div className="flex flex-row gap-1">
+                          <h5 className="text-sm">Border Radius</h5>
+                          <ThemeSettingsTooltip text="Set the border radius for all Fidgets on your Space." />
+                        </div>
+                        <Slider
+                          value={parseInt(fidgetBorderRadius)}
+                          min={0}
+                          max={32}
+                          step={1}
+                          onChange={(_, v) =>
+                            themePropSetter<string>("fidgetBorderRadius")(
+                              `${v}px`,
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="mt-2">
+                        <div className="flex flex-row gap-1">
+                          <h5 className="text-sm">Spacing</h5>
+                          <ThemeSettingsTooltip text="Set spacing between Fidgets on the grid." />
+                        </div>
+                        <Slider
+                          value={parseInt(gridSpacing)}
+                          min={0}
+                          max={40}
+                          step={1}
+                          onChange={(_, v) =>
+                            themePropSetter<string>("gridSpacing")(String(v))
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
@@ -415,10 +456,11 @@ const BackgroundGenerator = ({
   const [generateText, setGenerateText] = useState("Generate");
   const [showBanner, setShowBanner] = useState(false);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [internalBackgroundHTML, setInternalBackgroundHTML] = useState(backgroundHTML);
+  const [internalBackgroundHTML, setInternalBackgroundHTML] =
+    useState(backgroundHTML);
   const timersRef = useRef<number[]>([]);
   const { showToast } = useToastStore();
-  
+
   // Sync internal state with props when backgroundHTML changes
   useEffect(() => {
     setInternalBackgroundHTML(backgroundHTML);
@@ -431,7 +473,7 @@ const BackgroundGenerator = ({
     "Floating bubble circles",
     "Calm teal radial glow",
     "Lush green rainforest",
-    "Animated purple gradient"
+    "Animated purple gradient",
   ];
 
   const { user } = usePrivy();
@@ -495,15 +537,16 @@ const BackgroundGenerator = ({
       setGenerateText(messages[index]);
     }, 8000);
     timersRef.current = [intervalId];
-    
+
     // If field is empty, use a random prompt from the list
-    const inputText = internalBackgroundHTML.trim() === "" 
-      ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
-      : internalBackgroundHTML;
+    const inputText =
+      internalBackgroundHTML.trim() === ""
+        ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
+        : internalBackgroundHTML;
 
     if (process.env.NODE_ENV !== "production")
       console.log(`inputText: ${inputText}`);
-      
+
     handleGenerateBackground(inputText);
   };
 
