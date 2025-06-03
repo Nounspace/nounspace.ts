@@ -20,9 +20,7 @@ import SpaceLoading from "./SpaceLoading";
 import { LayoutFidgets } from "@/fidgets";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
-import { TAB_HEIGHT } from "@/constants/layout";
 import Image from "next/image";
 
 export type SpaceFidgetConfig = {
@@ -395,12 +393,13 @@ export default function Space({
               />
               <div className="relative w-full h-full flex flex-col">
               <div className="w-full bg-white">
+                
                   {!isUndefined(profile) ? (
+                    <div className="z-50">
+                      {profile}
+                    </div>
+                  ) : null}
 
-                    <div className="z-50 md:min-h-40">
-                            {profile}
-                          </div>
-                        ) : null}
                         <div className="border-b">
                           <div className="flex">
                             {tabBar}
@@ -409,7 +408,7 @@ export default function Space({
 
                       </div>
 
-                      <div className="flex-1 w-full overflow-auto" >
+                      <div className="flex-1 w-full overflow-auto " >
                         <Suspense fallback={
                           <SpaceLoading
                             hasProfile={!isNil(profile)}
