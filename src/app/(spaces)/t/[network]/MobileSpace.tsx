@@ -113,12 +113,7 @@ export const MobileContractDefinedSpace = ({
     size: number;
   }) => (
     <div
-      onClick={(e) => {
-        e.stopPropagation();
-        setTab(label);
-      }}
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
+      onClick={() => setTab(label)}
       className={cn(
         "gap-1 text-sm font-semibold flex flex-col items-center cursor-pointer",
         currentTab === label && "text-purple-500",
@@ -296,10 +291,7 @@ export const MobileContractDefinedSpace = ({
       </div>
       <div 
         className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200"
-        onTouchStart={(e) => e.stopPropagation()}
-        onTouchMove={(e) => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
+        style={{ touchAction: 'manipulation' }}
       >
         <IconButton
           size={20}
