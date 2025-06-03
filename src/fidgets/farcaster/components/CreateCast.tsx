@@ -430,7 +430,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       console.log("Parsed mentions from text:", usernamesWithPositions);
 
       let mentionsToFids: { [key: string]: string } = {};
-      let mentionsPositions: number[] = [];
+      const mentionsPositions: number[] = [];
       let mentionsText = text; // Initialize mentionsText with current text
 
       if (uniqueUsernames.length > 0) {
