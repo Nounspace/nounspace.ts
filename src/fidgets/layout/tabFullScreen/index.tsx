@@ -47,9 +47,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const viewportMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
   const isMobile = viewportMobile || mobilePreview;
-  const pathname = usePathname();
-  const isHomebasePath = pathname?.startsWith('/homebase');
-  const isHomePath = pathname?.startsWith('/home');
   
   // Process fidgets and prepare data for rendering
   const validFidgetIds = useMemo(() => 
@@ -85,38 +82,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return bundles;
   }, [validFidgetIds, fidgetInstanceDatums]);
 
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  // Get ordered fidget IDs with feed prioritized (except in homebase)
-  const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    
-    // If we're in homebase or home path, don't reorder
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
-    
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
-    
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath]);
+  // Use the processed fidget order as is
+  const orderedFidgetIds = processedFidgetIds;
 
-  // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
+  // Initialize with the first fidget ID from the processed order
   const [selectedTab, setSelectedTab] = useState(
     orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
   );
