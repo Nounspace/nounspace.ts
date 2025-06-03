@@ -120,7 +120,7 @@ const Gridlines: React.FC<GridDetails> = ({
 
 type GridLayoutProps = LayoutFidgetProps<GridLayoutConfig>;
 
-const Grid: LayoutFidget<GridLayoutProps> = ({
+const GridComponent: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
   fidgetTrayContents,
   layoutConfig,
@@ -566,5 +566,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     </>
   );
 };
+
+const Grid = React.memo(GridComponent) as LayoutFidget<GridLayoutProps>;
 
 export default Grid;
