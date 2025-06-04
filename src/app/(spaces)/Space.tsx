@@ -3,12 +3,12 @@ import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackgr
 import InfoToast from "@/common/components/organisms/InfoBanner";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import {
-  FidgetConfig,
-  FidgetInstanceData,
-  FidgetSettings,
-  LayoutFidgetConfig,
-  LayoutFidgetDetails,
-  LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
+    FidgetConfig,
+    FidgetInstanceData,
+    FidgetSettings,
+    LayoutFidgetConfig,
+    LayoutFidgetDetails,
+    LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
@@ -273,35 +273,36 @@ export default function Space({
   }
 
   const mainContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-y-auto touch-auto">
       <div style={{ position: "fixed", zIndex: 9999 }}>
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className="z-50 bg-white md:h-40">{profile}</div>
+        <div className={`z-50 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}>{profile}</div>
       ) : null}
 
-      <div className="relative">
+      <div className="relative flex-shrink-0 bg-white">
         {!isMobile && (
-        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+          <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
         )}
-        {isMobile && !showMobileContainer && (
-          <div
-            className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
-            }}
-          />
+        {isMobile && (
+          <div className="w-full border-b flex-shrink-0" style={{ backgroundColor: 'white' }}>
+            <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+          </div>
         )}
       </div>
-
-      <div className={isMobile ? "w-full h-full" : "flex h-full"}>
+ 
+      <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
         {!isUndefined(feed) && !isMobile ? (
-          <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+          <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
         ) : null}
 
-        <div className={isMobile ? "w-full h-full" : "grow"}>
+        {!isUndefined(feed) && isMobile ? (
+          <div className="w-full overflow-y-auto touch-auto">{feed}</div>
+        ) : null}
+
+        <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
+         
           <Suspense
             fallback={
               <SpaceLoading
@@ -395,21 +396,20 @@ export default function Space({
                 <div className="flex-1 w-full overflow-auto" >
               <div className="relative w-full h-full flex flex-col">
               <div className="w-full bg-white"> 
-                
                   {!isUndefined(profile) ? (
-                    <div className="overflow-auto"> 
+                    <div className="w-full"> 
                       {profile}
                     </div>
                   ) : null}
 
-                  <div className="border-b">
-                    <div className="flex">
+                  <div className="border-b relative">
+                    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
                       {tabBar}
                     </div>
                   </div>
 
                   {!isUndefined(feed) ? (
-                    <div className="overflow-auto h-[calc(100vh-64px)]">
+                    <div className="w-full overflow-auto">
                       {feed}
                     </div>
                   ) : null}
