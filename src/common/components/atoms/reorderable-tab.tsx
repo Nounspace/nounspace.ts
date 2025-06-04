@@ -44,6 +44,7 @@ export const Tab = ({
       className={isSelected ? "selected relative" : "relative"}
       onPointerDown={onClick}
       dragListener={draggable}
+      style={{ minWidth: 'fit-content' }}
     >
       <Link href={getSpacePageUrl(tabName)}>
         <div
