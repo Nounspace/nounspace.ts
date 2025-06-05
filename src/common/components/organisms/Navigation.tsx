@@ -52,6 +52,9 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
+  enterEditMode?: () => void;
+  mobile?: boolean;
+  onNavigate?: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -65,12 +68,17 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable }) => {
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  mobile = false,
+  onNavigate,
+}) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
-      getIsLoggedIn: state.getIsAccountReady,
+      getIsAccountReady: state.getIsAccountReady,
       getIsInitializing: state.getIsInitializing,
     })
   );
@@ -82,9 +90,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   const isNotificationsPage = pathname === "/notifications";
   const isExplorerPage = pathname === "/explore";
 
-  const [shrunk, setShrunk] = useState(true);
+  const [shrunk, setShrunk] = useState(mobile ? false : true);
 
   const toggleSidebar = () => {
+    if (mobile) return;
     setShrunk((prev) => !prev);
   };
 
@@ -100,7 +109,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
@@ -130,6 +139,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
     openInNewTab = false,
     badgeText = null,
   }) => {
+    const handleClick = useCallback(() => {
+      onClick?.();
+      onNavigate?.();
+    }, [onClick, onNavigate]);
     return (
       <li>
         <Link
@@ -139,7 +152,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
             href === pathname ? "bg-gray-100" : "",
             shrunk ? "justify-center" : ""
           )}
-          onClick={onClick}
+          onClick={handleClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
@@ -185,7 +198,12 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   return (
     <aside
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
+      className={mergeClasses(
+        "border-r-2 bg-white",
+        mobile
+          ? "w-[270px]"
+          : "w-full transition-transform -translate-x-full sm:translate-x-0"
+      )}
       aria-label="Sidebar"
     >
       <Modal
@@ -197,24 +215,35 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-5 pb-12 h-full md:block hidden">
+      <div
+        className={mergeClasses(
+          "pt-12 pb-12 h-full",
+          mobile ? "block" : "md:block hidden"
+        )}
+      >
         <div
           className={mergeClasses(
-            "flex flex-col h-full ml-auto transition-all duration-300 relative",
-            shrunk ? "w-[90px]" : "w-[270px]"
+            "flex flex-col h-full transition-all duration-300 relative",
+            mobile
+              ? "w-[270px]"
+              : shrunk
+                ? "w-[90px] ml-auto"
+                : "w-[270px] ml-auto"
           )}
         >
-          <button
-            onClick={toggleSidebar}
-            className="absolute right-0 top-[30px] transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
-            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {shrunk ? (
-              <FaChevronRight size={14} />
-            ) : (
-              <FaChevronLeft size={14} />
-            )}
-          </button>
+          {!mobile && (
+            <button
+              onClick={toggleSidebar}
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {shrunk ? (
+                <FaChevronRight size={14} />
+              ) : (
+                <FaChevronLeft size={14} />
+              )}
+            </button>
+          )}
 
           <BrandHeader />
           <div

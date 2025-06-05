@@ -66,9 +66,9 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
 
@@ -183,6 +183,8 @@ function TabBar({
     }
   }
 
+  const isLoggedIn = getIsAccountReady();
+  
    const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -193,8 +195,6 @@ function TabBar({
     
     switchTabTo(tabName, true);
   }, [switchTabTo]);
-
-  const isLoggedIn = getIsLoggedIn();
 
   return (
     <TooltipProvider>

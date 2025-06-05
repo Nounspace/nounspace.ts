@@ -32,6 +32,7 @@ import ExpandableText from "@/common/components/molecules/ExpandableText";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { FaReply } from "react-icons/fa6";
+import { useAppStore } from "@/common/data/stores/app";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -243,6 +244,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
+  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsAccountReady: state.getIsAccountReady,
+  }));
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -278,6 +283,11 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   const onClickReaction = async (key: CastReactionType, isActive: boolean) => {
     if (key === CastReactionType.links) {
+      return;
+    }
+
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
       return;
     }
 

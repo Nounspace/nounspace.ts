@@ -1,50 +1,43 @@
-import React, { useState, useMemo, useEffect } from "react"
-import { TabsContent, Tabs } from "@/common/components/atoms/tabs"
+import React, { useState, useEffect, useMemo } from "react"
+import { Tabs, TabsContent } from "@/common/components/atoms/tabs"
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout"
-import useIsMobile from "@/common/lib/hooks/useIsMobile"
-import { usePathname } from "next/navigation"
 import {
-  FidgetBundle,
   FidgetConfig,
+  FidgetBundle,
   FidgetInstanceData,
-  LayoutFidget,
-  LayoutFidgetConfig,
-  LayoutFidgetProps,
 } from "@/common/fidgets"
+import { UserTheme } from "@/common/lib/theme"
+import { createFidgetBundle } from "@/fidgets/layout/tabFullScreen/utils"
 import { CompleteFidgets } from "@/fidgets"
-import { createFidgetBundle } from "./utils"
-import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent"
-import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent"
-import FidgetContent from "./components/FidgetContent"
 import MobileNavbar from "@/common/components/organisms/MobileNavbar"
 import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils"
 import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds"
-import { UserTheme } from "@/common/lib/theme"
-import defaultUserTheme from "@/common/lib/theme/defaultTheme"
 
-export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
-  layout: string[]
+// Import the content components
+import ConsolidatedMediaContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedMediaContent"
+import ConsolidatedPinnedContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedPinnedContent"
+import FidgetContent from "@/fidgets/layout/tabFullScreen/components/FidgetContent"
+
+type MobileViewProps = {
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
+  layoutFidgetIds: string[]
+  theme: UserTheme
+  saveConfig: (config: any) => Promise<void>
+  tabNames?: string[]
 }
 
-type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>
-
 /**
- * Main TabFullScreen Layout component
- *
- * This component provides a tabbed interface for displaying multiple fidgets,
- * with the ability to switch between them.
+ * MobileView component that handles the mobile-specific layout for Space
+ * Provides a tabbed interface for displaying fidgets on mobile devices
  */
-const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
+const MobileView: React.FC<MobileViewProps> = ({
   fidgetInstanceDatums,
-  layoutConfig,
+  layoutFidgetIds,
   theme,
   saveConfig,
   tabNames,
 }) => {
-  const isMobile = useIsMobile()
-  const pathname = usePathname()
-  const isHomebasePath = pathname?.startsWith("/homebase")
-  const isHomePath = pathname?.startsWith("/home")
+  const isMobile = true // This component is always for mobile
 
   // Use the unified hook to process fidget IDs
   const {
@@ -53,7 +46,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     mediaFidgetIds,
     pinnedCastIds,
     orderedFidgetIds,
-  } = useProcessedFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile)
+  } = useProcessedFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile)
 
   // Create tab items for the MobileNavbar
   const tabItems = useMemo(
@@ -70,6 +63,30 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const [selectedTab, setSelectedTab] = useState(
     orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
   )
+
+  // Update selected tab when orderedFidgetIds changes
+  useEffect(() => {
+    // If there are no fidget IDs, do nothing
+    if (orderedFidgetIds.length === 0) return
+
+    // If current selection is invalid or no tab is selected, select the first one
+    if (
+      !orderedFidgetIds.includes(selectedTab) &&
+      orderedFidgetIds.length > 0
+    ) {
+      setSelectedTab(orderedFidgetIds[0])
+    } else if (orderedFidgetIds.length === 0) {
+      setSelectedTab("") // Clear selection if no tabs
+    }
+  }, [orderedFidgetIds, selectedTab])
+
+  // Reset scroll position when switching between tabs on mobile
+  useEffect(() => {
+    if (selectedTab) {
+      // Reset scroll position to top when switching tabs
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }, [selectedTab])
 
   // Create bundles for all fidgets
   const fidgetBundles = useMemo(() => {
@@ -88,25 +105,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return bundles
   }, [validFidgetIds, fidgetInstanceDatums])
 
-  // Update selected tab when orderedFidgetIds changes
-  useEffect(() => {
-    // If there are no fidget IDs, do nothing
-    if (orderedFidgetIds.length === 0) return
-
-    // If current selection is invalid, select the first one
-    if (!orderedFidgetIds.includes(selectedTab)) {
-      setSelectedTab(orderedFidgetIds[0])
-    }
-  }, [orderedFidgetIds, selectedTab])
-
-  // Reset scroll position when switching between tabs on mobile
-  useEffect(() => {
-    if (isMobile && selectedTab) {
-      // Reset scroll position to top when switching tabs
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    }
-  }, [selectedTab, isMobile])
-
   // Configuration saving function
   const saveFidgetConfig =
     (id: string) =>
@@ -122,7 +120,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
       })
     }
 
-  // If no valid fidgets, show empty state
+  // Conditional rendering after all hooks have been called
   if (processedFidgetIds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-500">
@@ -138,7 +136,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* Main content area with padding-bottom to make space for fixed tabs */}
+      {/* Main content area with padding-bottom to make space for fixed navbar */}
       <div
         className="w-full h-full overflow-hidden"
         style={{
@@ -151,9 +149,9 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="h-full w-full">
             {/* Special case for consolidated media tab */}
-            {isMobile && mediaFidgetIds.length > 1 && (
+            {mediaFidgetIds.length > 1 && selectedTab === "consolidated-media" && (
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
@@ -178,7 +176,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
             )}
 
             {/* Special case for consolidated pinned tab */}
-            {isMobile && pinnedCastIds.length > 1 && (
+            {pinnedCastIds.length > 1 && selectedTab === "consolidated-pinned" && (
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
@@ -209,6 +207,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   id !== "consolidated-media" && id !== "consolidated-pinned"
               )
               .map((fidgetId) => {
+                if (selectedTab !== fidgetId) return null
+                
                 const fidgetDatum = fidgetInstanceDatums[fidgetId]
                 if (!fidgetDatum) return null
 
@@ -220,7 +220,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   createFidgetBundle(fidgetDatum, false)
                 if (!bundle) return null
 
-                // Only render the content for the selected tab
                 return (
                   <TabsContent
                     key={fidgetId}
@@ -240,22 +239,22 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                 )
               })}
           </div>
-
-          {/* Tabs fixed to bottom of screen */}
-          {processedFidgetIds.length > 1 && (
-            <MobileNavbar
-              tabs={tabItems}
-              selected={selectedTab}
-              onSelect={setSelectedTab}
-              theme={(theme as UserTheme) || defaultUserTheme}
-              fidgetInstanceDatums={fidgetInstanceDatums}
-              tabNames={tabNames}
-            />
-          )}
         </Tabs>
       </div>
+
+      {/* Mobile Navbar at bottom of screen */}
+      {processedFidgetIds.length > 1 && (
+        <MobileNavbar
+          tabs={tabItems}
+          selected={selectedTab}
+          onSelect={setSelectedTab}
+          theme={theme}
+          fidgetInstanceDatums={fidgetInstanceDatums}
+          tabNames={tabNames}
+        />
+      )}
     </div>
   )
 }
 
-export default TabFullScreen
+export default MobileView

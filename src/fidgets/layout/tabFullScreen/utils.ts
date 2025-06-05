@@ -49,7 +49,7 @@ export const getFidgetDisplayName = (
 
   if (isMobile) {
     // First check for user-defined custom mobile display name
-    if (fidgetData.config.settings.customMobileDisplayName) {
+    if (fidgetData.config?.settings?.customMobileDisplayName) {
       return fidgetData.config.settings.customMobileDisplayName;
     }
     // Then use the developer-defined mobile fidget name if available
@@ -125,7 +125,7 @@ export const processTabFidgetIds = (
     if (!fidgetData) return;
     
     // Skip fidgets that should be hidden on mobile
-    if (fidgetData.config.settings.showOnMobile === false) return;
+    if (fidgetData.config?.settings?.showOnMobile === false) return;
     
     if (isPinnedCast(id, fidgetInstanceDatums)) {
       pinnedCastIds.push(id);
@@ -169,7 +169,7 @@ export const getValidFidgetIds = (
     
     // On mobile, check showOnMobile setting
     if (isMobile) {
-      const showOnMobile = fidgetData.config.settings.showOnMobile;
+      const showOnMobile = fidgetData.config?.settings?.showOnMobile;
       // If showOnMobile is explicitly false, hide the fidget
       if (showOnMobile === false) return false;
     }

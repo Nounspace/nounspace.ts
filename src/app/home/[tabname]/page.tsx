@@ -27,11 +27,11 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
-    getIsLoggedIn: state.getIsAccountReady,
+  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
+    getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
