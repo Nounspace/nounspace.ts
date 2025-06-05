@@ -129,64 +129,31 @@ export function FidgetWrapper({
   const [iconPosition, setIconPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
-    let rafId: number | null = null;
-    let ticking = false;
+    let animationFrameId: number;
     
     const updateIconPosition = () => {
-      if (fidgetRef.current) {
+      if (selectedFidgetID === bundle.id && fidgetRef.current) {
         const rect = fidgetRef.current.getBoundingClientRect();
         setIconPosition({
           top: rect.top - 28, // 28px above the fidget
           left: rect.left,
         });
-        ticking = false;
-      }
-    };
-    
-    const requestUpdate = () => {
-      if (!ticking && selectedFidgetID === bundle.id) {
-        rafId = requestAnimationFrame(updateIconPosition);
-        ticking = true;
+        
+        // Continue updating position while this fidget is selected
+        animationFrameId = requestAnimationFrame(updateIconPosition);
       }
     };
 
     if (selectedFidgetID === bundle.id) {
-      // Initial position update
+      // Start continuous position updates when this fidget is selected
       updateIconPosition();
-      
-      // Update on scroll, resize, and drag events
-      window.addEventListener('scroll', requestUpdate, true);
-      window.addEventListener('resize', requestUpdate);
-      
-      // Listen for grid layout changes (drag/resize operations)
-      const gridElement = fidgetRef.current?.closest('.react-grid-layout');
-      if (gridElement) {
-        // Use MutationObserver to detect transform changes during drag/resize
-        const observer = new MutationObserver(requestUpdate);
-        observer.observe(gridElement, {
-          childList: true,
-          subtree: true,
-          attributes: true,
-          attributeFilter: ['style']
-        });
-        
-        return () => {
-          if (rafId !== null) {
-            cancelAnimationFrame(rafId);
-          }
-          window.removeEventListener('scroll', requestUpdate, true);
-          window.removeEventListener('resize', requestUpdate);
-          observer.disconnect();
-        };
-      }
     }
 
     return () => {
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
+      // Clean up animation frame when component unmounts or selection changes
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
       }
-      window.removeEventListener('scroll', requestUpdate, true);
-      window.removeEventListener('resize', requestUpdate);
     };
   }, [selectedFidgetID, bundle.id]);
 
@@ -197,12 +164,13 @@ export function FidgetWrapper({
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6"
-            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6"
+            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6 z-50"
+            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6 z-50"
         }
         style={{
           top: iconPosition.top,
           left: iconPosition.left,
+          zIndex: 999999,
         }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
