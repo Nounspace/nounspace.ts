@@ -150,7 +150,7 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         <div
           className="grid grid-cols-1 sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
         >
-          <div className="sm:col-start-1 sm:row-start-1">
+          <div className="sm:col-start-2 sm:row-start-1">
             <Badge status={status} />
           </div>
           <img
@@ -158,16 +158,16 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
             alt="Avatar"
             width={64}
             height={64}
-            className="w-16 h-16 rounded-md object-cover sm:col-start-1 sm:row-start-2"
+            className="w-16 h-16 rounded-md object-cover sm:col-start-1 sm:row-start-1 sm:row-span-2"
             onError={handleError}
           />
           <h4
-            className="font-bold break-words sm:col-start-2"
+            className="font-bold break-words sm:col-start-2 sm:row-start-2"
             style={headingStyle}
           >
             {proposal.title}
           </h4>
-          <div className="grid grid-cols-3 gap-2 mt-2 col-span-2 sm:col-span-3">
+          <div className="grid grid-cols-3 gap-2 mt-2 col-span-2 sm:col-span-3 sm:row-start-3">
             <CardButton
               label="Preview"
               onClick={handleSectionChange}
