@@ -109,7 +109,7 @@ const NotificationHeader = ({
   return (
     <div className="flex flex-col gap-1 flex-wrap items-start w-full">
       {relatedUsers.length > 0 && (
-        <div className="flex gap-x-1 items-center mb-1 pl-12 sm:pl-10 xs:pl-8 overflow-x-auto pb-1">
+        <div className="flex gap-x-1 items-center mb-1 sm:pl-10 md:pl-12 md:overflow-x-auto pb-1">
           {leftIcon && (
             <span className="flex items-center justify-center text-red-500 mr-1 flex-shrink-0">
               {leftIcon}
@@ -132,7 +132,7 @@ const NotificationHeader = ({
         </div>
       )}
       <div className="w-full">
-        <p className="text-base leading-[1.3] text-left m-0 p-0 pl-12 sm:pl-10 xs:pl-8">
+        <p className="text-base leading-[1.3] text-left m-0 p-0 sm:pl-10 md:pl-12">
           <FormattedUsersText users={relatedUsers} />
           {` ${descriptionSuffix}`}
         </p>
@@ -288,8 +288,8 @@ const LikeNotificationRow: NotificationRowProps = ({
         descriptionSuffix="liked your cast"
         leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <div className="ml-12 sm:ml-10 xs:ml-8 w-full overflow-x-auto">
-        <div className="min-w-[250px]">
+      <div className="sm:ml-10 md:ml-12 w-full">
+        <div className="w-full">
           <CastBody
             cast={notification.cast!}
             channel={null}
@@ -339,7 +339,7 @@ const NotificationRow: NotificationRowProps = ({
       }
     >
       <div className="px-4 py-4 md:px-4 sm:px-5 xs:px-6 border-b hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out">
-        <div className="max-w-2xl overflow-x-auto md:overflow-visible pb-2">
+        <div className="max-w-2xl md:overflow-visible pb-2">
           <div className="min-w-full sm:px-2 xs:px-3">
             <NotificationType notification={notification} onSelect={onSelect} />
           </div>
