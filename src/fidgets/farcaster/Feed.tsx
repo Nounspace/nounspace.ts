@@ -439,18 +439,22 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       hideScrollBar: "false",
       lang: "en",
       origin: "https://publish.twitter.com/#",
-      theme: theme,
+      theme,
       widgetsVersion: "2615f7e52b7e0:1702314776716",
     });
 
-    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?${params.toString()}`;
-          border: "none",
-          width: "100%",
-          height: "100%",
-          overflowY: "auto",
-          overflowX: "auto",
-        }}
-    return (
+    const url =
+      "https://syndication.twitter.com/srv/timeline-profile/screen-name/" +
+      `${Xhandle}?${params.toString()}`;
+
+    const iframeStyle: React.CSSProperties = {
+      border: "none",
+      width: "100%",
+      height: "100%",
+      overflowY: "auto",
+      overflowX: "auto",
+    };
+        style={iframeStyle}
       <iframe
         src={url}
         style={{ border: "none", width: "100%", height: "100%" }}
