@@ -147,43 +147,45 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         className="p-4 border border-gray-200 bg-white rounded-lg"
         style={bodyStyle}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-[4rem_1fr] gap-4">
+        <div
+          className="grid grid-cols-[4rem_auto] sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
+        >
           <img
             src={currentAvatarUrl}
             alt="Avatar"
             width={64}
             height={64}
-            className="w-16 h-16 rounded-md mr-4 object-cover"
+            className="w-16 h-16 rounded-md object-cover row-span-2 sm:row-auto"
             onError={handleError}
           />
-          <div className="flex flex-col flex-grow">
-            <h4
-              className="font-bold flex flex-wrap items-start gap-2"
-              style={headingStyle}
-            >
-              <span className="break-words flex-1">{proposal.title}</span>
-              <Badge status={status} />
-            </h4>
-            <div className="flex flex-wrap gap-2 mt-4">
-              <CardButton
-                label="Preview"
-                onClick={handleSectionChange}
-                isActive={visibleSection === "preview"}
-                section="preview"
-              />
-              <CardButton
-                label="Results"
-                onClick={handleSectionChange}
-                isActive={visibleSection === "results"}
-                section="results"
-              />
-              <CardButton
-                label="Voting"
-                onClick={handleSectionChange}
-                isActive={visibleSection === "voting"}
-                section="voting"
-              />
-            </div>
+          <div className="self-center">
+            <Badge status={status} />
+          </div>
+          <h4
+            className="font-bold col-span-2 sm:col-span-1 break-words"
+            style={headingStyle}
+          >
+            {proposal.title}
+          </h4>
+          <div className="grid grid-cols-3 gap-2 mt-4 col-span-2 sm:col-span-3">
+            <CardButton
+              label="Preview"
+              onClick={handleSectionChange}
+              isActive={visibleSection === "preview"}
+              section="preview"
+            />
+            <CardButton
+              label="Results"
+              onClick={handleSectionChange}
+              isActive={visibleSection === "results"}
+              section="results"
+            />
+            <CardButton
+              label="Voting"
+              onClick={handleSectionChange}
+              isActive={visibleSection === "voting"}
+              section="voting"
+            />
           </div>
         </div>
 
