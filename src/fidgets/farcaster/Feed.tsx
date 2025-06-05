@@ -337,7 +337,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
-    style,
+    style: themeName,
   } = settings;
   const { feedType, users, username, channel, filterType, keyword, membersOnly } = settings;
   const { fid } = useFarcasterSigner("feed");
@@ -427,7 +427,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   );
 
   const renderXFeed = () => {
-    const theme = style || "light";
+    const theme = themeName || "light";
 
     const params = new URLSearchParams({
       dnt: "true",
