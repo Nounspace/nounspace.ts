@@ -58,14 +58,20 @@ const TabItem = React.memo(({
         "data-[state=active]:shadow-none",
         "data-[state=active]:bg-transparent",
         "transition-all duration-200",
-        "focus:outline-none",
+        "focus:outline-none focus-visible:outline-none",
+        "active:outline-none active:ring-0",
+        "select-none touch-manipulation",
+        "-webkit-tap-highlight-color: transparent",
         isSelected 
           ? "data-[state=active]:text-primary opacity-100" 
           : "data-[state=inactive]:opacity-70 hover:opacity-90"
       )}
       style={{
         "--tw-text-opacity": 1,
-        color: isSelected ? activeColor : inactiveColor
+        color: isSelected ? activeColor : inactiveColor,
+        WebkitTapHighlightColor: "transparent",
+        outline: "none",
+        border: "none"
       } as React.CSSProperties}
       aria-selected={isSelected}
       role="tab"
