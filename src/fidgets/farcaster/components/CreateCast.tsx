@@ -13,9 +13,6 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import {
-  FarcasterMention,
-} from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
@@ -23,9 +20,6 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
-
-
 import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
@@ -57,17 +51,29 @@ import {
 } from "../utils";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
-// import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
+
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
 
+type FarcasterMention = {
+  fid: number;
+  display_name: string;
+  username: string;
+  avatar_url: string;
+};
+
+// Module-level cache of resolved usernames → FIDs
+const mentionFidCache = new Map<string, string>();
+
 const fetchNeynarMentions = async (
   query: string,
 ): Promise<FarcasterMention[]> => {
   try {
+    if (query == "") return [];
+
     const res = await fetch(
       `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
     );
@@ -124,13 +130,6 @@ type CreateCastProps = {
   initialDraft?: Partial<DraftType>;
   afterSubmit?: () => void;
 };
-
-// export type ModProtocolCastAddBody = Exclude<
-//   Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
-//   false
-// > & {
-//   type: CastType;
-// };
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
@@ -358,7 +357,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fetchUrlMetadata: getUrlMetadata,
     onError,
     onSubmit: onSubmitPost,
-    linkClassName: "text-blue-300",
+    linkClassName: "text-blue-800",
     renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
       getResults: debouncedGetChannels,
       RenderList: ChannelList,
@@ -398,11 +397,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
+      // console.group("Mention Parsing");
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
       // Regex to match pure @username mentions, ensuring it's not part of a URL
-      // const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.-]+)(?=\s|$)/g;
+      // Updated to handle punctuation after mentions and parentheses before mentions
+      // const usernamePattern = /(?:^|\s|[(])@([a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*)/g;
+
+      // Updated regex: supports ENS-style usernames and extra trailing punctuation like . , ! ? ; :
+      const usernamePattern =
+        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=\s|[.,!?;:)]|$)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -419,62 +423,88 @@ const CreateCast: React.FC<CreateCastProps> = ({
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
-      let mentionsToFids: { [key: string]: string } = {};
-      let mentionsPositions: number[] = [];
+      // console.log("Parsed mentions from text:", usernamesWithPositions);
+
+      const mentionsToFids: { [key: string]: string } = {};
+      const mentionsPositions: number[] = [];
       let mentionsText = text; // Initialize mentionsText with current text
 
       if (uniqueUsernames.length > 0) {
-        try {
-          // Fetch the FIDs for the mentioned users
-          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
 
-          const query = encodeURIComponent(uniqueUsernames.join(","));
-          // console.log(query);
-          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-          const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
-
-          if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce(
-              (acc, mention) => {
-                if (mention && mention.username && mention.fid) {
-                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
-                }
-                return acc;
-              },
-              {} as { [key: string]: string },
-            );
+        for (const username of uniqueUsernames) {
+          if (mentionFidCache.has(username)) {
+            mentionsToFids[username] = mentionFidCache.get(username)!;
+            continue;
           }
 
-          mentionsPositions = [];
-          // const currentTextIndex = 0;
-          // const finalText = text;
-          const mentions = [];
-          mentionsText = text;
+          try {
+            const query = encodeURIComponent(username);
+            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+            const fetched = await res.json();
 
-          for (let i = 0; i < mentionsText.length; i++) {
-            if (
-              mentionsText[i] === "@" &&
-              ((mentionsText[i - 1] !== "/" &&
-                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
-                mentionsText[i - 1] === undefined)
-            ) {
-              let mentionIndex = i + 1;
-              while (
-                mentionIndex < mentionsText.length &&
-                mentionsText[mentionIndex] !== " " &&
-                mentionsText[mentionIndex] !== "\n"
-              )
-                mentionIndex++;
-              const mention = mentionsText.substring(i + 1, mentionIndex);
-              const position = i;
-              mentionsPositions.push(position);
-              mentionsText = mentionsText.replace(`@${mention}`, "");
+            if (Array.isArray(fetched) && fetched[0]?.fid) {
+              const fid = fetched[0].fid.toString();
+              mentionsToFids[username] = fid;
+              mentionFidCache.set(username, fid); // ✅ cache it
+            } else {
+              mentionFidCache.set(username, ""); // cache bad names as well
+              console.warn(`Username "${username}" not found or invalid response.`, fetched);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch FID for "${username}"`, err);
+          }
+        }
+
+        // try {
+        //   // Fetch the FIDs for the mentioned users
+        //   // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+
+        //   const query = encodeURIComponent(uniqueUsernames.join(","));
+        //   // console.log(query);
+        //   const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+        //   const fetchedMentions = await res.json();
+        //   console.log("fetchedMentions");
+        //   console.log(fetchedMentions);
+
+        //   if (Array.isArray(fetchedMentions)) {
+        //     mentionsToFids = fetchedMentions.reduce(
+        //       (acc, mention) => {
+        //         if (mention && mention.username && mention.fid) {
+        //           acc[mention.username] = mention.fid.toString(); // Convert fid to string
+        //         }
+        //         return acc;
+        //       },
+        //       {} as { [key: string]: string },
+        //     );
+        //   }
+
+
+          // console.log("Resolved mentions to FIDs:", mentionsToFids);
+
+          let cumulativeOffset = 0;
+          const mentionMatches = [...text.matchAll(usernamePattern)];
+
+          for (const match of mentionMatches) {
+            const fullMatch = match[0]; // e.g. " @bob"
+            const username = match[1];  // "bob"
+            const atIndex = match.index! + fullMatch.indexOf("@");
+
+            // Adjust position based on previous removals
+            const adjustedPosition = atIndex - cumulativeOffset;
+
+            if (mentionsToFids[username]) {
+              mentionsPositions.push(adjustedPosition);
+
+              // Remove `@username` from mentionsText
+              mentionsText = mentionsText.slice(0, adjustedPosition) +
+                mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
+
+              // Update offset so future positions shift correctly
+              cumulativeOffset += username.length + 1;
             }
           }
 
-          if (mentions.length > 10)
+          if (mentionsPositions.length > 10)
             if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
               console.error(
                 "Mismatch between mentions and their positions:",
@@ -482,10 +512,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 mentionsPositions,
               );
             }
-        } catch (error) {
-          console.error("Error fetching FIDs:", error);
-        }
+        // } catch (error) {
+        //   console.error("Error fetching FIDs:", error);
+        //   console.groupEnd();
+        // }
       }
+
+      // console.groupEnd();
 
       // Update the draft regardless of mentions
       setDraft((prevDraft) => {
@@ -545,7 +578,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!castAddMessageResp.isOk()) {
       return {
         success: false,
-        message: "Invalid cast data.",
+        message: "Invalid cast data: " + castAddMessageResp.error.message,
       };
     }
 
@@ -668,13 +701,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 }
               }}
             />
-            {/* <div className="z-50">
-              <EmbedsEditor
-                embeds={embeds}
-                setEmbeds={setEmbeds}
-                RichEmbed={() => <div />}
-              />
-            </div> */}
           </div>
         )}
 
