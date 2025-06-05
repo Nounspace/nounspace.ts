@@ -157,8 +157,7 @@ export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
   }, [settings.rssUrl]);
 
   return (
-    <div
-    >
+    <div className="h-full overflow-y-auto">
       {rssFeed?.title && (
         <CardHeader className="p-2 ml-5">
           <div className="flex-col items-center">
