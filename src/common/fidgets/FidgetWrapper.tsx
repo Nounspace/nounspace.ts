@@ -129,6 +129,8 @@ export function FidgetWrapper({
   const [iconPosition, setIconPosition] = useState({ top: 0, left: 0 });
 
   useEffect(() => {
+    let animationFrameId: number;
+    
     const updateIconPosition = () => {
       if (selectedFidgetID === bundle.id && fidgetRef.current) {
         const rect = fidgetRef.current.getBoundingClientRect();
@@ -136,18 +138,22 @@ export function FidgetWrapper({
           top: rect.top - 28, // 28px above the fidget
           left: rect.left,
         });
+        
+        // Continue updating position while this fidget is selected
+        animationFrameId = requestAnimationFrame(updateIconPosition);
       }
     };
 
-    updateIconPosition();
-
-    // Update position on scroll and resize
-    window.addEventListener('scroll', updateIconPosition);
-    window.addEventListener('resize', updateIconPosition);
+    if (selectedFidgetID === bundle.id) {
+      // Start continuous position updates when this fidget is selected
+      updateIconPosition();
+    }
 
     return () => {
-      window.removeEventListener('scroll', updateIconPosition);
-      window.removeEventListener('resize', updateIconPosition);
+      // Clean up animation frame when component unmounts or selection changes
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, [selectedFidgetID, bundle.id]);
 
