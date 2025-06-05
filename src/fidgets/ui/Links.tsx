@@ -345,8 +345,8 @@ export const Links: React.FC<FidgetArgs<LinkFidgetSettings>> = ({
                 style={{ backgroundColor: settings.itemBackground }}
                 className={
                   isGridView
-                    ? "relative p-4 flex flex-col items-start justify-between m-1 transform-gpu transition-transform duration-150 ease-out will-change-transform hover:scale-[1.03]"
-                    : "relative p-2 flex items-center justify-between m-2 transform-gpu transition-transform duration-150 ease-out will-change-transform hover:scale-[1.03]"
+                    ? "relative p-4 flex flex-col items-start justify-between m-1 rounded-lg transform-gpu transition-transform duration-150 ease-out will-change-transform hover:scale-[1.015]"
+                    : "relative p-2 flex items-center justify-between m-2 rounded-lg transform-gpu transition-transform duration-150 ease-out will-change-transform hover:scale-[1.015]"
                 }
                 key={index}
               >
