@@ -148,21 +148,19 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         style={bodyStyle}
       >
         <div
-          className="grid grid-cols-[4rem_auto] sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
+          className="grid grid-cols-1 sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
         >
+          <Badge status={status} className="sm:col-start-2" />
           <img
             src={currentAvatarUrl}
             alt="Avatar"
             width={64}
             height={64}
-            className="w-16 h-16 rounded-md object-cover row-span-2 sm:row-auto"
+            className="w-16 h-16 rounded-md object-cover sm:row-span-2 sm:col-start-1"
             onError={handleError}
           />
-          <div className="self-center">
-            <Badge status={status} />
-          </div>
           <h4
-            className="font-bold col-span-2 sm:col-span-1 break-words"
+            className="font-bold break-words sm:col-start-2"
             style={headingStyle}
           >
             {proposal.title}
