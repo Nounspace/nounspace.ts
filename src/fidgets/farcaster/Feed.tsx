@@ -427,7 +427,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   );
 
   const renderXFeed = () => {
-    const themeSetting = style || "light";
+    const theme = style || "light";
 
     const params = new URLSearchParams({
       dnt: "true",
@@ -439,7 +439,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       hideScrollBar: "false",
       lang: "en",
       origin: "https://publish.twitter.com/#",
-      theme: themeSetting,
+      theme: theme,
       widgetsVersion: "2615f7e52b7e0:1702314776716",
     });
 
