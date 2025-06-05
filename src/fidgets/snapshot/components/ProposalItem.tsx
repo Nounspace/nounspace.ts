@@ -147,25 +147,24 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         className="p-4 border border-gray-200 bg-white rounded-lg"
         style={bodyStyle}
       >
-        <div className="grid grid-cols-[4rem_1fr] gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-[4rem_1fr] gap-4">
           <img
             src={currentAvatarUrl}
             alt="Avatar"
             width={64}
             height={64}
-            style={{ width: "auto", height: "auto" }}
-            className="rounded-md mr-4 object-cover"
+            className="w-16 h-16 rounded-md mr-4 object-cover"
             onError={handleError}
           />
           <div className="flex flex-col flex-grow">
             <h4
-              className="font-bold grid grid-cols-[1fr_auto] gap-4 items-start"
+              className="font-bold flex flex-wrap items-start gap-2"
               style={headingStyle}
             >
-              {proposal.title}
+              <span className="break-words flex-1">{proposal.title}</span>
               <Badge status={status} />
             </h4>
-            <div className="flex gap-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4">
               <CardButton
                 label="Preview"
                 onClick={handleSectionChange}

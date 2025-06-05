@@ -189,7 +189,7 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
 
   return (
     <div className="size-full">
-      <CardContent className="size-full overflow-hidden p-4 flex flex-col">
+      <CardContent className="size-full overflow-y-auto overflow-x-hidden p-4 flex flex-col">
         <h1 className="text-2xl font-bold mb-4" style={headingStyle}>
           {settings.snapshotEns} Governance
         </h1>
@@ -198,7 +198,10 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
             {error}
           </p>
         )}
-        <div className="grid gap-2 overflow-auto" style={containerStyle}>
+        <div
+          className="grid gap-2 overflow-y-auto overflow-x-hidden flex-1"
+          style={containerStyle}
+        >
           {proposals.map((proposal) => (
             <ProposalItem
               key={proposal.id}
@@ -218,11 +221,13 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
           ))}
         </div>
 
-        <div className="flex justify-between mt-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
           <Button
             variant="primary"
             onClick={handlePrevious}
             disabled={isPreviousDisabled}
+            width="full"
+            className="sm:w-auto"
           >
             <FaAngleLeft /> Previous
           </Button>
@@ -230,6 +235,8 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
             variant="primary"
             onClick={handleNext}
             disabled={isNextDisabled}
+            width="full"
+            className="sm:w-auto"
           >
             Next <FaAngleRight />
           </Button>
