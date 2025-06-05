@@ -3,12 +3,12 @@ import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackgr
 import InfoToast from "@/common/components/organisms/InfoBanner";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import {
-    FidgetConfig,
-    FidgetInstanceData,
-    FidgetSettings,
-    LayoutFidgetConfig,
-    LayoutFidgetDetails,
-    LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
+  FidgetConfig,
+  FidgetInstanceData,
+  FidgetSettings,
+  LayoutFidgetConfig,
+  LayoutFidgetDetails,
+  LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
@@ -104,58 +104,58 @@ export default function Space({
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
-       const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-        (id) => !layoutFidgetIds.has(id)
-      );
-      if (unusedFidgetIds.length > 0) {
-        const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-        unusedFidgetIds.forEach((id) => {
-          delete cleanedFidgetInstanceDatums[id];
-        });
-        if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
-          saveConfig({
-            fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-            timestamp: new Date().toISOString(),
-          }).then(() => {
-            commitConfig();
-          });
-        }
-      }
-      // Check for and handle overlapping fidgets
-      const { cleanedLayout, removedFidgetIds } = cleanupLayout(
-        config.layoutDetails.layoutConfig.layout,
-        config.fidgetInstanceDatums,
-        !isNil(profile),
-        !isNil(feed)
-      );
+    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+      (id) => !layoutFidgetIds.has(id)
+    );
+    if (unusedFidgetIds.length > 0) {
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      removedFidgetIds.forEach(id => {
+      unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
-      let settingsChanged = false;
-      // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-      Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-        const datum = cleanedFidgetInstanceDatums[id];
-        const settings = datum.config?.settings as Record<string, unknown>;
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-        if (settings && "fidget Shadow" in settings) {
-          settings.fidgetShadow = settings["fidget Shadow"];
-          delete settings["fidget Shadow"];
-          settingsChanged = true;
-        }
-      });
-      // Make Queued Changes
-      if (removedFidgetIds.length > 0 || 
-        cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x || 
-        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-        settingsChanged) {
+      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
         saveConfig({
-          layoutDetails: {
-            layoutConfig: {
+          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+          timestamp: new Date().toISOString(),
+        }).then(() => {
+          commitConfig();
+        });
+      }
+    }
+    // Check for and handle overlapping fidgets
+    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+      config.layoutDetails.layoutConfig.layout,
+      config.fidgetInstanceDatums,
+      !isNil(profile),
+      !isNil(feed)
+    );
+    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+    removedFidgetIds.forEach(id => {
+      delete cleanedFidgetInstanceDatums[id];
+    });
+    let settingsChanged = false;
+    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
+    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
+      const datum = cleanedFidgetInstanceDatums[id];
+      const settings = datum.config?.settings as Record<string, unknown>;
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+      if (settings && "fidget Shadow" in settings) {
+        settings.fidgetShadow = settings["fidget Shadow"];
+        delete settings["fidget Shadow"];
+        settingsChanged = true;
+      }
+    });
+    // Make Queued Changes
+    if (removedFidgetIds.length > 0 ||
+      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
+        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
+      settingsChanged) {
+      saveConfig({
+        layoutDetails: {
+          layoutConfig: {
             ...config.layoutDetails.layoutConfig,
             layout: cleanedLayout,
           },
@@ -169,7 +169,7 @@ export default function Space({
 
     // Mark cleanup as complete
     cleanupHasRun.current = true;
-  }, []); 
+  }, []);
 
   function saveExitEditMode() {
     commitConfig();
@@ -192,8 +192,8 @@ export default function Space({
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
-            layoutConfig,
-          }
+          layoutConfig,
+        }
         : undefined,
       theme,
       fidgetInstanceDatums,
@@ -208,7 +208,7 @@ export default function Space({
     } else {
       const layoutFidgetKey =
         config?.layoutDetails?.layoutFidget &&
-        LayoutFidgets[config.layoutDetails.layoutFidget]
+          LayoutFidgets[config.layoutDetails.layoutFidget]
           ? config.layoutDetails.layoutFidget
           : "grid";
       return LayoutFidgets[layoutFidgetKey];
@@ -244,7 +244,7 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !viewportMobile && editMode, 
+      inEditMode: !viewportMobile && editMode,
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -291,7 +291,7 @@ export default function Space({
           </div>
         )}
       </div>
- 
+
       <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
         {!isUndefined(feed) && !isMobile ? (
           <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
@@ -302,7 +302,7 @@ export default function Space({
         ) : null}
 
         <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
-         
+
           <Suspense
             fallback={
               <SpaceLoading
@@ -334,88 +334,90 @@ export default function Space({
     <>
       {showMobileContainer && editMode && portalRef.current
         ? createPortal(
-            <aside
-              id="logo-sidebar"
-              className="h-screen flex-row flex bg-white"
-              aria-label="Sidebar"
-            >
-              <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
-                <ThemeSettingsEditor
-                  theme={config.theme}
-                  saveTheme={(newTheme) =>
-                    saveLocalConfig({ theme: newTheme })
-                  }
-                  saveExitEditMode={saveExitEditMode}
-                  cancelExitEditMode={cancelExitEditMode}
-                  fidgetInstanceDatums={config.fidgetInstanceDatums}
-                  saveFidgetInstanceDatums={(datums) =>
-                    saveLocalConfig({ fidgetInstanceDatums: datums })
-                  }
-                />
-              </div>
-            </aside>,
-            portalRef.current,
-          )
+          <aside
+            id="logo-sidebar"
+            className="h-screen flex-row flex bg-white"
+            aria-label="Sidebar"
+          >
+            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+              <ThemeSettingsEditor
+                theme={config.theme}
+                saveTheme={(newTheme) =>
+                  saveLocalConfig({ theme: newTheme })
+                }
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                saveFidgetInstanceDatums={(datums) =>
+                  saveLocalConfig({ fidgetInstanceDatums: datums })
+                }
+              />
+            </div>
+          </aside>,
+          portalRef.current,
+        )
         : null}
-     <div
-  className={`w-full h-full relative flex-col ${showMobileContainer
+      <div
+        className={`w-full h-full relative flex-col ${showMobileContainer
           ? "flex items-center justify-center"
           : "user-theme-background"
           }`}
         style={{
           backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background
         }}
->
-  {showMobileContainer && (
-    <Image
-      src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
-      alt="Mobile preview background"
-      fill
-      className="object-cover pointer-events-none select-none -z-10"
-    />
-  )}
-  <div className="w-full transition-all duration-100 ease-out">
-      {showMobileContainer ? (
-      <div className="flex items-center justify-center h-full">
-        <div className="relative w-[344px] h-[744px]">
-          <div className="absolute top-[10px] left-[16px] z-0">
-            <div
-              className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                backgroundColor: config.theme?.properties.background || 'white',
-                transform: 'scale(1.0)',
-                transformOrigin: 'top left'
-              }}
-            >
-              <CustomHTMLBackground
-                html={config.theme?.properties.backgroundHTML}
-                className="absolute inset-0 pointer-events-none w-full h-full"
-              />
-                <div className="flex-1 w-full overflow-auto" >
-              <div className="relative w-full h-full flex flex-col">
-              <div className="w-full bg-white"> 
-                  {!isUndefined(profile) ? (
-                    <div className="w-full"> 
-                      {profile}
-                    </div>
-                  ) : null}
+      >
+        {showMobileContainer && (
+          <Image
+            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
+            alt="Mobile preview background"
+            fill
+            className="object-cover pointer-events-none select-none -z-10"
+          />
+        )}
+        <div className="w-full transition-all duration-100 ease-out">
+          {showMobileContainer ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="relative w-[344px] h-[744px]">
+                <div className="absolute top-[10px] left-[16px] z-0">
+                  <div
+                    className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: config.theme?.properties.background || 'white',
+                      transform: 'scale(1.0)',
+                      transformOrigin: 'top left'
+                    }}
+                  >
+                    <CustomHTMLBackground
+                      html={config.theme?.properties.backgroundHTML}
+                      className="absolute inset-0 pointer-events-none w-full h-full"
+                    />
+                    <div className="flex-1 w-full overflow-auto" >
+                      <div className="relative w-full h-full flex flex-col">
+                        <div className="w-full bg-white">
+                          {!isUndefined(profile) ? (
+                            <div className="w-full max-h-fit py-2 px-1">
+                              <div className="rounded-md shadow-sm overflow-hidden">
+                                {profile}
+                              </div>
+                            </div>
+                          ) : null}
 
-                  <div className="border-b relative">
-                    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-                      {tabBar}
-                    </div>
-                  </div>
+                          <div className="border-b relative">
+                            <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                              {tabBar}
+                            </div>
+                          </div>
 
-                  {!isUndefined(feed) ? (
-                    <div className="w-full overflow-auto">
-                      {feed}
-                    </div>
-                  ) : null}
-                </div>
+                          {!isUndefined(feed) ? (
+                            <div className="w-full overflow-auto">
+                              {feed}
+                            </div>
+                          ) : null}
+                        </div>
 
-                    
+
                         <Suspense fallback={
                           <SpaceLoading
                             hasProfile={!isNil(profile)}
@@ -441,22 +443,22 @@ export default function Space({
                   </div>
                 </div>
                 <Image
-            src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-            alt="Phone mockup"
-            width={344}
-            height={744}
-            className="pointer-events-none select-none absolute inset-0 z-10"
-          />
+                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+                  alt="Phone mockup"
+                  width={344}
+                  height={744}
+                  className="pointer-events-none select-none absolute inset-0 z-10"
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
+            </>
+          )}
         </div>
       </div>
-    ) : (
-      <>
-        <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-        {mainContent}
-      </>
-    )}
-  </div>
-</div>
     </>
   );
 }
