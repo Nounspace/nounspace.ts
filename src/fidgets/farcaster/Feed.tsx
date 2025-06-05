@@ -427,10 +427,11 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     return (
       <iframe
         src={url}
-        style={{ border: "none", width: "100%" }}
+        style={{ border: "none", width: "100%", height: "100%" }}
         title="Twitter Feed"
-        scrolling="no"
+        scrolling="yes"
         frameBorder="0"
+        className="scrollbar-none"
       />
     );
   };
