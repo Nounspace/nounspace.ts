@@ -427,7 +427,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     return (
       <iframe
         src={url}
-        style={{ border: "none", width: "100%", height: "100%" }}
+        style={{ border: "none", width: "100%" }}
         title="Twitter Feed"
         scrolling="no"
         frameBorder="0"
@@ -552,7 +552,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
   return (
     <div
-      className="h-full"
+      className="h-full overflow-y-auto"
       style={{
         fontFamily: settings.useDefaultColors ? 'var(--user-theme-font)' : settings.fontFamily,
         color: settings.useDefaultColors ? 'var(--user-theme-font-color)' : settings.fontColor,
@@ -564,11 +564,11 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           <Loading />
         </div>
       ) : isThreadView ? (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full">
           {renderThread()}
         </div>
       ) : (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full">
           {renderFeedContent()}
         </div>
       )}
