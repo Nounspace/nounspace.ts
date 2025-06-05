@@ -52,14 +52,14 @@ export function useProcessedFidgetIds(
     prioritizeFeedFidgets(processedFidgetIds, fidgetInstanceDatums, isSpecialPath),
   [processedFidgetIds, fidgetInstanceDatums, isSpecialPath]);
   
-  return {
+  return useMemo(() => ({
     validFidgetIds,
     processedFidgetIds,
     mediaFidgetIds,
     pinnedCastIds,
     orderedFidgetIds,
     isSpecialPath
-  };
+  }), [validFidgetIds, processedFidgetIds, mediaFidgetIds, pinnedCastIds, orderedFidgetIds, isSpecialPath]);
 }
 
 export default useProcessedFidgetIds;
