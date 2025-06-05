@@ -447,17 +447,15 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
       "https://syndication.twitter.com/srv/timeline-profile/screen-name/" +
       `${Xhandle}?${params.toString()}`;
 
-    const iframeStyle: React.CSSProperties = {
-      border: "none",
-      width: "100%",
-      height: "100%",
-      overflowY: "auto",
-      overflowX: "auto",
-    };
-        style={iframeStyle}
       <iframe
         src={url}
-        style={{ border: "none", width: "100%", height: "100%" }}
+        style={{
+          border: "none",
+          width: "100%",
+          height: "100%",
+          overflowY: "auto",
+          overflowX: "auto",
+        }}
         title="Twitter Feed"
         scrolling="yes"
         frameBorder="0"
