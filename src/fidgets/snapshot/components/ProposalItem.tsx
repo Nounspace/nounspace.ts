@@ -150,7 +150,9 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         <div
           className="grid grid-cols-1 sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
         >
-          <Badge status={status} className="sm:col-start-2" />
+          <div className="sm:col-start-2">
+            <Badge status={status} />
+          </div>
           <img
             src={currentAvatarUrl}
             alt="Avatar"
