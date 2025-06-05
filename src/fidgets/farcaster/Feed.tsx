@@ -427,8 +427,23 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   );
 
   const renderXFeed = () => {
-    const theme = style || "light";
-        style={{
+    const themeSetting = style || "light";
+
+    const params = new URLSearchParams({
+      dnt: "true",
+      embedId: "twitter-widget-0",
+      frame: "false",
+      hideBorder: "true",
+      hideFooter: "false",
+      hideHeader: "false",
+      hideScrollBar: "false",
+      lang: "en",
+      origin: "https://publish.twitter.com/#",
+      theme: themeSetting,
+      widgetsVersion: "2615f7e52b7e0:1702314776716",
+    });
+
+    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?${params.toString()}`;
           border: "none",
           width: "100%",
           height: "100%",
