@@ -58,7 +58,7 @@ const TabItem = React.memo(({
         "data-[state=active]:shadow-none",
         "data-[state=active]:bg-transparent",
         "transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+        "focus:outline-none",
         isSelected 
           ? "data-[state=active]:text-primary opacity-100" 
           : "data-[state=inactive]:opacity-70 hover:opacity-90"
