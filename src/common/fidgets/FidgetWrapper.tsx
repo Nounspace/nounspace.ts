@@ -132,7 +132,6 @@ export function FidgetWrapper({
             ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6"
             : "absolute opacity-0 transition-opacity ease-in flex flex-row h-6"
         }
-        style={{ zIndex: 999999 }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
           <TooltipProvider>
