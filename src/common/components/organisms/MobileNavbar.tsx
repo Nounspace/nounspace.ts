@@ -25,6 +25,67 @@ interface MobileNavbarProps {
 }
 
 /**
+ * Memoized tab item component for better performance
+ */
+const TabItem = React.memo(({ 
+  tab, 
+  index, 
+  isSelected, 
+  activeColor,
+  inactiveColor,
+  onSelect,
+  getTabIcon,
+  getTabLabel
+}: { 
+  tab: TabItem; 
+  index: number;
+  isSelected: boolean; 
+  activeColor: string;
+  inactiveColor: string;
+  onSelect: (id: string) => void;
+  getTabIcon: (tab: TabItem) => React.ReactNode;
+  getTabLabel: (tab: TabItem, index: number) => string;
+}) => {
+  return (
+    <TabsTrigger 
+      key={tab.id} 
+      value={tab.id}
+      onClick={() => onSelect(tab.id)}
+      className={mergeClasses(
+        "flex flex-col items-center justify-center",
+        "min-w-[72px] h-full py-2 px-0",
+        "font-medium text-xs",
+        "data-[state=active]:shadow-none",
+        "data-[state=active]:bg-transparent",
+        "transition-all duration-200",
+        "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
+        isSelected 
+          ? "data-[state=active]:text-primary opacity-100" 
+          : "data-[state=inactive]:opacity-70 hover:opacity-90"
+      )}
+      style={{
+        "--tw-text-opacity": 1,
+        color: isSelected ? activeColor : inactiveColor
+      } as React.CSSProperties}
+      aria-selected={isSelected}
+      role="tab"
+    >
+      {/* Icon (active or inactive based on selection state) */}
+      <div className="text-xl mb-1">
+        {getTabIcon(tab)}
+      </div>
+      
+      {/* Label with truncation for long text */}
+      <span className="truncate max-w-[80px] line-clamp-1">
+        {getTabLabel(tab, index)}
+      </span>
+    </TabsTrigger>
+  );
+});
+
+TabItem.displayName = 'TabItem';
+
+/**
  * A responsive mobile navigation bar that displays as a fixed bar at the bottom of the screen
  * with scrollable tabs. Features accessibility support and theme integration.
  * 
@@ -230,67 +291,6 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   // Get theme colors for active tab indicators
   const activeColor = theme.properties.headingsFontColor || "#000000";
   const inactiveColor = "rgba(107, 114, 128, 0.7)"; // text-gray-500 with some opacity
-
-  /**
-   * Memoized tab item component for better performance
-   */
-  const TabItem = React.memo(({ 
-    tab, 
-    index, 
-    isSelected, 
-    activeColor,
-    inactiveColor,
-    onSelect,
-    getTabIcon,
-    getTabLabel
-  }: { 
-    tab: TabItem; 
-    index: number;
-    isSelected: boolean; 
-    activeColor: string;
-    inactiveColor: string;
-    onSelect: (id: string) => void;
-    getTabIcon: (tab: TabItem) => React.ReactNode;
-    getTabLabel: (tab: TabItem, index: number) => string;
-  }) => {
-    return (
-      <TabsTrigger 
-        key={tab.id} 
-        value={tab.id}
-        onClick={() => onSelect(tab.id)}
-        className={mergeClasses(
-          "flex flex-col items-center justify-center",
-          "min-w-[72px] h-full py-2 px-0",
-          "font-medium text-xs",
-          "data-[state=active]:shadow-none",
-          "data-[state=active]:bg-transparent",
-          "transition-all duration-200",
-          "focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500",
-          isSelected 
-            ? "data-[state=active]:text-primary opacity-100" 
-            : "data-[state=inactive]:opacity-70 hover:opacity-90"
-        )}
-        style={{
-          "--tw-text-opacity": 1,
-          color: isSelected ? activeColor : inactiveColor
-        } as React.CSSProperties}
-        aria-selected={isSelected}
-        role="tab"
-      >
-        {/* Icon (active or inactive based on selection state) */}
-        <div className="text-xl mb-1">
-          {getTabIcon(tab)}
-        </div>
-        
-        {/* Label with truncation for long text */}
-        <span className="truncate max-w-[80px] line-clamp-1">
-          {getTabLabel(tab, index)}
-        </span>
-      </TabsTrigger>
-    );
-  });
-
-  TabItem.displayName = 'TabItem';
 
   return (
     <Tabs
