@@ -3,7 +3,8 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
-import React from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -35,6 +36,7 @@ export type FidgetWrapperProps = {
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  portalNode?: HTMLDivElement | null;
 };
 
 export const getSettingsWithDefaults = (
@@ -64,10 +66,36 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
+  portalNode,
 }: FidgetWrapperProps) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+
+  useLayoutEffect(() => {
+    if (selectedFidgetID !== bundle.id || !wrapperRef.current) return;
+
+    const update = () => {
+      const rect = wrapperRef.current!.getBoundingClientRect();
+      setPosition({
+        top: rect.top + window.scrollY,
+        left: rect.left + window.scrollX,
+      });
+    };
+
+    update();
+    window.addEventListener("scroll", update, true);
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update, true);
+      window.removeEventListener("resize", update);
+    };
+  }, [selectedFidgetID]);
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -124,16 +152,9 @@ export function FidgetWrapper({
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
-  return (
-    <>
-      <div
-        className={
-          selectedFidgetID === bundle.id
-            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6 z-[10000001]"
-            : "absolute opacity-0 transition-opacity ease-in flex flex-row h-6 z-[10000001]"
-        }
-      >
-        <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+  const actionIcons = (
+    <div className="opacity-80 transition-opacity ease-in flex flex-row h-6 z-infinity">
+      <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -180,7 +201,12 @@ export function FidgetWrapper({
           </Card>
         </button>
       </div>
-      <Card
+  );
+
+  return (
+    <>
+      <div ref={wrapperRef} className="relative">
+        <Card
         className={
           selectedFidgetID === bundle.id
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
@@ -218,7 +244,22 @@ export function FidgetWrapper({
             />
           </CardContent>
         </ScopedStyles>
-      </Card>
+        </Card>
+      </div>
+      {selectedFidgetID === bundle.id && portalNode && position
+        ? createPortal(
+            <div
+              style={{
+                position: "absolute",
+                top: position.top - 28,
+                left: position.left,
+              }}
+            >
+              {actionIcons}
+            </div>,
+            portalNode,
+          )
+        : null}
     </>
   );
 }

@@ -551,6 +551,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                     setCurrentFidgetSettings={setCurrentFidgetSettings}
                     setSelectedFidgetID={setSelectedFidgetID}
                     selectedFidgetID={selectedFidgetID}
+                    portalNode={element}
                     bundle={{
                       ...fidgetDatum,
                       properties: fidgetModule.properties,
