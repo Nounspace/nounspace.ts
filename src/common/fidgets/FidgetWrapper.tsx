@@ -130,9 +130,10 @@ export function FidgetWrapper({
 
   useEffect(() => {
     let animationFrameId: number;
+    let isActive = false;
     
     const updateIconPosition = () => {
-      if (selectedFidgetID === bundle.id && fidgetRef.current) {
+      if (selectedFidgetID === bundle.id && fidgetRef.current && isActive) {
         const rect = fidgetRef.current.getBoundingClientRect();
         setIconPosition({
           top: rect.top - 28, // 28px above the fidget
@@ -145,11 +146,13 @@ export function FidgetWrapper({
     };
 
     if (selectedFidgetID === bundle.id) {
+      isActive = true;
       // Start continuous position updates when this fidget is selected
       updateIconPosition();
     }
 
     return () => {
+      isActive = false;
       // Clean up animation frame when component unmounts or selection changes
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
@@ -164,8 +167,8 @@ export function FidgetWrapper({
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6 z-50"
-            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6 z-50"
+            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6"
+            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6"
         }
         style={{
           top: iconPosition.top,
