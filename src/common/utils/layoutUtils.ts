@@ -51,7 +51,7 @@ export const processTabFidgetIds = (
     if (!fidgetData) return;
     
     // Skip fidgets that should be hidden on mobile
-    if (fidgetData.config.settings.showOnMobile === false) return;
+    if (fidgetData.config?.settings?.showOnMobile === false) return;
     
     if (isPinnedCast(id, fidgetInstanceDatums)) {
       pinnedCastIds.push(id);
@@ -95,7 +95,7 @@ export const getValidFidgetIds = (
     
     // On mobile, check showOnMobile setting
     if (isMobile) {
-      const showOnMobile = fidgetData.config.settings.showOnMobile;
+      const showOnMobile = fidgetData.config?.settings?.showOnMobile;
       // If showOnMobile is explicitly false, hide the fidget
       if (showOnMobile === false) return false;
     }
