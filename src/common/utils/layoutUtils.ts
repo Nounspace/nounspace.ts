@@ -135,7 +135,7 @@ export const createTabItemsFromFidgetIds = (
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   tabNames?: string[]
 ): TabItem[] => {
-  return fidgetIds.map(id => {
+  return fidgetIds.map((id, index) => {
     let label = "";
     let fidgetType = "";
     
@@ -146,26 +146,41 @@ export const createTabItemsFromFidgetIds = (
       label = "Pinned";
     } else {
       // Get fidget data and set label and type
-      const fidgetData = fidgetInstanceDatums[id];
+      const fidgetData = fidgetInstanceDatums?.[id];
       if (fidgetData) {
-        fidgetType = fidgetData.fidgetType;
+        // Safely get fidgetType with null check
+        fidgetType = fidgetData.fidgetType || "";
         
         // If user has provided custom display name in settings, use it
-        if (fidgetData.config?.settings?.customMobileDisplayName) {
-          label = fidgetData.config.settings.customMobileDisplayName;
-        } else if (CompleteFidgets[fidgetData.fidgetType]) {
-          // Otherwise use module properties
+        const customMobileDisplayName = fidgetData.config?.settings?.customMobileDisplayName;
+        if (customMobileDisplayName && typeof customMobileDisplayName === 'string' && customMobileDisplayName.trim() !== '') {
+          label = customMobileDisplayName.trim();
+        } else if (fidgetData.fidgetType && CompleteFidgets?.[fidgetData.fidgetType]) {
+          // Otherwise use module properties with null checks
           const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-          label = fidgetModule.properties.mobileFidgetName || 
-                  fidgetModule.properties.fidgetName || 
-                  "Tab";
+          if (fidgetModule?.properties) {
+            label = fidgetModule.properties.mobileFidgetName || 
+                    fidgetModule.properties.fidgetName || 
+                    "";
+          }
         }
+      }
+    }
+    
+    // Provide default non-empty label fallback if none is set
+    if (!label || label.trim() === '') {
+      // Try to use tabNames array if available
+      if (tabNames && tabNames[index] && typeof tabNames[index] === 'string' && tabNames[index].trim() !== '') {
+        label = tabNames[index].trim();
+      } else {
+        // Final fallback to ensure all tabs have valid labels
+        label = `Tab ${index + 1}`;
       }
     }
     
     return {
       id,
-      label,
+      label: label.trim(), // Ensure no leading/trailing whitespace
       fidgetType
     };
   });
