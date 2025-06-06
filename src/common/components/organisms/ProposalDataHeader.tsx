@@ -5,7 +5,7 @@ import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { format } from "date-fns";
 import { Address } from "viem";
 import { useEnsName } from "wagmi";
-import { mainnet } from "wagmi/chains";
+import { mainnet } from "viem/chains";
 
 const AddressDisplay = ({ address }: { address: Address }) => {
   const { data: ensName } = useEnsName({
