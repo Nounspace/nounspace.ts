@@ -1,4 +1,4 @@
-import { http } from "@wagmi/core";
+import { http } from "viem";
 import { ALCHEMY_API } from "./urls";
 
 export const optimismHttp = http(

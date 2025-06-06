@@ -1,5 +1,6 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 import packageInfo from "./package.json" with { type: "json" };
+import path from "path";
 
 const withBundleAnalyzer = bundlerAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -28,6 +29,24 @@ const nextConfig = {
   transpilePackages: ["react-tweet", "react-best-gradient-color-picker"], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
+  },
+  webpack: (config, { dev, isServer }) => {
+    // Only apply optimizations in production
+    if (!dev) {
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
+      };
+    }
+    return config;
+  },
+  // Add font optimization settings
+  optimizeFonts: true,
+  experimental: {
+    optimizeCss: {
+      inlineThreshold: 2048,
+    },
   },
   env: {
     NEXT_PUBLIC_VERSION: packageInfo.version,

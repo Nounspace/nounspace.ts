@@ -17,7 +17,7 @@ import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { Address } from "viem";
 import { useEnsName } from "wagmi";
-import { mainnet } from "wagmi/chains";
+import { mainnet } from "viem/chains";
 import { StatusBadge } from "./BuilderProposalItem";
 import { estimateBlockTime } from "./ProposalListRowItem";
 
