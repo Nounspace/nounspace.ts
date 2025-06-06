@@ -129,7 +129,8 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   // const location = 'teste';
   const hasLocation = location.length > 0;
 
-  // Sempre usar o layout mobile para ficar igual ao print
+  const bioText = user.profile?.bio?.text || "";
+  
   return (
     <div className="flex flex-col h-full overflow-auto px-4 py-4">
       <div className="flex flex-row items-center mb-4">
@@ -169,9 +170,11 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
         )}
       </div>
       {/* Bio - full width on mobile */}
-      <p className="text-sm mb-3 w-full">
-        <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
-      </p>
+      {bioText && (
+        <p className="text-sm mb-3 w-full">
+          <FarcasterLinkify>{bioText}</FarcasterLinkify>
+        </p>
+      )}
       {/* Followers/Following count - underneath bio */}
       <div className="flex flex-row text-sm items-center gap-3">
         <p>
