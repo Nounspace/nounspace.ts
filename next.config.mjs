@@ -31,23 +31,14 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   webpack: (config, { dev, isServer }) => {
-    // Optimize webpack caching
+    // Only apply optimizations in production
     if (!dev) {
-      config.cache = {
-        type: 'filesystem',
-        cacheDirectory: '.next/cache',
-        maxAge: 172800000, // 2 days
-        compression: 'gzip',
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        chunkIds: 'deterministic',
       };
     }
-
-    // Optimize large string handling
-    config.optimization = {
-      ...config.optimization,
-      moduleIds: 'deterministic',
-      chunkIds: 'deterministic',
-    };
-
     return config;
   },
   // Add font optimization settings
