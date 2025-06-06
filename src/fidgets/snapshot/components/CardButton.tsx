@@ -1,6 +1,5 @@
 import React, { memo, useCallback } from "react";
 import { Button } from "@/common/components/atoms/button";
-import { FaAngleDown } from "react-icons/fa6";
 
 interface CardButtonProps {
   label: string;
@@ -23,14 +22,8 @@ const CardButton: React.FC<CardButtonProps> = memo(
         className={`rounded-full text-slate-600 ${
           isActive ? "bg-slate-100 text-slate-700 border-slate-300" : ""
         }`}
-        withIcon
       >
-        {label}{" "}
-        <FaAngleDown
-          className={`fill-slate-400 transition-all ease-in ${
-            isActive ? "rotate-180" : ""
-          }`}
-        />
+        {label}
       </Button>
     );
   }
