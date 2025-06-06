@@ -358,9 +358,9 @@ export default function Space({
         )
         : null}
       <div
-        className={`w-full h-full relative flex-col ${showMobileContainer
-          ? "flex items-center justify-center"
-          : "user-theme-background"
+        className={`w-full h-full relative ${showMobileContainer
+          ? "flex flex-col items-center justify-center"
+          : "user-theme-background flex flex-col"
           }`}
         style={{
           backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background
@@ -374,7 +374,7 @@ export default function Space({
             className="object-cover pointer-events-none select-none -z-10"
           />
         )}
-        <div className="w-full transition-all duration-100 ease-out">
+        <div className="w-full h-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <div className="flex items-center justify-center h-full">
               <div className="relative w-[344px] h-[744px]">
