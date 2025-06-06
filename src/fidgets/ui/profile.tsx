@@ -11,6 +11,7 @@ import { useFarcasterSigner } from "../farcaster";
 import FarcasterLinkify from "../farcaster/components/linkify";
 import { followUser, unfollowUser } from "../farcaster/utils";
 // Removido: import { useIsMobile } 
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { BsPerson, BsPersonFill } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 
@@ -43,7 +44,7 @@ const profileProperties: FidgetProperties = {
 const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   settings: { fid },
 }) => {
-  // Removido: const isMobile = useIsMobile();
+  const isMobile = useIsMobile();
   const { fid: viewerFid, signer } = useFarcasterSigner("Profile");
   const { data: userData } = useLoadFarcasterUser(
     fid,
@@ -132,9 +133,9 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   const bioText = user.profile?.bio?.text || "";
   
   return (
-    <div className="flex flex-col h-full overflow-auto px-4 py-4">
+    <div className={`flex flex-col h-full overflow-auto ${isMobile ? 'px-3 py-3' : 'px-4 py-4'}`}>
       <div className="flex flex-row items-center mb-4">
-        <div className="h-14 w-14 mr-4">
+        <div className={`${isMobile ? 'h-12 w-12' : 'h-14 w-14'} mr-4`}>
           {user.pfp_url ? (
             <img
               className="aspect-square rounded-full max-h-full object-cover"

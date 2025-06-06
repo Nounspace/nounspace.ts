@@ -79,8 +79,9 @@ export default function Space({
 }: SpaceArgs) {
   const viewportMobile = useIsMobile();
   const { mobilePreview, setMobilePreview } = useMobilePreview();
-  const isMobile = viewportMobile || mobilePreview;
-  const showMobileContainer = mobilePreview && !viewportMobile;
+
+  const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
+  const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -393,11 +394,12 @@ export default function Space({
                       html={config.theme?.properties.backgroundHTML}
                       className="absolute inset-0 pointer-events-none w-full h-full"
                     />
-                    <div className="flex-1 w-full overflow-auto" >
+                          <div className="flex-1 w-full overflow-auto" >
+                   
                       <div className="relative w-full h-full flex flex-col">
                         <div className="w-full bg-white">
                           {!isUndefined(profile) ? (
-                            <div className="w-full max-h-fit py-2 px-1">
+                            <div className="w-full max-h-fit">
                               <div className="rounded-md shadow-sm overflow-hidden">
                                 {profile}
                               </div>
@@ -411,12 +413,11 @@ export default function Space({
                           </div>
 
                           {!isUndefined(feed) ? (
-                            <div className="w-full overflow-auto">
+                            <div className="w-full overflow-auto bg-white">
                               {feed}
                             </div>
                           ) : null}
                         </div>
-
 
                         <Suspense fallback={
                           <SpaceLoading
@@ -428,14 +429,14 @@ export default function Space({
                             <LayoutFidget
                               layoutConfig={{ ...layoutConfig }}
                               {...layoutFidgetProps}
-                            />
+                              style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: 9999 }}
+                            /> 
                           ) : (
-                            <div className="flex items-center justify-center h-full" style={{ backgroundColor: 'transparent' }}>
                               <SpaceLoading
                                 hasProfile={!isNil(profile)}
                                 hasFeed={!isNil(feed)}
                               />
-                            </div>
+                          
                           )}
                         </Suspense>
                       </div>
