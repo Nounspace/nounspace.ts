@@ -48,12 +48,12 @@ async function getSpaceOrder(
   req: NextApiRequest,
   res: NextApiResponse<UpdateSpaceOrderResponse>,
 ) {
-  const fid = req.query.fid;
-  if (isUndefined(fid) || isArray(fid)) {
+  const fid = Number(req.query.fid);
+  if (isUndefined(fid) || isArray(fid) || isNaN(fid)) {
     res.status(400).json({
       result: "error",
       error: {
-        message: "fid must be provided as a single query argument",
+        message: "fid must be provided as a valid number",
       },
     });
     return;

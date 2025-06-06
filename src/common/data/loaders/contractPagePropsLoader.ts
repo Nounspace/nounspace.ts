@@ -37,6 +37,7 @@ export async function loadContractData(
   const { contractAddress, tabName: tabNameUnparsed, network } = params;
   // console.log("contractPageProps network", network);
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
+  const networkStr = isString(network) ? network : Array.isArray(network) ? network[0] : "";
   if (
     isNil(contractAddress) ||
     isArray(contractAddress) ||
@@ -53,7 +54,7 @@ export async function loadContractData(
 
   const contract = await loadEthersViewOnlyContract(
     contractAddress,
-    String(network),
+    networkStr,
   );
   if (isUndefined(contract)) {
     return {
@@ -99,7 +100,7 @@ export async function loadContractData(
   if (ownerIdType === "address") {
     owningIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
   } else {
-    owningIdentities = await loadOwnedItentitiesForFid(ownerId);
+    owningIdentities = await loadOwnedItentitiesForFid(Number(ownerId));
   }
   // console.log("Debug - Contract Address before query:", contractAddress);
   // console.log("Debug - Network:", network);
@@ -108,7 +109,7 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
     .eq("contractAddress", contractAddress)
-    .eq("network", network)
+    .eq("network", networkStr)
     .order("timestamp", { ascending: true })
     .limit(1)
   

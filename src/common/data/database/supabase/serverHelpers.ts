@@ -35,11 +35,11 @@ export async function loadIdentitiesOwningContractSpace(
   if (ownerIdType === "address") {
     return await loadOwnedItentitiesForWalletAddress(ownerId);
   } else {
-    return await loadOwnedItentitiesForFid(ownerId);
+    return await loadOwnedItentitiesForFid(Number(ownerId));
   }
 }
 
-export async function loadOwnedItentitiesForFid(fid: string) {
+export async function loadOwnedItentitiesForFid(fid: number) {
   const { data } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select(`identityPublicKey`)
