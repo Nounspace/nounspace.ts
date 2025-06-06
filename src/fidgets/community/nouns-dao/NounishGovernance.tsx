@@ -15,7 +15,8 @@ import NounsProposalDetailView from "@/fidgets/community/nouns-dao/components/No
 import ProposalListView from "@/fidgets/community/nouns-dao/components/ProposalListView";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
 import React, { useEffect, useMemo, useState } from "react";
-import { getBlock } from "wagmi/actions";
+import { createPublicClient, http } from "viem";
+import { mainnet } from "viem/chains";
 
 export type NounishGovernanceSettings = {
   subgraphUrl: string;
@@ -137,7 +138,8 @@ export const NounishGovernance: React.FC<
   useEffect(() => {
     const fetchBlockNumber = async () => {
       try {
-        const block = await getBlock(wagmiConfig);
+        const client = createPublicClient({ chain: mainnet, transport: http() });
+        const block = await client.getBlock();
         setCurrentBlock({
           number: Number(block.number),
           timestamp: Number(block.timestamp) * 1000,
