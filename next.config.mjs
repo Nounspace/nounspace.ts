@@ -37,7 +37,7 @@ const nextConfig = {
         buildDependencies: {
           config: [import.meta.url],
         },
-        cacheDirectory: process.cwd() + '/.next/cache',
+        cacheDirectory: path.join(process.cwd(), '.next', 'cache'),
         maxAge: 172800000, // 2 days
         compression: 'gzip',
       };
@@ -56,7 +56,7 @@ const nextConfig = {
   optimizeFonts: true,
   experimental: {
     optimizeCss: {
-      inlineThreshold: 0,
+      inlineThreshold: 2048,
     },
   },
   env: {
