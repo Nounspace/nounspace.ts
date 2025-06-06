@@ -10,9 +10,10 @@ import { CgProfile } from "react-icons/cg";
 import { useFarcasterSigner } from "../farcaster";
 import FarcasterLinkify from "../farcaster/components/linkify";
 import { followUser, unfollowUser } from "../farcaster/utils";
+// Removido: import { useIsMobile } 
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { IoLocationOutline } from "react-icons/io5";
 import { BsPerson, BsPersonFill } from "react-icons/bs";
+import { IoLocationOutline } from "react-icons/io5";
 
 export type ProfileFidgetSettings = {
   fid: number;
@@ -53,7 +54,6 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   const [actionStatus, setActionStatus] = useState<
     "idle" | "loading" | "error"
   >("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const user: User | undefined = useMemo(() => {
     if (isUndefined(userData)) {
@@ -95,7 +95,7 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
           following: wasFollowing,
         };
         setActionStatus("error");
-        setErrorMessage("An error occurred while updating follow status.");
+        // Removido: setErrorMessage não é mais necessário
       } finally {
         // Reset status after some delay
         setTimeout(() => setActionStatus("idle"), 3000);
@@ -130,75 +130,70 @@ const Profile: React.FC<FidgetArgs<ProfileFidgetSettings>> = ({
   // const location = 'teste';
   const hasLocation = location.length > 0;
 
+  const bioText = user.profile?.bio?.text || "";
+  
   return (
-    <div className="flex flex-col items-start gap-2 p-2.5 sm:gap-3 sm:p-4 justify-start">
-      <div className="flex flex-row items-start w-full">
-        <div className="h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14 flex-shrink-0">
+    <div className={`flex flex-col h-full overflow-auto ${isMobile ? 'px-3 py-3' : 'px-4 py-4'}`}>
+      <div className="flex flex-row items-center mb-4">
+        <div className={`${isMobile ? 'h-12 w-12' : 'h-14 w-14'} mr-4`}>
           {user.pfp_url ? (
             <img
               className="aspect-square rounded-full max-h-full object-cover"
               src={user.pfp_url}
-              alt={`${user.display_name || user.username}'s profile picture`}
             />
           ) : (
-            <CgProfile className="text-gray-200 dark:text-gray-700 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>
+            <CgProfile className="text-gray-200 dark:text-gray-700 me-4 aspect-square rounded-full max-h-full h-full w-full"></CgProfile>
           )}
         </div>
-        <div className="flex flex-col ml-2 items-start overflow-hidden">
-          <div className="flex flex-col w-full sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-[calc(100%-80px)] sm:max-w-full overflow-hidden">
-              <span className="text-base sm:text-base md:text-lg font-bold leading-tight truncate block">
-                {user.display_name || user.username}
-              </span>
-              <small className="block text-xs sm:text-xs md:text-sm text-slate-500 leading-tight truncate">
-                @{user.username}
-              </small>
-            </div>
-            {user.viewer_context && fid !== viewerFid && (
-              <Button
-                onClick={toggleFollowing}
-                variant={
-                  user.viewer_context?.following ? "secondary" : "primary"
-                }
-                disabled={actionStatus === "loading"}
-                className="text-xs sm:text-xs md:text-sm mt-2 sm:mt-0 px-3 py-1 sm:px-4 sm:py-1.5"
-              >
-                {actionStatus === "loading"
-                  ? "Loading..."
-                  : user.viewer_context?.following
-                    ? "Unfollow"
-                    : "Follow"}
-              </Button>
-            )}
+        <div className="flex flex-col">
+          <span className="text-xl">
+            {user.display_name || user.username}
+          </span>
+          <small className="text-slate-500">@{user.username}</small>
+        </div>
+        {user.viewer_context && fid !== viewerFid && (
+          <div className="ml-auto">
+            <Button
+              onClick={toggleFollowing}
+              variant={
+                user.viewer_context?.following ? "secondary" : "primary"
+              }
+              disabled={actionStatus === "loading"}
+              className="px-3 py-1 text-sm"
+            >
+              {actionStatus === "loading"
+                ? "..."
+                : user.viewer_context?.following
+                  ? "Unfollow"
+                  : "Follow"}
+            </Button>
           </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col w-full items-start pl-[13px] sm:pl-[13px] md:pl-[15px]">
-        {user.profile.bio.text && (
-          <p className="text-xs sm:text-xs md:text-sm text-slate-700 text-left max-w-[220px] sm:max-w-[300px] md:max-w-[400px] block break-words">
-            <FarcasterLinkify>{user.profile.bio.text}</FarcasterLinkify>
-          </p>
         )}
-
-        <div className="flex flex-wrap items-center text-xs sm:text-xs md:text-sm mt-2 gap-2 sm:gap-3 text-slate-500">
-          <p className="flex items-center">
-            <span className="font-bold mr-1">{user.following_count}</span> Following
-          </p>
-          <p className="flex items-center">
-            <span className="font-bold mr-1">{user.follower_count}</span> Followers
-          </p>
-          {hasLocation && (
-            <p className="flex items-center gap-1">
-              <IoLocationOutline className="flex-shrink-0" />
-              <span className="truncate max-w-full">{location}</span>
-            </p>
-          )}
-        </div>
+      </div>
+      {/* Bio - full width on mobile */}
+      {bioText && (
+        <p className="text-sm mb-3 w-full">
+          <FarcasterLinkify>{bioText}</FarcasterLinkify>
+        </p>
+      )}
+      {/* Followers/Following count - underneath bio */}
+      <div className="flex flex-row text-sm items-center gap-3">
+        <p>
+          <span className="font-bold">{user.following_count}</span> Following
+        </p>
+        <p>
+          <span className="font-bold">{user.follower_count}</span> Followers
+        </p>
+        {hasLocation && (
+          <div className="flex gap-0 items-center">
+            <IoLocationOutline className="h-4 w-4 text-slate-500 inline-block mr-1" />
+            <p className="text-slate-500">{location}</p>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
 export default {
   fidget: Profile,
