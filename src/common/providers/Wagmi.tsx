@@ -26,8 +26,6 @@ const wagmiParams: CreateConfigParameters<
 const wagmiConfig = createConfig(wagmiParams);
 export { wagmiConfig };
 
-const client = createPublicClient({ chain: mainnet, transport: http() });
-
 export default function Wagmi({ children }: { children: React.ReactNode }) {
   return <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>;
 }
