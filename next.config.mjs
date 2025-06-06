@@ -29,6 +29,36 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  webpack: (config, { dev, isServer }) => {
+    // Optimize webpack caching
+    if (!dev) {
+      config.cache = {
+        type: 'filesystem',
+        buildDependencies: {
+          config: [import.meta.url],
+        },
+        cacheDirectory: process.cwd() + '/.next/cache',
+        maxAge: 172800000, // 2 days
+        compression: 'gzip',
+      };
+    }
+
+    // Optimize large string handling
+    config.optimization = {
+      ...config.optimization,
+      moduleIds: 'deterministic',
+      chunkIds: 'deterministic',
+    };
+
+    return config;
+  },
+  // Add font optimization settings
+  optimizeFonts: true,
+  experimental: {
+    optimizeCss: {
+      inlineThreshold: 0,
+    },
+  },
   env: {
     NEXT_PUBLIC_VERSION: packageInfo.version,
   },
