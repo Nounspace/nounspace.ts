@@ -35,10 +35,7 @@ const nextConfig = {
     if (!dev) {
       config.cache = {
         type: 'filesystem',
-        buildDependencies: {
-          config: [import.meta.url],
-        },
-        cacheDirectory: path.join(process.cwd(), '.next', 'cache'),
+        cacheDirectory: '.next/cache',
         maxAge: 172800000, // 2 days
         compression: 'gzip',
       };
