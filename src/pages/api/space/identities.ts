@@ -102,11 +102,12 @@ async function handleGet(
 ) {
   const query = req.query;
   if (query.address) {
+    const address = Array.isArray(query.address) ? query.address[0] : query.address;
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("walletIdentities")
       .select()
-      .eq("walletAddress", query.address);
+      .eq("walletAddress", address);
     if (error) {
       res.status(500).json({
         result: "error",

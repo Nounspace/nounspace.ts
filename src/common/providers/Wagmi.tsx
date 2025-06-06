@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Chain, Transport } from "viem";
+import { Chain, Transport, createPublicClient, http } from "viem";
 import { createConfig } from "wagmi";
 import { WagmiProvider } from "@privy-io/wagmi";
 import type { CreateConfigParameters } from "wagmi";
