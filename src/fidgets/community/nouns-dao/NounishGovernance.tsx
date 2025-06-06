@@ -32,6 +32,9 @@ export type NounishGovernanceSettings = {
   fontFamily?: string;
 } & FidgetSettingsStyle;
 
+// Create a single shared Viem client instance
+const publicClient = createPublicClient({ chain: mainnet, transport: http() });
+
 export const nounishGovernanceConfig: FidgetProperties = {
   fidgetName: "Nounish Governance",
   mobileFidgetName: "Gov",
@@ -138,8 +141,7 @@ export const NounishGovernance: React.FC<
   useEffect(() => {
     const fetchBlockNumber = async () => {
       try {
-        const client = createPublicClient({ chain: mainnet, transport: http() });
-        const block = await client.getBlock();
+        const block = await publicClient.getBlock();
         setCurrentBlock({
           number: Number(block.number),
           timestamp: Number(block.timestamp) * 1000,

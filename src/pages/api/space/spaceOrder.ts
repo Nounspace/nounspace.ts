@@ -48,8 +48,8 @@ async function getSpaceOrder(
   req: NextApiRequest,
   res: NextApiResponse<UpdateSpaceOrderResponse>,
 ) {
-  const fid = Number(req.query.fid);
-  if (isUndefined(fid) || isArray(fid) || isNaN(fid)) {
+  const fid = req.query.fid;
+  if (isUndefined(fid) || isArray(fid) || isNaN(Number(fid))) {
     res.status(400).json({
       result: "error",
       error: {
@@ -58,10 +58,11 @@ async function getSpaceOrder(
     });
     return;
   }
+  const fidNumber = Number(fid);
   const { data: orders, error } = await createSupabaseServerClient()
     .from("spaceOrderings")
     .select("ordering")
-    .eq("fid", fid);
+    .eq("fid", fidNumber);
   if (isNull(orders)) {
     res.status(500).json({
       result: "error",
@@ -83,7 +84,7 @@ async function getSpaceOrder(
     await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
-      .eq("fid", fid)
+      .eq("fid", fidNumber)
       .in("spaceId", order.ordering);
   if (spacesForOrderingError) {
     res.status(500).json({
