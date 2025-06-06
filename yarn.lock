@@ -973,6 +973,11 @@
     "@ethersproject/properties" "^5.8.0"
     "@ethersproject/strings" "^5.8.0"
 
+"@faker-js/faker@^7.6.0":
+  version "7.6.0"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-7.6.0.tgz#9ea331766084288634a9247fcd8b84f16ff4ba07"
+  integrity sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==
+
 "@farcaster/auth-client@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@farcaster/auth-client/-/auth-client-0.1.1.tgz#097aec1c1023c2d7c3408e948b1409af3e12b1e6"
@@ -992,11 +997,23 @@
     qrcode "^1.5.3"
     react-remove-scroll "^2.5.7"
 
-"@farcaster/core@^0.14.11", "@farcaster/core@^0.14.16", "@farcaster/core@^0.14.7", "@farcaster/core@^0.14.8":
+"@farcaster/core@^0.14.16", "@farcaster/core@^0.14.7", "@farcaster/core@^0.14.8":
   version "0.14.20"
   resolved "https://registry.yarnpkg.com/@farcaster/core/-/core-0.14.20.tgz#b912ead5a3fedfb943d217593d1e5e10f1a97353"
   integrity sha512-VHnvt78fITnztYwRrrLAI0MTxgUelGw8ieync4yLxDx/BA2wSr9gNNeLxnQupLXD6qf8k7JsxqLJrFAuVDzt5A==
   dependencies:
+    "@noble/curves" "^1.0.0"
+    "@noble/hashes" "^1.3.0"
+    bs58 "^5.0.0"
+    neverthrow "^6.0.0"
+    viem "^2.17.4"
+
+"@farcaster/core@^0.16.5":
+  version "0.16.5"
+  resolved "https://registry.yarnpkg.com/@farcaster/core/-/core-0.16.5.tgz#2232c5fd6bbd807a54eacd1d62a0fec5536ac2fe"
+  integrity sha512-gqwRGQTWy3Ezvx/SE03iF445pTj7gTG0uAVInpt4MwA8Ze2LvnDUr0MXfqD1zzzOC9Yq2usA8sX2bAHbq8pTDQ==
+  dependencies:
+    "@faker-js/faker" "^7.6.0"
     "@noble/curves" "^1.0.0"
     "@noble/hashes" "^1.3.0"
     bs58 "^5.0.0"
