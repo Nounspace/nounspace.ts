@@ -689,10 +689,8 @@ export default function PublicSpace({
     );
   }
 
-  // Removido o uso de key baseada em getCurrentSpaceId() + providedTabName para evitar remounts desnecessários
   return (
     <SpacePage
-      // key={getCurrentSpaceId() + providedTabName} // Não usar key dinâmica aqui
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
