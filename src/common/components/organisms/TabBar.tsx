@@ -15,6 +15,7 @@ import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -195,6 +196,8 @@ function TabBar({
   }, [switchTabTo]);
 
   const isLoggedIn = getIsLoggedIn();
+  const showButtons =
+    inEditMode || (!inEditMode && !isMobile && isLoggedIn && sidebarEditable);
 
   return (
     <TooltipProvider>
@@ -204,7 +207,12 @@ function TabBar({
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
+        <div
+          className={mergeClasses(
+            "flex flex-auto justify-start h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-y-scroll",
+            showButtons && "w-64 pr-8",
+          )}
+        >
           {tabList && (
             <Reorder.Group
               as="ol"
