@@ -13,7 +13,12 @@ import axiosBackend from "../api/backend";
 export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
   return useQuery({
     queryKey: ["user", fid, viewerFid],
-    staleTime: 1000 * 60 * 1,
+    // We increased staleTime to avoid unnecessary requests
+    staleTime: 1000 * 60 * 5, 
+    // Avoid reloading data when the window is focused
+    refetchOnWindowFocus: false,
+   // Limit retry attempts to avoid excessive calls
+    retry: 1,
     queryFn: async () => {
       if (fid === -1) {
         return {
@@ -40,7 +45,12 @@ export const useLoadFarcasterConversation = (
 ) => {
   return useQuery({
     queryKey: ["conversation", castHash, viewerFid],
-    staleTime: 1000 * 60 * 1,
+    // We increased the staleTime for conversations, which normally don't change frequently
+    staleTime: 1000 * 60 * 3, 
+    // Avoid reloading data when the window is focused
+    refetchOnWindowFocus: false,
+ // Limit retry attempts to avoid excessive calls
+    retry: 1,
     queryFn: async () => {
       const { data } = await axiosBackend.get<Conversation>(
         "/api/farcaster/neynar/conversation",
@@ -79,7 +89,10 @@ export const useGetCasts = ({
 }) => {
   return useInfiniteQuery({
     queryKey: ["channelCasts", feedType, fid, filterType, fids, channel, membersOnly],
-    staleTime: 1000 * 60 * 1,
+    staleTime: 1000 * 60 * 3, // Increased to 3 minutes to reduce calls
+    refetchInterval: 1000 * 60 * 10, // Refetch data every 10 minutes
+    refetchOnWindowFocus: false, // Avoid automatic refetch when focusing on the window
+    retry: 1, // Reduce the number of attempts in case of failure
     queryFn: async ({ pageParam: cursor }) => {
       const params: any = {
         fid: fid === -1 ? 456830 : fid,
@@ -108,7 +121,11 @@ export const useGetCasts = ({
 export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
   return useInfiniteQuery({
     queryKey: ["keywordCasts", keyword],
-    staleTime: 1000 * 60 * 1,
+    staleTime: 1000 * 60 * 3, // Increased to 3 minutes
+    refetchInterval: 1000 * 60 * 10, // Automatic refetch every 10 minutes
+    refetchOnWindowFocus: false, // Avoid refetch when focusing on the window
+    enabled: keyword.length > 0, // Only search if there is a keyword
+    retry: 1, // Limit attempts in case of failure
     queryFn: async ({ pageParam: cursor }) => {
       const params: any = {
         q: keyword,
