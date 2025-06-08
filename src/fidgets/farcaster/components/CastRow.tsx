@@ -132,13 +132,13 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
       {map(cast.embeds, (embed, i) => {
         const embedData = isEmbedUrl(embed)
           ? {
-              ...embed,
-              key: embed.url,
-            }
+            ...embed,
+            key: embed.url,
+          }
           : {
-              castId: embed.cast_id,
-              key: embed.cast_id,
-            };
+            castId: embed.cast_id,
+            key: embed.cast_id,
+          };
 
         return (
           <div
@@ -281,21 +281,12 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       return;
     }
 
-    if (key === CastReactionType.likes) {
-      trackAnalyticsEvent(AnalyticsEvent.LIKE, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidLike(!isActive);
-    } else if (key === CastReactionType.recasts) {
-      trackAnalyticsEvent(AnalyticsEvent.RECAST, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidRecast(!isActive);
+    // We check if we have the signer before proceeding
+    if (isUndefined(signer)) {
+      console.error("NO SIGNER");
+      return;
     }
 
-    if (isUndefined(signer)) return console.error("NO SIGNER");
     try {
       if (key === CastReactionType.replies) {
         onReply?.();
@@ -305,6 +296,22 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       if (key === CastReactionType.quote) {
         onQuote?.();
         return;
+      }
+
+      // We only perform analytics and state modification actions
+      // when we are sure that we can proceed
+      if (key === CastReactionType.likes) {
+        trackAnalyticsEvent(AnalyticsEvent.LIKE, {
+          username: cast.author.username,
+          castId: cast.hash,
+        });
+        setDidLike(!isActive);
+      } else if (key === CastReactionType.recasts) {
+        trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+          username: cast.author.username,
+          castId: cast.hash,
+        });
+        setDidRecast(!isActive);
       }
 
       const reactionBodyType: ReactionType =
