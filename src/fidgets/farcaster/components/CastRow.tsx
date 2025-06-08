@@ -138,12 +138,12 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
       {map(cast.embeds, (embed, i) => {
         const embedData: CastEmbed = isEmbedUrl(embed)
           ? {
-            url: embed.url,
+            ...embed,
             key: embed.url,
           }
           : {
             castId: embed.cast_id,
-            key: embed.cast_id?.hash?.toString() || '',
+            key: embed.cast_id,
           };
 
         return (

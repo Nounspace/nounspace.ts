@@ -393,20 +393,18 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
   useEffect(() => {
     if (prevFeedType !== feedType) {
       setIsTransitioning(true);
-      clear();
+      threadStack.clear();
       setTimeout(() => {
-        refetch()
-          .then(() => {
-            setIsTransitioning(false);
-            setPrevFeedType(feedType);
-          })
-          .catch(() => {
-            setIsTransitioning(false);
-            setPrevFeedType(feedType);
-          });
+        refetch().then(() => {
+          setIsTransitioning(false);
+          setPrevFeedType(feedType);
+        }).catch(() => {
+          setIsTransitioning(false);
+          setPrevFeedType(feedType);
+        });
       }, 200);
     }
-  }, [feedType, prevFeedType, refetch, clear]);
+  }, [feedType, prevFeedType, refetch, threadStack]);
 
   // We use useCallback to avoid unnecessary function recreations
   const handleFetchNextPage = useCallback(() => {
