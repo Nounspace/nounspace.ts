@@ -49,6 +49,15 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@noble/hashes/sha2': '@noble/hashes/sha2.js',
+      '@noble/hashes/hmac': '@noble/hashes/hmac.js',
+      '@noble/hashes/utils': '@noble/hashes/utils.js'
+    };
+    return config;
+  },
   async redirects() {
     return [
       {
