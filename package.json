@@ -204,6 +204,8 @@
     "@noble/hashes": "1.8.0",
     "@noble/curves": "1.9.1",
     "@noble/secp256k1": "2.1.0",
-    "@noble/ed25519": "2.1.0"
+    "@noble/ed25519": "2.1.0",
+    "viem": "2.31.0",
+    "@walletconnect/types": "2.21.2"
   }
 }
