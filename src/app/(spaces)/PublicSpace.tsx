@@ -17,7 +17,6 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
-import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -437,7 +436,6 @@ export default function PublicSpace({
             //   currentUserFid,
             // });
 
-            revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
             router.replace(newUrl, { scroll: false });
           }
@@ -464,7 +462,6 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
             router.replace(newUrl, { scroll: false });
           }
