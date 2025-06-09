@@ -5,7 +5,7 @@ import {
 } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+// Removed unused import: ImageScaleSlider
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
