@@ -44,6 +44,17 @@ const nextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@noble/hashes/sha2': '@noble/hashes/esm/sha2.js',
+      '@noble/hashes/sha256': '@noble/hashes/esm/sha256.js',
+      '@noble/hashes/sha512': '@noble/hashes/esm/sha512.js',
+      '@noble/hashes/hmac': '@noble/hashes/esm/hmac.js',
+      '@noble/hashes/utils': '@noble/hashes/esm/utils.js'
+    };
+    return config;
+  },
   async redirects() {
     return [
       {
