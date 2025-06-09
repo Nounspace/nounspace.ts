@@ -1,15 +1,23 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-// Custom hook for intersecting observers
-export const useIntersectionObserver = (options = {}) => {
+interface IntersectionOptions {
+  rootMargin?: string;
+  threshold?: number | number[];
+  root?: Element | Document | null;
+}
+
+export const useIntersectionObserver = (options: IntersectionOptions = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Extract individual properties to avoid stability issues with the object reference
+  const { rootMargin, threshold, root } = options;
+  
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       setIsIntersecting(entry.isIntersecting);
-    }, options);
+    }, { rootMargin, threshold, root });
 
     const currentRef = ref.current;
     if (currentRef) {
@@ -21,7 +29,7 @@ export const useIntersectionObserver = (options = {}) => {
         observer.unobserve(currentRef);
       }
     };
-  }, [options]);
+  }, [rootMargin, threshold, root]);
 
   return { ref, isIntersecting };
 };
