@@ -53,7 +53,7 @@ export async function loadContractData(
 
   const contractData = await loadViemViewOnlyContract(
     contractAddress,
-    String(network),
+    isString(network) ? network : undefined,
   );
   if (isUndefined(contractData)) {
     return {
@@ -74,7 +74,7 @@ export async function loadContractData(
       contract,
       abi,
       contractAddress,
-      String(network),
+      isString(network) ? network : undefined,
     );
     ownerId = ownerData.ownerId;
     ownerIdType = ownerData.ownerIdType;
@@ -116,11 +116,16 @@ export async function loadContractData(
   // console.log("Debug - Contract Address before query:", contractAddress);
   // console.log("Debug - Network:", network);
 
-  const { data, error } = await createSupabaseServerClient()
+  let query = createSupabaseServerClient()
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
-    .eq("contractAddress", contractAddress)
-    .eq("network", String(network))
+    .eq("contractAddress", contractAddress);
+  
+  if (isString(network)) {
+    query = query.eq("network", network);
+  }
+  
+  const { data, error } = await query
     .order("timestamp", { ascending: true })
     .limit(1)
   

@@ -47,9 +47,15 @@ interface EtherscanResponse {
   result: unknown; // ABI comes as a string that needs to be parsed
 }
 
+// Server-only environment variable to prevent API key exposure to client
+const alchemyApiKey = process.env.ALCHEMY_API_KEY;
+if (!alchemyApiKey && typeof window === 'undefined') {
+  throw new Error('ALCHEMY_API_KEY environment variable is required');
+}
+
 export const publicClient = createPublicClient({
   chain: base,
-  transport: http(`https://base-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`)
+  transport: http(`https://base-mainnet.g.alchemy.com/v2/${alchemyApiKey}`)
 });
 
 // Rate limiting setup
@@ -117,7 +123,7 @@ async function getContractABI(
 
 async function getContractCreator(
   contractAddress: string,
-  network: string,
+  network?: string,
 ): Promise<ContractCreation> {
   const baseUrl = "https://api.etherscan.io";
   const apiKey = process.env.ETHERSCAN_API_KEY!;
@@ -212,7 +218,7 @@ export async function contractOwnerFromContract(
   try {
     if (hasFunction(abi, "fid")) {
       const result = await contract.read.fid();
-      ownerId = Number(result).toString();
+      ownerId = result.toString();
       ownerIdType = "fid" as OwnerType;
     } else if (hasFunction(abi, "owner")) {
       ownerId = await contract.read.owner() as string;
@@ -222,7 +228,7 @@ export async function contractOwnerFromContract(
       // Use contract creator address as a fall back
       const contractCreation = await getContractCreator(
         contractAddress,
-        String(network),
+        network,
       );
       ownerId = contractCreation.contractCreator;
       try {
