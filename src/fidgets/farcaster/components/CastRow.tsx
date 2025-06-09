@@ -1,12 +1,10 @@
-"use client"
-
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
@@ -32,7 +30,10 @@ import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
-import { useToastStore } from "@/common/data/stores/toastStore";
+import CreateCast, { DraftType } from "./CreateCast";
+import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
+import FarcasterLinkify from "./linkify";
+import { useToastStore } from "@/common/stores/toastStore";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -125,7 +126,7 @@ export const CastAvatar = ({
 
 interface CastEmbedsProps {
   cast: CastWithInteractions;
-  onSelectCast: (hash: string, username: string) => void;
+  onSelectCast: (hash: string) => void;
 }
 
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
@@ -138,12 +139,12 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
       {map(cast.embeds, (embed, i) => {
         const embedData: CastEmbed = isEmbedUrl(embed)
           ? {
-            ...embed,
+            url: embed.url,
             key: embed.url,
           }
           : {
             castId: embed.cast_id,
-            key: embed.cast_id,
+            key: embed.cast_id?.hash?.toString() || '',
           };
 
         return (
@@ -156,7 +157,10 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash, cast.author.username);
+                const hash = typeof embedData.castId.hash === 'string' 
+                  ? embedData.castId.hash 
+                  : Buffer.from(embedData.castId.hash).toString('hex');
+                onSelectCast(hash);
               }
             }}
           >
@@ -511,7 +515,7 @@ interface CastBodyProps {
   renderRecastBadge?: () => React.ReactNode;
   userFid?: number;
   isDetailView?: boolean;
-  onSelectCast?: (hash: string, username: string) => void;
+  onSelectCast?: (hash: string, username?: string) => void;
   maxLines?: number;
   hideEmbeds?: boolean;
 }
@@ -530,9 +534,9 @@ const CastBodyComponent = ({
   maxLines = 0,
   hideEmbeds = false,
 }: CastBodyProps) => {
-  const handleSelectCast = useCallback((hash: string, username: string) => {
+  const handleSelectCast = useCallback((hash: string) => {
     if (onSelectCast) {
-      onSelectCast(hash, username);
+      onSelectCast(hash);
     }
   }, [onSelectCast]);
   
@@ -736,7 +740,7 @@ const CastRowComponent = ({
             renderRecastBadge={renderRecastBadge}
             isDetailView={isFocused}
             userFid={userFid}
-            onSelectCast={onSelect}
+            onSelectCast={(hash) => onSelect && onSelect(hash, cast.author.username)}
             maxLines={maxLines}
             hideEmbeds={hideEmbeds}
           />
