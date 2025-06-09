@@ -1,7 +1,14 @@
 import { EtherScanChains } from "@/constants/etherscanChainIds";
 import axios from "axios";
-import { Contract, Interface } from "ethers";
-import { AlchemyProvider, Provider } from "ethers/providers";
+import { 
+  createPublicClient, 
+  http, 
+  getContract, 
+  Address,
+  PublicClient,
+  Abi
+} from "viem";
+import { base } from "viem/chains";
 import { filter, isUndefined } from "lodash";
 import neynar from "./neynar";
 
@@ -40,10 +47,10 @@ interface EtherscanResponse {
   result: unknown; // ABI comes as a string that needs to be parsed
 }
 
-export const alchemyProvider = new AlchemyProvider(
-  "base",
-  process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-);
+export const publicClient = createPublicClient({
+  chain: base,
+  transport: http(`https://base-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`)
+});
 
 // Rate limiting setup
 const RATE_LIMIT = 5; // 5 calls per second
@@ -145,23 +152,37 @@ async function getContractCreator(
 async function getViewOnlyContractABI(
   contractAddress: string,
   network?: string,
-): Promise<ContractAbi[]> {
+): Promise<Abi> {
   const abiUnfiltered = await getContractABI(contractAddress, network);
   return filter(
     abiUnfiltered,
     (abiItem) =>
       abiItem.type === "function" && abiItem.stateMutability === "view",
+  ) as Abi;
+}
+
+function hasFunction(abi: Abi, functionName: string): boolean {
+  return abi.some(item => 
+    item.type === 'function' && 
+    item.name === functionName
   );
 }
 
-export async function loadEthersViewOnlyContract(
+export async function loadViemViewOnlyContract(
   contractAddress: string,
   network?: string,
-  provider: Provider = alchemyProvider,
+  client: PublicClient = publicClient,
 ) {
   try {
     const abi = await getViewOnlyContractABI(contractAddress, network);
-    return new Contract(contractAddress, new Interface(abi), provider);
+    return {
+      contract: getContract({
+        address: contractAddress as Address,
+        abi,
+        client,
+      }),
+      abi
+    };
   } catch (e) {
     return undefined;
   }
@@ -173,34 +194,34 @@ export async function contractOwnerFromContractAddress(
 ) {
   if (isUndefined(contractAddress))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
-  const contract = await loadEthersViewOnlyContract(contractAddress, network);
-  if (isUndefined(contract))
+  const contractData = await loadViemViewOnlyContract(contractAddress, network);
+  if (isUndefined(contractData))
     return { ownerId: undefined, ownerIdType: "fid" as OwnerType };
-  return contractOwnerFromContract(contract, network);
+  return contractOwnerFromContract(contractData.contract, contractData.abi, contractAddress, network);
 }
 
 export async function contractOwnerFromContract(
-  contract: Contract,
+  contract: any,
+  abi: Abi,
+  contractAddress: string,
   network?: string,
 ) {
   let ownerId: string | undefined = "";
   let ownerIdType: OwnerType = "address";
-  const abi = contract.interface;
-  if (abi.hasFunction("fid")) {
-    ownerId = Number(await contract.fid()).toString();
-    ownerIdType = "fid" as OwnerType;
-  } else if (abi.hasFunction("owner")) {
-    ownerId = (await contract.owner()) as string;
-  } else if (abi.hasFunction("deployer")) {
-    ownerId = (await contract.deployer()) as string;
-  } else {
-    // Finally use contract creator address as a fall back
-    const deploymentTx = contract.deploymentTransaction();
-    if (deploymentTx) {
-      ownerId = deploymentTx.from;
+  
+  try {
+    if (hasFunction(abi, "fid")) {
+      const result = await contract.read.fid();
+      ownerId = Number(result).toString();
+      ownerIdType = "fid" as OwnerType;
+    } else if (hasFunction(abi, "owner")) {
+      ownerId = await contract.read.owner() as string;
+    } else if (hasFunction(abi, "deployer")) {
+      ownerId = await contract.read.deployer() as string;
     } else {
+      // Use contract creator address as a fall back
       const contractCreation = await getContractCreator(
-        contract.target.toString(),
+        contractAddress,
         String(network),
       );
       ownerId = contractCreation.contractCreator;
@@ -216,6 +237,8 @@ export async function contractOwnerFromContract(
       }
       // console.log("Contract creator:", contractCreation);
     }
+  } catch (error) {
+    console.error("Error reading contract:", error);
   }
 
   return {
