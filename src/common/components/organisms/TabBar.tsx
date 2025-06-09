@@ -108,10 +108,10 @@ function TabBar({
 
     // Start the tab creation process but don't await it
     const creationPromise = createTab(tabName);
-    
+
     // Switch to the new tab immediately
     switchTabTo(tabName);
-    
+
     // Handle the remote operations in the background
     creationPromise.then(result => {
       if (result?.tabName) {
@@ -131,18 +131,18 @@ function TabBar({
   async function handleDeleteTab(tabName: string) {
     // Get the next tab before any state changes
     const nextTab = nextClosestTab(tabName);
-    
+
     try {
-        // First update the tab order and delete the tab
-        const newOrder = tabList.filter((name) => name !== tabName);
-        await updateTabOrder(newOrder);
-        await deleteTab(tabName);
-        await commitTabOrder();
-        
-        switchTabTo(nextTab, false);
+      // First update the tab order and delete the tab
+      const newOrder = tabList.filter((name) => name !== tabName);
+      await updateTabOrder(newOrder);
+      await deleteTab(tabName);
+      await commitTabOrder();
+
+      switchTabTo(nextTab, false);
     } catch (error) {
-        console.error("Failed to delete tab:", error);
-        // Optionally add error handling UI here
+      console.error("Failed to delete tab:", error);
+      // Optionally add error handling UI here
     }
   }
 
@@ -167,28 +167,28 @@ function TabBar({
     const index = tabList.indexOf(tabName);
     // For middle tabs, prefer the next tab
     if (index >= 0 && index < tabList.length - 1) {
-        // If there's a next tab, use it
-        return tabList[index + 1];
+      // If there's a next tab, use it
+      return tabList[index + 1];
     } else if (index > 0) {
-        // If we're at the end, go to previous tab
-        return tabList[index - 1];
+      // If we're at the end, go to previous tab
+      return tabList[index - 1];
     } else if (inHomebase) {
-        // If no other tabs, go to Feed
-        return "Feed";
+      // If no other tabs, go to Feed
+      return "Feed";
     } else {
-        // If no other tabs in profile space, go to Profile
-        return "Profile";
+      // If no other tabs in profile space, go to Profile
+      return "Profile";
     }
   }
 
-   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
+  const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
-    
+
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-    
+
     switchTabTo(tabName, true);
   }, [switchTabTo]);
 
@@ -196,52 +196,73 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white w-full">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
-          {tabList && (
-            <Reorder.Group
-              as="ol"
-              axis="x"
-              onReorder={updateTabOrder}
-              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
-              values={tabList}
-            >
-              <AnimatePresence initial={false}>
-                {map(
-                    inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
-                  (tabName: string) => {
-                    return (
-                      <Tab
-                        key={tabName}
-                        getSpacePageUrl={getSpacePageUrl}
-                        tabName={tabName}
-                        inEditMode={inEditMode}
-                        isSelected={currentTab === tabName}
-                        onClick={() => handleTabClick(tabName)}  
-                        removeable={isEditableTab(tabName)}
-                        draggable={inEditMode}
-                        renameable={isEditableTab(tabName)}
-                        onRemove={() => handleDeleteTab(tabName)}
-                        renameTab={handleRenameTab}
-                      />
-                    );
-                  },
-                )}
-              </AnimatePresence>
-            </Reorder.Group>
+        <div className="relative flex flex-auto h-16 z-70 bg-white">
+          {isMobile && (
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white">
+              <NogsGateButton
+                onClick={() => handleCreateTab(generateNewTabName())}
+                className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+              >
+                <div>
+                  <FaPlus />
+                </div>
+                <span className="ml-1">Tab</span>
+              </NogsGateButton>
+            </div>
           )}
+          <div className={`flex-1 overflow-x-auto scrollbar-hide ${isMobile ? 'pr-16' : 'pr-4'}`}>
+            {tabList && (
+              <Reorder.Group
+                as="ol"
+                axis="x"
+                onReorder={updateTabOrder}
+                className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
+                values={tabList}
+                style={{
+                  maxWidth: isMobile ? 'calc(100% - 60px)' : '100%',
+                  overflowX: 'auto',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
+                }}
+              >
+                <AnimatePresence initial={false}>
+                  {map(
+                    inHomebase
+                      ? ["Feed", ...tabList]
+                      : tabList,
+                    (tabName: string) => {
+                      return (
+                        <Tab
+                          key={tabName}
+                          getSpacePageUrl={getSpacePageUrl}
+                          tabName={tabName}
+                          inEditMode={inEditMode}
+                          isSelected={currentTab === tabName}
+                          onClick={() => handleTabClick(tabName)}
+                          removeable={isEditableTab(tabName)}
+                          draggable={inEditMode}
+                          renameable={isEditableTab(tabName)}
+                          onRemove={() => handleDeleteTab(tabName)}
+                          renameTab={handleRenameTab}
+                        />
+                      );
+                    },
+                  )}
+                </AnimatePresence>
+              </Reorder.Group>
+            )}
+          </div>
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
-        {inEditMode && !mobilePreview ? (
+        {inEditMode && !mobilePreview && !isMobile ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
