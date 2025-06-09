@@ -1,39 +1,38 @@
 "use client"
 
-import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
-import { useRouter } from "next/navigation";
-import useNotifications from "@/common/lib/hooks/useNotifications";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
-import { FaCircleExclamation } from "react-icons/fa6";
-import {
-  Notification,
-  NotificationTypeEnum,
-  User,
-} from "@neynar/nodejs-sdk/build/api"
+import { Alert, AlertDescription } from "@/common/components/atoms/alert";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/common/components/atoms/tabs"
-import { Alert, AlertDescription } from "@/common/components/atoms/alert"
+} from "@/common/components/atoms/tabs";
+import Loading from "@/common/components/molecules/Loading";
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
+import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
+import useNotifications from "@/common/lib/hooks/useNotifications";
+import {
+  useMutateNotificationsLastSeenCursor,
+  useNotificationsLastSeenCursor,
+} from "@/common/lib/hooks/useNotificationsLastSeenCursor";
 import {
   CastAvatar,
   CastBody,
   CastRow,
   PriorityLink,
-} from "@/fidgets/farcaster/components/CastRow"
-import Loading from "@/common/components/molecules/Loading"
-import { useInView } from "react-intersection-observer"
-import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey"
+} from "@/fidgets/farcaster/components/CastRow";
 import {
-  useNotificationsLastSeenCursor,
-  useMutateNotificationsLastSeenCursor,
-} from "@/common/lib/hooks/useNotificationsLastSeenCursor"
-import moment from "moment"
-import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
-import { FaHeart } from "react-icons/fa"
+  Notification,
+  NotificationTypeEnum,
+  User,
+} from "@neynar/nodejs-sdk/build/api";
+import moment from "moment";
+import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaCircleExclamation } from "react-icons/fa6";
+import { useInView } from "react-intersection-observer";
+import { FaHeart } from "react-icons/fa";
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -312,10 +311,10 @@ const LikeNotificationRow: NotificationRowProps = ({
             textAlign: "left",
           }}
           hideReactions={false}
-          renderRecastBadge={false}
-          userFid={fid}
+          renderRecastBadge={() => null} 
+          userFid={fid || undefined} 
           isDetailView={false}
-          onSelectCast={onSelect}
+          onSelectCast={(hash) => onSelect(hash, notification.cast!.author.username)}
         />
       </div>
     </div>
