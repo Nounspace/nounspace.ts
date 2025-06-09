@@ -1,8 +1,7 @@
 import neynar from "@/common/data/api/neynar";
 import requestHandler from "@/common/data/api/requestHandler";
-import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
-import { isString } from "lodash";
+// Removed unused imports: CastParamType and isString
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 
