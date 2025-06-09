@@ -177,7 +177,7 @@ function hasFunction(abi: Abi, functionName: string): boolean {
 export async function loadViemViewOnlyContract(
   contractAddress: string,
   network?: string,
-  client: PublicClient = publicClient,
+  client: PublicClient = publicClient as PublicClient,
 ) {
   try {
     const abi = await getViewOnlyContractABI(contractAddress, network);
