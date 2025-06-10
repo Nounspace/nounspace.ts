@@ -1,5 +1,5 @@
 import React from "react";
-import { NextRequest } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
 
 export const config = {
@@ -15,10 +15,15 @@ interface ProposalImageData {
   quorum: number;
 }
 
-export default async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ImageResponse | string>,
+) {
+  if (!req.url) {
+    return res.status(404).send("Url not found");
+  }
 
-  const params = searchParams;
+  const params = new URLSearchParams(req.url.split("?")[1] || "");
   const data: ProposalImageData = {
     id: params.get("id") || "",
     title: params.get("title") || "",
@@ -27,6 +32,7 @@ export default async function GET(req: NextRequest) {
     abstainVotes: Number(params.get("abstainVotes") || 0),
     quorum: Number(params.get("quorum") || 0),
   };
+
   return new ImageResponse(<ProposalCard data={data} />, {
     width: 1200,
     height: 630,
