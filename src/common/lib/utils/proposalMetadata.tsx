@@ -4,6 +4,7 @@ import { Metadata } from "next";
 export type ProposalMetadata = {
   id?: string;
   title?: string;
+  proposerId?: string;
   forVotes?: string | number;
   againstVotes?: string | number;
   abstainVotes?: string | number;
@@ -20,6 +21,7 @@ export const getProposalMetadataStructure = (
   const {
     id,
     title,
+    proposerId,
     forVotes,
     againstVotes,
     abstainVotes,
@@ -39,6 +41,9 @@ export const getProposalMetadataStructure = (
 
   const spaceUrl = id ? `${WEBSITE_URL}/p/${id}` : undefined;
   const proposalTitle = title ? `Prop ${id}: ${title}` : "Proposal on Nounspace";
+  const description = proposerId
+    ? `Proposal by ${proposerId} on Nounspace.`
+    : undefined;
 
   const metadata: Metadata = {
     title: proposalTitle,
@@ -46,13 +51,16 @@ export const getProposalMetadataStructure = (
       title: proposalTitle,
       url: spaceUrl,
       images: [ogImageUrl],
+      ...(description ? { description } : {}),
     },
     twitter: {
       title: proposalTitle,
       images: [ogImageUrl],
       card: "summary_large_image",
+      ...(description ? { description } : {}),
     },
   };
 
   return metadata;
 };
+
