@@ -34,11 +34,18 @@ export async function generateMetadata({
     ? `${WEBSITE_URL}/s/${handle}/${encodeURIComponent(tabName)}`
     : `${WEBSITE_URL}/s/${handle}`;
     
-  const displayName = userMetadata?.displayName || userMetadata?.username || handle;
-  
+  const displayName =
+    userMetadata?.displayName || userMetadata?.username || handle;
+
+  // Build Open Graph image URL matching the dynamic metadata
+  const encodedDisplayName = encodeURIComponent(displayName || "");
+  const encodedPfpUrl = encodeURIComponent(userMetadata?.pfpUrl || "");
+  const encodedBio = encodeURIComponent(userMetadata?.bio || "");
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${handle}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
+
   const spaceFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: ogImageUrl,
     button: {
       title: `Visit ${displayName}'s Space`,
       action: {
