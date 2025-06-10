@@ -3,7 +3,8 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -127,14 +128,56 @@ export function FidgetWrapper({
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
-  return (
-    <>
+  const fidgetRef = useRef<HTMLDivElement>(null);
+  const [iconPosition, setIconPosition] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let isActive = false;
+    
+    const updateIconPosition = () => {
+      if (selectedFidgetID === bundle.id && fidgetRef.current && isActive) {
+        const rect = fidgetRef.current.getBoundingClientRect();
+        setIconPosition({
+          top: rect.top - 28, // 28px above the fidget
+          left: rect.left,
+        });
+        
+        // Continue updating position while this fidget is selected
+        animationFrameId = requestAnimationFrame(updateIconPosition);
+      }
+    };
+
+    if (selectedFidgetID === bundle.id) {
+      isActive = true;
+      // Start continuous position updates when this fidget is selected
+      updateIconPosition();
+    }
+
+    return () => {
+      isActive = false;
+      // Clean up animation frame when component unmounts or selection changes
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [selectedFidgetID, bundle.id]);
+
+  const renderActionIcons = () => {
+    if (typeof window === "undefined") return null;
+    
+    return createPortal(
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6"
-            : "absolute opacity-0 transition-opacity ease-in flex flex-row h-6"
+            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6"
+            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6"
         }
+        style={{
+          top: iconPosition.top,
+          left: iconPosition.left,
+          zIndex: 999999,
+        }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
           <TooltipProvider>
@@ -182,9 +225,21 @@ export function FidgetWrapper({
             </TooltipProvider>
           </Card>
         </button>
-      </div>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      {renderActionIcons()}
       <Card
-        className="size-full overflow-hidden"
+        ref={fidgetRef}
+        className={
+          selectedFidgetID === bundle.id
+            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+            : "size-full overflow-hidden"
+        }
         style={{
           outline:
             selectedFidgetID === bundle.id
