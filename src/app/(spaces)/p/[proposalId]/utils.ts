@@ -10,6 +10,10 @@ export interface ProposalData {
     id: Address;
   }[];
   createdTimestamp?: string;
+  forVotes?: string;
+  againstVotes?: string;
+  abstainVotes?: string;
+  quorumVotes?: string;
 }
 
 export async function loadProposalData(proposalId: string): Promise<ProposalData> {
@@ -31,6 +35,10 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
               signers {
                 id
               }
+              forVotes
+              againstVotes
+              abstainVotes
+              quorumVotes
             }
           }`,
         variables: {
@@ -61,6 +69,10 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
       },
       signers: [],
       createdTimestamp: "",
+      forVotes: "0",
+      againstVotes: "0",
+      abstainVotes: "0",
+      quorumVotes: "0",
     };
   }
 }

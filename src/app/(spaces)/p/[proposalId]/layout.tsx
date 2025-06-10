@@ -3,6 +3,7 @@ import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
 import { loadProposalData } from "./utils";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import { getProposalMetadataStructure } from "@/common/lib/utils/proposalMetadata";
 
 const defaultMetadata = {
   other: {
@@ -25,9 +26,20 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
 
+  const queryParams = new URLSearchParams({
+    id: proposalData.id,
+    title: proposalData.title,
+    forVotes: proposalData.forVotes || "0",
+    againstVotes: proposalData.againstVotes || "0",
+    abstainVotes: proposalData.abstainVotes || "0",
+    quorum: proposalData.quorumVotes || "0",
+  });
+
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/proposal?${queryParams.toString()}`;
+
   const proposalFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: ogImageUrl,
     button: {
       title: `View Proposal ${proposalData.id}`,
       action: {
@@ -40,9 +52,17 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     },
   };
 
+  const baseMetadata = getProposalMetadataStructure({
+    id: proposalData.id,
+    title: proposalData.title,
+    forVotes: proposalData.forVotes,
+    againstVotes: proposalData.againstVotes,
+    abstainVotes: proposalData.abstainVotes,
+    quorumVotes: proposalData.quorumVotes,
+  });
+
   const metadataWithFrame = {
-    title: `Proposal: ${proposalData.title} | Nounspace`,
-    description: `Proposal by ${proposalData.proposer.id} on Nounspace. Explore the details and discussions around this proposal.`,
+    ...baseMetadata,
     other: {
       "fc:frame": JSON.stringify(proposalFrame),
     },
