@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NODE_ENV=development next build",
     "start": "next start",
     "serve": "serve -s build",
     "lint": "next lint",
@@ -198,13 +198,17 @@
     "glob": "^9.0.0",
     "rimraf": "^4.0.0",
     "@eslint/config-array": "^0.18.0",
-        "@eslint/object-schema": "^2.1.4",
+    "@eslint/object-schema": "^2.1.4",
     "@noble/hashes": "1.8.0",
     "@noble/curves": "1.9.1",
     "@noble/secp256k1": "2.1.0",
     "@noble/ed25519": "2.1.0",
     "viem": "2.31.0",
     "@walletconnect/types": "2.21.2",
+    "@walletconnect/core": "2.21.2",
+    "@walletconnect/universal-provider": "2.21.2",
+    "@walletconnect/ethereum-provider": "2.21.2",
+    "@walletconnect/sign-client": "2.21.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-native": "npm:react@^18.3.1",
@@ -222,6 +226,11 @@
     "esbuild": "^0.25.4",
     "cookie": "^0.7.0",
     "@coinbase/wallet-sdk": "^4.3.0",
-    "next": "^15.2.2"
+    "next": "^15.2.2",
+    "@walletconnect/types": "2.21.2",
+    "@walletconnect/core": "2.21.2",
+    "@walletconnect/universal-provider": "2.21.2",
+    "@walletconnect/ethereum-provider": "2.21.2",
+    "@walletconnect/sign-client": "2.21.2"
   }
 }

@@ -9,9 +9,9 @@ export default function SpaceNotFound({ src = "/images/UserNotFound.png" }) {
           <Image
             src={src}
             alt="User not found"
-            layout="fill"
-            objectFit="cover"
-          ></Image>
+            fill
+            className="object-cover"
+          />
         </div>
       </div>
     </div>
