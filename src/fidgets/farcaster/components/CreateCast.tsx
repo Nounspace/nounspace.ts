@@ -400,13 +400,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
       // console.group("Mention Parsing");
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions, ensuring it's not part of a URL
-      // Updated to handle punctuation after mentions and parentheses before mentions
-      // const usernamePattern = /(?:^|\s|[(])@([a-zA-Z0-9_-]+(?:\.[a-zA-Z0-9_-]+)*)/g;
-
       // Updated regex: supports ENS-style usernames and extra trailing punctuation like . , ! ? ; :
+      // Uses lookaheads instead of lookbehinds for better browser compatibility
       const usernamePattern =
-        /(?<![\w@])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=\s|[.,!?;:)]|$)/g;
+        /(?:^|[\s(])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=[\s.,!?;:)]|$)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -430,92 +427,72 @@ const CreateCast: React.FC<CreateCastProps> = ({
       let mentionsText = text; // Initialize mentionsText with current text
 
       if (uniqueUsernames.length > 0) {
+        // Filter out usernames that are already in cache with valid FIDs
+        const uncachedUsernames = uniqueUsernames.filter(
+          username => !mentionFidCache.has(username) || !mentionFidCache.get(username)
+        );
 
-        for (const username of uniqueUsernames) {
-          if (mentionFidCache.has(username)) {
-            mentionsToFids[username] = mentionFidCache.get(username)!;
-            continue;
+        // Add cached usernames to mentionsToFids only if they have valid FIDs
+        uniqueUsernames.forEach(username => {
+          const cachedFid = mentionFidCache.get(username);
+          if (cachedFid) {
+            mentionsToFids[username] = cachedFid;
           }
+        });
 
+        // Only make API call if there are uncached usernames
+        if (uncachedUsernames.length > 0) {
           try {
-            const query = encodeURIComponent(username);
+            const query = encodeURIComponent(uncachedUsernames.join(","));
             const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-            const fetched = await res.json();
+            const fetchedMentions = await res.json();
 
-            if (Array.isArray(fetched) && fetched[0]?.fid) {
-              const fid = fetched[0].fid.toString();
-              mentionsToFids[username] = fid;
-              mentionFidCache.set(username, fid); // ✅ cache it
-            } else {
-              mentionFidCache.set(username, ""); // cache bad names as well
-              console.warn(`Username "${username}" not found or invalid response.`, fetched);
+            if (Array.isArray(fetchedMentions)) {
+              fetchedMentions.forEach(mention => {
+                if (mention && mention.username && mention.fid) {
+                  const fid = mention.fid.toString();
+                  mentionsToFids[mention.username] = fid;
+                  mentionFidCache.set(mention.username, fid);
+                }
+                // Remove caching of invalid usernames
+              });
             }
           } catch (err) {
-            console.error(`Failed to fetch FID for "${username}"`, err);
+            console.error("Failed to fetch FIDs in batch:", err);
           }
         }
 
-        // try {
-        //   // Fetch the FIDs for the mentioned users
-        //   // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+        let cumulativeOffset = 0;
+        const mentionMatches = [...text.matchAll(usernamePattern)];
 
-        //   const query = encodeURIComponent(uniqueUsernames.join(","));
-        //   // console.log(query);
-        //   const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-        //   const fetchedMentions = await res.json();
-        //   console.log("fetchedMentions");
-        //   console.log(fetchedMentions);
+        for (const match of mentionMatches) {
+          const fullMatch = match[0]; // e.g. " @bob"
+          const username = match[1];  // "bob"
+          const atIndex = match.index! + fullMatch.indexOf("@");
 
-        //   if (Array.isArray(fetchedMentions)) {
-        //     mentionsToFids = fetchedMentions.reduce(
-        //       (acc, mention) => {
-        //         if (mention && mention.username && mention.fid) {
-        //           acc[mention.username] = mention.fid.toString(); // Convert fid to string
-        //         }
-        //         return acc;
-        //       },
-        //       {} as { [key: string]: string },
-        //     );
-        //   }
+          // Adjust position based on previous removals
+          const adjustedPosition = atIndex - cumulativeOffset;
 
+          if (mentionsToFids[username]) {
+            mentionsPositions.push(adjustedPosition);
 
-          // console.log("Resolved mentions to FIDs:", mentionsToFids);
+            // Remove `@username` from mentionsText
+            mentionsText = mentionsText.slice(0, adjustedPosition) +
+              mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
 
-          let cumulativeOffset = 0;
-          const mentionMatches = [...text.matchAll(usernamePattern)];
-
-          for (const match of mentionMatches) {
-            const fullMatch = match[0]; // e.g. " @bob"
-            const username = match[1];  // "bob"
-            const atIndex = match.index! + fullMatch.indexOf("@");
-
-            // Adjust position based on previous removals
-            const adjustedPosition = atIndex - cumulativeOffset;
-
-            if (mentionsToFids[username]) {
-              mentionsPositions.push(adjustedPosition);
-
-              // Remove `@username` from mentionsText
-              mentionsText = mentionsText.slice(0, adjustedPosition) +
-                mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
-
-              // Update offset so future positions shift correctly
-              cumulativeOffset += username.length + 1;
-            }
+            // Update offset so future positions shift correctly
+            cumulativeOffset += username.length + 1;
           }
+        }
 
-          if (mentionsPositions.length > 10)
-            if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-              console.error(
-                "Mismatch between mentions and their positions:",
-                mentionsToFids,
-                mentionsPositions,
-              );
-            }
-        // } catch (error) {
-        //   console.error("Error fetching FIDs:", error);
-        //   console.groupEnd();
-        // }
+        if (mentionsPositions.length > 10)
+          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
+            console.error(
+              "Mismatch between mentions and their positions:",
+              mentionsToFids,
+              mentionsPositions,
+            );
+          }
       }
 
       // console.groupEnd();
