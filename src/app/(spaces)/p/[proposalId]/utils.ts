@@ -10,6 +10,10 @@ export interface ProposalData {
     id: Address;
   }[];
   createdTimestamp?: string;
+  forVotes?: string;
+  againstVotes?: string;
+  abstainVotes?: string;
+  quorumVotes?: string;
 }
 
 export async function loadProposalData(proposalId: string): Promise<ProposalData> {
@@ -25,6 +29,10 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
               id
               title
               createdTimestamp
+              forVotes
+              againstVotes
+              abstainVotes
+              quorumVotes
               proposer {
                 id
               }
