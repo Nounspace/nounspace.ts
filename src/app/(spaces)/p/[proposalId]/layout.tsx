@@ -55,6 +55,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   const baseMetadata = getProposalMetadataStructure({
     id: proposalData.id,
     title: proposalData.title,
+    proposerId: proposalData.proposer.id,
     forVotes: proposalData.forVotes,
     againstVotes: proposalData.againstVotes,
     abstainVotes: proposalData.abstainVotes,
@@ -74,3 +75,4 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
+
