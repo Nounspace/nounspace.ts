@@ -16,7 +16,7 @@ interface TokenCardData {
   priceChange: string;
 }
 
-export default async function GET(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ImageResponse | string>,
 ) {
@@ -24,7 +24,7 @@ export default async function GET(
     return res.status(404).send("Url not found");
   }
 
-  const params = new URLSearchParams(req.url.split("?")[1]);
+  const params = new URLSearchParams(req.url?.split("?")[1] || "");
   const data: TokenCardData = {
     name: params.get("name") || "",
     symbol: params.get("symbol") || "",
