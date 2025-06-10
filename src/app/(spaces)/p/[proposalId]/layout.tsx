@@ -3,6 +3,7 @@ import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
 import { loadProposalData } from "./utils";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import { getProposalMetadataStructure } from "@/common/lib/utils/proposalMetadata";
 
 const defaultMetadata = {
   other: {
@@ -25,9 +26,20 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
 
+  const baseMetadata = getProposalMetadataStructure({
+    id: proposalData.id,
+    title: proposalData.title,
+    forVotes: proposalData.forVotes,
+    againstVotes: proposalData.againstVotes,
+    abstainVotes: proposalData.abstainVotes,
+    quorumVotes: proposalData.quorumVotes,
+  });
+
+  const ogImageUrl = baseMetadata.openGraph?.images?.[0];
+
   const proposalFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: ogImageUrl,
     button: {
       title: `View Proposal ${proposalData.id}`,
       action: {
@@ -41,6 +53,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   };
 
   const metadataWithFrame = {
+    ...baseMetadata,
     title: `Proposal: ${proposalData.title} | Nounspace`,
     description: `Proposal by ${proposalData.proposer.id} on Nounspace. Explore the details and discussions around this proposal.`,
     other: {
