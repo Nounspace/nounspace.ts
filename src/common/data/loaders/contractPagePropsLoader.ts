@@ -76,7 +76,7 @@ export async function loadContractData(
       contractAddress,
       isString(network) ? network : undefined,
     );
-    ownerId = ownerData.ownerId;
+    ownerId = ownerData.ownerId || null;
     ownerIdType = ownerData.ownerIdType;
   } catch (error) {
     console.error("Error fetching contract owner:", error);
