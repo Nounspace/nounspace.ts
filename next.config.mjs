@@ -28,8 +28,6 @@ const nextConfig = {
   transpilePackages: [
     "react-tweet", 
     "react-best-gradient-color-picker",
-    "@noble/hashes",
-    "@noble/curves"
   ], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
