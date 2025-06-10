@@ -328,8 +328,8 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
 
 export const FEED_TYPES = [
   { name: "Following", value: FeedType.Following },
-  { name: "For you", value: "for_you" }, 
-  { name: "Trending", value: "trending" }, 
+  { name: "For you", value: "for_you" },
+  { name: "Trending", value: "trending" },
   { name: "Filter", value: FeedType.Filter },
 ];
 
@@ -358,8 +358,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     fetchNextPage,
     hasNextPage,
     isError,
-    isPending,
-    refetch
+    isPending
   } =
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })
@@ -369,7 +368,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         filterType,
         fids: effectiveFids,
         channel,
-        ...(feedType === FeedType.Filter && filterType === 
+        ...(feedType === FeedType.Filter && filterType ===
           FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
       });
 
@@ -382,23 +381,29 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
     if (prevFeedType !== feedType) {
       setIsTransitioning(true);
       threadStack.clear();
+      // We don't need to call refetch() here, as React Query
+      // will automatically update when the queryKey changes
+      // due to the feedType change
+      setPrevFeedType(feedType);
       setTimeout(() => {
-        refetch().then(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        }).catch(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        });
-      }, 200);
+        setIsTransitioning(false);
+      }, 100);
     }
-  }, [feedType, prevFeedType, refetch]);
+  }, [feedType, prevFeedType, threadStack]);
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isTransitioning) {
+  // We use useCallback to avoid unnecessary function recreations
+  const handleFetchNextPage = useCallback(() => {
+    if (hasNextPage && !isTransitioning && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, fetchNextPage, isTransitioning]);
+  }, [hasNextPage, isTransitioning, fetchNextPage, isFetchingNextPage]);
+
+  // Effect to detect when the watch element is visible
+  useEffect(() => {
+    if (inView) {
+      handleFetchNextPage();
+    }
+  }, [inView, handleFetchNextPage]);
 
 
   useEffect(() => {
@@ -429,8 +434,9 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
         src={url}
         style={{ border: "none", width: "100%", height: "100%" }}
         title="Twitter Feed"
-        scrolling="no"
+        scrolling="yes"
         frameBorder="0"
+        className="scrollbar-none"
       />
     );
   };
@@ -552,7 +558,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
 
   return (
     <div
-      className="h-full"
+      className="h-full overflow-y-auto"
       style={{
         fontFamily: settings.useDefaultColors ? 'var(--user-theme-font)' : settings.fontFamily,
         color: settings.useDefaultColors ? 'var(--user-theme-font-color)' : settings.fontColor,
@@ -564,11 +570,11 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
           <Loading />
         </div>
       ) : isThreadView ? (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full">
           {renderThread()}
         </div>
       ) : (
-        <div className="h-full overflow-y-auto">
+        <div className="h-full">
           {renderFeedContent()}
         </div>
       )}

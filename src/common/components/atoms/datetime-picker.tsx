@@ -410,7 +410,11 @@ const DateTimePicker = React.forwardRef<
                 granularity="minute"
                 hourCycle={24}
                 value={state.timeValue}
-                onChange={state.setTimeValue}
+                onChange={(value: TimeValue | null) => {
+                  if (value) {
+                    state.setTimeValue(value);
+                  }
+                }}
               />
             )}
           </div>

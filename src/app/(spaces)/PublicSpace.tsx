@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
@@ -17,7 +17,6 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import Profile from "@/fidgets/ui/profile";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
-import { revalidatePath } from "next/cache";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -164,52 +163,47 @@ export default function PublicSpace({
 
   console.log("Resolved page type:", resolvedPageType);
 
-  // Sets the current space and tab name on initial load
+  // Control to avoid infinite space/tab update cycles
+  const prevSpaceId = useRef<string | null>(null);
+  const prevTabName = useRef<string | null>(null);
+
   useEffect(() => {
-    console.log(
-      "Setting current space and tab for page type:",
-      resolvedPageType,
-    );
+    let nextSpaceId = providedSpaceId;
+    let nextTabName = decodeURIComponent(providedTabName);
+
+    const localSpacesSnapshot = localSpaces;
 
     if (resolvedPageType === "token" && contractAddress && tokenData?.network) {
-      const existingSpace = Object.values(localSpaces).find(
+      const existingSpace = Object.values(localSpacesSnapshot).find(
         (space) =>
           space.contractAddress === contractAddress &&
           space.network === tokenData.network,
       );
-
       if (existingSpace) {
-        console.log("Found existing token space:", {
-          spaceId: existingSpace.id,
-          contractAddress,
-          network: tokenData.network,
-        });
-        setCurrentSpaceId(existingSpace.id);
-        setCurrentTabName(decodeURIComponent(providedTabName));
-        return;
+        nextSpaceId = existingSpace.id;
+        nextTabName = decodeURIComponent(providedTabName);
       }
     } else if (resolvedPageType === "person" && spaceOwnerFid) {
-      const existingSpace = Object.values(localSpaces).find(
+      const existingSpace = Object.values(localSpacesSnapshot).find(
         (space) => space.fid === spaceOwnerFid,
       );
-
       if (existingSpace) {
-        console.log("Found existing user space:", {
-          spaceId: existingSpace.id,
-          spaceOwnerFid,
-        });
-        setCurrentSpaceId(existingSpace.id);
-        setCurrentTabName(decodeURIComponent(providedTabName));
-        return;
+        nextSpaceId = existingSpace.id;
+        nextTabName = decodeURIComponent(providedTabName);
       }
     } else if (resolvedPageType === "proposal") {
-      console.log("Handling proposal page logic...");
-      // Add specific logic for proposal pages here
+      // logic for proposal
     }
 
-    // If no existing space found locally, use the provided spaceId
-    setCurrentSpaceId(providedSpaceId);
-    setCurrentTabName(decodeURIComponent(providedTabName));
+    if (prevSpaceId.current !== nextSpaceId) {
+      setCurrentSpaceId(nextSpaceId);
+      prevSpaceId.current = nextSpaceId;
+    }
+    if (prevTabName.current !== nextTabName) {
+      setCurrentTabName(nextTabName);
+      prevTabName.current = nextTabName;
+    }
+    // localSpaces is not in the dependencies!
   }, [
     resolvedPageType,
     providedSpaceId,
@@ -217,7 +211,8 @@ export default function PublicSpace({
     contractAddress,
     tokenData?.network,
     spaceOwnerFid,
-    localSpaces,
+    setCurrentSpaceId,
+    setCurrentTabName,
   ]);
 
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
@@ -231,11 +226,13 @@ export default function PublicSpace({
       loading,
     });
 
+    const localSpacesSnapshot = localSpaces;
+
     if (!isNil(currentSpaceId)) {
-      const hasCachedTab = !!localSpaces[currentSpaceId]?.tabs[currentTabName];
+      const hasCachedTab = !!localSpacesSnapshot[currentSpaceId]?.tabs[currentTabName];
       const hasCachedOrder =
-        !!localSpaces[currentSpaceId]?.order &&
-        localSpaces[currentSpaceId].order.length > 0;
+        !!localSpacesSnapshot[currentSpaceId]?.order &&
+        localSpacesSnapshot[currentSpaceId].order.length > 0;
 
       if (!hasCachedTab || !hasCachedOrder) {
         setLoading(true);
@@ -265,7 +262,7 @@ export default function PublicSpace({
           setLoading(false);
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName, localSpaces]);
+  }, [getCurrentSpaceId, getCurrentTabName]);
 
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
@@ -437,7 +434,6 @@ export default function PublicSpace({
             //   currentUserFid,
             // });
 
-            revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
             router.replace(newUrl, { scroll: false });
           }
@@ -464,7 +460,6 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            revalidatePath(getSpacePageUrl("Profile"));
             const newUrl = getSpacePageUrl("Profile");
             router.replace(newUrl, { scroll: false });
           }
@@ -506,12 +501,12 @@ export default function PublicSpace({
         ...spaceConfig,
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
           ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
-              ...datum,
-              config: {
-                settings: datum.config.settings,
-                editable: datum.config.editable,
-              },
-            }))
+            ...datum,
+            config: {
+              settings: datum.config.settings,
+              editable: datum.config.editable,
+            },
+          }))
           : undefined,
         isPrivate: false,
       };
@@ -603,21 +598,21 @@ export default function PublicSpace({
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? deleteSpaceTab(
-              currentSpaceId,
-              tabName,
-              tokenData?.network as EtherScanChainName,
-            )
+            currentSpaceId,
+            tabName,
+            tokenData?.network as EtherScanChainName,
+          )
           : undefined;
       }}
       createTab={async (tabName) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? createSpaceTab(
-              currentSpaceId,
-              tabName,
-              INITIAL_SPACE_CONFIG_EMPTY,
-              tokenData?.network as EtherScanChainName,
-            )
+            currentSpaceId,
+            tabName,
+            INITIAL_SPACE_CONFIG_EMPTY,
+            tokenData?.network as EtherScanChainName,
+          )
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
@@ -643,9 +638,9 @@ export default function PublicSpace({
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? commitSpaceTabOrder(
-              currentSpaceId,
-              tokenData?.network as EtherScanChainName,
-            )
+            currentSpaceId,
+            tokenData?.network as EtherScanChainName,
+          )
           : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
@@ -696,7 +691,6 @@ export default function PublicSpace({
 
   return (
     <SpacePage
-      key={getCurrentSpaceId() + providedTabName}
       config={memoizedConfig}
       saveConfig={saveConfig}
       commitConfig={commitConfig}
