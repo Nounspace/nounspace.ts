@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "NODE_ENV=development next build",
+    "build": "next build",
     "start": "next start",
     "serve": "serve -s build",
     "lint": "next lint",
