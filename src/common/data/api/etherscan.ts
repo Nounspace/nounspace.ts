@@ -48,15 +48,20 @@ interface EtherscanResponse {
 }
 
 // Server-only environment variable to prevent API key exposure to client
-const alchemyApiKey = process.env.ALCHEMY_API_KEY;
-if (!alchemyApiKey && typeof window === 'undefined') {
-  throw new Error('ALCHEMY_API_KEY environment variable is required');
+function getAlchemyApiKey(): string {
+  const alchemyApiKey = process.env.ALCHEMY_API_KEY;
+  if (!alchemyApiKey && typeof window === 'undefined') {
+    throw new Error('ALCHEMY_API_KEY environment variable is required');
+  }
+  return alchemyApiKey || '';
 }
 
-export const publicClient = createPublicClient({
-  chain: base,
-  transport: http(`https://base-mainnet.g.alchemy.com/v2/${alchemyApiKey}`)
-});
+export function getPublicClient() {
+  return createPublicClient({
+    chain: base,
+    transport: http(`https://base-mainnet.g.alchemy.com/v2/${getAlchemyApiKey()}`)
+  });
+}
 
 // Rate limiting setup
 const RATE_LIMIT = 5; // 5 calls per second
@@ -177,15 +182,16 @@ function hasFunction(abi: Abi, functionName: string): boolean {
 export async function loadViemViewOnlyContract(
   contractAddress: string,
   network?: string,
-  client: PublicClient = publicClient as PublicClient,
+  client?: PublicClient,
 ) {
   try {
     const abi = await getViewOnlyContractABI(contractAddress, network);
+    const publicClient = client || getPublicClient();
     return {
       contract: getContract({
         address: contractAddress as Address,
         abi,
-        client,
+        client: publicClient,
       }),
       abi
     };
