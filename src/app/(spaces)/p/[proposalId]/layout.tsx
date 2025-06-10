@@ -10,7 +10,9 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({ params: { proposalId } }): Promise<Metadata> {
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const { proposalId } = await params;
+  
   if (!proposalId) {
     return defaultMetadata;
   }

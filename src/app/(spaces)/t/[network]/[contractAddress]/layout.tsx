@@ -13,8 +13,10 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({
-  params: { network, contractAddress, tabName: tabNameParam },
+  params,
 }): Promise<Metadata> {
+  const { network, contractAddress, tabName: tabNameParam } = await params;
+  
   console.log("Generating metadata for contract space");
   console.log("Params:", { network, contractAddress, tabNameParam });
   if (!network || !contractAddress) {
@@ -69,7 +71,7 @@ export async function generateMetadata({
     : `${WEBSITE_URL}/t/${network}/${contractAddress}`;
     
   // Create token frame with the symbol if available
-  const params = new URLSearchParams({
+  const queryParams = new URLSearchParams({
     name,
     symbol,
     imageUrl,
@@ -79,7 +81,7 @@ export async function generateMetadata({
     priceChange,
   });
 
-  const ogImageUrl = `${WEBSITE_URL}/api/metadata/token?${params.toString()}`;
+  const ogImageUrl = `${WEBSITE_URL}/api/metadata/token?${queryParams.toString()}`;
 
   const tokenFrame = {
     version: "next",
