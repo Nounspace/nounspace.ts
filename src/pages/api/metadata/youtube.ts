@@ -6,7 +6,7 @@ import { youtube_v3 } from "@googleapis/youtube";
 export type YouTubeMetadataResponse =
   NounspaceResponse<youtube_v3.Schema$Video>;
 
-export default async function GET(
+export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<YouTubeMetadataResponse>,
 ) {
