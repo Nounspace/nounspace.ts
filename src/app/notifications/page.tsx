@@ -275,7 +275,7 @@ const LikeNotificationRow: NotificationRowProps = ({
         return;
       }
 
-      onSelect(notification.cast!.hash, notification.cast!.author.username);
+      onSelect(notification.cast!.hash);
     },
     [notification.cast, onSelect],
   );
@@ -392,8 +392,9 @@ function NotificationsPageContent() {
     setTab(value);
   }, []);
 
-  const onSelectNotification = useCallback(() => {
-    // console.log("@TODO: navigateToCastDetail"); // TODO
+  const onSelectNotification = useCallback((castHash: string) => {
+    // Navigate to cast detail view
+    window.location.href = `/cast/${castHash}`;
   }, []);
 
   const filterByType = useCallback(
