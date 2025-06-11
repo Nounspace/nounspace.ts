@@ -43,7 +43,7 @@ export async function loadOwnedItentitiesForFid(fid: string) {
   const { data } = await createSupabaseServerClient()
     .from("fidRegistrations")
     .select(`identityPublicKey`)
-    .eq("fid", fid);
+    .eq("fid", +fid);
 
   return data === null ? [] : map(data, (d) => d.identityPublicKey);
 }

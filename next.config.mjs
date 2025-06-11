@@ -25,7 +25,10 @@ const cspHeader = `
 const nextConfig = {
   // output: 'export', // Outputs a Single-Page Application (SPA).
   // distDir: './dist', // Changes the build output directory to `./dist/`.
-  transpilePackages: ["react-tweet", "react-best-gradient-color-picker"], // https://react-tweet.vercel.app/next,
+  transpilePackages: [
+    "react-tweet", 
+    "react-best-gradient-color-picker",
+  ], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
   },

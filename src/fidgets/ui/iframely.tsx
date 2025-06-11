@@ -87,8 +87,6 @@ const Iframely: React.FC<FidgetArgs<IframelyFidgetSettings>> = ({
         );
     }
 
-    const scaleValue = size;
-
     return (
         <div
             dangerouslySetInnerHTML={{ __html: embedHtml }}
