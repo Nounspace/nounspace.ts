@@ -47,6 +47,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const viewportMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
   const isMobile = viewportMobile || mobilePreview;
+  const navPositionClass = viewportMobile
+    ? 'fixed'
+    : mobilePreview
+      ? 'sticky'
+      : 'absolute';
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
   const isHomePath = pathname?.startsWith('/home');
@@ -262,7 +267,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
             <div
-              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-50 bg-white`}
+              className={`${navPositionClass} bottom-0 left-0 right-0 z-50 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation
