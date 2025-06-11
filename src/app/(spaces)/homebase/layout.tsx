@@ -5,14 +5,15 @@ import { useParams } from 'next/navigation';
 import PrivateSpace from './PrivateSpace';
 
 export default function HomebaseLayout({ children }: { children: React.ReactNode }) {
-  const params = useParams<{
-    tabname?: string;
-    caster?: string;
-    castHash?: string;
-  }>();
+  const params = useParams<{ slug: string[] }>();
 
-  const tabName = params?.tabname ? decodeURIComponent(params.tabname) : 'Feed';
-  const castHash = params?.castHash ? decodeURIComponent(params.castHash) : undefined;
+  const tabName = params?.slug?.[0] ? decodeURIComponent(params.slug[0]) : 'Feed';
+  const castHash = params?.slug?.[1] ? decodeURIComponent(params.slug[1]) : undefined;
 
-  return <PrivateSpace tabName={tabName} castHash={castHash} />;
+  return (
+    <>
+      <PrivateSpace tabName={tabName} castHash={castHash} />
+      {children}
+    </>
+  );
 } 
