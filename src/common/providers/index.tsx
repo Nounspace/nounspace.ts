@@ -13,6 +13,7 @@ import VersionCheckProivder from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
+import { SharedDataProvider } from "./SharedDataProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +29,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                       <SidebarContextProvider>
                         <AnalyticsProvider>
                           <MiniAppSdkProvider>
-                            <ToastProvider>{children}</ToastProvider>
+                            <SharedDataProvider>
+                              <ToastProvider>{children}</ToastProvider>
+                            </SharedDataProvider>
                           </MiniAppSdkProvider>
                         </AnalyticsProvider>
                       </SidebarContextProvider>

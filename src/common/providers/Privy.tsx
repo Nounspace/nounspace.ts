@@ -15,9 +15,16 @@ const privyConfig: PrivyClientConfig = {
 };
 
 export default function Privy({ children }: { children: React.ReactNode }) {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_API_KEY;
+  
+  if (!appId) {
+    console.warn("NEXT_PUBLIC_PRIVY_API_KEY is not set");
+    return <>{children}</>;
+  }
+
   return (
     <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_API_KEY!}
+      appId={appId}
       config={privyConfig}
     >
       {children}

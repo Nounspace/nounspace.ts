@@ -1,52 +1,21 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { CastRow } from "@/fidgets/farcaster/components/CastRow";
-import { isEmpty, isString } from "lodash";
-import { CastParamType } from "@neynar/nodejs-sdk/build/api";
-import { CastWithInteractions } from "@neynar/nodejs-sdk/build/api";
-import { CastResponse } from "@neynar/nodejs-sdk/build/api";
+import { isEmpty } from "lodash";
 import type { CastEmbed } from ".";
-import { bytesToHex } from "@noble/ciphers/utils";
-import axiosBackend from "@/common/data/api/backend";
-import { AxiosResponse } from "axios";
+import { useCastById } from "@/common/lib/hooks/useCastById";
+import Loading from "@/common/components/molecules/Loading";
 
 const EmbededCast = ({ url, castId }: CastEmbed) => {
-  const [cast, setCast] = useState<CastWithInteractions | null>(null);
+  // We use the custom hook that implements automatic caching
+  const { data: cast, isLoading, isError } = useCastById(url, castId);
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        let res: AxiosResponse<CastResponse> | null;
-        if (url) {
-          res = await axiosBackend.get("/api/farcaster/neynar/cast", {
-            params: {
-              identifier: url,
-              type: CastParamType.Url,
-            },
-          });
-        } else if (castId) {
-          res = await axiosBackend.get("/api/farcaster/neynar/cast", {
-            params: {
-              identifier: isString(castId.hash)
-                ? castId.hash
-                : bytesToHex(castId.hash),
-              type: CastParamType.Hash,
-            },
-          });
-        } else {
-          return;
-        }
+  // Show a loading indicator while fetching data
+  if (isLoading) return <div className="p-4 flex justify-center"><Loading /></div>;
+  
+  // Show an error message if there was a problem fetching the data
+  if (isError) return <div className="p-4 text-red-500">Failed to load this cast</div>;
 
-        if (res && res.data && res.data.cast) {
-          setCast(res.data.cast);
-        }
-      } catch (err) {
-        console.error(`Error in CastEmbed: ${err} ${url} ${castId}`);
-      }
-    };
-
-    getData();
-  }, [url, castId]);
-
+  // Don’t render anything if there’s no data to show
   if ((!url && !castId) || isEmpty(cast)) return null;
 
   return (

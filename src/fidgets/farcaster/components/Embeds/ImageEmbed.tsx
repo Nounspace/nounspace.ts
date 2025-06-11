@@ -1,42 +1,22 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, useCallback } from "react";
-import { PhotoIcon } from "@heroicons/react/24/solid";
+import React, { useCallback } from "react";
 import ExpandOnClick from "@/common/components/molecules/ExpandOnClick";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-
-const LoadingPlaceholder = () => {
-  return (
-    <div className="h-60 w-full flex items-center justify-center py-10 px-20 animate-pulse bg-primary/10">
-      <PhotoIcon className="h-12 w-12 text-foreground/20" />
-    </div>
-  );
-};
+import { LazyImage } from "../LazyLoad";
 
 const ImageEmbed = ({ url }: { url: string }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  const onLoad = useCallback(() => {
-    setIsLoading(false);
-  }, []);
-
   const onError = useCallback(() => {
     console.debug("error loading image", url);
-  }, []);
+  }, [url]);
 
   return (
     <ExpandOnClick>
-      <img
-        className={mergeClasses(
-          "object-contain size-full max-h-[inherit]",
-          isLoading && "hidden",
-        )}
+      <LazyImage
+        className="object-contain size-full max-h-[inherit]"
         src={url}
-        onLoad={onLoad}
         onError={onError}
         referrerPolicy="no-referrer"
-        alt=""
+        alt="Embedded image"
       />
-      {isLoading && <LoadingPlaceholder />}
     </ExpandOnClick>
   );
 };
