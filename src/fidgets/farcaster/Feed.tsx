@@ -379,26 +379,29 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       });
 
   const router = useRouter();
-  const threadStackRef = React.useRef(useLifoQueue<string>());
-  const threadStack = threadStackRef.current;
+  const threadStack = useLifoQueue<string>();
 
   const [ref, inView] = useInView();
+
+  const { push, pop, clear, last } = threadStack;
 
   useEffect(() => {
     if (prevFeedType !== feedType) {
       setIsTransitioning(true);
-      threadStack.clear();
+      clear();
       setTimeout(() => {
-        refetch().then(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        }).catch(() => {
-          setIsTransitioning(false);
-          setPrevFeedType(feedType);
-        });
+        refetch()
+          .then(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          })
+          .catch(() => {
+            setIsTransitioning(false);
+            setPrevFeedType(feedType);
+          });
       }, 200);
     }
-  }, [feedType, prevFeedType, refetch]);
+  }, [feedType, prevFeedType, refetch, clear]);
 
   useEffect(() => {
     if (inView && hasNextPage && !isTransitioning) {
@@ -408,29 +411,29 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
 
 
   useEffect(() => {
-    threadStack.clear();
-    if (data?.initialHash) {
-      threadStack.push(data.initialHash);
+    clear();
+    if (initialData?.initialHash) {
+      push(initialData.initialHash);
     }
-  }, [settings, threadStack, data?.initialHash]);
+  }, [settings, initialData?.initialHash, clear, push]);
 
   const onSelectCast = useCallback(
     (hash: string, username: string) => {
-      threadStack.push(hash);
-      router.push(`/homebase/${username}/${hash}`);
+      push(hash);
+      router.push(`/homebase/c/${username}/${hash}`);
     },
-    [threadStack, router],
+    [push, router],
   );
 
   const handleBack = useCallback(() => {
-    threadStack.pop();
+    pop();
     router.push(`/homebase`);
-  }, [threadStack, router]);
+  }, [pop, router]);
 
   const renderThread = () => (
     <CastThreadView
       cast={{
-        hash: threadStack.last || "",
+        hash: last || "",
         author: { fid },
       }}
       onBack={handleBack}
@@ -566,7 +569,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     );
   };
 
-  const isThreadView = threadStack.last !== undefined;
+  const isThreadView = last !== undefined;
 
   return (
     <div
