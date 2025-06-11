@@ -266,6 +266,20 @@ const LikeNotificationRow: NotificationRowProps = ({
       .map((r) => r.user);
   }, [notification?.reactions]);
 
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      onSelect(notification.cast!.hash, notification.cast!.author.username);
+    },
+    [notification.cast, onSelect],
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <NotificationHeader
@@ -274,7 +288,7 @@ const LikeNotificationRow: NotificationRowProps = ({
         descriptionSuffix="liked your cast"
         leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <div className="ml-4 w-full">
+      <div className="ml-4 w-full cursor-pointer" onClick={handleClick}>
         <CastBody
           cast={notification.cast!}
           channel={null}
