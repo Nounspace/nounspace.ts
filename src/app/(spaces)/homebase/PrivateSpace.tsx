@@ -10,8 +10,6 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
-import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
@@ -19,7 +17,7 @@ import { FeedType } from "@neynar/nodejs-sdk/build/api";
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
-function PrivateSpace({ tabName }: { tabName: string }) {
+function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -212,7 +210,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     commitConfig: commitConfigHandler,
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
-    feed: tabName === "Feed" && currentFid ? (
+    feed: tabName === "Feed" ? (
       <FeedModule.fidget
         settings={{
           feedType: FeedType.Following,
@@ -225,35 +223,19 @@ function PrivateSpace({ tabName }: { tabName: string }) {
           fontColor: "var(--user-theme-font-color)" as any,
         }}
         saveData={async () => noop()}
-        data={{}}
+        data={{ initialHash: castHash }}
       />
     ) : undefined,
   }), [
     tabName,
-    tabName === "Feed" 
-      ? homebaseConfig 
+    tabName === "Feed"
+      ? homebaseConfig
       : tabConfigs[tabName]?.config,
     tabOrdering.local,
-    editMode
+    editMode,
+    castHash,
   ]);
 
-  // If not logged in, show a loading state with the login modal
-  if (!isLoggedIn) {
-    return (
-      <div className="user-theme-background w-full h-full relative flex-col">
-        <div className="w-full transition-all duration-100 ease-out">
-          <div className="flex flex-col h-full">
-            <TabBarSkeleton />
-            <div className="flex h-full">
-              <div className={"grow"}>
-                <SpaceLoading hasProfile={false} hasFeed={tabName === "Feed"} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render the SpacePage component with the defined arguments
   return (
