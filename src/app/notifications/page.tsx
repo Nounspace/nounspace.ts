@@ -1,15 +1,9 @@
 "use client"
 
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  Suspense,
-} from "react"
-import useNotifications from "@/common/lib/hooks/useNotifications"
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid"
-import { FaCircleExclamation } from "react-icons/fa6"
+import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
+import useNotifications from "@/common/lib/hooks/useNotifications";
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
+import { FaCircleExclamation } from "react-icons/fa6";
 import {
   Notification,
   NotificationTypeEnum,
@@ -51,10 +45,10 @@ const TAB_OPTIONS = {
 }
 
 export type NotificationRowProps = React.FC<{
-  notification: Notification
-  onSelect: (castHash: string, username: string) => void
-  isUnseen?: boolean
-}>
+  notification: Notification;
+  onSelect: (castHash: string, username: string) => void;
+  isUnseen?: boolean;
+}>;
 
 const ErrorPanel = ({ message }: { message: string }) => {
   return (
