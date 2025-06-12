@@ -20,10 +20,11 @@ export default async function GET(
     return res.status(404).send("Url not found");
   }
 
-  const params = new URLSearchParams(req.url.split("?")[1]);
+  const urlParts = req.url.split("?");
+  const params = new URLSearchParams(urlParts[1] || "");
   const data: ProposalCardData = {
-    id: params.get("id") || "",
-    title: params.get("title") || "",
+    id: params.get("id") || "Unknown",
+    title: params.get("title") || "Unknown Proposal",
     forVotes: params.get("forVotes") || "0",
   };
 
@@ -43,14 +44,24 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         display: "flex",
         flexDirection: "column",
         alignItems: "flex-start",
-        background: "purple",
+        background: "black",
         color: "white",
+        gap: "32px",
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <span style={{ fontSize: "56px", fontWeight: "bold" }}>Prop {data.id}</span>
-      <span style={{ fontSize: "32px" }}>{data.title}</span>
-      <span style={{ fontSize: "24px" }}>For: {data.forVotes}</span>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          paddingLeft: "111px",
+        }}
+      >
+        <span style={{ fontSize: "56px", fontWeight: "bold" }}>Prop {data.id}</span>
+        <span style={{ fontSize: "42px", color: "white" }}>{data.title}</span>
+        <span style={{ fontSize: "28px" }}>For: {data.forVotes}</span>
+      </div>
     </div>
   );
 };
