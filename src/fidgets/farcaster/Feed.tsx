@@ -338,7 +338,7 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
-const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settings, data }) => {
+const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settings, data: initialData }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
@@ -358,7 +358,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     : users;
 
   const {
-    data,
+    data: castPages,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
@@ -414,15 +414,15 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
 
   useEffect(() => {
     threadStack.clear();
-    if (data?.initialHash) {
-      threadStack.push(data.initialHash);
+    if (initialData?.initialHash) {
+      threadStack.push(initialData.initialHash);
     }
-  }, [settings, threadStack, data?.initialHash]);
+  }, [settings, threadStack, initialData?.initialHash]);
 
   const onSelectCast = useCallback(
     (hash: string, username: string) => {
       threadStack.push(hash);
-      router.push(`/homebase/${username}/${hash}`);
+      router.push(`/homebase/c/${username}/${hash}`);
     },
     [threadStack, router],
   );
@@ -483,10 +483,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       );
     }
 
-    const hasData = data && (
+    const hasData = castPages && (
       filterType === FilterType.Keyword
-        ? data.pages.some(page => page.result.casts?.length > 0)
-        : data.pages.some(page => page.casts?.length > 0)
+        ? castPages.pages.some(page => page.result.casts?.length > 0)
+        : castPages.pages.some(page => page.casts?.length > 0)
     );
 
     const filtroInformado = (
@@ -513,10 +513,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       <>
         {!isPending && (
           <div>
-            {isError ? (
-              <div>Error</div>
-            ) : !isNil(data) ? (
-              data.pages.map((page, pageNum) => (
+              {isError ? (
+                <div>Error</div>
+              ) : !isNil(castPages) ? (
+              castPages.pages.map((page, pageNum) => (
                 <React.Fragment key={pageNum}>
                   {filterType === FilterType.Keyword
                     ? page.result.casts?.map(
