@@ -9,6 +9,7 @@ export const config = {
 interface ProposalCardData {
   id: string;
   title: string;
+  proposer: string;
   forVotes: string;
   againstVotes: string;
   abstainVotes: string;
@@ -28,6 +29,7 @@ export default async function GET(
   const data: ProposalCardData = {
     id: params.get("id") || "Unknown",
     title: params.get("title") || "Unknown Proposal",
+    proposer: params.get("proposer") || "0x0",
     forVotes: params.get("forVotes") || "0",
     againstVotes: params.get("againstVotes") || "0",
     abstainVotes: params.get("abstainVotes") || "0",
@@ -53,6 +55,14 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return Math.floor(num).toString();
+  };
+
+  const formatAddress = (address: string) => {
+    if (!address || address === "0x0") return "Unknown";
+    if (address.length > 10) {
+      return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    }
+    return address;
   };
 
   // Progress bar calculations
@@ -83,17 +93,31 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
           paddingLeft: "111px",
         }}
       >
-        <span style={{ fontSize: "56px", fontWeight: "bold" }}>Prop {data.id}</span>
-        <span style={{ fontSize: "42px", color: "white" }}>{data.title}</span>
-        <span style={{ fontSize: "28px" }}>
-          For: {formatVotes(forVotes)} | Against: {formatVotes(againstVotes)} | Abstain: {formatVotes(abstainVotes)}
+        {/* Proposal ID - 20% larger and bold */}
+        <span style={{ fontSize: "67px", fontWeight: "bold" }}>Prop {data.id}</span>
+        
+        {/* Proposal Title - 20% larger and bold */}
+        <span style={{ fontSize: "50px", fontWeight: "bold", color: "white" }}>{data.title}</span>
+        
+        {/* Proposer - 20% larger and bold */}
+        <span style={{ fontSize: "34px", fontWeight: "bold", opacity: 0.9 }}>
+          by {formatAddress(data.proposer)}
         </span>
-        <span style={{ fontSize: "24px" }}>Quorum: {formatVotes(quorumVotes)}</span>
+        
+        {/* Vote counts with colored text - 20% larger and bold */}
+        <span style={{ fontSize: "34px", fontWeight: "bold" }}>
+          <span style={{ color: "#10b981" }}>For: {formatVotes(forVotes)}</span> | 
+          <span style={{ color: "#ef4444" }}> Against: {formatVotes(againstVotes)}</span> | 
+          <span style={{ color: "#fbbf24" }}> Abstain: {formatVotes(abstainVotes)}</span>
+        </span>
+        
+        {/* Quorum - 20% larger and bold */}
+        <span style={{ fontSize: "29px", fontWeight: "bold" }}>Quorum: {formatVotes(quorumVotes)}</span>
       </div>
 
-      {/* Progress bar */}
+      {/* Progress bar - 30% smaller width */}
       <div style={{
-        width: "100%",
+        width: "70%",
         height: "20px",
         backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: "10px",
