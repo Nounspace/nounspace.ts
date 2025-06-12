@@ -146,7 +146,16 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData): 
     params.set("timeRemaining", timeRemaining);
   }
   
-  const url = `${WEBSITE_URL}/api/metadata/proposals?${params.toString()}`;
-  console.log("Generated proposal thumbnail URL:", url);
+  // Fix WEBSITE_URL fallback for deployment
+  const base = WEBSITE_URL ?? 
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+  
+  const url = `${base}/api/metadata/proposals?${params.toString()}`;
+  
+  // Log for debugging in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Generated proposal thumbnail URL:", url);
+  }
+  
   return url;
 }

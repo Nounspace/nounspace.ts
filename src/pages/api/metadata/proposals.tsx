@@ -1,6 +1,6 @@
 import React from "react";
-import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
+import type { NextRequest } from "next/server";
 
 export const config = {
   runtime: "edge",
@@ -18,36 +18,29 @@ interface ProposalMetadata {
   timeRemaining?: string;
 }
 
-export default async function GET(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
+export default async function GET(req: NextRequest) {
   try {
-    if (!req.url) {
-      return res.status(404).send("Url not found");
-    }
-
-    const urlParts = req.url.split("?");
-    const queryString = urlParts[1] || "";
-    const params = new URLSearchParams(queryString);
+    const { searchParams } = new URL(req.url);
     
-    console.log("Proposal thumbnail request:", {
-      url: req.url,
-      queryString,
-      id: params.get("id"),
-      title: params.get("title"),
-    });
+    // Log for debugging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Proposal thumbnail request:", {
+        url: req.url,
+        id: searchParams.get("id"),
+        title: searchParams.get("title"),
+      });
+    }
     
     const proposalMetadata: ProposalMetadata = {
-      id: params.get("id") || "Unknown",
-      title: params.get("title") || "Unknown Proposal",
-      proposer: params.get("proposer") || "0x0",
-      signers: params.get("signers")?.split(",").filter(Boolean) || [],
-      forVotes: params.get("forVotes") || "0",
-      againstVotes: params.get("againstVotes") || "0",
-      abstainVotes: params.get("abstainVotes") || "0",
-      quorumVotes: params.get("quorumVotes") || "100",
-      timeRemaining: params.get("timeRemaining") || "",
+      id: searchParams.get("id") || "Unknown",
+      title: searchParams.get("title") || "Unknown Proposal",
+      proposer: searchParams.get("proposer") || "0x0",
+      signers: searchParams.get("signers")?.split(",").filter(Boolean) || [],
+      forVotes: searchParams.get("forVotes") || "0",
+      againstVotes: searchParams.get("againstVotes") || "0",
+      abstainVotes: searchParams.get("abstainVotes") || "0",
+      quorumVotes: searchParams.get("quorumVotes") || "100",
+      timeRemaining: searchParams.get("timeRemaining") || "",
     };
 
     return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
@@ -56,25 +49,51 @@ export default async function GET(
     });
   } catch (error) {
     console.error("Error generating proposal image:", error);
-    return res.status(500).send("Error generating image");
+    
+    // Return error image instead of using res object
+    return new ImageResponse(
+      (
+        <div style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "#ef4444",
+          color: "white",
+          fontSize: "24px",
+          fontFamily: "Arial, sans-serif",
+        }}>
+          Error generating proposal thumbnail
+        </div>
+      ),
+      { width: 1200, height: 630 }
+    );
   }
 }
 
 const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata }) => {
-  const forVotes = parseInt(proposalMetadata.forVotes);
-  const againstVotes = parseInt(proposalMetadata.againstVotes);
-  const abstainVotes = parseInt(proposalMetadata.abstainVotes);
-  const quorumVotes = parseInt(proposalMetadata.quorumVotes);
+  // Safe number parsing with NaN protection
+  const forVotes = Number(proposalMetadata.forVotes) || 0;
+  const againstVotes = Number(proposalMetadata.againstVotes) || 0;
+  const abstainVotes = Number(proposalMetadata.abstainVotes) || 0;
+  const quorumVotes = Number(proposalMetadata.quorumVotes) || 0;
   
   const totalVotes = forVotes + againstVotes + abstainVotes;
-  const forPercentage = totalVotes > 0 ? (forVotes / quorumVotes) * 100 : 0;
-  const againstPercentage = totalVotes > 0 ? (againstVotes / quorumVotes) * 100 : 0;
-  const abstainPercentage = totalVotes > 0 ? (abstainVotes / quorumVotes) * 100 : 0;
+  
+  // Safe division with zero protection
+  const forPercentage = (quorumVotes > 0 && totalVotes > 0) ? Math.min((forVotes / quorumVotes) * 100, 100) : 0;
+  const againstPercentage = (quorumVotes > 0 && totalVotes > 0) ? Math.min((againstVotes / quorumVotes) * 100, 100) : 0;
+  const abstainPercentage = (quorumVotes > 0 && totalVotes > 0) ? Math.min((abstainVotes / quorumVotes) * 100, 100) : 0;
 
   const formatVotes = (votes: number) => {
-    if (votes >= 1000000) return `${(votes / 1000000).toFixed(1)}M`;
-    if (votes >= 1000) return `${(votes / 1000).toFixed(1)}K`;
-    return votes.toString();
+    // Check for NaN and invalid numbers
+    if (isNaN(votes) || !isFinite(votes)) return "0";
+    
+    const num = Math.abs(votes);
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+    return Math.floor(num).toString();
   };
 
   const formatAddress = (address: string) => {
@@ -121,7 +140,7 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
           Prop {proposalMetadata.id}
         </div>
         <div style={{ fontSize: "18px", opacity: 0.9 }}>
-          by {formatAddress(proposalMetadata.proposer)}
+          by {getProposerDisplay()}
         </div>
         {proposalMetadata.timeRemaining && (
           <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>
