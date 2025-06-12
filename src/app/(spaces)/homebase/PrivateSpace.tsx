@@ -242,7 +242,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
           fontColor: "var(--user-theme-font-color)" as any,
         }}
         saveData={async () => noop()}
-        data={{ initialHash: castHash, updateUrl: true }}
+        data={{ initialHash: castHash }}
       />
     ) : undefined,
   }), [
