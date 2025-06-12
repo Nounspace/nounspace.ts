@@ -156,7 +156,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             )}
             onClick={(event) => {
               event.stopPropagation();
-              if (embedData?.castId?.hash && typeof embedData.castId.hash === 'string') {
+              if (embedData?.castId?.hash) {
                 onSelectCast(embedData.castId.hash, cast.author.username);
               }
             }}
