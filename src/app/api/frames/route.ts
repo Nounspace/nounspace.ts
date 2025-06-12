@@ -241,7 +241,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       const frame = frameResult.frame;
       frameData = {
         image: frame.image || null,
-        title: frame.title || null,
+        title: null,
         buttons: frame.buttons ? frame.buttons.map(btn => ({
           label: btn.label || "Open",
           action: btn.action || "post"

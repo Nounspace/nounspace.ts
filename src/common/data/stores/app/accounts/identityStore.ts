@@ -123,7 +123,7 @@ async function decryptKeyFile(
   encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
   const signature = await signMessage(
-    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    wallet,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
@@ -139,7 +139,7 @@ async function encryptKeyFile(
   keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
   const signature = await signMessage(
-    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    wallet,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));

@@ -17,14 +17,15 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     return defaultMetadata;
   }
 
-  const proposalData = await loadProposalData(proposalId);
+  try {
+    const proposalData = await loadProposalData(proposalId);
 
-  if (!proposalData || proposalData.title === "Error loading proposal") {
-    return defaultMetadata;
-  }
+    if (!proposalData || proposalData.title === "Error loading proposal") {
+      return defaultMetadata;
+    }
 
-  const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
-  const dynamicThumbnailUrl = await generateProposalThumbnailUrl(proposalData);
+    const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
+    const dynamicThumbnailUrl = await generateProposalThumbnailUrl(proposalData);
 
   const proposalFrame = {
     version: "next",
@@ -81,6 +82,11 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   };
 
   return metadataWithFrame;
+  
+  } catch (error) {
+    console.error("Error generating proposal metadata:", error);
+    return defaultMetadata;
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
