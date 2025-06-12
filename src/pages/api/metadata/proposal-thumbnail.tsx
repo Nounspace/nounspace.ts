@@ -14,6 +14,7 @@ interface ProposalCardData {
   againstVotes: string;
   abstainVotes: string;
   quorumVotes: string;
+  timeRemaining: string;
 }
 
 export default async function GET(
@@ -34,6 +35,7 @@ export default async function GET(
     againstVotes: params.get("againstVotes") || "0",
     abstainVotes: params.get("abstainVotes") || "0",
     quorumVotes: params.get("quorumVotes") || "100",
+    timeRemaining: params.get("timeRemaining") || "",
   };
 
   return new ImageResponse(<ProposalCard data={data} />, {
@@ -94,53 +96,68 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         }}
       >
         {/* Proposal ID - 20% larger and bold */}
-        <span style={{ fontSize: "67px", fontWeight: "bold" }}>Prop {data.id}</span>
+        <span style={{ fontSize: "67px", fontWeight: "900" }}>Prop {data.id}</span>
         
         {/* Proposal Title - 20% larger and bold */}
-        <span style={{ fontSize: "50px", fontWeight: "bold", color: "white" }}>{data.title}</span>
+        <span style={{ fontSize: "50px", fontWeight: "900", color: "white" }}>{data.title}</span>
         
-        {/* Proposer - 20% larger and bold */}
-        <span style={{ fontSize: "34px", fontWeight: "bold", opacity: 0.9 }}>
+        {/* Proposer - commented out for now since we can't get ENS names */}
+        {/* <span style={{ fontSize: "34px", fontWeight: "bold", opacity: 0.9 }}>
           by {formatAddress(data.proposer)}
-        </span>
+        </span> */}
         
-        {/* Vote counts with colored text - 20% larger and bold */}
-        <span style={{ fontSize: "34px", fontWeight: "bold" }}>
-          <span style={{ color: "#10b981" }}>For: {formatVotes(forVotes)}</span> | 
-          <span style={{ color: "#ef4444" }}> Against: {formatVotes(againstVotes)}</span> | 
-          <span style={{ color: "#fbbf24" }}> Abstain: {formatVotes(abstainVotes)}</span>
+        {/* Vote counts with colored numbers, white labels - 20% larger and bold */}
+        <span style={{ fontSize: "34px", fontWeight: "900" }}>
+          For: <span style={{ color: "#10b981" }}>{formatVotes(forVotes)}</span> | 
+          Against: <span style={{ color: "#ef4444" }}>{formatVotes(againstVotes)}</span> | 
+          Abstain: <span style={{ color: "#fbbf24" }}>{formatVotes(abstainVotes)}</span>
         </span>
         
         {/* Quorum - 20% larger and bold */}
-        <span style={{ fontSize: "29px", fontWeight: "bold" }}>Quorum: {formatVotes(quorumVotes)}</span>
+        <span style={{ fontSize: "29px", fontWeight: "900" }}>Quorum: {formatVotes(quorumVotes)}</span>
+        
+        {/* Time remaining */}
+        {data.timeRemaining && (
+          <span style={{ fontSize: "24px", fontWeight: "700", opacity: 0.9 }}>
+            {data.timeRemaining}
+          </span>
+        )}
       </div>
 
-      {/* Progress bar - 30% smaller width */}
+      {/* Progress bar - 30% smaller width with grey quorum background */}
       <div style={{
         width: "70%",
         height: "20px",
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        backgroundColor: "rgba(255, 255, 255, 0.3)", // Grey quorum background
         borderRadius: "10px",
-        display: "flex",
+        position: "relative",
         marginTop: "20px",
       }}>
-        <div style={{
-          width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
-          height: "100%",
-          backgroundColor: "#10b981",
-          borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
-        }} />
-        <div style={{
-          width: `${Math.max(0, Math.min(abstainPercentage, 100 - forPercentage))}%`,
-          height: "100%",
-          backgroundColor: "#fbbf24",
-        }} />
-        <div style={{
-          width: `${Math.max(0, Math.min(againstPercentage, 100 - forPercentage - abstainPercentage))}%`,
-          height: "100%",
-          backgroundColor: "#ef4444",
-          borderRadius: (forPercentage + abstainPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
-        }} />
+        {/* For votes (green) */}
+        {forPercentage > 0 && (
+          <div style={{
+            position: "absolute",
+            left: "0",
+            top: "0",
+            width: `${Math.min(forPercentage, 100)}%`,
+            height: "100%",
+            backgroundColor: "#10b981",
+            borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
+          }} />
+        )}
+        
+        {/* Against votes (red) - positioned after For votes */}
+        {againstPercentage > 0 && (
+          <div style={{
+            position: "absolute",
+            left: `${Math.min(forPercentage, 100)}%`,
+            top: "0",
+            width: `${Math.min(againstPercentage, 100 - forPercentage)}%`,
+            height: "100%",
+            backgroundColor: "#ef4444",
+            borderRadius: (forPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
+          }} />
+        )}
       </div>
     </div>
   );
