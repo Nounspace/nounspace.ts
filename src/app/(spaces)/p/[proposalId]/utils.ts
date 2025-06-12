@@ -19,14 +19,14 @@ export interface ProposalData {
   status?: string;
 }
 
-export async function loadProposalData(proposalId: string): Promise<ProposalData> {
+export async function loadProposalData(proposalId: string, signal?: AbortSignal): Promise<ProposalData> {
   try {
     const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(10000), // 10 second timeout
+      signal: signal || AbortSignal.timeout(10000), // 10 second timeout
       body: JSON.stringify({
         query: `query Proposal($proposalId: ID!) {
             proposal(id: $proposalId) {
@@ -89,7 +89,7 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
   }
 }
 
-export async function calculateTimeRemaining(endBlock: string): Promise<string> {
+export async function calculateTimeRemaining(endBlock: string, signal?: AbortSignal): Promise<string> {
   if (!endBlock) return "";
   
   try {
@@ -99,7 +99,7 @@ export async function calculateTimeRemaining(endBlock: string): Promise<string> 
       headers: {
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(5000), // 5 second timeout for metadata
+      signal: signal || AbortSignal.timeout(5000), // 5 second timeout for metadata
       body: JSON.stringify({
         query: `query {
           _meta {
@@ -152,7 +152,7 @@ export async function calculateTimeRemaining(endBlock: string): Promise<string> 
   }
 }
 
-export async function generateProposalThumbnailUrl(proposalData: ProposalData): Promise<string> {
+export async function generateProposalThumbnailUrl(proposalData: ProposalData, signal?: AbortSignal): Promise<string> {
   const params = new URLSearchParams({
     id: proposalData.id,
     title: proposalData.title,
@@ -168,7 +168,7 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData): 
   }
   
   if (proposalData.endBlock) {
-    const timeRemaining = await calculateTimeRemaining(proposalData.endBlock);
+    const timeRemaining = await calculateTimeRemaining(proposalData.endBlock, signal);
     params.set("timeRemaining", timeRemaining);
   }
   
