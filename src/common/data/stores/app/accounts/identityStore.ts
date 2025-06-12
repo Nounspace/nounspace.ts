@@ -1,5 +1,5 @@
 import { isArray, find, isUndefined, isNull, findIndex } from "lodash";
-import { Wallet } from "@privy-io/react-auth";
+import { Wallet, ConnectedWallet } from "@privy-io/react-auth";
 import { ed25519 } from "@noble/curves/ed25519";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { hkdf } from "@noble/hashes/hkdf";
@@ -123,7 +123,7 @@ async function decryptKeyFile(
   encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
   const signature = await signMessage(
-    wallet,
+    wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
@@ -139,7 +139,7 @@ async function encryptKeyFile(
   keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
   const signature = await signMessage(
-    wallet,
+    wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
