@@ -20,7 +20,10 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import {
+  FeedType,
+  FilterType as NeynarFilterType,
+} from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -366,7 +369,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
   const castsQuery = useGetCasts({
     feedType,
     fid,
-    filterType,
+    filterType: filterType as NeynarFilterType,
     fids: effectiveFids,
     channel,
     enabled: filterType !== FilterType.Keyword,
