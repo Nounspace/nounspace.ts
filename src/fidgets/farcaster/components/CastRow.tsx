@@ -35,6 +35,7 @@ import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -158,7 +159,10 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash.toString());
+                const hashString = typeof embedData.castId.hash === 'string' 
+                  ? embedData.castId.hash 
+                  : Buffer.from(embedData.castId.hash).toString('hex');
+                onSelectCast(hashString, cast.author.username);
               }
             }}
           >
@@ -513,7 +517,7 @@ interface CastBodyProps {
   renderRecastBadge?: () => React.ReactNode;
   userFid?: number;
   isDetailView?: boolean;
-  onSelectCast?: (hash: string) => void;
+  onSelectCast?: (hash: string, username: string) => void;
   maxLines?: number;
   hideEmbeds?: boolean;
 }
