@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, lazy } from "react";
+import React, { useEffect, useMemo, lazy, useState } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -93,13 +93,19 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
+  // Track hydration so login modal doesn't show before params are available
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
+
   // Effect to handle login modal when user is not logged in and not viewing a cast
   useEffect(() => {
-    if (!isLoggedIn && !castHash) {
+    if (hydrated && !isLoggedIn && !castHash) {
       // Open the login modal if user is not logged in
       setModalOpen(true);
     }
-  }, [isLoggedIn, castHash, setModalOpen]);
+  }, [hydrated, isLoggedIn, castHash, setModalOpen]);
 
   // Effect to set the current space and tab name, and load the tab configuration
   useEffect(() => {
