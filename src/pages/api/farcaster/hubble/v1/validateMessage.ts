@@ -1,14 +1,9 @@
+import axiosInstance from "@/common/data/api/backend";
 import requestHandler from "@/common/data/api/requestHandler";
 import { HubRestAPIClient } from "@standard-crypto/farcaster-js-hub-rest";
-import axios, { isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const axiosInstance = axios.create({
-  headers: {
-    "Content-Type": "application/json",
-    api_key: process.env.NEYNAR_API_KEY,
-  },
-});
 const writeClient = new HubRestAPIClient({
   hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
   axiosInstance,
