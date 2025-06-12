@@ -69,6 +69,7 @@ export const useGetCasts = ({
   fids,
   channel,
   membersOnly,
+  enabled = true,
 }: {
   feedType: FeedType;
   fid: number;
@@ -76,6 +77,7 @@ export const useGetCasts = ({
   fids?: string;
   channel?: string;
   membersOnly?: boolean;
+  enabled?: boolean;
 }) => {
   return useInfiniteQuery({
     queryKey: ["channelCasts", feedType, fid, filterType, fids, channel, membersOnly],
@@ -102,10 +104,17 @@ export const useGetCasts = ({
       !isUndefined(lastPage) && !isUndefined(lastPage.next)
         ? lastPage.next.cursor
         : undefined,
+    enabled,
   });
 };
 
-export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
+export const useGetCastsByKeyword = ({
+  keyword,
+  enabled = true,
+}: {
+  keyword: string;
+  enabled?: boolean;
+}) => {
   return useInfiniteQuery({
     queryKey: ["keywordCasts", keyword],
     staleTime: 1000 * 60 * 1,
@@ -124,6 +133,7 @@ export const useGetCastsByKeyword = ({ keyword }: { keyword: string }) => {
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage?.next?.cursor ?? undefined,
+    enabled,
   });
 };
 
