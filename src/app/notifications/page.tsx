@@ -272,8 +272,8 @@ const LikeNotificationRow: NotificationRowProps = ({
   const likedByUsers = useMemo(() => {
     return (notification?.reactions || [])
       .filter((r) => r.object === "likes")
-      .map((r) => r.user)
-  }, [notification?.reactions])
+      .map((r) => r.user);
+  }, [notification?.reactions]);
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
