@@ -9,7 +9,6 @@ export const config = {
 interface ProposalCardData {
   id: string;
   title: string;
-  proposer: string;
   forVotes: string;
   againstVotes: string;
   abstainVotes: string;
@@ -30,7 +29,6 @@ export default async function GET(
   const data: ProposalCardData = {
     id: params.get("id") || "Unknown",
     title: params.get("title") || "Unknown Proposal",
-    proposer: params.get("proposer") || "0x0",
     forVotes: params.get("forVotes") || "0",
     againstVotes: params.get("againstVotes") || "0",
     abstainVotes: params.get("abstainVotes") || "0",
@@ -57,14 +55,6 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return Math.floor(num).toString();
-  };
-
-  const formatAddress = (address: string) => {
-    if (!address || address === "0x0") return "Unknown";
-    if (address.length > 10) {
-      return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-    }
-    return address;
   };
 
   // Progress bar calculations
@@ -95,28 +85,12 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
           paddingLeft: "111px",
         }}
       >
-        {/* Proposal ID - 20% larger and bold */}
         <span style={{ fontSize: "67px", fontWeight: "900" }}>Prop {data.id}</span>
-        
-        {/* Proposal Title - 20% larger and bold */}
         <span style={{ fontSize: "50px", fontWeight: "900", color: "white" }}>{data.title}</span>
-        
-        {/* Proposer - commented out for now since we can't get ENS names */}
-        {/* <span style={{ fontSize: "34px", fontWeight: "bold", opacity: 0.9 }}>
-          by {formatAddress(data.proposer)}
-        </span> */}
-        
-        {/* Vote counts with colored numbers, white labels - 20% larger and bold */}
         <span style={{ fontSize: "34px", fontWeight: "900" }}>
-          For: <span style={{ color: "#10b981" }}>{formatVotes(forVotes)}</span> | 
-          Against: <span style={{ color: "#ef4444" }}>{formatVotes(againstVotes)}</span> | 
-          Abstain: <span style={{ color: "#fbbf24" }}>{formatVotes(abstainVotes)}</span>
+          For: {formatVotes(forVotes)} | Against: {formatVotes(againstVotes)} | Abstain: {formatVotes(abstainVotes)}
         </span>
-        
-        {/* Quorum - 20% larger and bold */}
         <span style={{ fontSize: "29px", fontWeight: "900" }}>Quorum: {formatVotes(quorumVotes)}</span>
-        
-        {/* Time remaining */}
         {data.timeRemaining && (
           <span style={{ fontSize: "24px", fontWeight: "700", opacity: 0.9 }}>
             {data.timeRemaining}
@@ -124,40 +98,27 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         )}
       </div>
 
-      {/* Progress bar - 30% smaller width with grey quorum background */}
+      {/* Progress bar - 30% smaller width */}
       <div style={{
         width: "70%",
         height: "20px",
-        backgroundColor: "rgba(255, 255, 255, 0.3)", // Grey quorum background
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: "10px",
-        position: "relative",
+        display: "flex",
         marginTop: "20px",
       }}>
-        {/* For votes (green) */}
-        {forPercentage > 0 && (
-          <div style={{
-            position: "absolute",
-            left: "0",
-            top: "0",
-            width: `${Math.min(forPercentage, 100)}%`,
-            height: "100%",
-            backgroundColor: "#10b981",
-            borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
-          }} />
-        )}
-        
-        {/* Against votes (red) - positioned after For votes */}
-        {againstPercentage > 0 && (
-          <div style={{
-            position: "absolute",
-            left: `${Math.min(forPercentage, 100)}%`,
-            top: "0",
-            width: `${Math.min(againstPercentage, 100 - forPercentage)}%`,
-            height: "100%",
-            backgroundColor: "#ef4444",
-            borderRadius: (forPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
-          }} />
-        )}
+        <div style={{
+          width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
+          height: "100%",
+          backgroundColor: "#10b981",
+          borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
+        }} />
+        <div style={{
+          width: `${Math.max(0, Math.min(againstPercentage, 100 - forPercentage))}%`,
+          height: "100%",
+          backgroundColor: "#ef4444",
+          borderRadius: (forPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
+        }} />
       </div>
     </div>
   );
