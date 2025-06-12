@@ -146,5 +146,7 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData): 
     params.set("timeRemaining", timeRemaining);
   }
   
-  return `${WEBSITE_URL}/api/metadata/proposals?${params.toString()}`;
+  const url = `${WEBSITE_URL}/api/metadata/proposals?${params.toString()}`;
+  console.log("Generated proposal thumbnail URL:", url);
+  return url;
 }
