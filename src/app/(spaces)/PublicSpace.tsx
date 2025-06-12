@@ -197,14 +197,10 @@ export default function PublicSpace({
       // logic for proposal
     }
 
-    if (prevSpaceId.current !== nextSpaceId) {
-      setCurrentSpaceId(nextSpaceId);
-      prevSpaceId.current = nextSpaceId;
-    }
-    if (prevTabName.current !== nextTabName) {
-      setCurrentTabName(nextTabName);
-      prevTabName.current = nextTabName;
-    }
+    setCurrentSpaceId(nextSpaceId);
+    prevSpaceId.current = nextSpaceId;
+    setCurrentTabName(nextTabName);
+    prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
   }, [
     resolvedPageType,
