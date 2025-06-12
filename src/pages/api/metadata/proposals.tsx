@@ -35,7 +35,12 @@ export default async function GET(req: NextRequest) {
       id: searchParams.get("id") || "Unknown",
       title: searchParams.get("title") || "Unknown Proposal",
       proposer: searchParams.get("proposer") || "0x0",
-      signers: searchParams.get("signers")?.split(",").filter(Boolean) || [],
+      signers: searchParams.get("signers") 
+        ? decodeURIComponent(searchParams.get("signers")!)
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean) 
+        : [],
       forVotes: searchParams.get("forVotes") || "0",
       againstVotes: searchParams.get("againstVotes") || "0",
       abstainVotes: searchParams.get("abstainVotes") || "0",
@@ -191,18 +196,18 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
         display: "flex",
       }}>
         <div style={{
-          width: `${Math.min(forPercentage, 100)}%`,
+          width: `${Math.min(Math.max(0, forPercentage), 100)}%`,
           height: "100%",
           backgroundColor: "#10b981",
           borderRadius: "10px 0 0 10px",
         }} />
         <div style={{
-          width: `${Math.min(abstainPercentage, 100 - forPercentage)}%`,
+          width: `${Math.min(Math.max(0, abstainPercentage), Math.max(0, 100 - forPercentage))}%`,
           height: "100%",
           backgroundColor: "#fbbf24",
         }} />
         <div style={{
-          width: `${Math.min(againstPercentage, 100 - forPercentage - abstainPercentage)}%`,
+          width: `${Math.min(Math.max(0, againstPercentage), Math.max(0, 100 - forPercentage - abstainPercentage))}%`,
           height: "100%",
           backgroundColor: "#ef4444",
           borderRadius: againstPercentage + forPercentage + abstainPercentage >= 100 ? "0 10px 10px 0" : "0",

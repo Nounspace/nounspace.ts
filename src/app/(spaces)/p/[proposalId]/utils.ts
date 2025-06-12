@@ -26,6 +26,7 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(10000), // 10 second timeout
       body: JSON.stringify({
         query: `query Proposal($proposalId: ID!) {
             proposal(id: $proposalId) {
@@ -60,6 +61,16 @@ export async function loadProposalData(proposalId: string): Promise<ProposalData
 
     const data = await response.json();
 
+    // Check if GraphQL returned errors
+    if (data.errors && data.errors.length > 0) {
+      throw new Error(`GraphQL errors: ${data.errors.map(e => e.message).join(', ')}`);
+    }
+
+    // Check if proposal data exists
+    if (!data.data || !data.data.proposal) {
+      throw new Error(`Proposal ${proposalId} not found`);
+    }
+
     return {
       ...data.data.proposal,
     };
@@ -88,6 +99,7 @@ export async function calculateTimeRemaining(endBlock: string): Promise<string> 
       headers: {
         "Content-Type": "application/json",
       },
+      signal: AbortSignal.timeout(5000), // 5 second timeout for metadata
       body: JSON.stringify({
         query: `query {
           _meta {
@@ -100,7 +112,21 @@ export async function calculateTimeRemaining(endBlock: string): Promise<string> 
       }),
     });
 
+    if (!response.ok) {
+      throw new Error(`Failed to fetch block data: ${response.status} ${response.statusText}`);
+    }
+
     const data = await response.json();
+
+    // Check if GraphQL returned errors
+    if (data.errors && data.errors.length > 0) {
+      throw new Error(`GraphQL errors: ${data.errors.map(e => e.message).join(', ')}`);
+    }
+
+    // Check if block data exists
+    if (!data.data || !data.data._meta || !data.data._meta.block) {
+      throw new Error('Block data not found');
+    }
     const currentBlock = parseInt(data.data._meta.block.number);
     const endBlockNumber = parseInt(endBlock);
     
