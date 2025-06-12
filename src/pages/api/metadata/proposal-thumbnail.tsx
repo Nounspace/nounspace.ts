@@ -9,12 +9,10 @@ export const config = {
 interface ProposalCardData {
   id: string;
   title: string;
-  proposer: string;
   forVotes: string;
   againstVotes: string;
   abstainVotes: string;
   quorumVotes: string;
-  timeRemaining: string;
 }
 
 export default async function GET(
@@ -30,12 +28,10 @@ export default async function GET(
   const data: ProposalCardData = {
     id: params.get("id") || "Unknown",
     title: params.get("title") || "Unknown Proposal",
-    proposer: params.get("proposer") || "0x0",
     forVotes: params.get("forVotes") || "0",
     againstVotes: params.get("againstVotes") || "0",
     abstainVotes: params.get("abstainVotes") || "0",
     quorumVotes: params.get("quorumVotes") || "100",
-    timeRemaining: params.get("timeRemaining") || "",
   };
 
   return new ImageResponse(<ProposalCard data={data} />, {
@@ -50,7 +46,7 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
   const againstVotes = Number(data.againstVotes) || 0;
   const abstainVotes = Number(data.abstainVotes) || 0;
   const quorumVotes = Number(data.quorumVotes) || 1;
-  
+
   const formatVotes = (votes: number) => {
     if (isNaN(votes) || !isFinite(votes)) return "0";
     const num = Math.abs(votes);
@@ -58,17 +54,6 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return Math.floor(num).toString();
   };
-
-  const formatAddress = (address: string) => {
-    if (address.length > 10) {
-      return `${address.slice(0, 6)}...${address.slice(-4)}`;
-    }
-    return address;
-  };
-
-  const displayTitle = data.title.length > 60 
-    ? data.title.substring(0, 60) + "..." 
-    : data.title;
 
   // Progress bar calculations
   const forPercentage = Math.min((forVotes / quorumVotes) * 100, 100);
@@ -80,70 +65,40 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
       style={{
         width: "100%",
         height: "100%",
+        padding: "40px",
         display: "flex",
         flexDirection: "column",
+        alignItems: "flex-start",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         color: "white",
+        gap: "32px",
         fontFamily: "Arial, sans-serif",
-        padding: "40px",
       }}
     >
-      {/* Header with proposal ID and proposer */}
-      <div style={{ marginBottom: "30px" }}>
-        <div style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "8px" }}>
-          Prop {data.id}
-        </div>
-        <div style={{ fontSize: "18px", opacity: 0.9 }}>
-          by {formatAddress(data.proposer)}
-        </div>
-        {data.timeRemaining && (
-          <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>
-            {data.timeRemaining}
-          </div>
-        )}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          paddingLeft: "111px",
+        }}
+      >
+        <span style={{ fontSize: "56px", fontWeight: "bold" }}>Prop {data.id}</span>
+        <span style={{ fontSize: "42px", color: "white" }}>{data.title}</span>
+        <span style={{ fontSize: "28px" }}>
+          For: {formatVotes(forVotes)} | Against: {formatVotes(againstVotes)} | Abstain: {formatVotes(abstainVotes)}
+        </span>
+        <span style={{ fontSize: "24px" }}>Quorum: {formatVotes(quorumVotes)}</span>
       </div>
 
-      {/* Title */}
-      <div style={{ 
-        fontSize: "24px", 
-        fontWeight: "600", 
-        marginBottom: "30px", 
-        lineHeight: 1.3,
-        minHeight: "60px"
-      }}>
-        {displayTitle}
-      </div>
-
-      {/* Vote counts with colored dots */}
-      <div style={{ display: "flex", gap: "30px", marginBottom: "25px", fontSize: "16px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "12px", height: "12px", backgroundColor: "#10b981", borderRadius: "50%" }} />
-          <span>{formatVotes(forVotes)} For</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "12px", height: "12px", backgroundColor: "#fbbf24", borderRadius: "50%" }} />
-          <span>{formatVotes(abstainVotes)} Abstain</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{ width: "12px", height: "12px", backgroundColor: "#ef4444", borderRadius: "50%" }} />
-          <span>{formatVotes(againstVotes)} Against</span>
-        </div>
-      </div>
-
-      {/* Quorum info */}
-      <div style={{ fontSize: "14px", marginBottom: "10px", opacity: 0.9 }}>
-        Voting Progress - Quorum: {formatVotes(quorumVotes)}
-      </div>
-
-      {/* Progress bar with quorum background */}
+      {/* Progress bar */}
       <div style={{
         width: "100%",
         height: "20px",
         backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: "10px",
-        marginBottom: "40px",
         display: "flex",
-        position: "relative",
+        marginTop: "20px",
       }}>
         <div style={{
           width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
@@ -162,18 +117,6 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
           backgroundColor: "#ef4444",
           borderRadius: (forPercentage + abstainPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
         }} />
-      </div>
-
-      {/* Footer */}
-      <div style={{ 
-        marginTop: "auto", 
-        display: "flex", 
-        justifyContent: "space-between",
-        alignItems: "center",
-        fontSize: "14px"
-      }}>
-        <div style={{ fontWeight: "600" }}>Nounspace</div>
-        <div style={{ opacity: 0.7 }}>View proposal details and vote</div>
       </div>
     </div>
   );
