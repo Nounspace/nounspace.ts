@@ -1,7 +1,7 @@
 import { Metadata } from "next/types";
 import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
-import { loadProposalData } from "./utils";
+import { loadProposalData, generateProposalThumbnailUrl } from "./utils";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
 const defaultMetadata = {
@@ -24,25 +24,57 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
+  const dynamicThumbnailUrl = await generateProposalThumbnailUrl(proposalData);
 
   const proposalFrame = {
     version: "next",
-    imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+    imageUrl: dynamicThumbnailUrl,
     button: {
       title: `View Proposal ${proposalData.id}`,
       action: {
         type: "launch_frame",
         url: frameUrl,
         name: `Proposal ${proposalData.id} on Nounspace`,
-        splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
+        splashImageUrl: dynamicThumbnailUrl,
         splashBackgroundColor: "#FFFFFF",
       },
     },
   };
 
+  const getProposerDisplay = () => {
+    if (proposalData.signers && proposalData.signers.length > 0) {
+      const allSigners = [proposalData.proposer.id, ...proposalData.signers.map(s => s.id)];
+      if (allSigners.length <= 2) {
+        return allSigners.join(" & ");
+      } else {
+        return `${allSigners[0]} & ${allSigners.length - 1} others`;
+      }
+    }
+    return proposalData.proposer.id;
+  };
+
   const metadataWithFrame = {
     title: `Proposal: ${proposalData.title} | Nounspace`,
-    description: `Proposal by ${proposalData.proposer.id} on Nounspace. Explore the details and discussions around this proposal.`,
+    description: `Proposal by ${getProposerDisplay()} on Nounspace. Explore the details and discussions around this proposal.`,
+    openGraph: {
+      title: `Prop ${proposalData.id}: ${proposalData.title}`,
+      description: `Proposal by ${getProposerDisplay()} on Nounspace. View voting details and participate in the discussion.`,
+      images: [
+        {
+          url: dynamicThumbnailUrl,
+          width: 1200,
+          height: 630,
+          alt: `Proposal ${proposalData.id} voting details`,
+        },
+      ],
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Prop ${proposalData.id}: ${proposalData.title}`,
+      description: `Proposal by ${getProposerDisplay()} on Nounspace. View voting details and participate in the discussion.`,
+      images: [dynamicThumbnailUrl],
+    },
     other: {
       "fc:frame": JSON.stringify(proposalFrame),
     },
