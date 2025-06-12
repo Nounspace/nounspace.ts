@@ -497,7 +497,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   }
 
-  const [itemsVisible] = useState(true);
+  const [itemsVisible, setItemsVisible] = useState(false);
+
+  useEffect(() => {
+    setItemsVisible(true);
+  }, []);
 
   // Log initial config state
   useEffect(() => {

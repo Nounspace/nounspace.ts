@@ -143,8 +143,8 @@
 }
 .react-grid-item {
   border-color: lightgray;
-  transition: all 200ms ease;
-  transition-property: left, top, width, height;
+  opacity: 0;
+  transition: opacity 200ms ease;
 }
 .react-grid-item img {
   pointer-events: none;
@@ -167,6 +167,10 @@
 
 .react-grid-item.dropping {
   visibility: hidden;
+}
+
+.items-visible .react-grid-item {
+  opacity: 1;
 }
 
 .react-grid-item.react-grid-placeholder {
