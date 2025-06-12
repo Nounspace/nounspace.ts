@@ -20,29 +20,44 @@ interface ProposalMetadata {
 
 export default async function GET(
   req: NextApiRequest,
-  res: NextApiResponse<ImageResponse | string>,
+  res: NextApiResponse,
 ) {
-  if (!req.url) {
-    return res.status(404).send("Url not found");
+  try {
+    if (!req.url) {
+      return res.status(404).send("Url not found");
+    }
+
+    const urlParts = req.url.split("?");
+    const queryString = urlParts[1] || "";
+    const params = new URLSearchParams(queryString);
+    
+    console.log("Proposal thumbnail request:", {
+      url: req.url,
+      queryString,
+      id: params.get("id"),
+      title: params.get("title"),
+    });
+    
+    const proposalMetadata: ProposalMetadata = {
+      id: params.get("id") || "Unknown",
+      title: params.get("title") || "Unknown Proposal",
+      proposer: params.get("proposer") || "0x0",
+      signers: params.get("signers")?.split(",").filter(Boolean) || [],
+      forVotes: params.get("forVotes") || "0",
+      againstVotes: params.get("againstVotes") || "0",
+      abstainVotes: params.get("abstainVotes") || "0",
+      quorumVotes: params.get("quorumVotes") || "100",
+      timeRemaining: params.get("timeRemaining") || "",
+    };
+
+    return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
+      width: 1200,
+      height: 630,
+    });
+  } catch (error) {
+    console.error("Error generating proposal image:", error);
+    return res.status(500).send("Error generating image");
   }
-
-  const params = new URLSearchParams(req.url.split("?")[1]);
-  const proposalMetadata: ProposalMetadata = {
-    id: params.get("id") || "",
-    title: params.get("title") || "",
-    proposer: params.get("proposer") || "",
-    signers: params.get("signers")?.split(",") || [],
-    forVotes: params.get("forVotes") || "0",
-    againstVotes: params.get("againstVotes") || "0",
-    abstainVotes: params.get("abstainVotes") || "0",
-    quorumVotes: params.get("quorumVotes") || "0",
-    timeRemaining: params.get("timeRemaining") || "",
-  };
-
-  return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
-    width: 1200,
-    height: 630,
-  });
 }
 
 const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata }) => {
@@ -52,12 +67,9 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
   const quorumVotes = parseInt(proposalMetadata.quorumVotes);
   
   const totalVotes = forVotes + againstVotes + abstainVotes;
-  const quorumProgress = totalVotes > 0 ? Math.min((totalVotes / quorumVotes) * 100, 100) : 0;
-  
-  // Calculate proportions for the voting bar
-  const forPercentage = totalVotes > 0 ? (forVotes / totalVotes) * quorumProgress : 0;
-  const abstainPercentage = totalVotes > 0 ? (abstainVotes / totalVotes) * quorumProgress : 0;
-  const againstPercentage = totalVotes > 0 ? (againstVotes / totalVotes) * quorumProgress : 0;
+  const forPercentage = totalVotes > 0 ? (forVotes / quorumVotes) * 100 : 0;
+  const againstPercentage = totalVotes > 0 ? (againstVotes / quorumVotes) * 100 : 0;
+  const abstainPercentage = totalVotes > 0 ? (abstainVotes / quorumVotes) * 100 : 0;
 
   const formatVotes = (votes: number) => {
     if (votes >= 1000000) return `${(votes / 1000000).toFixed(1)}M`;
@@ -72,13 +84,17 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
     return address;
   };
 
+  const displayTitle = proposalMetadata.title.length > 60 
+    ? proposalMetadata.title.substring(0, 60) + "..." 
+    : proposalMetadata.title;
+
   const getProposerDisplay = () => {
     if (proposalMetadata.signers && proposalMetadata.signers.length > 0) {
       const allSigners = [proposalMetadata.proposer, ...proposalMetadata.signers];
       if (allSigners.length === 1) {
         return formatAddress(allSigners[0]);
-      } else if (allSigners.length <= 3) {
-        return allSigners.map(formatAddress).join(", ");
+      } else if (allSigners.length <= 2) {
+        return allSigners.map(formatAddress).join(" & ");
       } else {
         return `${formatAddress(allSigners[0])} +${allSigners.length - 1} others`;
       }
@@ -91,202 +107,99 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
       style={{
         width: "100%",
         height: "100%",
-        padding: "40px",
         display: "flex",
         flexDirection: "column",
         background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         color: "white",
-        fontFamily: "system-ui, -apple-system, sans-serif",
+        fontFamily: "Arial, sans-serif",
+        padding: "40px",
       }}
     >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "30px",
-        }}
-      >
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              fontSize: "32px",
-              fontWeight: "bold",
-              marginBottom: "8px",
-            }}
-          >
-            Prop {proposalMetadata.id}
-          </div>
-          <div
-            style={{
-              fontSize: "20px",
-              opacity: 0.9,
-            }}
-          >
-            by {getProposerDisplay()}
-          </div>
+      {/* Header with proposal ID and proposer */}
+      <div style={{ marginBottom: "30px" }}>
+        <div style={{ fontSize: "36px", fontWeight: "bold", marginBottom: "8px" }}>
+          Prop {proposalMetadata.id}
+        </div>
+        <div style={{ fontSize: "18px", opacity: 0.9 }}>
+          by {formatAddress(proposalMetadata.proposer)}
         </div>
         {proposalMetadata.timeRemaining && (
-          <div
-            style={{
-              fontSize: "18px",
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
-              padding: "8px 16px",
-              borderRadius: "8px",
-            }}
-          >
+          <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>
             {proposalMetadata.timeRemaining}
           </div>
         )}
       </div>
 
       {/* Title */}
-      <div
-        style={{
-          fontSize: "28px",
-          fontWeight: "600",
-          marginBottom: "40px",
-          lineHeight: 1.3,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          display: "-webkit-box",
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: "vertical",
-        }}
-      >
-        {proposalMetadata.title}
+      <div style={{ 
+        fontSize: "24px", 
+        fontWeight: "600", 
+        marginBottom: "30px", 
+        lineHeight: 1.3,
+        minHeight: "60px"
+      }}>
+        {displayTitle}
       </div>
 
-      {/* Voting Statistics */}
-      <div
-        style={{
-          display: "flex",
-          gap: "40px",
-          marginBottom: "30px",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "#10b981",
-              borderRadius: "50%",
-            }}
-          />
-          <span style={{ fontSize: "18px", fontWeight: "600" }}>
-            {formatVotes(forVotes)} For
-          </span>
+      {/* Vote counts */}
+      <div style={{ display: "flex", gap: "30px", marginBottom: "25px", fontSize: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ width: "12px", height: "12px", backgroundColor: "#10b981", borderRadius: "50%" }} />
+          <span>{formatVotes(forVotes)} For</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "#fbbf24",
-              borderRadius: "50%",
-            }}
-          />
-          <span style={{ fontSize: "18px", fontWeight: "600" }}>
-            {formatVotes(abstainVotes)} Abstain
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ width: "12px", height: "12px", backgroundColor: "#fbbf24", borderRadius: "50%" }} />
+          <span>{formatVotes(abstainVotes)} Abstain</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              backgroundColor: "#ef4444",
-              borderRadius: "50%",
-            }}
-          />
-          <span style={{ fontSize: "18px", fontWeight: "600" }}>
-            {formatVotes(againstVotes)} Against
-          </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <div style={{ width: "12px", height: "12px", backgroundColor: "#ef4444", borderRadius: "50%" }} />
+          <span>{formatVotes(againstVotes)} Against</span>
         </div>
       </div>
 
-      {/* Voting Progress Bar */}
-      <div style={{ marginBottom: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "8px",
-          }}
-        >
-          <span style={{ fontSize: "16px", fontWeight: "500" }}>
-            Voting Progress
-          </span>
-          <span style={{ fontSize: "16px", opacity: 0.9 }}>
-            Quorum: {formatVotes(quorumVotes)}
-          </span>
-        </div>
-        
-        {/* Progress Bar */}
-        <div
-          style={{
-            width: "100%",
-            height: "24px",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "12px",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
-          {/* Against votes (bottom layer) */}
-          <div
-            style={{
-              position: "absolute",
-              left: "0",
-              top: "0",
-              height: "100%",
-              width: `${againstPercentage}%`,
-              backgroundColor: "#ef4444",
-            }}
-          />
-          {/* Abstain votes (middle layer) */}
-          <div
-            style={{
-              position: "absolute",
-              left: `${againstPercentage}%`,
-              top: "0",
-              height: "100%",
-              width: `${abstainPercentage}%`,
-              backgroundColor: "#fbbf24",
-            }}
-          />
-          {/* For votes (top layer) */}
-          <div
-            style={{
-              position: "absolute",
-              left: `${againstPercentage + abstainPercentage}%`,
-              top: "0",
-              height: "100%",
-              width: `${forPercentage}%`,
-              backgroundColor: "#10b981",
-            }}
-          />
-        </div>
+      {/* Quorum info */}
+      <div style={{ fontSize: "14px", marginBottom: "10px", opacity: 0.9 }}>
+        Voting Progress - Quorum: {formatVotes(quorumVotes)}
       </div>
 
-      {/* Nounspace Branding */}
-      <div
-        style={{
-          marginTop: "auto",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <div style={{ fontSize: "18px", fontWeight: "600", opacity: 0.9 }}>
-          Nounspace
-        </div>
-        <div style={{ fontSize: "14px", opacity: 0.7 }}>
-          View proposal details and vote
-        </div>
+      {/* Progress bar */}
+      <div style={{
+        width: "100%",
+        height: "20px",
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        borderRadius: "10px",
+        marginBottom: "40px",
+        display: "flex",
+      }}>
+        <div style={{
+          width: `${Math.min(forPercentage, 100)}%`,
+          height: "100%",
+          backgroundColor: "#10b981",
+          borderRadius: "10px 0 0 10px",
+        }} />
+        <div style={{
+          width: `${Math.min(abstainPercentage, 100 - forPercentage)}%`,
+          height: "100%",
+          backgroundColor: "#fbbf24",
+        }} />
+        <div style={{
+          width: `${Math.min(againstPercentage, 100 - forPercentage - abstainPercentage)}%`,
+          height: "100%",
+          backgroundColor: "#ef4444",
+          borderRadius: againstPercentage + forPercentage + abstainPercentage >= 100 ? "0 10px 10px 0" : "0",
+        }} />
+      </div>
+
+      {/* Footer */}
+      <div style={{ 
+        marginTop: "auto", 
+        display: "flex", 
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: "14px"
+      }}>
+        <div style={{ fontWeight: "600" }}>Nounspace</div>
+        <div style={{ opacity: 0.7 }}>View proposal details and vote</div>
       </div>
     </div>
   );
