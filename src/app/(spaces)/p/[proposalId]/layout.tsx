@@ -18,14 +18,27 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   try {
-    const proposalData = await loadProposalData(proposalId);
+    // Add timeout to prevent hanging during metadata generation
+    const proposalData = await Promise.race([
+      loadProposalData(proposalId),
+      new Promise<null>((_, reject) => 
+        setTimeout(() => reject(new Error('Proposal data fetch timeout')), 8000)
+      )
+    ]);
 
     if (!proposalData || proposalData.title === "Error loading proposal") {
       return defaultMetadata;
     }
 
     const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
-    const dynamicThumbnailUrl = await generateProposalThumbnailUrl(proposalData);
+    
+    // Generate thumbnail URL with timeout protection
+    const dynamicThumbnailUrl = await Promise.race([
+      generateProposalThumbnailUrl(proposalData),
+      new Promise<string>((resolve) => 
+        setTimeout(() => resolve(`${WEBSITE_URL}/images/nounspace_og_low.png`), 3000)
+      )
+    ]);
 
   const proposalFrame = {
     version: "next",
