@@ -58,7 +58,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       thumbnailParams.set("timeRemaining", "Voting ended");
     }
     
-    const dynamicThumbnailUrl = `${WEBSITE_URL}/api/metadata/proposals-minimal?${thumbnailParams.toString()}`;
+    const dynamicThumbnailUrl = `${WEBSITE_URL}/api/metadata/proposals?${thumbnailParams.toString()}`;
 
   const proposalFrame = {
     version: "next",
