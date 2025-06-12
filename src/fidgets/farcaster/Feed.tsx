@@ -363,6 +363,25 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     ? usernameFid.toString()
     : users;
 
+  const castsQuery = useGetCasts({
+    feedType,
+    fid,
+    filterType,
+    fids: effectiveFids,
+    channel,
+    enabled: filterType !== FilterType.Keyword,
+    ...(feedType === FeedType.Filter &&
+      filterType === FilterType.Channel &&
+      membersOnly !== undefined
+      ? { membersOnly }
+      : {}),
+  });
+
+  const keywordQuery = useGetCastsByKeyword({
+    keyword: keyword || "",
+    enabled: filterType === FilterType.Keyword,
+  });
+
   const {
     data: castPages,
     isFetchingNextPage,
@@ -370,19 +389,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     hasNextPage,
     isError,
     isPending,
-    refetch
-  } =
-    filterType === FilterType.Keyword
-      ? useGetCastsByKeyword({ keyword: keyword || "" })
-      : useGetCasts({
-        feedType,
-        fid,
-        filterType,
-        fids: effectiveFids,
-        channel,
-        ...(feedType === FeedType.Filter && filterType === 
-          FilterType.Channel && membersOnly !== undefined ? { membersOnly } : {}),
-      });
+    refetch,
+  } = filterType === FilterType.Keyword ? keywordQuery : castsQuery;
 
   const router = useRouter();
   const threadStack = useLifoQueue<string>();
