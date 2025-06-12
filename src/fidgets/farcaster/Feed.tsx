@@ -384,7 +384,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       });
 
   const router = useRouter();
-  const threadStack = useLifoQueue<string>();
+  const threadStackRef = React.useRef(useLifoQueue<string>());
+  const threadStack = threadStackRef.current;
 
   const [ref, inView] = useInView();
 
@@ -419,7 +420,6 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       handleFetchNextPage();
     }
   }, [inView, handleFetchNextPage]);
-
 
   useEffect(() => {
     clear();
