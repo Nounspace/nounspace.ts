@@ -64,7 +64,7 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
-  onSelect?: (hash: string) => void;
+  onSelect?: (hash: string, username: string) => void;
   isFocused?: boolean;
   isEmbed?: boolean;
   isReply?: boolean;
@@ -150,7 +150,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash);
+                onSelectCast(embedData.castId.hash, cast.author.username);
               }
             }}
           >
@@ -619,10 +619,10 @@ export const CastRow = ({
         event.preventDefault();
         event.stopPropagation();
       } else {
-        onSelect && onSelect(cast.hash);
+        onSelect && onSelect(cast.hash, cast.author.username);
       }
     },
-    [cast.hash, isFocused],
+    [cast.hash, isFocused, cast.author.username, onSelect],
   );
 
   return (
