@@ -73,6 +73,24 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   const isLoggedIn = getIsLoggedIn(); // Check if the user is logged in
   const currentFid = useCurrentFid(); // Get the current FID
 
+  // Remove onboarding fidgets when the user is logged out
+  const sanitizedHomebaseConfig = useMemo(() => {
+    if (!homebaseConfig) return undefined;
+    if (isLoggedIn) return homebaseConfig;
+    return {
+      ...homebaseConfig,
+      layoutDetails: {
+        ...homebaseConfig.layoutDetails,
+        layoutConfig: {
+          ...homebaseConfig.layoutDetails.layoutConfig,
+          layout: [],
+        },
+      },
+      fidgetInstanceDatums: {},
+      fidgetTrayContents: [],
+    };
+  }, [homebaseConfig, isLoggedIn]);
+
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
   // Effect to handle login modal when user is not logged in
@@ -197,11 +215,12 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   // Define the arguments for the SpacePage component
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
+      const sourceConfig =
+        tabName === "Feed"
+          ? sanitizedHomebaseConfig
+          : tabConfigs[tabName]?.config;
       const { timestamp, ...restConfig } = {
-        ...((tabName === "Feed" 
-            ? homebaseConfig 
-            : tabConfigs[tabName]?.config)
-            ?? INITIAL_SPACE_CONFIG_EMPTY),
+        ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
         isEditable: true,
       };
       return restConfig;
@@ -229,7 +248,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   }), [
     tabName,
     tabName === "Feed"
-      ? homebaseConfig
+      ? sanitizedHomebaseConfig
       : tabConfigs[tabName]?.config,
     tabOrdering.local,
     editMode,
