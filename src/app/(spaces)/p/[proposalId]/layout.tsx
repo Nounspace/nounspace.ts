@@ -1,7 +1,7 @@
 import { Metadata } from "next/types";
 import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
-import { loadProposalData, generateProposalThumbnailUrl } from "./utils";
+import { loadProposalData, calculateTimeRemaining } from "./utils";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
 const defaultMetadata = {
@@ -36,8 +36,29 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
     const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
     
-    // Test with static URL first to isolate issue
-    const dynamicThumbnailUrl = `${WEBSITE_URL}/api/metadata/proposals-copy?id=${proposalData.id}&title=${encodeURIComponent(proposalData.title)}&proposer=${proposalData.proposer.id}&forVotes=${proposalData.forVotes || '0'}&againstVotes=${proposalData.againstVotes || '0'}&abstainVotes=${proposalData.abstainVotes || '0'}&timeRemaining=${encodeURIComponent('Voting ended')}`;
+    // Generate beautiful thumbnail URL with all voting data
+    const thumbnailParams = new URLSearchParams({
+      id: proposalData.id,
+      title: proposalData.title,
+      proposer: proposalData.proposer.id,
+      forVotes: proposalData.forVotes || '0',
+      againstVotes: proposalData.againstVotes || '0',
+      abstainVotes: proposalData.abstainVotes || '0',
+      quorumVotes: proposalData.quorumVotes || '0',
+    });
+    
+    if (proposalData.signers && proposalData.signers.length > 0) {
+      thumbnailParams.set("signers", proposalData.signers.map(s => s.id).join(","));
+    }
+    
+    if (proposalData.endBlock) {
+      const timeRemaining = await calculateTimeRemaining(proposalData.endBlock);
+      thumbnailParams.set("timeRemaining", timeRemaining);
+    } else {
+      thumbnailParams.set("timeRemaining", "Voting ended");
+    }
+    
+    const dynamicThumbnailUrl = `${WEBSITE_URL}/api/metadata/proposals-copy?${thumbnailParams.toString()}`;
 
   const proposalFrame = {
     version: "next",
