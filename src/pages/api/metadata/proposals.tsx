@@ -22,25 +22,23 @@ export default async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     
-    // Log for debugging in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log("Proposal thumbnail request:", {
-        url: req.url,
-        id: searchParams.get("id"),
-        title: searchParams.get("title"),
-      });
-    }
-    
+    // Directly extract parameters without complex processing to avoid hangs
     const proposalMetadata: ProposalMetadata = {
       id: searchParams.get("id") || "Unknown",
       title: searchParams.get("title") || "Unknown Proposal",
       proposer: searchParams.get("proposer") || "0x0",
-      signers: searchParams.get("signers") 
-        ? decodeURIComponent(searchParams.get("signers")!)
+      signers: (() => {
+        const raw = searchParams.get("signers");
+        if (!raw) return [];
+        try {
+          return decodeURIComponent(raw)
             .split(",")
             .map(s => s.trim())
-            .filter(Boolean) 
-        : [],
+            .filter(Boolean);
+        } catch {
+          return [];
+        }
+      })(),
       forVotes: searchParams.get("forVotes") || "0",
       againstVotes: searchParams.get("againstVotes") || "0",
       abstainVotes: searchParams.get("abstainVotes") || "0",
@@ -48,14 +46,67 @@ export default async function GET(req: NextRequest) {
       timeRemaining: searchParams.get("timeRemaining") || "",
     };
 
-    return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
-      width: 1200,
-      height: 630,
+    // Add timeout protection around the ImageResponse creation
+    const imagePromise = new Promise<Response>((resolve) => {
+      try {
+        const response = new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
+          width: 1200,
+          height: 630,
+        });
+        resolve(response);
+      } catch (err) {
+        console.error("Error in ImageResponse creation:", err);
+        resolve(new ImageResponse(
+          (
+            <div style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#ef4444",
+              color: "white",
+              fontSize: "24px",
+              fontFamily: "Arial, sans-serif",
+            }}>
+              Error: {String(err).substring(0, 100)}
+            </div>
+          ),
+          { width: 1200, height: 630 }
+        ));
+      }
     });
+
+    // Timeout after 25 seconds (Vercel edge function limit is 30s)
+    const timeoutPromise = new Promise<Response>((resolve) => {
+      setTimeout(() => {
+        resolve(new ImageResponse(
+          (
+            <div style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "#fbbf24",
+              color: "white",
+              fontSize: "24px",
+              fontFamily: "Arial, sans-serif",
+            }}>
+              Timeout generating thumbnail
+            </div>
+          ),
+          { width: 1200, height: 630 }
+        ));
+      }, 25000);
+    });
+
+    return await Promise.race([imagePromise, timeoutPromise]);
+
   } catch (error) {
     console.error("Error generating proposal image:", error);
     
-    // Return error image instead of using res object
+    // Return error image
     return new ImageResponse(
       (
         <div style={{
@@ -66,10 +117,12 @@ export default async function GET(req: NextRequest) {
           justifyContent: "center",
           background: "#ef4444",
           color: "white",
-          fontSize: "24px",
+          fontSize: "20px",
           fontFamily: "Arial, sans-serif",
+          padding: "20px",
+          textAlign: "center",
         }}>
-          Error generating proposal thumbnail
+          Error: {String(error).substring(0, 200)}
         </div>
       ),
       { width: 1200, height: 630 }
@@ -113,17 +166,24 @@ const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata
     : proposalMetadata.title;
 
   const getProposerDisplay = () => {
-    if (proposalMetadata.signers && proposalMetadata.signers.length > 0) {
-      const allSigners = [proposalMetadata.proposer, ...proposalMetadata.signers];
-      if (allSigners.length === 1) {
-        return formatAddress(allSigners[0]);
-      } else if (allSigners.length <= 2) {
-        return allSigners.map(formatAddress).join(" & ");
-      } else {
-        return `${formatAddress(allSigners[0])} +${allSigners.length - 1} others`;
+    try {
+      if (proposalMetadata.signers && proposalMetadata.signers.length > 0) {
+        // De-duplicate addresses in case proposer is also in signers
+        const allSigners = Array.from(
+          new Set([proposalMetadata.proposer, ...proposalMetadata.signers])
+        );
+        if (allSigners.length === 1) {
+          return formatAddress(allSigners[0]);
+        } else if (allSigners.length <= 2) {
+          return allSigners.map(formatAddress).join(" & ");
+        } else {
+          return `${formatAddress(allSigners[0])} +${allSigners.length - 1} others`;
+        }
       }
+      return formatAddress(proposalMetadata.proposer);
+    } catch (err) {
+      return formatAddress(proposalMetadata.proposer);
     }
-    return formatAddress(proposalMetadata.proposer);
   };
 
   return (

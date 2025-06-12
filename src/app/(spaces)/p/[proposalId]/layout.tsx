@@ -19,10 +19,14 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   try {
     // Add timeout to prevent hanging during metadata generation
+    const proposalAbort = new AbortController();
     const proposalData = await Promise.race([
-      loadProposalData(proposalId),
+      loadProposalData(proposalId, proposalAbort.signal),
       new Promise<null>((_, reject) => 
-        setTimeout(() => reject(new Error('Proposal data fetch timeout')), 8000)
+        setTimeout(() => {
+          proposalAbort.abort();
+          reject(new Error('Proposal data fetch timeout'));
+        }, 8000)
       )
     ]);
 
@@ -33,10 +37,14 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
     
     // Generate thumbnail URL with timeout protection
+    const thumbnailAbort = new AbortController();
     const dynamicThumbnailUrl = await Promise.race([
-      generateProposalThumbnailUrl(proposalData),
+      generateProposalThumbnailUrl(proposalData, thumbnailAbort.signal),
       new Promise<string>((resolve) => 
-        setTimeout(() => resolve(`${WEBSITE_URL}/images/nounspace_og_low.png`), 3000)
+        setTimeout(() => {
+          thumbnailAbort.abort();
+          resolve(`${WEBSITE_URL}/images/nounspace_og_low.png`);
+        }, 3000)
       )
     ]);
 
@@ -57,7 +65,10 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   const getProposerDisplay = () => {
     if (proposalData.signers && proposalData.signers.length > 0) {
-      const allSigners = [proposalData.proposer.id, ...proposalData.signers.map(s => s.id)];
+      // De-duplicate addresses in case proposer is also in signers
+      const allSigners = Array.from(
+        new Set([proposalData.proposer.id, ...proposalData.signers.map(s => s.id)])
+      );
       if (allSigners.length <= 2) {
         return allSigners.join(" & ");
       } else {
