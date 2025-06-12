@@ -93,6 +93,8 @@ export default function PublicSpace({
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     getCurrentTabName: state.currentSpace.getCurrentTabName,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
+    currentSpaceId: state.currentSpace.currentSpaceId,
+    currentTabName: state.currentSpace.currentTabName,
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
