@@ -36,17 +36,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
     const frameUrl = `${WEBSITE_URL}/p/${proposalId}`;
     
-    // Generate thumbnail URL with timeout protection
-    const thumbnailAbort = new AbortController();
-    const dynamicThumbnailUrl = await Promise.race([
-      generateProposalThumbnailUrl(proposalData, thumbnailAbort.signal),
-      new Promise<string>((resolve) => 
-        setTimeout(() => {
-          thumbnailAbort.abort();
-          resolve(`${WEBSITE_URL}/images/nounspace_og_low.png`);
-        }, 3000)
-      )
-    ]);
+    // Test with static URL first to isolate issue
+    const dynamicThumbnailUrl = `${WEBSITE_URL}/api/metadata/proposals-copy?id=${proposalData.id}&title=${encodeURIComponent(proposalData.title)}&proposer=${proposalData.proposer.id}&forVotes=${proposalData.forVotes || '0'}&againstVotes=${proposalData.againstVotes || '0'}&abstainVotes=${proposalData.abstainVotes || '0'}&timeRemaining=${encodeURIComponent('Voting ended')}`;
 
   const proposalFrame = {
     version: "next",
