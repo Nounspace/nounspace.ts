@@ -31,9 +31,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
-import CreateCast, { DraftType } from "./CreateCast";
-import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
-import FarcasterLinkify from "./linkify";
+import { IoMdShare } from "react-icons/io";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -253,6 +252,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
+  const { showToast } = useToastStore();
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -437,7 +437,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div className="-ml-1.5 flex space-x-3">
+      <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
           const isActive = get(reactionInfo, "isActive", false);
           const icon = getIconForCastReactionType(
@@ -485,6 +485,17 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             /{cast.channel.name}
           </div>
         )}
+        <div
+          className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
+          onClick={(e) => {
+            e.stopPropagation();
+            const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
+            navigator.clipboard.writeText(url);
+            showToast("Link copied", 2000);
+          }}
+        >
+          <IoMdShare className="w-4 h-4" aria-hidden="true" />
+        </div>
       </div>
     </>
   );
