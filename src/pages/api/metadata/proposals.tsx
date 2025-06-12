@@ -1,6 +1,6 @@
 import React from "react";
+import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
-import type { NextRequest } from "next/server";
 
 export const config = {
   runtime: "edge",
@@ -18,17 +18,23 @@ interface ProposalMetadata {
   timeRemaining?: string;
 }
 
-export default async function GET(req: NextRequest) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ImageResponse | string>,
+) {
   try {
-    const { searchParams } = new URL(req.url);
+    if (!req.url) {
+      return res.status(404).send("Url not found");
+    }
+
+    const params = new URLSearchParams(req.url.split("?")[1]);
     
-    // Directly extract parameters without complex processing to avoid hangs
     const proposalMetadata: ProposalMetadata = {
-      id: searchParams.get("id") || "Unknown",
-      title: searchParams.get("title") || "Unknown Proposal",
-      proposer: searchParams.get("proposer") || "0x0",
+      id: params.get("id") || "Unknown",
+      title: params.get("title") || "Unknown Proposal",
+      proposer: params.get("proposer") || "0x0",
       signers: (() => {
-        const raw = searchParams.get("signers");
+        const raw = params.get("signers");
         if (!raw) return [];
         try {
           return decodeURIComponent(raw)
@@ -39,69 +45,17 @@ export default async function GET(req: NextRequest) {
           return [];
         }
       })(),
-      forVotes: searchParams.get("forVotes") || "0",
-      againstVotes: searchParams.get("againstVotes") || "0",
-      abstainVotes: searchParams.get("abstainVotes") || "0",
-      quorumVotes: searchParams.get("quorumVotes") || "100",
-      timeRemaining: searchParams.get("timeRemaining") || "",
+      forVotes: params.get("forVotes") || "0",
+      againstVotes: params.get("againstVotes") || "0",
+      abstainVotes: params.get("abstainVotes") || "0",
+      quorumVotes: params.get("quorumVotes") || "100",
+      timeRemaining: params.get("timeRemaining") || "",
     };
 
-    // Add timeout protection around the ImageResponse creation
-    const imagePromise = new Promise<Response>((resolve) => {
-      try {
-        const response = new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
-          width: 1200,
-          height: 630,
-        });
-        resolve(response);
-      } catch (err) {
-        console.error("Error in ImageResponse creation:", err);
-        resolve(new ImageResponse(
-          (
-            <div style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#ef4444",
-              color: "white",
-              fontSize: "24px",
-              fontFamily: "Arial, sans-serif",
-            }}>
-              Error: {String(err).substring(0, 100)}
-            </div>
-          ),
-          { width: 1200, height: 630 }
-        ));
-      }
+    return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
+      width: 1200,
+      height: 630,
     });
-
-    // Timeout after 25 seconds (Vercel edge function limit is 30s)
-    const timeoutPromise = new Promise<Response>((resolve) => {
-      setTimeout(() => {
-        resolve(new ImageResponse(
-          (
-            <div style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "#fbbf24",
-              color: "white",
-              fontSize: "24px",
-              fontFamily: "Arial, sans-serif",
-            }}>
-              Timeout generating thumbnail
-            </div>
-          ),
-          { width: 1200, height: 630 }
-        ));
-      }, 25000);
-    });
-
-    return await Promise.race([imagePromise, timeoutPromise]);
 
   } catch (error) {
     console.error("Error generating proposal image:", error);
