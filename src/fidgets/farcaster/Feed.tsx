@@ -384,8 +384,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
       });
 
   const router = useRouter();
-  const threadStackRef = React.useRef(useLifoQueue<string>());
-  const threadStack = threadStackRef.current;
+  const threadStack = useLifoQueue<string>();
 
   const [ref, inView] = useInView();
 
