@@ -32,10 +32,10 @@ export default async function GET(
     title: params.get("title") || "",
     proposer: params.get("proposer") || "",
     signers: params.get("signers") || "",
-    forVotes: params.get("forVotes") || "",
-    againstVotes: params.get("againstVotes") || "",
-    abstainVotes: params.get("abstainVotes") || "",
-    quorumVotes: params.get("quorumVotes") || "",
+    forVotes: params.get("forVotes") || "0",
+    againstVotes: params.get("againstVotes") || "0",
+    abstainVotes: params.get("abstainVotes") || "0",
+    quorumVotes: params.get("quorumVotes") || "100",
     timeRemaining: params.get("timeRemaining") || "",
   };
 
