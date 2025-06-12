@@ -10,7 +10,6 @@ interface ProposalCardData {
   id: string;
   title: string;
   proposer: string;
-  signers?: string;
   forVotes: string;
   againstVotes: string;
   abstainVotes: string;
@@ -26,12 +25,12 @@ export default async function GET(
     return res.status(404).send("Url not found");
   }
 
-  const params = new URLSearchParams(req.url.split("?")[1]);
+  const urlParts = req.url.split("?");
+  const params = new URLSearchParams(urlParts[1] || "");
   const data: ProposalCardData = {
-    id: params.get("id") || "",
-    title: params.get("title") || "",
-    proposer: params.get("proposer") || "",
-    signers: params.get("signers") || "",
+    id: params.get("id") || "Unknown",
+    title: params.get("title") || "Unknown Proposal",
+    proposer: params.get("proposer") || "0x0",
     forVotes: params.get("forVotes") || "0",
     againstVotes: params.get("againstVotes") || "0",
     abstainVotes: params.get("abstainVotes") || "0",
@@ -46,18 +45,12 @@ export default async function GET(
 }
 
 const ProposalCard = ({ data }: { data: ProposalCardData }) => {
-  // Safe number parsing
+  // Vote count formatting
   const forVotes = Number(data.forVotes) || 0;
   const againstVotes = Number(data.againstVotes) || 0;
   const abstainVotes = Number(data.abstainVotes) || 0;
   const quorumVotes = Number(data.quorumVotes) || 1;
   
-  // Calculate percentages for the progress bar (based on quorum)
-  const forPercentage = Math.min((forVotes / quorumVotes) * 100, 100);
-  const againstPercentage = Math.min((againstVotes / quorumVotes) * 100, 100);
-  const abstainPercentage = Math.min((abstainVotes / quorumVotes) * 100, 100);
-  const totalVotePercentage = forPercentage + againstPercentage + abstainPercentage;
-
   const formatVotes = (votes: number) => {
     if (isNaN(votes) || !isFinite(votes)) return "0";
     const num = Math.abs(votes);
@@ -77,23 +70,10 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
     ? data.title.substring(0, 60) + "..." 
     : data.title;
 
-  const getProposerDisplay = () => {
-    if (data.signers && data.signers.trim()) {
-      try {
-        const signersList = data.signers.split(",").map(s => s.trim()).filter(Boolean);
-        const allSigners = Array.from(new Set([data.proposer, ...signersList]));
-        
-        if (allSigners.length <= 2) {
-          return allSigners.map(formatAddress).join(" & ");
-        } else {
-          return `${formatAddress(allSigners[0])} +${allSigners.length - 1} others`;
-        }
-      } catch {
-        return formatAddress(data.proposer);
-      }
-    }
-    return formatAddress(data.proposer);
-  };
+  // Progress bar calculations
+  const forPercentage = Math.min((forVotes / quorumVotes) * 100, 100);
+  const againstPercentage = Math.min((againstVotes / quorumVotes) * 100, 100);
+  const abstainPercentage = Math.min((abstainVotes / quorumVotes) * 100, 100);
 
   return (
     <div
@@ -114,7 +94,7 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
           Prop {data.id}
         </div>
         <div style={{ fontSize: "18px", opacity: 0.9 }}>
-          by {getProposerDisplay()}
+          by {formatAddress(data.proposer)}
         </div>
         {data.timeRemaining && (
           <div style={{ fontSize: "14px", marginTop: "8px", opacity: 0.8 }}>
@@ -134,7 +114,7 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         {displayTitle}
       </div>
 
-      {/* Vote counts */}
+      {/* Vote counts with colored dots */}
       <div style={{ display: "flex", gap: "30px", marginBottom: "25px", fontSize: "16px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <div style={{ width: "12px", height: "12px", backgroundColor: "#10b981", borderRadius: "50%" }} />
@@ -159,31 +139,28 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
       <div style={{
         width: "100%",
         height: "20px",
-        backgroundColor: "rgba(255, 255, 255, 0.3)", // Grey quorum background
+        backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: "10px",
         marginBottom: "40px",
         display: "flex",
         position: "relative",
       }}>
-        {/* For votes (green) */}
         <div style={{
           width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
           height: "100%",
           backgroundColor: "#10b981",
           borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
         }} />
-        {/* Abstain votes (yellow) */}
         <div style={{
           width: `${Math.max(0, Math.min(abstainPercentage, 100 - forPercentage))}%`,
           height: "100%",
           backgroundColor: "#fbbf24",
         }} />
-        {/* Against votes (red) */}
         <div style={{
           width: `${Math.max(0, Math.min(againstPercentage, 100 - forPercentage - abstainPercentage))}%`,
           height: "100%",
           backgroundColor: "#ef4444",
-          borderRadius: totalVotePercentage >= 100 ? "0 10px 10px 0" : "0",
+          borderRadius: (forPercentage + abstainPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
         }} />
       </div>
 
