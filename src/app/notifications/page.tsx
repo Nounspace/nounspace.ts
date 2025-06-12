@@ -275,6 +275,20 @@ const LikeNotificationRow: NotificationRowProps = ({
       .map((r) => r.user)
   }, [notification?.reactions])
 
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      onSelect(notification.cast!.hash, notification.cast!.author.username);
+    },
+    [notification.cast, onSelect],
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <NotificationHeader
@@ -283,28 +297,26 @@ const LikeNotificationRow: NotificationRowProps = ({
         descriptionSuffix="liked your cast"
         leftIcon={<FaHeart className="w-4 h-4" aria-label="Like" />}
       />
-      <div className="sm:ml-10 md:ml-12 w-full">
-        <div className="w-full">
-          <CastBody
-            cast={notification.cast!}
-            channel={null}
-            isEmbed={false}
-            showChannel={false}
-            hideEmbeds={false}
-            castTextStyle={{
-              fontSize: "14px",
-              color: "#71767B",
-              lineHeight: "1.3",
-              fontWeight: "normal",
-              textAlign: "left",
-            }}
-            hideReactions={false}
-            renderRecastBadge={undefined}
-            userFid={fid ?? undefined}
-            isDetailView={false}
-            onSelectCast={onSelect}
-          />
-        </div>
+      <div className="ml-4 w-full cursor-pointer" onClick={handleClick}>
+        <CastBody
+          cast={notification.cast!}
+          channel={null}
+          isEmbed={false}
+          showChannel={false}
+          hideEmbeds={false}
+          castTextStyle={{
+            fontSize: "14px",
+            color: "#71767B",
+            lineHeight: "1.3",
+            fontWeight: "normal",
+            textAlign: "left",
+          }}
+          hideReactions={false}
+          renderRecastBadge={false}
+          userFid={fid}
+          isDetailView={false}
+          onSelectCast={onSelect}
+        />
       </div>
     </div>
   )
