@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, lazy, useState } from "react";
+import React, { lazy, useEffect, useMemo, useRef } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 // Lazy load the TabBar component to improve performance
@@ -93,19 +92,19 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
-  // Track hydration so login modal doesn't show before params are available
-  const [hydrated, setHydrated] = useState(false);
+  // Track hydration without causing a re-render
+  const hasHydrated = useRef(false);
   useEffect(() => {
-    setHydrated(true);
+    hasHydrated.current = true;
   }, []);
 
   // Effect to handle login modal when user is not logged in and not viewing a cast
   useEffect(() => {
-    if (hydrated && !isLoggedIn && !castHash) {
+    if (hasHydrated.current && !isLoggedIn && !castHash) {
       // Open the login modal if user is not logged in
       setModalOpen(true);
     }
-  }, [hydrated, isLoggedIn, castHash, setModalOpen]);
+  }, [isLoggedIn, castHash, setModalOpen]);
 
   // Effect to set the current space and tab name, and load the tab configuration
   useEffect(() => {
