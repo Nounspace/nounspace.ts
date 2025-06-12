@@ -39,6 +39,12 @@ export enum FilterType {
 
 export type FeedFidgetData = {
   initialHash?: string;
+  /**
+   * When true, selecting a cast will update the browser URL to
+   * reflect the selected cast on the homebase feed. This should
+   * only be enabled for the immutable feed on /homebase.
+   */
+  updateUrl?: boolean;
 };
 
 export type FeedFidgetSettings = {
@@ -427,15 +433,19 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
   const onSelectCast = useCallback(
     (hash: string, username: string) => {
       push(hash);
-      router.push(`/homebase/c/${username}/${hash}`);
+      if (initialData?.updateUrl) {
+        router.push(`/homebase/c/${username}/${hash}`);
+      }
     },
-    [push, router],
+    [push, router, initialData?.updateUrl],
   );
 
   const handleBack = useCallback(() => {
     pop();
-    router.push(`/homebase`);
-  }, [pop, router]);
+    if (initialData?.updateUrl) {
+      router.push(`/homebase`);
+    }
+  }, [pop, router, initialData?.updateUrl]);
 
   const renderThread = () => (
     <CastThreadView
