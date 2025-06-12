@@ -22,66 +22,26 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ImageResponse | string>,
 ) {
-  try {
-    if (!req.url) {
-      return res.status(404).send("Url not found");
-    }
-
-    const params = new URLSearchParams(req.url.split("?")[1]);
-    
-    const proposalMetadata: ProposalMetadata = {
-      id: params.get("id") || "Unknown",
-      title: params.get("title") || "Unknown Proposal",
-      proposer: params.get("proposer") || "0x0",
-      signers: (() => {
-        const raw = params.get("signers");
-        if (!raw) return [];
-        try {
-          return decodeURIComponent(raw)
-            .split(",")
-            .map(s => s.trim())
-            .filter(Boolean);
-        } catch {
-          return [];
-        }
-      })(),
-      forVotes: params.get("forVotes") || "0",
-      againstVotes: params.get("againstVotes") || "0",
-      abstainVotes: params.get("abstainVotes") || "0",
-      quorumVotes: params.get("quorumVotes") || "100",
-      timeRemaining: params.get("timeRemaining") || "",
-    };
-
-    return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
-      width: 1200,
-      height: 630,
-    });
-
-  } catch (error) {
-    console.error("Error generating proposal image:", error);
-    
-    // Return error image
-    return new ImageResponse(
-      (
-        <div style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "#ef4444",
-          color: "white",
-          fontSize: "20px",
-          fontFamily: "Arial, sans-serif",
-          padding: "20px",
-          textAlign: "center",
-        }}>
-          Error: {String(error).substring(0, 200)}
-        </div>
-      ),
-      { width: 1200, height: 630 }
-    );
+  if (!req.url) {
+    return res.status(404).send("Url not found");
   }
+
+  const params = new URLSearchParams(req.url.split("?")[1]);
+  const proposalMetadata: ProposalMetadata = {
+    id: params.get("id") || "Unknown",
+    title: params.get("title") || "Unknown Proposal",
+    proposer: params.get("proposer") || "0x0",
+    forVotes: params.get("forVotes") || "0",
+    againstVotes: params.get("againstVotes") || "0",
+    abstainVotes: params.get("abstainVotes") || "0",
+    quorumVotes: params.get("quorumVotes") || "100",
+    timeRemaining: params.get("timeRemaining") || "",
+  };
+
+  return new ImageResponse(<ProposalCard proposalMetadata={proposalMetadata} />, {
+    width: 1200,
+    height: 630,
+  });
 }
 
 const ProposalCard = ({ proposalMetadata }: { proposalMetadata: ProposalMetadata }) => {
