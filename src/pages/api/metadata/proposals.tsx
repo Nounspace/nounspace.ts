@@ -18,7 +18,7 @@ interface ProposalMetadata {
   timeRemaining?: string;
 }
 
-export default async function handler(
+export default async function GET(
   req: NextApiRequest,
   res: NextApiResponse<ImageResponse | string>,
 ) {
