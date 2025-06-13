@@ -4,28 +4,36 @@ import ProfileSpace, { UserDefinedSpacePageProps } from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { unstable_noStore as noStore } from "next/cache";
 
+const cache = new Map<string, UserDefinedSpacePageProps>();
+
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
 ): Promise<UserDefinedSpacePageProps> => {
+  const cacheKey = `${handle}-${tabNameParam || "default"}`;
+  if (cache.has(cacheKey)) {
+    console.log("Cache hit for", cacheKey);
+    return cache.get(cacheKey)!;
+  }
+
   noStore();
 
   console.log("Starting loadUserSpaceData for handle:", handle);
 
   const userMetadata = await getUserMetadata(handle);
-  // console.log("User metadata result:", userMetadata);
   const spaceOwnerFid = userMetadata?.fid || null;
   const spaceOwnerUsername = userMetadata?.username || null;
-  // console.log("Extracted FID:", spaceOwnerFid);
 
   if (!spaceOwnerFid) {
     console.log("No FID found, returning null values");
-    return {
+    const result = {
       spaceOwnerFid: null,
       spaceOwnerUsername: null,
       spaceId: null,
       tabName: null,
     };
+    cache.set(cacheKey, result);
+    return result;
   }
 
   const tabList = await getTabList(spaceOwnerFid);
@@ -33,7 +41,9 @@ const loadUserSpaceData = async (
 
   if (!tabList || tabList.length === 0) {
     console.log("No tab list found, returning null spaceId and tabName");
-    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
+    const result = { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
+    cache.set(cacheKey, result);
+    return result;
   }
 
   const defaultTab: Tab = tabList[0];
@@ -43,7 +53,9 @@ const loadUserSpaceData = async (
   const tabName = tabNameParam || defaultTab.spaceName;
   console.log("Final values - spaceId:", spaceId, "tabName:", tabName);
 
-  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
+  const result = { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
+  cache.set(cacheKey, result);
+  return result;
 };
 
 const ProfileSpacePage = async ({

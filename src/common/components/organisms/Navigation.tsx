@@ -1,41 +1,41 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
-import { useAppStore, useLogout } from "@/common/data/stores/app";
-import Modal from "../molecules/Modal";
-import CreateCast from "@/fidgets/farcaster/components/CreateCast";
-import Link from "next/link";
-import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { useAppStore, useLogout } from "@/common/data/stores/app";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { first } from "lodash";
-import { Button } from "../atoms/button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { CgProfile } from "react-icons/cg";
 import {
-  FaDiscord,
-  FaChevronLeft,
-  FaChevronRight,
+    FaChevronLeft,
+    FaChevronRight,
+    FaDiscord,
 } from "react-icons/fa6";
+import { Button } from "../atoms/button";
+import BrandHeader from "../molecules/BrandHeader";
+import Modal from "../molecules/Modal";
 // RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
 // is `RiQuillPenLine`. Update the import to prevent build errors.
-import { RiQuillPenLine } from "react-icons/ri";
-import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
+import { Badge } from "@/common/components/atoms/badge";
+import SearchModal from "@/common/components/organisms/SearchModal";
+import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
-import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
-import { Badge } from "@/common/components/atoms/badge";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { usePathname } from "next/navigation";
+import { RiQuillPenLine } from "react-icons/ri";
+import ExploreIcon from "../atoms/icons/ExploreIcon";
 import HomeIcon from "../atoms/icons/HomeIcon";
-import SearchIcon from "../atoms/icons/SearchIcon";
+import LoginIcon from "../atoms/icons/LoginIcon";
+import LogoutIcon from "../atoms/icons/LogoutIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
-import ExploreIcon from "../atoms/icons/ExploreIcon";
-import LogoutIcon from "../atoms/icons/LogoutIcon";
-import LoginIcon from "../atoms/icons/LoginIcon";
+import SearchIcon from "../atoms/icons/SearchIcon";
 
 type NavItemProps = {
   label: string;
@@ -79,8 +79,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
-  const isNotificationsPage = pathname === "/notifications";
-  const isExplorerPage = pathname === "/explore";
 
   const [shrunk, setShrunk] = useState(true);
 
@@ -183,7 +181,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
   }, [searchRef]);
 
   return (
-    <aside
+    <nav
       id="logo-sidebar"
       className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
@@ -344,7 +342,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable }) => {
           </div>
         </div>
       </div>
-    </aside>
+    </nav>
   );
 };
 

@@ -4,7 +4,6 @@ import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
@@ -32,6 +31,7 @@ import { FaReply } from "react-icons/fa6";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
