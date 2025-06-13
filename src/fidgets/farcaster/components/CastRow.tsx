@@ -9,7 +9,11 @@ import {
   ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
+import {
+  publishReaction,
+  removeReaction,
+  getUsernameForFid,
+} from "@/fidgets/farcaster/utils";
 import { includes, isObject, isUndefined, map, get } from "lodash";
 import { ErrorBoundary } from "@sentry/react";
 import { renderEmbedForUrl } from "./Embeds";
@@ -150,13 +154,26 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
               embedData.castId ? "max-w-[100%]" : "max-w-max",
             )}
-            onClick={(event) => {
+            onClick={async (event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                const authorIdentifier = embedData.castId.fid
-                  ? String(embedData.castId.fid)
-                  : cast.author.username;
-                onSelectCast(embedData.castId.hash, authorIdentifier);
+                let authorIdentifier = embedData.castId.username;
+                if (!authorIdentifier && embedData.castId.fid) {
+                  try {
+                    authorIdentifier = await getUsernameForFid(
+                      embedData.castId.fid,
+                    );
+                  } catch (err) {
+                    console.error(
+                      `Failed to get username for fid ${embedData.castId.fid}`,
+                      err,
+                    );
+                  }
+                }
+                onSelectCast(
+                  embedData.castId.hash,
+                  authorIdentifier ?? cast.author.username,
+                );
               }
             }}
           >
