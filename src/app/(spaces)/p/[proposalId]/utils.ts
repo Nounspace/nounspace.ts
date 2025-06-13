@@ -183,7 +183,7 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData, s
   const base = WEBSITE_URL ?? 
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
   
-  const url = `${base}/api/metadata/proposals?${params.toString()}`;
+  const url = `${base}/api/metadata/proposal-thumbnail?${params.toString()}`;
   
   // Log for debugging in development
   if (process.env.NODE_ENV === 'development') {
