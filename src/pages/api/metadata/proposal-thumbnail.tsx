@@ -98,7 +98,7 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         )}
       </div>
 
-      {/* Progress bar - 30% smaller width */}
+      {/* Progress bar - 30% smaller width, aligned with text */}
       <div style={{
         width: "70%",
         height: "20px",
@@ -106,6 +106,7 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         borderRadius: "10px",
         display: "flex",
         marginTop: "20px",
+        marginLeft: "111px",
       }}>
         <div style={{
           width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
