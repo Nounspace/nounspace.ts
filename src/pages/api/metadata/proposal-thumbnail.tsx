@@ -1,4 +1,5 @@
 import React from "react";
+import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
 
 export const config = {
@@ -15,16 +16,23 @@ interface ProposalCardData {
   timeRemaining: string;
 }
 
-export default async function handler(req: Request) {
-  const { searchParams } = new URL(req.url);
+export default async function GET(
+  req: NextApiRequest,
+  res: NextApiResponse<ImageResponse | string>,
+) {
+  if (!req.url) {
+    return res.status(404).send("Url not found");
+  }
+
+  const params = new URLSearchParams(req.url.split("?")[1]);
   const data: ProposalCardData = {
-    id: searchParams.get("id") || "Unknown",
-    title: searchParams.get("title") || "Unknown Proposal",
-    forVotes: searchParams.get("forVotes") || "0",
-    againstVotes: searchParams.get("againstVotes") || "0",
-    abstainVotes: searchParams.get("abstainVotes") || "0",
-    quorumVotes: searchParams.get("quorumVotes") || "100",
-    timeRemaining: searchParams.get("timeRemaining") || "",
+    id: params.get("id") || "Unknown",
+    title: params.get("title") || "Unknown Proposal",
+    forVotes: params.get("forVotes") || "0",
+    againstVotes: params.get("againstVotes") || "0",
+    abstainVotes: params.get("abstainVotes") || "0",
+    quorumVotes: params.get("quorumVotes") || "100",
+    timeRemaining: params.get("timeRemaining") || "",
   };
 
   return new ImageResponse(<ProposalCard data={data} />, {
@@ -34,26 +42,22 @@ export default async function handler(req: Request) {
 }
 
 const ProposalCard = ({ data }: { data: ProposalCardData }) => {
-  // Vote count formatting
-  const forVotes = Number(data.forVotes) || 0;
-  const againstVotes = Number(data.againstVotes) || 0;
-  const abstainVotes = Number(data.abstainVotes) || 0;
-  const quorumVotes = Number(data.quorumVotes) || 1;
-
-  const formatVotes = (votes: number) => {
-    if (isNaN(votes) || !isFinite(votes)) return "0";
-    const num = Math.abs(votes);
+  // Simple vote formatting
+  const formatVotes = (votes: string) => {
+    const num = Number(votes) || 0;
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return Math.floor(num).toString();
+    return num.toString();
   };
 
-  // Progress bar calculations for Nouns governance
-  // Calculate total scale: against votes + quorum (since for votes overlay on quorum)
-  const totalScale = againstVotes + quorumVotes;
-  const againstPercentage = totalScale > 0 ? (againstVotes / totalScale) * 100 : 0;
-  const quorumPercentage = totalScale > 0 ? (quorumVotes / totalScale) * 100 : 0;
-  const forPercentage = totalScale > 0 ? (forVotes / totalScale) * 100 : 0;
+  // Progress bar calculations  
+  const forVotes = Number(data.forVotes) || 0;
+  const againstVotes = Number(data.againstVotes) || 0;
+  const totalVotes = forVotes + againstVotes;
+  const forPercent = totalVotes > 0 ? Math.round((forVotes / totalVotes) * 100) : 0;
+  const againstPercent = totalVotes > 0 ? Math.round((againstVotes / totalVotes) * 100) : 0;
+  const forWidth = forPercent.toString() + "%";
+  const againstWidth = againstPercent.toString() + "%";
 
   return (
     <div
@@ -81,9 +85,9 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         <span style={{ fontSize: "67px", fontWeight: "900" }}>Prop {data.id}</span>
         <span style={{ fontSize: "50px", fontWeight: "900", color: "white" }}>{data.title}</span>
         <span style={{ fontSize: "34px", fontWeight: "900" }}>
-          For: {formatVotes(forVotes)} | Against: {formatVotes(againstVotes)} | Abstain: {formatVotes(abstainVotes)}
+          For: {formatVotes(data.forVotes)} | Against: {formatVotes(data.againstVotes)} | Abstain: {formatVotes(data.abstainVotes)}
         </span>
-        <span style={{ fontSize: "29px", fontWeight: "900" }}>Quorum: {formatVotes(quorumVotes)}</span>
+        <span style={{ fontSize: "29px", fontWeight: "900" }}>Quorum: {formatVotes(data.quorumVotes)}</span>
         {data.timeRemaining && (
           <span style={{ fontSize: "24px", fontWeight: "700", opacity: 0.9 }}>
             {data.timeRemaining}
@@ -91,54 +95,25 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         )}
       </div>
 
-      {/* Progress bar - Nouns governance style */}
       <div style={{
         width: "70%",
         height: "20px",
         backgroundColor: "rgba(255, 255, 255, 0.1)",
         borderRadius: "10px",
-        position: "relative",
         marginTop: "20px",
         marginLeft: "111px",
+        display: "flex",
       }}>
-        {/* Against votes (red) - always on the left */}
-        {againstPercentage > 0 && (
-          <div style={{
-            position: "absolute",
-            left: "0",
-            top: "0",
-            width: `${Math.min(againstPercentage, 100)}%`,
-            height: "100%",
-            backgroundColor: "#ef4444",
-            borderRadius: againstPercentage >= 100 ? "10px" : "10px 0 0 10px",
-          }} />
-        )}
-        
-        {/* Quorum bar (grey) - starts after against votes */}
-        {quorumPercentage > 0 && (
-          <div style={{
-            position: "absolute",
-            left: `${Math.min(againstPercentage, 100)}%`,
-            top: "0",
-            width: `${Math.min(quorumPercentage, 100 - againstPercentage)}%`,
-            height: "100%",
-            backgroundColor: "rgba(255, 255, 255, 0.3)",
-            borderRadius: (againstPercentage + quorumPercentage) >= 100 ? "0 10px 10px 0" : "0",
-          }} />
-        )}
-        
-        {/* For votes (green) - overlays on quorum, starts after against votes */}
-        {forPercentage > 0 && (
-          <div style={{
-            position: "absolute",
-            left: `${Math.min(againstPercentage, 100)}%`,
-            top: "0",
-            width: `${Math.min(forPercentage, 100 - againstPercentage)}%`,
-            height: "100%",
-            backgroundColor: "#10b981",
-            borderRadius: (againstPercentage + forPercentage) >= 100 ? "0 10px 10px 0" : "0",
-          }} />
-        )}
+        <div style={{
+          width: againstWidth,
+          height: "100%",
+          backgroundColor: "#ef4444",
+        }} />
+        <div style={{
+          width: forWidth,
+          height: "100%",
+          backgroundColor: "#10b981",
+        }} />
       </div>
     </div>
   );
