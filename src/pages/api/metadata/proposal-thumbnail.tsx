@@ -1,5 +1,4 @@
 import React from "react";
-import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
 
 export const config = {
@@ -16,24 +15,16 @@ interface ProposalCardData {
   timeRemaining: string;
 }
 
-export default async function GET(
-  req: NextApiRequest,
-  res: NextApiResponse<ImageResponse | string>,
-) {
-  if (!req.url) {
-    return res.status(404).send("Url not found");
-  }
-
-  const urlParts = req.url.split("?");
-  const params = new URLSearchParams(urlParts[1] || "");
+export default async function handler(req: Request) {
+  const { searchParams } = new URL(req.url);
   const data: ProposalCardData = {
-    id: params.get("id") || "Unknown",
-    title: params.get("title") || "Unknown Proposal",
-    forVotes: params.get("forVotes") || "0",
-    againstVotes: params.get("againstVotes") || "0",
-    abstainVotes: params.get("abstainVotes") || "0",
-    quorumVotes: params.get("quorumVotes") || "100",
-    timeRemaining: params.get("timeRemaining") || "",
+    id: searchParams.get("id") || "Unknown",
+    title: searchParams.get("title") || "Unknown Proposal",
+    forVotes: searchParams.get("forVotes") || "0",
+    againstVotes: searchParams.get("againstVotes") || "0",
+    abstainVotes: searchParams.get("abstainVotes") || "0",
+    quorumVotes: searchParams.get("quorumVotes") || "100",
+    timeRemaining: searchParams.get("timeRemaining") || "",
   };
 
   return new ImageResponse(<ProposalCard data={data} />, {

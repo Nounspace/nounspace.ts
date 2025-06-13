@@ -122,6 +122,11 @@ async function decryptKeyFile(
   nonce: string,
   encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
+  // Ensure wallet has required properties for signing
+  if (!wallet.address) {
+    throw new Error("Wallet must have an address to sign messages");
+  }
+  
   const signature = await signMessage(
     wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
@@ -138,6 +143,11 @@ async function encryptKeyFile(
   nonce: string,
   keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
+  // Ensure wallet has required properties for signing
+  if (!wallet.address) {
+    throw new Error("Wallet must have an address to sign messages");
+  }
+  
   const signature = await signMessage(
     wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
