@@ -1,5 +1,5 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface IntersectionOptions {
   rootMargin?: string;
@@ -10,28 +10,38 @@ interface IntersectionOptions {
 export const useIntersectionObserver = (options: IntersectionOptions = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Extract individual properties to avoid stability issues with the object reference
   const { rootMargin, threshold, root } = options;
-  
+
+  const disconnect = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+  }, []);
+
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+    observerRef.current = new IntersectionObserver(([entry]) => {
       setIsIntersecting(entry.isIntersecting);
     }, { rootMargin, threshold, root });
 
     const currentRef = ref.current;
     if (currentRef) {
-      observer.observe(currentRef);
+      observerRef.current.observe(currentRef);
     }
 
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
+      if (observerRef.current && currentRef) {
+        observerRef.current.unobserve(currentRef);
+        observerRef.current.disconnect();
+        observerRef.current = null;
       }
     };
   }, [rootMargin, threshold, root]);
 
-  return { ref, isIntersecting };
+  return { ref, isIntersecting, disconnect };
 };
 
 const LazyImageComponent = ({ 
@@ -51,10 +61,18 @@ const LazyImageComponent = ({
   referrerPolicy?: string;
 }) => {
   const [loaded, setLoaded] = useState(false);
-  const { ref, isIntersecting: isVisible } = useIntersectionObserver({
-    rootMargin: '200px', 
-    threshold: 0.1,
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const { ref, isIntersecting, disconnect } = useIntersectionObserver({
+    rootMargin: '200px',
+    threshold: 0,
   });
+
+  useEffect(() => {
+    if (isIntersecting) {
+      setShouldLoad(true);
+      disconnect();
+    }
+  }, [isIntersecting, disconnect]);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
@@ -85,8 +103,8 @@ const LazyImageComponent = ({
 
   return (
     <div ref={ref} className="relative">
-      {(!isVisible || !loaded) && placeholder}
-      {isVisible && (
+      {(!shouldLoad || !loaded) && placeholder}
+      {shouldLoad && (
         <img
           src={src}
           alt={alt}
