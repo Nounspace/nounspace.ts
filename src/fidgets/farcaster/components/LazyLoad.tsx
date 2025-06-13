@@ -52,8 +52,8 @@ const LazyImageComponent = ({
 }) => {
   const [loaded, setLoaded] = useState(false);
   const { ref, isIntersecting: isVisible } = useIntersectionObserver({
-    rootMargin: '200px', 
-    threshold: 0.1,
+    rootMargin: '200px',
+    threshold: 0,
   });
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
