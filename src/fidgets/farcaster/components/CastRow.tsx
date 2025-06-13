@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useCallback, useMemo } from "react";
 import { Properties } from "csstype";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
