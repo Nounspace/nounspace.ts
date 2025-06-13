@@ -152,7 +152,10 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash, cast.author.username);
+                const authorIdentifier = embedData.castId.fid
+                  ? String(embedData.castId.fid)
+                  : cast.author.username;
+                onSelectCast(embedData.castId.hash, authorIdentifier);
               }
             }}
           >
