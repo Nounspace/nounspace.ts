@@ -194,5 +194,9 @@
     "ramda": "^0.30.1",
     "supabase": "^1.123.0",
     "vitest": "^1.5.0"
+  },
+  "resolutions": {
+    "@noble/curves": "1.9.2",
+    "@noble/hashes": "1.8.0"
   }
 }
