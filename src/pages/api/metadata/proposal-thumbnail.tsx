@@ -85,7 +85,9 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         <span style={{ fontSize: "67px", fontWeight: "900" }}>Prop {data.id}</span>
         <span style={{ fontSize: "50px", fontWeight: "900", color: "white" }}>{data.title}</span>
         <span style={{ fontSize: "34px", fontWeight: "900" }}>
-          For: {formatVotes(data.forVotes)} | Against: {formatVotes(data.againstVotes)} | Abstain: {formatVotes(data.abstainVotes)}
+          For: {formatVotes(data.forVotes)} | 
+          Against: {formatVotes(data.againstVotes)} | 
+          Abstain: {formatVotes(data.abstainVotes)}
         </span>
         <span style={{ fontSize: "29px", fontWeight: "900" }}>Quorum: {formatVotes(data.quorumVotes)}</span>
         {data.timeRemaining && (
