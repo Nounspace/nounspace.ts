@@ -23,6 +23,7 @@ export async function generateMetadata({
     const username: string = cast?.author?.username || caster;
     const pfpUrl: string = cast?.author?.pfp_url || "";
     const text: string = cast?.text || "";
+    const timestamp: number | string | undefined = cast?.timestamp;
     let imageUrl: string | undefined;
 
     if (Array.isArray(cast.embeds)) {
@@ -42,6 +43,7 @@ export async function generateMetadata({
       pfpUrl,
       text: truncated,
       imageUrl,
+      timestamp,
     });
   } catch (error) {
     console.error("Error generating cast metadata:", error);

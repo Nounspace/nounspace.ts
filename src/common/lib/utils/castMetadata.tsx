@@ -7,6 +7,7 @@ export type CastMetadata = {
   pfpUrl?: string;
   text?: string;
   imageUrl?: string;
+  timestamp?: number | string;
 };
 
 export const getCastMetadataStructure = (
@@ -16,9 +17,19 @@ export const getCastMetadataStructure = (
     return {};
   }
 
-  const { username, pfpUrl, text, imageUrl } = cast;
+  const { username, pfpUrl, text, imageUrl, timestamp } = cast;
 
-  const title = username ? `Cast by @${username}` : "Cast on Nounspace";
+  const dateTitle = timestamp
+    ? new Date(
+        typeof timestamp === "string"
+          ? timestamp
+          : timestamp.toString().length === 10
+            ? timestamp * 1000
+            : timestamp,
+      ).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+    : undefined;
+
+  const title = dateTitle || (username ? `Cast by @${username}` : "Cast on Nounspace");
 
   const params = new URLSearchParams({
     username: username || "",
