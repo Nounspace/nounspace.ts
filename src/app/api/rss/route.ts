@@ -1,7 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import RSSParser from "rss-parser";
+import { isIP } from "node:net";
+
+// Instantiate RSSParser once with a timeout
+const parser: RSSParser = (globalThis as any).__rssParser ??
+  new RSSParser({ requestOptions: { timeout: 8000 } });
+(globalThis as any).__rssParser = parser;
 
 // SSRF protection: Block internal IP ranges and localhost
+function ipToLong(ip: string): number {
+  return ip.split(".").reduce((acc, oct) => (acc << 8) + parseInt(oct, 10), 0) >>> 0;
+}
+
+const IPV4_RANGES: Array<[number, number]> = [
+  ["0.0.0.0", "0.255.255.255"],
+  ["10.0.0.0", "10.255.255.255"],
+  ["100.64.0.0", "100.127.255.255"],
+  ["127.0.0.0", "127.255.255.255"],
+  ["169.254.0.0", "169.254.255.255"],
+  ["172.16.0.0", "172.31.255.255"],
+  ["192.168.0.0", "192.168.255.255"],
+  ["224.0.0.0", "255.255.255.255"],
+].map(([start, end]) => [ipToLong(start), ipToLong(end)]);
+
+function inIpv4Ranges(ip: string): boolean {
+  const num = ipToLong(ip);
+  return IPV4_RANGES.some(([s, e]) => num >= s && num <= e);
+}
+
+function isReservedIpv6(addr: string): boolean {
+  const lower = addr.toLowerCase();
+  return (
+    lower === "::" ||
+    lower === "::1" ||
+    lower.startsWith("fc") ||
+    lower.startsWith("fd") ||
+    /^fe[89ab]/.test(lower) ||
+    lower.startsWith("ff")
+  );
+}
+
 function isInternalUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
@@ -12,21 +50,12 @@ function isInternalUrl(url: string): boolean {
       return true;
     }
 
-    // Block private IP ranges
-    const ip = hostname.split(".");
-    if (ip.length === 4 && ip.every((octet) => /^\d+$/.test(octet))) {
-      const [a, b] = ip.map(Number);
-
-      // 10.0.0.0/8
-      if (a === 10) return true;
-      // 172.16.0.0/12
-      if (a === 172 && b >= 16 && b <= 31) return true;
-      // 192.168.0.0/16
-      if (a === 192 && b === 168) return true;
-      // 169.254.0.0/16
-      if (a === 169 && b === 254) return true;
-      // 0.0.0.0/8
-      if (a === 0) return true;
+    const ipType = isIP(hostname);
+    if (ipType === 4 && inIpv4Ranges(hostname)) {
+      return true;
+    }
+    if (ipType === 6 && isReservedIpv6(hostname)) {
+      return true;
     }
 
     // Block other localhost variations
@@ -60,7 +89,6 @@ export async function GET(request: NextRequest): Promise<Response> {
   }
 
   try {
-    const parser = new RSSParser();
     const feed = await parser.parseURL(url);
 
     return NextResponse.json({
