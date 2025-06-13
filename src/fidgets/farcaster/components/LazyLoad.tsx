@@ -51,10 +51,17 @@ const LazyImageComponent = ({
   referrerPolicy?: string;
 }) => {
   const [loaded, setLoaded] = useState(false);
-  const { ref, isIntersecting: isVisible } = useIntersectionObserver({
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const { ref, isIntersecting } = useIntersectionObserver({
     rootMargin: '200px',
     threshold: 0,
   });
+
+  useEffect(() => {
+    if (isIntersecting) {
+      setShouldLoad(true);
+    }
+  }, [isIntersecting]);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
@@ -85,8 +92,8 @@ const LazyImageComponent = ({
 
   return (
     <div ref={ref} className="relative">
-      {(!isVisible || !loaded) && placeholder}
-      {isVisible && (
+      {(!shouldLoad || !loaded) && placeholder}
+      {shouldLoad && (
         <img
           src={src}
           alt={alt}
