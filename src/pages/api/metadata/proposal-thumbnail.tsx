@@ -57,10 +57,12 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
     return Math.floor(num).toString();
   };
 
-  // Progress bar calculations
-  const forPercentage = Math.min((forVotes / quorumVotes) * 100, 100);
-  const againstPercentage = Math.min((againstVotes / quorumVotes) * 100, 100);
-  const abstainPercentage = Math.min((abstainVotes / quorumVotes) * 100, 100);
+  // Progress bar calculations for Nouns governance
+  // Calculate total scale: against votes + quorum (since for votes overlay on quorum)
+  const totalScale = againstVotes + quorumVotes;
+  const againstPercentage = totalScale > 0 ? (againstVotes / totalScale) * 100 : 0;
+  const quorumPercentage = totalScale > 0 ? (quorumVotes / totalScale) * 100 : 0;
+  const forPercentage = totalScale > 0 ? (forVotes / totalScale) * 100 : 0;
 
   return (
     <div
@@ -98,28 +100,54 @@ const ProposalCard = ({ data }: { data: ProposalCardData }) => {
         )}
       </div>
 
-      {/* Progress bar - 30% smaller width, aligned with text */}
+      {/* Progress bar - Nouns governance style */}
       <div style={{
         width: "70%",
         height: "20px",
-        backgroundColor: "rgba(255, 255, 255, 0.3)",
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
         borderRadius: "10px",
-        display: "flex",
+        position: "relative",
         marginTop: "20px",
         marginLeft: "111px",
       }}>
-        <div style={{
-          width: `${Math.max(0, Math.min(forPercentage, 100))}%`,
-          height: "100%",
-          backgroundColor: "#10b981",
-          borderRadius: forPercentage >= 100 ? "10px" : "10px 0 0 10px",
-        }} />
-        <div style={{
-          width: `${Math.max(0, Math.min(againstPercentage, 100 - forPercentage))}%`,
-          height: "100%",
-          backgroundColor: "#ef4444",
-          borderRadius: (forPercentage + againstPercentage) >= 100 ? "0 10px 10px 0" : "0",
-        }} />
+        {/* Against votes (red) - always on the left */}
+        {againstPercentage > 0 && (
+          <div style={{
+            position: "absolute",
+            left: "0",
+            top: "0",
+            width: `${Math.min(againstPercentage, 100)}%`,
+            height: "100%",
+            backgroundColor: "#ef4444",
+            borderRadius: againstPercentage >= 100 ? "10px" : "10px 0 0 10px",
+          }} />
+        )}
+        
+        {/* Quorum bar (grey) - starts after against votes */}
+        {quorumPercentage > 0 && (
+          <div style={{
+            position: "absolute",
+            left: `${Math.min(againstPercentage, 100)}%`,
+            top: "0",
+            width: `${Math.min(quorumPercentage, 100 - againstPercentage)}%`,
+            height: "100%",
+            backgroundColor: "rgba(255, 255, 255, 0.3)",
+            borderRadius: (againstPercentage + quorumPercentage) >= 100 ? "0 10px 10px 0" : "0",
+          }} />
+        )}
+        
+        {/* For votes (green) - overlays on quorum, starts after against votes */}
+        {forPercentage > 0 && (
+          <div style={{
+            position: "absolute",
+            left: `${Math.min(againstPercentage, 100)}%`,
+            top: "0",
+            width: `${Math.min(forPercentage, 100 - againstPercentage)}%`,
+            height: "100%",
+            backgroundColor: "#10b981",
+            borderRadius: (againstPercentage + forPercentage) >= 100 ? "0 10px 10px 0" : "0",
+          }} />
+        )}
       </div>
     </div>
   );
