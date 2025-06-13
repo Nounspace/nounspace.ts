@@ -26,6 +26,8 @@ export const THEMES = [
       fidgetBorderWidth: "1px",
       fidgetBorderColor: "#C0C0C0",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -43,6 +45,8 @@ export const THEMES = [
       fidgetBorderWidth: "1px",
       fidgetBorderColor: "#ffffff",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -60,6 +64,8 @@ export const THEMES = [
       fidgetBorderWidth: "1px",
       fidgetBorderColor: "#ffffff",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -77,6 +83,8 @@ export const THEMES = [
       fidgetBorderWidth: "0",
       fidgetBorderColor: "transparent",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -94,6 +102,8 @@ export const THEMES = [
       fidgetBorderWidth: "0",
       fidgetBorderColor: "transparent",
       fidgetShadow: "0 5px 15px rgba(0,0,0,0.55)",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -111,6 +121,8 @@ export const THEMES = [
       fidgetBorderWidth: "1px",
       fidgetBorderColor: "#FACA15",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -128,6 +140,8 @@ export const THEMES = [
       fidgetBorderWidth: "4px",
       fidgetBorderColor: "#FFFFFF",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -145,6 +159,8 @@ export const THEMES = [
       fidgetBorderWidth: "2px",
       fidgetBorderColor: "#F8B4D9",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -163,6 +179,8 @@ export const THEMES = [
       fidgetBorderWidth: "2px",
       fidgetBorderColor: "#90A5B9",
       fidgetShadow: "none",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
   {
@@ -180,6 +198,8 @@ export const THEMES = [
       fidgetBorderWidth: "2px",
       fidgetBorderColor: "#F05252",
       fidgetShadow: "0 5px 15px rgba(0,0,0,0.55)",
+      fidgetBorderRadius: "12px",
+      gridSpacing: "16",
     },
   },
 ];

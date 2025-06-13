@@ -10,12 +10,12 @@ interface IntersectionOptions {
 export const useIntersectionObserver = (options: IntersectionOptions = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-const observerRef = useRef<IntersectionObserver | null>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Extract individual properties to avoid stability issues with the object reference
   const { rootMargin, threshold, root } = options;
 
-   const disconnect = useCallback(() => {
+  const disconnect = useCallback(() => {
     if (observerRef.current) {
       observerRef.current.disconnect();
       observerRef.current = null;
@@ -33,7 +33,7 @@ const observerRef = useRef<IntersectionObserver | null>(null);
     }
 
     return () => {
-     if (observerRef.current && currentRef) {
+      if (observerRef.current && currentRef) {
         observerRef.current.unobserve(currentRef);
         observerRef.current.disconnect();
         observerRef.current = null;
@@ -67,7 +67,13 @@ const LazyImageComponent = ({
     threshold: 0,
   });
 
-    const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  useEffect(() => {
+    if (isVisible) {
+      setShouldLoad(true);
+    }
+  }, [isVisible]);
+
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
     if (onLoad) onLoad(e);
   };
