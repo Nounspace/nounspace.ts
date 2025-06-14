@@ -6,6 +6,12 @@ export enum FilterType {
   Keyword = "keyword",
 }
 
+export const FILTER_TYPES = [
+  { name: "Users", value: FilterType.Users },
+  { name: "Channel", value: FilterType.Channel },
+  { name: "Keyword", value: FilterType.Keyword },
+];
+
 export const FEED_TYPES = [
   { name: "Following", value: FeedType.Following },
   { name: "For you", value: "for_you" },
