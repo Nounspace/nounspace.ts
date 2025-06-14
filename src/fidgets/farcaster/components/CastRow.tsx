@@ -27,7 +27,7 @@ import { Properties } from "csstype";
 import { get, includes, isObject, isUndefined, map } from "lodash";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
@@ -254,10 +254,6 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [didRecast, setDidRecast] = useState(
     cast.viewer_context?.recasted ?? false,
   );
-  useEffect(() => {
-    setDidLike(cast.viewer_context?.liked ?? false);
-    setDidRecast(cast.viewer_context?.recasted ?? false);
-  }, [cast.viewer_context?.liked, cast.viewer_context?.recasted]);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
 
   const authorFid = cast.author.fid;
@@ -275,23 +271,27 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
-    const likesCount = cast.reactions?.likes_count;
+    const likesCount = cast.reactions?.likes_count || 0;
 
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
+
+    const viewerLiked = cast.viewer_context?.liked ?? false;
+    const viewerRecasted = cast.viewer_context?.recasted ?? false;
+
     return {
       [CastReactionType.likes]: {
-        count: likesCount + Number(didLike),
+        count: likesCount + (!viewerLiked ? Number(didLike) : 0),
         isActive:
           didLike ||
-          cast.viewer_context?.liked ||
+          viewerLiked ||
           includes(likeFids, userFid),
       },
       [CastReactionType.recasts]: {
-        count: recastsCount + Number(didRecast),
+        count: recastsCount + (!viewerRecasted ? Number(didRecast) : 0),
         isActive:
           didRecast ||
-          cast.viewer_context?.recasted ||
+          viewerRecasted ||
           includes(recastFids, userFid),
       },
       [CastReactionType.replies]: { count: repliesCount },
