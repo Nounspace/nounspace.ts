@@ -2,8 +2,13 @@ import React, { memo, useCallback } from "react";
 import Slider from "@mui/material/Slider";
 import { Button } from "@/common/components/atoms/button";
 
+type VotingAction = 
+  | { type: "toggleApprovalChoice"; index: number }
+  | { type: "setWeightedChoice"; index: number; weight: number }
+  | { type: "setRankedChoice"; index: number; rank: number };
+
 interface VotingUIProps {
-  proposal: any;
+  proposal: unknown;
   handleVote: (
     choiceId: number | number[] | { [key: string]: number },
     reason: string,
@@ -11,15 +16,15 @@ interface VotingUIProps {
 }
 
 interface StatefulVotingUIProps extends VotingUIProps {
-  state: any;
-  dispatch: React.Dispatch<any>;
+  state: unknown;
+  dispatch: React.Dispatch<VotingAction>;
 }
 
 export const SingleChoiceVotingUI: React.FC<VotingUIProps> = memo(({ 
   proposal, 
   handleVote 
 }) => (
-  <div className="flex-col justify-center gap-4">
+  <div className="flex flex-col justify-center gap-4">
     {proposal.choices.map((choice: string, index: number) => {
       const handleChoiceClick = () => handleVote(index + 1, choice);
       
@@ -205,27 +210,27 @@ RankedChoiceVotingUI.displayName = 'RankedChoiceVotingUI';
 
 // Legacy exports for backward compatibility
 export const renderSingleChoiceVotingUI = (
-  proposal: any,
+  proposal: unknown,
   handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
 ) => <SingleChoiceVotingUI proposal={proposal} handleVote={handleVote} />;
 
 export const renderApprovalVotingUI = (
-  proposal: any,
-  state: any,
-  dispatch: React.Dispatch<any>,
+  proposal: unknown,
+  state: unknown,
+  dispatch: React.Dispatch<VotingAction>,
   handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
 ) => <ApprovalVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
 
 export const renderWeightedVotingUI = (
-  proposal: any,
-  state: any,
-  dispatch: React.Dispatch<any>,
+  proposal: unknown,
+  state: unknown,
+  dispatch: React.Dispatch<VotingAction>,
   handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
 ) => <WeightedVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
 
 export const renderRankedChoiceVotingUI = (
-  proposal: any,
-  state: any,
-  dispatch: React.Dispatch<any>,
+  proposal: unknown,
+  state: unknown,
+  dispatch: React.Dispatch<VotingAction>,
   handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
 ) => <RankedChoiceVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
