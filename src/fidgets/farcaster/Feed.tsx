@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -25,7 +25,6 @@ import {
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
-import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
