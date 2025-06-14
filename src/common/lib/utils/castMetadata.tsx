@@ -1,5 +1,5 @@
 import { WEBSITE_URL } from "@/constants/app";
-import { merge } from "lodash";
+// Avoid pulling in the whole lodash/merge for three shallow merges
 import { Metadata } from "next";
 
 export type CastMetadata = {
@@ -37,7 +37,7 @@ export const getCastMetadataStructure = (
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/cast?${params.toString()}`;
 
-  const metadata: Metadata = {
+  let metadata: Metadata = {
     title,
     openGraph: {
       title,
@@ -51,11 +51,12 @@ export const getCastMetadataStructure = (
   };
 
   if (text) {
-    merge(metadata, {
+    metadata = {
+      ...metadata,
       description: text,
-      openGraph: { description: text },
-      twitter: { description: text },
-    });
+      openGraph: { ...metadata.openGraph, description: text },
+      twitter: { ...metadata.twitter, description: text },
+    };
   }
 
   return metadata;
