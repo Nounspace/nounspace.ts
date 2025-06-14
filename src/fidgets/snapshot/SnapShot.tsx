@@ -162,8 +162,8 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
   // Memoize disabled states
   const isPreviousDisabled = useMemo(() => skip === 0, [skip]);
   const isNextDisabled = useMemo(
-    () => proposals.length < first,
-    [proposals.length, first]
+    () => (proposals?.length ?? 0) < first,
+    [proposals?.length, first]
   );
 
   // Memoize the container style using CSS variables directly
