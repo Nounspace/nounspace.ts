@@ -20,7 +20,7 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal";
+export type SpacePageType = "profile" | "token" | "proposal" | "channel";
 
 interface PublicSpaceProps {
   spaceId: string | null;
@@ -37,6 +37,7 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  channelName?: string;
 }
 
 export default function PublicSpace({
@@ -52,6 +53,7 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
   pageType, // New prop
+  channelName,
 }: PublicSpaceProps) {
   console.log("PublicSpace mounted:", {
     spaceId: providedSpaceId,
@@ -419,6 +421,16 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress,
             });
+          } else if (resolvedPageType === "channel" && channelName) {
+            console.log("Attempting to register channel space:", {
+              currentUserFid,
+              channelName,
+            });
+            newSpaceId = await registerSpaceFid(
+              currentUserFid,
+              channelName,
+              getSpacePageUrl("Profile"),
+            );
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {
               currentUserFid,

@@ -789,7 +789,9 @@ export const createSpaceStoreFunc = (
       );
       
       if (existingSpaces.value) {
-        const existingSpace = existingSpaces.value.spaces.find(space => space.fid === fid);
+        const existingSpace = existingSpaces.value.spaces.find(
+          space => space.fid === fid && space.spaceName === name,
+        );
         if (existingSpace) {
           return existingSpace.spaceId;
         }
