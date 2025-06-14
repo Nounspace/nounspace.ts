@@ -1,5 +1,5 @@
 import React from "react";
-import { ImageResponse } from "next/server";
+import { ImageResponse } from "next/og";
 import { WEBSITE_URL } from "@/constants/app";
 
 export const runtime = "edge";
