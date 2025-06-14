@@ -86,34 +86,28 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
 
         {/* Voting Results */}
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
-          {choices.map((choice: string, index: number) => {
-            const score = scores[index];
-            const percentage =
-              totalScores > 0 ? (score / totalScores) * 100 : 0;
+          {choices.map((choice, index) => {
+            const score = scores[index] || 0;
+            const percentage = totalScores > 0 ? ((score / totalScores) * 100).toFixed(1) : "0.0";
             const isWinning = index === winningIndex && score > 0;
 
             return (
-              <React.Fragment key={index}>
-                <div
-                  className={`text-xs font-medium ${isWinning ? "text-green-600" : ""}`}
-                >
-                  {isWinning && "👑 "}
-                  {choice}
+              <div key={index} className="mb-2">
+                <div className="flex justify-between mb-1">
+                  <span className="text-sm font-medium">{choice}</span>
+                  <span className="text-sm text-gray-600">
+                    {score.toLocaleString()} ({percentage}%)
+                  </span>
                 </div>
-                <div className="h-2 w-full bg-gray-300 rounded">
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className={`h-full rounded ${
-                      isWinning ? "bg-green-500" : "bg-blue-400"
-                    }`}
-                    style={{ width: `${percentage}%` }}
+                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: totalScores > 0 ? `${(score / totalScores) * 100}%` : "0%"
+                    }}
                   />
                 </div>
-                <div
-                  className={`text-xs font-medium ${isWinning ? "text-green-600" : ""}`}
-                >
-                  {score.toFixed(2)} ({percentage.toFixed(1)}%)
-                </div>
-              </React.Fragment>
+              </div>
             );
           })}
         </div>
@@ -135,6 +129,12 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
         </div>
       </div>
     );
+  }
+);
+
+VotingResults.displayName = "VotingResults";
+
+export default VotingResults;
   }
 );
 
