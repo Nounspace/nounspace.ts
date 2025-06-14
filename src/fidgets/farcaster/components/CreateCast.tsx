@@ -4,7 +4,7 @@ import {
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ModManifest,
@@ -274,15 +274,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fetchInitialChannels();
   }, [fid]);
 
-  const debouncedGetChannels = useCallback(
-    debounce(
-      async (query: string) => {
-        return await fetchChannelsByName(query);
-      },
-      200,
-      { leading: true, trailing: false },
-    ),
+  const getChannelsDebounced = useMemo(
+    () =>
+      debounce(
+        async (query: string) => fetchChannelsByName(query),
+        200,
+        { leading: true, trailing: false },
+      ),
     [],
+  );
+
+  const debouncedGetChannels = useCallback(
+    (query: string) => getChannelsDebounced(query),
+    [getChannelsDebounced],
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
