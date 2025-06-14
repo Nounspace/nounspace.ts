@@ -17,17 +17,25 @@ export const isWebUrl = (url: string) => {
   return url.match(/^(http|https):\/\//) != null;
 };
 
-export const isVideoUrl = (url: string) => {
+const VIDEO_STREAM_DOMAINS = [
+  "https://stream.warpcast.com",
+  "https://stream.farcaster.xyz",
+];
+
+const VIDEO_PATH_REGEX = /\/~\/(video|shorts)\//i;
+
+const VIDEO_EXTENSION_REGEX = /\.(m3u8|mp4|webm|mov|ogg)(\?|$)/i;
+
+export const isVideoUrl = (url: string): boolean => {
   if (!url) {
     return false;
   }
 
+  const lowerUrl = url.toLowerCase();
+
   return (
-    url.startsWith("https://stream.warpcast.com") ||
-    url.startsWith("https://stream.farcaster.xyz") ||
-    url.includes("/~/video/") ||
-    url.includes("/~/shorts/") ||
-    /\.m3u8($|\?)/.test(url) ||
-    /\.mp4($|\?)/.test(url)
+    VIDEO_STREAM_DOMAINS.some((domain) => lowerUrl.startsWith(domain)) ||
+    VIDEO_PATH_REGEX.test(lowerUrl) ||
+    VIDEO_EXTENSION_REGEX.test(lowerUrl)
   );
 };
