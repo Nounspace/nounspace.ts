@@ -7,7 +7,7 @@ import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
 import FrameEmbed from "./FrameEmbed";
-import { isImageUrl } from "@/common/lib/utils/urls";
+import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
 import CreateCastImage from "./createCastImage";
 
 export type CastEmbed = {
@@ -38,7 +38,7 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast:
   }
   else if (url.startsWith('"chain:')) {
     return <OnchainEmbed url={url} key={key} />;
-  } else if (url.startsWith("https://stream.warpcast.com")) {
+  } else if (isVideoUrl(url)) {
     return <VideoEmbed url={url} key={key} />;
   } else if (url.startsWith("https://warpcast.com") && !url.includes("/~/")) {
     return <EmbededCast url={url} key={key} />;
