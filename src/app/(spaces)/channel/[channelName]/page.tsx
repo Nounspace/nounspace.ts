@@ -30,7 +30,13 @@ async function getChannelSpace(channel: string) {
   return data[0].spaceId as string;
 }
 
-export default async function ChannelSpace({ params }) {
+import type { PageProps } from "next";
+
+interface ChannelPageProps extends PageProps {
+  params: { channelName?: string; tabName?: string };
+}
+
+export default async function ChannelSpace({ params }: ChannelPageProps) {
   const channelName = params?.channelName as string;
   if (!channelName) return <SpaceNotFound />;
 
@@ -48,7 +54,7 @@ export default async function ChannelSpace({ params }) {
       tabName="Feed"
       initialConfig={INITIAL_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
-      spaceOwnerFid={info.host?.fid ?? null}
+      spaceOwnerFid={info.host?.fid}
       pageType="channel"
       channelName={channelName}
     />
