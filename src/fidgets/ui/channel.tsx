@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
