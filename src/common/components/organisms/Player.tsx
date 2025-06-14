@@ -17,7 +17,6 @@ import {
 } from "react-icons/lia";
 import { Button } from "@/common/components/atoms/button";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { Address } from "viem";
 import ScanAddress from "../molecules/ScanAddress";
 import { AlchemyNetwork } from "@/fidgets/ui/gallery";
@@ -27,6 +26,7 @@ import {
 } from "@/constants/nounishLowfi";
 import { FaPause, FaPlay } from "react-icons/fa";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 
 type ContentMetadata = {
   title?: string | null;
@@ -115,16 +115,17 @@ export const Player: React.FC<PlayerProps> = ({ url, shrunk = false }) => {
       setMuted(false);
     }
   }, [playing, started]);
+  const normalizedUrl = Array.isArray(url) ? url[0] : url;
 
   const onPlay = useCallback(() => {
-    trackAnalyticsEvent(AnalyticsEvent.PLAY, { url });
+    trackAnalyticsEvent(AnalyticsEvent.PLAY, { url: normalizedUrl });
     setPlaying(true);
-  }, []);
+  }, [normalizedUrl]);
 
   const onPause = useCallback(() => {
-    trackAnalyticsEvent(AnalyticsEvent.PAUSE, { url });
+    trackAnalyticsEvent(AnalyticsEvent.PAUSE, { url: normalizedUrl });
     setPlaying(false);
-  }, []);
+  }, [normalizedUrl]);
 
   const onReady = useCallback((player) => {
     setReady(true);

@@ -1,9 +1,6 @@
-// src/common/lib/analyticsUtils.ts
 
-import {
-  analytics,
-  AnalyticsEventProperties,
-} from "@/common/providers/AnalyticsProvider";
+import { AnalyticsEventProperties } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 
 export const trackAnalyticsEvent = <T extends keyof AnalyticsEventProperties>(
   eventName: T,

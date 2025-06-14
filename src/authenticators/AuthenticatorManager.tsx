@@ -1,3 +1,17 @@
+import { useAppStore } from "@/common/data/stores/app";
+import {
+  concat,
+  first,
+  fromPairs,
+  get,
+  isNull,
+  isUndefined,
+  map,
+  mapValues,
+  reject,
+  tail,
+} from "lodash";
+import moment from "moment";
 import React, {
   createContext,
   useCallback,
@@ -12,21 +26,7 @@ import {
   AuthenticatorInitializer,
   AuthenticatorMethods,
 } from ".";
-import {
-  concat,
-  first,
-  fromPairs,
-  get,
-  isNull,
-  isUndefined,
-  map,
-  mapValues,
-  reject,
-  tail,
-} from "lodash";
 import authenticators from "./authenticators";
-import moment from "moment";
-import { useAppStore } from "@/common/data/stores/app";
 
 type AuthenticatorPermissions = {
   [fidgetId: string]: string[];

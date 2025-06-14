@@ -10,10 +10,8 @@ import { concat, isUndefined } from "lodash";
 import { hashObject } from "@/common/lib/signedFiles";
 import moment from "moment";
 import { bytesToHex } from "@noble/ciphers/utils";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 
 type FarcasterActions = {
   getFidsForCurrentIdentity: () => Promise<void>;

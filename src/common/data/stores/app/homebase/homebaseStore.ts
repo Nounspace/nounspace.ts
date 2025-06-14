@@ -13,14 +13,12 @@ import {
 } from "@/app/(spaces)/Space";
 import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-import {
   HomeBaseTabStore,
   createHomeBaseTabStoreFunc,
 } from "./homebaseTabsStore";
 import moment from "moment";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 
 interface HomeBaseStoreState {
   homebaseConfig?: SpaceConfig;
