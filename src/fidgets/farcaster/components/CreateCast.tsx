@@ -50,6 +50,7 @@ import {
   submitCast,
 } from "../utils";
 import type { Channel } from "../utils";
+import type { Channel as ModChannel } from "@mod-protocol/farcaster";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 
@@ -722,7 +723,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
                   onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel);
+                    setChannel(selectedChannel as unknown as ModChannel);
                   }}
                   value={channel}
                   initialChannels={initialChannels}
