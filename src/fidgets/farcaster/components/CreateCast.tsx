@@ -49,6 +49,7 @@ import {
   isFarcasterUrlEmbed,
   submitCast,
 } from "../utils";
+import type { Channel } from "../utils";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 
