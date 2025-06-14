@@ -4,6 +4,7 @@ import { Metadata } from "next";
 
 export type CastMetadata = {
   username?: string;
+  displayName?: string;
   pfpUrl?: string;
   text?: string;
   imageUrl?: string;
@@ -17,25 +18,17 @@ export const getCastMetadataStructure = (
     return {};
   }
 
-  const { username, pfpUrl, text, imageUrl, timestamp } = cast;
+  const { username, displayName, pfpUrl, text, imageUrl, timestamp } = cast;
 
-  const dateTitle = timestamp
-    ? new Date(
-        typeof timestamp === "string"
-          ? timestamp
-          : timestamp.toString().length === 10
-            ? timestamp * 1000
-            : timestamp,
-      ).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
-    : undefined;
-
-  const title = dateTitle || (username ? `Cast by @${username}` : "Cast on Nounspace");
+  const title = username ? `@${username} on Nounspace` : "Cast on Nounspace";
 
   const params = new URLSearchParams({
     username: username || "",
+    displayName: displayName || "",
     pfpUrl: pfpUrl || "",
     text: text || "",
     imageUrl: imageUrl || "",
+    timestamp: timestamp ? String(timestamp) : "",
   });
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/cast?${params.toString()}`;
