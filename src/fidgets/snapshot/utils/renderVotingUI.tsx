@@ -20,7 +20,7 @@ type RankedChoiceVotingState = {
 };
 // ---
 
-type VotingAction = 
+type VotingAction =
   | { type: "toggleApprovalChoice"; index: number }
   | { type: "setWeightedChoice"; index: number; weight: number }
   | { type: "setRankedChoice"; index: number; rank: number };
@@ -29,7 +29,7 @@ interface VotingUIProps {
   proposal: Proposal;
   handleVote: (
     choiceId: number | number[] | { [key: string]: number },
-    reason: string,
+    reason: string
   ) => void;
 }
 
@@ -40,34 +40,30 @@ interface StatefulVotingUIProps<TState> extends VotingUIProps {
 }
 
 // --- SingleChoiceVotingUI ---
-export const SingleChoiceVotingUI: React.FC<VotingUIProps> = memo(({ 
-  proposal, 
-  handleVote 
-}) => (
-  <div className="flex flex-col justify-center gap-4">
-    {proposal.choices.map((choice: string, index: number) => {
-      const handleChoiceClick = () => handleVote(index + 1, choice);
-      
-      return (
-        <Button
-          key={index}
-          onClick={handleChoiceClick}
-          className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
-        >
-          {choice}
-        </Button>
-      );
-    })}
-  </div>
-));
+export const SingleChoiceVotingUI: React.FC<VotingUIProps> = memo(
+  ({ proposal, handleVote }) => (
+    <div className="flex flex-col justify-center gap-4">
+      {proposal.choices.map((choice: string, index: number) => {
+        const handleChoiceClick = () => handleVote(index + 1, choice);
+
+        return (
+          <Button
+            key={index}
+            onClick={handleChoiceClick}
+            className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
+          >
+            {choice}
+          </Button>
+        );
+      })}
+    </div>
+  )
+);
 
 // --- ApprovalVotingUI ---
-export const ApprovalVotingUI: React.FC<StatefulVotingUIProps<ApprovalVotingState>> = memo(({ 
-  proposal, 
-  state, 
-  dispatch, 
-  handleVote 
-}) => {
+export const ApprovalVotingUI: React.FC<
+  StatefulVotingUIProps<ApprovalVotingState>
+> = memo(({ proposal, state, dispatch, handleVote }) => {
   const handleSubmit = useCallback(() => {
     handleVote(state.selectedChoices, "Approval vote");
   }, [state.selectedChoices, handleVote]);
@@ -77,7 +73,7 @@ export const ApprovalVotingUI: React.FC<StatefulVotingUIProps<ApprovalVotingStat
       {proposal.choices.map((choice: string, index: number) => {
         const choiceIndex = index + 1;
         const isChecked = state.selectedChoices.includes(choiceIndex);
-        
+
         const handleToggle = () => {
           dispatch({ type: "toggleApprovalChoice", index: choiceIndex });
         };
@@ -97,29 +93,40 @@ export const ApprovalVotingUI: React.FC<StatefulVotingUIProps<ApprovalVotingStat
           </div>
         );
       })}
-      <button
-        className="bg-green-500 text-white py-2 px-4 rounded mt-2"
+      <Button
+        variant="primary"
+        className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
         onClick={handleSubmit}
       >
         Submit Approval Vote
-      </button>
+      </Button>
     </div>
   );
 });
 
 // --- WeightedVotingUI ---
-export const WeightedVotingUI: React.FC<StatefulVotingUIProps<WeightedVotingState>> = memo(({ 
-  proposal, 
-  state, 
-  dispatch, 
-  handleVote 
-}) => {
+export const WeightedVotingUI: React.FC<
+  StatefulVotingUIProps<WeightedVotingState>
+> = memo(({ proposal, state, dispatch, handleVote }) => {
   const handleSubmit = useCallback(() => {
     handleVote(
       Object.fromEntries(state.weightedChoices.entries()),
-      "Weighted vote",
+      "Weighted vote"
     );
   }, [state.weightedChoices, handleVote]);
+
+  const createSliderChangeHandler = useCallback(
+    (choiceIndex: number) => {
+      return (e: Event, newValue: number | number[]) => {
+        dispatch({
+          type: "setWeightedChoice",
+          index: choiceIndex,
+          weight: newValue as number,
+        });
+      };
+    },
+    [dispatch]
+  );
 
   return (
     <>
@@ -127,14 +134,8 @@ export const WeightedVotingUI: React.FC<StatefulVotingUIProps<WeightedVotingStat
         {proposal.choices.map((choice: string, index: number) => {
           const choiceIndex = index + 1;
           const value = state.weightedChoices.get(choiceIndex) || 0;
-          
-          const handleSliderChange = (e: Event, newValue: number | number[]) => {
-            dispatch({
-              type: "setWeightedChoice",
-              index: choiceIndex,
-              weight: newValue as number,
-            });
-          };
+
+          const handleSliderChange = createSliderChangeHandler(choiceIndex);
 
           return (
             <React.Fragment key={index}>
@@ -170,32 +171,36 @@ export const WeightedVotingUI: React.FC<StatefulVotingUIProps<WeightedVotingStat
 });
 
 // --- RankedChoiceVotingUI ---
-export const RankedChoiceVotingUI: React.FC<StatefulVotingUIProps<RankedChoiceVotingState>> = memo(({ 
-  proposal, 
-  state, 
-  dispatch, 
-  handleVote 
-}) => {
+export const RankedChoiceVotingUI: React.FC<
+  StatefulVotingUIProps<RankedChoiceVotingState>
+> = memo(({ proposal, state, dispatch, handleVote }) => {
   const handleSubmit = useCallback(() => {
     handleVote(
       Object.fromEntries(state.rankedChoices.entries()),
-      "Ranked choice vote",
+      "Ranked choice vote"
     );
   }, [state.rankedChoices, handleVote]);
+
+  const createSliderChangeHandler = useCallback(
+    (choiceIndex: number) => {
+      return (e: Event, newValue: number | number[]) => {
+        dispatch({
+          type: "setRankedChoice",
+          index: choiceIndex,
+          rank: newValue as number,
+        });
+      };
+    },
+    [dispatch]
+  );
 
   return (
     <div>
       {proposal.choices.map((choice: string, index: number) => {
         const choiceIndex = index + 1;
         const value = state.rankedChoices.get(choiceIndex) || 0;
-        
-        const handleSliderChange = (e: Event, newValue: number | number[]) => {
-          dispatch({
-            type: "setRankedChoice",
-            index: choiceIndex,
-            rank: newValue as number,
-          });
-        };
+
+        const handleSliderChange = createSliderChangeHandler(choiceIndex);
 
         return (
           <div key={index} className="flex items-center mb-2">
@@ -218,45 +223,79 @@ export const RankedChoiceVotingUI: React.FC<StatefulVotingUIProps<RankedChoiceVo
           </div>
         );
       })}
-      <button
-        className="w-full bg-green-500 text-white py-2 px-4 rounded mt-2"
+      <Button
+        variant="primary"
+        className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
         onClick={handleSubmit}
       >
         Submit Ranked Vote
-      </button>
+      </Button>
     </div>
   );
 });
 
 // Set display names for better debugging
-SingleChoiceVotingUI.displayName = 'SingleChoiceVotingUI';
-ApprovalVotingUI.displayName = 'ApprovalVotingUI';
-WeightedVotingUI.displayName = 'WeightedVotingUI';
-RankedChoiceVotingUI.displayName = 'RankedChoiceVotingUI';
+SingleChoiceVotingUI.displayName = "SingleChoiceVotingUI";
+ApprovalVotingUI.displayName = "ApprovalVotingUI";
+WeightedVotingUI.displayName = "WeightedVotingUI";
+RankedChoiceVotingUI.displayName = "RankedChoiceVotingUI";
 
 // Legacy exports for backward compatibility
 export const renderSingleChoiceVotingUI = (
   proposal: Proposal,
-  handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
+  handleVote: (
+    choiceId: number | number[] | { [key: string]: number },
+    reason: string
+  ) => void
 ) => <SingleChoiceVotingUI proposal={proposal} handleVote={handleVote} />;
 
 export const renderApprovalVotingUI = (
   proposal: Proposal,
   state: ApprovalVotingState,
   dispatch: React.Dispatch<VotingAction>,
-  handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
-) => <ApprovalVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
+  handleVote: (
+    choiceId: number | number[] | { [key: string]: number },
+    reason: string
+  ) => void
+) => (
+  <ApprovalVotingUI
+    proposal={proposal}
+    state={state}
+    dispatch={dispatch}
+    handleVote={handleVote}
+  />
+);
 
 export const renderWeightedVotingUI = (
   proposal: Proposal,
   state: WeightedVotingState,
   dispatch: React.Dispatch<VotingAction>,
-  handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
-) => <WeightedVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
+  handleVote: (
+    choiceId: number | number[] | { [key: string]: number },
+    reason: string
+  ) => void
+) => (
+  <WeightedVotingUI
+    proposal={proposal}
+    state={state}
+    dispatch={dispatch}
+    handleVote={handleVote}
+  />
+);
 
 export const renderRankedChoiceVotingUI = (
   proposal: Proposal,
   state: RankedChoiceVotingState,
   dispatch: React.Dispatch<VotingAction>,
-  handleVote: (choiceId: number | number[] | { [key: string]: number }, reason: string) => void,
-) => <RankedChoiceVotingUI proposal={proposal} state={state} dispatch={dispatch} handleVote={handleVote} />;
+  handleVote: (
+    choiceId: number | number[] | { [key: string]: number },
+    reason: string
+  ) => void
+) => (
+  <RankedChoiceVotingUI
+    proposal={proposal}
+    state={state}
+    dispatch={dispatch}
+    handleVote={handleVote}
+  />
+);
