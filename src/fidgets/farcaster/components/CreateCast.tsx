@@ -418,7 +418,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
   const text = getText();
   const embeds = getEmbeds();
-  const channel = getChannel();
+  const channel = getChannel() as Channel | null;
   useEffect(() => {
     if (!editor) return;
     if (isPublishing) return;
@@ -725,7 +725,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   onSelect={(selectedChannel) => {
                     setChannel(selectedChannel as unknown as ModChannel);
                   }}
-                  value={channel}
+                  value={channel as unknown as Channel}
                   initialChannels={initialChannels}
                 />
               )}
