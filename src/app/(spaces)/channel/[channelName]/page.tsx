@@ -5,7 +5,7 @@ import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import axiosBackend from "@/common/data/api/backend";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { type Channel } from "@/fidgets/farcaster/utils";
-import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore } from "next/cache";
 
 async function loadChannelInfo(channel: string): Promise<Channel | null> {
   try {
@@ -31,19 +31,12 @@ async function getChannelSpace(channel: string) {
 }
 
 // Define the expected params for this page
-export interface ChannelPageProps {
-  params: ChannelPageParams;
-}
-
-interface ChannelPageParams {
-  channelName?: string;
-  tabName?: string;
-}
-
 export default async function ChannelSpace({
   params,
-}: ChannelPageProps) {
-  const channelName = params?.channelName as string;
+}: {
+  params: { channelName?: string; tabName?: string };
+}) {
+  const { channelName } = await params;
   if (!channelName) return <SpaceNotFound />;
 
   const info = await loadChannelInfo(channelName);
