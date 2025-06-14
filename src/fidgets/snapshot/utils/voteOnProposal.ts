@@ -33,10 +33,17 @@ const voteOnProposalCore = async ({
   }
 
   const web3 = new Web3Provider(window.ethereum);
-  const [account] = await web3.listAccounts();
+  let [account] = await web3.listAccounts();
   
   if (!account) {
-    throw new Error("Please connect your wallet");
+    // Request wallet connection
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    // Retrieve accounts again after connection request
+    [account] = await web3.listAccounts();
+    
+    if (!account) {
+      throw new Error("Please connect your wallet");
+    }
   }
 
   const receipt = await client.vote(web3, account, {

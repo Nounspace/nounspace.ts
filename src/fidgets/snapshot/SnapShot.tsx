@@ -202,7 +202,7 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
           className="grid gap-2 overflow-y-auto overflow-x-hidden flex-1"
           style={containerStyle}
         >
-          {proposals.map((proposal) => (
+          {proposals?.map((proposal) => (
             <ProposalItem
               key={proposal.id}
               proposal={proposal}
