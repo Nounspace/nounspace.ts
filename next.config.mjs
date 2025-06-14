@@ -81,17 +81,14 @@ const nextConfig = {
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
         os: false,
-        "@walletconnect/types": false,
       };
       config.resolve.fallback = {
         ...(config.resolve.fallback || {}),
         os: false,
-        "@walletconnect/types": false,
       };
     } else {
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
-        "@walletconnect/types": false,
       };
     }
     return config;
