@@ -36,7 +36,7 @@ export default async function ChannelSpace({
 }: {
   params: { channelName?: string; tabName?: string };
 }) {
-  const { channelName } = await params;
+  const { channelName } = params;
   if (!channelName) return <SpaceNotFound />;
 
   const info = await loadChannelInfo(channelName);
