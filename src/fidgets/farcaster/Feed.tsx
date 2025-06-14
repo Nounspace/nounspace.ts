@@ -572,3 +572,4 @@ const exp = {
 } as FidgetModule<FidgetArgs<FeedFidgetSettings>>;
 
 export default exp;
+export { FeedType } from "./feedConstants";
