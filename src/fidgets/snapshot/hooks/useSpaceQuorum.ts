@@ -30,5 +30,5 @@ export const useSpaceQuorum = (spaceEns: string): QuorumSettings => {
     };
     
     return result;
-  }, [snapShotInfo, error, spaceEns]);
+  }, [snapShotInfo, error]);
 };
