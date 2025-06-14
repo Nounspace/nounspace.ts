@@ -5,6 +5,7 @@ import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
 import Profile from "./ui/profile";
+import ChannelInfo from "./ui/channel";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
@@ -29,6 +30,7 @@ export const CompleteFidgets = {
   FramesV2: FramesFidget,
   profile:
     process.env.NEXT_PUBLIC_VERCEL_ENV === "development" ? Profile : undefined,
+  channel: ChannelInfo,
   // Farcaster
   frame: Frame,
   // iframely: iframely,

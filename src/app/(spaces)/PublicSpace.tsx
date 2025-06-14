@@ -20,7 +20,7 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal";
+export type SpacePageType = "profile" | "token" | "proposal" | "channel";
 
 interface PublicSpaceProps {
   spaceId: string | null;
@@ -156,9 +156,9 @@ export default function PublicSpace({
   const resolvedPageType = useMemo(() => {
     if (pageType) return pageType;
     if (isTokenPage) return "token";
-    if (spaceOwnerFid) return "person";
     if (providedSpaceId?.startsWith("proposal:")) return "proposal";
-    return "person"; // Default to person page
+    if (spaceOwnerFid) return "profile";
+    return "profile";
   }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
 
   console.log("Resolved page type:", resolvedPageType);
@@ -183,7 +183,7 @@ export default function PublicSpace({
         nextSpaceId = existingSpace.id;
         nextTabName = decodeURIComponent(providedTabName);
       }
-    } else if (resolvedPageType === "person" && spaceOwnerFid) {
+    } else if (resolvedPageType === "profile" && spaceOwnerFid) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
         (space) => space.fid === spaceOwnerFid,
       );
