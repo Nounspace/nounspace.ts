@@ -31,12 +31,11 @@ async function getChannelSpace(channel: string) {
 }
 
 // Define the expected params for this page
-export default async function ChannelSpace({
-  params,
-}: {
-  params: { channelName?: string; tabName?: string };
-}) {
-  const { channelName } = params;
+export default async function ChannelSpace({ params }: any) {
+  const { channelName } = params as {
+    channelName?: string;
+    tabName?: string;
+  };
   if (!channelName) return <SpaceNotFound />;
 
   const info = await loadChannelInfo(channelName);
