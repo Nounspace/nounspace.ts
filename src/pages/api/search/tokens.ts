@@ -128,4 +128,4 @@ const get = async (
 
 export default requestHandler({ get });
 
-export { TokenResult };
+export type { TokenResult };
