@@ -55,7 +55,7 @@ async function fetchTokenByAddress(address: string): Promise<TokenResult | null>
     id: json.id,
     name: json.name,
     symbol: json.symbol,
-    image: json.image?.thumb || null,
+    image: json.image?.small || json.image?.large || json.image?.thumb || null,
     contractAddress,
     network: platformId === "ethereum" ? "mainnet" : platformId.replace("polygon-pos", "polygon"),
   };
@@ -89,7 +89,7 @@ async function fetchTokensByQuery(query: string, limit: number): Promise<TokenRe
       id: json.id,
       name: json.name,
       symbol: json.symbol,
-      image: json.image?.thumb || null,
+      image: json.image?.small || json.image?.large || json.image?.thumb || null,
       contractAddress,
       network: platformId === "ethereum" ? "mainnet" : platformId.replace("polygon-pos", "polygon"),
     });
