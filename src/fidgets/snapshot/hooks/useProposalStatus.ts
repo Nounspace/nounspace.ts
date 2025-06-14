@@ -11,7 +11,6 @@ interface UseProposalStatusProps {
     type: string;
     scores: number[];
     scores_total?: number;
-    scores_by_strategy?: any[];
     space?: {
       id: string;
       name?: string;
@@ -39,7 +38,7 @@ export const useProposalStatus = ({ proposal, spaceQuorum }: UseProposalStatusPr
     }
     
     // Proposal has ended - determine final status
-    if (proposal.state === "closed") {
+    if (proposal.state === "Closed") {
       return calculateFinalStatus(proposal, spaceQuorum);
     }
     
