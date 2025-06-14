@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useState } from "react";
 import Slider from "@mui/material/Slider";
 import { Button } from "@/common/components/atoms/button";
 
