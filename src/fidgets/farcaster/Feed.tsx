@@ -30,7 +30,7 @@ import { useFarcasterSigner } from ".";
 import { mobileStyleSettings, WithMargin } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
-import { FEED_TYPES, FilterType, FeedType } from "./feedConstants";
+import { FEED_TYPES, FILTER_TYPES, FilterType, FeedType } from "./feedConstants";
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
