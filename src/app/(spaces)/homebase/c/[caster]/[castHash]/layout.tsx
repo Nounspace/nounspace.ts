@@ -1,6 +1,6 @@
 import { WEBSITE_URL } from "@/constants/app";
-import { Metadata } from "next/types";
-import axios from "axios";
+import type { Metadata } from "next";
+// axios adds ~30 kB; built-in fetch is sufficient here
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { isImageUrl } from "@/common/lib/utils/urls";
 
@@ -12,12 +12,8 @@ export async function generateMetadata({
   }
 
   try {
-    const { data } = await axios.get(
-      `${WEBSITE_URL}/api/farcaster/neynar/cast`,
-      {
-        params: { identifier: castHash, type: "hash" },
-      },
-    );
+    const url = `${WEBSITE_URL}/api/farcaster/neynar/cast?identifier=${castHash}&type=hash`;
+    const data = await fetch(url).then((r) => r.json());
 
     const cast = data.cast || data;
     const username: string = cast?.author?.username || caster;
