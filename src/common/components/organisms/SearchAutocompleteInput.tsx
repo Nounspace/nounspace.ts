@@ -1,7 +1,9 @@
 import React, { useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
+import { useChannelsByName } from "@/common/lib/hooks/useChannels";
 import { User } from "@neynar/nodejs-sdk/build/api";
+import type { Channel } from "@mod-protocol/farcaster";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import {
   Command,
@@ -34,6 +36,7 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
   const { users, loading } = useSearchUsers(query);
+  const { data: channels } = useChannelsByName(query || "");
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
@@ -57,11 +60,16 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
     onSelect && onSelect();
   }, []);
 
+  const onSelectChannel = useCallback((channel: Channel) => {
+    router.push(`/channel/${channel.id}`);
+    onSelect && onSelect();
+  }, []);
+
   return (
     <Command className="rounded-md border" shouldFilter={false} loop={true}>
       <div className={loading ? "animated-loading-bar" : ""}>
         <CommandInput
-          placeholder="Search users"
+          placeholder="Search users or channels"
           onValueChange={setQuery}
           value={query || ""}
           onFocus={handleFocus}
@@ -101,6 +109,26 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
                   <div className="leading-[1.3]">
                     <p className="font-bold opacity-80">{user.display_name}</p>
                     <p className="font-normal opacity-80">@{user.username}</p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {channels && channels.length > 0 && (
+            <CommandGroup heading="Channels">
+              {channels.map((channel: Channel, i: number) => (
+                <CommandItem
+                  key={i}
+                  onSelect={() => onSelectChannel(channel)}
+                  value={channel.name || channel.id}
+                  className="gap-x-2 cursor-pointer"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={channel.image_url} alt={channel.name} />
+                  </Avatar>
+                  <div className="leading-[1.3]">
+                    <p className="font-bold opacity-80">{channel.name}</p>
+                    <p className="font-normal opacity-80">/{channel.id}</p>
                   </div>
                 </CommandItem>
               ))}

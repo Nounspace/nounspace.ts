@@ -5,6 +5,7 @@ import Gallery from "./ui/gallery";
 import TextFidget from "./ui/Text";
 import IFrame from "./ui/IFrame";
 import Profile from "./ui/profile";
+import Channel from "./ui/channel";
 import Grid from "./layout/Grid";
 import NounishGovernance from "./community/nouns-dao/NounishGovernance";
 import Cast from "./farcaster/Cast";
@@ -34,6 +35,7 @@ export const CompleteFidgets = {
   // iframely: iframely,
   feed: Feed,
   cast: Cast,
+  Channel: Channel,
   // createCast: CreateCast,
   // Basic UI elements
   gallery: Gallery,
