@@ -21,6 +21,11 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
       scores_total ||
       scores.reduce((acc: number, score: number) => acc + score, 0);
 
+    // Guard clause to handle empty scores array
+    if (scores.length === 0) {
+      return <div>No voting data available</div>;
+    }
+
     const maxScore = Math.max(...scores);
     const winningIndex = scores.indexOf(maxScore);
 
@@ -88,7 +93,10 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2">
           {choices.map((choice, index) => {
             const score = scores[index] || 0;
-            const percentage = totalScores > 0 ? ((score / totalScores) * 100).toFixed(1) : "0.0";
+            const percentage =
+              totalScores > 0
+                ? ((score / totalScores) * 100).toFixed(1)
+                : "0.0";
             const isWinning = index === winningIndex && score > 0;
 
             return (
@@ -103,7 +111,10 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
                   <div
                     className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{
-                      width: totalScores > 0 ? `${(score / totalScores) * 100}%` : "0%"
+                      width:
+                        totalScores > 0
+                          ? `${(score / totalScores) * 100}%`
+                          : "0%",
                     }}
                   />
                 </div>
@@ -129,12 +140,6 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
         </div>
       </div>
     );
-  }
-);
-
-VotingResults.displayName = "VotingResults";
-
-export default VotingResults;
   }
 );
 
