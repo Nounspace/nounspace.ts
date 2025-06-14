@@ -30,7 +30,10 @@ async function getChannelSpace(channel: string) {
   return data[0].spaceId as string;
 }
 
-import { type PageProps } from "next";
+// Define the expected params for this page
+export interface ChannelPageProps {
+  params: ChannelPageParams;
+}
 
 interface ChannelPageParams {
   channelName?: string;
@@ -39,7 +42,7 @@ interface ChannelPageParams {
 
 export default async function ChannelSpace({
   params,
-}: PageProps<ChannelPageParams>) {
+}: ChannelPageProps) {
   const channelName = params?.channelName as string;
   if (!channelName) return <SpaceNotFound />;
 
