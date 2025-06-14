@@ -20,7 +20,7 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal";
+export type SpacePageType = "profile" | "token" | "proposal" | "channel";
 
 interface PublicSpaceProps {
   spaceId: string | null;

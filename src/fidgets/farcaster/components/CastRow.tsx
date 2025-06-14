@@ -476,12 +476,13 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           getIconForCastReactionType(CastReactionType.quote),
         )}
         {cast.channel && cast.channel.name && (
-          <div
+          <PriorityLink
+            href={`/channel/${cast.channel.name}`}
             key={`cast-${cast.hash}-channel-name`}
             className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
           >
             /{cast.channel.name}
-          </div>
+          </PriorityLink>
         )}
       </div>
     </>
