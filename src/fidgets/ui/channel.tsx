@@ -4,7 +4,7 @@ import TextInput from "@/common/components/molecules/TextInput";
 import { useQuery } from "@tanstack/react-query";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
-import { Channel } from "@/fidgets/farcaster/utils";
+import type { Channel as ChannelInfo } from "@/fidgets/farcaster/utils";
 import { useFarcasterSigner } from "../farcaster";
 import { followUser } from "../farcaster/utils";
 
@@ -31,7 +31,7 @@ const useChannelInfo = (name: string) => {
     queryKey: ["channel-info", name],
     enabled: !!name,
     queryFn: async () => {
-      const { data } = await axiosBackend.get<{ channel: Channel }>(
+      const { data } = await axiosBackend.get<{ channel: ChannelInfo }>(
         "/api/farcaster/neynar/channel",
         { params: { id: name } },
       );
