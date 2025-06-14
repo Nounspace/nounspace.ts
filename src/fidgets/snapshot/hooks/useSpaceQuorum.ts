@@ -23,10 +23,10 @@ export const useSpaceQuorum = (spaceEns: string): QuorumSettings => {
     const filtersMinScore = space.filters?.minScore;
     
     const result: QuorumSettings = {
-      hasQuorum: !!(votingQuorum || filtersMinScore),
+      hasQuorum: votingQuorum !== undefined || filtersMinScore !== undefined,
       quorumThreshold: votingQuorum,
       minScore: filtersMinScore,
-      quorumType: votingQuorum ? 'voting' : filtersMinScore ? 'filters' : undefined
+      quorumType: votingQuorum !== undefined ? 'voting' : filtersMinScore !== undefined ? 'filters' : undefined
     };
     
     return result;
