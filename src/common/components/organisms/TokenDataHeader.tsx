@@ -59,7 +59,7 @@ const TokenDataHeader: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-between px-3 md:px-4 py-2 w-full border-b border-b-gray-200 md:border-none">
+    <div className="flex items-center px-3 md:px-4 py-2 w-fit border-b border-b-gray-200 md:border-none space-x-2 md:space-x-4">
       <div className="flex items-center space-x-2 md:space-x-4">
         <Avatar
           style={{
@@ -172,7 +172,7 @@ const TokenDataHeader: React.FC = () => {
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-5 hidden md:visible" />
+        <div className="w-0.5 h-12 bg-gray-200 m-2.5 hidden md:block" />
       </div>
     </div>
   );
