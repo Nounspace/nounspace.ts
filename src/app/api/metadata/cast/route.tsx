@@ -1,11 +1,8 @@
 import React from "react";
-import { NextApiRequest, NextApiResponse } from "next";
-import { ImageResponse } from "next/og";
+import { ImageResponse } from "next/server";
 import { WEBSITE_URL } from "@/constants/app";
 
-export const config = {
-  runtime: "edge",
-};
+export const runtime = "edge";
 
 interface CastCardData {
   username: string;
@@ -16,24 +13,16 @@ interface CastCardData {
   timestamp?: number | string;
 }
 
-export default async function GET(
-  req: NextApiRequest,
-  res: NextApiResponse<ImageResponse | string>,
-) {
-  if (!req.url) {
-    return res.status(404).send("Url not found");
-  }
-
-  const params = new URLSearchParams(req.url.split("?")[1]);
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
   const data: CastCardData = {
-    username: params.get("username") || "",
-    displayName: params.get("displayName") || "",
-    pfpUrl: params.get("pfpUrl") || "",
-    text: params.get("text") || "",
-    imageUrl: params.get("imageUrl") || undefined,
-    timestamp: params.get("timestamp") || undefined,
+    username: searchParams.get("username") || "",
+    displayName: searchParams.get("displayName") || "",
+    pfpUrl: searchParams.get("pfpUrl") || "",
+    text: searchParams.get("text") || "",
+    imageUrl: searchParams.get("imageUrl") || undefined,
+    timestamp: searchParams.get("timestamp") || undefined,
   };
-
   return new ImageResponse(<CastCard data={data} />, {
     width: 1200,
     height: 630,
