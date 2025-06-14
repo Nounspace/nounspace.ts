@@ -476,12 +476,13 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           getIconForCastReactionType(CastReactionType.quote),
         )}
         {cast.channel && cast.channel.name && (
-          <div
+          <PriorityLink
             key={`cast-${cast.hash}-channel-name`}
+            href={`/channel/${cast.channel.name}`}
             className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
           >
             /{cast.channel.name}
-          </div>
+          </PriorityLink>
         )}
       </div>
     </>
@@ -625,7 +626,20 @@ const CastRowComponent = ({
 
   const getChannelForParentUrl = (
     _parentUrl: string | null,
-  ): { name: string } | null => null;
+  ): { name: string } | null => {
+    if (!_parentUrl) return null;
+    try {
+      const url = new URL(_parentUrl);
+      const parts = url.pathname.split("/");
+      const idx = parts.indexOf("channel");
+      if (idx >= 0 && idx + 1 < parts.length) {
+        return { name: parts[idx + 1] };
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
+  };
 
   const renderRecastBadge = () => {
     const shouldShowBadge =

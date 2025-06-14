@@ -12,6 +12,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
 } from "@/constants/initialPersonSpace";
+import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
 import {
   ModifiableSpacesResponse,
   RegisterNewSpaceResponse,
@@ -165,6 +166,11 @@ interface SpaceActions {
   registerSpaceFid: (
     fid: number,
     name: string,
+    path: string,
+  ) => Promise<string | undefined>;
+  registerChannelSpace: (
+    fid: number,
+    channelName: string,
     path: string,
   ) => Promise<string | undefined>;
   registerSpaceContract: (
@@ -844,6 +850,77 @@ export const createSpaceStoreFunc = (
       return newSpaceId;
     } catch (e) {
       console.error("Failed to register space:", e);
+      throw e;
+    }
+  },
+  registerChannelSpace: async (fid, channelName, path) => {
+    try {
+      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+        "/api/space/registry",
+        {
+          params: {
+            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+          },
+        },
+      );
+
+      if (existingSpaces.value) {
+        const existingSpace = existingSpaces.value.spaces.find(
+          space => space.spaceName === channelName,
+        );
+        if (existingSpace) {
+          return existingSpace.spaceId;
+        }
+      }
+    } catch (e) {
+      console.error("Error checking for existing channel space:", e);
+    }
+
+    const unsignedRegistration: Omit<SpaceRegistrationFid, "signature"> = {
+      identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
+      spaceName: channelName,
+      timestamp: moment().toISOString(),
+      fid,
+    };
+    const registration = signSignable(
+      unsignedRegistration,
+      get().account.getCurrentIdentity()!.rootKeys.privateKey,
+    );
+
+    try {
+      const { data } = await axiosBackend.post<RegisterNewSpaceResponse>(
+        "/api/space/registry",
+        registration,
+      );
+      const newSpaceId = data.value!.spaceId;
+
+      set(draft => {
+        draft.space.editableSpaces[newSpaceId] = channelName;
+        draft.space.localSpaces[newSpaceId] = {
+          id: newSpaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+          fid: fid,
+        };
+      });
+
+      await get().space.createSpaceTab(
+        newSpaceId,
+        "Feed",
+        createInitialChannelSpaceConfig(channelName),
+      );
+
+      analytics.track(AnalyticsEvent.SPACE_REGISTERED, {
+        type: "user",
+        spaceId: newSpaceId,
+        path,
+      });
+
+      return newSpaceId;
+    } catch (e) {
+      console.error("Failed to register channel space:", e);
       throw e;
     }
   },

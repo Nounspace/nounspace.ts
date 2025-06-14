@@ -333,6 +333,8 @@ export const FEED_TYPES = [
   { name: "Filter", value: FeedType.Filter },
 ];
 
+export { FeedType };
+
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
