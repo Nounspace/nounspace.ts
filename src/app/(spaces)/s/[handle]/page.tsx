@@ -4,19 +4,12 @@ import ProfileSpace, { UserDefinedSpacePageProps } from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { unstable_noStore as noStore } from "next/cache";
 
-const cache = new Map<string, UserDefinedSpacePageProps>();
 
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
 ): Promise<UserDefinedSpacePageProps> => {
-  const cacheKey = `${handle}-${tabNameParam || "default"}`;
-  if (cache.has(cacheKey)) {
-    console.log("Cache hit for", cacheKey);
-    return cache.get(cacheKey)!;
-  }
-
-  noStore();
+  noStore(); 
 
   console.log("Starting loadUserSpaceData for handle:", handle);
 
@@ -26,14 +19,12 @@ const loadUserSpaceData = async (
 
   if (!spaceOwnerFid) {
     console.log("No FID found, returning null values");
-    const result = {
+    return {
       spaceOwnerFid: null,
       spaceOwnerUsername: null,
       spaceId: null,
       tabName: null,
     };
-    cache.set(cacheKey, result);
-    return result;
   }
 
   const tabList = await getTabList(spaceOwnerFid);
@@ -41,9 +32,7 @@ const loadUserSpaceData = async (
 
   if (!tabList || tabList.length === 0) {
     console.log("No tab list found, returning null spaceId and tabName");
-    const result = { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
-    cache.set(cacheKey, result);
-    return result;
+    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
   }
 
   const defaultTab: Tab = tabList[0];
@@ -53,9 +42,7 @@ const loadUserSpaceData = async (
   const tabName = tabNameParam || defaultTab.spaceName;
   console.log("Final values - spaceId:", spaceId, "tabName:", tabName);
 
-  const result = { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
-  cache.set(cacheKey, result);
-  return result;
+  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
 };
 
 const ProfileSpacePage = async ({

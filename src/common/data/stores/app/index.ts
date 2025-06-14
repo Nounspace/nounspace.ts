@@ -34,6 +34,7 @@ export type AppStore = {
   logout: () => void;
   getIsAccountReady: () => boolean;
   getIsInitializing: () => boolean;
+  clearLocalSpaces: () => void; 
 };
 
 const LOCAL_STORAGE_LOCATION = "nounspace-app-store";
@@ -48,6 +49,10 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
     get().account.reset();
     get().homebase.clearHomebase();
     get().homebase.clearHomebaseTabOrder();
+    get().space.clear();
+    localStorage.removeItem(LOCAL_STORAGE_LOCATION);
+  },
+  clearLocalSpaces: () => {
     get().space.clear();
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },

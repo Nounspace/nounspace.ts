@@ -1,23 +1,25 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
+
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
-import SpacePage from "./SpacePage";
-import SpaceLoading from "./SpaceLoading";
-import { SpaceConfigSaveDetails } from "./Space";
+import { useAppStore } from "@/common/data/stores/app";
+import { MasterToken } from "@/common/providers/TokenProvider";
+import { createEditabilityChecker } from "@/common/utils/spaceEditability";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import Profile from "@/fidgets/ui/profile";
+import { useWallets } from "@privy-io/react-auth";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
-import { useWallets } from "@privy-io/react-auth";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { MasterToken } from "@/common/providers/TokenProvider";
-import Profile from "@/fidgets/ui/profile";
-import { createEditabilityChecker } from "@/common/utils/spaceEditability";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
+import { SpaceConfigSaveDetails } from "./Space";
+import SpaceLoading from "./SpaceLoading";
+import SpacePage from "./SpacePage";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -53,6 +55,13 @@ export default function PublicSpace({
   tokenData,
   pageType, // New prop
 }: PublicSpaceProps) {
+
+ const clearLocalSpaces = useAppStore((state) => state.clearLocalSpaces);
+
+useEffect(() => {
+  clearLocalSpaces?.();
+}, [clearLocalSpaces]);
+
   console.log("PublicSpace mounted:", {
     spaceId: providedSpaceId,
     tabName: providedTabName,
@@ -321,8 +330,7 @@ export default function PublicSpace({
       console.error("Config is undefined");
       return {};
     }
-    const { timestamp, ...restConfig } = config;
-    return restConfig;
+    return config;
   }, [
     config?.fidgetInstanceDatums,
     config?.layoutID,
