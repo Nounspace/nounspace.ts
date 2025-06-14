@@ -72,9 +72,9 @@ const CastCard = ({ data }: { data: CastCardData }) => {
     >
       <img
         src={`${WEBSITE_URL}/images/logo.png`}
-        width="80"
-        height="80"
-        style={{ position: "absolute", top: "40px", right: "40px" }}
+        width="120"
+        height="120"
+        style={{ position: "absolute", top: "40px", right: "40px", objectFit: "contain" }}
       />
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         {data.pfpUrl && (
@@ -107,17 +107,23 @@ const CastCard = ({ data }: { data: CastCardData }) => {
           </div>
         </div>
       </div>
-      <span style={{ fontSize: "32px", whiteSpace: "pre-wrap" }}>{data.text}</span>
-      {data.imageUrl && (
-        <img
-          src={data.imageUrl}
-          style={{
-            width: "100%",
-            maxHeight: "320px",
-            objectFit: "cover",
-            borderRadius: "12px",
-          }}
-        />
+      {data.imageUrl ? (
+        <div style={{ display: "flex", gap: "24px" }}>
+          <span style={{ fontSize: "32px", whiteSpace: "pre-wrap", flex: 1 }}>
+            {data.text}
+          </span>
+          <img
+            src={data.imageUrl}
+            style={{
+              width: "40%",
+              maxHeight: "320px",
+              objectFit: "cover",
+              borderRadius: "12px",
+            }}
+          />
+        </div>
+      ) : (
+        <span style={{ fontSize: "32px", whiteSpace: "pre-wrap" }}>{data.text}</span>
       )}
     </div>
   );
