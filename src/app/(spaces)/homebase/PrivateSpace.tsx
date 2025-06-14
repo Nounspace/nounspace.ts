@@ -3,7 +3,8 @@
 import React, { useEffect, useMemo, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
-import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
+import FeedModule from "@/fidgets/farcaster/Feed";
+import { FilterType } from "@/fidgets/farcaster/feedConstants";
 import { isNil, noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
