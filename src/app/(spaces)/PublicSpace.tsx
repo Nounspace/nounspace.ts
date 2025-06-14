@@ -16,11 +16,12 @@ import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import Profile from "@/fidgets/ui/profile";
+import Channel from "@/fidgets/ui/channel";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal";
+export type SpacePageType = "profile" | "token" | "proposal" | "channel";
 
 interface PublicSpaceProps {
   spaceId: string | null;
@@ -37,6 +38,7 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  channelName?: string;
 }
 
 export default function PublicSpace({
@@ -52,6 +54,7 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
   pageType, // New prop
+  channelName,
 }: PublicSpaceProps) {
   console.log("PublicSpace mounted:", {
     spaceId: providedSpaceId,
@@ -59,6 +62,7 @@ export default function PublicSpace({
     isTokenPage,
     contractAddress,
     pageType, // Log the page type
+    channelName,
   });
 
   const router = useRouter();
@@ -87,6 +91,7 @@ export default function PublicSpace({
     createSpaceTab,
     deleteSpaceTab,
     registerSpaceFid,
+    registerChannelSpace,
     registerSpaceContract,
   } = useAppStore((state) => ({
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
@@ -106,6 +111,7 @@ export default function PublicSpace({
     updateSpaceTabOrder: state.space.updateLocalSpaceOrder,
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
     registerSpaceFid: state.space.registerSpaceFid,
+    registerChannelSpace: state.space.registerChannelSpace,
     registerSpaceContract: state.space.registerSpaceContract,
   }));
 
@@ -160,6 +166,8 @@ export default function PublicSpace({
     if (providedSpaceId?.startsWith("proposal:")) return "proposal";
     return "person"; // Default to person page
   }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
+
+  const isChannelPage = resolvedPageType === "channel";
 
   console.log("Resolved page type:", resolvedPageType);
 
@@ -419,6 +427,14 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress,
             });
+          } else if (isChannelPage && channelName) {
+            newSpaceId = await registerChannelSpace(
+              currentUserFid,
+              channelName,
+              getSpacePageUrl("Feed"),
+            );
+            const newUrl = getSpacePageUrl("Feed");
+            router.replace(newUrl, { scroll: false });
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {
               currentUserFid,
@@ -441,17 +457,18 @@ export default function PublicSpace({
           if (newSpaceId) {
             // Set both spaceId and currentSpaceId atomically
             setCurrentSpaceId(newSpaceId);
-            setCurrentTabName("Profile");
+            const firstTab = isChannelPage ? "Feed" : "Profile";
+            setCurrentTabName(firstTab);
 
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
             await loadEditableSpaces(); // First load
-            await loadSpaceTab(newSpaceId, "Profile");
+            await loadSpaceTab(newSpaceId, firstTab);
 
             // Load remaining tabs
             const tabOrder = localSpaces[newSpaceId]?.order || [];
             for (const tabName of tabOrder) {
-              if (tabName !== "Profile") {
+              if (tabName !== firstTab) {
                 await loadSpaceTab(newSpaceId, tabName);
               }
             }
@@ -460,7 +477,7 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            const newUrl = getSpacePageUrl("Profile");
+            const newUrl = getSpacePageUrl(firstTab);
             router.replace(newUrl, { scroll: false });
           }
         } catch (error) {
@@ -478,6 +495,7 @@ export default function PublicSpace({
     isTokenPage,
     contractAddress,
     tokenData?.network,
+    isChannelPage,
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
@@ -647,15 +665,29 @@ export default function PublicSpace({
     />
   );
 
-  // @todo - Use correct page type for profile
-  const profile =
-    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined : (
+  const profile = (() => {
+    if (pageType === "channel") {
+      return channelName ? (
+        <Channel.fidget
+          settings={{ channel: channelName }}
+          saveData={async () => noop()}
+          data={{}}
+        />
+      ) : undefined;
+    }
+
+    if (isTokenPage || !spaceOwnerFid || pageType === "proposal") {
+      return undefined;
+    }
+
+    return (
       <Profile.fidget
         settings={{ fid: spaceOwnerFid }}
         saveData={async () => noop()}
         data={{}}
       />
     );
+  })();
 
   if (!profile) {
     console.warn("Profile component is undefined");

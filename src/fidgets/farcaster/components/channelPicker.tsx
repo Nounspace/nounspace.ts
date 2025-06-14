@@ -15,7 +15,7 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/common/components/atoms/popover"; // Adjust the import paths if needed
-import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
+import { Channel } from "@/fidgets/farcaster/utils";
 
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;

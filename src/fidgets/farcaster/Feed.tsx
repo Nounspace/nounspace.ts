@@ -1,3 +1,6 @@
+"use client";
+
+import React, { useCallback, useEffect, useState } from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
@@ -20,21 +23,14 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useLifoQueue from "@/common/lib/hooks/useLifoQueue";
-import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { isNil } from "lodash";
-import React, { useCallback, useEffect, useState } from "react";
 import { BsChatRightHeart, BsChatRightHeartFill } from "react-icons/bs";
 import { useInView } from "react-intersection-observer";
 import { useFarcasterSigner } from ".";
 import { mobileStyleSettings, WithMargin } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
-
-export enum FilterType {
-  Channel = "channel_id",
-  Users = "fids",
-  Keyword = "keyword",
-}
+import { FEED_TYPES, FILTER_TYPES, FilterType, FeedType } from "./feedConstants";
 
 export type FeedFidgetSettings = {
   feedType: FeedType;
@@ -50,11 +46,6 @@ export type FeedFidgetSettings = {
   membersOnly?: boolean;
 } & FidgetSettingsStyle;
 
-const FILTER_TYPES = [
-  { name: "Channel", value: FilterType.Channel },
-  { name: "Users", value: FilterType.Users },
-  { name: "Keyword", value: FilterType.Keyword },
-];
 
 export const FilterTypeSelector: React.FC<{
   onChange: (value: string) => void;
@@ -326,13 +317,6 @@ const feedProperties: FidgetProperties<FeedFidgetSettings> = {
   mobileIconSelected: <BsChatRightHeartFill size={20} />,
 };
 
-export const FEED_TYPES = [
-  { name: "Following", value: FeedType.Following },
-  { name: "For you", value: "for_you" },
-  { name: "Trending", value: "trending" },
-  { name: "Filter", value: FeedType.Filter },
-];
-
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings>> = ({ settings }) => {
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
@@ -588,3 +572,4 @@ const exp = {
 } as FidgetModule<FidgetArgs<FeedFidgetSettings>>;
 
 export default exp;
+export { FeedType } from "./feedConstants";

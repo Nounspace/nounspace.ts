@@ -4,7 +4,7 @@ import {
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ModManifest,
@@ -49,8 +49,21 @@ import {
   isFarcasterUrlEmbed,
   submitCast,
 } from "../utils";
+import type { Channel } from "../utils";
+import type { Channel as ModChannel } from "@mod-protocol/farcaster";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
+
+// The mentions library expects these channel result types, but we only
+// return simplified channel data from our backend. Define placeholder
+// interfaces to satisfy the generic signature without pulling in the
+// actual library types.
+type VirtualChannel = unknown;
+type RealizedChannel = unknown;
+
+type ChannelListRef = {
+  onKeyDown: (props: { event: Event }) => boolean;
+};
 
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
@@ -274,15 +287,22 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fetchInitialChannels();
   }, [fid]);
 
-  const debouncedGetChannels = useCallback(
-    debounce(
-      async (query: string) => {
-        return await fetchChannelsByName(query);
-      },
-      200,
-      { leading: true, trailing: false },
-    ),
+  const getChannelsDebounced = useMemo(
+    () =>
+      debounce(
+        async (query: string) => fetchChannelsByName(query),
+        200,
+        { leading: true, trailing: false },
+      ),
     [],
+  );
+
+  const debouncedGetChannels = useCallback(
+    async (query: string): Promise<Channel[]> => {
+      const channels = await getChannelsDebounced(query);
+      return channels ?? [];
+    },
+    [getChannelsDebounced],
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
@@ -359,8 +379,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
     onSubmit: onSubmitPost,
     linkClassName: "text-blue-800",
     renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetChannels,
-      RenderList: ChannelList,
+      getResults: (debouncedGetChannels as unknown as (
+        query: string,
+      ) => Promise<(VirtualChannel | RealizedChannel | null)[]>),
+      RenderList: ChannelList as unknown as React.ForwardRefExoticComponent<
+        {
+          items: (VirtualChannel | RealizedChannel | null)[];
+          command: any;
+        } & React.RefAttributes<ChannelListRef>
+      >,
     }),
     renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
       getResults: debouncedGetMentions,
@@ -696,7 +723,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
                   onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel);
+                    setChannel(selectedChannel as unknown as ModChannel);
                   }}
                   value={channel}
                   initialChannels={initialChannels}
