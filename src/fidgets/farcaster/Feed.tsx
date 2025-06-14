@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import BorderSelector from "@/common/components/molecules/BorderSelector";
 import FeedTypeSelector from "@/common/components/molecules/FeedTypeSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";

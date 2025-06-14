@@ -1,9 +1,10 @@
+import React from "react";
 import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
 import { useQuery } from "@tanstack/react-query";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
-import { Channel } from "@mod-protocol/farcaster";
+import { Channel } from "@/fidgets/farcaster/utils";
 import { useFarcasterSigner } from "../farcaster";
 import { followUser } from "../farcaster/utils";
 

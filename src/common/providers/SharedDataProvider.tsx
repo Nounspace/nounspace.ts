@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Channel, FarcasterEmbed } from '@mod-protocol/farcaster';
+import { type Channel, type FarcasterEmbed } from '@/fidgets/farcaster/utils';
 import { useQueryClient } from '@tanstack/react-query';
 
 // Define the types of data that will be shared
