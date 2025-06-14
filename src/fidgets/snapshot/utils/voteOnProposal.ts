@@ -78,7 +78,7 @@ const voteOnProposalCore = async ({
 };
 
 // Legacy export for backward compatibility
-const voteOnProposal = async (
+const voteOnProposalWrapper = async (
   proposalId: string,
   choiceId: number | number[] | { [key: string]: number },
   reason: string,
@@ -95,4 +95,4 @@ const voteOnProposal = async (
 };
 
 export { voteOnProposalCore };
-export default voteOnProposal;
+export default voteOnProposalWrapper;
