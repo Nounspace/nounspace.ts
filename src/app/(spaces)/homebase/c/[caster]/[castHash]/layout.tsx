@@ -21,6 +21,7 @@ export async function generateMetadata({
 
     const cast = data.cast || data;
     const username: string = cast?.author?.username || caster;
+    const displayName: string = cast?.author?.display_name || "";
     const pfpUrl: string = cast?.author?.pfp_url || "";
     const text: string = cast?.text || "";
     const timestamp: number | string | undefined = cast?.timestamp;
@@ -40,6 +41,7 @@ export async function generateMetadata({
 
     return getCastMetadataStructure({
       username,
+      displayName,
       pfpUrl,
       text: truncated,
       imageUrl,
