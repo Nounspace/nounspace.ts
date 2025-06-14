@@ -28,7 +28,17 @@ import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 // import { ModProtocolCastAddBody } from "./components/CreateCast";
-import { type Channel } from "@mod-protocol/farcaster";
+
+export interface Channel {
+  id: string;
+  name: string;
+  image_url?: string;
+  parent_url?: string;
+  description?: string;
+  member_count?: number;
+  followers?: number;
+  host?: { fid: number };
+}
 
 type FarcasterUrlEmbed = {
   url: string;

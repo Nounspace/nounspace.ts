@@ -1,9 +1,10 @@
+import React from "react";
 import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import axiosBackend from "@/common/data/api/backend";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
-import { Channel } from "@mod-protocol/farcaster";
+import { type Channel } from "@/fidgets/farcaster/utils";
 import { unstable_noStore as noStore } from 'next/cache';
 
 async function loadChannelInfo(channel: string): Promise<Channel | null> {

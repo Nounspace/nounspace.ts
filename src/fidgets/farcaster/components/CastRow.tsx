@@ -1,3 +1,4 @@
+import React from "react";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";

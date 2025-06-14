@@ -5,7 +5,12 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { FarcasterMention } from "@mod-protocol/farcaster";
+type FarcasterMention = {
+  fid: number;
+  display_name: string;
+  username: string;
+  avatar_url: string;
+};
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { debounce } from "lodash";
