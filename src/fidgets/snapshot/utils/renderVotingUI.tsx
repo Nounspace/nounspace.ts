@@ -41,23 +41,69 @@ interface StatefulVotingUIProps<TState> extends VotingUIProps {
 
 // --- SingleChoiceVotingUI ---
 export const SingleChoiceVotingUI: React.FC<VotingUIProps> = memo(
-  ({ proposal, handleVote }) => (
-    <div className="flex flex-col justify-center gap-4">
-      {proposal.choices.map((choice: string, index: number) => {
-        const handleChoiceClick = () => handleVote(index + 1, choice);
+  ({ proposal, handleVote }) => {
+    const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+    const [reason, setReason] = useState<string>("");
 
-        return (
-          <Button
-            key={index}
-            onClick={handleChoiceClick}
-            className="w-full rounded-full bg-transparent border-2 border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white m-1"
-          >
-            {choice}
-          </Button>
-        );
-      })}
-    </div>
-  )
+    const handleChoiceClick = useCallback((choiceIndex: number) => {
+      setSelectedChoice(choiceIndex);
+    }, []);
+
+    const handleSubmit = useCallback(() => {
+      if (selectedChoice !== null) {
+        handleVote(selectedChoice, reason);
+      }
+    }, [selectedChoice, reason, handleVote]);
+
+    return (
+      <div className="flex flex-col justify-center gap-4">
+        {proposal.choices.map((choice: string, index: number) => {
+          const choiceIndex = index + 1;
+          const isSelected = selectedChoice === choiceIndex;
+
+          return (
+            <Button
+              key={index}
+              onClick={() => handleChoiceClick(choiceIndex)}
+              className={`w-full rounded-full border-2 m-1 ${
+                isSelected
+                  ? "bg-green-500 text-white border-green-500"
+                  : "bg-transparent border-gray-500 text-gray-500 hover:bg-green-500 hover:text-white"
+              }`}
+            >
+              {choice}
+            </Button>
+          );
+        })}
+        
+        <div className="mt-4">
+          <label htmlFor="vote-reason" className="block text-sm font-medium text-gray-700 mb-2">
+            Reason (optional)
+          </label>
+          <textarea
+            id="vote-reason"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Enter your reason for this vote..."
+            className="w-full p-3 border border-gray-300 rounded-md resize-vertical min-h-[80px] focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            rows={3}
+          />
+        </div>
+
+        <Button
+          onClick={handleSubmit}
+          disabled={selectedChoice === null}
+          className={`w-full rounded-full border-2 m-1 ${
+            selectedChoice !== null
+              ? "bg-green-500 text-white border-green-500 hover:bg-green-600"
+              : "bg-gray-300 text-gray-500 border-gray-300 cursor-not-allowed"
+          }`}
+        >
+          Submit Vote
+        </Button>
+      </div>
+    );
+  }
 );
 
 // --- ApprovalVotingUI ---
