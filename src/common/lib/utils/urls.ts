@@ -16,3 +16,18 @@ export const isWebUrl = (url: string) => {
 
   return url.match(/^(http|https):\/\//) != null;
 };
+
+export const isVideoUrl = (url: string) => {
+  if (!url) {
+    return false;
+  }
+
+  return (
+    url.startsWith("https://stream.warpcast.com") ||
+    url.startsWith("https://stream.farcaster.xyz") ||
+    url.includes("/~/video/") ||
+    url.includes("/~/shorts/") ||
+    /\.m3u8($|\?)/.test(url) ||
+    /\.mp4($|\?)/.test(url)
+  );
+};
