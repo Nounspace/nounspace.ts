@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback, useMemo, useReducer } from "react";
 import { useProposalStatus } from "../hooks/useProposalStatus";
 import { useSpaceQuorum } from "../hooks/useSpaceQuorum";
+import { useToastStore } from "@/common/data/stores/toastStore";
 import Badge from "./Badge";
 import CardButton from "./CardButton";
 import VotingResults from "./VotingResults";
@@ -81,17 +82,41 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
       ) => {
         const now = Date.now() / 1000;
         if (now < proposal.start || now > proposal.end) {
-          alert("Voting is not open for this proposal.");
+          useToastStore.getState().showToast("Voting is not open for this proposal.", 5000);
           return;
         }
 
-        await voteOnProposal(
-          proposal.id,
-          choiceId,
-          reason,
-          space,
-          proposal.type as ProposalType
-        );
+        try {
+          await voteOnProposal(
+            proposal.id,
+            choiceId,
+            reason,
+            space,
+            proposal.type as ProposalType
+          );
+          useToastStore.getState().showToast("Vote submitted successfully!", 5000);
+        } catch (error) {
+          console.error("Error submitting vote:", error);
+          
+          // More specific error messages based on error type
+          let errorMessage = "An error occurred while submitting your vote. Please try again.";
+          
+          if (error instanceof Error) {
+            if (error.message.includes("User denied") || error.message.includes("user rejected")) {
+              errorMessage = "Transaction was cancelled by user.";
+            } else if (error.message.includes("insufficient funds")) {
+              errorMessage = "Insufficient funds to complete the transaction.";
+            } else if (error.message.includes("Please install") || error.message.includes("wallet")) {
+              errorMessage = "Please connect your Web3 wallet to vote.";
+            } else if (error.message.includes("network") || error.message.includes("connection")) {
+              errorMessage = "Network error. Please check your connection and try again.";
+            } else if (error.message) {
+              errorMessage = `Vote failed: ${error.message}`;
+            }
+          }
+          
+          useToastStore.getState().showToast(errorMessage, 7000);
+        }
       },
       [proposal.id, proposal.start, proposal.end, proposal.type, space]
     );

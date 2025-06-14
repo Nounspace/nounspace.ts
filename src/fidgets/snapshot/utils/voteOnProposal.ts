@@ -27,54 +27,32 @@ const voteOnProposalCore = async ({
   space,
   type,
 }: VoteParams): Promise<boolean> => {
-  try {
-    // Check if ethereum is available
-    if (!window.ethereum) {
-      alert("Please install a Web3 wallet like MetaMask");
-      return false;
-    }
-
-    const web3 = new Web3Provider(window.ethereum);
-    const [account] = await web3.listAccounts();
-    
-    if (!account) {
-      alert("Please connect your wallet");
-      return false;
-    }
-
-    const receipt = await client.vote(web3, account, {
-      space: space,
-      proposal: proposalId,
-      type: type,
-      choice: choiceId,
-      reason: reason,
-      app: "nounspace",
-    });
-
-    if (receipt) {
-      alert("Vote submitted successfully!");
-      return true;
-    }
-    
-    return false;
-  } catch (error) {
-    console.error("Error submitting vote:", error);
-    
-    // More specific error messages
-    if (error instanceof Error) {
-      if (error.message.includes("User denied")) {
-        alert("Transaction was cancelled by user.");
-      } else if (error.message.includes("insufficient funds")) {
-        alert("Insufficient funds to complete the transaction.");
-      } else {
-        alert(`An error occurred while submitting your vote: ${error.message}`);
-      }
-    } else {
-      alert("An unexpected error occurred while submitting your vote. Please try again.");
-    }
-    
-    return false;
+  // Check if ethereum is available
+  if (!window.ethereum) {
+    throw new Error("Please install a Web3 wallet like MetaMask");
   }
+
+  const web3 = new Web3Provider(window.ethereum);
+  const [account] = await web3.listAccounts();
+  
+  if (!account) {
+    throw new Error("Please connect your wallet");
+  }
+
+  const receipt = await client.vote(web3, account, {
+    space: space,
+    proposal: proposalId,
+    type: type,
+    choice: choiceId,
+    reason: reason,
+    app: "nounspace",
+  });
+
+  if (!receipt) {
+    throw new Error("Vote submission failed - no receipt received");
+  }
+  
+  return true;
 };
 
 // Legacy export for backward compatibility
