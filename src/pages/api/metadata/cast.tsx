@@ -108,20 +108,33 @@ const CastCard = ({ data }: { data: CastCardData }) => {
         </div>
       </div>
       {data.imageUrl ? (
-        <div style={{ display: "flex", gap: "24px" }}>
-          <span style={{ fontSize: "32px", whiteSpace: "pre-wrap", flex: 1 }}>
-            {data.text}
-          </span>
+        data.text ? (
+          <div style={{ display: "flex", gap: "24px" }}>
+            <span style={{ fontSize: "32px", whiteSpace: "pre-wrap", flex: 1 }}>
+              {data.text}
+            </span>
+            <img
+              src={data.imageUrl}
+              style={{
+                width: "40%",
+                maxHeight: "320px",
+                objectFit: "cover",
+                borderRadius: "12px",
+              }}
+            />
+          </div>
+        ) : (
           <img
             src={data.imageUrl}
             style={{
-              width: "40%",
+              width: "60%",
               maxHeight: "320px",
               objectFit: "cover",
               borderRadius: "12px",
+              alignSelf: "flex-start",
             }}
           />
-        </div>
+        )
       ) : (
         <span style={{ fontSize: "32px", whiteSpace: "pre-wrap" }}>{data.text}</span>
       )}
