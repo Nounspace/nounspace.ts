@@ -60,6 +60,10 @@ import { renderEmbedForUrl } from "./Embeds";
 type VirtualChannel = unknown;
 type RealizedChannel = unknown;
 
+type ChannelListRef = {
+  onKeyDown: (props: { event: Event }) => boolean;
+};
+
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
@@ -377,7 +381,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
       getResults: (debouncedGetChannels as unknown as (
         query: string,
       ) => Promise<(VirtualChannel | RealizedChannel | null)[]>),
-      RenderList: ChannelList,
+      RenderList: ChannelList as unknown as React.ForwardRefExoticComponent<
+        {
+          items: (VirtualChannel | RealizedChannel | null)[];
+          command: any;
+        } & React.RefAttributes<ChannelListRef>
+      >,
     }),
     renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
       getResults: debouncedGetMentions,
