@@ -94,5 +94,5 @@ const voteOnProposal = async (
   });
 };
 
-export { voteOnProposalCore as voteOnProposal };
+export { voteOnProposalCore };
 export default voteOnProposal;
