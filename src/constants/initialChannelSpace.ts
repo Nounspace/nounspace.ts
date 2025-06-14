@@ -1,8 +1,7 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import { cloneDeep } from "lodash";
-import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
-import { FilterType } from "@/fidgets/farcaster/Feed";
+import { FeedType, FilterType } from "@/fidgets/farcaster/feedConstants";
 
 export const createInitialChannelSpaceConfig = (
   channel: string,
