@@ -20,22 +20,8 @@ export const getCastMetadataStructure = (
 
   const { username, displayName, pfpUrl, text, imageUrl, timestamp } = cast;
 
-  const dateTitle = timestamp
-    ? new Date(
-        typeof timestamp === "string"
-          ? timestamp
-          : timestamp.toString().length === 10
-            ? timestamp * 1000
-            : timestamp,
-      ).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      })
-    : undefined;
-
-  const title = dateTitle
-    ? dateTitle
+  const title = displayName
+    ? `${displayName} on Nounspace`
     : username
       ? `@${username} on Nounspace`
       : "Cast on Nounspace";
