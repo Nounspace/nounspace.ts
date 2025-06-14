@@ -12,7 +12,7 @@ import {
   renderWeightedVotingUI,
 } from "../utils/renderVotingUI";
 import { Action, initialState, reducer, State } from "../utils/stateManagement";
-import { voteOnProposal, ProposalType } from "../utils/voteOnProposal";
+import voteOnProposal, { ProposalType } from "../utils/voteOnProposal";
 
 interface Proposal {
   id: string;
@@ -85,13 +85,13 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
           return;
         }
 
-        await voteOnProposal({
-          proposalId: proposal.id,
+        await voteOnProposal(
+          proposal.id,
           choiceId,
           reason,
           space,
-          type: proposal.type as ProposalType,
-        });
+          proposal.type as ProposalType
+        );
       },
       [proposal.id, proposal.start, proposal.end, proposal.type, space]
     );
@@ -147,9 +147,7 @@ const ProposalItem: React.FC<ProposalItemProps> = memo(
         className="p-4 border border-gray-200 bg-white rounded-lg"
         style={bodyStyle}
       >
-        <div
-          className="grid grid-cols-1 sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-[4rem_1fr_auto] gap-2 sm:gap-4 items-start">
           <div className="sm:col-start-2 sm:row-start-1">
             <Badge status={status} />
           </div>
