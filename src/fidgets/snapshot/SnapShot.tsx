@@ -2,10 +2,15 @@ import { Button } from "@/common/components/atoms/button";
 import { CardContent } from "@/common/components/atoms/card";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import TextInput from "@/common/components/molecules/TextInput";
-import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  FidgetSettingsStyle,
+} from "@/common/fidgets";
 import { useSnapshotProposals } from "@/common/lib/hooks/useSnapshotProposals";
 import { defaultStyleFields, WithMargin } from "@/fidgets/helpers";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { BsFillLightningChargeFill } from "react-icons/bs";
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
 import ProposalItem from "./components/ProposalItem";
@@ -32,7 +37,8 @@ export const snapshotConfig: FidgetProperties = {
     {
       fieldName: "snapshotEns",
       displayName: "Snapshot ENS",
-      displayNameHint: "Enter the ENS name of the Snapshot space (e.g. 'gnars.eth')",
+      displayNameHint:
+        "Enter the ENS name of the Snapshot space (e.g. 'gnars.eth')",
       default: "gnars.eth",
       required: true,
       inputSelector: (props) => (
@@ -45,7 +51,8 @@ export const snapshotConfig: FidgetProperties = {
     {
       fieldName: "headingsFontFamily",
       displayName: "Headings Font Family",
-      displayNameHint: "Font used for proposal titles. Select 'Theme Headings Font' to inherit from the theme.",
+      displayNameHint:
+        "Font used for proposal titles. Select 'Theme Headings Font' to inherit from the theme.",
       default: "Theme Headings Font",
       required: false,
       inputSelector: (props) => (
@@ -58,7 +65,8 @@ export const snapshotConfig: FidgetProperties = {
     {
       fieldName: "fontFamily",
       displayName: "Font Family",
-      displayNameHint: "Font used for proposal text. Select 'Theme Font' to inherit from the theme.",
+      displayNameHint:
+        "Font used for proposal text. Select 'Theme Font' to inherit from the theme.",
       default: "Theme Font",
       required: false,
       inputSelector: (props) => (
@@ -118,9 +126,6 @@ export const snapshotConfig: FidgetProperties = {
 export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
   settings,
 }) => {
-  // const [expandedProposalId, setExpandedProposalId] = useState<string | null>(
-  //   null,
-  // );
   const [skip, setSkip] = useState<number>(0);
   const first = 5;
 
@@ -129,97 +134,109 @@ export const SnapShot: React.FC<FidgetArgs<SnapShotSettings>> = ({
     skip,
     first,
   });
-  // const { snapShotInfo } = useSnapShotInfo({
-  //   ens: settings.snapshotEns,
-  // });
 
-  // const handleToggleExpand = (proposalId: string) => {
-  //   setExpandedProposalId((prevId) =>
-  //     prevId === proposalId ? null : proposalId,
-  //   );
-  // };
+  // Helper function to get CSS variable or fallback to setting value
+  const getFontFamily = useCallback(
+    (setting: string | undefined, themeVariable: string) => {
+      if (
+        !setting ||
+        setting === "Theme Font" ||
+        setting === "Theme Headings Font"
+      ) {
+        return `var(${themeVariable})`;
+      }
+      return setting;
+    },
+    []
+  );
 
-  const handlePrevious = () => {
+  // Memoize navigation handlers
+  const handlePrevious = useCallback(() => {
     setSkip((prevSkip) => Math.max(prevSkip - first, 0));
-  };
+  }, [first]);
 
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     setSkip((prevSkip) => prevSkip + first);
-  };
+  }, [first]);
 
-  const getHeadingsFontFamily = () => {
-    return settings.headingsFontFamily === "Theme Headings Font"
-      ? "var(--user-theme-headings-font)"
-      : settings.headingsFontFamily || "var(--user-theme-headings-font)";
-  };
+  // Memoize disabled states
+  const isPreviousDisabled = useMemo(() => skip === 0, [skip]);
+  const isNextDisabled = useMemo(
+    () => (proposals?.length ?? 0) < first,
+    [proposals?.length, first]
+  );
 
-  const getBodyFontFamily = () => {
-    return settings.fontFamily === "Theme Font"
-      ? "var(--user-theme-font)"
-      : settings.fontFamily || "var(--user-theme-font)";
-  };
+  // Memoize the container style using CSS variables directly
+  const containerStyle = useMemo(
+    () => ({
+      fontFamily: getFontFamily(settings.fontFamily, "--user-theme-font"),
+      color: settings.fontColor || "var(--user-theme-font-color)",
+    }),
+    [settings.fontFamily, settings.fontColor, getFontFamily]
+  );
 
-  const getHeadingsFontColor = () => {
-    if (settings.headingsFontColor &&
-      settings.headingsFontColor.toString() !== "var(--user-theme-headings-font-color)") {
-      return settings.headingsFontColor;
-    }
-
-    return '#000000';
-  };
-
-  const getBodyFontColor = () => {
-    if (settings.fontColor &&
-      settings.fontColor.toString() !== "var(--user-theme-font-color)") {
-      return settings.fontColor;
-    }
-
-    return '#333333';
-  };
-
-
+  const headingStyle = useMemo(
+    () => ({
+      fontFamily: getFontFamily(
+        settings.headingsFontFamily,
+        "--user-theme-headings-font"
+      ),
+      color:
+        settings.headingsFontColor || "var(--user-theme-headings-font-color)",
+    }),
+    [settings.headingsFontFamily, settings.headingsFontColor, getFontFamily]
+  );
 
   return (
     <div className="size-full">
-      <CardContent className="size-full overflow-hidden p-4 flex flex-col">
-        <h1
-          className="text-2xl font-bold mb-4"
-          style={{
-            fontFamily: getHeadingsFontFamily(),
-            color: getHeadingsFontColor()
-          }}
-        >
-          {settings.snapshotEns} proposals
+      <CardContent className="size-full overflow-y-auto overflow-x-hidden p-4 flex flex-col">
+        <h1 className="text-2xl font-bold mb-4" style={headingStyle}>
+          {settings.snapshotEns} Governance
         </h1>
-        {error && <p className="text-red-500" style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}>{error}</p>}
+        {error && (
+          <p className="text-red-500" style={containerStyle}>
+            {error}
+          </p>
+        )}
         <div
-          className="grid gap-2 overflow-auto"
-          style={{ fontFamily: getBodyFontFamily(), color: getBodyFontColor() }}
+          className="grid gap-2 overflow-y-auto overflow-x-hidden flex-1"
+          style={containerStyle}
         >
-          {proposals.map((proposal) => (
+          {proposals?.map((proposal) => (
             <ProposalItem
               key={proposal.id}
               proposal={proposal}
               space={settings.snapshotEns}
-              headingsFont={getHeadingsFontFamily()}
-              headingsColor={getHeadingsFontColor()}
-              bodyFont={getBodyFontFamily()}
-              bodyColor={getBodyFontColor()}
+              headingsFont={getFontFamily(
+                settings.headingsFontFamily,
+                "--user-theme-headings-font"
+              )}
+              headingsColor={
+                settings.headingsFontColor ||
+                "var(--user-theme-headings-font-color)"
+              }
+              bodyFont={getFontFamily(settings.fontFamily, "--user-theme-font")}
+              bodyColor={settings.fontColor || "var(--user-theme-font-color)"}
             />
           ))}
         </div>
-        <div className="flex justify-between mt-4">
+
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-4">
           <Button
             variant="primary"
             onClick={handlePrevious}
-            disabled={skip === 0}
+            disabled={isPreviousDisabled}
+            width="full"
+            className="sm:w-auto"
           >
             <FaAngleLeft /> Previous
           </Button>
           <Button
             variant="primary"
             onClick={handleNext}
-            disabled={proposals.length < first}
+            disabled={isNextDisabled}
+            width="full"
+            className="sm:w-auto"
           >
             Next <FaAngleRight />
           </Button>
