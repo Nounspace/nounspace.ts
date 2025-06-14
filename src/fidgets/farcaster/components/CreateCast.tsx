@@ -52,6 +52,13 @@ import {
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 
+// The mentions library expects these channel result types, but we only
+// return simplified channel data from our backend. Define placeholder
+// interfaces to satisfy the generic signature without pulling in the
+// actual library types.
+type VirtualChannel = unknown;
+type RealizedChannel = unknown;
+
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
@@ -285,7 +292,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
   );
 
   const debouncedGetChannels = useCallback(
-    (query: string) => getChannelsDebounced(query),
+    async (query: string): Promise<Channel[]> => {
+      const channels = await getChannelsDebounced(query);
+      return channels ?? [];
+    },
     [getChannelsDebounced],
   );
 
@@ -363,7 +373,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     onSubmit: onSubmitPost,
     linkClassName: "text-blue-800",
     renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetChannels,
+      getResults: (debouncedGetChannels as unknown as (
+        query: string,
+      ) => Promise<(VirtualChannel | RealizedChannel | null)[]>),
       RenderList: ChannelList,
     }),
     renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
