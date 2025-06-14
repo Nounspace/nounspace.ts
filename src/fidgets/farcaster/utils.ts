@@ -33,7 +33,7 @@ export interface Channel {
   id: string;
   name: string;
   image_url?: string;
-  parent_url?: string;
+  parent_url?: string | null;
   description?: string;
   member_count?: number;
   followers?: number;
