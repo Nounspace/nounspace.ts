@@ -76,19 +76,17 @@ const nextConfig = {
     ];
   },
 
-  webpack(config, { isServer }) {
-    if (!isServer) {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        os: false,
-        "@walletconnect/types": false,
-      };
-      config.resolve.fallback = {
-        ...(config.resolve.fallback || {}),
-        os: false,
-        "@walletconnect/types": false,
-      };
-    }
+  webpack(config) {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      os: false,
+      "@walletconnect/types": false,
+    };
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      os: false,
+      "@walletconnect/types": false,
+    };
     return config;
   },
   
