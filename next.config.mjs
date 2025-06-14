@@ -76,11 +76,13 @@ const nextConfig = {
     ];
   },
 
-  webpack(config) {
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      os: 'os',
-    };
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        os: false,
+      };
+    }
     return config;
   },
   

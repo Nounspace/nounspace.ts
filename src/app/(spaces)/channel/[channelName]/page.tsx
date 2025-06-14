@@ -30,9 +30,7 @@ async function getChannelSpace(channel: string) {
   return data[0].spaceId as string;
 }
 
-import type { PageProps } from "next";
-
-interface ChannelPageProps extends PageProps {
+interface ChannelPageProps {
   params: { channelName?: string; tabName?: string };
 }
 
