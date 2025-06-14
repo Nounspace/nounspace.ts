@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 
+import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
@@ -56,11 +56,7 @@ export default function PublicSpace({
   pageType, // New prop
 }: PublicSpaceProps) {
 
- const clearLocalSpaces = useAppStore((state) => state.clearLocalSpaces);
-
-useEffect(() => {
-  clearLocalSpaces?.();
-}, [clearLocalSpaces]);
+  const clearLocalSpaces = useAppStore((state) => state.clearLocalSpaces);
 
   console.log("PublicSpace mounted:", {
     spaceId: providedSpaceId,
@@ -117,6 +113,19 @@ useEffect(() => {
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
   }));
+  
+ // Clear local spaces and force data reload when mounting the component
+  const didInitialize = useRef(false);
+  useEffect(() => {
+    if (!didInitialize.current && clearLocalSpaces && providedSpaceId) {
+      console.log("Inicializando componente - limpando cache e forçando recarregamento");
+      clearLocalSpaces();
+      
+      didInitialize.current = true;
+      
+      initialDataLoadRef.current = false;
+    }
+  }, [clearLocalSpaces, providedSpaceId]);
 
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -177,6 +186,11 @@ useEffect(() => {
   const prevTabName = useRef<string | null>(null);
 
   useEffect(() => {
+    // Reset initialDataLoadRef whenever changing spaces
+    if (prevSpaceId.current !== providedSpaceId || prevTabName.current !== providedTabName) {
+      initialDataLoadRef.current = false;
+    }
+    
     let nextSpaceId = providedSpaceId;
     let nextTabName = decodeURIComponent(providedTabName);
 
@@ -224,68 +238,82 @@ useEffect(() => {
     setCurrentTabName,
   ]);
 
-  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
-  useEffect(() => {
-    const currentSpaceId = getCurrentSpaceId();
-    const currentTabName = getCurrentTabName() ?? "Profile";
-
-    console.log("Loading space tab:", {
-      currentSpaceId,
-      currentTabName,
-      loading,
-    });
-
-    const localSpacesSnapshot = localSpaces;
-
-    if (!isNil(currentSpaceId)) {
-      const hasCachedTab = !!localSpacesSnapshot[currentSpaceId]?.tabs[currentTabName];
-      const hasCachedOrder =
-        !!localSpacesSnapshot[currentSpaceId]?.order &&
-        localSpacesSnapshot[currentSpaceId].order.length > 0;
-
-      if (!hasCachedTab || !hasCachedOrder) {
-        setLoading(true);
-      } else {
-        setLoading(false);
-      }
-
-      loadSpaceTabOrder(currentSpaceId)
-        .then(() => {
-          console.log("Loaded space tab order");
-          return loadEditableSpaces();
-        })
-        .then(() => {
-          console.log("Loaded editable spaces");
-          return loadSpaceTab(currentSpaceId, currentTabName);
-        })
-        .then(() => {
-          console.log("Loaded space tab");
-          setLoading(false);
-          // Preload other tabs in the background
-          if (currentSpaceId) {
-            void loadRemainingTabs(currentSpaceId);
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading space:", error);
-          setLoading(false);
-        });
-    }
-  }, [getCurrentSpaceId, getCurrentTabName]);
-
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
       const currentTabName = getCurrentTabName();
       const tabOrder = localSpaces[spaceId]?.order || [];
+     // Forces all database tabs to load
       await Promise.all(
         tabOrder
           .filter((tabName) => tabName !== currentTabName)
-          .map((tabName) => loadSpaceTab(spaceId, tabName)),
+          .map((tabName) => loadSpaceTab(spaceId, tabName, currentUserFid || undefined)),
       );
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab],
+    [localSpaces, getCurrentTabName, loadSpaceTab, currentUserFid],
   );
+
+  // Track if initial data load already happened
+  const initialDataLoadRef = useRef(false);
+  const isLoadingRef = useRef(false);
+  
+  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
+  useEffect(() => {
+    const currentSpaceId = getCurrentSpaceId();
+    const currentTabName = getCurrentTabName() ?? "Profile";
+    
+// Avoid repeated simultaneous loading or when reloading is not necessary
+    if (isLoadingRef.current || (initialDataLoadRef.current && !didInitialize.current)) {
+      return;
+    }
+
+    console.log("Loading space tab:", {
+      currentSpaceId,
+      currentTabName,
+      loading,
+      initialLoad: initialDataLoadRef.current,
+      didInitialize: didInitialize.current
+    });
+
+    if (!isNil(currentSpaceId)) {
+      isLoadingRef.current = true;
+      setLoading(true);
+      
+      let loadPromise;
+      
+      if (!initialDataLoadRef.current || didInitialize.current) {
+        loadPromise = loadSpaceTabOrder(currentSpaceId)
+          .then(() => {
+            console.log("Loaded space tab order");
+            return loadEditableSpaces();
+          })
+          .then(() => {
+            console.log("Loaded editable spaces");
+            return loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined);
+          });
+      } else {
+        loadPromise = Promise.resolve();
+      }
+      
+      loadPromise
+        .then(() => {
+          console.log("Loaded space tab from database or using cache");
+          setLoading(false);
+          isLoadingRef.current = false;
+          initialDataLoadRef.current = true;
+          
+          if (currentSpaceId && didInitialize.current) {
+            void loadRemainingTabs(currentSpaceId);
+            didInitialize.current = false;
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading space:", error);
+          setLoading(false);
+          isLoadingRef.current = false;
+        });
+    }
+  }, [getCurrentSpaceId, getCurrentTabName, loadSpaceTabOrder, loadEditableSpaces, loadSpaceTab, loadRemainingTabs]);
 
   // Checks if the user is signed into Farcaster
   useEffect(() => {
@@ -316,8 +344,6 @@ useEffect(() => {
     console.error("Current space config is undefined");
   }
 
-  const currentTabName = getCurrentTabName();
-
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
       ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
@@ -332,7 +358,7 @@ useEffect(() => {
     }
     return config;
   }, [
-    config?.fidgetInstanceDatums,
+    Object.keys(config?.fidgetInstanceDatums || {}).sort().join(','),
     config?.layoutID,
     config?.layoutDetails,
     config?.isEditable,
@@ -520,7 +546,7 @@ useEffect(() => {
       };
       return saveLocalSpaceTab(currentSpaceId, currentTabName, saveableConfig);
     },
-    [getCurrentSpaceId, getCurrentTabName, config.fidgetInstanceDatums]
+    [getCurrentSpaceId, getCurrentTabName]
   );
 
   const commitConfig = useCallback(async () => {
@@ -669,6 +695,17 @@ useEffect(() => {
     console.warn("Profile component is undefined");
   }
 
+  const MemoizedSpacePage = useMemo(() => (
+    <SpacePage
+      config={memoizedConfig}
+      saveConfig={saveConfig}
+      commitConfig={commitConfig}
+      resetConfig={resetConfig}
+      tabBar={tabBar}
+      profile={profile ?? undefined}
+    />
+  ), [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]);
+  
   const shouldShowSkeleton =
     loading && providedSpaceId !== null && providedSpaceId !== "";
 
@@ -696,15 +733,6 @@ useEffect(() => {
       </div>
     );
   }
-
-  return (
-    <SpacePage
-      config={memoizedConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-      tabBar={tabBar}
-      profile={profile ?? undefined}
-    />
-  );
+  
+  return MemoizedSpacePage;
 }
