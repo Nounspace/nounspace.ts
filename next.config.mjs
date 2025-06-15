@@ -75,6 +75,24 @@ const nextConfig = {
       },
     ];
   },
+
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        os: false,
+      };
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        os: false,
+      };
+    } else {
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+      };
+    }
+    return config;
+  },
   
   // async headers() {
   //   return [

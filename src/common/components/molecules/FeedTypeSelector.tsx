@@ -1,6 +1,8 @@
+"use client";
+
 import React from "react";
 import SettingsSelector from "@/common/components/molecules/SettingsSelector";
-import { FEED_TYPES } from "@/fidgets/farcaster/Feed";
+import { FEED_TYPES } from "@/fidgets/farcaster/feedConstants";
 
 export const FeedTypeSelector: React.FC<{
   onChange: (value: string) => void;
