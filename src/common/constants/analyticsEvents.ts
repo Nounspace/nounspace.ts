@@ -44,4 +44,6 @@ export type AnalyticsEventProperties = {
   [AnalyticsEvent.LIKE]: { username: string; castId: string };
   [AnalyticsEvent.RECAST]: { username: string; castId: string };
   [AnalyticsEvent.REPLY]: { username: string; castId: string };
+} & {
+  [K in AnalyticsEvent]?: Record<string, any>;
 };
