@@ -53,8 +53,16 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },
   clearLocalSpaces: () => {
+    // remove only the space slice while keeping the rest of the persisted data
     get().space.clear();
-    localStorage.removeItem(LOCAL_STORAGE_LOCATION);
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_LOCATION);
+      if (raw) {
+        const persisted = JSON.parse(raw);
+        delete persisted.space;
+        localStorage.setItem(LOCAL_STORAGE_LOCATION, JSON.stringify(persisted));
+      }
+    } catch { /* fall back silently – corruption handled on next hydrate */ }
   },
   getIsAccountReady: () => {
     return (
