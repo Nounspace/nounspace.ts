@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FaPlus, FaPaintbrush } from "react-icons/fa6";
+import { FaPlus, FaPaintbrush, FaWandMagicSparkles } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
@@ -16,6 +16,8 @@ import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import { IoSparklesOutline } from "react-icons/io5";
+import { LucideSparkle } from "lucide-react";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -63,7 +65,7 @@ function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
-  pageType
+  pageType,
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
@@ -73,7 +75,49 @@ function TabBar({
     getIsInitializing: state.getIsInitializing,
   }));
 
-  const { setEditMode, sidebarEditable } = useSidebarContext();
+  const {
+    setEditMode,
+    setEditWithAiMode,
+    sidebarEditable,
+    editWithAiMode,
+    editMode,
+  } = useSidebarContext();
+
+  // Helper functions for better state management
+  const enterEditMode = () => {
+    setEditWithAiMode(false); // Ensure AI mode is off
+    setEditMode(true);
+  };
+
+  const enterAiEditMode = () => {
+    setEditMode(false); // Ensure regular edit mode is off
+    setEditWithAiMode(true);
+  };
+
+  const exitAllEditModes = () => {
+    setEditMode(false);
+    setEditWithAiMode(false);
+  };
+
+  const toggleAiMode = () => {
+    if (editWithAiMode) {
+      // If AI mode is on, turn it off (go to normal mode)
+      exitAllEditModes();
+    } else {
+      // If AI mode is off, turn it on (and turn off regular edit mode)
+      enterAiEditMode();
+    }
+  };
+
+  const toggleEditMode = () => {
+    if (editMode) {
+      // If edit mode is on, turn it off (go to normal mode)
+      exitAllEditModes();
+    } else {
+      // If edit mode is off, turn it on (and turn off AI mode)
+      enterEditMode();
+    }
+  };
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -111,41 +155,43 @@ function TabBar({
 
     // Start the tab creation process but don't await it
     const creationPromise = createTab(tabName);
-    
+
     // Switch to the new tab immediately
     switchTabTo(tabName);
-    
+
     // Handle the remote operations in the background
-    creationPromise.then(result => {
-      if (result?.tabName) {
-        // If the tab name changed during creation, update the URL
-        if (result.tabName !== tabName) {
-          switchTabTo(result.tabName);
+    creationPromise
+      .then((result) => {
+        if (result?.tabName) {
+          // If the tab name changed during creation, update the URL
+          if (result.tabName !== tabName) {
+            switchTabTo(result.tabName);
+          }
         }
-      }
-      // Commit the tab order in the background
-      commitTabOrder();
-    }).catch(error => {
-      console.error("Failed to create tab:", error);
-      // Optionally show an error message to the user
-    });
+        // Commit the tab order in the background
+        commitTabOrder();
+      })
+      .catch((error) => {
+        console.error("Failed to create tab:", error);
+        // Optionally show an error message to the user
+      });
   }
 
   async function handleDeleteTab(tabName: string) {
     // Get the next tab before any state changes
     const nextTab = nextClosestTab(tabName);
-    
+
     try {
-        // First update the tab order and delete the tab
-        const newOrder = tabList.filter((name) => name !== tabName);
-        await updateTabOrder(newOrder);
-        await deleteTab(tabName);
-        await commitTabOrder();
-        
-        switchTabTo(nextTab, false);
+      // First update the tab order and delete the tab
+      const newOrder = tabList.filter((name) => name !== tabName);
+      await updateTabOrder(newOrder);
+      await deleteTab(tabName);
+      await commitTabOrder();
+
+      switchTabTo(nextTab, false);
     } catch (error) {
-        console.error("Failed to delete tab:", error);
-        // Optionally add error handling UI here
+      console.error("Failed to delete tab:", error);
+      // Optionally add error handling UI here
     }
   }
 
@@ -159,7 +205,7 @@ function TabBar({
     const uniqueName = generateUniqueTabName(newName);
     await renameTab(tabName, uniqueName);
     updateTabOrder(
-      tabList.map((name) => (name === tabName ? uniqueName : name)),
+      tabList.map((name) => (name === tabName ? uniqueName : name))
     );
     await commitTab(uniqueName);
     await commitTabOrder();
@@ -170,30 +216,33 @@ function TabBar({
     const index = tabList.indexOf(tabName);
     // For middle tabs, prefer the next tab
     if (index >= 0 && index < tabList.length - 1) {
-        // If there's a next tab, use it
-        return tabList[index + 1];
+      // If there's a next tab, use it
+      return tabList[index + 1];
     } else if (index > 0) {
-        // If we're at the end, go to previous tab
-        return tabList[index - 1];
+      // If we're at the end, go to previous tab
+      return tabList[index - 1];
     } else if (inHomebase) {
-        // If no other tabs, go to Feed
-        return "Feed";
+      // If no other tabs, go to Feed
+      return "Feed";
     } else {
-        // If no other tabs in profile space, go to Profile
-        return "Profile";
+      // If no other tabs in profile space, go to Profile
+      return "Profile";
     }
   }
 
-   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
-    
-    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-    
-    switchTabTo(tabName, true);
-  }, [switchTabTo]);
+  const handleTabClick = React.useCallback(
+    (tabName: string, e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+
+      console.log("Tab clicked:", tabName, "Current tab:", currentTab);
+
+      switchTabTo(tabName, true);
+    },
+    [switchTabTo]
+  );
 
   const isLoggedIn = getIsLoggedIn();
   const showButtons =
@@ -210,7 +259,7 @@ function TabBar({
         <div
           className={mergeClasses(
             "flex flex-auto justify-start h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-y-scroll",
-            showButtons && "w-64 pr-8",
+            showButtons && "w-64 pr-8"
           )}
         >
           {tabList && (
@@ -226,9 +275,7 @@ function TabBar({
             >
               <AnimatePresence initial={false}>
                 {map(
-                    inHomebase
-                    ? ["Feed", ...tabList]
-                    : tabList,
+                  inHomebase ? ["Feed", ...tabList] : tabList,
                   (tabName: string) => {
                     return (
                       <Tab
@@ -237,7 +284,7 @@ function TabBar({
                         tabName={tabName}
                         inEditMode={inEditMode}
                         isSelected={currentTab === tabName}
-                        onClick={() => handleTabClick(tabName)}  
+                        onClick={() => handleTabClick(tabName)}
                         removeable={isEditableTab(tabName)}
                         draggable={inEditMode}
                         renameable={isEditableTab(tabName)}
@@ -245,30 +292,54 @@ function TabBar({
                         renameTab={handleRenameTab}
                       />
                     );
-                  },
+                  }
                 )}
               </AnimatePresence>
             </Reorder.Group>
           )}
-        </div>
+        </div>{" "}
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
-        {!inEditMode && !isMobile && isLoggedIn && sidebarEditable && (
+        {/* AI Button - Hidden when in regular edit mode */}
+        {!editMode && !isMobile && isLoggedIn && sidebarEditable && (
+          <div className="absolute right-[180px] top-2.5 z-infinity">
+            <Button
+              onClick={toggleAiMode}
+              size="md"
+              variant="secondary"
+              withIcon
+              className={`scale-110 transition-all duration-300 ${
+                editWithAiMode
+                  ? "bg-gray-600 hover:bg-gray-700 text-white border-none shadow-lg hover:shadow-xl"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-none shadow-lg hover:shadow-xl"
+              }`}
+            >
+              <LucideSparkle />
+              <span className="whitespace-nowrap text-[1.05em] font-semibold">
+                {editWithAiMode ? "Close AI" : "AI"}
+              </span>
+            </Button>
+          </div>
+        )}
+        {/* Customize Button - Always visible when logged in and sidebar is editable */}
+        {!isMobile && isLoggedIn && sidebarEditable && (
           <div className="absolute right-4 top-2.5 z-infinity bg-white rounded-md p-1 pr-0">
             <Button
-              onClick={() => setEditMode(true)}
+              onClick={toggleEditMode}
               size="md"
               variant="secondary"
               withIcon
               className="scale-110"
             >
               <FaPaintbrush />
-              <span className="whitespace-nowrap text-[1.05em] font-semibold">Customize</span>
+              <span className="whitespace-nowrap text-[1.05em] font-semibold">
+                {editMode ? "Done" : "Customize"}
+              </span>
             </Button>
           </div>
         )}
-        {inEditMode ? (
+        {editMode ? (
           <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
