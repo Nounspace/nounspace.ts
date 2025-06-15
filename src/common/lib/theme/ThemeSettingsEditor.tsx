@@ -20,7 +20,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
-import { Slider } from "@mui/material";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
@@ -32,13 +32,11 @@ import {
   tabListClasses,
   tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
+import { Slider } from "@mui/material";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
