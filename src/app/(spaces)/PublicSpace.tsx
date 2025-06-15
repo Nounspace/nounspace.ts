@@ -114,15 +114,32 @@ export default function PublicSpace({
     registerSpaceContract: state.space.registerSpaceContract,
   }));
   
- // Clear local spaces and force data reload when mounting the component
+ // Clear local spaces and force data reload only on initial mount, not for tab switches
   const didInitialize = useRef(false);
+  const lastMountedSpaceId = useRef<string | null>(null);
+  
   useEffect(() => {
-    if (!didInitialize.current && clearLocalSpaces && providedSpaceId) {
-      console.log("Inicializando componente - limpando cache e forçando recarregamento");
+    // Clear cache only when changing to a different space or on first mount
+    if ((!didInitialize.current || lastMountedSpaceId.current !== providedSpaceId) && 
+        clearLocalSpaces && providedSpaceId) {
+      console.log("Initializing component/new space - clearing cache and forcing reload");
       clearLocalSpaces();
       
-      didInitialize.current = true;
+      // If we're changing space (not just tabs), reset the loaded tabs registry
+      if (lastMountedSpaceId.current !== providedSpaceId) {
+        console.log(`Changing space from ${lastMountedSpaceId.current} to ${providedSpaceId}, resetting tabs cache`);
+        // Keep only the current space registry, if it exists
+        const currentSpaceCache = loadedTabsRef.current[providedSpaceId];
+        loadedTabsRef.current = {};
+        if (currentSpaceCache) {
+          loadedTabsRef.current[providedSpaceId] = currentSpaceCache;
+        }
+      }
       
+      didInitialize.current = true;
+      lastMountedSpaceId.current = providedSpaceId;
+      
+      // Force reload only for the new space, not for tab navigation
       initialDataLoadRef.current = false;
     }
   }, [clearLocalSpaces, providedSpaceId]);
@@ -241,14 +258,34 @@ export default function PublicSpace({
   // Function to load remaining tabs
   const loadRemainingTabs = useCallback(
     async (spaceId: string) => {
-      const currentTabName = getCurrentTabName();
+      const currentTabName = getCurrentTabName() ?? "Profile";
       const tabOrder = localSpaces[spaceId]?.order || [];
-     // Forces all database tabs to load
-      await Promise.all(
-        tabOrder
-          .filter((tabName) => tabName !== currentTabName)
-          .map((tabName) => loadSpaceTab(spaceId, tabName, currentUserFid || undefined)),
+      
+      // Initialize the set of loaded tabs for this space if it doesn't exist
+      if (!loadedTabsRef.current[spaceId]) {
+        loadedTabsRef.current[spaceId] = new Set();
+      }
+      
+      // Mark the current tab as loaded
+      loadedTabsRef.current[spaceId].add(currentTabName);
+      
+      // Load only tabs that haven't been loaded yet
+      const tabsToLoad = tabOrder.filter(
+        (tabName) => tabName !== currentTabName && !loadedTabsRef.current[spaceId].has(tabName)
       );
+      
+      console.log(`Loading ${tabsToLoad.length} remaining tabs for space ${spaceId}`);
+      
+      // Load the remaining tabs in parallel and mark them as loaded
+      if (tabsToLoad.length > 0) {
+        await Promise.all(
+          tabsToLoad.map(async (tabName) => {
+            await loadSpaceTab(spaceId, tabName, currentUserFid || undefined);
+            loadedTabsRef.current[spaceId].add(tabName);
+          })
+        );
+        console.log(`Tabs loaded and cached: ${Array.from(loadedTabsRef.current[spaceId]).join(', ')}`);
+      }
     },
     [localSpaces, getCurrentTabName, loadSpaceTab, currentUserFid],
   );
@@ -256,6 +293,8 @@ export default function PublicSpace({
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(false);
   const isLoadingRef = useRef(false);
+  // Keeps track of which tabs have already been loaded for each space
+  const loadedTabsRef = useRef<Record<string, Set<string>>>({});
   
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
@@ -281,7 +320,8 @@ export default function PublicSpace({
       
       let loadPromise;
       
-      if (!initialDataLoadRef.current || didInitialize.current) {
+      if (!initialDataLoadRef.current) {
+        // First load - load everything from the database
         loadPromise = loadSpaceTabOrder(currentSpaceId)
           .then(() => {
             console.log("Loaded space tab order");
@@ -289,10 +329,38 @@ export default function PublicSpace({
           })
           .then(() => {
             console.log("Loaded editable spaces");
+            // Load the current tab from the database
             return loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined);
           });
+      } else if (didInitialize.current) {
+        // Loading new space - reload from the database
+        loadPromise = loadSpaceTabOrder(currentSpaceId)
+          .then(() => loadEditableSpaces())
+          .then(() => loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined));
       } else {
-        loadPromise = Promise.resolve();
+        // Navigation between tabs - check if we already have the tab in local cache
+        const tabExists = localSpaces[currentSpaceId]?.tabs?.[currentTabName];
+        // Also check if the tab is marked as loaded in our registry
+        const isTabCached = loadedTabsRef.current[currentSpaceId]?.has(currentTabName);
+        
+        if (!tabExists && !isTabCached) {
+          // If the tab is not in local cache, load it from the database
+          console.log(`Tab ${currentTabName} not in cache, loading from database`);
+          loadPromise = loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined);
+        } else {
+          // Use the cached version and set loading to false immediately
+          console.log(`Using tab ${currentTabName} from local cache, avoiding skeleton`);
+          loadPromise = Promise.resolve();
+          // Important: don't show loading for cached tabs
+          setLoading(false);
+          isLoadingRef.current = false;
+          
+          // Ensure that the tab is registered as loaded
+          if (!loadedTabsRef.current[currentSpaceId]) {
+            loadedTabsRef.current[currentSpaceId] = new Set();
+          }
+          loadedTabsRef.current[currentSpaceId].add(currentTabName);
+        }
       }
       
       loadPromise
@@ -302,6 +370,16 @@ export default function PublicSpace({
           isLoadingRef.current = false;
           initialDataLoadRef.current = true;
           
+          // Mark the current tab as loaded in our registry
+          if (currentSpaceId) {
+            if (!loadedTabsRef.current[currentSpaceId]) {
+              loadedTabsRef.current[currentSpaceId] = new Set();
+            }
+            loadedTabsRef.current[currentSpaceId].add(currentTabName);
+            console.log(`Tab ${currentTabName} marked as loaded for space ${currentSpaceId}`);
+          }
+          
+          // Load remaining tabs in the background if necessary
           if (currentSpaceId && didInitialize.current) {
             void loadRemainingTabs(currentSpaceId);
             didInitialize.current = false;
@@ -596,6 +674,33 @@ export default function PublicSpace({
       to: tabName,
       shouldSave,
     });
+    
+    // Check if we already have the tab in cache
+    const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
+    
+    // Always show the skeleton during tab switching for better UX
+    setLoading(true);
+    
+    // If not in cache, we need to load it
+    if (currentSpaceId && !tabExists) {
+      console.log(`Tab ${tabName} not in cache, loading from database`);
+      // Mark as loaded to avoid loading again
+      if (loadedTabsRef.current[currentSpaceId]) {
+        loadedTabsRef.current[currentSpaceId].add(tabName);
+      } else {
+        loadedTabsRef.current[currentSpaceId] = new Set([tabName]);
+      }
+      
+      // Load the tab showing the skeleton for better UX
+      loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined)
+        .catch(error => console.error(`Error loading tab ${tabName}:`, error));
+    } else if (currentSpaceId && tabExists) {
+      // If the tab already exists in cache, disable loading quickly after navigation
+      console.log(`Tab ${tabName} in cache, will be shown quickly`);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300); // Short delay to ensure the skeleton is shown
+    }
 
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
@@ -706,8 +811,18 @@ export default function PublicSpace({
     />
   ), [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]);
   
-  const shouldShowSkeleton =
-    loading && providedSpaceId !== null && providedSpaceId !== "";
+  // Mostra o skeleton apenas durante o carregamento inicial do espaço, não durante troca de abas
+  const shouldShowSkeleton = 
+    loading && 
+    // Apenas mostrar skeleton quando:
+    // 1. Não tivermos carregado dados iniciais ainda ou
+    // 2. Estivermos mudando para um espaço diferente (e não apenas entre abas)
+    (!initialDataLoadRef.current || lastMountedSpaceId.current !== providedSpaceId) && 
+    // Não mostrar skeleton para navegação entre abas
+    providedSpaceId !== null && providedSpaceId !== "" &&
+    // Evita mostrar skeleton para abas que já foram carregadas
+    !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
+      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
 
   if (shouldShowSkeleton) {
     return (
