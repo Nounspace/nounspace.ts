@@ -1,11 +1,10 @@
 import React from "react";
-import createInitialChannelSpaceConfig from "@/constants/initialChannelSpace";
-import PublicSpace from "@/app/(spaces)/PublicSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import axiosBackend from "@/common/data/api/backend";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { type Channel } from "@/fidgets/farcaster/utils";
 import { unstable_noStore as noStore } from "next/cache";
+import ChannelSpace from "./ChannelSpace";
 
 async function loadChannelInfo(channel: string): Promise<Channel | null> {
   try {
@@ -30,9 +29,8 @@ async function getChannelSpace(channel: string) {
   return data[0].spaceId as string;
 }
 
-// Define the expected params for this page
-export default async function ChannelSpace({ params }: any) {
-  const { channelName } = params as {
+export default async function ChannelSpacePage({ params }: any) {
+  const { channelName, tabName } = params as {
     channelName?: string;
     tabName?: string;
   };
@@ -42,19 +40,13 @@ export default async function ChannelSpace({ params }: any) {
   if (!info) return <SpaceNotFound />;
 
   const spaceId = await getChannelSpace(channelName);
-  const INITIAL_CONFIG = createInitialChannelSpaceConfig(channelName);
-
-  const getSpacePageUrl = (_: string) => `/channel/${channelName}`;
 
   return (
-    <PublicSpace
-      spaceId={spaceId}
-      tabName="Feed"
-      initialConfig={INITIAL_CONFIG}
-      getSpacePageUrl={getSpacePageUrl}
-      spaceOwnerFid={info.host?.fid}
-      pageType="channel"
+    <ChannelSpace
       channelName={channelName}
+      spaceId={spaceId}
+      tabName={tabName ?? "Feed"}
+      spaceOwnerFid={info.host?.fid}
     />
   );
 }
