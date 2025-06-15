@@ -303,7 +303,7 @@ function TabBar({
         )}
         {/* AI Button - Hidden when in regular edit mode */}
         {!editMode && !isMobile && isLoggedIn && sidebarEditable && (
-          <div className="absolute right-[180px] top-2.5 z-infinity">
+          <div className="absolute right-[180px] top-2.5 z-infinity bg-white rounded-md p-1 pr-0">
             <Button
               onClick={toggleAiMode}
               size="md"
