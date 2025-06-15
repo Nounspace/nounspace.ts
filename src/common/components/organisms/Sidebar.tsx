@@ -7,7 +7,9 @@ import React, {
   useRef,
   useMemo,
 } from "react";
+import { createPortal } from "react-dom";
 import Navigation from "./Navigation";
+import AiChatSidebar from "./AiChatSidebar";
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };
@@ -57,15 +59,31 @@ export const useSidebarContext = (): SidebarContextValue => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = () => {
-  const { editMode, editWithAiMode, sidebarEditable, portalRef } =
-    useSidebarContext();
+  const {
+    editMode,
+    editWithAiMode,
+    setEditWithAiMode,
+    sidebarEditable,
+    portalRef,
+  } = useSidebarContext();
+
+  const aiChatSidebarPortal = (portalNode: HTMLDivElement | null) => {
+    return editWithAiMode && portalNode
+      ? createPortal(
+          <AiChatSidebar onClose={() => setEditWithAiMode(false)} />,
+          portalNode
+        )
+      : null;
+  };
 
   return (
     <>
       <div
         ref={portalRef}
         className={editMode || editWithAiMode ? "w-full" : ""}
-      ></div>
+      >
+        {aiChatSidebarPortal(portalRef.current)}
+      </div>
       <div
         className={
           editMode || editWithAiMode
