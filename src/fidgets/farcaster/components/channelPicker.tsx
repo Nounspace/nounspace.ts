@@ -48,7 +48,7 @@ export function ChannelPicker(props: Props) {
   const handleSelect = React.useCallback(
     (channel: Channel) => {
       setOpen(false);
-      onSelect(channel);
+      onSelect(channel.id, channel.name);
     },
     [onSelect],
   );

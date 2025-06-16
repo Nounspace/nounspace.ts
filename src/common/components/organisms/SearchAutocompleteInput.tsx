@@ -49,12 +49,12 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
 
   const onSelectQuery = useCallback(() => {
     router.push(`/search?q=${query}`);
-    onSelect && onSelect();
+    onSelect && onSelect("", "");
   }, []);
 
   const onSelectUser = useCallback((user: User) => {
     router.push(`/s/${user.username}`);
-    onSelect && onSelect();
+    onSelect && onSelect("", user.username);
   }, []);
 
   return (
