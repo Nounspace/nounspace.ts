@@ -6,6 +6,8 @@ import { isImageUrl } from "@/common/lib/utils/urls";
 
 export async function generateMetadata({
   params: { caster, castHash },
+}: {
+  params: { caster: string; castHash: string };
 }): Promise<Metadata> {
   if (!caster || !castHash) {
     return {};
@@ -13,11 +15,12 @@ export async function generateMetadata({
 
   try {
     const url = `${WEBSITE_URL}/api/farcaster/neynar/cast?identifier=${castHash}&type=hash`;
-   const res = await fetch(url, { next: { revalidate: 60 } }); // 60 s ISR
-   if (!res.ok) {
-     throw new Error(`Farcaster API ${res.status}: ${await res.text()}`);
-   }
-   const data = await res.json();
+
+    const res = await fetch(url, { next: { revalidate: 60 } }); // 60 s ISR
+    if (!res.ok) {
+      throw new Error(`Farcaster API ${res.status}: ${await res.text()}`);
+    }
+    const data = await res.json();
 
     const cast = data.cast || data;
     const username: string = cast?.author?.username || caster;

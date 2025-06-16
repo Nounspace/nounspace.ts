@@ -1,5 +1,3 @@
-// src/utils/voteOnProposal.ts
-
 import { Web3Provider } from "@ethersproject/providers";
 import snapshot from "@snapshot-labs/snapshot.js";
 
@@ -14,43 +12,72 @@ export declare type ProposalType =
   | "weighted"
   | "basic";
 
-const voteOnProposal = async (
+interface VoteParams {
+  proposalId: string;
+  choiceId: number | number[] | { [key: string]: number };
+  reason: string;
+  space: string;
+  type: ProposalType;
+}
+
+const voteOnProposalCore = async ({
+  proposalId,
+  choiceId,
+  reason,
+  space,
+  type,
+}: VoteParams): Promise<boolean> => {
+  // Check if ethereum is available
+  if (!window.ethereum) {
+    throw new Error("Please install a Web3 wallet like MetaMask");
+  }
+
+  const web3 = new Web3Provider(window.ethereum);
+  let [account] = await web3.listAccounts();
+  
+  if (!account) {
+    // Request wallet connection
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+    // Retrieve accounts again after connection request
+    [account] = await web3.listAccounts();
+    
+    if (!account) {
+      throw new Error("Please connect your wallet");
+    }
+  }
+
+  const receipt = await client.vote(web3, account, {
+    space: space,
+    proposal: proposalId,
+    type: type,
+    choice: choiceId,
+    reason: reason,
+    app: "nounspace",
+  });
+
+  if (!receipt) {
+    throw new Error("Vote submission failed - no receipt received");
+  }
+  
+  return true;
+};
+
+// Legacy export for backward compatibility
+const voteOnProposalWrapper = async (
   proposalId: string,
   choiceId: number | number[] | { [key: string]: number },
   reason: string,
   space: string,
   type: ProposalType,
-) => {
-  try {
-    const web3 = new Web3Provider(window.ethereum);
-    const [account] = await web3.listAccounts();
-    if (!account) {
-      alert("Please connect your wallet");
-      return;
-    }
-    // console.log("Voting with account:", account);
-    // console.log("Voting on proposal:", proposalId);
-    // console.log("Choice:", choiceId);
-    // console.log("Reason:", reason);
-    // console.log("Space:", space);
-    // console.log("Type:", type);
-
-    const receipt = await client.vote(web3, account, {
-      space: space,
-      proposal: proposalId,
-      type: type,
-      choice: choiceId,
-      reason: reason,
-      app: "nounspace",
-    });
-
-    if (receipt) {
-      alert("Vote submitted!");
-    }
-  } catch (error) {
-    console.error("Error submitting vote:", error);
-    alert("An error occurred while submitting your vote. Please try again.");
-  }
+): Promise<boolean> => {
+  return voteOnProposalCore({
+    proposalId,
+    choiceId,
+    reason,
+    space,
+    type,
+  });
 };
 
-export default voteOnProposal;
+export { voteOnProposalCore };
+export default voteOnProposalWrapper;

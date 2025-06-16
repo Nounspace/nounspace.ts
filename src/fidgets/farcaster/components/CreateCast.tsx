@@ -1,10 +1,11 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
 import {
   CastAddBody,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
 import {
   ModManifest,
@@ -13,9 +14,6 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import {
-  getFarcasterMentions,
-} from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
@@ -23,9 +21,6 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-// import { FarcasterEmbed, isFarcasterUrlEmbed } from "@mod-protocol/farcaster";
-
-
 import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
@@ -57,15 +52,47 @@ import {
 } from "../utils";
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
-// import { getUsernamesAndFids } from "@/pages/api/farcaster/neynar/cast";
+
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
 const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
-const getMentions = getFarcasterMentions(API_URL);
 
-const debouncedGetMentions = debounce(getMentions, 200, {
+type FarcasterMention = {
+  fid: number;
+  display_name: string;
+  username: string;
+  avatar_url: string;
+};
+
+// Module-level cache of resolved usernames → FIDs
+const mentionFidCache = new Map<string, string>();
+
+const fetchNeynarMentions = async (
+  query: string,
+): Promise<FarcasterMention[]> => {
+  try {
+    if (query == "") return [];
+
+    const res = await fetch(
+      `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
+    );
+    const data = await res.json();
+    const users = data?.value?.users || [];
+    return users.map((user: any) => ({
+      fid: user.fid,
+      username: user.username,
+      display_name: user.display_name,
+      avatar_url: user.pfp_url,
+    }));
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+};
+
+const debouncedGetMentions = debounce(fetchNeynarMentions, 200, {
   leading: true,
   trailing: false,
 });
@@ -105,19 +132,13 @@ type CreateCastProps = {
   afterSubmit?: () => void;
 };
 
-// export type ModProtocolCastAddBody = Exclude<
-//   Awaited<ReturnType<typeof formatPlaintextToHubCastMessage>>,
-//   false
-// > & {
-//   type: CastType;
-// };
-
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
   afterSubmit = () => { },
 }) => {
+  const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
@@ -338,7 +359,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fetchUrlMetadata: getUrlMetadata,
     onError,
     onSubmit: onSubmitPost,
-    linkClassName: "text-blue-300",
+    linkClassName: "text-blue-800",
     renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
       getResults: debouncedGetChannels,
       RenderList: ChannelList,
@@ -378,11 +399,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (isPublishing) return;
 
     const fetchMentionsAndSetDraft = async () => {
+      // console.group("Mention Parsing");
       const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
 
-      // Regex to match pure @username mentions, ensuring it's not part of a URL
-      // const usernamePattern = /(?:^|\s|^)@([a-zA-Z0-9_.]+)(?=\s|$)/g;
-      const usernamePattern = /(?:^|\s)@([a-zA-Z0-9_.-]+)(?=\s|$)/g;
+      // Updated regex: supports ENS-style usernames and extra trailing punctuation like . , ! ? ; :
+      // Uses lookaheads instead of lookbehinds for better browser compatibility
+      const usernamePattern =
+        /(?:^|[\s(])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=[\s.,!?;:)]|$)/g;
 
       // The working copy of the text for position calculation
       const workingText = text;
@@ -399,73 +422,82 @@ const CreateCast: React.FC<CreateCastProps> = ({
         new Set(usernamesWithPositions.map((u) => u.username)),
       );
 
-      let mentionsToFids: { [key: string]: string } = {};
-      let mentionsPositions: number[] = [];
+      // console.log("Parsed mentions from text:", usernamesWithPositions);
+
+      const mentionsToFids: { [key: string]: string } = {};
+      const mentionsPositions: number[] = [];
       let mentionsText = text; // Initialize mentionsText with current text
 
       if (uniqueUsernames.length > 0) {
-        try {
-          // Fetch the FIDs for the mentioned users
-          // const fetchedMentions = await getUsernamesAndFids(uniqueUsernames);
+        // Filter out usernames that are already in cache with valid FIDs
+        const uncachedUsernames = uniqueUsernames.filter(
+          username => !mentionFidCache.has(username) || !mentionFidCache.get(username)
+        );
 
-          const query = encodeURIComponent(uniqueUsernames.join(","));
-          // console.log(query);
-          const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-          const fetchedMentions = await res.json();
-          console.log("fetchedMentions");
-          console.log(fetchedMentions);
+        // Add cached usernames to mentionsToFids only if they have valid FIDs
+        uniqueUsernames.forEach(username => {
+          const cachedFid = mentionFidCache.get(username);
+          if (cachedFid) {
+            mentionsToFids[username] = cachedFid;
+          }
+        });
 
-          if (Array.isArray(fetchedMentions)) {
-            mentionsToFids = fetchedMentions.reduce(
-              (acc, mention) => {
+        // Only make API call if there are uncached usernames
+        if (uncachedUsernames.length > 0) {
+          try {
+            const query = encodeURIComponent(uncachedUsernames.join(","));
+            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+            const fetchedMentions = await res.json();
+
+            if (Array.isArray(fetchedMentions)) {
+              fetchedMentions.forEach(mention => {
                 if (mention && mention.username && mention.fid) {
-                  acc[mention.username] = mention.fid.toString(); // Convert fid to string
+                  const fid = mention.fid.toString();
+                  mentionsToFids[mention.username] = fid;
+                  mentionFidCache.set(mention.username, fid);
                 }
-                return acc;
-              },
-              {} as { [key: string]: string },
+                // Remove caching of invalid usernames
+              });
+            }
+          } catch (err) {
+            console.error("Failed to fetch FIDs in batch:", err);
+          }
+        }
+
+        let cumulativeOffset = 0;
+        const mentionMatches = [...text.matchAll(usernamePattern)];
+
+        for (const match of mentionMatches) {
+          const fullMatch = match[0]; // e.g. " @bob"
+          const username = match[1];  // "bob"
+          const atIndex = match.index! + fullMatch.indexOf("@");
+
+          // Adjust position based on previous removals
+          const adjustedPosition = atIndex - cumulativeOffset;
+
+          if (mentionsToFids[username]) {
+            mentionsPositions.push(adjustedPosition);
+
+            // Remove `@username` from mentionsText
+            mentionsText = mentionsText.slice(0, adjustedPosition) +
+              mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
+
+            // Update offset so future positions shift correctly
+            cumulativeOffset += username.length + 1;
+          }
+        }
+
+        if (mentionsPositions.length > 10)
+          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
+            console.error(
+              "Mismatch between mentions and their positions:",
+              mentionsToFids,
+              mentionsPositions,
             );
           }
-
-          mentionsPositions = [];
-          // const currentTextIndex = 0;
-          // const finalText = text;
-          const mentions = [];
-          mentionsText = text;
-
-          for (let i = 0; i < mentionsText.length; i++) {
-            if (
-              mentionsText[i] === "@" &&
-              ((mentionsText[i - 1] !== "/" &&
-                !/^[a-zA-Z0-9]+$/.test(mentionsText[i - 1])) ||
-                mentionsText[i - 1] === undefined)
-            ) {
-              let mentionIndex = i + 1;
-              while (
-                mentionIndex < mentionsText.length &&
-                mentionsText[mentionIndex] !== " " &&
-                mentionsText[mentionIndex] !== "\n"
-              )
-                mentionIndex++;
-              const mention = mentionsText.substring(i + 1, mentionIndex);
-              const position = i;
-              mentionsPositions.push(position);
-              mentionsText = mentionsText.replace(`@${mention}`, "");
-            }
-          }
-
-          if (mentions.length > 10)
-            if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-              console.error(
-                "Mismatch between mentions and their positions:",
-                mentionsToFids,
-                mentionsPositions,
-              );
-            }
-        } catch (error) {
-          console.error("Error fetching FIDs:", error);
-        }
       }
+
+      // console.groupEnd();
 
       // Update the draft regardless of mentions
       setDraft((prevDraft) => {
@@ -525,7 +557,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!castAddMessageResp.isOk()) {
       return {
         success: false,
-        message: "Invalid cast data.",
+        message: "Invalid cast data: " + castAddMessageResp.error.message,
       };
     }
 
@@ -648,13 +680,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 }
               }}
             />
-            {/* <div className="z-50">
-              <EmbedsEditor
-                embeds={embeds}
-                setEmbeds={setEmbeds}
-                RichEmbed={() => <div />}
-              />
-            </div> */}
           </div>
         )}
 
@@ -664,56 +689,99 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        <div className="flex flex-row pt-2 gap-1">
-          {!isReply && (
-            <div className="opacity-80">
-              {isPublishing || isLoadingSigner ? (
-                channel?.name
-              ) : (
-                <ChannelPicker
-                  getChannels={debouncedGetChannels}
-                  onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel);
-                  }}
-                  value={channel}
-                  initialChannels={initialChannels}
-                />
+        <div className={isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"}>
+          {/* First row for mobile: Channel picker + icon buttons */}
+          <div className={isMobile ? "flex flex-row justify-between w-full" : "flex flex-row gap-1 md:justify-start"}>
+            {/* Left side: Channel picker and Add media button for mobile */}
+            <div className={isMobile ? "flex flex-row gap-1" : ""}>
+              {!isReply && (
+                <div className="opacity-80">
+                  {isPublishing || isLoadingSigner ? (
+                    channel?.name
+                  ) : (
+                    <ChannelPicker
+                      getChannels={debouncedGetChannels}
+                      onSelect={(selectedChannel) => {
+                        setChannel(selectedChannel);
+                      }}
+                      value={channel}
+                      initialChannels={initialChannels}
+                    />
+                  )}
+                </div>
+              )}
+              
+              {/* Add media button moved to left side on mobile */}
+              {isMobile && (
+                <Button
+                  className="h-10"
+                  type="button"
+                  variant="outline"
+                  disabled={isPublishing}
+                  onClick={() => setCurrentMod(creationMods[0])}
+                >
+                  <PhotoIcon className="mr-1 w-5 h-5" />
+                  Add
+                </Button>
               )}
             </div>
-          )}
-          <Button
-            className="h-10"
-            type="button"
-            variant="outline"
-            disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
-          >
-            <PhotoIcon className="mr-1 w-5 h-5" />
-            Add
-          </Button>
-          <Button
-            className="h-10"
-            type="button"
-            variant="ghost"
-            disabled={isPublishing}
-            onClick={() => handleEnhanceCast(text)}
-          >
-            {isEnhancing ? (
-              <Spinner style={{ width: "30px", height: "30px" }} />
-            ) : (
-              <HiOutlineSparkles size={20} />
-            )}
-          </Button>
+            
+            {/* Right side: Other action buttons */}
+            <div className={isMobile ? "flex flex-row gap-1" : ""}>
+              {/* Only show Add button here for desktop */}
+              {!isMobile && (
+                <Button
+                  className="h-10"
+                  type="button"
+                  variant="outline"
+                  disabled={isPublishing}
+                  onClick={() => setCurrentMod(creationMods[0])}
+                >
+                  <PhotoIcon className="mr-1 w-5 h-5" />
+                  Add
+                </Button>
+              )}
+              
+              <Button
+                className="h-10"
+                type="button"
+                variant="ghost"
+                disabled={isPublishing}
+                onClick={() => handleEnhanceCast(text)}
+              >
+                {isEnhancing ? (
+                  <Spinner style={{ width: "30px", height: "30px" }} />
+                ) : (
+                  <HiOutlineSparkles size={20} />
+                )}
+              </Button>
 
-          <Button
-            className="h-10"
-            type="button"
-            variant="ghost"
-            disabled={isPublishing}
-            onClick={() => setIsPickingEmoji(!isPickingEmoji)}
-          >
-            <GoSmiley size={20} />
-          </Button>
+              <Button
+                className="h-10"
+                type="button"
+                variant="ghost"
+                disabled={isPublishing}
+                onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+              >
+                <GoSmiley size={20} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Cast button row for mobile */}
+          {isMobile && (
+            <div className="flex flex-row pt-2 justify-center w-full">
+              <Button
+                size="lg"
+                type="submit"
+                className="line-clamp-1 w-full"
+                disabled={isPublishing || isLoadingSigner}
+              >
+                {getButtonText()}
+              </Button>
+            </div>
+          )}
+          
           <div
             ref={parentRef}
             style={{
@@ -757,19 +825,25 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </div>
             </PopoverContent>
           </Popover>
-          <CastLengthUIIndicator getText={getText} />
-          <div className="grow"></div>
-          <div className="flex flex-row pt-0 justify-end">
-            <Button
-              size="lg"
+          
+          {/* Desktop cast button */}
+          {!isMobile && (
+            <>
+              <CastLengthUIIndicator getText={getText} />
+              <div className="grow"></div>
+              <div className="flex flex-row pt-0 justify-end">
+                <Button
+                  size="lg"
               variant="primary"
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
-              disabled={isPublishing || isLoadingSigner}
-            >
-              {getButtonText()}
-            </Button>
-          </div>
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
+                  disabled={isPublishing || isLoadingSigner}
+                >
+                  {getButtonText()}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </form>
 

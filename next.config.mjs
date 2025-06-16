@@ -1,5 +1,8 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 import packageInfo from "./package.json" with { type: "json" };
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
 
 const withBundleAnalyzer = bundlerAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -25,7 +28,10 @@ const cspHeader = `
 const nextConfig = {
   // output: 'export', // Outputs a Single-Page Application (SPA).
   // distDir: './dist', // Changes the build output directory to `./dist/`.
-  transpilePackages: ["react-tweet", "react-best-gradient-color-picker"], // https://react-tweet.vercel.app/next,
+  transpilePackages: [
+    "react-tweet", 
+    "react-best-gradient-color-picker",
+  ], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -68,7 +74,7 @@ const nextConfig = {
     return [
       {
         source: "/home",
-        destination: "/home/Nouns", 
+        destination: "/home/Nouns",
       },
     ];
   },

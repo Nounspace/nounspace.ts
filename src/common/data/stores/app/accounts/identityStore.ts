@@ -32,11 +32,8 @@ import {
   signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 export interface SpaceKeys {
   publicKey: string;
   privateKey: string;
@@ -122,7 +119,10 @@ async function decryptKeyFile(
   nonce: string,
   encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
-  const signature = await signMessage(wallet, generateMessage(nonce));
+  const signature = await signMessage(
+    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    generateMessage(nonce)
+  );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
   return JSON.parse(bytesToUtf8(cipher.decrypt(encryptedBlob))) as
     | RootSpaceKeys
@@ -135,7 +135,10 @@ async function encryptKeyFile(
   nonce: string,
   keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
-  const signature = await signMessage(wallet, generateMessage(nonce));
+  const signature = await signMessage(
+    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    generateMessage(nonce)
+  );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
