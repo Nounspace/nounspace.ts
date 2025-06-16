@@ -61,13 +61,17 @@ const useSearchTokens = (
     }, debounceMs),
     [],
   );
-
   useEffect(() => {
     setError(null);
     if (query) {
       setLoading(true);
       fetchResults(query);
     }
+
+    return () => {
+      cancelRequest.current?.cancel("component unmounted");
+      fetchResults.cancel(); // lodash debounce helper
+    };
   }, [query]);
 
   return {
@@ -76,5 +80,4 @@ const useSearchTokens = (
     error: error,
   };
 };
-
 export default useSearchTokens;
