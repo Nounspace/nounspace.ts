@@ -113,11 +113,11 @@ const Portfolio: React.FC<FidgetArgs<PortfolioFidgetSettings>> = ({
       style={{
         overflow: "hidden",
         width: "100%",
-        height: "100%",
         borderColor: fidgetBorderColor,
         borderWidth: fidgetBorderWidth,
         boxShadow: fidgetShadow,
       }}
+      className="h-[calc(100dvh-220px)] md:h-full"
     >
       <iframe src={url} className="size-full" frameBorder="0" />
     </div>

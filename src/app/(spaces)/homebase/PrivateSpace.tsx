@@ -37,7 +37,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     setCurrentSpaceId,
     setCurrentTabName,
     loadTabNames,
-    getIsLoggedIn,
+    getIsAccountReady,
     loadTabOrder,
     updateTabOrder,
     createTab: originalCreateTab,
@@ -58,7 +58,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     loadFeedConfig: state.homebase.loadHomebase,
     commitConfig: state.homebase.commitHomebaseToDatabase,
     resetConfig: state.homebase.resetHomebaseConfig,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     loadTabNames: state.homebase.loadTabNames,
@@ -72,7 +72,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   }));
 
   const router = useRouter(); // Hook for navigation
-  const isLoggedIn = getIsLoggedIn(); // Check if the user is logged in
+  const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
   const currentFid = useCurrentFid(); // Get the current FID
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
