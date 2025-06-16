@@ -57,8 +57,10 @@ export async function generateMetadata({
 
 export default function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { caster: string; castHash: string };
 }) {
   return children;
 }
