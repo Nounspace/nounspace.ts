@@ -4,7 +4,6 @@ import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
@@ -34,6 +33,7 @@ import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
 import { useToastStore } from "@/common/stores/toastStore";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
