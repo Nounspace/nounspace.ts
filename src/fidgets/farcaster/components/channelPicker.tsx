@@ -19,7 +19,7 @@ import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
 
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;
-  onSelect: (hash: string, name: string) => void;
+  onSelect: (channel: Channel) => void;
   value: Channel;
   initialChannels?: Channel[];
 };
@@ -48,7 +48,7 @@ export function ChannelPicker(props: Props) {
   const handleSelect = React.useCallback(
     (channel: Channel) => {
       setOpen(false);
-      onSelect(channel.id, channel.name);
+      onSelect(channel);
     },
     [onSelect],
   );
