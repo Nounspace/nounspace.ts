@@ -60,11 +60,13 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
     onSelect && onSelect();
   }, []);
 
-  const onSelectToken = useCallback((token: TokenResult) => {
-    router.push(`/t/${token.network}/${token.contractAddress}`);
-    onSelect && onSelect();
-  }, []);
-
+  const onSelectToken = useCallback(
+    (token: TokenResult) => {
+      router.push(`/t/${token.network}/${token.contractAddress}`);
+      onSelect?.();
+    },
+    [router, onSelect],
+  );
   return (
     <Command className="rounded-md border" shouldFilter={false} loop={true}>
       <div className={loading ? "animated-loading-bar" : ""}>
