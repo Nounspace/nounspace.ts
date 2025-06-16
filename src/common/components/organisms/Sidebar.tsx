@@ -13,7 +13,7 @@ import AiChatSidebar from "./AiChatSidebar";
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };
-
+// test
 export type SidebarContextValue = {
   editMode: boolean;
   setEditMode: (value: boolean) => void;
@@ -22,6 +22,10 @@ export type SidebarContextValue = {
   sidebarEditable: boolean;
   setSidebarEditable: (value: boolean) => void;
   portalRef: React.RefObject<HTMLDivElement>;
+  previewConfig: any | null;
+  setPreviewConfig: (config: any | null) => void;
+  isPreviewMode: boolean;
+  setIsPreviewMode: (value: boolean) => void;
 };
 
 export const SidebarContext = createContext<SidebarContextValue>(
@@ -34,6 +38,8 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
   const [editMode, setEditMode] = useState(false);
   const [editWithAiMode, setEditWithAiMode] = useState(false);
   const [sidebarEditable, setSidebarEditable] = useState(false);
+  const [previewConfig, setPreviewConfig] = useState<any | null>(null);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const portalRef = useRef<HTMLDivElement>(null);
 
   const value = useMemo(
@@ -45,8 +51,19 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
       sidebarEditable,
       setSidebarEditable,
       portalRef,
+      previewConfig,
+      setPreviewConfig,
+      isPreviewMode,
+      setIsPreviewMode,
     }),
-    [editMode, editWithAiMode, sidebarEditable, portalRef]
+    [
+      editMode,
+      editWithAiMode,
+      sidebarEditable,
+      portalRef,
+      previewConfig,
+      isPreviewMode,
+    ]
   );
 
   return (

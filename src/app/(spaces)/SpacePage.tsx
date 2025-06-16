@@ -11,7 +11,7 @@ export type SpacePageArgs = {
   profile?: ReactNode;
   feed?: ReactNode;
 };
-
+// test
 export default function SpacePage({
   config,
   saveConfig,
@@ -21,13 +21,22 @@ export default function SpacePage({
   profile,
   feed,
 }: SpacePageArgs) {
-  const { editMode, setEditMode, setSidebarEditable, portalRef } =
-    useSidebarContext();
+  const {
+    editMode,
+    setEditMode,
+    setSidebarEditable,
+    portalRef,
+    previewConfig,
+    isPreviewMode,
+  } = useSidebarContext();
+
+  // Use preview config when in preview mode, otherwise use the original config
+  const activeConfig = isPreviewMode && previewConfig ? previewConfig : config;
 
   return (
     <>
       <Space
-        config={config}
+        config={activeConfig}
         saveConfig={saveConfig}
         commitConfig={commitConfig}
         resetConfig={resetConfig}

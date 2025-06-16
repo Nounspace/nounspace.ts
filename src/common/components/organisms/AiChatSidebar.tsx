@@ -15,8 +15,11 @@ import {
   AlertCircle,
   Wifi,
   WifiOff,
+  Eye,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useSidebarContext } from "./Sidebar";
 
 interface Message {
   id: string;
@@ -31,7 +34,7 @@ interface Message {
 }
 
 interface WebSocketMessage {
-  type: "user_message" | "ai_response" | "status_update";
+  type: "user_message" | "ai_response" | "status_update" | "ping" | "pong";
   data: {
     message?: string;
     response?: Message;
@@ -40,6 +43,7 @@ interface WebSocketMessage {
     status?: "thinking" | "building" | "complete" | "error";
     sessionId?: string;
     context?: any; // Space context for AI
+    timestamp?: string;
   };
 }
 
@@ -52,12 +56,27 @@ interface AiChatSidebarProps {
   spaceContext?: any; // Current space context to send with messages
 }
 
+const DummyTestConfig = {
+  fileData:
+    '{"fidgetInstanceDatums":{"feed:profile":{"config":{"data":{},"editable":false,"settings":{"feedType":"filter","filterType":"fids","users":2788}},"fidgetType":"feed","id":"feed:profile"},"frame:a5381fd6-bbb4-430b-8cdd-bbda770afd41":{"config":{"editable":true,"settings":{"background":"transparent","fidgetBorderColor":"transparent","fidgetBorderWidth":"transparent","fidgetShadow":"none","url":"https://find.farcaster.info"}},"fidgetType":"frame","id":"frame:a5381fd6-bbb4-430b-8cdd-bbda770afd41","properties":{"fidgetName":"Farcaster Frame","fields":[{"fieldName":"url","inputSelector":{"displayName":"TextInput"},"required":true},{"default":"transparent","fieldName":"background","group":"style","required":false},{"default":"transparent","fieldName":"fidgetBorderWidth","group":"style","required":false},{"default":"transparent","fieldName":"fidgetBorderColor","group":"style","required":false},{"default":"none","fieldName":"fidgetShadow","group":"style","required":false}],"icon":9209,"size":{"maxHeight":36,"maxWidth":36,"minHeight":2,"minWidth":2}}}},"fidgetTrayContents":[],"isPrivate":false,"layoutDetails":{"layoutConfig":{"layout":[{"h":8,"i":"feed:profile","maxH":36,"maxW":36,"minH":6,"minW":4,"moved":false,"static":false,"w":5,"x":0,"y":0},{"h":5,"i":"frame:a5381fd6-bbb4-430b-8cdd-bbda770afd41","isBounded":false,"isDraggable":true,"isResizable":true,"maxH":36,"maxW":36,"minH":2,"minW":2,"moved":false,"resizeHandles":["s","w","e","n","sw","nw","se","ne"],"static":false,"w":4,"x":8,"y":0}]},"layoutFidget":"grid"},"layoutID":"","theme":{"id":"0196ebba-5457-4411-abf8-06f2e660f57a-Profile-theme","name":"0196ebba-5457-4411-abf8-06f2e660f57a-Profile-theme","properties":{"background":"#ffffff","backgroundHTML":"","fidgetBackground":"#ffffff","fidgetBorderColor":"#eeeeee","fidgetBorderWidth":"1px","fidgetShadow":"none","font":"Inter","fontColor":"#000000","headingsFont":"Inter","headingsFontColor":"#000000","musicURL":"https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"}}}',
+  fileName: "Profile",
+  fileType: "json",
+  isEncrypted: false,
+  publicKey: "faec323a261fa9dca6fc9ae33f726bae8781b2a1f65250baf5fc4aace2a2e764",
+  signature:
+    "67b6a314446ceea11066a0c290337e0e5841de533205dd9a1678574b2df47690d365d958a429ce8e182ddf56ac4ce030b60804a2102ba9098a7987a37f6c4005",
+  timestamp: "2024-12-06T12:23:11.653Z",
+};
+// test
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   onApplySpaceConfig,
-  wsUrl = "ws://localhost:8080/ai-chat",
+  wsUrl = "ws://192.168.8.25:4200", // Your friend's WebSocket server
   spaceContext,
 }) => {
+  const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
+    useSidebarContext();
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -128,15 +147,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         setConnectionStatus("connected");
         reconnectAttempts.current = 0;
 
-        // Send session initialization
-        const initMessage: WebSocketMessage = {
-          type: "user_message",
-          data: {
-            sessionId,
-            context: spaceContext,
-            message: "INIT_SESSION",
-          },
+        // Send simple session initialization that matches server expectations
+        const initMessage = {
+          name: "init",
+          message: "session_initialized",
         };
+        console.log("Sending init message:", initMessage);
         wsRef.current?.send(JSON.stringify(initMessage));
       };
 
@@ -189,35 +205,83 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     setConnectionStatus("disconnected");
   }, []);
 
-  const handleWebSocketMessage = useCallback((wsMessage: WebSocketMessage) => {
-    switch (wsMessage.type) {
-      case "ai_response":
-        if (wsMessage.data.response) {
-          setMessages((prev) => [...prev, wsMessage.data.response!]);
-          setIsLoading(false);
-          setLoadingType(null);
-        }
-        break;
+  const handleWebSocketMessage = useCallback((wsMessage: any) => {
+    console.log("Received WebSocket message:", wsMessage);
 
-      case "status_update":
-        if (wsMessage.data.status === "thinking") {
-          setLoadingType("thinking");
-          setIsLoading(true);
-        } else if (wsMessage.data.status === "building") {
-          setLoadingType("building");
-          setIsLoading(true);
-        } else if (wsMessage.data.status === "complete") {
-          setIsLoading(false);
-          setLoadingType(null);
-        } else if (wsMessage.data.status === "error") {
-          setIsLoading(false);
-          setLoadingType(null);
-          toast.error("AI processing error");
-        }
-        break;
+    // Handle structured messages with type
+    if (wsMessage.type) {
+      switch (wsMessage.type) {
+        case "ai_response":
+          if (wsMessage.data.response) {
+            setMessages((prev) => [...prev, wsMessage.data.response!]);
+            setIsLoading(false);
+            setLoadingType(null);
+          }
+          break;
 
-      default:
-        console.log("Unknown WebSocket message type:", wsMessage.type);
+        case "status_update":
+          if (wsMessage.data.status === "thinking") {
+            setLoadingType("thinking");
+            setIsLoading(true);
+          } else if (wsMessage.data.status === "building") {
+            setLoadingType("building");
+            setIsLoading(true);
+          } else if (wsMessage.data.status === "complete") {
+            setIsLoading(false);
+            setLoadingType(null);
+          } else if (wsMessage.data.status === "error") {
+            setIsLoading(false);
+            setLoadingType(null);
+            toast.error("AI processing error");
+          }
+          break;
+
+        case "pong":
+          // Handle pong response from your friend's server
+          console.log("Received pong response!");
+          const pongMessage: Message = {
+            id: `pong-${Date.now()}`,
+            role: "assistant",
+            content: "🏓 Pong! WebSocket connection is working perfectly!",
+            timestamp: new Date(),
+            type: "text",
+          };
+          setMessages((prev) => [...prev, pongMessage]);
+          toast.success("Pong received! WebSocket is working!");
+          break;
+
+        default:
+          console.log("Unknown WebSocket message type:", wsMessage.type);
+          break;
+      }
+    }
+    // Handle simple messages with name/message format
+    else if (wsMessage.name === "pong" || wsMessage.message === "pong") {
+      console.log("Received pong response (simple format)!");
+      const pongMessage: Message = {
+        id: `pong-${Date.now()}`,
+        role: "assistant",
+        content: `🏓 Pong! Server responded: ${wsMessage.message || "pong"}`,
+        timestamp: new Date(),
+        type: "text",
+      };
+      setMessages((prev) => [...prev, pongMessage]);
+      toast.success("Pong received! WebSocket is working!");
+    }
+    // Fallback: check if any property contains "pong"
+    else if (JSON.stringify(wsMessage).toLowerCase().includes("pong")) {
+      console.log("Received pong response (fallback detection)!");
+      const pongMessage: Message = {
+        id: `pong-${Date.now()}`,
+        role: "assistant",
+        content: `🏓 Pong detected! Raw response: ${JSON.stringify(wsMessage)}`,
+        timestamp: new Date(),
+        type: "text",
+      };
+      setMessages((prev) => [...prev, pongMessage]);
+      toast.success("Pong received!");
+    } else {
+      console.log("Unhandled message format:", wsMessage);
     }
   }, []);
 
@@ -277,44 +341,24 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         let mockResponse: Message;
 
         if (aiType === "builder") {
-          // Builder AI: Store actual response and show generic message
+          // Builder AI: Use DummyTestConfig for testing
           const builderData = {
-            spaceConfig: {
-              theme: {
-                properties: {
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  fidgetBackground: "#ffffff",
-                  fidgetBorderColor: "#e2e8f0",
-                  fidgetBorderWidth: "1px",
-                  textColor: "#1a202c",
-                },
-              },
-              fidgets: [
-                {
-                  type: "feed",
-                  settings: {
-                    title: "Social Feed",
-                    showHeader: true,
-                    feedType: "farcaster",
-                  },
-                  position: { x: 0, y: 0, w: 4, h: 6 },
-                },
-              ],
-            },
+            spaceConfig: JSON.parse(DummyTestConfig.fileData),
             reasoning:
-              "Applied modern gradient background with clean white fidgets for professional look",
+              "Applied a professional profile layout with clean theme and optimized feed configuration",
             changesApplied: [
-              "Updated color scheme",
-              "Added social feed",
-              "Optimized layout",
+              "Updated theme colors to white/gray scheme",
+              "Added profile feed fidget with filtered content",
+              "Added Farcaster frame for enhanced functionality",
+              "Optimized grid layout for better visual balance",
             ],
           };
 
           mockResponse = {
             id: `ai-${Date.now()}`,
             role: "assistant",
-            content: "What do you think about this design?",
+            content:
+              "I've created a professional profile layout with a clean theme and optimized feed configuration. What do you think about this design?",
             timestamp: new Date(),
             type: "config",
             aiType: "builder",
@@ -353,6 +397,10 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         )
       );
 
+      // Clear preview mode
+      setPreviewConfig(null);
+      setIsPreviewMode(false);
+
       toast.success("Space configuration applied successfully!");
     } catch (error) {
       console.error("Failed to apply space config:", error);
@@ -360,15 +408,63 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   };
 
+  const handlePreviewConfig = (message: Message) => {
+    if (!message.spaceConfig) return;
+
+    setPreviewConfig(message.spaceConfig);
+    setIsPreviewMode(true);
+    toast.success(
+      "Preview mode activated! Check your space to see the changes."
+    );
+  };
+
+  const handleCancelPreview = () => {
+    setPreviewConfig(null);
+    setIsPreviewMode(false);
+    toast.info("Preview cancelled. Returned to original configuration.");
+  };
+
+  // Simple ping function for WebSocket testing
+  const handlePing = () => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      // Send a simple ping message with only name and message as expected by server
+      const pingMessage = {
+        name: "ping",
+        message: "ping",
+      };
+
+      console.log("Sending ping:", pingMessage);
+      wsRef.current.send(JSON.stringify(pingMessage));
+
+      // Add a user message to show the ping in chat
+      const userMessage: Message = {
+        id: `ping-${Date.now()}`,
+        role: "user",
+        content: "🏓 Ping sent to server...",
+        timestamp: new Date(),
+        type: "text",
+      };
+      setMessages((prev) => [...prev, userMessage]);
+
+      toast.info("Ping sent! Waiting for pong response...");
+    } else {
+      toast.error(
+        "WebSocket not connected! Please wait for connection or try reconnecting."
+      );
+    }
+  };
+
   const getMockAiResponse = (userInput: string): Message => {
     const input = userInput.toLowerCase();
 
-    // Return configuration when user asks to apply/implement something
+    // Return configuration when user asks to apply/implement something OR test config
     if (
       input.includes("apply") ||
       input.includes("implement") ||
       input.includes("set up") ||
-      input.includes("create space")
+      input.includes("create space") ||
+      input.includes("test") ||
+      input.includes("dummy")
     ) {
       return {
         id: `ai-${Date.now()}`,
@@ -377,32 +473,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           "Perfect! I've prepared a custom space configuration based on our conversation. This will update your theme colors, add the requested fidgets, and optimize your layout.\n\n**Changes included:**\n• Updated color scheme\n• Added social media feed fidget\n• Improved mobile layout\n• Enhanced typography\n\nClick 'Apply Configuration' below to implement these changes.",
         timestamp: new Date(),
         type: "config",
-        spaceConfig: {
-          theme: {
-            properties: {
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              fidgetBackground: "#ffffff",
-              fidgetBorderColor: "#e2e8f0",
-              fidgetBorderWidth: "1px",
-              textColor: "#1a202c",
-            },
-          },
-          fidgets: [
-            {
-              type: "feed",
-              settings: {
-                title: "Social Feed",
-                showHeader: true,
-                feedType: "farcaster",
-              },
-              position: { x: 0, y: 0, w: 4, h: 6 },
-            },
-          ],
-          layout: {
-            gridSpacing: 12,
-            mobileOptimized: true,
-          },
-        },
+        spaceConfig: JSON.parse(DummyTestConfig.fileData),
         configApplied: false,
       };
     }
@@ -479,6 +550,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 <p className="text-xs text-gray-500">
                   Your space design assistant
                 </p>
+                {/* Preview Mode Indicator */}
+                {isPreviewMode && (
+                  <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full">
+                    <Eye className="w-3 h-3" />
+                    <span className="text-xs font-medium">Preview Mode</span>
+                  </div>
+                )}
                 {/* Connection Status Indicator */}
                 <div className="flex items-center gap-1">
                   {connectionStatus === "connected" && (
@@ -511,14 +589,28 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Cancel Preview Button */}
+            {isPreviewMode && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelPreview}
+                className="text-orange-600 border-orange-300 hover:bg-orange-50"
+              >
+                <X className="w-4 h-4 mr-1" />
+                Cancel Preview
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </Button>
+          </div>
         </div>
 
         {/* Messages */}
@@ -583,28 +675,41 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                           </div>
                         )}
 
-                      <Button
-                        onClick={() => handleApplyConfig(message)}
-                        disabled={message.configApplied}
-                        size="sm"
-                        className={`w-full ${
-                          message.configApplied
-                            ? "bg-green-500 hover:bg-green-500"
-                            : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        }`}
-                      >
-                        {message.configApplied ? (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            Configuration Applied
-                          </>
-                        ) : (
-                          <>
+                      {/* Preview and Apply buttons */}
+                      {!message.configApplied && (
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => handlePreviewConfig(message)}
+                            size="sm"
+                            variant="outline"
+                            className="w-full border-purple-300 text-purple-600 hover:bg-purple-50"
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview Design
+                          </Button>
+
+                          <Button
+                            onClick={() => handleApplyConfig(message)}
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                          >
                             <Settings className="w-4 h-4 mr-2" />
                             Apply Configuration
-                          </>
-                        )}
-                      </Button>
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Applied state */}
+                      {message.configApplied && (
+                        <Button
+                          disabled
+                          size="sm"
+                          className="w-full bg-green-500 hover:bg-green-500"
+                        >
+                          <Check className="w-4 h-4 mr-2" />
+                          Configuration Applied
+                        </Button>
+                      )}
                     </div>
                   )}
 
@@ -704,7 +809,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           <div className="text-xs font-medium text-gray-700 mb-2">
             Quick Actions:
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 mb-2">
             <Button
               variant="outline"
               size="sm"
@@ -716,10 +821,10 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setInputValue("Add a social media feed fidget")}
-              className="text-xs h-8"
+              onClick={handlePing}
+              className="text-xs h-8 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
             >
-              📱 Add Feed
+              🏓 Ping Test
             </Button>
             <Button
               variant="outline"
@@ -727,17 +832,15 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               onClick={() => setInputValue("Apply a modern design to my space")}
               className="text-xs h-8"
             >
-              � Apply Design
+              ✨ Apply Design
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() =>
-                setInputValue("Make my space look more professional")
-              }
-              className="text-xs h-8"
+              onClick={() => setInputValue("Test the dummy config")}
+              className="text-xs h-8 bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
             >
-              ✨ Polish Style
+              🧪 Test Config
             </Button>
           </div>
         </div>
