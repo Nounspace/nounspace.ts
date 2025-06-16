@@ -14,8 +14,8 @@ const defaultMetadata = {
 
 export async function generateMetadata({
   params,
-}): Promise<Metadata> {
-  const { network, contractAddress, tabName: tabNameParam } = await params;
+}: { params: { network?: string; contractAddress?: string; tabName?: string } }): Promise<Metadata> {
+  const { network, contractAddress, tabName: tabNameParam } = params;
   
   console.log("Generating metadata for contract space");
   console.log("Params:", { network, contractAddress, tabNameParam });
