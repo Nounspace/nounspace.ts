@@ -348,6 +348,7 @@ export const FEED_TYPES = [
 ];
 
 const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settings, data: initialData }) => {
+  const router = useRouter();
   const {
     selectPlatform = { name: "Farcaster", icon: "/images/farcaster.jpeg" },
     Xhandle,
@@ -391,7 +392,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     fetchNextPage,
     hasNextPage,
     isError,
-    isPending
+    isPending,
+    refetch
   } =
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })

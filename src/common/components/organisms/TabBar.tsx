@@ -186,7 +186,7 @@ function TabBar({
 
   const isLoggedIn = getIsAccountReady();
   
-  const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
+   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
