@@ -19,7 +19,7 @@ import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
 
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;
-  onSelect: (value: Channel) => void;
+  onSelect: (hash: string, name: string) => void;
   value: Channel;
   initialChannels?: Channel[];
 };
