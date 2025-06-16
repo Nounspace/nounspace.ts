@@ -4,19 +4,18 @@ import ProfileSpace, { UserDefinedSpacePageProps } from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { unstable_noStore as noStore } from "next/cache";
 
+
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
 ): Promise<UserDefinedSpacePageProps> => {
-  noStore();
+  noStore(); 
 
   console.log("Starting loadUserSpaceData for handle:", handle);
 
   const userMetadata = await getUserMetadata(handle);
-  // console.log("User metadata result:", userMetadata);
   const spaceOwnerFid = userMetadata?.fid || null;
   const spaceOwnerUsername = userMetadata?.username || null;
-  // console.log("Extracted FID:", spaceOwnerFid);
 
   if (!spaceOwnerFid) {
     console.log("No FID found, returning null values");

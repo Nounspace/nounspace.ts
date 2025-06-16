@@ -32,11 +32,8 @@ import {
   signSignable,
 } from "@/common/lib/signedFiles";
 import { PreSpaceKeys } from "./prekeyStore";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
-
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 export interface SpaceKeys {
   publicKey: string;
   privateKey: string;
