@@ -20,6 +20,13 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useSidebarContext } from "./Sidebar";
+import {
+  WebSocketService,
+  ConnectionStatus,
+  type WebSocketMessage,
+} from "@/common/services/websocket";
+import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -32,22 +39,6 @@ interface Message {
   aiType?: "planner" | "builder"; // Track which AI responded
   builderResponse?: any; // Store the actual builder response data
 }
-
-interface WebSocketMessage {
-  type: "user_message" | "ai_response" | "status_update" | "ping" | "pong";
-  data: {
-    message?: string;
-    response?: Message;
-    aiType?: "planner" | "builder";
-    loadingType?: "thinking" | "building";
-    status?: "thinking" | "building" | "complete" | "error";
-    sessionId?: string;
-    context?: any; // Space context for AI
-    timestamp?: string;
-  };
-}
-
-type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
 interface AiChatSidebarProps {
   onClose: () => void;
@@ -76,13 +67,14 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 }) => {
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
     useSidebarContext();
+  const currentFid = useCurrentFid();
 
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
       role: "assistant",
       content:
-        "Hello! I'm your AI assistant for customizing your space. I can help you:\n\n• Add and configure fidgets\n• Adjust themes and colors\n• Modify layouts and styling\n• Suggest improvements\n\nWhat would you like to customize today?",
+        "Hello! I'm going to assist you customizing your space. I can help you:\n\n• Add and configure fidgets\n• Adjust themes and colors\n• Modify layouts and styling\n• Suggest improvements\n\nWhat would you like to customize today?",
       timestamp: new Date(),
       type: "text",
     },
@@ -100,110 +92,42 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectAttempts = useRef(0);
-  const maxReconnectAttempts = 5;
+  const wsServiceRef = useRef<WebSocketService | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Enhanced reconnection with exponential backoff
-  const reconnectWithBackoff = useCallback(() => {
-    if (reconnectAttempts.current >= maxReconnectAttempts) {
-      console.log("Max reconnection attempts reached");
-      toast.error("Unable to connect to AI service. Please try again later.");
-      return;
+  // Initialize WebSocket service
+  const initializeWebSocketService = useCallback(() => {
+    if (wsServiceRef.current) {
+      wsServiceRef.current.destroy();
     }
 
-    const delay = Math.min(
-      1000 * Math.pow(2, reconnectAttempts.current),
-      10000
-    );
-    console.log(
-      `Attempting to reconnect in ${delay}ms (attempt ${reconnectAttempts.current + 1}/${maxReconnectAttempts})`
-    );
+    const config = {
+      url: wsUrl,
+      sessionId,
+      maxReconnectAttempts: 5,
+      reconnectBackoffMs: 1000,
+      spaceContext,
+      userFid: currentFid,
+    };
 
-    reconnectTimeoutRef.current = setTimeout(() => {
-      reconnectAttempts.current++;
-      // Call connectWebSocket recursively for reconnection
-      connectWebSocket();
-    }, delay);
-  }, []);
+    const callbacks = {
+      onStatusChange: (status: ConnectionStatus) => {
+        setConnectionStatus(status);
+      },
+      onMessage: (message: any) => {
+        handleWebSocketMessage(message);
+      },
+      onError: (error: string) => {
+        toast.error(error);
+      },
+    };
 
-  // WebSocket connection management
-  const connectWebSocket = useCallback(() => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return; // Already connected
-    }
-
-    try {
-      setConnectionStatus("connecting");
-      wsRef.current = new WebSocket(wsUrl);
-
-      wsRef.current.onopen = () => {
-        console.log("WebSocket connected");
-        setConnectionStatus("connected");
-        reconnectAttempts.current = 0;
-
-        // Send simple session initialization that matches server expectations
-        const initMessage = {
-          name: "init",
-          message: "session_initialized",
-        };
-        console.log("Sending init message:", initMessage);
-        wsRef.current?.send(JSON.stringify(initMessage));
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const wsMessage: WebSocketMessage = JSON.parse(event.data);
-          handleWebSocketMessage(wsMessage);
-        } catch (error) {
-          console.error("Failed to parse WebSocket message:", error);
-        }
-      };
-
-      wsRef.current.onclose = (event) => {
-        console.log("WebSocket disconnected:", event.code, event.reason);
-        setConnectionStatus("disconnected");
-        setIsLoading(false);
-        setLoadingType(null);
-
-        // Attempt to reconnect if not manually closed
-        if (
-          event.code !== 1000 &&
-          reconnectAttempts.current < maxReconnectAttempts
-        ) {
-          reconnectWithBackoff();
-        } else if (event.code !== 1000) {
-          toast.error("Connection lost. Please try reconnecting manually.");
-        }
-      };
-
-      wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        setConnectionStatus("error");
-        toast.error("Connection error. Trying to reconnect...");
-      };
-    } catch (error) {
-      console.error("Failed to connect WebSocket:", error);
-      setConnectionStatus("error");
-      toast.error("Failed to connect to AI service");
-    }
-  }, [wsUrl, sessionId, spaceContext]);
-
-  const disconnectWebSocket = useCallback(() => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    if (wsRef.current) {
-      wsRef.current.close(1000, "User disconnected");
-      wsRef.current = null;
-    }
-    setConnectionStatus("disconnected");
-  }, []);
+    wsServiceRef.current = new WebSocketService(config, callbacks);
+    wsServiceRef.current.connect();
+  }, [wsUrl, sessionId, spaceContext, currentFid]);
 
   const handleWebSocketMessage = useCallback((wsMessage: any) => {
     console.log("Received WebSocket message:", wsMessage);
@@ -288,11 +212,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   // Connect on mount, disconnect on unmount
   useEffect(() => {
-    connectWebSocket();
+    initializeWebSocketService();
     return () => {
-      disconnectWebSocket();
+      wsServiceRef.current?.destroy();
     };
-  }, [connectWebSocket, disconnectWebSocket]);
+  }, [initializeWebSocketService]);
 
   useEffect(() => {
     scrollToBottom();
@@ -315,17 +239,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     try {
       // Send message via WebSocket if connected
-      if (wsRef.current?.readyState === WebSocket.OPEN) {
-        const wsMessage: WebSocketMessage = {
-          type: "user_message",
-          data: {
-            message: userMessage.content,
-            sessionId,
-            context: spaceContext,
-          },
-        };
-
-        wsRef.current.send(JSON.stringify(wsMessage));
+      if (wsServiceRef.current?.isConnected()) {
+        wsServiceRef.current.sendUserMessage(userMessage.content);
       } else {
         // Fallback to mock responses if WebSocket is not connected
         console.warn("WebSocket not connected, using mock responses");
@@ -427,27 +342,22 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   // Simple ping function for WebSocket testing
   const handlePing = () => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      // Send a simple ping message with only name and message as expected by server
-      const pingMessage = {
-        name: "ping",
-        message: "ping",
-      };
+    if (wsServiceRef.current?.isConnected()) {
+      const success = wsServiceRef.current.ping();
 
-      console.log("Sending ping:", pingMessage);
-      wsRef.current.send(JSON.stringify(pingMessage));
+      if (success) {
+        // Add a user message to show the ping in chat
+        const userMessage: Message = {
+          id: `ping-${Date.now()}`,
+          role: "user",
+          content: "🏓 Ping sent to server...",
+          timestamp: new Date(),
+          type: "text",
+        };
+        setMessages((prev) => [...prev, userMessage]);
 
-      // Add a user message to show the ping in chat
-      const userMessage: Message = {
-        id: `ping-${Date.now()}`,
-        role: "user",
-        content: "🏓 Ping sent to server...",
-        timestamp: new Date(),
-        type: "text",
-      };
-      setMessages((prev) => [...prev, userMessage]);
-
-      toast.info("Ping sent! Waiting for pong response...");
+        toast.info("Ping sent! Waiting for pong response...");
+      }
     } else {
       toast.error(
         "WebSocket not connected! Please wait for connection or try reconnecting."
@@ -548,9 +458,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             <div>
               <h2 className="font-semibold text-lg">AI Customization</h2>
               <div className="flex items-center gap-2">
-                <p className="text-xs text-gray-500">
-                  Your space design assistant
-                </p>
                 {/* Preview Mode Indicator */}
                 {isPreviewMode && (
                   <div className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full">
@@ -625,8 +532,14 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 }`}
               >
                 {message.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="w-4 h-4 text-white" />
+                  <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+                    <Image
+                      src="/images/tom_alerts.png"
+                      alt="AI Avatar"
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover"
+                    />
                   </div>
                 )}
 
@@ -738,8 +651,14 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0 mt-1">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+                  <Image
+                    src="/images/tom_alerts.png"
+                    alt="AI Avatar"
+                    width={40}
+                    height={40}
+                    className="rounded-full object-cover shadow-md"
+                  />
                 </div>
                 <div className="bg-gray-100 rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2">
@@ -795,7 +714,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={connectWebSocket}
+                onClick={initializeWebSocketService}
                 className="text-xs h-7 w-full"
               >
                 <Wifi className="w-3 h-3 mr-1" />
