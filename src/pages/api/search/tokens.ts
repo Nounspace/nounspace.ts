@@ -71,15 +71,19 @@ async function fetchTokensByQuery(query: string, limit: number): Promise<TokenRe
   if (!searchRes.ok) return [];
   const searchJson = await searchRes.json();
   const coins = Array.isArray(searchJson.coins) ? searchJson.coins.slice(0, limit) : [];
+
+  const detailResponses = await Promise.allSettled(
+    coins.map((c) =>
+      fetch(`${COINGECKO_BASE_URL}/coins/${c.id}`, {
+        headers: { "x-cg-demo-api-key": process.env.COINGECKO_API_KEY ?? "" },
+      }),
+    ),
+  );
+
   const results: TokenResult[] = [];
-  for (const coin of coins) {
-    const detailRes = await fetch(`${COINGECKO_BASE_URL}/coins/${coin.id}`, {
-      headers: {
-        "x-cg-demo-api-key": process.env.COINGECKO_API_KEY ?? "",
-      },
-    });
-    if (!detailRes.ok) continue;
-    const json = await detailRes.json();
+  for (const d of detailResponses) {
+    if (d.status !== "fulfilled" || !d.value.ok) continue;
+    const json = await d.value.json();
     const platformId: string = json.asset_platform_id || "ethereum";
     const platforms: Record<string, string> = json.platforms || {};
     const contractAddress =
@@ -95,6 +99,7 @@ async function fetchTokensByQuery(query: string, limit: number): Promise<TokenRe
     });
     if (results.length >= limit) break;
   }
+
   return results;
 }
 
