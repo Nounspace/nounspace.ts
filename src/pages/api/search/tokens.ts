@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next/types";
+import { NextApiRequest, NextApiResponse } from "next";
 import { z, ZodSchema } from "zod";
 import requestHandler, { NounspaceResponse } from "@/common/data/api/requestHandler";
 
