@@ -7,7 +7,7 @@ const BrandHeader = () => {
     <>
       <Link
         href="/home"
-        className="flex items-center ps-2.5 -mt-[15px]"
+        className="flex items-center ps-2.5 -mt-[20px] pb-[3px]"
         rel="noopener noreferrer"
       >
         <Image
