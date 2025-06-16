@@ -157,12 +157,24 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
             onClick={async (event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                let authorIdentifier = embedData.castId.username;
+                // Use a module-level variable to cache usernames by fid
+                // @ts-expect-error: augmenting window for username cache
+                if (!window.__castEmbedsUsernameCache) {
+                  // @ts-expect-error: augmenting window for username cache
+                  window.__castEmbedsUsernameCache = new Map<number, string>();
+                }
+                // @ts-expect-error: augmenting window for username cache
+                const usernameCache = window.__castEmbedsUsernameCache;
+
+                let authorIdentifier =
+                  embedData.castId.username ?? usernameCache.get(embedData.castId.fid);
                 if (!authorIdentifier && embedData.castId.fid) {
                   try {
                     authorIdentifier = await getUsernameForFid(
                       embedData.castId.fid,
                     );
+                    if (authorIdentifier)
+                      usernameCache.set(embedData.castId.fid, authorIdentifier);
                   } catch (err) {
                     console.error(
                       `Failed to get username for fid ${embedData.castId.fid}`,
@@ -505,7 +517,6 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             }
           }}
           aria-label="Share cast"
-        >
         >
           <IoMdShare className="w-4 h-4" aria-hidden="true" />
         </div>
