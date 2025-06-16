@@ -1,3 +1,4 @@
+import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
 import type { Metadata } from "next";
 // axios adds ~30 kB; built-in fetch is sufficient here

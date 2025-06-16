@@ -48,7 +48,7 @@ const loadUserSpaceData = async (
 const ProfileSpacePage = async ({
   params,
 }) => {
-  const { handle, tabName: tabNameParam } = await params;
+  const { handle, tabName: tabNameParam } = params;
   
   console.log("ProfileSpacePage rendering with params:", {
     handle,
