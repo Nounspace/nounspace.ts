@@ -1,27 +1,40 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Custom hook for intersecting observers
 export const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
+  // Extract individual properties to avoid stability issues with the object reference
+  const { rootMargin, threshold, root } = options;
+
+  const disconnect = useCallback(() => {
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+  }, []);
+  
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+    observerRef.current = new IntersectionObserver(([entry]) => {
       setIsIntersecting(entry.isIntersecting);
     }, options);
 
     const currentRef = ref.current;
     if (currentRef) {
-      observer.observe(currentRef);
+      observerRef.current.observe(currentRef);
     }
 
     return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
+      if (observerRef.current && currentRef) {
+        observerRef.current.unobserve(currentRef);
+        observerRef.current.disconnect();
+        observerRef.current = null;
       }
     };
-  }, [options]);
+  }, [rootMargin, threshold, root, disconnect]);
 
   return { ref, isIntersecting };
 };
@@ -43,16 +56,22 @@ const LazyImageComponent = ({
   referrerPolicy?: string;
 }) => {
   const [loaded, setLoaded] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const { ref, isIntersecting: isVisible } = useIntersectionObserver({
     rootMargin: '200px', 
-    threshold: 0.1,
+    threshold: 0,
   });
+
+  useEffect(() => {
+    if (isVisible) {
+      setShouldLoad(true);
+    }
+  }, [isVisible]);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
     if (onLoad) onLoad(e);
   };
-
   
   const placeholder = useMemo(() => {
    // We convert to number explicitly to avoid type errors
@@ -77,8 +96,8 @@ const LazyImageComponent = ({
 
   return (
     <div ref={ref} className="relative">
-      {(!isVisible || !loaded) && placeholder}
-      {isVisible && (
+      {(!shouldLoad || !loaded) && placeholder}
+      {shouldLoad && (
         <img
           src={src}
           alt={alt}
