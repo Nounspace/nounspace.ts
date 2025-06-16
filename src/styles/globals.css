@@ -171,6 +171,7 @@
 
 .items-visible .react-grid-item {
   opacity: 1;
+  transition: opacity 200ms ease;
 }
 
 .react-grid-item.react-grid-placeholder {
