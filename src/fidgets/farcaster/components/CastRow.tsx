@@ -1,3 +1,5 @@
+"use client"
+
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";
@@ -32,7 +34,6 @@ import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
-import { useToastStore } from "@/common/stores/toastStore";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
@@ -126,7 +127,7 @@ export const CastAvatar = ({
 
 interface CastEmbedsProps {
   cast: CastWithInteractions;
-  onSelectCast: (hash: string) => void;
+  onSelectCast: (hash: string, username: string) => void;
 }
 
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
@@ -157,10 +158,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                const hash = typeof embedData.castId.hash === 'string' 
-                  ? embedData.castId.hash 
-                  : Buffer.from(embedData.castId.hash).toString('hex');
-                onSelectCast(hash);
+                onSelectCast(embedData.castId.hash.toString());
               }
             }}
           >
@@ -253,12 +251,8 @@ const CastAttributionSecondary = ({ cast }) => {
 };
 
 const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
-  const [didLike, setDidLike] = useState(
-    cast.viewer_context?.liked ?? false,
-  );
-  const [didRecast, setDidRecast] = useState(
-    cast.viewer_context?.recasted ?? false,
-  );
+  const [didLike, setDidLike] = useState(false);
+  const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
   const { showToast } = useToastStore();
 
@@ -277,28 +271,18 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
-    const likesCount = cast.reactions?.likes_count || 0;
+    const likesCount = cast.reactions?.likes_count;
 
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
-
-    const viewerLiked = cast.viewer_context?.liked ?? false;
-    const viewerRecasted = cast.viewer_context?.recasted ?? false;
-
     return {
       [CastReactionType.likes]: {
-        count: likesCount + (!viewerLiked ? Number(didLike) : 0),
-        isActive:
-          didLike ||
-          viewerLiked ||
-          includes(likeFids, userFid),
+        count: likesCount + Number(didLike),
+        isActive: didLike || includes(likeFids, userFid),
       },
       [CastReactionType.recasts]: {
-        count: recastsCount + (!viewerRecasted ? Number(didRecast) : 0),
-        isActive:
-          didRecast ||
-          viewerRecasted ||
-          includes(recastFids, userFid),
+        count: recastsCount + Number(didRecast),
+        isActive: didRecast || includes(recastFids, userFid),
       },
       [CastReactionType.replies]: { count: repliesCount },
     };
@@ -529,7 +513,7 @@ interface CastBodyProps {
   renderRecastBadge?: () => React.ReactNode;
   userFid?: number;
   isDetailView?: boolean;
-  onSelectCast?: (hash: string, username?: string) => void;
+  onSelectCast?: (hash: string) => void;
   maxLines?: number;
   hideEmbeds?: boolean;
 }
@@ -548,9 +532,9 @@ const CastBodyComponent = ({
   maxLines = 0,
   hideEmbeds = false,
 }: CastBodyProps) => {
-  const handleSelectCast = useCallback((hash: string) => {
+  const handleSelectCast = useCallback((hash: string, username: string) => {
     if (onSelectCast) {
-      onSelectCast(hash);
+      onSelectCast(hash, username);
     }
   }, [onSelectCast]);
   
@@ -606,14 +590,10 @@ const getIconForCastReactionType = (
   reactionType: CastReactionType,
   isActive?: boolean,
 ): JSX.Element | undefined => {
-  const baseColor = isActive
-    ? reactionType === CastReactionType.likes
-      ? "text-red-500"
-      : reactionType === CastReactionType.recasts
-        ? "text-green-500"
-        : "text-foreground"
-    : "text-foreground/70";
-  const className = classNames("mt-0.5 w-4 h-4 mr-1", baseColor);
+  const className = classNames(
+    isActive ? "text-foreground/70" : "",
+    "mt-0.5 w-4 h-4 mr-1",
+  );
 
   switch (reactionType) {
     case CastReactionType.likes:

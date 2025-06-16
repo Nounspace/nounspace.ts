@@ -1,38 +1,45 @@
 "use client"
 
-import { Alert, AlertDescription } from "@/common/components/atoms/alert";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  Suspense,
+} from "react"
+import useNotifications from "@/common/lib/hooks/useNotifications"
+import useCurrentFid from "@/common/lib/hooks/useCurrentFid"
+import { FaCircleExclamation } from "react-icons/fa6"
+import {
+  Notification,
+  NotificationTypeEnum,
+  User,
+} from "@neynar/nodejs-sdk/build/api"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/common/components/atoms/tabs";
-import Loading from "@/common/components/molecules/Loading";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
-import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
-import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
-import useNotifications from "@/common/lib/hooks/useNotifications";
-import {
-  useMutateNotificationsLastSeenCursor,
-  useNotificationsLastSeenCursor,
-} from "@/common/lib/hooks/useNotificationsLastSeenCursor";
+} from "@/common/components/atoms/tabs"
+import { Alert, AlertDescription } from "@/common/components/atoms/alert"
 import {
   CastAvatar,
   CastBody,
   CastRow,
   PriorityLink,
-} from "@/fidgets/farcaster/components/CastRow";
+} from "@/fidgets/farcaster/components/CastRow"
+import Loading from "@/common/components/molecules/Loading"
+import { useInView } from "react-intersection-observer"
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey"
 import {
-  Notification,
-  NotificationTypeEnum,
-  User,
-} from "@neynar/nodejs-sdk/build/api";
-import moment from "moment";
-import React, { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { FaCircleExclamation } from "react-icons/fa6";
-import { useInView } from "react-intersection-observer";
-import { FaHeart } from "react-icons/fa";
+  useNotificationsLastSeenCursor,
+  useMutateNotificationsLastSeenCursor,
+} from "@/common/lib/hooks/useNotificationsLastSeenCursor"
+import moment from "moment"
+import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
+import { FaHeart } from "react-icons/fa"
+import { useRouter } from "next/navigation"
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -44,10 +51,10 @@ const TAB_OPTIONS = {
 }
 
 export type NotificationRowProps = React.FC<{
-  notification: Notification;
-  onSelect: (castHash: string, username: string) => void;
-  isUnseen?: boolean;
-}>;
+  notification: Notification
+  onSelect: (castHash: string, username: string) => void
+  isUnseen?: boolean
+}>
 
 const ErrorPanel = ({ message }: { message: string }) => {
   return (
@@ -311,8 +318,8 @@ const LikeNotificationRow: NotificationRowProps = ({
             textAlign: "left",
           }}
           hideReactions={false}
-          renderRecastBadge={() => null} 
-          userFid={fid || undefined} 
+          renderRecastBadge={() => null}
+          userFid={fid || undefined}
           isDetailView={false}
           onSelectCast={(hash) => onSelect(hash, notification.cast!.author.username)}
         />
@@ -398,7 +405,7 @@ function NotificationsPageContent() {
     identityPublicKey
   )
 
-  const router = useRouter();
+  const router = useRouter()
 
   const onTabChange = useCallback((value: string) => {
     setTab(value)
