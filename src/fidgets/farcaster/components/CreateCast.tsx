@@ -1,10 +1,11 @@
+import React, { useCallback, useEffect, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
 import {
   CastAddBody,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
 import {
   ModManifest,
@@ -137,6 +138,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
   afterSubmit = () => { },
 }) => {
+  const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
   const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
@@ -687,56 +689,99 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        <div className="flex flex-row pt-2 gap-1">
-          {!isReply && (
-            <div className="opacity-80">
-              {isPublishing || isLoadingSigner ? (
-                channel?.name
-              ) : (
-                <ChannelPicker
-                  getChannels={debouncedGetChannels}
-                  onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel);
-                  }}
-                  value={channel}
-                  initialChannels={initialChannels}
-                />
+        <div className={isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"}>
+          {/* First row for mobile: Channel picker + icon buttons */}
+          <div className={isMobile ? "flex flex-row justify-between w-full" : "flex flex-row gap-1 md:justify-start"}>
+            {/* Left side: Channel picker and Add media button for mobile */}
+            <div className={isMobile ? "flex flex-row gap-1" : ""}>
+              {!isReply && (
+                <div className="opacity-80">
+                  {isPublishing || isLoadingSigner ? (
+                    channel?.name
+                  ) : (
+                    <ChannelPicker
+                      getChannels={debouncedGetChannels}
+                      onSelect={(selectedChannel) => {
+                        setChannel(selectedChannel);
+                      }}
+                      value={channel}
+                      initialChannels={initialChannels}
+                    />
+                  )}
+                </div>
+              )}
+              
+              {/* Add media button moved to left side on mobile */}
+              {isMobile && (
+                <Button
+                  className="h-10"
+                  type="button"
+                  variant="outline"
+                  disabled={isPublishing}
+                  onClick={() => setCurrentMod(creationMods[0])}
+                >
+                  <PhotoIcon className="mr-1 w-5 h-5" />
+                  Add
+                </Button>
               )}
             </div>
-          )}
-          <Button
-            className="h-10"
-            type="button"
-            variant="outline"
-            disabled={isPublishing}
-            onClick={() => setCurrentMod(creationMods[0])}
-          >
-            <PhotoIcon className="mr-1 w-5 h-5" />
-            Add
-          </Button>
-          <Button
-            className="h-10"
-            type="button"
-            variant="ghost"
-            disabled={isPublishing}
-            onClick={() => handleEnhanceCast(text)}
-          >
-            {isEnhancing ? (
-              <Spinner style={{ width: "30px", height: "30px" }} />
-            ) : (
-              <HiOutlineSparkles size={20} />
-            )}
-          </Button>
+            
+            {/* Right side: Other action buttons */}
+            <div className={isMobile ? "flex flex-row gap-1" : ""}>
+              {/* Only show Add button here for desktop */}
+              {!isMobile && (
+                <Button
+                  className="h-10"
+                  type="button"
+                  variant="outline"
+                  disabled={isPublishing}
+                  onClick={() => setCurrentMod(creationMods[0])}
+                >
+                  <PhotoIcon className="mr-1 w-5 h-5" />
+                  Add
+                </Button>
+              )}
+              
+              <Button
+                className="h-10"
+                type="button"
+                variant="ghost"
+                disabled={isPublishing}
+                onClick={() => handleEnhanceCast(text)}
+              >
+                {isEnhancing ? (
+                  <Spinner style={{ width: "30px", height: "30px" }} />
+                ) : (
+                  <HiOutlineSparkles size={20} />
+                )}
+              </Button>
 
-          <Button
-            className="h-10"
-            type="button"
-            variant="ghost"
-            disabled={isPublishing}
-            onClick={() => setIsPickingEmoji(!isPickingEmoji)}
-          >
-            <GoSmiley size={20} />
-          </Button>
+              <Button
+                className="h-10"
+                type="button"
+                variant="ghost"
+                disabled={isPublishing}
+                onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+              >
+                <GoSmiley size={20} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Cast button row for mobile */}
+          {isMobile && (
+            <div className="flex flex-row pt-2 justify-center w-full">
+              <Button
+                size="lg"
+                type="submit"
+                className="line-clamp-1 w-full"
+                disabled={isPublishing || isLoadingSigner}
+              >
+                {getButtonText()}
+              </Button>
+            </div>
+          )}
+          
           <div
             ref={parentRef}
             style={{
@@ -780,19 +825,25 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </div>
             </PopoverContent>
           </Popover>
-          <CastLengthUIIndicator getText={getText} />
-          <div className="grow"></div>
-          <div className="flex flex-row pt-0 justify-end">
-            <Button
-              size="lg"
+          
+          {/* Desktop cast button */}
+          {!isMobile && (
+            <>
+              <CastLengthUIIndicator getText={getText} />
+              <div className="grow"></div>
+              <div className="flex flex-row pt-0 justify-end">
+                <Button
+                  size="lg"
               variant="primary"
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
-              disabled={isPublishing || isLoadingSigner}
-            >
-              {getButtonText()}
-            </Button>
-          </div>
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
+                  disabled={isPublishing || isLoadingSigner}
+                >
+                  {getButtonText()}
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </form>
 
