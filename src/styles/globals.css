@@ -141,11 +141,14 @@
   width: 100%;
   height: 100%;
 }
-.react-grid-item {
-  border-color: lightgray;
-  opacity: 0;
-  transition: opacity 200ms ease;
-}
+.grid-overlap:not(.items-visible) .react-grid-item {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  
+  .react-grid-item {         /* preserve generic styling */
+    border-color: lightgray;
+  }
 .react-grid-item img {
   pointer-events: none;
   user-select: none;
