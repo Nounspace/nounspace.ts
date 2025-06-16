@@ -49,7 +49,7 @@ async function fetchTokenByAddress(address: string): Promise<TokenResult | null>
   const platformId: string = json.asset_platform_id || "ethereum";
   const platforms: Record<string, string> = json.platforms || {};
   const contractAddress =
-    platforms[platformId] || platforms.ethereum || Object.values(platforms)[0];
+    (platforms[platformId] || platforms.ethereum || Object.values(platforms)[0] || "").toLowerCase();
   if (!contractAddress) return null;
   return {
     id: json.id,
@@ -57,7 +57,12 @@ async function fetchTokenByAddress(address: string): Promise<TokenResult | null>
     symbol: json.symbol,
     image: json.image?.small || json.image?.large || json.image?.thumb || null,
     contractAddress,
-    network: platformId === "ethereum" ? "mainnet" : platformId.replace("polygon-pos", "polygon"),
+    network: ({
+      ethereum: "mainnet",
+      "polygon-pos": "polygon",
+      optimism: "optimism",
+      "arbitrum-one": "arbitrum",
+    } as Record<string, string>)[platformId] ?? platformId,
   };
 }
 
