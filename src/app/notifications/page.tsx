@@ -39,6 +39,7 @@ import moment from "moment"
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
 import { FaHeart } from "react-icons/fa"
+import { useRouter } from "next/navigation"
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -51,7 +52,7 @@ const TAB_OPTIONS = {
 
 export type NotificationRowProps = React.FC<{
   notification: Notification
-  onSelect: (castHash: string) => void
+  onSelect: (castHash: string, username: string) => void
   isUnseen?: boolean
 }>
 
@@ -317,8 +318,8 @@ const LikeNotificationRow: NotificationRowProps = ({
             textAlign: "left",
           }}
           hideReactions={false}
-          renderRecastBadge={false}
-          userFid={fid}
+          renderRecastBadge={undefined}
+          userFid={fid ?? undefined}
           isDetailView={false}
           onSelectCast={onSelect}
         />

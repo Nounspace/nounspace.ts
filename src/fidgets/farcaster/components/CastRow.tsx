@@ -9,7 +9,7 @@ import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
-import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
+import { publishReaction, removeReaction, getUsernameForFid } from "@/fidgets/farcaster/utils";
 import { ReactionType } from "@farcaster/core";
 import {
   ArrowPathRoundedSquareIcon,
@@ -18,15 +18,6 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import {
-  publishReaction,
-  removeReaction,
-  getUsernameForFid,
-} from "@/fidgets/farcaster/utils";
-import { includes, isObject, isUndefined, map, get } from "lodash";
-import { ErrorBoundary } from "@sentry/react";
-import { renderEmbedForUrl } from "./Embeds";
-import Image from "next/image";
 import {
   CastWithInteractions,
   EmbedUrl,
@@ -177,8 +168,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
                 // @ts-expect-error: augmenting window for username cache
                 const usernameCache = window.__castEmbedsUsernameCache;
 
-                let authorIdentifier =
-                  embedData.castId.username ?? usernameCache.get(embedData.castId.fid);
+                let authorIdentifier = usernameCache.get(embedData.castId.fid);
                 if (!authorIdentifier && embedData.castId.fid) {
                   try {
                     authorIdentifier = await getUsernameForFid(
@@ -194,7 +184,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
                   }
                 }
                 onSelectCast(
-                  embedData.castId.hash,
+                  embedData.castId.hash.toString(),
                   authorIdentifier ?? cast.author.username,
                 );
               }
