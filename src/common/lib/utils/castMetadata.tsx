@@ -2,6 +2,11 @@ import { WEBSITE_URL } from "@/constants/app";
 // Avoid pulling in the whole lodash/merge for three shallow merges
 import { Metadata } from "next";
 
+const MAX_QUERY_FIELD_LENGTH = 320;
+
+const safeValue = (value?: string | number): string =>
+  value ? String(value).slice(0, MAX_QUERY_FIELD_LENGTH) : "";
+
 export type CastMetadata = {
   username?: string;
   displayName?: string;
@@ -27,12 +32,12 @@ export const getCastMetadataStructure = (
       : "Cast on Nounspace";
 
   const params = new URLSearchParams({
-    username: username || "",
-    displayName: displayName || "",
-    pfpUrl: pfpUrl || "",
-    text: text || "",
-    imageUrl: imageUrl || "",
-    timestamp: timestamp ? String(timestamp) : "",
+    username: safeValue(username),
+    displayName: safeValue(displayName),
+    pfpUrl: safeValue(pfpUrl),
+    text: safeValue(text),
+    imageUrl: safeValue(imageUrl),
+    timestamp: safeValue(timestamp),
   });
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/cast?${params.toString()}`;
