@@ -100,7 +100,7 @@ async function updateSpaceTabOrder(
   // );
 
   const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase.storage
+  const { data: _data, error } = await supabase.storage
     .from("spaces")
     .upload(
       `${updateOrderRequest.spaceId}/tabOrder`,

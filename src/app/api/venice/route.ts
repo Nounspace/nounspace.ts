@@ -11,7 +11,8 @@ import {
   VENICE_MODEL,
 } from "./config";
 import { CREATE_PROMPT, ENHANCE_PROMPT, SYSTEM_PROMPT } from "./prompts";
-import { TrendingTimeWindow } from "@neynar/nodejs-sdk/build/api";
+// TrendingTimeWindow type is no longer exported, using string literal type
+type TrendingTimeWindow = "1h" | "6h" | "24h" | "7d";
 
 //
 // Process Trending Casts array and return a string with the top MAX_TRENDING_CASTS casts

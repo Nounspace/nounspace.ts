@@ -289,7 +289,10 @@ export const MobileContractDefinedSpace = ({
           </>
         </div>
       </div>
-      <div className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200">
+      <div 
+        className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200"
+        style={{ touchAction: 'manipulation' }}
+      >
         <IconButton
           size={20}
           icon={BsBarChartFill}

@@ -17,6 +17,7 @@ import {
 } from "@neynar/nodejs-sdk/build/api"
 import {
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
   TabsContent,
@@ -24,7 +25,6 @@ import {
 import { Alert, AlertDescription } from "@/common/components/atoms/alert"
 import {
   CastAvatar,
-  PriorityLink,
   CastBody,
   CastRow,
 } from "@/fidgets/farcaster/components/CastRow"
