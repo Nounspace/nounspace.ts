@@ -13,14 +13,26 @@ interface CastCardData {
   timestamp?: number | string;
 }
 
+const safeUrl = (raw: string | null): string | undefined => {
+  if (!raw) return undefined;
+  const trimmed = raw.trim();
+  if (trimmed.includes(" ")) return undefined;
+  try {
+    const url = new URL(trimmed);
+    return url.protocol === "http:" || url.protocol === "https:" ? trimmed : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const data: CastCardData = {
     username: searchParams.get("username") || "",
     displayName: searchParams.get("displayName") || "",
-    pfpUrl: searchParams.get("pfpUrl") || "",
+    pfpUrl: safeUrl(searchParams.get("pfpUrl")) || "",
     text: searchParams.get("text") || "",
-    imageUrl: searchParams.get("imageUrl") || undefined,
+    imageUrl: safeUrl(searchParams.get("imageUrl")),
     timestamp: searchParams.get("timestamp") || undefined,
   };
 
