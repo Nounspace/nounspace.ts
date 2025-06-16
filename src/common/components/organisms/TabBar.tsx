@@ -1,18 +1,21 @@
 "use client";
 import React from "react";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
+import { useSidebarContext } from "./Sidebar";
 import { TooltipProvider } from "../atoms/tooltip";
+import { Button } from "../atoms/button";
 import TokenDataHeader from "./TokenDataHeader";
 import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -64,11 +67,13 @@ function TabBar({
 }: TabBarProps) {
   const isMobile = useIsMobile();
 
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
+
+  const { setEditMode, sidebarEditable } = useSidebarContext();
 
   function generateNewTabName() {
     const endIndex = tabList.length + 1;
@@ -179,6 +184,8 @@ function TabBar({
     }
   }
 
+  const isLoggedIn = getIsAccountReady();
+  
    const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
@@ -190,23 +197,32 @@ function TabBar({
     switchTabTo(tabName, true);
   }, [switchTabTo]);
 
-  const isLoggedIn = getIsLoggedIn();
+  const showButtons =
+    inEditMode || (!inEditMode && !isMobile && isLoggedIn && sidebarEditable);
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white relative">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-x-scroll overflow-y-hidden w-fit z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex w-64 flex-auto justify-start h-16 z-70 bg-white pr-8 md:pr-0 flex-nowrap overflow-y-scroll">
+        <div
+          className={mergeClasses(
+            "flex flex-auto justify-center h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-x-scroll overflow-y-hidden",
+            showButtons && "w-64 pr-8",
+          )}
+        >
           {tabList && (
             <Reorder.Group
               as="ol"
               axis="x"
-              onReorder={updateTabOrder}
-              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
+              onReorder={async (newOrder) => {
+                await updateTabOrder(newOrder);
+                await commitTabOrder();
+              }}
+              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs grow"
               values={tabList}
             >
               <AnimatePresence initial={false}>
@@ -238,6 +254,20 @@ function TabBar({
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
+        )}
+        {!inEditMode && !isMobile && isLoggedIn && sidebarEditable && (
+          <div className="absolute right-4 top-2.5 z-infinity bg-white rounded-md p-1 pr-0">
+            <Button
+              onClick={() => setEditMode(true)}
+              size="md"
+              variant="secondary"
+              withIcon
+              className="scale-110"
+            >
+              <FaPaintbrush />
+              <span className="whitespace-nowrap text-[1.05em] font-semibold">Customize</span>
+            </Button>
+          </div>
         )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">

@@ -1,44 +1,41 @@
-"use client";
-import React, { useState, useCallback, useMemo } from "react";
-import { Properties } from "csstype";
+"use client"
+
+import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
+import ExpandableText from "@/common/components/molecules/ExpandableText";
+import Modal from "@/common/components/molecules/Modal";
+import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { useFarcasterSigner } from "@/fidgets/farcaster/index";
+import { CastReactionType } from "@/fidgets/farcaster/types";
+import { publishReaction, removeReaction, getUsernameForFid } from "@/fidgets/farcaster/utils";
+import { ReactionType } from "@farcaster/core";
 import {
   ArrowPathRoundedSquareIcon,
   ArrowTopRightOnSquareIcon,
-  HeartIcon,
   ChatBubbleLeftRightIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import {
-  publishReaction,
-  removeReaction,
-  getUsernameForFid,
-} from "@/fidgets/farcaster/utils";
-import { includes, isObject, isUndefined, map, get } from "lodash";
-import { ErrorBoundary } from "@sentry/react";
-import { renderEmbedForUrl } from "./Embeds";
-import Image from "next/image";
 import {
   CastWithInteractions,
   EmbedUrl,
   User,
 } from "@neynar/nodejs-sdk/build/api";
-import { useFarcasterSigner } from "@/fidgets/farcaster/index";
-import { CastReactionType } from "@/fidgets/farcaster/types";
-import { ReactionType } from "@farcaster/core";
 import { hexToBytes } from "@noble/ciphers/utils";
-import CreateCast, { DraftType } from "./CreateCast";
-import Modal from "@/common/components/molecules/Modal";
-import FarcasterLinkify from "./linkify";
-import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
+import { ErrorBoundary } from "@sentry/react";
+import { Properties } from "csstype";
+import { get, includes, isObject, isUndefined, map } from "lodash";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { formatTimeAgo } from "@/common/lib/utils/date";
-import ExpandableText from "@/common/components/molecules/ExpandableText";
-import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
+import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import { useToastStore } from "@/common/data/stores/toastStore";
+import CreateCast, { DraftType } from "./CreateCast";
+import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
+import FarcasterLinkify from "./linkify";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -129,7 +126,12 @@ export const CastAvatar = ({
   );
 };
 
-const CastEmbeds = ({ cast, onSelectCast }) => {
+interface CastEmbedsProps {
+  cast: CastWithInteractions;
+  onSelectCast: (hash: string, username: string) => void;
+}
+
+const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
   if (!("embeds" in cast) || !cast.embeds.length) {
     return null;
   }
@@ -137,15 +139,15 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
   return (
     <ErrorBoundary>
       {map(cast.embeds, (embed, i) => {
-        const embedData = isEmbedUrl(embed)
+        const embedData: CastEmbed = isEmbedUrl(embed)
           ? {
-              ...embed,
-              key: embed.url,
-            }
+            url: embed.url,
+            key: embed.url,
+          }
           : {
-              castId: embed.cast_id,
-              key: embed.cast_id,
-            };
+            castId: embed.cast_id,
+            key: embed.cast_id?.hash?.toString() || '',
+          };
 
         return (
           <div
@@ -166,8 +168,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
                 // @ts-expect-error: augmenting window for username cache
                 const usernameCache = window.__castEmbedsUsernameCache;
 
-                let authorIdentifier =
-                  embedData.castId.username ?? usernameCache.get(embedData.castId.fid);
+                let authorIdentifier = usernameCache.get(embedData.castId.fid);
                 if (!authorIdentifier && embedData.castId.fid) {
                   try {
                     authorIdentifier = await getUsernameForFid(
@@ -183,7 +184,7 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
                   }
                 }
                 onSelectCast(
-                  embedData.castId.hash,
+                  embedData.castId.hash.toString(),
                   authorIdentifier ?? cast.author.username,
                 );
               }
@@ -196,6 +197,9 @@ const CastEmbeds = ({ cast, onSelectCast }) => {
     </ErrorBoundary>
   );
 };
+
+const CastEmbeds = React.memo(CastEmbedsComponent);
+CastEmbeds.displayName = 'CastEmbeds';
 
 const CastAttributionHeader = ({
   cast,
@@ -317,21 +321,12 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       return;
     }
 
-    if (key === CastReactionType.likes) {
-      trackAnalyticsEvent(AnalyticsEvent.LIKE, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidLike(!isActive);
-    } else if (key === CastReactionType.recasts) {
-      trackAnalyticsEvent(AnalyticsEvent.RECAST, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidRecast(!isActive);
+    // We check if we have the signer before proceeding
+    if (isUndefined(signer)) {
+      console.error("NO SIGNER");
+      return;
     }
 
-    if (isUndefined(signer)) return console.error("NO SIGNER");
     try {
       if (key === CastReactionType.replies) {
         onReply?.();
@@ -341,6 +336,22 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       if (key === CastReactionType.quote) {
         onQuote?.();
         return;
+      }
+
+      // We only perform analytics and state modification actions
+      // when we are sure that we can proceed
+      if (key === CastReactionType.likes) {
+        trackAnalyticsEvent(AnalyticsEvent.LIKE, {
+          username: cast.author.username,
+          castId: cast.hash,
+        });
+        setDidLike(!isActive);
+      } else if (key === CastReactionType.recasts) {
+        trackAnalyticsEvent(AnalyticsEvent.RECAST, {
+          username: cast.author.username,
+          castId: cast.hash,
+        });
+        setDidRecast(!isActive);
       }
 
       const reactionBodyType: ReactionType =
@@ -450,7 +461,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         showClose={false}
       >
         <div className="mb-4">
-          {replyCastType === "reply" ? <CastRow cast={cast} isEmbed /> : null}
+          {replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}
         </div>
         <div className="flex">
           <CreateCast initialDraft={replyCastDraft} />
@@ -525,7 +536,22 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   );
 };
 
-export const CastBody = ({
+interface CastBodyProps {
+  cast: CastWithInteractions;
+  channel?: { name: string } | null;
+  isEmbed?: boolean;
+  showChannel?: boolean;
+  castTextStyle?: any;
+  hideReactions?: boolean;
+  renderRecastBadge?: () => React.ReactNode;
+  userFid?: number;
+  isDetailView?: boolean;
+  onSelectCast?: (hash: string, username: string) => void;
+  maxLines?: number;
+  hideEmbeds?: boolean;
+}
+
+const CastBodyComponent = ({
   cast,
   channel,
   isEmbed,
@@ -538,7 +564,13 @@ export const CastBody = ({
   onSelectCast,
   maxLines = 0,
   hideEmbeds = false,
-}) => {
+}: CastBodyProps) => {
+  const handleSelectCast = useCallback((hash: string, username: string) => {
+    if (onSelectCast) {
+      onSelectCast(hash, username);
+    }
+  }, [onSelectCast]);
+  
   return (
     <div className="flex flex-col grow">
       {cast.text && (
@@ -550,18 +582,22 @@ export const CastBody = ({
             style={castTextStyle}
           >
             <ExpandableText maxLines={maxLines || (isDetailView ? null : 10)}>
-              {cast.text}
+              {React.createElement('span', {}, cast.text)}
             </ExpandableText>
           </p>
         </FarcasterLinkify>
       )}
       {!isEmbed && !hideEmbeds && (
-        <CastEmbeds cast={cast} onSelectCast={onSelectCast} />
+        <CastEmbeds cast={cast} onSelectCast={handleSelectCast} />
       )}
       {!hideReactions && <CastReactions cast={cast} />}
     </div>
   );
 };
+
+export const CastBody = React.memo(CastBodyComponent);
+CastBody.displayName = 'CastBody';
+
 
 const ThreadConnector = ({ className }) => {
   return (
@@ -618,7 +654,7 @@ const getIconForCastReactionType = (
   }
 };
 
-export const CastRow = ({
+const CastRowComponent = ({
   cast,
   onSelect,
   isFocused,
@@ -744,3 +780,8 @@ export const CastRow = ({
     </div>
   );
 };
+
+export const CastRow = React.memo(CastRowComponent);
+CastRow.displayName = 'CastRow';
+
+export const CastRowExport = CastRow;

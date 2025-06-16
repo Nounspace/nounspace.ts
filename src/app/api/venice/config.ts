@@ -1,7 +1,7 @@
-export const USE_USER_PAST_TWEETS = true;
+export const USE_USER_PAST_CASTS = true;
 export const USERS_CASTS_CHRONOLOGICALLY = true;
 
-export const MAX_TRENDING_TWEETS = 3;
+export const MAX_TRENDING_CASTS = 3;
 export const DEBUG_PROMPTS = true;
 
 export const VENICE_API_KEY = process.env.VENICE_API_KEY;

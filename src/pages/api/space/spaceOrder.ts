@@ -61,7 +61,7 @@ async function getSpaceOrder(
   const { data: orders, error } = await createSupabaseServerClient()
     .from("spaceOrderings")
     .select("ordering")
-    .eq("fid", fid);
+    .eq("fid", +fid);
   if (isNull(orders)) {
     res.status(500).json({
       result: "error",
@@ -83,7 +83,7 @@ async function getSpaceOrder(
     await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
-      .eq("fid", fid)
+      .eq("fid", +fid)
       .in("spaceId", order.ordering);
   if (spacesForOrderingError) {
     res.status(500).json({

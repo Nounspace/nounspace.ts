@@ -4,10 +4,6 @@ import {
 } from "@/app/(spaces)/Space";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
@@ -47,6 +43,8 @@ import { AppStore } from "..";
 import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
 import { StoreGet, StoreSet } from "../../createStore";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -311,9 +309,14 @@ export const createSpaceStoreFunc = (
 
     console.log("NewConfig", config);
     let localCopy;
+    const newTimestamp = moment().toISOString();
+
     // If the tab doesn't exist yet, use the new config directly
     if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
-      localCopy = cloneDeep(config);
+      localCopy = {
+        ...cloneDeep(config),
+        timestamp: newTimestamp,
+      };
     } else {
       // Otherwise merge with existing config
       localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
@@ -324,6 +327,7 @@ export const createSpaceStoreFunc = (
           return srcValue;
         }
       });
+      localCopy.timestamp = newTimestamp;
       console.log("localCopy", localCopy);
     }
 
@@ -335,8 +339,8 @@ export const createSpaceStoreFunc = (
       } else {
         draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
       }
-      const newTimestamp = moment().toISOString();
-      draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
+      const newSpaceTimestamp = moment().toISOString();
+      draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
     }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: debounce(
