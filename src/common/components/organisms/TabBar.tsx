@@ -203,13 +203,13 @@ function TabBar({
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white relative">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-x-scroll overflow-y-hidden w-fit z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
         <div
           className={mergeClasses(
-            "flex flex-auto justify-start h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-y-scroll",
+            "flex flex-auto justify-center h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-x-scroll overflow-y-hidden",
             showButtons && "w-64 pr-8",
           )}
         >
@@ -221,7 +221,7 @@ function TabBar({
                 await updateTabOrder(newOrder);
                 await commitTabOrder();
               }}
-              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
+              className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs grow"
               values={tabList}
             >
               <AnimatePresence initial={false}>
