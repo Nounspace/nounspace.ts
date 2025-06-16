@@ -15,7 +15,7 @@ const SearchModal = React.forwardRef((props, ref) => {
     setIsFocused(true);
   }, []);
 
-  const handleBlur = useCallback(() => {
+  const handleBlur = useCallback((hash?: string, username?: string) => {
     setIsFocused(false);
   }, []);
 

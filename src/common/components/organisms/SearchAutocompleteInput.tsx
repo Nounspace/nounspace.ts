@@ -14,7 +14,7 @@ import {
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 
 type SearchAutocompleteInputProps = {
-  onSelect: () => void;
+  onSelect: (hash: string, username: string) => void;
 };
 
 const SearchAutocompleteInput: React.FC<SearchAutocompleteInputProps> = ({

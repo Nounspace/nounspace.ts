@@ -15,6 +15,7 @@ import {
 } from "@mod-protocol/core";
 import {
   getFarcasterMentions,
+  type Channel,
 } from "@mod-protocol/farcaster";
 import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
@@ -672,8 +673,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
               ) : (
                 <ChannelPicker
                   getChannels={debouncedGetChannels}
-                  onSelect={(selectedChannel) => {
-                    setChannel(selectedChannel);
+                  onSelect={(id, name) => {
+                    setChannel({ id, name } as Channel);
                   }}
                   value={channel}
                   initialChannels={initialChannels}
