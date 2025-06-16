@@ -1,7 +1,7 @@
 import { first, isArray, isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
-  loadEthersViewOnlyContract,
+  loadViemViewOnlyContract,
   OwnerType,
 } from "../api/etherscan";
 import {
@@ -51,11 +51,11 @@ export async function loadContractData(
   }
   // console.log("network contractPageProps", network);
 
-  const contract = await loadEthersViewOnlyContract(
+  const contractData = await loadViemViewOnlyContract(
     contractAddress,
-    String(network),
+    isString(network) ? network : undefined,
   );
-  if (isUndefined(contract)) {
+  if (isUndefined(contractData)) {
     return {
       props: {
         ...defaultContractPageProps,
@@ -63,7 +63,7 @@ export async function loadContractData(
       },
     };
   }
-  const abi = contract.interface;
+  const { contract, abi } = contractData;
 
   let pinnedCastId: string | null = "";
   let owningIdentities: string[] = [];
@@ -72,9 +72,11 @@ export async function loadContractData(
   try {
     const ownerData = await contractOwnerFromContract(
       contract,
-      String(network),
+      abi,
+      contractAddress,
+      isString(network) ? network : undefined,
     );
-    ownerId = ownerData.ownerId;
+    ownerId = ownerData.ownerId || null;
     ownerIdType = ownerData.ownerIdType;
   } catch (error) {
     console.error("Error fetching contract owner:", error);
@@ -92,8 +94,18 @@ export async function loadContractData(
     };
   }
 
-  if (abi.hasFunction("castHash")) {
-    pinnedCastId = (await contract.castHash()) as string;
+  // Check if the contract has a castHash function
+  const hasCastHash = abi.some(item => 
+    item.type === 'function' && 
+    item.name === 'castHash'
+  );
+  
+  if (hasCastHash) {
+    try {
+      pinnedCastId = (await contract.read.castHash()) as string;
+    } catch (error) {
+      console.error("Error reading castHash:", error);
+    }
   }
 
   if (ownerIdType === "address") {
@@ -104,11 +116,16 @@ export async function loadContractData(
   // console.log("Debug - Contract Address before query:", contractAddress);
   // console.log("Debug - Network:", network);
 
-  const { data, error } = await createSupabaseServerClient()
+  let query = createSupabaseServerClient()
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
-    .eq("contractAddress", contractAddress)
-    .eq("network", network)
+    .eq("contractAddress", contractAddress);
+  
+  if (isString(network)) {
+    query = query.eq("network", network);
+  }
+  
+  const { data, error } = await query
     .order("timestamp", { ascending: true })
     .limit(1)
   

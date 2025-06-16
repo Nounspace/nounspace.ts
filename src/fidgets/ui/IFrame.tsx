@@ -7,9 +7,10 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
-import { isValidUrl } from "@/common/lib/utils/url";
+import { debounce } from "lodash";
+import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
 export type IFrameFidgetSettings = {
@@ -76,21 +77,35 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     iframelyHtml?: string | null;
   } | null>(null);
 
-  const isValid = isValidUrl(url);
-  const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
+  const [debouncedUrl, setDebouncedUrl] = useState(url);
+
+  const debouncedSetUrl = useMemo(
+    () => debounce((value: string) => setDebouncedUrl(value), 300),
+    [],
+  );
+
+  useEffect(() => {
+    debouncedSetUrl(url);
+    return () => {
+      debouncedSetUrl.cancel();
+    };
+  }, [url, debouncedSetUrl]);
+
+  const isValid = isValidHttpUrl(debouncedUrl);
+  const sanitizedUrl = useSafeUrl(debouncedUrl, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
   const scaleValue = size;
 
   useEffect(() => {
     async function checkEmbedInfo() {
-      if (!isValid || !url) return;
+      if (!isValid || !sanitizedUrl) return;
 
       setLoading(true);
       setError(null);
 
       try {
         const response = await fetch(
-          `/api/iframely?url=${encodeURIComponent(url)}`
+          `/api/iframely?url=${encodeURIComponent(sanitizedUrl)}`
         );
         if (!response.ok) {
           const errorData = await response.json();
@@ -110,7 +125,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     }
 
     checkEmbedInfo();
-  }, [url, isValid]);
+  }, [sanitizedUrl, isValid]);
 
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;

@@ -5,7 +5,7 @@ import {
 } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import FontSelector from "@/common/components/molecules/FontSelector";
-import ImageScaleSlider from "@/common/components/molecules/ImageScaleSlider";
+// Removed unused import: ImageScaleSlider
 import TextInput from "@/common/components/molecules/TextInput";
 import ThemeColorSelector from "@/common/components/molecules/ThemeColorSelector";
 import { FidgetArgs, FidgetModule, FidgetProperties, FidgetSettingsStyle } from "@/common/fidgets";
@@ -13,7 +13,6 @@ import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 import React, { useEffect, useState } from "react";
 import { BsRss, BsRssFill } from "react-icons/bs";
 import ReactMarkdown from "react-markdown";
-import RSSParser from "rss-parser";
 import { defaultStyleFields, WithMargin } from "../helpers";
 
 export type RSSFidgetSettings = {
@@ -137,12 +136,15 @@ export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
   useEffect(() => {
     const fetchRssFeed = async () => {
       try {
-        const parser = new RSSParser();
-        const feed = await parser.parseURL(settings.rssUrl);
+        const res = await fetch(`/api/rss?url=${encodeURIComponent(settings.rssUrl)}`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch RSS feed: ${res.status}`);
+        }
+        const data = await res.json();
 
-        if (feed.items && feed.items.length > 0) {
-          setRssItems(feed.items);
-          setRssFeed(feed);
+        if (data.items && data.items.length > 0) {
+          setRssItems(data.items);
+          setRssFeed({ title: data.title, image: data.image });
         } else {
           console.warn("No items found in the RSS feed.");
         }
@@ -157,8 +159,7 @@ export const Rss: React.FC<FidgetArgs<RSSFidgetSettings>> = ({ settings }) => {
   }, [settings.rssUrl]);
 
   return (
-    <div
-    >
+    <div className="h-full overflow-y-auto">
       {rssFeed?.title && (
         <CardHeader className="p-2 ml-5">
           <div className="flex-col items-center">
