@@ -19,14 +19,14 @@ const BrandHeader = () => {
         <Tooltip>
           <Link
             href="/home"
-            className="flex items-center ps-2.5"
+            className="flex items-center ps-2.5 -mt-[3px] mb-[34px]"
             rel="noopener noreferrer"
           >
             <div className="w-14 h-14 flex items-center justify-center overflow-hidden rounded-md bg-white ml-3">
               <TooltipTrigger asChild>
                 <Image
                   src="/images/noggles.svg"
-                  className="h-13 me-3 mb-4"
+                  className="h-13 me-3"
                   alt="Nounspace Logo"
                   width={64}
                   height={64}
