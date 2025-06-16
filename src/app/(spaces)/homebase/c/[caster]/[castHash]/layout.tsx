@@ -1,5 +1,5 @@
 import { WEBSITE_URL } from "@/constants/app";
-import type { Metadata } from "next";
+import type { Metadata } from "next/types";
 // axios adds ~30 kB; built-in fetch is sufficient here
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { isImageUrl } from "@/common/lib/utils/urls";
