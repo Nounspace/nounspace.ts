@@ -236,7 +236,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           }
           break;
 
-        case "pong":
+        case "pong": {
           // Handle pong response from your friend's server
           console.log("Received pong response!");
           const pongMessage: Message = {
@@ -249,6 +249,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           setMessages((prev) => [...prev, pongMessage]);
           toast.success("Pong received! WebSocket is working!");
           break;
+        }
 
         default:
           console.log("Unknown WebSocket message type:", wsMessage.type);
