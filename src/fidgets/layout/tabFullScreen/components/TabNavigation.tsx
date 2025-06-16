@@ -188,7 +188,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div 
+      className="relative w-full h-full"
+      style={{ touchAction: 'manipulation' }}
+    >
       <TabsList 
         ref={tabsListRef}
         className={`
@@ -200,6 +203,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
           rounded-none
         `}
+        style={{ touchAction: 'manipulation' }}
       >
         {orderedFidgetIds.map((fidgetId) => {
           const fidgetName = getFidgetName(fidgetId);

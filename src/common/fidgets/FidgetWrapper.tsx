@@ -3,7 +3,8 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
-import React from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
 import {
@@ -38,17 +39,18 @@ export type FidgetWrapperProps = {
 };
 
 export const getSettingsWithDefaults = (
-  settings: FidgetSettings,
+  settings: FidgetSettings | undefined,
   config: FidgetProperties,
 ): FidgetSettings => {
+  const safeSettings = settings ?? {};
   return reduce(
     config.fields,
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
-        f.fieldName in settings
-          ? settings[f.fieldName]
-          : f.default || undefined,
+        f.fieldName in safeSettings
+          ? safeSettings[f.fieldName]
+          : (f.default ?? undefined),
     }),
     {},
   );
@@ -57,6 +59,7 @@ export const getSettingsWithDefaults = (
 export function FidgetWrapper({
   fidget,
   bundle,
+  context,
   saveConfig,
   setCurrentFidgetSettings,
   setSelectedFidgetID,
@@ -67,6 +70,8 @@ export function FidgetWrapper({
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
+
+  const themeProps = (context?.theme ?? homebaseConfig?.theme)?.properties;
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -123,14 +128,56 @@ export function FidgetWrapper({
     .filter((f) => f.inputSelector === CSSInput)
     .map((f) => settingsWithDefaults[f.fieldName]);
 
-  return (
-    <>
+  const fidgetRef = useRef<HTMLDivElement>(null);
+  const [iconPosition, setIconPosition] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let isActive = false;
+    
+    const updateIconPosition = () => {
+      if (selectedFidgetID === bundle.id && fidgetRef.current && isActive) {
+        const rect = fidgetRef.current.getBoundingClientRect();
+        setIconPosition({
+          top: rect.top - 28, // 28px above the fidget
+          left: rect.left,
+        });
+        
+        // Continue updating position while this fidget is selected
+        animationFrameId = requestAnimationFrame(updateIconPosition);
+      }
+    };
+
+    if (selectedFidgetID === bundle.id) {
+      isActive = true;
+      // Start continuous position updates when this fidget is selected
+      updateIconPosition();
+    }
+
+    return () => {
+      isActive = false;
+      // Clean up animation frame when component unmounts or selection changes
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [selectedFidgetID, bundle.id]);
+
+  const renderActionIcons = () => {
+    if (typeof window === "undefined") return null;
+    
+    return createPortal(
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6"
-            : "absolute opacity-0 transition-opacity ease-in flex flex-row h-6"
+            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6"
+            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6"
         }
+        style={{
+          top: iconPosition.top,
+          left: iconPosition.left,
+          zIndex: 999999,
+        }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
           <TooltipProvider>
@@ -178,15 +225,31 @@ export function FidgetWrapper({
             </TooltipProvider>
           </Card>
         </button>
-      </div>
+      </div>,
+      document.body
+    );
+  };
+
+  return (
+    <>
+      {renderActionIcons()}
       <Card
+        ref={fidgetRef}
         className={
           selectedFidgetID === bundle.id
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
             : "size-full overflow-hidden"
         }
         style={{
-          background: settingsWithDefaults.useDefaultColors 
+          outline:
+            selectedFidgetID === bundle.id
+              ? "4px solid rgb(2 132 199)" /* sky-600 */
+              : undefined,
+          outlineOffset:
+            selectedFidgetID === bundle.id
+              ? -parseInt(themeProps?.fidgetBorderWidth ?? "0")
+              : undefined,
+          background: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetBackground
             : settingsWithDefaults.background,
           borderColor: settingsWithDefaults.useDefaultColors
@@ -198,12 +261,14 @@ export function FidgetWrapper({
           boxShadow: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
+          borderRadius: themeProps?.fidgetBorderRadius,
         }}
       >
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md"
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50"
+            style={{ borderRadius: themeProps?.fidgetBorderRadius }}
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">

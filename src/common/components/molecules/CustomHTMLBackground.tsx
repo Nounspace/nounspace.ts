@@ -8,10 +8,12 @@ type CustomHTMLBackgroundProps = {
 
 const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
   html,
-  className = "fixed size-full pointer-events-none",
+  className = "fixed inset-0 w-full h-full pointer-events-none z-0",
 }) => {
   // todo: more robust sanitization
   const sanitizedHtml = useMemo(() => {
+    if (!html) return "";
+
     return DOMPurify.sanitize(html, {
       FORCE_BODY: true,
       SAFE_FOR_TEMPLATES: false,

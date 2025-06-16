@@ -1,7 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import { parseFramesWithReports } from "frames.js/parseFramesWithReports";
+import { getFrame } from "frames.js";
 
 // TODO: FIX BUTTON LABELS
+
+// Helper to normalize specification to supported values
+function normalizeSpecification(spec: string | null): "farcaster" | "openframes" {
+  return spec === "openframes" ? "openframes" : "farcaster";
+}
+
+// SSRF protection: Block internal IP ranges and localhost
+function isInternalUrl(url: string): boolean {
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname;
+    
+    // Block localhost variations
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
+      return true;
+    }
+    
+    // Block private IP ranges
+    const ip = hostname.split('.');
+    if (ip.length === 4 && ip.every(octet => /^\d+$/.test(octet))) {
+      const [a, b, c, d] = ip.map(Number);
+      
+      // 10.0.0.0/8 (10.0.0.0 - 10.255.255.255)
+      if (a === 10) return true;
+      
+      // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
+      if (a === 172 && b >= 16 && b <= 31) return true;
+      
+      // 192.168.0.0/16 (192.168.0.0 - 192.168.255.255)
+      if (a === 192 && b === 168) return true;
+      
+      // 169.254.0.0/16 (Link-local addresses)
+      if (a === 169 && b === 254) return true;
+      
+      // 0.0.0.0/8 (Current network)
+      if (a === 0) return true;
+    }
+    
+    // Block other localhost variations
+    if (hostname.endsWith('.localhost') || hostname.includes('local')) {
+      return true;
+    }
+    
+    return false;
+  } catch {
+    return true; // If URL parsing fails, consider it unsafe
+  }
+}
 
 // --- Type Definitions ---
 interface FrameData {
@@ -12,14 +60,7 @@ interface FrameData {
   postUrl: string | null;
 }
 
-interface FrameObject {
-  image?: string | null;
-  title?: string | null;
-  buttons?: { label?: string; action?: string }[];
-  input?: { text?: string };
-  inputText?: boolean;
-  postUrl?: string | null;
-}
+// Removed FrameObject interface since we're using frames.js types directly
 
 // Helper: Regex-based fallback parser for frame metadata
 async function parseFrameFallback(url: string): Promise<FrameData> {
@@ -91,175 +132,12 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   };
 }
 
-// Extract frame data from parseFramesWithReports result
-function extractFrameData(parseResult: unknown, fallbackUrl: string): FrameData {
-  type RawMeta = { flattenedMeta?: Record<string, string> };
-  type FarcasterV2 = { status: string; frame: FrameObject };
-  type Farcaster = { status: string; frame: FrameObject };
-  type ParseResult = {
-    raw?: RawMeta;
-    farcaster_v2?: FarcasterV2;
-    farcaster?: Farcaster;
-  };
-  const safeParseResult = parseResult as ParseResult;
-
-  const frameData: FrameData = {
-    image: null,
-    title: null,
-    buttons: [],
-    inputText: false,
-    postUrl: fallbackUrl,
-  };
-
-  try {
-    if (safeParseResult.raw?.flattenedMeta) {
-      const meta = safeParseResult.raw.flattenedMeta;
-
-      // --- PATCH: Handle JSON "next" format in fc:frame meta tag ---
-      if (meta["fc:frame"]) {
-        // Try to parse as JSON only if it looks like JSON
-        const fcFrameRaw = meta["fc:frame"].trim();
-        if (fcFrameRaw.startsWith("{") || fcFrameRaw.startsWith("[")) {
-          try {
-            const fcFrame = JSON.parse(fcFrameRaw);
-            if (fcFrame && typeof fcFrame === "object") {
-              frameData.image = fcFrame.imageUrl || null;
-              frameData.title = fcFrame.title || null;
-              frameData.postUrl = fcFrame.postUrl || fallbackUrl;
-              if (fcFrame.button) {
-                const buttons = Array.isArray(fcFrame.button)
-                  ? fcFrame.button
-                  : [fcFrame.button];
-                frameData.buttons = buttons.map((btn: any) => ({
-                  label: btn.title || btn.label || "Open",
-                  action: btn.action?.type || "post",
-                }));
-              }
-            }
-          } catch (err) {
-            // Not JSON, ignore
-          }
-        }
-      }
-      // --- END PATCH ---
-
-      const buttons: { label: string; action: string }[] = [];
-      for (let i = 1; i <= 4; i++) {
-        const buttonLabel = meta[`fc:frame:button:${i}`];
-        if (buttonLabel) {
-          const buttonAction = meta[`fc:frame:button:${i}:action`] || "post";
-          buttons.push({ label: buttonLabel, action: buttonAction });
-        }
-      }
-
-      if (buttons.length > 0 && frameData.buttons.length === 0) {
-        frameData.buttons = buttons;
-      }
-
-      if (!frameData.title) {
-        frameData.title = meta["fc:frame:title"] || meta["og:title"] || null;
-      }
-      if (!frameData.image) {
-        frameData.image = meta["fc:frame:image"] || meta["og:image"] || null;
-      }
-      if (!frameData.postUrl || frameData.postUrl === fallbackUrl) {
-        frameData.postUrl = meta["fc:frame:post_url"] || fallbackUrl;
-      }
-      if (!frameData.inputText) {
-        frameData.inputText = !!meta["fc:frame:input:text"];
-      }
-    }
-  } catch (e) {
-    console.warn("Error extracting raw meta tags:", e);
-  }
-
-  if (frameData.buttons.length === 0) {
-    if (safeParseResult.farcaster_v2?.status === "success") {
-      const frame = safeParseResult.farcaster_v2.frame;
-
-      if (!frameData.image) {
-        frameData.image = frame.image || null;
-      }
-
-      if (!frameData.title) {
-        frameData.title = frame.title || null;
-      }
-
-      if (frame.buttons && frame.buttons.length > 0) {
-        frameData.buttons = frame.buttons.map((btn: { label?: string; action?: string }) => ({
-          label: btn.label || "Open",
-          action: btn.action || "post",
-        }));
-      }
-
-      if (!frameData.inputText) {
-        frameData.inputText = !!frame.input?.text;
-      }
-
-      if (frameData.postUrl === fallbackUrl) {
-        frameData.postUrl = frame.postUrl || fallbackUrl;
-      }
-
-      return frameData;
-    }
-
-    if (safeParseResult.farcaster?.status === "success") {
-      const frame = safeParseResult.farcaster.frame;
-
-      if (!frameData.image) {
-        frameData.image = frame.image || null;
-      }
-
-      if (!frameData.title) {
-        frameData.title = frame.title || null;
-      }
-
-      if (frame.buttons && frame.buttons.length > 0) {
-        frameData.buttons = frame.buttons.map((btn: { label?: string; action?: string }) => ({
-          label: btn.label || "Open",
-          action: btn.action || "post",
-        }));
-      }
-
-      if (!frameData.inputText) {
-        frameData.inputText = !!frame.inputText;
-      }
-
-      if (frameData.postUrl === fallbackUrl) {
-        frameData.postUrl = frame.postUrl || fallbackUrl;
-      }
-    }
-  }
-
-  if (frameData.buttons.length === 0) {
-    let defaultLabel = "Open";
-
-    if (
-      frameData.title?.toLowerCase().includes("read") ||
-      fallbackUrl.includes("paragraph") ||
-      fallbackUrl.includes("article")
-    ) {
-      defaultLabel = "Read";
-    } else if (
-      frameData.title?.toLowerCase().includes("watch") ||
-      fallbackUrl.includes("video") ||
-      fallbackUrl.includes("youtube")
-    ) {
-      defaultLabel = "Watch";
-    } else if (fallbackUrl.includes("skatehive")) {
-      defaultLabel = "Be Brave";
-    }
-
-    frameData.buttons = [{ label: defaultLabel, action: "post" }];
-  }
-
-  return frameData;
-}
+// Removed extractFrameData function since we're using parseFrameFallback directly
 
 // GET handler
 export async function GET(request: NextRequest): Promise<Response> {
   const url = request.nextUrl.searchParams.get("url");
-  const specification = request.nextUrl.searchParams.get("specification") ?? "farcaster_v2";
+  const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
   const fid = request.nextUrl.searchParams.get("fid");
 
   if (!url) {
@@ -267,6 +145,9 @@ export async function GET(request: NextRequest): Promise<Response> {
   }
   if (typeof url !== "string" || !url.startsWith("http")) {
     return NextResponse.json({ message: "Invalid URL. Must start with http(s)://" }, { status: 400 });
+  }
+  if (isInternalUrl(url)) {
+    return NextResponse.json({ message: "Invalid URL. Internal URLs are not allowed." }, { status: 400 });
   }
 
   try {
@@ -277,25 +158,28 @@ export async function GET(request: NextRequest): Promise<Response> {
       });
       html = await urlRes.text();
     }
-    const parseResult = await parseFramesWithReports({
-      html,
-      frameUrl: url,
-      fallbackPostUrl: url,
-      fromRequestMethod: "GET",
-      parseSettings: {
-        farcaster_v2: {
-          parseManifest: true,
-          strict: false,
-        },
-      },
+    // Use the new getFrame function from frames.js
+    const frameResult = await getFrame({
+      htmlString: html,
+      url: url,
+      specification: specification,
     });
-    let frameData = extractFrameData(parseResult, url);
 
-    if (
-      (!frameData.image || frameData.image === null) &&
-      (!frameData.title || frameData.title === null) &&
-      (!frameData.buttons || frameData.buttons.length === 0)
-    ) {
+    let frameData: FrameData;
+    if (frameResult.status === "success" && frameResult.frame) {
+      const frame = frameResult.frame;
+      frameData = {
+        image: frame.image || null,
+        title: frame.title || null,
+        buttons: frame.buttons ? frame.buttons.map(btn => ({
+          label: btn.label || "Open",
+          action: btn.action || "post"
+        })) : [],
+        inputText: !!frame.inputText,
+        postUrl: frame.postUrl || url,
+      };
+    } else {
+      // Fall back to manual parsing if getFrame fails
       frameData = await parseFrameFallback(url);
     }
 
@@ -326,12 +210,16 @@ export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
     const { frameUrl, buttonIndex } = body;
+    const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
 
     if (!frameUrl) {
       return NextResponse.json({ message: "Missing frameUrl in request body" }, { status: 400 });
     }
     if (typeof frameUrl !== "string" || !frameUrl.startsWith("http")) {
       return NextResponse.json({ message: "Invalid URL. Must start with http(s)://" }, { status: 400 });
+    }
+    if (isInternalUrl(frameUrl)) {
+      return NextResponse.json({ message: "Invalid URL. Internal URLs are not allowed." }, { status: 400 });
     }
 
     let html: string;
@@ -341,25 +229,28 @@ export async function POST(request: NextRequest): Promise<Response> {
       });
       html = await urlRes.text();
     }
-    const parseResult = await parseFramesWithReports({
-      html,
-      frameUrl,
-      fallbackPostUrl: frameUrl,
-      fromRequestMethod: "POST",
-      parseSettings: {
-        farcaster_v2: {
-          parseManifest: true,
-          strict: false,
-        },
-      },
+    // Use the new getFrame function from frames.js
+    const frameResult = await getFrame({
+      htmlString: html,
+      url: frameUrl,
+      specification: specification,
     });
-    let frameData = extractFrameData(parseResult, frameUrl);
 
-    if (
-      (!frameData.image || frameData.image === null) &&
-      (!frameData.title || frameData.title === null) &&
-      (!frameData.buttons || frameData.buttons.length === 0)
-    ) {
+    let frameData: FrameData;
+    if (frameResult.status === "success" && frameResult.frame) {
+      const frame = frameResult.frame;
+      frameData = {
+        image: frame.image || null,
+        title: frame.title || null,
+        buttons: frame.buttons ? frame.buttons.map(btn => ({
+          label: btn.label || "Open",
+          action: btn.action || "post"
+        })) : [],
+        inputText: !!frame.inputText,
+        postUrl: frame.postUrl || frameUrl,
+      };
+    } else {
+      // Fall back to manual parsing if getFrame fails
       frameData = await parseFrameFallback(frameUrl);
     }
 
