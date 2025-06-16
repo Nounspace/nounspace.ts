@@ -494,12 +494,18 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         )}
         <div
           className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
-          onClick={(e) => {
+          onClick={async (e) => {
             e.stopPropagation();
-            const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
-            navigator.clipboard.writeText(url);
-            showToast("Link copied", 2000);
+            try {
+              const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
+              await navigator.clipboard.writeText(url);
+              showToast("Link copied", 2000);
+            } catch {
+              showToast("Could not copy link", 2000);
+            }
           }}
+          aria-label="Share cast"
+        >
         >
           <IoMdShare className="w-4 h-4" aria-hidden="true" />
         </div>
