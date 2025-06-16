@@ -20,13 +20,13 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-  TabsContent,
 } from "@/common/components/atoms/tabs"
 import { Alert, AlertDescription } from "@/common/components/atoms/alert"
 import {
   CastAvatar,
   CastBody,
   CastRow,
+  PriorityLink,
 } from "@/fidgets/farcaster/components/CastRow"
 import Loading from "@/common/components/molecules/Loading"
 import { useInView } from "react-intersection-observer"
@@ -304,8 +304,8 @@ const LikeNotificationRow: NotificationRowProps = ({
               textAlign: "left",
             }}
             hideReactions={false}
-            renderRecastBadge={false}
-            userFid={fid}
+            renderRecastBadge={undefined}
+            userFid={fid ?? undefined}
             isDetailView={false}
             onSelectCast={onSelect}
           />

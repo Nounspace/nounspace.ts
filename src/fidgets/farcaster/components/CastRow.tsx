@@ -4,6 +4,7 @@ import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
@@ -28,11 +29,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
-import { useAppStore } from "@/common/data/stores/app";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -65,7 +64,7 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
-  onSelect?: (hash: string) => void;
+  onSelect?: (hash: string, username: string) => void;
   isFocused?: boolean;
   isEmbed?: boolean;
   isReply?: boolean;
@@ -125,7 +124,7 @@ export const CastAvatar = ({
 
 interface CastEmbedsProps {
   cast: CastWithInteractions;
-  onSelectCast: (hash: string) => void;
+  onSelectCast: (hash: string, username: string) => void;
 }
 
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
@@ -155,8 +154,8 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             )}
             onClick={(event) => {
               event.stopPropagation();
-              if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash.toString());
+              if (embedData?.castId?.hash && typeof embedData.castId.hash === 'string') {
+                onSelectCast(embedData.castId.hash, cast.author.username);
               }
             }}
           >
@@ -249,17 +248,9 @@ const CastAttributionSecondary = ({ cast }) => {
 };
 
 const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
-  const [didLike, setDidLike] = useState(
-    cast.viewer_context?.liked ?? false,
-  );
-  const [didRecast, setDidRecast] = useState(
-    cast.viewer_context?.recasted ?? false,
-  );
+  const [didLike, setDidLike] = useState(false);
+  const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
-  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
-    setModalOpen: state.setup.setModalOpen,
-    getIsAccountReady: state.getIsAccountReady,
-  }));
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -276,28 +267,18 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
-    const likesCount = cast.reactions?.likes_count || 0;
+    const likesCount = cast.reactions?.likes_count;
 
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
-
-    const viewerLiked = cast.viewer_context?.liked ?? false;
-    const viewerRecasted = cast.viewer_context?.recasted ?? false;
-
     return {
       [CastReactionType.likes]: {
-        count: likesCount + (!viewerLiked ? Number(didLike) : 0),
-        isActive:
-          didLike ||
-          viewerLiked ||
-          includes(likeFids, userFid),
+        count: likesCount + Number(didLike),
+        isActive: didLike || includes(likeFids, userFid),
       },
       [CastReactionType.recasts]: {
-        count: recastsCount + (!viewerRecasted ? Number(didRecast) : 0),
-        isActive:
-          didRecast ||
-          viewerRecasted ||
-          includes(recastFids, userFid),
+        count: recastsCount + Number(didRecast),
+        isActive: didRecast || includes(recastFids, userFid),
       },
       [CastReactionType.replies]: { count: repliesCount },
     };
@@ -307,24 +288,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     if (key === CastReactionType.links) {
       return;
     }
-    
-    if (!getIsAccountReady()) {
-      setModalOpen(true);
-      return;
-    }
 
-    if (key === CastReactionType.likes) {
-      trackAnalyticsEvent(AnalyticsEvent.LIKE, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidLike(!isActive);
-    } else if (key === CastReactionType.recasts) {
-      trackAnalyticsEvent(AnalyticsEvent.RECAST, {
-        username: cast.author.username,
-        castId: cast.hash,
-      });
-      setDidRecast(!isActive);
     // We check if we have the signer before proceeding
     if (isUndefined(signer)) {
       console.error("NO SIGNER");
@@ -534,7 +498,7 @@ interface CastBodyProps {
   renderRecastBadge?: () => React.ReactNode;
   userFid?: number;
   isDetailView?: boolean;
-  onSelectCast?: (hash: string) => void;
+  onSelectCast?: (hash: string, username: string) => void;
   maxLines?: number;
   hideEmbeds?: boolean;
 }
@@ -553,9 +517,9 @@ const CastBodyComponent = ({
   maxLines = 0,
   hideEmbeds = false,
 }: CastBodyProps) => {
-  const handleSelectCast = useCallback((hash: string) => {
+  const handleSelectCast = useCallback((hash: string, username: string) => {
     if (onSelectCast) {
-      onSelectCast(hash);
+      onSelectCast(hash, username);
     }
   }, [onSelectCast]);
   
@@ -611,14 +575,10 @@ const getIconForCastReactionType = (
   reactionType: CastReactionType,
   isActive?: boolean,
 ): JSX.Element | undefined => {
-  const baseColor = isActive
-    ? reactionType === CastReactionType.likes
-      ? "text-red-500"
-      : reactionType === CastReactionType.recasts
-        ? "text-green-500"
-        : "text-foreground"
-    : "text-foreground/70";
-  const className = classNames("mt-0.5 w-4 h-4 mr-1", baseColor);
+  const className = classNames(
+    isActive ? "text-foreground/70" : "",
+    "mt-0.5 w-4 h-4 mr-1",
+  );
 
   switch (reactionType) {
     case CastReactionType.likes:
@@ -699,10 +659,10 @@ const CastRowComponent = ({
         event.preventDefault();
         event.stopPropagation();
       } else {
-        onSelect && onSelect(cast.hash);
+        onSelect && onSelect(cast.hash, cast.author.username);
       }
     },
-    [cast.hash, isFocused],
+    [cast.hash, isFocused, cast.author.username, onSelect],
   );
 
   return (
