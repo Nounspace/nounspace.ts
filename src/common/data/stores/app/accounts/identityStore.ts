@@ -1,5 +1,5 @@
 import { isArray, find, isUndefined, isNull, findIndex } from "lodash";
-import { Wallet } from "@privy-io/react-auth";
+import { Wallet, ConnectedWallet } from "@privy-io/react-auth";
 import { ed25519 } from "@noble/curves/ed25519";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { hkdf } from "@noble/hashes/hkdf";
@@ -119,8 +119,13 @@ async function decryptKeyFile(
   nonce: string,
   encryptedBlob: Uint8Array,
 ): Promise<RootSpaceKeys | PreSpaceKeys> {
+  // Ensure wallet has required properties for signing
+  if (!wallet.address) {
+    throw new Error("Wallet must have an address to sign messages");
+  }
+  
   const signature = await signMessage(
-    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
@@ -135,8 +140,13 @@ async function encryptKeyFile(
   nonce: string,
   keysToEncrypt: RootSpaceKeys | PreSpaceKeys,
 ): Promise<Uint8Array> {
+  // Ensure wallet has required properties for signing
+  if (!wallet.address) {
+    throw new Error("Wallet must have an address to sign messages");
+  }
+  
   const signature = await signMessage(
-    { ...wallet, walletIndex: wallet.walletIndex ?? undefined },
+    wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
   const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
