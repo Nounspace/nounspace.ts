@@ -243,7 +243,9 @@ const Navigation: React.FC<NavProps> = ({
             </button>
           )}
 
-          <BrandHeader />
+          <div className="-mt-5 pb-5">
+            <BrandHeader />
+          </div>
           <div
             className={mergeClasses(
               "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300",
