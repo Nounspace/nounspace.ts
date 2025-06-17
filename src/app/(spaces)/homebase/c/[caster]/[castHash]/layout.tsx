@@ -6,10 +6,9 @@ import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { isImageUrl } from "@/common/lib/utils/urls";
 
 export async function generateMetadata({
-  params,
+  params: { caster, castHash },
 }: {
   params: { caster: string; castHash: string };
-  const { caster, castHash } = params;
 }: {
 }): Promise<Metadata> {
   if (!caster || !castHash) {
