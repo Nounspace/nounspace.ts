@@ -62,7 +62,7 @@ const DummyTestConfig = {
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   onApplySpaceConfig,
-  wsUrl = "ws://192.168.8.25:4200", // Your friend's WebSocket server
+  wsUrl = "ws://10.58.103.20:3040",
   spaceContext,
 }) => {
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
@@ -93,6 +93,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const wsServiceRef = useRef<WebSocketService | null>(null);
+  const messageTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -140,6 +141,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             setMessages((prev) => [...prev, wsMessage.data.response!]);
             setIsLoading(false);
             setLoadingType(null);
+
+            // Clear message timeout
+            if (messageTimeoutRef.current) {
+              clearTimeout(messageTimeoutRef.current);
+              messageTimeoutRef.current = null;
+            }
           }
           break;
 
@@ -153,10 +160,22 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           } else if (wsMessage.data.status === "complete") {
             setIsLoading(false);
             setLoadingType(null);
+
+            // Clear message timeout
+            if (messageTimeoutRef.current) {
+              clearTimeout(messageTimeoutRef.current);
+              messageTimeoutRef.current = null;
+            }
           } else if (wsMessage.data.status === "error") {
             setIsLoading(false);
             setLoadingType(null);
             toast.error("AI processing error");
+
+            // Clear message timeout
+            if (messageTimeoutRef.current) {
+              clearTimeout(messageTimeoutRef.current);
+              messageTimeoutRef.current = null;
+            }
           }
           break;
 
@@ -172,6 +191,45 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           };
           setMessages((prev) => [...prev, pongMessage]);
           toast.success("Pong received! WebSocket is working!");
+          break;
+        }
+
+        case "REPLY": {
+          // Handle new server REPLY format
+          console.log("Received REPLY message from:", wsMessage.name);
+
+          if (wsMessage.message === "pong") {
+            // Handle pong response in new format
+            const pongMessage: Message = {
+              id: `pong-${Date.now()}`,
+              role: "assistant",
+              content: `🏓 Pong! ${wsMessage.name} responded: ${wsMessage.message}`,
+              timestamp: new Date(),
+              type: "text",
+            };
+            setMessages((prev) => [...prev, pongMessage]);
+            toast.success("Pong received! WebSocket is working!");
+          } else {
+            // Handle other REPLY messages (like AI responses)
+            const replyMessage: Message = {
+              id: `reply-${Date.now()}`,
+              role: "assistant",
+              content: `${wsMessage.name}: ${wsMessage.message}`,
+              timestamp: new Date(),
+              type: "text",
+            };
+            setMessages((prev) => [...prev, replyMessage]);
+
+            // Clear loading state when receiving AI response
+            setIsLoading(false);
+            setLoadingType(null);
+
+            // Clear message timeout
+            if (messageTimeoutRef.current) {
+              clearTimeout(messageTimeoutRef.current);
+              messageTimeoutRef.current = null;
+            }
+          }
           break;
         }
 
@@ -215,6 +273,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     initializeWebSocketService();
     return () => {
       wsServiceRef.current?.destroy();
+      // Clear message timeout on unmount
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+        messageTimeoutRef.current = null;
+      }
     };
   }, [initializeWebSocketService]);
 
@@ -240,7 +303,25 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     try {
       // Send message via WebSocket if connected
       if (wsServiceRef.current?.isConnected()) {
+        // Set loading type for WebSocket messages (assuming "tom" is thinking)
+        setLoadingType("thinking");
         wsServiceRef.current.sendUserMessage(userMessage.content);
+
+        // Clear any existing timeout
+        if (messageTimeoutRef.current) {
+          clearTimeout(messageTimeoutRef.current);
+        }
+
+        // Set a timeout to clear loading state if no response received
+        messageTimeoutRef.current = setTimeout(() => {
+          console.warn(
+            "No response received within 30 seconds, clearing loading state"
+          );
+          setIsLoading(false);
+          setLoadingType(null);
+          toast.error("No response received from AI. Please try again.");
+          messageTimeoutRef.current = null;
+        }, 30000); // 30 second timeout
       } else {
         // Fallback to mock responses if WebSocket is not connected
         console.warn("WebSocket not connected, using mock responses");
@@ -666,7 +747,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     <span className="text-sm text-gray-600">
                       {loadingType === "thinking" && "Thinking..."}
                       {loadingType === "building" && "Building..."}
-                      {!loadingType && "AI is processing..."}
+                      {!loadingType && "Tom is thinking..."}
                     </span>
                   </div>
                 </div>
@@ -724,7 +805,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           )}
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions
         <div className="px-4 pb-4">
           <div className="text-xs font-medium text-gray-700 mb-2">
             Quick Actions:
@@ -763,7 +844,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               🧪 Test Config
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
     </aside>
   );
