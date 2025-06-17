@@ -68,7 +68,7 @@ const DummyTestConfig = {
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   onApplySpaceConfig,
-  wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://192.168.8.19:3040",
+  wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:3040",
   spaceContext, // This prop is no longer needed but keeping for compatibility
 }) => {
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
@@ -184,7 +184,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     wsServiceRef.current = new WebSocketService(config, callbacks);
     wsServiceRef.current.connect();
-  }, [wsUrl, sessionId, actualSpaceContext, currentFid]);
+  }, [wsUrl, sessionId, currentFid]); // Remove actualSpaceContext from dependencies
 
   const handleWebSocketMessage = useCallback((wsMessage: any) => {
     console.log("Received WebSocket message:", wsMessage);
@@ -270,7 +270,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             const replyMessage: Message = {
               id: `reply-${Date.now()}`,
               role: "assistant",
-              content: `${wsMessage.name}: ${wsMessage.message}`,
+              content: wsMessage.message,
               timestamp: new Date(),
               type: "text",
             };
@@ -285,6 +285,37 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               clearTimeout(messageTimeoutRef.current);
               messageTimeoutRef.current = null;
             }
+          }
+          break;
+        }
+
+        // Handle various log message types
+        case "LOG":
+        case "PLANNER_LOGS":
+        case "BUILDER_LOGS":
+        case "COMM_LOGS": {
+          console.log(
+            `Received ${wsMessage.type} from ${wsMessage.name}:`,
+            wsMessage.message
+          );
+
+          // Show these as system messages in the chat for debugging
+          const logMessage: Message = {
+            id: `log-${Date.now()}-${Math.random()}`,
+            role: "assistant",
+            content: `**${wsMessage.name}** (${wsMessage.type}):\n${wsMessage.message}`,
+            timestamp: new Date(),
+            type: "text",
+          };
+          setMessages((prev) => [...prev, logMessage]);
+
+          // Update loading state based on log type
+          if (wsMessage.type === "PLANNER_LOGS") {
+            setLoadingType("thinking");
+            setIsLoading(true);
+          } else if (wsMessage.type === "BUILDER_LOGS") {
+            setLoadingType("building");
+            setIsLoading(true);
           }
           break;
         }
@@ -394,12 +425,10 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   }, [currentSpaceId, currentTabName, localSpaces, actualSpaceContext]);
 
-  // Monitor space context changes and update WebSocket
+  // Update space context on existing connection when it changes
   useEffect(() => {
-    if (wsServiceRef.current && actualSpaceContext) {
-      console.log(
-        "🔄 AiChatSidebar: Updating WebSocket with new space context"
-      );
+    if (wsServiceRef.current && wsServiceRef.current.isConnected()) {
+      console.log("🔄 Updating space context on existing WebSocket connection");
       wsServiceRef.current.updateSpaceContext(actualSpaceContext);
     }
   }, [actualSpaceContext]);
@@ -479,15 +508,29 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     console.log("💬 Sending user message:");
     console.log("  Message:", userMessage.content);
+
+    // Check if this is the first user message (excluding welcome message)
+    const userMessages = messages.filter((m) => m.role === "user");
+    const isFirstMessage = userMessages.length === 0;
+
+    // Determine which config to send
+    const configToSend = isFirstMessage
+      ? actualSpaceContext // Send current tab config for first message
+      : previewConfig || actualSpaceContext; // Send local/preview config for revisions
+
     console.log(
-      "  Current Space Context Size:",
-      actualSpaceContext ? JSON.stringify(actualSpaceContext).length : 0,
+      "  Config Type:",
+      isFirstMessage ? "currentTabConfig" : "localConfig"
+    );
+    console.log(
+      "  Config Size:",
+      configToSend ? JSON.stringify(configToSend).length : 0,
       "chars"
     );
     console.log(
-      "  Space Context Preview:",
-      actualSpaceContext
-        ? JSON.stringify(actualSpaceContext, null, 2).substring(0, 300) + "..."
+      "  Config Preview:",
+      configToSend
+        ? JSON.stringify(configToSend, null, 2).substring(0, 300) + "..."
         : "No context"
     );
 
@@ -502,13 +545,15 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         // Set loading type for WebSocket messages (assuming "tom" is thinking)
         setLoadingType("thinking");
 
-        // Note: Space context is automatically updated via useEffect when actualSpaceContext changes
+        // Send message with current context directly
         console.log(
-          "� Space context is automatically managed by WebSocket service"
+          `📤 Sending message with ${isFirstMessage ? "currentTabConfig" : "localConfig"} context`
         );
 
-        const success = wsServiceRef.current.sendUserMessage(
-          userMessage.content
+        // Use explicit context method to ensure AI understands the domain
+        const success = wsServiceRef.current.sendUserMessageWithExplicitContext(
+          userMessage.content,
+          configToSend // Pass context directly with this message
         );
 
         if (success) {
@@ -780,6 +825,27 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   };
 
+  const handleTestContextMessage = () => {
+    if (!wsServiceRef.current?.isConnected()) {
+      toast.error("WebSocket not connected");
+      return;
+    }
+
+    console.log("🧪 Sending test context message");
+    const success = wsServiceRef.current.sendUserMessageWithExplicitContext(
+      "TEST: Please confirm you received the space context with this message and tell me about the current fidgets and theme in my space",
+      actualSpaceContext
+    );
+
+    if (success) {
+      toast.success(
+        "Test message sent! Check console and wait for AI response."
+      );
+    } else {
+      toast.error("Failed to send test message");
+    }
+  };
+
   return (
     <aside
       className="h-screen flex-row flex bg-white transition-transform border-r"
@@ -793,7 +859,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               <LucideSparkle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg">AI Customization</h2>
+              <h2 className="font-semibold text-lg">Vibe Customization</h2>
               <div className="flex items-center gap-2">
                 {/* Preview Mode Indicator */}
                 {isPreviewMode && (
@@ -835,6 +901,17 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Test Context Button - for debugging */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTestContextMessage}
+              className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs"
+              title="Send test message with context for debugging"
+            >
+              🧪 Test Context
+            </Button>
+
             {/* Cancel Preview Button */}
             {isPreviewMode && (
               <Button
@@ -1063,18 +1140,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
         {/* Quick Actions */}
         <div className="px-4 pb-4">
-          <div className="text-xs font-medium text-gray-700 mb-2">
-            Quick Actions:
-          </div>
+          <div className="text-xs font-medium text-gray-700 mb-2">Debug:</div>
           <div className="grid grid-cols-2 gap-2 mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInputValue("Help me choose a color theme")}
-              className="text-xs h-8"
-            >
-              🎨 Pick Colors
-            </Button>
             <Button
               variant="outline"
               size="sm"
