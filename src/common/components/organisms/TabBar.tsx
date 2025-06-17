@@ -16,13 +16,11 @@ import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import { IoSparklesOutline } from "react-icons/io5";
 import { LucideSparkle } from "lucide-react";
 
 interface TabBarProps {
   inHome?: boolean;
   inHomebase: boolean;
-  inEditMode: boolean;
   currentTab: string;
   tabList: string[];
   updateTabOrder: (newOrder: string[]) => void;
@@ -52,7 +50,6 @@ const validateTabName = (tabName: string): string | null => {
 function TabBar({
   inHome,
   inHomebase,
-  inEditMode,
   currentTab,
   tabList = ["Profile"],
   switchTabTo,
@@ -246,7 +243,7 @@ function TabBar({
 
   const isLoggedIn = getIsLoggedIn();
   const showButtons =
-    inEditMode || (!inEditMode && !isMobile && isLoggedIn && sidebarEditable);
+    editMode || (!editMode && !isMobile && isLoggedIn && sidebarEditable);
 
   return (
     <TooltipProvider>
@@ -282,11 +279,11 @@ function TabBar({
                         key={tabName}
                         getSpacePageUrl={getSpacePageUrl}
                         tabName={tabName}
-                        inEditMode={inEditMode}
+                        inEditMode={editMode}
                         isSelected={currentTab === tabName}
                         onClick={() => handleTabClick(tabName)}
                         removeable={isEditableTab(tabName)}
-                        draggable={inEditMode}
+                        draggable={editMode}
                         renameable={isEditableTab(tabName)}
                         onRemove={() => handleDeleteTab(tabName)}
                         renameTab={handleRenameTab}
