@@ -282,7 +282,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       : gridDetails.rowHeight;
   }, [height, hasProfile, gridDetails.margin, gridDetails.containerPadding]);
 
-  function handleDrop(
+  async function handleDrop(
     _layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
@@ -304,8 +304,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       resizeHandles: resizeDirections,
     };
 
-    // Save both layout and fidget data in a single operation to keep them in sync
-    debouncedSaveConfig({
+    // Save layout and fidget data immediately so editing has the latest state
+    await saveConfig({
       layoutConfig: { layout: [...layoutConfig.layout, newItem] },
       fidgetInstanceDatums: { ...fidgetInstanceDatums, [fidgetData.id]: fidgetData },
     });
