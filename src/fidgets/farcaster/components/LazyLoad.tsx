@@ -1,43 +1,6 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-
-// Custom hook for intersecting observers
-export const useIntersectionObserver = (options = {}) => {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-
-  // Extract individual properties to avoid stability issues with the object reference
-  const { rootMargin, threshold, root } = options;
-
-  const disconnect = useCallback(() => {
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-      observerRef.current = null;
-    }
-  }, []);
-  
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting);
-    }, options);
-
-    const currentRef = ref.current;
-    if (currentRef) {
-      observerRef.current.observe(currentRef);
-    }
-
-    return () => {
-      if (observerRef.current && currentRef) {
-        observerRef.current.unobserve(currentRef);
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-    };
-  }, [rootMargin, threshold, root, disconnect]);
-
-  return { ref, isIntersecting };
-};
+import { useInView } from 'react-intersection-observer';
 
 const LazyImageComponent = ({ 
   src, 
@@ -57,16 +20,16 @@ const LazyImageComponent = ({
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
-  const { ref, isIntersecting: isVisible } = useIntersectionObserver({
-    rootMargin: '200px', 
+  const { ref, inView } = useInView({
+    rootMargin: '200px',
     threshold: 0,
   });
 
   useEffect(() => {
-    if (isVisible) {
+    if (inView) {
       setShouldLoad(true);
     }
-  }, [isVisible]);
+  }, [inView]);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setLoaded(true);
