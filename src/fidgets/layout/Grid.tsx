@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -201,17 +202,29 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
+  const fidgetInstanceDatumsRef = useRef(fidgetInstanceDatums);
+
+  useEffect(() => {
+    fidgetInstanceDatumsRef.current = fidgetInstanceDatums;
+  }, [fidgetInstanceDatums]);
+
   const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
+    (id: string, fidgetType?: string) =>
+      async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+        const currentDatums = fidgetInstanceDatumsRef.current;
+        const existing = currentDatums[id];
+        const updatedDatum: FidgetInstanceData = {
+          id: existing?.id ?? id,
+          fidgetType: existing?.fidgetType ?? fidgetType ?? id.split(":")[0],
           config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+        };
+
+        return await saveFidgetInstanceDatums({
+          ...currentDatums,
+          [id]: updatedDatum,
+        });
+      },
+    [saveFidgetInstanceDatums],
   );
 
   // Debounced save function
@@ -242,7 +255,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       shouldUnselect?: boolean,
     ) => {
       try {
-        await saveFidgetConfig(bundle.id)({
+        await saveFidgetConfig(bundle.id, bundle.fidgetType)({
           ...bundle.config,
           settings: newSettings,
         });
