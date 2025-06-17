@@ -31,7 +31,6 @@ const proposalsQuery = (ens: string, skip: number, first: number) => `
             created 
             scores
             scores_total
-            scores_by_strategy
             space {
                 id
                 name

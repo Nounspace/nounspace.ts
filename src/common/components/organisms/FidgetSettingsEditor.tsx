@@ -17,13 +17,11 @@ import {
   tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
 import React, { useEffect, useMemo, useState } from "react";
 import { FaCircleInfo, FaTrashCan } from "react-icons/fa6";
 import BackArrowIcon from "../atoms/icons/BackArrow";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 
 export type FidgetSettingsEditorProps = {
   fidgetId: string;
