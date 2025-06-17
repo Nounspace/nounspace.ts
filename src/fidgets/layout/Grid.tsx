@@ -213,9 +213,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
         const currentDatums = fidgetInstanceDatumsRef.current;
         const existing = currentDatums[id];
+        
+        // Safer approach: don't rely on splitting the id string
+        // Use existing fidgetType, provided fidgetType, or fallback to "unknown"
+        const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
+        
         const updatedDatum: FidgetInstanceData = {
           id: existing?.id ?? id,
-          fidgetType: existing?.fidgetType ?? fidgetType ?? id.split(":")[0],
+          fidgetType: determinedFidgetType,
           config: newInstanceConfig,
         };
 
