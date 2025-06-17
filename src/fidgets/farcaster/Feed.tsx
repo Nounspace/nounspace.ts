@@ -369,7 +369,8 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
     fetchNextPage,
     hasNextPage,
     isError,
-    isPending
+    isPending,
+    refetch
   } =
     filterType === FilterType.Keyword
       ? useGetCastsByKeyword({ keyword: keyword || "" })
