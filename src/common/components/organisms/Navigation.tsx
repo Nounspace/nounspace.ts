@@ -200,7 +200,7 @@ const Navigation: React.FC<NavProps> = ({
         "border-r-2 bg-white",
         mobile
           ? "w-[270px]"
-          : "w-full transition-transform -translate-x-full sm:translate-x-0"
+          : "w-full transition-transform -translate-x-full sm:translate-x-0 md:h-screen"
       )}
       aria-label="Sidebar"
     >
@@ -215,8 +215,8 @@ const Navigation: React.FC<NavProps> = ({
       <SearchModal ref={searchRef} />
       <div
         className={mergeClasses(
-          "pt-12 pb-12",
-          mobile ? "block h-full" : "md:block hidden md:h-screen h-full"
+          "pt-12 pb-12 h-full",
+          mobile ? "block" : "hidden md:block"
         )}
       >
         <div
