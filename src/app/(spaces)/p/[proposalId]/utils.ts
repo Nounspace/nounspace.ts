@@ -19,6 +19,13 @@ export interface ProposalData {
   status?: string;
 }
 
+// Helper function to create timeout signal compatible with Edge runtime
+function createTimeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 export async function loadProposalData(proposalId: string, signal?: AbortSignal): Promise<ProposalData> {
   try {
     const response = await fetch("https://www.nouns.camp/subgraphs/nouns", {
@@ -26,7 +33,7 @@ export async function loadProposalData(proposalId: string, signal?: AbortSignal)
       headers: {
         "Content-Type": "application/json",
       },
-      signal: signal || AbortSignal.timeout(10000), // 10 second timeout
+      signal: signal || createTimeoutSignal(10000), // 10 second timeout
       body: JSON.stringify({
         query: `query Proposal($proposalId: ID!) {
             proposal(id: $proposalId) {
@@ -99,7 +106,7 @@ export async function calculateTimeRemaining(endBlock: string, signal?: AbortSig
       headers: {
         "Content-Type": "application/json",
       },
-      signal: signal || AbortSignal.timeout(5000), // 5 second timeout for metadata
+      signal: signal || createTimeoutSignal(5000), // 5 second timeout for metadata
       body: JSON.stringify({
         query: `query {
           _meta {
