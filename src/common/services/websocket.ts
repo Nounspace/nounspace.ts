@@ -74,7 +74,7 @@ export class WebSocketService {
   }
 
   /**
-   * Connect to WebSocket server
+   * Connect to WebSocket server (WORKING FINE)
    */
   connect(): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
@@ -113,22 +113,30 @@ export class WebSocketService {
         this.callbacks.onStatusChange("connected");
         this.reconnectAttempts = 0;
 
-        // Send session initialization with space context
-        this.sendSessionInit();
-        
-        // Auto-send current space context if available
-        if (this.config.spaceContext) {
-          console.log("🚀 Auto-sending space context after connection established");
-          setTimeout(() => {
-            this.sendSpaceContext();
-          }, 100); // Small delay to ensure session init is processed first
-        }
+        // Don't auto-send context - only send when user sends a message
+        console.log("� WebSocket connected - ready to receive user messages with context");
       };
 
       this.ws.onmessage = (event) => {
         console.log("📨 WebSocket message received:", event.data);
+        
+        // DEBUG: Log raw message details
+        console.log("📋 RAW MESSAGE DETAILS:");
+        console.log("  Data Type:", typeof event.data);
+        console.log("  Data Length:", event.data.length);
+        console.log("  Raw Data Preview:", event.data.substring(0, 500));
+        
         try {
           const message = JSON.parse(event.data);
+          console.log("✅ Parsed message successfully:");
+          console.log("  Message Type:", message.type);
+          console.log("  Has Data Field:", !!message.data);
+          if (message.data) {
+            console.log("  Data Keys:", Object.keys(message.data));
+            console.log("  Has Response:", !!message.data.response);
+            console.log("  Has Context:", !!message.data.context);
+          }
+          
           this.callbacks.onMessage(message);
         } catch (error) {
           console.error("Failed to parse WebSocket message:", error);
@@ -182,7 +190,7 @@ export class WebSocketService {
   }
 
   /**
-   * Disconnect from WebSocket server
+   * Disconnect from WebSocket server (WORKING FINE)
    */
   disconnect(): void {
     if (this.reconnectTimeout) {
@@ -204,7 +212,29 @@ export class WebSocketService {
   }
 
   /**
-   * Send a message through WebSocket
+   * Check if WebSocket is connected
+   */
+  isConnected(): boolean {
+    return this.ws?.readyState === WebSocket.OPEN;
+  }
+
+
+  /**
+   * Send a ping message for connectivity testing (WORKING FINE)
+   */
+  ping(): boolean {
+    const pingMessage = {
+      name: this.config.userFid || null,
+      type: "ping",
+      message: "ping",
+    };
+    
+    console.log("Sending ping with FID:", pingMessage);
+    return this.send(pingMessage);
+  }
+
+  /**
+   * Send a message through WebSocket (WORKING FINE - NEED TO CHECK ITS USAGE)
    */
   send(message: any): boolean {
     if (this.ws?.readyState === WebSocket.OPEN) {
@@ -216,6 +246,10 @@ export class WebSocketService {
         console.log("  Has Space Context:", !!(message.spaceContext || message.context));
         console.log("  Space Context Size:", message.spaceContext ? 
           (typeof message.spaceContext === 'string' ? message.spaceContext.length : JSON.stringify(message.spaceContext).length) : 0, "chars");
+        
+        // DEBUG: Log the entire message payload for troubleshooting
+        console.log("📋 FULL MESSAGE PAYLOAD:");
+        console.log(JSON.stringify(message, null, 2));
         
         this.ws.send(stringifiedMessage);
         console.log("✅ WebSocket message sent successfully");
@@ -234,25 +268,15 @@ export class WebSocketService {
   }
 
   /**
-   * Send a ping message for connectivity testing
+   * Send a user message to the AI (WE ARE NOT USING THIS )
    */
-  ping(): boolean {
-    const pingMessage = {
-      name: this.config.userFid || null,
-      message: "ping",
-    };
+  sendUserMessage(message: string, spaceContext?: any): boolean {
+    // Use provided context or fall back to stored context
+    const contextToUse = spaceContext || this.config.spaceContext;
     
-    console.log("Sending ping with FID:", pingMessage);
-    return this.send(pingMessage);
-  }
-
-  /**
-   * Send a user message to the AI
-   */
-  sendUserMessage(message: string): boolean {
     // Prepare the space context as a stringified JSON for the backend
-    const stringifiedContext = this.config.spaceContext ? 
-      JSON.stringify(this.config.spaceContext, null, 2) : null;
+    const stringifiedContext = contextToUse ? 
+      JSON.stringify(contextToUse, null, 2) : null;
     
     const wsMessage: any = {
       type: "user_message",
@@ -267,18 +291,139 @@ export class WebSocketService {
 
     console.log("📤 Sending user message with context:");
     console.log("  Message:", message);
+    console.log("  Context Source:", spaceContext ? "provided" : "stored");
     console.log("  Context Size:", stringifiedContext ? stringifiedContext.length : 0, "chars");
     console.log("  User FID:", this.config.userFid);
     console.log("  Session ID:", this.config.sessionId);
+
+    // DEBUG: Log if context contains the expected fields
+    if (contextToUse) {
+      console.log("  ✅ Context Details:");
+      console.log("    Has fidgetInstanceDatums:", !!contextToUse.fidgetInstanceDatums);
+      console.log("    Has theme:", !!contextToUse.theme);
+      console.log("    Has layoutDetails:", !!contextToUse.layoutDetails);
+      console.log("    Context Keys:", Object.keys(contextToUse));
+    } else {
+      console.log("  ❌ NO CONTEXT PROVIDED");
+    }
 
     return this.send(wsMessage);
   }
 
   /**
-   * Check if WebSocket is connected
+   * Send a test message with context for debugging 
+   * (WE ARE NOT USING THIS, BECAUSE WE ARE TESTING THE CONTEXT IN sendUserMessageWithExplicitContext)
    */
-  isConnected(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN;
+  sendTestContextMessage(testMessage: string = "Test message with context"): boolean {
+    console.log("🧪 Sending test message with context for debugging:");
+    
+    const testContext = {
+      test: true,
+      timestamp: new Date().toISOString(),
+      spaceContext: this.config.spaceContext,
+      message: "This is a test to verify context is being sent properly"
+    };
+
+    const wsMessage: any = {
+      type: "user_message",
+      message: testMessage,
+      sessionId: this.config.sessionId,
+      context: JSON.stringify(testContext, null, 2),
+      spaceContext: JSON.stringify(testContext, null, 2),
+      fid: this.config.userFid || null,
+      name: this.config.userFid || null,
+      timestamp: new Date().toISOString(),
+      isTestMessage: true, // Flag to identify this as a test
+    };
+
+    console.log("🧪 Test message payload:");
+    console.log(JSON.stringify(wsMessage, null, 2));
+
+    return this.send(wsMessage);
+  }
+
+  /**
+   * Send a user message with explicit context instructions for the AI 
+   * (THIS ONE IS TRYING TO OVERWRITE THE TEMPORARY PROMPT ON VAIPRAONDES SERVER)
+   */
+  sendUserMessageWithExplicitContext(message: string, spaceContext?: any): boolean {
+    const contextToUse = spaceContext || this.config.spaceContext;
+    
+    // Create a highly structured and explicit instruction for the AI
+    const explicitMessage = contextToUse ? 
+      `SYSTEM INSTRUCTION: You are analyzing a DIGITAL SPACE CONFIGURATION for a user's dashboard/widget layout. This is NOT about physical rooms.
+
+      **CRITICAL**: The user already has a configured space. DO NOT suggest generic new fidgets. ANALYZE THEIR CURRENT SETUP.
+
+      CURRENT SPACE ANALYSIS:
+      ${JSON.stringify(contextToUse, null, 2)}
+
+      CURRENT FIDGETS IN USE:
+      ${this.extractFidgetSummary(contextToUse)}
+
+      CURRENT THEME SETTINGS:
+      ${this.extractThemeSummary(contextToUse)}
+
+      CURRENT LAYOUT:
+      ${this.extractLayoutSummary(contextToUse)}
+
+      USER'S ACTUAL REQUEST: ${message}
+
+      RESPONSE INSTRUCTIONS: 
+      - Reference the user's ACTUAL current fidgets (SnapShot, feed, etc.)
+      - Reference their ACTUAL theme settings and colors
+      - Reference their ACTUAL layout positions and sizes  
+      - If they want changes, modify THEIR EXISTING configuration
+      - DO NOT suggest generic gallery/text/video fidgets they don't have` 
+            : `USER REQUEST: ${message}
+
+      NOTE: No space configuration context available.`;
+
+    const wsMessage: any = {
+      type: "user_message", 
+      message: explicitMessage,
+      sessionId: this.config.sessionId,
+      
+      // PRIMARY CONTEXT - Backend should prioritize this
+      PRIMARY_CONTEXT: contextToUse ? {
+        instruction: "ANALYZE USER'S CURRENT CONFIGURATION - DO NOT SUGGEST GENERIC FIDGETS",
+        mode: "ANALYZE_EXISTING_NOT_SUGGEST_NEW",
+        current_fidgets: this.extractFidgetSummary(contextToUse),
+        current_theme: this.extractThemeSummary(contextToUse),
+        current_layout: this.extractLayoutSummary(contextToUse),
+        user_request: message,
+        raw_config: contextToUse
+      } : null,
+      
+      // Backup context fields
+      context: contextToUse ? JSON.stringify(contextToUse, null, 2) : null,
+      spaceContext: contextToUse ? JSON.stringify(contextToUse, null, 2) : null,
+      userSpaceAnalysis: contextToUse ? {
+        fidgets: this.extractFidgetSummary(contextToUse),
+        theme: this.extractThemeSummary(contextToUse),
+        layout: this.extractLayoutSummary(contextToUse)
+      } : null,
+      
+      fid: this.config.userFid || null,
+      name: this.config.userFid || null,
+      timestamp: new Date().toISOString(),
+      explicit_context: true,
+      context_priority: "ANALYZE_CURRENT_NOT_SUGGEST_NEW",
+    };
+
+    console.log("📤 Sending message with EXPLICIT CONTEXT:");
+    console.log("  Original Message:", message);
+    console.log("  Enhanced Message Length:", explicitMessage.length);
+    console.log("  Has Context:", !!contextToUse);
+    if (contextToUse) {
+      console.log("  📊 EXTRACTED SUMMARIES:");
+      console.log("    Fidgets:", this.extractFidgetSummary(contextToUse));
+      console.log("    Theme:", this.extractThemeSummary(contextToUse));  
+      console.log("    Layout:", this.extractLayoutSummary(contextToUse));
+      console.log("  🎯 PRIMARY_CONTEXT field:", wsMessage.PRIMARY_CONTEXT);
+    }
+
+    return this.send(wsMessage);
   }
 
   /**
@@ -291,15 +436,8 @@ export class WebSocketService {
     
     this.config.spaceContext = context;
     
-    // Automatically send the updated context to the server if connected
-    if (this.isConnected() && context) {
-      console.log("🚀 Auto-sending updated space context to server");
-      this.sendSpaceContext();
-    } else if (!this.isConnected()) {
-      console.log("⏳ WebSocket not connected, context will be sent when connection is established");
-    } else {
-      console.log("⚠️ No context provided to update");
-    }
+    // Don't auto-send context updates - only send when user sends a message
+    console.log("✅ Space context updated - will be sent with next user message");
   }
 
   /**
@@ -319,7 +457,7 @@ export class WebSocketService {
     
     const contextMessage = {
       name: "space_context",
-      message: "current_space_config",
+      message: stringifiedContext || "No space context available", // Send actual config as message
       sessionId: this.config.sessionId,
       fid: this.config.userFid,
       spaceContext: stringifiedContext, // Send as stringified JSON
@@ -334,7 +472,8 @@ export class WebSocketService {
     console.log("  Session ID:", this.config.sessionId);
     console.log("  Full Context Message Structure:", {
       name: contextMessage.name,
-      message: contextMessage.message,
+      hasMessage: !!contextMessage.message,
+      messageLength: contextMessage.message?.length || 0,
       hasContext: !!stringifiedContext,
       contextLength: stringifiedContext?.length || 0,
     });
@@ -343,38 +482,38 @@ export class WebSocketService {
   }
 
   /**
-   * Send session initialization message with space context
+   * Send session initialization message with space context (DONT USE, BUT DONT DELETE)
    */
-  private sendSessionInit(): void {
-    // Prepare the space context as a stringified JSON for the backend
-    const stringifiedContext = this.config.spaceContext ? 
-      JSON.stringify(this.config.spaceContext, null, 2) : null;
+  // private sendSessionInit(): void {
+  //   // Prepare the space context as a stringified JSON for the backend
+  //   const stringifiedContext = this.config.spaceContext ? 
+  //     JSON.stringify(this.config.spaceContext, null, 2) : null;
     
-    const initMessage = {
-      name: "init",
-      message: "session_initialized",
-      sessionId: this.config.sessionId,
-      fid: this.config.userFid,
-      spaceContext: stringifiedContext, // Send as stringified JSON
-      context: stringifiedContext, // Also include in context field
-      timestamp: new Date().toISOString(),
-    };
+  //   const initMessage = {
+  //     name: "init",
+  //     message: "session_initialized",
+  //     sessionId: this.config.sessionId,
+  //     fid: this.config.userFid,
+  //     spaceContext: stringifiedContext, // Send as stringified JSON
+  //     context: stringifiedContext, // Also include in context field
+  //     timestamp: new Date().toISOString(),
+  //   };
     
-    console.log("📤 Sending session initialization with space context:");
-    console.log("  Session ID:", this.config.sessionId);
-    console.log("  User FID:", this.config.userFid);
-    console.log("  Context Size:", stringifiedContext ? stringifiedContext.length : 0, "chars");
-    console.log("  Context Keys:", this.config.spaceContext ? Object.keys(this.config.spaceContext) : null);
-    console.log("  Context Preview:", stringifiedContext ? stringifiedContext.substring(0, 200) + "..." : null);
-    console.log("  Init Message Structure:", {
-      name: initMessage.name,
-      message: initMessage.message,
-      hasContext: !!stringifiedContext,
-      contextLength: stringifiedContext?.length || 0,
-    });
+  //   console.log("📤 Sending session initialization with space context:");
+  //   console.log("  Session ID:", this.config.sessionId);
+  //   console.log("  User FID:", this.config.userFid);
+  //   console.log("  Context Size:", stringifiedContext ? stringifiedContext.length : 0, "chars");
+  //   console.log("  Context Keys:", this.config.spaceContext ? Object.keys(this.config.spaceContext) : null);
+  //   console.log("  Context Preview:", stringifiedContext ? stringifiedContext.substring(0, 200) + "..." : null);
+  //   console.log("  Init Message Structure:", {
+  //     name: initMessage.name,
+  //     message: initMessage.message,
+  //     hasContext: !!stringifiedContext,
+  //     contextLength: stringifiedContext?.length || 0,
+  //   });
     
-    this.send(initMessage);
-  }
+  //   this.send(initMessage);
+  // }
 
   /**
    * Schedule reconnection with exponential backoff
@@ -403,5 +542,56 @@ export class WebSocketService {
    */
   destroy(): void {
     this.disconnect();
+  }
+
+  /**
+   * Extract a readable summary of current fidgets
+   */
+  private extractFidgetSummary(spaceContext: any): string {
+    if (!spaceContext?.fidgetInstanceDatums) return "No fidgets configured";
+    
+    const fidgets = Object.values(spaceContext.fidgetInstanceDatums) as any[];
+    return fidgets.map(fidget => {
+      const type = fidget.fidgetType || 'unknown';
+      const id = fidget.id || 'unnamed';
+      const settings = fidget.config?.settings || {};
+      const keySettings = Object.entries(settings)
+        .filter(([key, value]) => value && !key.includes('var(--') && key !== 'showOnMobile')
+        .map(([key, value]) => `${key}: ${value}`)
+        .slice(0, 3)
+        .join(', ');
+      
+      return `- ${type} (${id})${keySettings ? `: ${keySettings}` : ''}`;
+    }).join('\n');
+  }
+
+  /**
+   * Extract a readable summary of current theme
+   */
+  private extractThemeSummary(spaceContext: any): string {
+    if (!spaceContext?.theme?.properties) return "No theme configured";
+    
+    const theme = spaceContext.theme.properties;
+    // debug: Log the theme properties
+    console.log("📋 Theme Properties:", theme);
+    return [
+      `Background: ${theme.background || 'default'}`,
+      `Font: ${theme.font || 'default'}`,
+      `Font Color: ${theme.fontColor || 'default'}`,
+      `Fidget Background: ${theme.fidgetBackground || 'default'}`,
+      `Border: ${theme.fidgetBorderWidth || 'none'} ${theme.fidgetBorderColor || ''}`.trim()
+    ].filter(line => !line.includes('default')).join('\n') || "Default theme settings";
+  }
+
+  /**
+   * Extract a readable summary of current layout
+   */
+  private extractLayoutSummary(spaceContext: any): string {
+    if (!spaceContext?.layoutDetails?.layoutConfig?.layout) return "No layout configured";
+    
+    const layout = spaceContext.layoutDetails.layoutConfig.layout;
+    return layout.map((item: any) => 
+      `- ${item.i}: Position (${item.x}, ${item.y}), Size ${item.w}x${item.h}`
+    ).join('\n');
   }
 }
