@@ -172,7 +172,7 @@
     "@stylistic/eslint-plugin-js": "^2.1.0",
     "@stylistic/eslint-plugin-jsx": "^2.1.0",
     "@stylistic/eslint-plugin-ts": "^2.1.0",
-    "@types/node": "^20.14.10",
+    "@types/node": "^24.0.2",
     "@types/ramda": "^0.29.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
