@@ -295,7 +295,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   }, [tabs, selected, onSelect]);
 
   // Get theme colors for active tab indicators
-  const activeColor = theme.properties.headingsFontColor || "#000000";
+  const activeColor = theme?.properties?.headingsFontColor || "#000000";
   const inactiveColor = "rgba(107, 114, 128, 0.7)"; // text-gray-500 with some opacity
 
   return (
@@ -307,8 +307,8 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         className
       )}
       style={{
-        backgroundColor: theme.properties.background || "white",
-        borderColor: theme.properties.fidgetBorderColor || "rgb(229 231 235)",
+          backgroundColor: theme?.properties?.background || "white",
+          borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)",
       }}
     >
       <div 
@@ -319,7 +319,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         <div 
           className="absolute left-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
           style={{
-            background: `linear-gradient(to right, ${theme.properties.background || "white"}, transparent)`,
+              background: `linear-gradient(to right, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.leftGradientOpacity,
             transition: 'opacity 0.3s ease'
           }}
@@ -353,7 +353,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         <div 
           className="absolute right-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
           style={{
-            background: `linear-gradient(to left, ${theme.properties.background || "white"}, transparent)`,
+              background: `linear-gradient(to left, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.rightGradientOpacity,
             transition: 'opacity 0.3s ease'
           }}

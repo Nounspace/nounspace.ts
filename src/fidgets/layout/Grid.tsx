@@ -162,14 +162,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       makeGridDetails(
         hasProfile,
         hasFeed,
-        parseInt(theme.properties.gridSpacing ?? "16"),
-        theme.properties.fidgetBorderRadius ?? "12px",
+        parseInt(theme?.properties?.gridSpacing ?? "16"),
+        theme?.properties?.fidgetBorderRadius ?? "12px",
       ),
     [
       hasProfile,
       hasFeed,
-      theme.properties.gridSpacing,
-      theme.properties.fidgetBorderRadius,
+      theme?.properties?.gridSpacing,
+      theme?.properties?.fidgetBorderRadius,
     ],
   );
 
@@ -570,7 +570,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                         : undefined,
                     outlineOffset:
                       selectedFidgetID === gridItem.i
-                        ? -parseInt(theme.properties.fidgetBorderWidth ?? "0")
+                        ? -parseInt(theme?.properties?.fidgetBorderWidth ?? "0")
                         : undefined,
                   }}
                 >
