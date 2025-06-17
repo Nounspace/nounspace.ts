@@ -243,7 +243,7 @@ const Navigation: React.FC<NavProps> = ({
             </button>
           )}
 
-          <div className="-mt-[22px] pb-[22px]">
+          <div className="-mt-[25px] pb-[25px]">
             <BrandHeader />
           </div>
           <div
