@@ -15,6 +15,7 @@ import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
 import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
@@ -79,9 +80,11 @@ export default function Space({
 }: SpaceArgs) {
   const viewportMobile = useIsMobile();
   const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const pathname = usePathname();
 
   const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
   const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
+  const isHomebasePath = useMemo(() => pathname?.startsWith('/homebase'), [pathname]);
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -295,7 +298,7 @@ export default function Space({
           <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
         ) : null}
 
-        {!isUndefined(feed) && isMobile ? (
+        {!isUndefined(feed) && isMobile && !isHomebasePath ? (
           <div className="w-full overflow-y-auto touch-auto">{feed}</div>
         ) : null}
 
@@ -409,33 +412,34 @@ export default function Space({
                             </div>
                           </div>
 
-                          {!isUndefined(feed) ? (
+                          {!isUndefined(feed) && !isHomebasePath ? (
                             <div className="w-full overflow-auto bg-white">
                               {feed}
                             </div>
                           ) : null}
                         </div>
 
-                        <Suspense fallback={
-                          <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                          />
-                        }>
-                          {LayoutFidget ? (
-                            <LayoutFidget
-                              layoutConfig={{ ...layoutConfig }}
-                              {...layoutFidgetProps}
-                              style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: 9999 }}
-                            /> 
-                          ) : (
-                              <SpaceLoading
-                                hasProfile={!isNil(profile)}
-                                hasFeed={!isNil(feed)}
-                              />
-                          
-                          )}
-                        </Suspense>
+                        <div className="flex-1 w-full h-full">
+                          <Suspense fallback={
+                            <SpaceLoading
+                              hasProfile={!isNil(profile)}
+                              hasFeed={!isNil(feed)}
+                            />
+                          }>
+                            {LayoutFidget ? (
+                              <LayoutFidget
+                                layoutConfig={{ ...layoutConfig }}
+                                {...layoutFidgetProps}
+                              /> 
+                            ) : (
+                                <SpaceLoading
+                                  hasProfile={!isNil(profile)}
+                                  hasFeed={!isNil(feed)}
+                                />
+                            
+                            )}
+                          </Suspense>
+                        </div>
                       </div>
                     </div>
                   </div>
