@@ -113,7 +113,7 @@ export default function PublicSpace({
     providedSpaceId !== "" &&
     !localSpaces[providedSpaceId];
 
-  const [loading, setLoading] = useState(initialLoading);
+  const [loading, setLoading] = useState<boolean>(initialLoading);
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
