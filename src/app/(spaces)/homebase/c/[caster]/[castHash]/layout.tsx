@@ -32,6 +32,7 @@ export async function generateMetadata({
 
     if (Array.isArray(cast.embeds)) {
       for (const embed of cast.embeds) {
+  params: { caster: string; castHash: string };
         if ("url" in embed && isImageUrl(embed.url)) {
           imageUrl = embed.url;
           break;
