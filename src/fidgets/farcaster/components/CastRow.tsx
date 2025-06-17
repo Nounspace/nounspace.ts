@@ -1,10 +1,11 @@
+"use client"
+
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 import { CastReactionType } from "@/fidgets/farcaster/types";
 import { publishReaction, removeReaction } from "@/fidgets/farcaster/utils";
@@ -29,9 +30,12 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 import { FaReply } from "react-icons/fa6";
+import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
 import FarcasterLinkify from "./linkify";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { useToastStore } from "@/common/data/stores/toastStore";
 
 function isEmbedUrl(maybe: unknown): maybe is EmbedUrl {
   return isObject(maybe) && typeof maybe["url"] === "string";
@@ -64,7 +68,7 @@ interface CastRowProps {
       is_following_author: boolean;
     };
   };
-  onSelect?: (hash: string) => void;
+  onSelect?: (hash: string, username: string) => void;
   isFocused?: boolean;
   isEmbed?: boolean;
   isReply?: boolean;
@@ -124,7 +128,7 @@ export const CastAvatar = ({
 
 interface CastEmbedsProps {
   cast: CastWithInteractions;
-  onSelectCast: (hash: string) => void;
+  onSelectCast: (hash: string, username: string) => void;
 }
 
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
@@ -155,7 +159,10 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                onSelectCast(embedData.castId.hash.toString());
+                const hashString = typeof embedData.castId.hash === 'string' 
+                  ? embedData.castId.hash 
+                  : Buffer.from(embedData.castId.hash).toString('hex');
+                onSelectCast(hashString, cast.author.username);
               }
             }}
           >
@@ -251,6 +258,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const [didLike, setDidLike] = useState(false);
   const [didRecast, setDidRecast] = useState(false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
+  const { showToast } = useToastStore();
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -435,7 +443,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           <CreateCast initialDraft={replyCastDraft} />
         </div>
       </Modal>
-      <div className="-ml-1.5 flex space-x-3">
+      <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
           const isActive = get(reactionInfo, "isActive", false);
           const icon = getIconForCastReactionType(
@@ -483,6 +491,17 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
             /{cast.channel.name}
           </div>
         )}
+        <div
+          className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
+          onClick={(e) => {
+            e.stopPropagation();
+            const url = `${window.location.origin}/homebase/c/${cast.author.username}/${cast.hash}`;
+            navigator.clipboard.writeText(url);
+            showToast("Link copied", 2000);
+          }}
+        >
+          <IoMdShare className="w-4 h-4" aria-hidden="true" />
+        </div>
       </div>
     </>
   );
@@ -498,7 +517,7 @@ interface CastBodyProps {
   renderRecastBadge?: () => React.ReactNode;
   userFid?: number;
   isDetailView?: boolean;
-  onSelectCast?: (hash: string) => void;
+  onSelectCast?: (hash: string, username: string) => void;
   maxLines?: number;
   hideEmbeds?: boolean;
 }
@@ -517,9 +536,9 @@ const CastBodyComponent = ({
   maxLines = 0,
   hideEmbeds = false,
 }: CastBodyProps) => {
-  const handleSelectCast = useCallback((hash: string) => {
+  const handleSelectCast = useCallback((hash: string, username: string) => {
     if (onSelectCast) {
-      onSelectCast(hash);
+      onSelectCast(hash, username);
     }
   }, [onSelectCast]);
   
@@ -659,10 +678,10 @@ const CastRowComponent = ({
         event.preventDefault();
         event.stopPropagation();
       } else {
-        onSelect && onSelect(cast.hash);
+        onSelect && onSelect(cast.hash, cast.author.username);
       }
     },
-    [cast.hash, isFocused],
+    [cast.hash, isFocused, cast.author.username, onSelect],
   );
 
   return (
@@ -723,7 +742,7 @@ const CastRowComponent = ({
             renderRecastBadge={renderRecastBadge}
             isDetailView={isFocused}
             userFid={userFid}
-            onSelectCast={onSelect}
+            onSelectCast={(hash) => onSelect && onSelect(hash, cast.author.username)}
             maxLines={maxLines}
             hideEmbeds={hideEmbeds}
           />

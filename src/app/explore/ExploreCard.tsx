@@ -3,8 +3,9 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider"; // Import analytics
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+
 
 const ExploreCard = ({ post }) => {
   return (

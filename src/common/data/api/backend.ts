@@ -1,8 +1,12 @@
-import { WEBSITE_URL } from "@/constants/app";
 import axios from "axios";
 
-const axiosBackend = axios.create({
-  baseURL: WEBSITE_URL,
+// Replacing the local axios instance with the configured global instance
+const axiosInstance = axios.create({
+  baseURL: process.env.API_BASE_URL || "",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-export default axiosBackend;
+export default axiosInstance;

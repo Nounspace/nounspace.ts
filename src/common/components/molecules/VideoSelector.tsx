@@ -5,16 +5,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/common/components/atoms/select";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
+
 import React, { useState } from "react";
 import AlchemyVideoNftSelector, {
   AlchemyVideoNftSelectorValue,
 } from "./AlchemyVideoNFTSelector";
 import { YouTubeSelector } from "./YouTubeSelector";
 import Player from "../organisms/Player";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 
 type VideoSource = "youtube" | "wallet";
 
