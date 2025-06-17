@@ -215,8 +215,8 @@ const Navigation: React.FC<NavProps> = ({
       <SearchModal ref={searchRef} />
       <div
         className={mergeClasses(
-          "pt-12 pb-12 h-full",
-          mobile ? "block" : "md:block hidden"
+          "pt-12 pb-12",
+          mobile ? "block h-full" : "md:block hidden md:h-screen h-full"
         )}
       >
         <div
