@@ -137,15 +137,12 @@ export default function Space({
     // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
     Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
       const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown>;
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
-      }
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
+      const settings = datum?.config?.settings;
+      // Add defensive check to ensure settings is a valid object before using 'in' operator
+      if (settings && typeof settings === 'object' && settings !== null && "fidget Shadow" in settings) {
+        const typedSettings = settings as Record<string, unknown>;
+        typedSettings.fidgetShadow = typedSettings["fidget Shadow"];
+        delete typedSettings["fidget Shadow"];
         settingsChanged = true;
       }
     });

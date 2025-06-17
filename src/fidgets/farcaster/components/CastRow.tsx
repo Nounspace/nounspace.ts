@@ -123,7 +123,8 @@ export const CastAvatar = ({
 };
 
 const CastEmbeds = ({ cast, onSelectCast }) => {
-  if (!("embeds" in cast) || !cast.embeds.length) {
+  // Add defensive check to ensure cast is a valid object
+  if (!cast || typeof cast !== 'object' || !("embeds" in cast) || !cast.embeds.length) {
     return null;
   }
 

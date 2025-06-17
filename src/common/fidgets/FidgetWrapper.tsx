@@ -46,7 +46,7 @@ export const getSettingsWithDefaults = (
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
-        f.fieldName in settings
+        settings && typeof settings === 'object' && f.fieldName in settings
           ? settings[f.fieldName]
           : f.default || undefined,
     }),
