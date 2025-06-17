@@ -215,7 +215,7 @@ const Navigation: React.FC<NavProps> = ({
       <SearchModal ref={searchRef} />
       <div
         className={mergeClasses(
-          "flex flex-col h-full pt-12 pb-12",
+          "flex flex-col h-full pt-12 pb-12 box-border",
           mobile ? "block" : "hidden md:block"
         )}
       >
@@ -325,7 +325,7 @@ const Navigation: React.FC<NavProps> = ({
               </ul>
             </div>
           </div>
-          <div className="mt-auto flex flex-col justify-between border-t px-4">
+          <div className="flex flex-col flex-auto justify-between border-t px-4">
             <div
               className={mergeClasses("mt-8 px-2", shrunk ? "px-0" : "px-2")}
             >
