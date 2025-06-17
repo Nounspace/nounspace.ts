@@ -276,10 +276,26 @@ export default function Space({
 
           <div className={isMobile ? "size-full" : "flex h-full"}>
             {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+              <div
+                className={
+                  !isUndefined(profile)
+                    ? "w-6/12 h-[calc(100vh-224px)]"
+                    : "w-6/12 h-[calc(100vh-64px)]"
+                }
+              >
+                {feed}
+              </div>
             ) : null}
 
-            <div className={isMobile ? "size-full" : "grow h-[calc(100vh-64px)]"}>
+            <div
+              className={
+                isMobile
+                  ? "size-full"
+                  : !isUndefined(profile)
+                    ? "grow h-[calc(100vh-224px)]"
+                    : "grow h-[calc(100vh-64px)]"
+              }
+            >
               <Suspense
                 fallback={
                   <SpaceLoading
