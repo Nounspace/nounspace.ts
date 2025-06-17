@@ -25,14 +25,14 @@ const BrandHeader = () => {
             <TooltipTrigger asChild>
               <Image
                 src="/images/noggles.svg"
-                className="h-13 me-3 "
+                className="h-13 me-3"
                 alt="Nounspace Logo"
                 width={60}
                 height={40}
               />
             </TooltipTrigger>
           </Link>
-          <TooltipContent className=" bg-gray-200 font-black" side="left">
+          <TooltipContent className="bg-gray-200 font-black" side="left">
             <TooltipArrow className="fill-gray-200" />
             <div className="flex flex-col gap-1">
               <a

@@ -248,7 +248,7 @@ const Navigation: React.FC<NavProps> = ({
           </div>
           <div
             className={mergeClasses(
-              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300",
+              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300 pt-[18px]",
               shrunk ? "px-1" : "px-4"
             )}
           >
