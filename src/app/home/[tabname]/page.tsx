@@ -57,7 +57,6 @@ const Home = () => {
       currentTab={tabName}
       tabList={tabOrdering}
       switchTabTo={switchTabTo}
-      inEditMode={false}
       updateTabOrder={async () => Promise.resolve()}
       deleteTab={async () => Promise.resolve()}
       createTab={async () => Promise.resolve({ tabName })}

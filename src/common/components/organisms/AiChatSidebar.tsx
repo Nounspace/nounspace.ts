@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Textarea } from "@/common/components/atoms/textarea";
 import { ScrollArea } from "@/common/components/atoms/scroll-area";
@@ -8,7 +14,6 @@ import {
   LucideSparkle,
   Send,
   User,
-  Bot,
   Loader2,
   Settings,
   Check,
@@ -26,6 +31,7 @@ import {
   type WebSocketMessage,
 } from "@/common/services/websocket";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
+import { useAppStore } from "@/common/data/stores/app";
 import Image from "next/image";
 
 interface Message {
@@ -62,12 +68,38 @@ const DummyTestConfig = {
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   onApplySpaceConfig,
-  wsUrl = "ws://10.58.103.20:3040",
-  spaceContext,
+  wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://192.168.8.19:3040",
+  spaceContext, // This prop is no longer needed but keeping for compatibility
 }) => {
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
     useSidebarContext();
   const currentFid = useCurrentFid();
+
+  // Get current space state directly to avoid function reference issues
+  const {
+    currentSpaceId,
+    currentTabName,
+    localSpaces,
+    loadSpaceTab,
+    loadSpaceTabOrder,
+  } = useAppStore((state) => ({
+    currentSpaceId: state.currentSpace.currentSpaceId,
+    currentTabName: state.currentSpace.currentTabName,
+    localSpaces: state.space.localSpaces,
+    loadSpaceTab: state.space.loadSpaceTab,
+    loadSpaceTabOrder: state.space.loadSpaceTabOrder,
+  }));
+
+  // Memoize the actual current space configuration to prevent infinite re-renders
+  const actualSpaceContext = useMemo(() => {
+    if (!currentSpaceId || !localSpaces[currentSpaceId]) {
+      return undefined;
+    }
+
+    const tabName = currentTabName ?? "Profile";
+    const currentTabConfig = localSpaces[currentSpaceId]?.tabs[tabName];
+    return currentTabConfig;
+  }, [currentSpaceId, currentTabName, localSpaces]);
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -105,18 +137,42 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       wsServiceRef.current.destroy();
     }
 
+    // Log the current space context being sent to WebSocket
+    console.log(
+      "🔍 AiChatSidebar: Initializing WebSocket with context from store"
+    );
+    console.log("📋 Store State Debug:", {
+      currentSpaceId: currentSpaceId,
+      currentTabName: currentTabName,
+      hasLocalSpaces: !!localSpaces,
+      localSpacesKeys: Object.keys(localSpaces || {}),
+      currentSpaceExists: !!(currentSpaceId && localSpaces[currentSpaceId]),
+      currentSpaceData: currentSpaceId ? localSpaces[currentSpaceId] : null,
+    });
+    console.log("📋 Current Space Context:", {
+      actualSpaceContext: actualSpaceContext,
+      contextType: typeof actualSpaceContext,
+      contextKeys: actualSpaceContext ? Object.keys(actualSpaceContext) : null,
+      contextSize: actualSpaceContext
+        ? JSON.stringify(actualSpaceContext).length
+        : 0,
+    });
+    console.log("👤 User FID:", currentFid);
+    console.log("🔗 WebSocket URL:", wsUrl);
+
     const config = {
       url: wsUrl,
       sessionId,
       maxReconnectAttempts: 5,
       reconnectBackoffMs: 1000,
-      spaceContext,
+      spaceContext: actualSpaceContext,
       userFid: currentFid,
     };
 
     const callbacks = {
       onStatusChange: (status: ConnectionStatus) => {
         setConnectionStatus(status);
+        console.log(`🔌 WebSocket status changed to: ${status}`);
       },
       onMessage: (message: any) => {
         handleWebSocketMessage(message);
@@ -128,7 +184,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     wsServiceRef.current = new WebSocketService(config, callbacks);
     wsServiceRef.current.connect();
-  }, [wsUrl, sessionId, spaceContext, currentFid]);
+  }, [wsUrl, sessionId, actualSpaceContext, currentFid]);
 
   const handleWebSocketMessage = useCallback((wsMessage: any) => {
     console.log("Received WebSocket message:", wsMessage);
@@ -285,6 +341,131 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     scrollToBottom();
   }, [messages]);
 
+  // Monitor space data changes for debugging
+  useEffect(() => {
+    console.log("🔄 AiChatSidebar: Space data changed");
+    console.log("📊 Space Data Monitor:", {
+      currentSpaceId: currentSpaceId,
+      currentTabName: currentTabName,
+      hasLocalSpaces: !!localSpaces,
+      localSpacesCount: Object.keys(localSpaces || {}).length,
+      spaceExists: !!(currentSpaceId && localSpaces[currentSpaceId]),
+      tabExists: !!(
+        currentSpaceId &&
+        localSpaces[currentSpaceId]?.tabs[currentTabName || "Profile"]
+      ),
+      actualSpaceContext: actualSpaceContext,
+      contextSize: actualSpaceContext
+        ? JSON.stringify(actualSpaceContext).length
+        : 0,
+      contextHasFidgets: !!actualSpaceContext?.fidgetInstanceDatums,
+      contextHasTheme: !!actualSpaceContext?.theme,
+      contextHasLayout: !!actualSpaceContext?.layoutDetails,
+      fidgetCount: actualSpaceContext?.fidgetInstanceDatums
+        ? Object.keys(actualSpaceContext.fidgetInstanceDatums).length
+        : 0,
+    });
+
+    // Log the actual space structure for debugging
+    if (currentSpaceId && localSpaces[currentSpaceId]) {
+      const space = localSpaces[currentSpaceId];
+      console.log("🏠 Full Space Structure:", {
+        spaceId: currentSpaceId,
+        spaceTabs: Object.keys(space.tabs || {}),
+        spaceMetadata: {
+          id: space.id,
+          fid: space.fid,
+          contractAddress: space.contractAddress,
+          network: space.network,
+          updatedAt: space.updatedAt,
+        },
+        currentTab: currentTabName || "Profile",
+        currentTabData: space.tabs[currentTabName || "Profile"],
+        tabDataKeys: space.tabs[currentTabName || "Profile"]
+          ? Object.keys(space.tabs[currentTabName || "Profile"])
+          : null,
+      });
+    } else {
+      console.log("❌ No space data found:", {
+        currentSpaceId,
+        hasLocalSpaces: !!localSpaces,
+        localSpacesKeys: Object.keys(localSpaces || {}),
+      });
+    }
+  }, [currentSpaceId, currentTabName, localSpaces, actualSpaceContext]);
+
+  // Monitor space context changes and update WebSocket
+  useEffect(() => {
+    if (wsServiceRef.current && actualSpaceContext) {
+      console.log(
+        "🔄 AiChatSidebar: Updating WebSocket with new space context"
+      );
+      wsServiceRef.current.updateSpaceContext(actualSpaceContext);
+    }
+  }, [actualSpaceContext]);
+
+  // Monitor when space config is fully loaded with content
+  useEffect(() => {
+    if (currentSpaceId && localSpaces[currentSpaceId]) {
+      const space = localSpaces[currentSpaceId];
+      const currentTab = space.tabs[currentTabName || "Profile"];
+
+      if (currentTab) {
+        const hasFullConfig =
+          !!(
+            currentTab.fidgetInstanceDatums &&
+            Object.keys(currentTab.fidgetInstanceDatums).length > 0
+          ) || !!(currentTab.theme && currentTab.layoutDetails);
+
+        if (hasFullConfig) {
+          console.log("✅ FULL SPACE CONFIG LOADED!");
+          console.log("📋 Complete space configuration available:", {
+            spaceId: currentSpaceId,
+            tabName: currentTabName || "Profile",
+            fidgetCount: Object.keys(currentTab.fidgetInstanceDatums || {})
+              .length,
+            hasTheme: !!currentTab.theme,
+            hasLayout: !!currentTab.layoutDetails,
+            themeId: currentTab.theme?.id,
+            layoutFidget: currentTab.layoutDetails?.layoutFidget,
+            configSize: JSON.stringify(currentTab).length,
+          });
+
+          // Optionally send the full config to WebSocket when it's ready
+          if (wsServiceRef.current?.isConnected()) {
+            console.log("🚀 Sending full space config to WebSocket");
+            wsServiceRef.current.updateSpaceContext(currentTab);
+          }
+        } else {
+          console.log(
+            "⏳ Space config partially loaded, waiting for full config...",
+            {
+              spaceId: currentSpaceId,
+              tabName: currentTabName || "Profile",
+              hasFidgets: !!currentTab.fidgetInstanceDatums,
+              fidgetCount: Object.keys(currentTab.fidgetInstanceDatums || {})
+                .length,
+              hasTheme: !!currentTab.theme,
+              hasLayout: !!currentTab.layoutDetails,
+              tabKeys: Object.keys(currentTab),
+            }
+          );
+        }
+      } else {
+        console.log("⏳ Space exists but tab not loaded yet:", {
+          spaceId: currentSpaceId,
+          tabName: currentTabName || "Profile",
+          availableTabs: Object.keys(space.tabs || {}),
+        });
+      }
+    }
+  }, [
+    currentSpaceId,
+    currentTabName,
+    localSpaces,
+    wsServiceRef.current?.isConnected(),
+  ]);
+
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -296,6 +477,20 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       type: "text",
     };
 
+    console.log("💬 Sending user message:");
+    console.log("  Message:", userMessage.content);
+    console.log(
+      "  Current Space Context Size:",
+      actualSpaceContext ? JSON.stringify(actualSpaceContext).length : 0,
+      "chars"
+    );
+    console.log(
+      "  Space Context Preview:",
+      actualSpaceContext
+        ? JSON.stringify(actualSpaceContext, null, 2).substring(0, 300) + "..."
+        : "No context"
+    );
+
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
@@ -303,9 +498,24 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     try {
       // Send message via WebSocket if connected
       if (wsServiceRef.current?.isConnected()) {
+        console.log("🔌 WebSocket is connected, sending message...");
         // Set loading type for WebSocket messages (assuming "tom" is thinking)
         setLoadingType("thinking");
-        wsServiceRef.current.sendUserMessage(userMessage.content);
+
+        // Note: Space context is automatically updated via useEffect when actualSpaceContext changes
+        console.log(
+          "� Space context is automatically managed by WebSocket service"
+        );
+
+        const success = wsServiceRef.current.sendUserMessage(
+          userMessage.content
+        );
+
+        if (success) {
+          console.log("✅ Message sent successfully via WebSocket");
+        } else {
+          console.error("❌ Failed to send message via WebSocket");
+        }
 
         // Clear any existing timeout
         if (messageTimeoutRef.current) {
@@ -438,6 +648,52 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         setMessages((prev) => [...prev, userMessage]);
 
         toast.info("Ping sent! Waiting for pong response...");
+      }
+    } else {
+      toast.error(
+        "WebSocket not connected! Please wait for connection or try reconnecting."
+      );
+    }
+  };
+
+  // Send current space context for debugging (now happens automatically)
+  const handleSendSpaceContext = () => {
+    console.log(
+      "🔄 Manual space context send requested (normally sent automatically)"
+    );
+    console.log("📋 Current actual space context:", actualSpaceContext);
+
+    if (wsServiceRef.current?.isConnected()) {
+      // Note: Context is now sent automatically, but this provides manual override
+      console.log("ℹ️ Context is normally sent automatically when it changes");
+      // Update the WebSocket service with the current context
+      wsServiceRef.current.updateSpaceContext(actualSpaceContext);
+      const success = wsServiceRef.current.sendSpaceContext();
+
+      if (success) {
+        const contextSize = actualSpaceContext
+          ? JSON.stringify(actualSpaceContext).length
+          : 0;
+        const contextSizeKB = Math.round(contextSize / 1024);
+
+        // Add a user message to show the context send in chat
+        const userMessage: Message = {
+          id: `context-${Date.now()}`,
+          role: "user",
+          content: `📋 Space context sent to server (${contextSizeKB}KB)...\n\nContext preview: ${
+            actualSpaceContext
+              ? JSON.stringify(actualSpaceContext, null, 2).substring(0, 200) +
+                (JSON.stringify(actualSpaceContext).length > 200 ? "..." : "")
+              : "No context available"
+          }`,
+          timestamp: new Date(),
+          type: "text",
+        };
+        setMessages((prev) => [...prev, userMessage]);
+
+        toast.info(
+          `Space context sent to backend (${contextSizeKB}KB) for debugging!`
+        );
       }
     } else {
       toast.error(
@@ -805,7 +1061,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           )}
         </div>
 
-        {/* Quick Actions
+        {/* Quick Actions */}
         <div className="px-4 pb-4">
           <div className="text-xs font-medium text-gray-700 mb-2">
             Quick Actions:
@@ -822,18 +1078,18 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={handlePing}
-              className="text-xs h-8 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-            >
-              🏓 Ping Test
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => setInputValue("Apply a modern design to my space")}
               className="text-xs h-8"
             >
               ✨ Apply Design
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePing}
+              className="text-xs h-8 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+            >
+              🏓 Ping Test
             </Button>
             <Button
               variant="outline"
@@ -843,8 +1099,105 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             >
               🧪 Test Config
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.log("🔍 DEBUG: Current Store State");
+                console.log("Current Space ID:", currentSpaceId);
+                console.log("Current Tab Name:", currentTabName);
+                console.log("Local Spaces:", localSpaces);
+                console.log("Space Keys:", Object.keys(localSpaces || {}));
+                if (currentSpaceId && localSpaces[currentSpaceId]) {
+                  console.log(
+                    "Current Space Full:",
+                    localSpaces[currentSpaceId]
+                  );
+                  console.log(
+                    "Available Tabs:",
+                    Object.keys(localSpaces[currentSpaceId].tabs || {})
+                  );
+                  const currentTab =
+                    localSpaces[currentSpaceId].tabs[
+                      currentTabName || "Profile"
+                    ];
+                  console.log("Current Tab Config:", currentTab);
+                  if (currentTab) {
+                    console.log(
+                      "Tab Has Fidgets:",
+                      !!currentTab.fidgetInstanceDatums
+                    );
+                    console.log("Tab Has Theme:", !!currentTab.theme);
+                    console.log("Tab Has Layout:", !!currentTab.layoutDetails);
+                  }
+                }
+                toast.info("Store state logged to console!");
+              }}
+              className="text-xs h-8 bg-purple-50 border-purple-300 text-purple-700 hover:bg-purple-100"
+            >
+              🔍 Debug Store
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                console.log("🔄 Manually triggering space data load...");
+                if (currentSpaceId) {
+                  console.log(
+                    "Loading space tab order and data for:",
+                    currentSpaceId
+                  );
+                  loadSpaceTabOrder(currentSpaceId)
+                    .then(() => {
+                      console.log("✅ Tab order loaded");
+                      return loadSpaceTab(
+                        currentSpaceId,
+                        currentTabName || "Profile"
+                      );
+                    })
+                    .then(() => {
+                      console.log("✅ Space tab data loaded");
+                      toast.success("Space data reloaded!");
+                    })
+                    .catch((error) => {
+                      console.error("❌ Error loading space data:", error);
+                      toast.error("Failed to load space data");
+                    });
+                } else {
+                  toast.error("No space ID found");
+                }
+              }}
+              className="text-xs h-8 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
+            >
+              🔄 Reload Space Data
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendSpaceContext}
+              className="text-xs h-8 bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
+            >
+              📋 Manual Send (
+              {actualSpaceContext
+                ? `${Math.round(JSON.stringify(actualSpaceContext).length / 1024)}KB`
+                : "0KB"}
+              )
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setInputValue(
+                  "Analyze my current space configuration and suggest improvements"
+                );
+                handleSendMessage();
+              }}
+              className="text-xs h-8 bg-yellow-50 border-yellow-300 text-yellow-700 hover:bg-yellow-100 col-span-2"
+            >
+              🧪 Test Message with Context
+            </Button>
           </div>
-        </div> */}
+        </div>
       </div>
     </aside>
   );
