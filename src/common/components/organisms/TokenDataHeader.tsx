@@ -172,7 +172,7 @@ const TokenDataHeader: React.FC = () => {
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-2.5 hidden md:visible" />
+        <div className="w-0.5 h-12 bg-gray-200 m-2.5 hidden md:block" />
       </div>
     </div>
   );
