@@ -172,7 +172,7 @@
     "@stylistic/eslint-plugin-js": "^2.1.0",
     "@stylistic/eslint-plugin-jsx": "^2.1.0",
     "@stylistic/eslint-plugin-ts": "^2.1.0",
-    "@types/node": "^20.14.10",
+    "@types/node": "^24.0.2",
     "@types/ramda": "^0.29.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -194,5 +194,9 @@
     "ramda": "^0.30.1",
     "supabase": "^1.123.0",
     "vitest": "^1.5.0"
+  },
+  "resolutions": {
+    "@noble/curves": "1.9.2",
+    "@noble/hashes": "1.8.0"
   }
 }
