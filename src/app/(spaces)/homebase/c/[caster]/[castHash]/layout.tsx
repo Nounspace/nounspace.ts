@@ -1,13 +1,16 @@
+import React from "react";
 import { WEBSITE_URL } from "@/constants/app";
-import type { Metadata } from "next/types";
+import type { Metadata } from "next";
 // axios adds ~30 kB; built-in fetch is sufficient here
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { isImageUrl } from "@/common/lib/utils/urls";
 
 export async function generateMetadata({
-  params: { caster, castHash },
+  params,
 }: {
   params: { caster: string; castHash: string };
+  const { caster, castHash } = params;
+}: {
 }): Promise<Metadata> {
   if (!caster || !castHash) {
     return {};
