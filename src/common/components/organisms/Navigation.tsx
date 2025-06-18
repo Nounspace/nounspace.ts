@@ -197,7 +197,7 @@ const Navigation: React.FC<NavProps> = ({
     <nav
       id="logo-sidebar"
       className={mergeClasses(
-        "border-r-2 bg-white",
+        "border-r-2 bg-white flex flex-col md:h-screen md:sticky md:top-0",
         mobile
           ? "w-[270px]"
           : "w-full transition-transform -translate-x-full sm:translate-x-0"
@@ -215,8 +215,8 @@ const Navigation: React.FC<NavProps> = ({
       <SearchModal ref={searchRef} />
       <div
         className={mergeClasses(
-          "pt-12 pb-12 h-full",
-          mobile ? "block" : "md:block hidden"
+          "flex flex-col h-full pt-12 pb-12 box-border",
+          mobile ? "block" : "hidden md:block"
         )}
       >
         <div
