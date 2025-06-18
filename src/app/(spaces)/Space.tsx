@@ -177,9 +177,11 @@ export default function Space({
       }
 
       if (!datum.fidgetType || !datum.id) {
+        // Safer approach: don't rely on splitting the id string
+        // Use existing fidgetType or fallback to "unknown"
         cleanedFidgetInstanceDatums[id] = {
           ...datum,
-          fidgetType: datum.fidgetType || id.split(":")[0],
+          fidgetType: datum.fidgetType || "unknown",
           id: datum.id || id,
         };
         datumFieldsUpdated = true;

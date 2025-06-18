@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -201,17 +202,34 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
+  const fidgetInstanceDatumsRef = useRef(fidgetInstanceDatums);
+
+  useEffect(() => {
+    fidgetInstanceDatumsRef.current = fidgetInstanceDatums;
+  }, [fidgetInstanceDatums]);
+
   const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
+    (id: string, fidgetType?: string) =>
+      async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+        const currentDatums = fidgetInstanceDatumsRef.current;
+        const existing = currentDatums[id];
+        
+        // Safer approach: don't rely on splitting the id string
+        // Use existing fidgetType, provided fidgetType, or fallback to "unknown"
+        const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
+        
+        const updatedDatum: FidgetInstanceData = {
+          id: existing?.id ?? id,
+          fidgetType: determinedFidgetType,
           config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+        };
+
+        return await saveFidgetInstanceDatums({
+          ...currentDatums,
+          [id]: updatedDatum,
+        });
+      },
+    [saveFidgetInstanceDatums],
   );
 
   // Debounced save function
@@ -242,7 +260,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       shouldUnselect?: boolean,
     ) => {
       try {
-        await saveFidgetConfig(bundle.id)({
+        await saveFidgetConfig(bundle.id, bundle.fidgetType)({
           ...bundle.config,
           settings: newSettings,
         });
@@ -282,7 +300,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       : gridDetails.rowHeight;
   }, [height, hasProfile, gridDetails.margin, gridDetails.containerPadding]);
 
-  function handleDrop(
+  async function handleDrop(
     _layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
@@ -290,11 +308,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
-
-    saveFidgetInstanceDatums({
-      ...fidgetInstanceDatums,
-      [fidgetData.id]: fidgetData,
-    });
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
@@ -309,7 +322,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       resizeHandles: resizeDirections,
     };
 
-    saveLayout([...layoutConfig.layout, newItem]);
+    // Save layout and fidget data immediately so editing has the latest state
+    await saveConfig({
+      layoutConfig: { layout: [...layoutConfig.layout, newItem] },
+      fidgetInstanceDatums: { ...fidgetInstanceDatums, [fidgetData.id]: fidgetData },
+    });
 
     removeFidgetFromTray(fidgetData.id);
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
