@@ -380,6 +380,7 @@ export const createSpaceStoreFunc = (
           // Update timestamps
           const timestamp = moment().toISOString();
           draft.space.localSpaces[spaceId].updatedAt = timestamp;
+          draft.space.localSpaces[spaceId].orderUpdatedAt = timestamp;
           draft.space.remoteSpaces[spaceId].updatedAt = timestamp;
         }, "deleteSpaceTab");
         return get().space.commitSpaceOrderToDatabase(spaceId, network);
@@ -428,6 +429,9 @@ export const createSpaceStoreFunc = (
       };
 
       draft.space.localSpaces[spaceId].order.push(tabName);
+      const timestampNow = moment().toISOString();
+      draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
+      draft.space.localSpaces[spaceId].updatedAt = timestampNow;
     }, "createSpaceTab");
     analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
@@ -548,6 +552,9 @@ export const createSpaceStoreFunc = (
   updateLocalSpaceOrder: async (spaceId, newOrder) => {
     set((draft) => {
       draft.space.localSpaces[spaceId].order = newOrder;
+      const timestampNow = moment().toISOString();
+      draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
+      draft.space.localSpaces[spaceId].updatedAt = timestampNow;
     });
   },
   commitSpaceOrderToDatabase: debounce(
