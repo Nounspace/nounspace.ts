@@ -11,6 +11,13 @@ export interface ExampleFidgetInstance {
   config: ExampleFidgetConfig;
   fidgetType: string;
   id: string;
+  /**
+   * Minimum grid size required by the fidget.
+   * minWidth and minHeight correspond to the smallest
+   * number of grid units for width and height.
+   */
+  minWidth?: number;
+  minHeight?: number;
 }
 
 /**
@@ -20,6 +27,9 @@ export interface ExampleFidgetInstance {
 export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
   // Feed Fidget - displays casts from Farcaster or posts from X
   "feed:example": {
+    // Minimum size 4x2 (width x height)
+    minWidth: 4,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -83,6 +93,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Cast Fidget - pins a single Farcaster cast
   "cast:example": {
+    // Minimum size 3x1 (width x height)
+    minWidth: 3,
+    minHeight: 1,
     config: {
       editable: true,
       settings: {
@@ -114,6 +127,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Gallery Fidget - displays an image or NFT
   "gallery:example": {
+    // Minimum size 1x1 (width x height)
+    minWidth: 1,
+    minHeight: 1,
     config: {
       editable: true,
       settings: {
@@ -162,6 +178,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Text Fidget - renders Markdown text
   "text:example": {
+    // Minimum size 3x2 (width x height)
+    minWidth: 3,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -204,6 +223,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Links Fidget - list of external links
   "links:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -243,6 +265,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // IFrame Fidget - embeds a webpage
   "iframe:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -267,6 +292,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Swap Fidget - token swap widget
   "Swap:example": {
+    // Minimum size 2x3 (width x height)
+    minWidth: 2,
+    minHeight: 3,
     config: {
       editable: true,
       settings: {
@@ -298,6 +326,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Chat Fidget - realtime chat room
   "Chat:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -319,6 +350,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // SnapShot Fidget - shows Snapshot proposals
   "SnapShot:example": {
+    // Minimum size 3x3 (width x height)
+    minWidth: 3,
+    minHeight: 3,
     config: {
       editable: true,
       settings: {
@@ -348,6 +382,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Video Fidget - embeds a video player
   "Video:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -372,6 +409,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // RSS Fidget - displays items from an RSS feed
   "Rss:example": {
+    // Minimum size 3x2 (width x height)
+    minWidth: 3,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -407,6 +447,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Portfolio Fidget - displays balances for a Farcaster user or wallet
   "Portfolio:example": {
+    // Minimum size 3x3 (width x height)
+    minWidth: 3,
+    minHeight: 3,
     config: {
       editable: true,
       settings: {
@@ -437,6 +480,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Market Data Fidget - token chart widget
   "Market:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -470,6 +516,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Frame Fidget - embeds a Farcaster Frame
   "frame:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -494,6 +543,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // FramesV2 Fidget - renders a Farcaster mini app
   "FramesV2:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
@@ -524,6 +576,9 @@ export const FIDGET_CONFIG_GUIDE: Record<string, ExampleFidgetInstance> = {
 
   // Nounish Governance Fidget - proposals from Nounish DAOs
   "governance:example": {
+    // Minimum size 2x2 (width x height)
+    minWidth: 2,
+    minHeight: 2,
     config: {
       editable: true,
       settings: {
