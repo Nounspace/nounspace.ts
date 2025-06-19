@@ -44,6 +44,22 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const portalRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging for preview state changes
+  const setPreviewConfigWithLogging = (config: any | null) => {
+    console.log("🔄 Sidebar Context: Setting preview config:", {
+      hasConfig: !!config,
+      configType: config ? typeof config : "null",
+      configKeys: config ? Object.keys(config) : [],
+      fidgetCount: config?.fidgetInstanceDatums ? Object.keys(config.fidgetInstanceDatums).length : 0
+    });
+    setPreviewConfig(config);
+  };
+
+  const setIsPreviewModeWithLogging = (value: boolean) => {
+    console.log("🔄 Sidebar Context: Setting preview mode:", value);
+    setIsPreviewMode(value);
+  };
+
   const value = useMemo(
     () => ({
       editMode,
@@ -54,9 +70,9 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
       setSidebarEditable,
       portalRef,
       previewConfig,
-      setPreviewConfig,
+      setPreviewConfig: setPreviewConfigWithLogging,
       isPreviewMode,
-      setIsPreviewMode,
+      setIsPreviewMode: setIsPreviewModeWithLogging,
     }),
     [
       editMode,
@@ -65,6 +81,8 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
       portalRef,
       previewConfig,
       isPreviewMode,
+      setPreviewConfigWithLogging,
+      setIsPreviewModeWithLogging,
     ]
   );
 
@@ -121,7 +139,6 @@ export const Sidebar: React.FC<SidebarProps> = () => {
       ? createPortal(
           <AiChatSidebar 
             onClose={() => setEditWithAiMode(false)} 
-            spaceContext={spaceContext}
           />,
           portalNode
         )

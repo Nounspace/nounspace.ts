@@ -33,6 +33,22 @@ export default function SpacePage({
   // Use preview config when in preview mode, otherwise use the original config
   const activeConfig = isPreviewMode && previewConfig ? previewConfig : config;
 
+  // Debug logging for preview state
+  console.log("🎯 SpacePage Preview Debug:", {
+    isPreviewMode,
+    hasPreviewConfig: !!previewConfig,
+    hasOriginalConfig: !!config,
+    usingPreviewConfig: isPreviewMode && !!previewConfig,
+    previewConfigKeys: previewConfig ? Object.keys(previewConfig) : [],
+    originalConfigKeys: config ? Object.keys(config) : [],
+    previewFidgetCount: previewConfig?.fidgetInstanceDatums
+      ? Object.keys(previewConfig.fidgetInstanceDatums).length
+      : 0,
+    originalFidgetCount: config?.fidgetInstanceDatums
+      ? Object.keys(config.fidgetInstanceDatums).length
+      : 0,
+  });
+
   return (
     <>
       <Space

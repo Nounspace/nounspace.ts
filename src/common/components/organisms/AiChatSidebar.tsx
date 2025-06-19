@@ -89,39 +89,33 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   // Get current space configuration for AI context
   const currentSpaceId = getCurrentSpaceId();
   const currentTabName = getCurrentTabName();
-  
+
   // Handle homebase vs regular space configuration
   let currentTabConfig: any = null;
   let currentSpaceConfig: any = null;
 
   if (currentSpaceId === "homebase") {
     // For homebase, get tab-specific config or main feed config
-    if (currentTabName && currentTabName !== "Feed" && homebaseTabs[currentTabName]?.config) {
+    if (
+      currentTabName &&
+      currentTabName !== "Feed" &&
+      homebaseTabs[currentTabName]?.config
+    ) {
       currentTabConfig = homebaseTabs[currentTabName].config;
       currentSpaceConfig = { tabs: { [currentTabName]: currentTabConfig } };
     } else {
       // Main homebase feed config
       currentTabConfig = homebaseConfig;
-      currentSpaceConfig = homebaseConfig ? { tabs: { "Feed": homebaseConfig } } : null;
+      currentSpaceConfig = homebaseConfig
+        ? { tabs: { Feed: homebaseConfig } }
+        : null;
     }
   } else {
     // Regular space configuration
     currentSpaceConfig = getCurrentSpaceConfig();
-    currentTabConfig = currentSpaceConfig?.tabs[currentTabName || "Profile"] || null;
+    currentTabConfig =
+      currentSpaceConfig?.tabs[currentTabName || "Profile"] || null;
   }
-  
-  // Debug: Log store values
-  console.log("🔍 App store values:", {
-    currentSpaceId,
-    currentTabName,
-    isHomebase: currentSpaceId === "homebase",
-    hasCurrentSpaceConfig: !!currentSpaceConfig,
-    hasCurrentTabConfig: !!currentTabConfig,
-    currentSpaceConfigType: currentSpaceConfig ? typeof currentSpaceConfig : "undefined",
-    currentTabConfigType: currentTabConfig ? typeof currentTabConfig : "undefined",
-    tabsInConfig: currentSpaceConfig ? Object.keys(currentSpaceConfig.tabs || {}) : [],
-    homebaseTabsAvailable: Object.keys(homebaseTabs || {}),
-  });
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -156,11 +150,15 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     console.log("🔧 Initializing WebSocket service with space context:", {
       hasSpaceContext: !!currentTabConfig,
-      spaceContextType: currentTabConfig ? typeof currentTabConfig : "undefined",
+      spaceContextType: currentTabConfig
+        ? typeof currentTabConfig
+        : "undefined",
       currentSpaceId,
       currentTabName,
       hasCurrentSpaceConfig: !!currentSpaceConfig,
-      tabsInSpaceConfig: currentSpaceConfig ? Object.keys(currentSpaceConfig.tabs) : [],
+      tabsInSpaceConfig: currentSpaceConfig
+        ? Object.keys(currentSpaceConfig.tabs)
+        : [],
       currentTabConfigRaw: currentTabConfig,
       fidgetCount: currentTabConfig?.fidgetInstanceDatums
         ? Object.keys(currentTabConfig.fidgetInstanceDatums).length
@@ -214,13 +212,41 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         let spaceConfig = null;
         const messageContent = wsMessage.message || "AI response received";
 
+        console.log("📥 Raw REPLY message:", {
+          type: wsMessage.type,
+          name: wsMessage.name,
+          messageLength: messageContent.length,
+          messagePreview: messageContent.substring(0, 200) + "...",
+          containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
+          fullMessage: messageContent,
+        });
+
         try {
           // Check if the message contains JSON configuration
           if (messageContent.includes("fidgetInstanceDatums")) {
             spaceConfig = JSON.parse(messageContent);
             console.log("✅ AI generated space config:", spaceConfig);
+
+            // Log detailed config analysis
+            console.log("🔍 REPLY Config Analysis:", {
+              hasConfig: !!spaceConfig,
+              configType: typeof spaceConfig,
+              configKeys: spaceConfig ? Object.keys(spaceConfig) : [],
+              hasFidgetInstanceDatums: !!(spaceConfig as any)
+                ?.fidgetInstanceDatums,
+              fidgetCount: (spaceConfig as any)?.fidgetInstanceDatums
+                ? Object.keys((spaceConfig as any).fidgetInstanceDatums).length
+                : 0,
+              fidgetIds: (spaceConfig as any)?.fidgetInstanceDatums
+                ? Object.keys((spaceConfig as any).fidgetInstanceDatums)
+                : [],
+              hasTheme: !!(spaceConfig as any)?.theme,
+              hasLayoutID: !!(spaceConfig as any)?.layoutID,
+              fullConfig: JSON.stringify(spaceConfig, null, 2),
+            });
           }
         } catch (error) {
+          console.error("❌ Failed to parse REPLY message as JSON:", error);
           // Silently handle non-JSON messages
         }
 
@@ -239,10 +265,34 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           setMessages((prev) => [...prev, aiMessage]);
 
           // Auto-preview the configuration
+          console.log("🔄 Setting preview config from REPLY:", spaceConfig);
+          console.log("🎯 IMMEDIATE PREVIEW ACTIVATION (REPLY):", {
+            beforePreviewMode: isPreviewMode,
+            configBeingSet: {
+              fidgetCount: Object.keys(
+                (spaceConfig as any).fidgetInstanceDatums || {}
+              ).length,
+              fidgetIds: Object.keys(
+                (spaceConfig as any).fidgetInstanceDatums || {}
+              ),
+              hasTheme: !!(spaceConfig as any)?.theme,
+              themeId: (spaceConfig as any)?.theme?.id,
+            },
+          });
+
           setPreviewConfig(spaceConfig);
           setIsPreviewMode(true);
           setIsLoading(false);
           setLoadingType(null);
+
+          // Force a state update to ensure preview is visible
+          setTimeout(() => {
+            console.log("🔄 Preview mode should now be active (REPLY):", {
+              isPreviewModeNow: true,
+              previewConfigSet: !!spaceConfig,
+            });
+          }, 100);
+
           toast.success(
             "🎨 New space configuration created! Preview is now active."
           );
@@ -283,13 +333,44 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         let spaceConfig = null;
         const messageContent = wsMessage.message || "Builder is working...";
 
+        console.log("📥 Raw BUILDER_LOGS message:", {
+          type: wsMessage.type,
+          name: wsMessage.name,
+          messageLength: messageContent.length,
+          messagePreview: messageContent.substring(0, 200) + "...",
+          containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
+          fullMessage: messageContent,
+        });
+
         try {
           // Check if the message contains JSON configuration
           if (messageContent.includes("fidgetInstanceDatums")) {
             spaceConfig = JSON.parse(messageContent);
             console.log("✅ AI generated space config:", spaceConfig);
+
+            // Log detailed config analysis
+            console.log("🔍 BUILDER_LOGS Config Analysis:", {
+              hasConfig: !!spaceConfig,
+              configType: typeof spaceConfig,
+              configKeys: spaceConfig ? Object.keys(spaceConfig) : [],
+              hasFidgetInstanceDatums: !!(spaceConfig as any)
+                ?.fidgetInstanceDatums,
+              fidgetCount: (spaceConfig as any)?.fidgetInstanceDatums
+                ? Object.keys((spaceConfig as any).fidgetInstanceDatums).length
+                : 0,
+              fidgetIds: (spaceConfig as any)?.fidgetInstanceDatums
+                ? Object.keys((spaceConfig as any).fidgetInstanceDatums)
+                : [],
+              hasTheme: !!(spaceConfig as any)?.theme,
+              hasLayoutID: !!(spaceConfig as any)?.layoutID,
+              fullConfig: JSON.stringify(spaceConfig, null, 2),
+            });
           }
         } catch (error) {
+          console.error(
+            "❌ Failed to parse BUILDER_LOGS message as JSON:",
+            error
+          );
           // Silently handle non-JSON messages
         }
 
@@ -305,14 +386,62 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           aiType: "builder",
           builderResponse: spaceConfig ? wsMessage : undefined,
         };
+
+        console.log("📝 Creating message with config:", {
+          messageId: logMessage.id,
+          hasSpaceConfig: !!logMessage.spaceConfig,
+          messageType: logMessage.type,
+          contentPreview: logMessage.content.substring(0, 100),
+          finalConfigPreview: logMessage.spaceConfig
+            ? {
+                fidgetCount: Object.keys(
+                  (logMessage.spaceConfig as any).fidgetInstanceDatums || {}
+                ).length,
+                fidgetIds: Object.keys(
+                  (logMessage.spaceConfig as any).fidgetInstanceDatums || {}
+                ),
+                hasTheme: !!(logMessage.spaceConfig as any)?.theme,
+                themeId: (logMessage.spaceConfig as any)?.theme?.id,
+              }
+            : null,
+        });
+
         setMessages((prev) => [...prev, logMessage]);
 
         // Auto-preview the configuration if we have one
         if (spaceConfig) {
+          console.log(
+            "🔄 Setting preview config from BUILDER_LOGS:",
+            spaceConfig
+          );
+          console.log("🎯 IMMEDIATE PREVIEW ACTIVATION:", {
+            beforePreviewMode: isPreviewMode,
+            configBeingSet: {
+              fidgetCount: Object.keys(
+                (spaceConfig as any).fidgetInstanceDatums || {}
+              ).length,
+              fidgetIds: Object.keys(
+                (spaceConfig as any).fidgetInstanceDatums || {}
+              ),
+              hasTheme: !!(spaceConfig as any)?.theme,
+              themeId: (spaceConfig as any)?.theme?.id,
+            },
+          });
+
+          // Set preview immediately
           setPreviewConfig(spaceConfig);
           setIsPreviewMode(true);
           setIsLoading(false);
           setLoadingType(null);
+
+          // Force a state update to ensure preview is visible
+          setTimeout(() => {
+            console.log("🔄 Preview mode should now be active:", {
+              isPreviewModeNow: true,
+              previewConfigSet: !!spaceConfig,
+            });
+          }, 100);
+
           toast.success(
             "🎨 New space configuration created! Preview is now active."
           );
@@ -416,6 +545,24 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const handleApplyConfig = async (message: Message) => {
     if (!message.spaceConfig || !onApplySpaceConfig) return;
 
+    console.log("🔍 Apply Config Analysis:", {
+      messageId: message.id,
+      hasSpaceConfig: !!message.spaceConfig,
+      configType: typeof message.spaceConfig,
+      configKeys: message.spaceConfig ? Object.keys(message.spaceConfig) : [],
+      hasFidgetInstanceDatums: !!(message.spaceConfig as any)
+        ?.fidgetInstanceDatums,
+      fidgetCount: (message.spaceConfig as any)?.fidgetInstanceDatums
+        ? Object.keys((message.spaceConfig as any).fidgetInstanceDatums).length
+        : 0,
+      fidgetIds: (message.spaceConfig as any)?.fidgetInstanceDatums
+        ? Object.keys((message.spaceConfig as any).fidgetInstanceDatums)
+        : [],
+      hasTheme: !!(message.spaceConfig as any)?.theme,
+      hasLayoutID: !!(message.spaceConfig as any)?.layoutID,
+      fullConfig: JSON.stringify(message.spaceConfig, null, 2),
+    });
+
     try {
       await onApplySpaceConfig(message.spaceConfig);
 
@@ -430,6 +577,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       setPreviewConfig(null);
       setIsPreviewMode(false);
 
+      console.log("✅ Space configuration applied successfully");
       toast.success("Space configuration applied successfully!");
     } catch (error) {
       console.error("❌ Failed to apply space config:", error);
@@ -440,6 +588,24 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const handlePreviewConfig = (message: Message) => {
     if (!message.spaceConfig) return;
 
+    console.log("🔍 Preview Config Analysis:", {
+      messageId: message.id,
+      hasSpaceConfig: !!message.spaceConfig,
+      configType: typeof message.spaceConfig,
+      configKeys: message.spaceConfig ? Object.keys(message.spaceConfig) : [],
+      hasFidgetInstanceDatums: !!(message.spaceConfig as any)
+        ?.fidgetInstanceDatums,
+      fidgetCount: (message.spaceConfig as any)?.fidgetInstanceDatums
+        ? Object.keys((message.spaceConfig as any).fidgetInstanceDatums).length
+        : 0,
+      fidgetIds: (message.spaceConfig as any)?.fidgetInstanceDatums
+        ? Object.keys((message.spaceConfig as any).fidgetInstanceDatums)
+        : [],
+      hasTheme: !!(message.spaceConfig as any)?.theme,
+      hasLayoutID: !!(message.spaceConfig as any)?.layoutID,
+      fullConfig: JSON.stringify(message.spaceConfig, null, 2),
+    });
+
     setPreviewConfig(message.spaceConfig);
     setIsPreviewMode(true);
     toast.success(
@@ -448,6 +614,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   };
 
   const handleCancelPreview = () => {
+    console.log("🔄 Canceling preview mode");
     setPreviewConfig(null);
     setIsPreviewMode(false);
     toast.info("Preview cancelled. Returned to original configuration.");

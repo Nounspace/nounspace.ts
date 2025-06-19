@@ -194,9 +194,19 @@ export class WebSocketService {
     }
 
     console.log("📝 Including current space config in message context:", {
-      fidgetCount: this.config.spaceContext.fidgetInstanceDatums?.length || 0,
+      spaceContextType: typeof this.config.spaceContext,
+      spaceContextKeys: this.config.spaceContext ? Object.keys(this.config.spaceContext) : [],
+      fidgetCount: this.config.spaceContext.fidgetInstanceDatums ? 
+        (Array.isArray(this.config.spaceContext.fidgetInstanceDatums) ? 
+          this.config.spaceContext.fidgetInstanceDatums.length : 
+          Object.keys(this.config.spaceContext.fidgetInstanceDatums).length) : 0,
+      fidgetIds: this.config.spaceContext.fidgetInstanceDatums ? 
+        (Array.isArray(this.config.spaceContext.fidgetInstanceDatums) ? 
+          this.config.spaceContext.fidgetInstanceDatums.map((f: any) => f.id || f.fidgetId) : 
+          Object.keys(this.config.spaceContext.fidgetInstanceDatums)) : [],
       hasTheme: !!this.config.spaceContext.theme,
-      hasLayout: !!this.config.spaceContext.layoutID
+      hasLayout: !!this.config.spaceContext.layoutID,
+      fullSpaceContext: JSON.stringify(this.config.spaceContext, null, 2)
     });
 
     // Include current space config as context for the AI
