@@ -1,39 +1,41 @@
-import React, { useCallback, useMemo, useState, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import BrandHeader from "../molecules/BrandHeader";
 import Player from "@/common/components/organisms/Player";
-import { useAppStore, useLogout } from "@/common/data/stores/app";
-import Modal from "../molecules/Modal";
-import CreateCast from "@/fidgets/farcaster/components/CreateCast";
-import Link from "next/link";
-import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { CgProfile } from "react-icons/cg";
 import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { useAppStore, useLogout } from "@/common/data/stores/app";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { first } from "lodash";
-import { Button } from "../atoms/button";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useMemo, useRef, useState } from "react";
+import { CgProfile } from "react-icons/cg";
 import {
-  FaPaintbrush,
-  FaDiscord,
-  FaChevronLeft,
-  FaChevronRight,
+    FaChevronLeft,
+    FaChevronRight,
+    FaDiscord,
 } from "react-icons/fa6";
-import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
+import { Button } from "../atoms/button";
+import BrandHeader from "../molecules/BrandHeader";
+import Modal from "../molecules/Modal";
+// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
+// is `RiQuillPenLine`. Update the import to prevent build errors.
+import { Badge } from "@/common/components/atoms/badge";
+import SearchModal from "@/common/components/organisms/SearchModal";
+import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
-import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
-import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
-import { Badge } from "@/common/components/atoms/badge";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { usePathname } from "next/navigation";
+import { RiQuillPenLine } from "react-icons/ri";
+import ExploreIcon from "../atoms/icons/ExploreIcon";
 import HomeIcon from "../atoms/icons/HomeIcon";
-import SearchIcon from "../atoms/icons/SearchIcon";
+import LoginIcon from "../atoms/icons/LoginIcon";
+import LogoutIcon from "../atoms/icons/LogoutIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
-import ExploreIcon from "../atoms/icons/ExploreIcon";
-import LogoutIcon from "../atoms/icons/LogoutIcon";
-import LoginIcon from "../atoms/icons/LoginIcon";
+import SearchIcon from "../atoms/icons/SearchIcon";
 
 type NavItemProps = {
   label: string;
@@ -50,7 +52,9 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
-  enterEditMode: () => void;
+  enterEditMode?: () => void;
+  mobile?: boolean;
+  onNavigate?: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -64,12 +68,17 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
+const Navigation: React.FC<NavProps> = ({
+  isEditable,
+  enterEditMode,
+  mobile = false,
+  onNavigate,
+}) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
+  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
-      getIsLoggedIn: state.getIsAccountReady,
+      getIsAccountReady: state.getIsAccountReady,
       getIsInitializing: state.getIsInitializing,
     })
   );
@@ -78,22 +87,17 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
-  const isNotificationsPage = pathname === "/notifications";
-  const isExplorerPage = pathname === "/explore";
 
-  const [shrunk, setShrunk] = useState(true);
+  const [shrunk, setShrunk] = useState(mobile ? false : true);
 
   const toggleSidebar = () => {
+    if (mobile) return;
     setShrunk((prev) => !prev);
   };
 
   function handleLogout() {
     router.push("/home");
     logout();
-  }
-
-  function turnOnEditMode() {
-    enterEditMode();
   }
 
   const openModal = () => setModalOpen(true);
@@ -103,7 +107,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
@@ -133,6 +137,10 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
     openInNewTab = false,
     badgeText = null,
   }) => {
+    const handleClick = useCallback(() => {
+      onClick?.();
+      onNavigate?.();
+    }, [onClick, onNavigate]);
     return (
       <li>
         <Link
@@ -142,7 +150,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
             href === pathname ? "bg-gray-100" : "",
             shrunk ? "justify-center" : ""
           )}
-          onClick={onClick}
+          onClick={handleClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
@@ -186,9 +194,14 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   }, [searchRef]);
 
   return (
-    <aside
+    <nav
       id="logo-sidebar"
-      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
+      className={mergeClasses(
+        "border-r-2 bg-white",
+        mobile
+          ? "w-[270px]"
+          : "w-full transition-transform -translate-x-full sm:translate-x-0"
+      )}
       aria-label="Sidebar"
     >
       <Modal
@@ -200,29 +213,42 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div className="pt-12 pb-12 h-full md:block hidden">
+      <div
+        className={mergeClasses(
+          "pt-12 pb-12 h-full",
+          mobile ? "block" : "md:block hidden"
+        )}
+      >
         <div
           className={mergeClasses(
-            "flex flex-col h-full ml-auto transition-all duration-300 relative",
-            shrunk ? "w-[90px]" : "w-[270px]"
+            "flex flex-col h-full transition-all duration-300 relative",
+            mobile
+              ? "w-[270px]"
+              : shrunk
+                ? "w-[90px] ml-auto"
+                : "w-[270px] ml-auto"
           )}
         >
-          <button
-            onClick={toggleSidebar}
-            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
-            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {shrunk ? (
-              <FaChevronRight size={14} />
-            ) : (
-              <FaChevronLeft size={14} />
-            )}
-          </button>
+          {!mobile && (
+            <button
+              onClick={toggleSidebar}
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {shrunk ? (
+                <FaChevronRight size={14} />
+              ) : (
+                <FaChevronLeft size={14} />
+              )}
+            </button>
+          )}
 
-          <BrandHeader />
+          <div className="-mt-6 pb-6">
+            <BrandHeader />
+          </div>
           <div
             className={mergeClasses(
-              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300",
+              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300 pt-[18px]",
               shrunk ? "px-1" : "px-4"
             )}
           >
@@ -315,18 +341,6 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   shrunk ? "flex-col gap-1" : ""
                 )}
               >
-                {!isNotificationsPage && !isExplorerPage && isEditable && (
-                  <Button
-                    onClick={turnOnEditMode}
-                    size="icon"
-                    variant="secondary"
-                    className="flex items-center justify-center w-12 h-12"
-                  >
-                    <div className="flex items-center p-1">
-                      <FaPaintbrush />
-                    </div>
-                  </Button>
-                )}
                 <Button
                   onClick={openCastModal}
                   variant="primary"
@@ -334,7 +348,11 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
                   className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
-                  {shrunk && <span className="text-lg font-bold">+</span>}
+                  {shrunk && (
+                    <span className="text-lg font-bold">
+                      <RiQuillPenLine />
+                    </span>
+                  )}
                 </Button>
               </div>
             )}
@@ -355,7 +373,7 @@ const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
           </div>
         </div>
       </div>
-    </aside>
+    </nav>
   );
 };
 
