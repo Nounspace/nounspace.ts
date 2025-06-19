@@ -217,9 +217,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (embedInfo.directEmbed && transformedUrl) {
-    // Calculate additional height needed for the iframe when offset
-    const extraHeight = cropOffsetY > 0 ? cropOffsetY : 0;
-    
     return (
       <div
         style={{ 
@@ -230,22 +227,32 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         }}
         className="h-[calc(100dvh-156px)] md:h-full"
       >
-        <iframe
-          src={transformedUrl}
-          title="IFrame Fidget"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-          style={{
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          transform: `scale(${size})`,
+          transformOrigin: "0 0",
+        }}>
+          <div style={{
             position: "absolute",
-            transform: `scale(${size})`,
-            transformOrigin: "0 0",
-            left: `${cropOffsetX}%`,
-            top: `${cropOffsetY}%`,
+            inset: 0,
             width: `${100 / size}%`,
-            height: `${(100 + extraHeight) / size}%`,
-            overflow: isScrollable ? "auto" : "hidden",
-          }}
-          className="size-full"
-        />
+            height: `${200 / size}%`,
+            transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
+          }}>
+            <iframe
+              src={transformedUrl}
+              title="IFrame Fidget"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              style={{
+                width: "100%",
+                height: "100%",
+                overflow: isScrollable ? "auto" : "hidden",
+              }}
+              className="size-full"
+            />
+          </div>
+        </div>
       </div>
     );
   }

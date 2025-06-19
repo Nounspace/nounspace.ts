@@ -58,9 +58,6 @@ const CropControls: React.FC<CropControlsProps> = ({
     return (
       <WithMargin>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Allow Scrolling
-          </label>
           <div className="flex items-center">
             <input
               type="checkbox"
