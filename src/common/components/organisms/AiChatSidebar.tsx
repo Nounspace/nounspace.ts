@@ -122,6 +122,32 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   );
 
+  // Add message deduplication to prevent duplicate responses
+  const [processedMessageIds] = useState(new Set<string>());
+  const [lastTestMessageTime, setLastTestMessageTime] = useState(0);
+
+  // Helper function to validate space configuration
+  const validateSpaceConfig = (config: any): boolean => {
+    try {
+      // Basic validation - ensure required fields exist
+      const hasRequiredFields =
+        config &&
+        typeof config === "object" &&
+        (config.fidgetInstanceDatums || config.theme || config.layoutDetails);
+
+      if (!hasRequiredFields) {
+        console.warn("Invalid config: Missing required fields");
+        return false;
+      }
+
+      // Additional validation can be added here
+      return true;
+    } catch (error) {
+      console.error("Config validation error:", error);
+      return false;
+    }
+  };
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const wsServiceRef = useRef<WebSocketService | null>(null);
@@ -137,28 +163,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       wsServiceRef.current.destroy();
     }
 
-    // Log the current space context being sent to WebSocket
-    console.log(
-      "🔍 AiChatSidebar: Initializing WebSocket with context from store"
-    );
-    console.log("📋 Store State Debug:", {
-      currentSpaceId: currentSpaceId,
-      currentTabName: currentTabName,
-      hasLocalSpaces: !!localSpaces,
-      localSpacesKeys: Object.keys(localSpaces || {}),
-      currentSpaceExists: !!(currentSpaceId && localSpaces[currentSpaceId]),
-      currentSpaceData: currentSpaceId ? localSpaces[currentSpaceId] : null,
-    });
-    console.log("📋 Current Space Context:", {
-      actualSpaceContext: actualSpaceContext,
-      contextType: typeof actualSpaceContext,
-      contextKeys: actualSpaceContext ? Object.keys(actualSpaceContext) : null,
-      contextSize: actualSpaceContext
-        ? JSON.stringify(actualSpaceContext).length
-        : 0,
-    });
-    console.log("👤 User FID:", currentFid);
-    console.log("🔗 WebSocket URL:", wsUrl);
+    console.log("� Initializing AI connection...");
 
     const config = {
       url: wsUrl,
@@ -172,7 +177,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     const callbacks = {
       onStatusChange: (status: ConnectionStatus) => {
         setConnectionStatus(status);
-        console.log(`🔌 WebSocket status changed to: ${status}`);
+        if (status === "connected") {
+          console.log("✅ AI connected");
+        } else if (status === "error") {
+          console.log("❌ AI connection failed");
+        }
       },
       onMessage: (message: any) => {
         handleWebSocketMessage(message);
@@ -187,7 +196,24 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   }, [wsUrl, sessionId, currentFid]); // Remove actualSpaceContext from dependencies
 
   const handleWebSocketMessage = useCallback((wsMessage: any) => {
-    console.log("Received WebSocket message:", wsMessage);
+    // Create a unique ID for deduplication
+    const messageId =
+      wsMessage.id ||
+      `${wsMessage.type || "unknown"}-${wsMessage.name || "unnamed"}-${Date.now()}`;
+
+    // Check for duplicate messages (within the same session)
+    if (processedMessageIds.has(messageId)) {
+      return; // Skip duplicate messages silently
+    }
+
+    // Add message ID to processed set
+    processedMessageIds.add(messageId);
+
+    // Clean up old message IDs to prevent memory leaks (keep only last 100)
+    if (processedMessageIds.size > 100) {
+      const idsArray = Array.from(processedMessageIds);
+      idsArray.slice(0, 50).forEach((id) => processedMessageIds.delete(id));
+    }
 
     // Handle structured messages with type
     if (wsMessage.type) {
@@ -252,8 +278,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
         case "REPLY": {
           // Handle new server REPLY format
-          console.log("Received REPLY message from:", wsMessage.name);
-
           if (wsMessage.message === "pong") {
             // Handle pong response in new format
             const pongMessage: Message = {
@@ -267,8 +291,9 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             toast.success("Pong received! WebSocket is working!");
           } else {
             // Handle other REPLY messages (like AI responses)
+            console.log("💬 AI Response received");
             const replyMessage: Message = {
-              id: `reply-${Date.now()}`,
+              id: `reply-${Date.now()}-${Math.random()}`,
               role: "assistant",
               content: wsMessage.message,
               timestamp: new Date(),
@@ -285,6 +310,18 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               clearTimeout(messageTimeoutRef.current);
               messageTimeoutRef.current = null;
             }
+
+            // Check if we're in preview mode and show helpful message
+            if (isPreviewMode && !wsMessage.message.includes("Preview")) {
+              setTimeout(() => {
+                toast.info(
+                  "💡 Your space is in preview mode. Apply changes to save them!",
+                  {
+                    duration: 4000,
+                  }
+                );
+              }, 1000);
+            }
           }
           break;
         }
@@ -294,28 +331,99 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         case "PLANNER_LOGS":
         case "BUILDER_LOGS":
         case "COMM_LOGS": {
-          console.log(
-            `Received ${wsMessage.type} from ${wsMessage.name}:`,
-            wsMessage.message
-          );
-
-          // Show these as system messages in the chat for debugging
-          const logMessage: Message = {
-            id: `log-${Date.now()}-${Math.random()}`,
-            role: "assistant",
-            content: `**${wsMessage.name}** (${wsMessage.type}):\n${wsMessage.message}`,
-            timestamp: new Date(),
-            type: "text",
-          };
-          setMessages((prev) => [...prev, logMessage]);
-
-          // Update loading state based on log type
+          // Only show essential logs, not all messages
           if (wsMessage.type === "PLANNER_LOGS") {
-            setLoadingType("thinking");
-            setIsLoading(true);
+            console.log("🤖 PLANNER: Processing configuration...");
+
+            // Try to extract JSON configuration from the message
+            const configMatch = wsMessage.message.match(
+              /\[YR_ID is: \d+\](.+)/s
+            );
+            if (configMatch) {
+              try {
+                const configJson = configMatch[1].trim();
+                const parsedConfig = JSON.parse(configJson);
+
+                // Validate the configuration before processing
+                if (!validateSpaceConfig(parsedConfig)) {
+                  console.warn("Invalid configuration received from Planner");
+                  return;
+                }
+
+                console.log("✅ Valid configuration received from Planner");
+
+                const themeInfo = parsedConfig.theme?.name || "Custom Theme";
+                const fidgetCount = Object.keys(
+                  parsedConfig.fidgetInstanceDatums || {}
+                ).length;
+
+                // Create a config message with preview capability
+                const configMessage: Message = {
+                  id: `config-${Date.now()}-${Math.random()}`,
+                  role: "assistant",
+                  content: `🎨 **New Design Ready!**\n\n**${themeInfo}** theme has been generated with ${fidgetCount} fidget${fidgetCount !== 1 ? "s" : ""} configured.\n\n✨ **Auto-Preview Activated** - Check your space to see the changes!\n\nLike what you see? Click "Apply Configuration" to save it permanently.`,
+                  timestamp: new Date(),
+                  type: "config",
+                  spaceConfig: parsedConfig,
+                  aiType: "planner",
+                };
+
+                setMessages((prev) => [...prev, configMessage]);
+
+                // Auto-trigger preview mode
+                setPreviewConfig(parsedConfig);
+                setIsPreviewMode(true);
+
+                // Clear loading state since we have the config
+                setIsLoading(false);
+                setLoadingType(null);
+
+                // Clear any message timeout
+                if (messageTimeoutRef.current) {
+                  clearTimeout(messageTimeoutRef.current);
+                  messageTimeoutRef.current = null;
+                }
+
+                toast.success("🎨 New design ready! Preview mode activated.", {
+                  duration: 3000,
+                });
+              } catch (error) {
+                console.error(
+                  "Failed to parse configuration from PLANNER_LOGS:",
+                  error
+                );
+                // Show error message to user
+                const errorMessage: Message = {
+                  id: `error-${Date.now()}-${Math.random()}`,
+                  role: "assistant",
+                  content:
+                    "⚠️ I generated a design but there was an issue processing it. Please try your request again.",
+                  timestamp: new Date(),
+                  type: "text",
+                };
+                setMessages((prev) => [...prev, errorMessage]);
+                setIsLoading(false);
+                setLoadingType(null);
+              }
+            } else {
+              // No config found, continue with thinking state
+              setLoadingType("thinking");
+              setIsLoading(true);
+            }
           } else if (wsMessage.type === "BUILDER_LOGS") {
+            console.log("🔧 BUILDER: Processing...");
             setLoadingType("building");
             setIsLoading(true);
+          } else if (wsMessage.type === "LOG") {
+            // Only show critical LOG messages
+            const logMessage: Message = {
+              id: `log-${Date.now()}-${Math.random()}`,
+              role: "assistant",
+              content: `**${wsMessage.name}**: ${wsMessage.message}`,
+              timestamp: new Date(),
+              type: "text",
+            };
+            setMessages((prev) => [...prev, logMessage]);
           }
           break;
         }
@@ -541,14 +649,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     try {
       // Send message via WebSocket if connected
       if (wsServiceRef.current?.isConnected()) {
-        console.log("🔌 WebSocket is connected, sending message...");
-        // Set loading type for WebSocket messages (assuming "tom" is thinking)
+        console.log("� Sending message to AI...");
         setLoadingType("thinking");
-
-        // Send message with current context directly
-        console.log(
-          `📤 Sending message with ${isFirstMessage ? "currentTabConfig" : "localConfig"} context`
-        );
 
         // Use explicit context method to ensure AI understands the domain
         const success = wsServiceRef.current.sendUserMessageWithExplicitContext(
@@ -557,9 +659,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         );
 
         if (success) {
-          console.log("✅ Message sent successfully via WebSocket");
+          console.log("✅ Message sent to AI");
         } else {
-          console.error("❌ Failed to send message via WebSocket");
+          console.error("❌ Failed to send message");
+          toast.error("Failed to send message to AI");
+          setIsLoading(false);
+          setLoadingType(null);
+          return;
         }
 
         // Clear any existing timeout
@@ -662,6 +768,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   const handlePreviewConfig = (message: Message) => {
     if (!message.spaceConfig) return;
+
+    // Validate the configuration before previewing
+    const isValidConfig = validateSpaceConfig(message.spaceConfig);
+    if (!isValidConfig) {
+      toast.error("Invalid configuration. Please check the details.");
+      return;
+    }
 
     setPreviewConfig(message.spaceConfig);
     setIsPreviewMode(true);
@@ -831,15 +944,36 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       return;
     }
 
-    console.log("🧪 Sending test context message");
-    const success = wsServiceRef.current.sendUserMessageWithExplicitContext(
-      "TEST: Please confirm you received the space context with this message and tell me about the current fidgets and theme in my space",
-      actualSpaceContext
-    );
+    // Prevent rapid duplicate calls (less than 2 seconds apart)
+    const now = Date.now();
+    if (now - lastTestMessageTime < 2000) {
+      toast.warning("Please wait before sending another test message");
+      return;
+    }
+    setLastTestMessageTime(now);
+
+    console.log("🧪 Sending SIMPLIFIED test context message");
+
+    // Use a simpler test method to avoid the complex sendUserMessageWithExplicitContext
+    const simpleTestMessage = {
+      type: "user_message",
+      message:
+        "TEST: Please confirm you received the space context with this message and tell me about the current fidgets and theme in my space",
+      sessionId: sessionId,
+      context: actualSpaceContext
+        ? JSON.stringify(actualSpaceContext, null, 2)
+        : null,
+      fid: currentFid || null,
+      name: currentFid || null,
+      timestamp: new Date().toISOString(),
+      isTestMessage: true,
+    };
+
+    const success = wsServiceRef.current?.send(simpleTestMessage);
 
     if (success) {
       toast.success(
-        "Test message sent! Check console and wait for AI response."
+        "Simplified test message sent! Check console and wait for AI response."
       );
     } else {
       toast.error("Failed to send test message");
@@ -851,9 +985,9 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       className="h-screen flex-row flex bg-white transition-transform border-r"
       aria-label="AI Chat Sidebar"
       style={{
-        wordWrap: 'break-word',
-        overflowWrap: 'break-word',
-        wordBreak: 'break-word'
+        wordWrap: "break-word",
+        overflowWrap: "break-word",
+        wordBreak: "break-word",
       }}
     >
       <div className="flex-1 w-[420px] min-w-[380px] max-w-[480px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
