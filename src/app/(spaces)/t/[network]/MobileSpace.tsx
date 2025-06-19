@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { useGetCastsByKeyword } from "@/common/data/queries/farcaster";
 import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
@@ -25,64 +25,45 @@ import createInitialContractSpaceConfigForAddress from "@/constants/initialContr
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
-export const MobileContractDefinedSpace = ({
+export const MobileContractDefinedSpace = React.memo(function MobileContractDefinedSpace({
   contractAddress,
-  tabName: providedTabName,
+  tabName,
 }: {
   contractAddress: string;
   tabName: string;
-}) => {
+}) {
   const [tab, setTab] = useState<Pages>("Price");
-  const [ref, inView] = useInView();
+  const [ref, inView] = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+    rootMargin: '200px',
+  });
+  
   const { tokenData } = useToken();
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
-  const decimals = tokenData?.geckoData?.decimals || "";
-  const image =
+  
+  const symbol = useMemo(() => 
+    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "", 
+    [tokenData?.clankerData?.symbol, tokenData?.geckoData?.symbol]
+  );
+  
+  const decimals = useMemo(() => 
+    tokenData?.geckoData?.decimals || "", 
+    [tokenData?.geckoData?.decimals]
+  );
+  
+  const image = useMemo(() => 
     tokenData?.clankerData?.img_url ||
     (tokenData?.geckoData?.image_url !== "missing.png"
       ? tokenData?.geckoData?.image_url
-      : null);
-
-  const INITIAL_SPACE_CONFIG = useMemo(
-    () =>
-      createInitialContractSpaceConfigForAddress(
-        contractAddress,
-        tokenData?.clankerData?.cast_hash || "",
-        tokenData?.clankerData?.requestor_fid
-          ? String(tokenData.clankerData.requestor_fid)
-          : "",
-        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
-        !!tokenData?.clankerData,
-        tokenData?.network,
-      ),
-    [contractAddress, tokenData, tokenData?.network],
+      : null),
+    [tokenData?.clankerData?.img_url, tokenData?.geckoData?.image_url]
   );
 
-  const { getCurrentSpaceConfig } = useAppStore((state) => ({
-    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
-  }));
-  const currentConfig = getCurrentSpaceConfig();
-  const config = {
-    ...(currentConfig?.tabs[providedTabName]
-      ? currentConfig.tabs[providedTabName]
-      : INITIAL_SPACE_CONFIG),
-    isEditable: false,
-  };
 
-  const memoizedConfig = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { ...restConfig } = config;
-    return restConfig;
-  }, [
-    config.fidgetInstanceDatums,
-    config.layoutID,
-    config.layoutDetails,
-    config.fidgetTrayContents,
-    config.theme,
-  ]);
+  
+  
 
-  console.log("memoizedConfig", memoizedConfig);
+
 
   const {
     data,
@@ -92,14 +73,18 @@ export const MobileContractDefinedSpace = ({
     isError,
     isPending,
   } = useGetCastsByKeyword({
-    keyword: tokenData ? `$${symbol}` : "",
+    keyword: symbol ? `$${symbol}` : "",
   });
 
-  useEffect(() => {
-    if (inView && hasNextPage) {
+  const loadMoreData = useCallback(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [inView]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    loadMoreData();
+  }, [loadMoreData]);
 
   const IconButton = ({
     icon: Icon,
@@ -318,4 +303,6 @@ export const MobileContractDefinedSpace = ({
       </div>
     </div>
   );
-};
+});
+
+export default MobileContractDefinedSpace;

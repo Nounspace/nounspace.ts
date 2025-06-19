@@ -1,13 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import useWindowSize from './useWindowSize';
 
-// Mobile breakpoint (in pixels)
 export const MOBILE_BREAKPOINT = 768;
 
-/**
- * Hook to detect if the current viewport is mobile-sized
- * @returns boolean indicating if the viewport is mobile-sized
- */
 export function useIsMobile(): boolean {
   const { width } = useWindowSize();
   const [isMobile, setIsMobile] = useState(false);
@@ -18,7 +13,7 @@ export function useIsMobile(): boolean {
     }
   }, [width]);
   
-  return isMobile;
+  return useMemo(() => isMobile, [isMobile]);
 }
 
 export default useIsMobile;
