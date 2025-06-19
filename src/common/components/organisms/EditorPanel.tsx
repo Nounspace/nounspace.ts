@@ -136,12 +136,14 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   setIsPickingFidget={setIsPickingFidget}
                 />
               ) : (
-                <ThemeSettingsEditor
-                  theme={theme}
-                  saveTheme={saveTheme}
-                  saveExitEditMode={saveExitEditMode}
-                  cancelExitEditMode={cancelExitEditMode}
-                />
+              <ThemeSettingsEditor
+                theme={theme}
+                saveTheme={saveTheme}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={fidgetInstanceDatums}
+                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+              />
               )}
             </>
           )}

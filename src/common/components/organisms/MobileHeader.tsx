@@ -123,11 +123,6 @@ const MobileHeader: React.FC = () => {
           <Navigation
             isEditable={sidebarEditable}
             enterEditMode={enterEditMode}
-            mobile
-            onNavigate={() => {
-              setNavOpen(false);
-              window.scrollTo({ top: 0 });
-            }}
           />
         </DrawerContent>
       </Drawer>

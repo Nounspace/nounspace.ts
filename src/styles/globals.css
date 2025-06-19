@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+.mobile-profile-container {
+  transform: translateY(0);
+  max-height: 200px;
+  opacity: 1;
+  overflow: hidden;
+  transition: transform 0.3s ease, max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.mobile-profile-container.profile-hidden {
+  transform: translateY(-100%);
+  max-height: 0;
+  opacity: 0;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -141,14 +155,11 @@
   width: 100%;
   height: 100%;
 }
-.grid-overlap:not(.items-visible) .react-grid-item {
-    opacity: 0;
-    transition: opacity 200ms ease;
-  }
-  
-  .react-grid-item {         /* preserve generic styling */
-    border-color: lightgray;
-  }
+.react-grid-item {
+  border-color: lightgray;
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
 .react-grid-item img {
   pointer-events: none;
   user-select: none;
@@ -170,11 +181,6 @@
 
 .react-grid-item.dropping {
   visibility: hidden;
-}
-
-.items-visible .react-grid-item {
-  opacity: 1;
-  transition: opacity 200ms ease;
 }
 
 .react-grid-item.react-grid-placeholder {

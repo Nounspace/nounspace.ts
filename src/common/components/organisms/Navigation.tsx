@@ -1,41 +1,39 @@
-import Player from "@/common/components/organisms/Player";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { useAppStore, useLogout } from "@/common/data/stores/app";
-import { mergeClasses } from "@/common/lib/utils/mergeClasses";
-import { useFarcasterSigner } from "@/fidgets/farcaster";
-import CreateCast from "@/fidgets/farcaster/components/CreateCast";
-import { first } from "lodash";
-import Link from "next/link";
+import React, { useCallback, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { CgProfile } from "react-icons/cg";
-import {
-    FaChevronLeft,
-    FaChevronRight,
-    FaDiscord,
-} from "react-icons/fa6";
-import { Button } from "../atoms/button";
+import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import BrandHeader from "../molecules/BrandHeader";
+import Player from "@/common/components/organisms/Player";
+import { useAppStore, useLogout } from "@/common/data/stores/app";
 import Modal from "../molecules/Modal";
-// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
-// is `RiQuillPenLine`. Update the import to prevent build errors.
-import { Badge } from "@/common/components/atoms/badge";
-import SearchModal from "@/common/components/organisms/SearchModal";
-import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
+import CreateCast from "@/fidgets/farcaster/components/CreateCast";
+import Link from "next/link";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { CgProfile } from "react-icons/cg";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import { first } from "lodash";
+import { Button } from "../atoms/button";
+import {
+  FaPaintbrush,
+  FaDiscord,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa6";
+import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
+import { AnalyticsEvent } from "@/common/providers/AnalyticsProvider";
+import SearchModal from "@/common/components/organisms/SearchModal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
-import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
+import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
+import { Badge } from "@/common/components/atoms/badge";
 import { usePathname } from "next/navigation";
-import { RiQuillPenLine } from "react-icons/ri";
-import ExploreIcon from "../atoms/icons/ExploreIcon";
 import HomeIcon from "../atoms/icons/HomeIcon";
-import LoginIcon from "../atoms/icons/LoginIcon";
-import LogoutIcon from "../atoms/icons/LogoutIcon";
+import SearchIcon from "../atoms/icons/SearchIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
-import SearchIcon from "../atoms/icons/SearchIcon";
+import ExploreIcon from "../atoms/icons/ExploreIcon";
+import LogoutIcon from "../atoms/icons/LogoutIcon";
+import LoginIcon from "../atoms/icons/LoginIcon";
 
 type NavItemProps = {
   label: string;
@@ -52,9 +50,7 @@ type NavButtonProps = Omit<NavItemProps, "href" | "openInNewTab">;
 
 type NavProps = {
   isEditable: boolean;
-  enterEditMode?: () => void;
-  mobile?: boolean;
-  onNavigate?: () => void;
+  enterEditMode: () => void;
 };
 
 const NavIconBadge = ({ children }) => {
@@ -68,17 +64,12 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({
-  isEditable,
-  enterEditMode,
-  mobile = false,
-  onNavigate,
-}) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
+  const { setModalOpen, getIsLoggedIn, getIsInitializing } = useAppStore(
     (state) => ({
       setModalOpen: state.setup.setModalOpen,
-      getIsAccountReady: state.getIsAccountReady,
+      getIsLoggedIn: state.getIsAccountReady,
       getIsInitializing: state.getIsInitializing,
     })
   );
@@ -87,17 +78,22 @@ const Navigation: React.FC<NavProps> = ({
   const logout = useLogout();
   const notificationBadgeText = useNotificationBadgeText();
   const pathname = usePathname();
+  const isNotificationsPage = pathname === "/notifications";
+  const isExplorerPage = pathname === "/explore";
 
-  const [shrunk, setShrunk] = useState(mobile ? false : true);
+  const [shrunk, setShrunk] = useState(true);
 
   const toggleSidebar = () => {
-    if (mobile) return;
     setShrunk((prev) => !prev);
   };
 
   function handleLogout() {
     router.push("/home");
     logout();
+  }
+
+  function turnOnEditMode() {
+    enterEditMode();
   }
 
   const openModal = () => setModalOpen(true);
@@ -107,7 +103,7 @@ const Navigation: React.FC<NavProps> = ({
     setShowCastModal(true);
   }
   const { fid } = useFarcasterSigner("navigation");
-  const isLoggedIn = getIsAccountReady();
+  const isLoggedIn = getIsLoggedIn();
   const isInitializing = getIsInitializing();
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
@@ -137,10 +133,6 @@ const Navigation: React.FC<NavProps> = ({
     openInNewTab = false,
     badgeText = null,
   }) => {
-    const handleClick = useCallback(() => {
-      onClick?.();
-      onNavigate?.();
-    }, [onClick, onNavigate]);
     return (
       <li>
         <Link
@@ -150,7 +142,7 @@ const Navigation: React.FC<NavProps> = ({
             href === pathname ? "bg-gray-100" : "",
             shrunk ? "justify-center" : ""
           )}
-          onClick={handleClick}
+          onClick={onClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
         >
@@ -194,14 +186,9 @@ const Navigation: React.FC<NavProps> = ({
   }, [searchRef]);
 
   return (
-    <nav
+    <aside
       id="logo-sidebar"
-      className={mergeClasses(
-        "border-r-2 bg-white",
-        mobile
-          ? "w-[270px]"
-          : "w-full transition-transform -translate-x-full sm:translate-x-0"
-      )}
+      className="w-full transition-transform -translate-x-full sm:translate-x-0 border-r-2 bg-white"
       aria-label="Sidebar"
     >
       <Modal
@@ -213,42 +200,29 @@ const Navigation: React.FC<NavProps> = ({
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div
-        className={mergeClasses(
-          "pt-12 pb-12 h-full",
-          mobile ? "block" : "md:block hidden"
-        )}
-      >
+      <div className="pt-12 pb-12 h-full md:block hidden">
         <div
           className={mergeClasses(
-            "flex flex-col h-full transition-all duration-300 relative",
-            mobile
-              ? "w-[270px]"
-              : shrunk
-                ? "w-[90px] ml-auto"
-                : "w-[270px] ml-auto"
+            "flex flex-col h-full ml-auto transition-all duration-300 relative",
+            shrunk ? "w-[90px]" : "w-[270px]"
           )}
         >
-          {!mobile && (
-            <button
-              onClick={toggleSidebar}
-              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
-              aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {shrunk ? (
-                <FaChevronRight size={14} />
-              ) : (
-                <FaChevronLeft size={14} />
-              )}
-            </button>
-          )}
+          <button
+            onClick={toggleSidebar}
+            className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+            aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {shrunk ? (
+              <FaChevronRight size={14} />
+            ) : (
+              <FaChevronLeft size={14} />
+            )}
+          </button>
 
-          <div className="-mt-6 pb-6">
-            <BrandHeader />
-          </div>
+          <BrandHeader />
           <div
             className={mergeClasses(
-              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300 pt-[18px]",
+              "flex flex-col text-lg font-medium pb-3 px-4 overflow-auto transition-all duration-300",
               shrunk ? "px-1" : "px-4"
             )}
           >
@@ -341,6 +315,18 @@ const Navigation: React.FC<NavProps> = ({
                   shrunk ? "flex-col gap-1" : ""
                 )}
               >
+                {!isNotificationsPage && !isExplorerPage && isEditable && (
+                  <Button
+                    onClick={turnOnEditMode}
+                    size="icon"
+                    variant="secondary"
+                    className="flex items-center justify-center w-12 h-12"
+                  >
+                    <div className="flex items-center p-1">
+                      <FaPaintbrush />
+                    </div>
+                  </Button>
+                )}
                 <Button
                   onClick={openCastModal}
                   variant="primary"
@@ -348,11 +334,7 @@ const Navigation: React.FC<NavProps> = ({
                   className="flex items-center justify-center w-12 h-12"
                 >
                   {shrunk ? <span className="sr-only">Cast</span> : "Cast"}
-                  {shrunk && (
-                    <span className="text-lg font-bold">
-                      <RiQuillPenLine />
-                    </span>
-                  )}
+                  {shrunk && <span className="text-lg font-bold">+</span>}
                 </Button>
               </div>
             )}
@@ -373,7 +355,7 @@ const Navigation: React.FC<NavProps> = ({
           </div>
         </div>
       </div>
-    </nav>
+    </aside>
   );
 };
 
