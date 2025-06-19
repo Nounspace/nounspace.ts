@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo } from "react";
 import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
@@ -9,7 +9,6 @@ import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
-import ProposalDataHeader from "./ProposalDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
@@ -198,6 +197,22 @@ function TabBar({
   }, [switchTabTo]);
 
   const isLoggedIn = getIsLoggedIn();
+  
+  // Remember the customization button to avoid unnecessary re-renders
+  const customizeButton = useMemo(() => {
+    if (!isEditable || inEditMode || (mobilePreview && !isMobile)) return null;
+    
+    return (
+      <Button
+        onClick={() => setEditMode(true)}
+        className={`items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold ${isMobile ? 'shadow-md' : ''}`}
+        aria-label="Customizar aparência"
+      >
+        <FaPaintbrush className={isMobile ? '' : 'mr-2'} />
+        {!isMobile && "Customize"}
+      </Button>
+    );
+  }, [isEditable, inEditMode, mobilePreview, isMobile, setEditMode]);
 
   return (
     <TooltipProvider>
@@ -210,14 +225,7 @@ function TabBar({
         <div className="relative flex flex-auto h-16 z-70 bg-white">
           {isMobile && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white flex gap-2">
-              {!inEditMode && isEditable && (
-                <Button
-                  onClick={() => setEditMode(true)}
-                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-                >
-                  <FaPaintbrush />
-                </Button>
-              )}
+              {customizeButton}
               <NogsGateButton
                 onClick={() => handleCreateTab(generateNewTabName())}
                 className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
@@ -288,15 +296,9 @@ function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
-        {!inEditMode && !mobilePreview && isEditable && (
+        {!isMobile && customizeButton && (
           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
-            <Button
-              onClick={() => setEditMode(true)}
-              className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
-              <FaPaintbrush className="mr-2" />
-              Customize
-            </Button>
+            {customizeButton}
           </div>
         )}
       </div>
