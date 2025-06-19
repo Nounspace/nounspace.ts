@@ -241,8 +241,12 @@ const CastAttributionSecondary = ({ cast }) => {
 };
 
 const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
-  const [didLike, setDidLike] = useState(false);
-  const [didRecast, setDidRecast] = useState(false);
+  const [didLike, setDidLike] = useState(
+    cast.viewer_context?.liked ?? false,
+  );
+  const [didRecast, setDidRecast] = useState(
+    cast.viewer_context?.recasted ?? false,
+  );
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
 
   const authorFid = cast.author.fid;
@@ -260,18 +264,28 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   const getReactions = () => {
     const repliesCount = cast.replies?.count || 0;
     const recastsCount = cast.reactions?.recasts_count || 0;
-    const likesCount = cast.reactions?.likes_count;
+    const likesCount = cast.reactions?.likes_count || 0;
 
     const likeFids = map(cast.reactions?.likes, "fid") || [];
     const recastFids = map(cast.reactions?.recasts, "fid") || [];
+
+    const viewerLiked = cast.viewer_context?.liked ?? false;
+    const viewerRecasted = cast.viewer_context?.recasted ?? false;
+
     return {
       [CastReactionType.likes]: {
-        count: likesCount + Number(didLike),
-        isActive: didLike || includes(likeFids, userFid),
+        count: likesCount + (!viewerLiked ? Number(didLike) : 0),
+        isActive:
+          didLike ||
+          viewerLiked ||
+          includes(likeFids, userFid),
       },
       [CastReactionType.recasts]: {
-        count: recastsCount + Number(didRecast),
-        isActive: didRecast || includes(recastFids, userFid),
+        count: recastsCount + (!viewerRecasted ? Number(didRecast) : 0),
+        isActive:
+          didRecast ||
+          viewerRecasted ||
+          includes(recastFids, userFid),
       },
       [CastReactionType.replies]: { count: repliesCount },
     };
@@ -536,10 +550,14 @@ const getIconForCastReactionType = (
   reactionType: CastReactionType,
   isActive?: boolean,
 ): JSX.Element | undefined => {
-  const className = classNames(
-    isActive ? "text-foreground/70" : "",
-    "mt-0.5 w-4 h-4 mr-1",
-  );
+  const baseColor = isActive
+    ? reactionType === CastReactionType.likes
+      ? "text-red-500"
+      : reactionType === CastReactionType.recasts
+        ? "text-green-500"
+        : "text-foreground"
+    : "text-foreground/70";
+  const className = classNames("mt-0.5 w-4 h-4 mr-1", baseColor);
 
   switch (reactionType) {
     case CastReactionType.likes:
