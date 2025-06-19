@@ -10,6 +10,8 @@ import React, {
 import { createPortal } from "react-dom";
 import Navigation from "./Navigation";
 import AiChatSidebar from "./AiChatSidebar";
+import { useAppStore } from "@/common/data/stores/app";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 export interface SidebarProps {}
 
 export type SidebarContextProviderProps = { children: React.ReactNode };
@@ -84,10 +86,43 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     portalRef,
   } = useSidebarContext();
 
+  // Get current space configuration from store
+  const { getCurrentSpaceConfig, getCurrentTabName } = useAppStore((state) => ({
+    getCurrentSpaceConfig: state.currentSpace.getCurrentSpaceConfig,
+    getCurrentTabName: state.currentSpace.getCurrentTabName,
+  }));
+
+  // Get the current space configuration for the AI
+  const spaceContext = useMemo(() => {
+    const currentSpaceConfig = getCurrentSpaceConfig();
+    const currentTabName = getCurrentTabName();
+    
+    if (!currentSpaceConfig || !currentTabName) {
+      return null;
+    }
+
+    const currentTabConfig = currentSpaceConfig.tabs[currentTabName];
+    if (!currentTabConfig) {
+      return null;
+    }
+
+    // Return a simplified space context for the AI
+    return {
+      fidgetInstanceDatums: currentTabConfig.fidgetInstanceDatums || {},
+      layoutID: currentTabConfig.layoutID || '',
+      layoutDetails: currentTabConfig.layoutDetails || null,
+      theme: currentTabConfig.theme || null,
+      fidgetTrayContents: currentTabConfig.fidgetTrayContents || [],
+    };
+  }, [getCurrentSpaceConfig, getCurrentTabName]);
+
   const aiChatSidebarPortal = (portalNode: HTMLDivElement | null) => {
     return editWithAiMode && portalNode
       ? createPortal(
-          <AiChatSidebar onClose={() => setEditWithAiMode(false)} />,
+          <AiChatSidebar 
+            onClose={() => setEditWithAiMode(false)} 
+            spaceContext={spaceContext}
+          />,
           portalNode
         )
       : null;

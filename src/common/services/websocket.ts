@@ -1,28 +1,30 @@
 /**
- * WebSocket Service for AI Chat
- * Handles basic WebSocket connection, reconnection, and message handling
+ * WebSocket Service for AI Space Builder
+ * Handles connection to the AI space builder service and manages message flow
  */
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 
-export interface WebSocketMessage {
-  type: "user_message" | "ai_response" | "status_update" | "ping" | "pong";
-  data: {
-    message?: string;
-    response?: any;
-    aiType?: "planner" | "builder";
-    loadingType?: "thinking" | "building";
-    status?: "thinking" | "building" | "complete" | "error";
-    sessionId?: string;
-    context?: any;
-    timestamp?: string;
-    fid?: number | null;
-  };
+export type WebSocketMessageType = 
+  | "REPLY"          // Final AI response with config or text
+  | "PLANNER_LOGS"   // Planning phase logs
+  | "BUILDER_LOGS"   // Building phase logs with JSON config
+  | "COMM_LOGS"      // Communication phase logs
+  | "pong";          // Ping response
+
+export interface IncomingMessage {
+  type: WebSocketMessageType;
+  name: string;      // e.g., "space-builder", "Planner", "BUILDER", "COMMUNICATOR"
+  message: string;   // The actual content/JSON config
+}
+
+export interface OutgoingMessage {
+  name: string;      // Client identifier
+  message: string;   // User message with space context
 }
 
 export interface WebSocketConfig {
   url: string;
-  sessionId: string;
   maxReconnectAttempts?: number;
   reconnectBackoffMs?: number;
   spaceContext?: any;
@@ -31,9 +33,14 @@ export interface WebSocketConfig {
 
 export interface WebSocketCallbacks {
   onStatusChange: (status: ConnectionStatus) => void;
-  onMessage: (message: any) => void;
+  onMessage: (message: IncomingMessage) => void;
   onError: (error: string) => void;
 }
+
+const DEFAULT_CONFIG = {
+  maxReconnectAttempts: 5,
+  reconnectBackoffMs: 1000,
+};
 
 export class WebSocketService {
   private ws: WebSocket | null = null;
@@ -43,8 +50,19 @@ export class WebSocketService {
   private reconnectTimeout: NodeJS.Timeout | null = null;
 
   constructor(config: WebSocketConfig, callbacks: WebSocketCallbacks) {
-    this.config = config;
+    // Merge with defaults
+    this.config = {
+      ...DEFAULT_CONFIG,
+      ...config,
+    };
     this.callbacks = callbacks;
+    
+    console.log("🔧 WebSocket constructor received config:", {
+      hasSpaceContext: !!this.config.spaceContext,
+      spaceContextType: this.config.spaceContext ? typeof this.config.spaceContext : "undefined",
+      spaceContextKeys: this.config.spaceContext ? Object.keys(this.config.spaceContext) : [],
+      userFid: this.config.userFid
+    });
   }
 
   /**
@@ -60,12 +78,9 @@ export class WebSocketService {
       this.ws = new WebSocket(this.config.url);
 
       this.ws.onopen = () => {
-        console.log("WebSocket connected to:", this.config.url);
+        console.log("✅ WebSocket connected to:", this.config.url);
         this.callbacks.onStatusChange("connected");
         this.reconnectAttempts = 0;
-
-        // Send session initialization
-        this.sendInitMessage();
       };
 
       this.ws.onmessage = (event) => {
@@ -79,17 +94,12 @@ export class WebSocketService {
       };
 
       this.ws.onclose = (event) => {
-        console.log("WebSocket disconnected:", event.code, event.reason);
+        console.log("🔌 WebSocket disconnected:", event.code, event.reason);
         this.callbacks.onStatusChange("disconnected");
-
-        // Attempt to reconnect if not manually closed
-        if (
-          event.code !== 1000 && 
-          this.reconnectAttempts < (this.config.maxReconnectAttempts || 5)
-        ) {
+        
+        // Auto-reconnect if not a clean disconnect
+        if (event.code !== 1000) {
           this.scheduleReconnect();
-        } else if (event.code !== 1000) {
-          this.callbacks.onError("Connection lost. Please try reconnecting manually.");
         }
       };
 
@@ -123,21 +133,21 @@ export class WebSocketService {
   }
 
   /**
-   * Send a message through WebSocket
+   * Send a message to the WebSocket server
    */
-  send(message: any): boolean {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      try {
-        this.ws.send(JSON.stringify(message));
-        return true;
-      } catch (error) {
-        console.error("Failed to send WebSocket message:", error);
-        this.callbacks.onError("Failed to send message");
-        return false;
-      }
-    } else {
-      console.warn("WebSocket not connected, cannot send message");
-      this.callbacks.onError("WebSocket not connected");
+  private send(message: OutgoingMessage): boolean {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.error("Cannot send message: WebSocket not connected");
+      return false;
+    }
+
+    try {
+      const messageString = JSON.stringify(message);
+      this.ws.send(messageString);
+      return true;
+    } catch (error) {
+      console.error("Failed to send WebSocket message:", error);
+      this.callbacks.onError("Failed to send message");
       return false;
     }
   }
@@ -146,31 +156,56 @@ export class WebSocketService {
    * Send a ping message for connectivity testing
    */
   ping(): boolean {
-    const pingMessage = {
+    const pingMessage: OutgoingMessage = {
       name: "ping",
       message: "ping",
-      fid: this.config.userFid || null
     };
-    
-    console.log("Sending ping with FID:", pingMessage);
+
     return this.send(pingMessage);
   }
 
   /**
-   * Send a user message to the AI
+   * Send a user message with space context to the AI
    */
   sendUserMessage(message: string): boolean {
-    const wsMessage: WebSocketMessage = {
-      type: "user_message",
-      data: {
-        message,
-        sessionId: this.config.sessionId,
-        context: this.config.spaceContext,
-        fid: this.config.userFid || null,
-      },
+    if (!this.isConnected()) {
+      console.error("WebSocket not connected");
+      return false;
+    }
+
+    // Create message with space context
+    const messageWithContext = this.formatMessageWithContext(message);
+    
+    const outgoingMessage: OutgoingMessage = {
+      name: `user_${this.config.userFid || 'anonymous'}`,
+      message: messageWithContext,
     };
 
-    return this.send(wsMessage);
+    return this.send(outgoingMessage);
+  }
+
+  /**
+   * Format message with space context
+   */
+  private formatMessageWithContext(userMessage: string): string {
+    if (!this.config.spaceContext) {
+      console.log("📝 Sending message without space context (context not available)");
+      return userMessage;
+    }
+
+    console.log("📝 Including current space config in message context:", {
+      fidgetCount: this.config.spaceContext.fidgetInstanceDatums?.length || 0,
+      hasTheme: !!this.config.spaceContext.theme,
+      hasLayout: !!this.config.spaceContext.layoutID
+    });
+
+    // Include current space config as context for the AI
+    const contextMessage = `User request: ${userMessage}
+
+Current space configuration:
+${JSON.stringify(this.config.spaceContext, null, 2)}`;
+
+    return contextMessage;
   }
 
   /**
@@ -192,19 +227,6 @@ export class WebSocketService {
    */
   updateUserFid(fid: number | null): void {
     this.config.userFid = fid;
-  }
-
-  /**
-   * Send session initialization message
-   */
-  private sendInitMessage(): void {
-    const initMessage = {
-      name: "init",
-      message: "session_initialized",
-    };
-    
-    console.log("Sending init message:", initMessage);
-    this.send(initMessage);
   }
 
   /**
