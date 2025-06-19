@@ -26,6 +26,7 @@ export const createInitialContractSpaceConfigForAddress = (
           defaultSellToken: "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
           fromChain: getNetworkWithId(network),
           toChain: getNetworkWithId(network),
+          size: 0.8,
         },
       },
       fidgetType: "Swap",
