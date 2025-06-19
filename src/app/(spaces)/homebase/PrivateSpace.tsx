@@ -209,6 +209,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
       renameTab={renameTab}
       commitTabOrder={commitTabOrder}
       commitTab={commitTab}
+      isEditable={true}
     />
   ), [tabName, tabOrdering.local, editMode]);
 

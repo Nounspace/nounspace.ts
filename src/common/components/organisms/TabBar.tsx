@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
@@ -14,6 +14,8 @@ import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
+import { useSidebarContext } from "./Sidebar";
+import { Button } from "../atoms/button";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -32,6 +34,7 @@ interface TabBarProps {
   isTokenPage?: boolean;
   contractAddress?: Address;
   pageType?: SpacePageType | undefined;
+  isEditable?: boolean;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -45,7 +48,7 @@ const validateTabName = (tabName: string): string | null => {
   return null;
 };
 
-const TabBar = React.memo(function TabBar({
+function TabBar({
   inHome,
   inHomebase,
   inEditMode,
@@ -61,10 +64,12 @@ const TabBar = React.memo(function TabBar({
   getSpacePageUrl,
   isTokenPage,
   contractAddress,
-  pageType
+  pageType,
+  isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
+  const { setEditMode } = useSidebarContext();
 
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
@@ -204,7 +209,15 @@ const TabBar = React.memo(function TabBar({
         )}
         <div className="relative flex flex-auto h-16 z-70 bg-white">
           {isMobile && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white flex gap-2">
+              {!inEditMode && isEditable && (
+                <Button
+                  onClick={() => setEditMode(true)}
+                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <FaPaintbrush />
+                </Button>
+              )}
               <NogsGateButton
                 onClick={() => handleCreateTab(generateNewTabName())}
                 className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
@@ -275,9 +288,20 @@ const TabBar = React.memo(function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
+        {!inEditMode && !mobilePreview && isEditable && (
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
+            <Button
+              onClick={() => setEditMode(true)}
+              className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+            >
+              <FaPaintbrush className="mr-2" />
+              Customize
+            </Button>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   );
-});
+}
 
 export default TabBar;
