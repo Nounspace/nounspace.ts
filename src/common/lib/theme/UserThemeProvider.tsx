@@ -80,7 +80,9 @@ export const UserThemeProvider = ({ children }) => {
       previewThemeName: previewConfig?.theme?.name,
       regularThemeName: userTheme?.name,
       activeThemeName: activeTheme?.name,
-      backgroundChanged: isPreviewMode ? previewConfig?.theme?.properties?.background : userTheme?.properties?.background
+      backgroundChanged: isPreviewMode
+        ? previewConfig?.theme?.properties?.background
+        : userTheme?.properties?.background,
     });
   }, [isPreviewMode, previewConfig, userTheme, activeTheme]);
 
@@ -101,7 +103,10 @@ export const UserThemeProvider = ({ children }) => {
   // Log preview mode changes for debugging
   useEffect(() => {
     if (isPreviewMode && previewConfig?.theme) {
-      console.log("🎨 Preview mode: Applying preview theme", previewConfig.theme.name);
+      console.log(
+        "🎨 Preview mode: Applying preview theme",
+        previewConfig.theme.name
+      );
     }
   }, [isPreviewMode, previewConfig?.theme]);
 
@@ -117,21 +122,21 @@ export const UserThemeProvider = ({ children }) => {
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-headings-font-color",
-      headingsFontColor,
+      headingsFontColor
     );
   }, [headingsFontColor]);
 
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-font",
-      FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style.fontFamily,
+      FONT_FAMILY_OPTIONS_BY_NAME[font]?.config?.style.fontFamily
     );
   }, [font]);
 
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-headings-font",
-      FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily,
+      FONT_FAMILY_OPTIONS_BY_NAME[headingsFont]?.config?.style.fontFamily
     );
   }, [headingsFont]);
 
@@ -143,14 +148,14 @@ export const UserThemeProvider = ({ children }) => {
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-fidget-border-width",
-      fidgetBorderWidth,
+      fidgetBorderWidth
     );
   }, [fidgetBorderWidth]);
 
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-fidget-border-color",
-      fidgetBorderColor,
+      fidgetBorderColor
     );
   }, [fidgetBorderColor]);
 
@@ -161,7 +166,7 @@ export const UserThemeProvider = ({ children }) => {
   useEffect(() => {
     setGlobalStyleProperty(
       "--user-theme-fidget-border-radius",
-      fidgetBorderRadius,
+      fidgetBorderRadius
     );
   }, [fidgetBorderRadius]);
 
