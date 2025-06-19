@@ -850,10 +850,15 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     <aside
       className="h-screen flex-row flex bg-white transition-transform border-r"
       aria-label="AI Chat Sidebar"
+      style={{
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        wordBreak: 'break-word'
+      }}
     >
-      <div className="flex-1 w-[350px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
+      <div className="flex-1 w-[420px] min-w-[380px] max-w-[480px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-4 border-b">
+        <div className="flex items-center justify-between px-6 pb-4 border-b flex-shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <LucideSparkle className="w-5 h-5 text-white" />
@@ -936,17 +941,17 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 px-4 py-2">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 min-h-0 px-6 py-2">
+          <div className="space-y-4 pb-4">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
+                className={`flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                } items-start w-full`}
               >
                 {message.role === "assistant" && (
-                  <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1 mr-3">
                     <Image
                       src="/images/tom_alerts.png"
                       alt="AI Avatar"
@@ -958,12 +963,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 )}
 
                 <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                  className={`rounded-lg px-3 py-2 ${
                     message.role === "user"
-                      ? "bg-blue-500 text-white ml-auto"
+                      ? "bg-blue-500 text-white max-w-[280px]"
                       : message.aiType === "builder"
-                        ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900"
-                        : "bg-gray-100 text-gray-900"
+                        ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900 max-w-[320px]"
+                        : "bg-gray-100 text-gray-900 max-w-[320px]"
                   }`}
                 >
                   {/* Builder AI indicator */}
@@ -974,7 +979,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   )}
 
-                  <div className="text-sm whitespace-pre-wrap">
+                  <div className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere word-wrap-break-word hyphens-auto">
                     {message.content}
                   </div>
 
@@ -1056,7 +1061,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 </div>
 
                 {message.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-1 ml-3">
                     <User className="w-4 h-4 text-white" />
                   </div>
                 )}
@@ -1064,8 +1069,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             ))}
 
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="flex justify-start items-start w-full">
+                <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1 mr-3">
                   <Image
                     src="/images/tom_alerts.png"
                     alt="AI Avatar"
@@ -1074,7 +1079,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     className="rounded-full object-cover shadow-md"
                   />
                 </div>
-                <div className="bg-gray-100 rounded-lg px-3 py-2">
+                <div className="bg-gray-100 rounded-lg px-3 py-2 max-w-[320px]">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm text-gray-600">
@@ -1092,7 +1097,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </ScrollArea>
 
         {/* Input */}
-        <div className="p-4 border-t">
+        <div className="p-6 border-t flex-shrink-0">
           <div className="flex gap-2">
             <Textarea
               ref={textareaRef}
@@ -1100,7 +1105,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="Ask me to customize your space..."
-              className="flex-1 min-h-[40px] max-h-[120px] resize-none"
+              className="flex-1 min-h-[40px] max-h-[120px] resize-none text-sm"
               disabled={isLoading}
             />
             <Button
@@ -1139,7 +1144,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </div>
 
         {/* Quick Actions */}
-        <div className="px-4 pb-4">
+        <div className="px-6 pb-4 flex-shrink-0">
           <div className="text-xs font-medium text-gray-700 mb-2">Debug:</div>
           <div className="grid grid-cols-2 gap-2 mb-2">
             <Button
