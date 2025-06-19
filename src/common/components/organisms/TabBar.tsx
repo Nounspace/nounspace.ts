@@ -45,7 +45,7 @@ const validateTabName = (tabName: string): string | null => {
   return null;
 };
 
-function TabBar({
+const TabBar = React.memo(function TabBar({
   inHome,
   inHomebase,
   inEditMode,
@@ -278,6 +278,6 @@ function TabBar({
       </div>
     </TooltipProvider>
   );
-}
+});
 
 export default TabBar;

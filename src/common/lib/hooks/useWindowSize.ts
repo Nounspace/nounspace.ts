@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export default function useWindowSize() {
   const hasWindow = typeof window !== "undefined";
@@ -16,16 +16,28 @@ export default function useWindowSize() {
     getWindowDimensions(),
   );
 
-  function handleResize() {
-    setWindowDimensions(getWindowDimensions());
-  }
+  const debounce = <T extends (...args: any[]) => any>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
+    let timeout: NodeJS.Timeout | null = null;
+
+    return (...args: any[]) => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  const handleResize = useCallback(
+    debounce(() => {
+      setWindowDimensions(getWindowDimensions());
+    }, 200),
+    [],
+  );
 
   useEffect(() => {
     if (hasWindow) {
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
-  }, [hasWindow]);
+  }, [hasWindow, handleResize]);
 
   return windowDimensions;
 }

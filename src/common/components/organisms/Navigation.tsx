@@ -17,25 +17,23 @@ import {
 import { Button } from "../atoms/button";
 import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
-// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
-// is `RiQuillPenLine`. Update the import to prevent build errors.
 import { Badge } from "@/common/components/atoms/badge";
-import SearchModal from "@/common/components/organisms/SearchModal";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { usePathname } from "next/navigation";
 import { RiQuillPenLine } from "react-icons/ri";
-import ExploreIcon from "../atoms/icons/ExploreIcon";
 import HomeIcon from "../atoms/icons/HomeIcon";
-import LoginIcon from "../atoms/icons/LoginIcon";
-import LogoutIcon from "../atoms/icons/LogoutIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
+import ExploreIcon from "../atoms/icons/ExploreIcon";
+import LogoutIcon from "../atoms/icons/LogoutIcon";
+import LoginIcon from "../atoms/icons/LoginIcon";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import SearchModal from "./SearchModal";
 
 type NavItemProps = {
   label: string;
