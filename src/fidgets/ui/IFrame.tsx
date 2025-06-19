@@ -217,7 +217,9 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (embedInfo.directEmbed && transformedUrl) {
-    // Always use positioning and zoom controls
+    // Calculate additional height needed for the iframe when offset
+    const extraHeight = cropOffsetY > 0 ? cropOffsetY : 0;
+    
     return (
       <div
         style={{ 
@@ -239,7 +241,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             left: `${cropOffsetX}%`,
             top: `${cropOffsetY}%`,
             width: `${100 / size}%`,
-            height: `${100 / size}%`,
+            height: `${(100 + extraHeight) / size}%`,
             overflow: isScrollable ? "auto" : "hidden",
           }}
           className="size-full"

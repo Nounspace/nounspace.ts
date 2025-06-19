@@ -1,5 +1,6 @@
 import React from "react";
 import { Slider } from "@mui/material";
+
 export type WidthSliderProps = {
   min: number;
   max: number;
@@ -23,6 +24,8 @@ const WidthSlider: React.FC<WidthSliderProps> = ({
         min={min}
         max={max}
         onChange={(_, value) => onChange(value as number)}
+        valueLabelDisplay="auto"
+        valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
       />
     </div>
   );
