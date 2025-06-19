@@ -1,5 +1,7 @@
 "use client";
-import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import InfoToast from "@/common/components/organisms/InfoBanner";
+import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -9,16 +11,19 @@ import {
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
-import InfoToast from "@/common/components/organisms/InfoBanner";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
+import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import SpaceLoading from "./SpaceLoading";
-import MobileView from "./MobileView";
-import DesktopView from "./DesktopView";
+// Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { LayoutFidgets } from "@/fidgets";
+import Image from "next/image";
+
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -73,24 +78,25 @@ export default function Space({
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
-  // Use the useIsMobile hook instead of duplicating logic
-  const isMobile = useIsMobile();
+  const viewportMobile = useIsMobile();
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const pathname = usePathname();
+
+  const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
+  const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
+  const isHomebasePath = useMemo(() => pathname?.startsWith('/homebase'), [pathname]);
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
   }, [config.isEditable]);
 
-  // Use a ref to track if cleanup has run
   const cleanupHasRun = React.useRef(false);
 
-  // Clean up unused fidgetInstanceDatums when config is first loaded
   useEffect(() => {
-    // Skip if cleanup has already run
     if (cleanupHasRun.current) {
       return;
     }
 
-    // Skip if config is not loaded
     if (
       !config?.layoutDetails?.layoutConfig?.layout ||
       !config?.fidgetInstanceDatums
@@ -98,36 +104,18 @@ export default function Space({
       return;
     }
 
-    // Get fidget IDs from layout
     const layoutFidgetIds = new Set(
       config.layoutDetails.layoutConfig.layout.map((item) => item.i)
     );
 
-    // Identify layout items that reference missing fidget data
-    const orphanedLayoutItems = config.layoutDetails.layoutConfig.layout.filter(
-      (item) => !config.fidgetInstanceDatums[item.i]
-    );
-
-    // Remove orphaned layout items
-    const layoutWithoutOrphans = config.layoutDetails.layoutConfig.layout.filter(
-      (item) => !!config.fidgetInstanceDatums[item.i]
-    );
-
-    const orphanedIds = orphanedLayoutItems.map((item) => item.i);
-
-    // Find unused fidgets
     const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
       (id) => !layoutFidgetIds.has(id)
     );
-
-    // Remove unused fidgets
     if (unusedFidgetIds.length > 0) {
       const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
       unusedFidgetIds.forEach((id) => {
         delete cleanedFidgetInstanceDatums[id];
       });
-
-      // Only save if we have fidgets left
       if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
         saveConfig({
           fidgetInstanceDatums: cleanedFidgetInstanceDatums,
@@ -137,68 +125,35 @@ export default function Space({
         });
       }
     }
-
-    // Check for and handle overlapping fidgets on the filtered layout
-    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } = cleanupLayout(
-      layoutWithoutOrphans,
+    // Check for and handle overlapping fidgets
+    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+      config.layoutDetails.layoutConfig.layout,
       config.fidgetInstanceDatums,
       !isNil(profile),
       !isNil(feed)
     );
-
-    const cleanedLayout = cleanedAfterOverlap;
-    const allRemovedIds = [...removedFidgetIds, ...orphanedIds];
-
     const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    allRemovedIds.forEach(id => {
+    removedFidgetIds.forEach(id => {
       delete cleanedFidgetInstanceDatums[id];
     });
-    
     let settingsChanged = false;
-    let datumFieldsUpdated = false;
-
-    // Normalize configuration keys and ensure required fields
+    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
     Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
       const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown> | undefined;
-
-      if (settings) {
-        const keyMap: Record<string, string> = {
-          "fidget Shadow": "fidgetShadow",
-          "font Color": "fontColor",
-        };
-        Object.entries(keyMap).forEach(([oldKey, newKey]) => {
-          if (oldKey in settings) {
-            settings[newKey] = settings[oldKey];
-            delete settings[oldKey];
-            settingsChanged = true;
-          }
-        });
-      }
-
-      if (!datum.fidgetType || !datum.id) {
-        cleanedFidgetInstanceDatums[id] = {
-          ...datum,
-          fidgetType: datum.fidgetType || id.split(":")[0],
-          id: datum.id || id,
-        };
-        datumFieldsUpdated = true;
+      const settings = datum?.config?.settings;
+      // Add defensive check to ensure settings is a valid object before using 'in' operator
+      if (settings && typeof settings === 'object' && settings !== null && "fidget Shadow" in settings) {
+        const typedSettings = settings as Record<string, unknown>;
+        typedSettings.fidgetShadow = typedSettings["fidget Shadow"];
+        delete typedSettings["fidget Shadow"];
+        settingsChanged = true;
       }
     });
-
     // Make Queued Changes
-    const layoutChanged =
-      cleanedLayout.length !== config.layoutDetails.layoutConfig.layout.length ||
-      cleanedLayout.some(
-        (item, i) =>
-          item.x !== config.layoutDetails.layoutConfig.layout[i]?.x ||
-          item.y !== config.layoutDetails.layoutConfig.layout[i]?.y ||
-          item.i !== config.layoutDetails.layoutConfig.layout[i]?.i ||
-          item.w !== config.layoutDetails.layoutConfig.layout[i]?.w ||
-          item.h !== config.layoutDetails.layoutConfig.layout[i]?.h
-      );
-
-    if (allRemovedIds.length > 0 || layoutChanged || settingsChanged || datumFieldsUpdated) {
+    if (removedFidgetIds.length > 0 ||
+      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
+        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
+      settingsChanged) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
@@ -215,16 +170,18 @@ export default function Space({
 
     // Mark cleanup as complete
     cleanupHasRun.current = true;
-  }, []); // Run only once on mount
+  }, []);
 
   function saveExitEditMode() {
     commitConfig();
     setEditMode(false);
+    setMobilePreview(false);
   }
 
   function cancelExitEditMode() {
     resetConfig();
     setEditMode(false);
+    setMobilePreview(false);
   }
 
   async function saveLocalConfig({
@@ -236,8 +193,8 @@ export default function Space({
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
-            layoutConfig,
-          }
+          layoutConfig,
+        }
         : undefined,
       theme,
       fidgetInstanceDatums,
@@ -245,79 +202,265 @@ export default function Space({
     });
   }
 
-  // Get mobile fidget IDs from the current config
-  const mobileFidgetIds = useMemo(() => 
-    Object.keys(config.fidgetInstanceDatums || {}),
-  [config?.fidgetInstanceDatums]);
-  
-  // Get desktop layout config from config or use default
-  const desktopLayoutConfig = useMemo(() => 
-    config?.layoutDetails?.layoutConfig ?? {
-      layout: [],
-      layoutFidget: "grid",
-    },
-  [config?.layoutDetails?.layoutConfig]);
+  // Memoize the LayoutFidget component selection based on mobile state
+  const LayoutFidget = useMemo(() => {
+    if (isMobile) {
+      return LayoutFidgets["tabFullScreen"];
+    } else {
+      const layoutFidgetKey =
+        config?.layoutDetails?.layoutFidget &&
+          LayoutFidgets[config.layoutDetails.layoutFidget]
+          ? config.layoutDetails.layoutFidget
+          : "grid";
+      return LayoutFidgets[layoutFidgetKey];
+    }
+  }, [isMobile, config?.layoutDetails?.layoutFidget]);
 
-  return (
-    <div className="user-theme-background size-full relative overflow-hidden">
-      <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
-        <div className="flex flex-col h-full">
-          <div style={{ position: "fixed", zIndex: 9999 }}>
-            <InfoToast />
-          </div>
-          {!isUndefined(profile) ? (
-            <div className="z-50 bg-white md:h-40">{profile}</div>
-          ) : null}
+  // Memoize the layoutConfig to prevent unnecessary re-renders
+  const layoutConfig = useMemo(() => {
+    if (isMobile) {
+      const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
 
-          <div className="relative">
+      return {
+        layout: fidgetIds,
+        layoutFidget: "tabFullScreen",
+      };
+    } else {
+      return (
+        config?.layoutDetails?.layoutConfig ?? {
+          layout: [],
+          layoutFidget: "grid",
+        }
+      );
+    }
+  }, [
+    isMobile,
+    config?.layoutDetails?.layoutConfig,
+    config?.fidgetInstanceDatums,
+  ]);
+
+  // Memoize the LayoutFidget render props that don't change during fidget movement
+  const layoutFidgetProps = useMemo(() => {
+    return {
+      theme: config.theme,
+      fidgetInstanceDatums: config.fidgetInstanceDatums,
+      fidgetTrayContents: config.fidgetTrayContents,
+      inEditMode: !viewportMobile && editMode,
+      saveExitEditMode: saveExitEditMode,
+      cancelExitEditMode: cancelExitEditMode,
+      portalRef: portalRef,
+      saveConfig: saveLocalConfig,
+      hasProfile: !isMobile && !isNil(profile),
+      hasFeed: !isNil(feed),
+      tabNames: config.tabNames,
+      fid: config.fid,
+    };
+  }, [
+    config.theme,
+    config.fidgetInstanceDatums,
+    config.fidgetTrayContents,
+    config.tabNames,
+    config.fid,
+    isMobile,
+    viewportMobile,
+    editMode,
+    portalRef,
+    profile,
+    feed,
+  ]);
+
+  if (!LayoutFidget) {
+    console.error("LayoutFidget is undefined");
+  }
+
+  const mainContent = (
+    <div className="flex flex-col h-full overflow-y-auto touch-auto">
+      <div style={{ position: "fixed", zIndex: 9999 }}>
+        <InfoToast />
+      </div>
+      {!isUndefined(profile) ? (
+        <div className={`z-50 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}>{profile}</div>
+      ) : null}
+
+      <div className="relative flex-shrink-0 bg-white">
+        {!isMobile && (
+          <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+        )}
+        {isMobile && (
+          <div className="w-full border-b flex-shrink-0" style={{ backgroundColor: 'white' }}>
             <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
           </div>
+        )}
+      </div>
 
-          <div className={isMobile ? "size-full" : "flex h-full"}>
-            {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
-            ) : null}
+      <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
+        {!isUndefined(feed) && !isMobile ? (
+          <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
+        ) : null}
 
-            <div className={isMobile ? "size-full" : "grow h-[calc(100vh-64px)]"}>
-              <Suspense
-                fallback={
-                  <SpaceLoading
-                    hasProfile={!isNil(profile)}
-                    hasFeed={!isNil(feed)}
-                  />
-                }
-              >
-                {isMobile ? (
-                  <MobileView
-                    fidgetInstanceDatums={config.fidgetInstanceDatums}
-                    layoutFidgetIds={mobileFidgetIds}
-                    theme={config.theme}
-                    saveConfig={saveLocalConfig}
-                    tabNames={config.tabNames}
-                  />
-                ) : (
-                  <DesktopView
-                    layoutConfig={{ ...desktopLayoutConfig }}
-                    theme={config.theme}
-                    fidgetInstanceDatums={config.fidgetInstanceDatums}
-                    fidgetTrayContents={config.fidgetTrayContents}
-                    inEditMode={editMode}
-                    saveExitEditMode={saveExitEditMode}
-                    cancelExitEditMode={cancelExitEditMode}
-                    portalRef={portalRef}
-                    saveConfig={saveLocalConfig}
-                    hasProfile={!isNil(profile)}
-                    hasFeed={!isNil(feed)}
-                    tabNames={config.tabNames}
-                    fid={config.fid}
-                  />
-                )}
-              </Suspense>
-            </div>
-          </div>
+        {!isUndefined(feed) && isMobile && !isHomebasePath ? (
+          <div className="w-full overflow-y-auto touch-auto">{feed}</div>
+        ) : null}
+
+        <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
+
+          <Suspense
+            fallback={
+              <SpaceLoading
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+              />
+            }
+          >
+            {LayoutFidget ? (
+              <LayoutFidget
+                layoutConfig={{ ...layoutConfig }}
+                {...layoutFidgetProps}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <SpaceLoading
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
+                />
+              </div>
+            )}
+          </Suspense>
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {showMobileContainer && editMode && portalRef.current
+        ? createPortal(
+          <aside
+            id="logo-sidebar"
+            className="h-screen flex-row flex bg-white"
+            aria-label="Sidebar"
+          >
+            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+              <ThemeSettingsEditor
+                theme={config.theme}
+                saveTheme={(newTheme) =>
+                  saveLocalConfig({ theme: newTheme })
+                }
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                saveFidgetInstanceDatums={(datums) =>
+                  saveLocalConfig({ fidgetInstanceDatums: datums })
+                }
+              />
+            </div>
+          </aside>,
+          portalRef.current,
+        )
+        : null}
+      <div
+        className={`w-full h-full relative ${showMobileContainer
+          ? "flex flex-col items-center justify-center"
+          : "user-theme-background flex flex-col"
+          }`}
+        style={{
+          backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background
+        }}
+      >
+        {showMobileContainer && (
+          <Image
+            src="https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png"
+            alt="Mobile preview background"
+            fill
+            className="object-cover pointer-events-none select-none -z-10"
+          />
+        )}
+        <div className="w-full h-full transition-all duration-100 ease-out">
+          {showMobileContainer ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="relative w-[344px] h-[744px]">
+                <div className="absolute top-[10px] left-[16px] z-0">
+                  <div
+                    className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: config.theme?.properties.background || 'white',
+                      transform: 'scale(1.0)',
+                      transformOrigin: 'top left'
+                    }}
+                  >
+                    <CustomHTMLBackground
+                      html={config.theme?.properties.backgroundHTML}
+                      className="absolute inset-0 pointer-events-none w-full h-full"
+                    />
+                          <div className="flex-1 w-full overflow-auto" >
+                   
+                      <div className="relative w-full h-full flex flex-col">
+                        <div className="w-full bg-white">
+                          {!isUndefined(profile) ? (
+                            <div className="w-full max-h-fit">
+                              <div className="rounded-md shadow-sm overflow-hidden">
+                                {profile}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="border-b relative">
+                            <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                              {tabBar}
+                            </div>
+                          </div>
+
+                          {!isUndefined(feed) && !isHomebasePath ? (
+                            <div className="w-full overflow-auto bg-white">
+                              {feed}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <div className="flex-1 w-full h-full">
+                          <Suspense fallback={
+                            <SpaceLoading
+                              hasProfile={!isNil(profile)}
+                              hasFeed={!isNil(feed)}
+                            />
+                          }>
+                            {LayoutFidget ? (
+                              <LayoutFidget
+                                layoutConfig={{ ...layoutConfig }}
+                                {...layoutFidgetProps}
+                              /> 
+                            ) : (
+                                <SpaceLoading
+                                  hasProfile={!isNil(profile)}
+                                  hasFeed={!isNil(feed)}
+                                />
+                            
+                            )}
+                          </Suspense>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Image
+                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+                  alt="Phone mockup"
+                  width={344}
+                  height={744}
+                  className="pointer-events-none select-none absolute inset-0 z-10"
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 }

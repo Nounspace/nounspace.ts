@@ -52,18 +52,24 @@ export const useSidebarContext = (): SidebarContextValue => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = () => {
-  const { editMode, sidebarEditable, portalRef } = useSidebarContext();
+  const { editMode, setEditMode, sidebarEditable, portalRef } =
+    useSidebarContext();
+
+  function enterEditMode() {
+    setEditMode(true);
+  }
 
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
       <div className={editMode ? "hidden" : "md:flex mx-auto h-full hidden"}>
-        <Navigation isEditable={sidebarEditable} />
+        <Navigation
+          isEditable={sidebarEditable}
+          enterEditMode={enterEditMode}
+        />
       </div>
     </>
   );
 };
 
-export default Object.assign(Sidebar, {
-  ContextProvider: SidebarContextProvider
-});
+export default Sidebar;

@@ -2,43 +2,47 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
-import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
+import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
-import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
-// import Head from "next/head";
-import type { Metadata } from 'next' // Migrating next/head
 
-export const metadata: Metadata = {
-  title: 'Nounspace',
+export const metadata = {
+  title: "Nounspace",
   description:
-    'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
+    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
   openGraph: {
-    title: 'Nounspace',
+    siteName: "Nounspace",
+    title: "Nounspace",
+    type: "website",
     description:
-      'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
+      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
+    images: {
+      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+      type: "image/png",
+      width: 1200,
+      height: 737,
+    },
     url: WEBSITE_URL,
-    siteName: 'Nounspace',
-    type: 'website',
-    images: [
-      {
-        url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
-        type: 'image/png',
-        width: 1200,
-        height: 737,
-      },
-    ],
   },
   icons: {
     icon: [
-      { url: '/images/favicon.ico' },
-      { url: '/images/favicon-32x32.png', sizes: '32x32' },
-      { url: '/images/favicon-16x16.png', sizes: '16x16' },
+      {
+        url: "/images/favicon.ico",
+      },
+      {
+        url: "/images/favicon-32x32.png",
+        sizes: "32x32",
+      },
+      {
+        url: "/images/favicon-16x16.png",
+        sizes: "16x16",
+      },
     ],
-    apple: '/images/apple-touch-icon.png',
+    apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(defaultFrame),
+    "fc:frame": JSON.stringify(defaultFrame),
   },
 };
 
@@ -53,6 +57,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <Head>
+        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
+      </Head>
       <body>
         <SpeedInsights />
         <Providers>{sidebarLayout(children)}</Providers>
@@ -64,16 +71,10 @@ export default function RootLayout({
 const sidebarLayout = (page: React.ReactNode) => {
   return (
     <>
-      <div className="min-h-screen max-w-screen w-screen flex flex-col">
-        {/* App Navigation Bar */}
-        <div className="w-full flex-shrink-0 md:hidden">
-          <ClientMobileHeaderWrapper />
-        </div>
-
-        {/* Main Content with Sidebar */}
-        <div className="flex w-full h-full flex-grow">
-          <div className="mx-auto transition-all duration-100 ease-out z-10 hidden md:block">
-            <ClientSidebarWrapper />
+      <div className="min-h-screen max-w-screen h-screen w-screen">
+        <div className="flex w-full h-full">
+          <div className="mx-auto transition-all duration-100 ease-out z-10">
+            <Sidebar />
           </div>
           {page}
         </div>
