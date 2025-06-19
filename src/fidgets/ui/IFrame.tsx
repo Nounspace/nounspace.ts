@@ -1,5 +1,6 @@
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
+import CropControls from "@/common/components/molecules/CropControls";
 import {
   FidgetArgs,
   FidgetModule,
@@ -16,6 +17,9 @@ import { BsCloud, BsCloudFill } from "react-icons/bs";
 export type IFrameFidgetSettings = {
   url: string;
   size: number;
+  cropOffsetX: number;
+  cropOffsetY: number;
+  isScrollable: boolean;
 } & FidgetSettingsStyle;
 
 const DISALLOW_URL_PATTERNS = [
@@ -44,19 +48,67 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
-   ...defaultStyleFields,
     {
       fieldName: "size",
-      displayName: "Size",
-      displayNameHint: "Drag the slider to adjust the zoom level.",
+      displayName: "Zoom Level",
+      displayNameHint: "Drag the slider to adjust the zoom level of the iframe content",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
           <IFrameWidthSlider {...props} />
         </WithMargin>
       ),
-      group: "style",
+      group: "settings",
     },
+    {
+      fieldName: "cropOffsetX",
+      displayName: "Horizontal Position",
+      displayNameHint: "Adjust the horizontal position of the iframe content",
+      required: false,
+      default: 0,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CropControls
+            offsetX={props.value || 0}
+            onOffsetXChange={props.onChange}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "cropOffsetY",
+      displayName: "Vertical Position",
+      displayNameHint: "Adjust the vertical position of the iframe content",
+      required: false,
+      default: 0,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CropControls
+            offsetY={props.value || 0}
+            onOffsetYChange={props.onChange}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+    {
+      fieldName: "isScrollable",
+      displayName: "Allow Scrolling",
+      displayNameHint: "Enable or disable scrolling within the iframe",
+      required: false,
+      default: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <CropControls
+            isScrollable={props.value || false}
+            onScrollableChange={props.onChange}
+          />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
+   ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,
@@ -67,7 +119,13 @@ const frameConfig: FidgetProperties = {
 };
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
-  settings: { url, size = 1 },
+  settings: { 
+    url, 
+    size = 1, 
+    cropOffsetX = 0, 
+    cropOffsetY = 0,
+    isScrollable = false
+  },
 }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -159,9 +217,15 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (embedInfo.directEmbed && transformedUrl) {
+    // Always use positioning and zoom controls
     return (
       <div
-        style={{ overflow: "hidden", width: "100%" }}
+        style={{ 
+          overflow: "hidden", 
+          width: "100%",
+          height: "100%",
+          position: "relative"
+        }}
         className="h-[calc(100dvh-156px)] md:h-full"
       >
         <iframe
@@ -169,10 +233,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
           title="IFrame Fidget"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           style={{
-            transform: `scale(${scaleValue})`,
+            position: "absolute",
+            transform: `scale(${size})`,
             transformOrigin: "0 0",
-            width: `${100 / scaleValue}%`,
-            height: `${100 / scaleValue}%`,
+            left: `${cropOffsetX}%`,
+            top: `${cropOffsetY}%`,
+            width: `${100 / size}%`,
+            height: `${100 / size}%`,
+            overflow: isScrollable ? "auto" : "hidden",
           }}
           className="size-full"
         />
