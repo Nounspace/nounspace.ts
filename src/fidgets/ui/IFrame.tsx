@@ -169,6 +169,9 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
           title="IFrame Fidget"
           sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
           style={{
+            // Use CSS zoom to avoid shifting when modals within the iframe open
+            // `transform` acts as a fallback for browsers without zoom support
+            zoom: scaleValue,
             transform: `scale(${scaleValue})`,
             transformOrigin: "0 0",
             width: `${100 / scaleValue}%`,
