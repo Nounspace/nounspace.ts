@@ -483,314 +483,391 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
 };
 
 export const NOUNS_TAB_CONFIG: SpaceConfig = {
-  layoutID: "nouns-tab-layout",
-  layoutDetails: {
-    layoutConfig: {
-      layout: [
+  "layoutID": "exported-grid-layout",
+  "layoutDetails": {
+    "layoutConfig": {
+      "layout": [
         {
-          w: 6,
-          h: 3,
-          x: 0,
-          y: 0,
-          i: "text:69ace79e-c7c9-4103-8054-58be8b6d0e09",
-          minW: 3,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
+          "w": 3,
+          "h": 2,
+          "x": 0,
+          "y": 0,
+          "i": "text:37020e2a-e4c1-47b5-b6e9-761cf905371e",
+          "minW": 3,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
         },
         {
-          w: 6,
-          h: 5,
-          x: 6,
-          y: 0,
-          i: "feed:7bfdfe2a-f9bf-4811-bfcf-27caf174083a",
-          minW: 4,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-        {
-          w: 3,
-          h: 2,
-          x: 0,
-          y: 3,
-          i: "Video:b2ecb43d-7e90-47b1-9d18-48811c3446dc",
-          minW: 2,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-        {
-          w: 3,
-          h: 5,
-          x: 0,
-          y: 5,
-          i: "iframe:eda6a2ea-5ab8-40df-b1d8-ae64dc2ec19b",
-          minW: 2,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-        {
-          w: 3,
-          h: 7,
-          x: 3,
-          y: 3,
-          i: "iframe:6b407404-9f64-43c0-a049-248c8dc1dd84",
-          minW: 2,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-        {
-          w: 3,
-          h: 5,
-          x: 6,
-          y: 5,
-          i: "governance:1ba6b901-bf43-4b4e-813a-80ece917ecab",
-          minW: 2,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-        {
-          w: 3,
-          h: 5,
-          x: 9,
-          y: 5,
-          i: "iframe:d1fcf325-dda8-4f1c-a995-b8fe953b264a",
-          minW: 2,
-          maxW: 36,
-          minH: 2,
-          maxH: 36,
-          moved: false,
-          static: false,
-          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
-          isBounded: false,
-        },
-      ],
+          "w": 1,
+          "h": 1,
+          "x": 0,
+          "y": 2,
+          "i": "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c",
+          "minW": 1,
+          "maxW": 36,
+          "minH": 1,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        }
+      ]
     },
-    layoutFidget: "grid",
+    "layoutFidget": "grid"
   },
-  theme: {
-    id: "Homebase-Tab 8-Theme",
-    name: "Homebase-Tab 8-Theme",
-    properties: {
-      background: "#ffffff",
-      backgroundHTML:
-        '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8" />\n  <title>Nouns DAO Fun Animated Background</title>\n  <style>\n    /* Reset and basic setup */\n    * {\n      margin: 0;\n      padding: 0;\n      box-sizing: border-box;\n    }\n\n    html, body {\n      width: 100%;\n      height: 100%;\n      overflow: hidden; /* Hide overflow so no scrollbars appear during animations */\n    }\n\n    /* Container with an animated multi-stop gradient */\n    .background {\n      position: relative;\n      width: 100%;\n      height: 100%;\n      /* A single gradient with multiple color stops for a smooth blend */\n      background: linear-gradient(\n        160deg,\n        #FCCD04 0%,\n        #E80173 20%,\n        #45AAF2 40%,\n        #23D160 60%,\n        #FDB900 80%,\n        #C8A2C8 100%\n      );\n      /* Increase the background size and animate its position for a continuous flowing effect */\n      background-size: 400% 400%;\n      animation: gradientFlow 30s ease-in-out infinite;\n    }\n\n    @keyframes gradientFlow {\n      0% {\n        background-position: 0% 50%;\n      }\n      50% {\n        background-position: 100% 50%;\n      }\n      100% {\n        background-position: 0% 50%;\n      }\n    }\n\n    /* Noggly magic: each "noggles" element floats up from bottom and spins */\n    .noggles {\n      position: absolute;\n      bottom: -15%;\n      width: 60px;\n      height: 60px;\n      background-image: url("https://nouns.wtf/static/media/noggles.7644bfd0.svg");\n      background-repeat: no-repeat;\n      background-size: contain;\n      opacity: 0;\n      animation-name: floatUp;\n      animation-iteration-count: infinite;\n      animation-fill-mode: forwards;\n    }\n\n    @keyframes floatUp {\n      0% {\n        transform: translateY(0) rotate(0deg);\n        opacity: 0;\n      }\n      10% {\n        opacity: 1;\n      }\n      100% {\n        transform: translateY(-120vh) rotate(1080deg);\n        opacity: 0;\n      }\n    }\n\n    /*\n      Add multiple noggles instances with varied positions (left),\n      durations, delays, and timing functions for variety.\n    */\n    .noggles:nth-child(1) {\n      left: 5%;\n      animation-duration: 8s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(2) {\n      left: 15%;\n      animation-duration: 9s;\n      animation-delay: 2s;\n      animation-timing-function: linear;\n    }\n    .noggles:nth-child(3) {\n      left: 25%;\n      animation-duration: 10s;\n      animation-delay: 4s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(4) {\n      left: 35%;\n      animation-duration: 11s;\n      animation-delay: 1s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(5) {\n      left: 45%;\n      animation-duration: 13s;\n      animation-delay: 3s;\n      animation-timing-function: linear;\n    }\n    .noggles:nth-child(6) {\n      left: 55%;\n      animation-duration: 9s;\n      animation-delay: 5s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(7) {\n      left: 65%;\n      animation-duration: 12s;\n      animation-delay: 1s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(8) {\n      left: 75%;\n      animation-duration: 10s;\n      animation-delay: 6s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(9) {\n      left: 85%;\n      animation-duration: 12s;\n      animation-delay: 2s;\n      animation-timing-function: linear;\n    }\n    .noggles:nth-child(10) {\n      left: 92%;\n      animation-duration: 14s;\n      animation-delay: 4s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(11) {\n      left: 10%;\n      animation-duration: 11s;\n      animation-delay: 7s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(12) {\n      left: 20%;\n      animation-duration: 9s;\n      animation-delay: 3s;\n      animation-timing-function: linear;\n    }\n    .noggles:nth-child(13) {\n      left: 30%;\n      animation-duration: 8s;\n      animation-delay: 1s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(14) {\n      left: 40%;\n      animation-duration: 12s;\n      animation-delay: 5s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(15) {\n      left: 50%;\n      animation-duration: 10s;\n      animation-delay: 2s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(16) {\n      left: 60%;\n      animation-duration: 14s;\n      animation-delay: 6s;\n      animation-timing-function: linear;\n    }\n    .noggles:nth-child(17) {\n      left: 70%;\n      animation-duration: 11s;\n      animation-delay: 4s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(18) {\n      left: 80%;\n      animation-duration: 8s;\n      animation-delay: 7s;\n      animation-timing-function: ease-in-out;\n    }\n    .noggles:nth-child(19) {\n      left: 88%;\n      animation-duration: 10s;\n      animation-delay: 3s;\n      animation-timing-function: ease;\n    }\n    .noggles:nth-child(20) {\n      left: 95%;\n      animation-duration: 13s;\n      animation-delay: 1s;\n      animation-timing-function: linear;\n    }\n  </style>\n</head>\n<body>\n  <div class="background">\n    <!-- 20 noggles elements -->\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n    <div class="noggles"></div>\n  </div>\n</body>\n</html>\n',
-      fidgetBackground: "#000000",
-      fidgetBorderColor: "#eeeeee",
-      fidgetBorderWidth: "4px",
-      fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-      font: "Inter",
-      fontColor: "#000000",
-      headingsFont: "Poppins",
-      headingsFontColor: "#000000",
-      musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
-      fidgetBorderRadius: "12px",
-      gridSpacing: "16",
-    },
+  "theme": {
+    "id": "Homebase-Tab 2-Theme",
+    "name": "Homebase-Tab 2-Theme",
+    "properties": {
+      "font": "Inter",
+      "fontColor": "#000000",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "background": "#ffffff",
+      "backgroundHTML": "",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+      "fidgetBackground": "#ffffff",
+      "fidgetBorderWidth": "1px",
+      "fidgetBorderColor": "#eeeeee",
+      "fidgetShadow": "none",
+      "fidgetBorderRadius": "12px",
+      "gridSpacing": "16"
+    }
   },
-  fidgetInstanceDatums: {
-    "text:69ace79e-c7c9-4103-8054-58be8b6d0e09": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "#ffffff80",
-          css: "",
-          fidgetBorderColor: "rgba(246, 129, 230, 1)",
-          fidgetBorderWidth: "2px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          fontColor: "#000000",
-          fontFamily: "var(--user-theme-font)",
-          headingsFontColor: "#000000",
-          headingsFontFamily: "var(--user-theme-headings-font)",
-          text: "A platform built by the Nouns community for the Nouns community.\n\nExplore the Nouniverse, or log in with Farcaster on desktop to customize your own **Profile** and **Dashboard** with **Themes**, **Mini Apps**, and **Tabs**.",
-          title: "Welcome to Nounspace",
-          url: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
-          urlColor: "blue",
-        },
+  "fidgetInstanceDatums": {
+    "text:37020e2a-e4c1-47b5-b6e9-761cf905371e": {
+      "config": {
+        "editable": true,
+        "data": {},
+        "settings": {
+          "title": "Text Fidget",
+          "text": "Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.",
+          "fontFamily": "var(--user-theme-font)",
+          "fontColor": "var(--user-theme-font-color)",
+          "urlColor": "var(--user-theme-link-color)",
+          "headingsFontFamily": "var(--user-theme-headings-font)",
+          "headingsFontColor": "var(--user-theme-headings-font-color)",
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "css": ""
+        }
       },
-      fidgetType: "text",
-      id: "text:69ace79e-c7c9-4103-8054-58be8b6d0e09",
-    },
-    "Video:b2ecb43d-7e90-47b1-9d18-48811c3446dc": {
-      fidgetType: "Video",
-      id: "Video:b2ecb43d-7e90-47b1-9d18-48811c3446dc",
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "#ffffff",
-          fidgetBorderColor: "#25b1f3",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          size: 0.8,
-          url: "https://www.youtube.com/watch?v=lOzCA7bZG_k",
-        },
-      },
-    },
-    "feed:7bfdfe2a-f9bf-4811-bfcf-27caf174083a": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          Xhandle: "thenounspace",
-          background: "#ffffff80",
-          channel: "nouns",
-          css: "",
-          feedType: "filter",
-          fidgetBorderColor: "rgba(132, 67, 153, 1)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          filterType: "channel_id",
-          fontColor: "#000000",
-          fontFamily: "",
-          headingsFontColor: "#000000",
-          headingsFontFamily: "",
-          keyword: "",
-          selectPlatform: {
-            icon: "/images/farcaster.jpeg",
-            name: "Farcaster",
+      "fidgetType": "text",
+      "id": "text:37020e2a-e4c1-47b5-b6e9-761cf905371e",
+      "properties": {
+        "fidgetName": "Text",
+        "icon": 128196,
+        "fields": [
+          {
+            "fieldName": "title",
+            "displayName": "Title",
+            "displayNameHint": "Optional title for your Text Fidget.",
+            "default": "Text Fidget",
+            "required": false,
+            "group": "settings"
           },
-          style: "",
-          text: "A platform built by the Nouns community for the Nouns community.\n\nExplore the Nouniverse, or log in with Farcaster on desktop to customize your own **Profile** and **Dashboard** with **Themes**, **Mini Apps**, and **Tabs**.",
-          title: "Welcome to Nounspace",
-          urlColor: "blue",
-          users: "",
-        },
-      },
-      fidgetType: "feed",
-      id: "feed:7bfdfe2a-f9bf-4811-bfcf-27caf174083a",
-    },
-    "governance:1ba6b901-bf43-4b4e-813a-80ece917ecab": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          Xhandle: "thenounspace",
-          background: "#ffffff",
-          channel: "nouns",
-          feedType: "filter",
-          fidgetBorderColor: "rgba(232, 200, 12, 1)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          filterType: "channel_id",
-          fontColor: "#000000",
-          fontFamily: "",
-          keyword: "",
-          selectPlatform: {
-            icon: "/images/farcaster.jpeg",
-            name: "Farcaster",
+          {
+            "fieldName": "text",
+            "displayName": "Text",
+            "displayNameHint": "Use Markdown syntax to format and embed content",
+            "default": "Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.",
+            "required": true,
+            "group": "settings"
           },
-          selectedDao: {
-            contract: "",
-            graphUrl:
-              "https://api.goldsky.com/api/public/project_cldf2o9pqagp43svvbk5u3kmo/subgraphs/nouns/prod/gn",
-            name: "Nouns DAO",
+          {
+            "fieldName": "fontFamily",
+            "displayName": "Font Family",
+            "displayNameHint": "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
+            "default": "var(--user-theme-font)",
+            "required": false,
+            "group": "style"
           },
-          style: "",
-          users: "",
-        },
-      },
-      fidgetType: "governance",
-      id: "governance:1ba6b901-bf43-4b4e-813a-80ece917ecab",
-    },
-    "iframe:6b407404-9f64-43c0-a049-248c8dc1dd84": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "#ffffff",
-          css: "",
-          customMobileDisplayName: "Auction",
-          fidgetBorderColor: "rgba(245, 155, 52, 1)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          fontColor: "#000000",
-          fontFamily: "",
-          headingsFontColor: "#000000",
-          headingsFontFamily: "",
-          showOnMobile: true,
-          size: 0.7,
-          text: "A platform built by the Nouns community for the Nouns community.\n\nExplore the Nouniverse, or log in with Farcaster on desktop to customize your own **Profile** and **Dashboard** with **Themes**, **Mini Apps**, and **Tabs**.",
-          title: "Welcome to Nounspace",
-          url: "https://nounswap.wtf",
-          urlColor: "blue",
-        },
-      },
-      fidgetType: "iframe",
-      id: "iframe:6b407404-9f64-43c0-a049-248c8dc1dd84",
-    },
-    "iframe:eda6a2ea-5ab8-40df-b1d8-ae64dc2ec19b": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "#ffffff",
-          customMobileDisplayName: "Explore",
-          fidgetBorderColor: "rgba(76, 234, 104, 1)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          showOnMobile: true,
-          url: "https://nouns.world",
-        },
-      },
-      fidgetType: "iframe",
-      id: "iframe:eda6a2ea-5ab8-40df-b1d8-ae64dc2ec19b",
-    },
-    "iframe:d1fcf325-dda8-4f1c-a995-b8fe953b264a": {
-      config: {
-        data: {},
-        editable: true,
-        settings: {
-          background: "#ffffff",
-          customMobileDisplayName: "Docs",
-          fidgetBorderColor: "rgba(7, 136, 64, 1)",
-          fidgetBorderWidth: "4px",
-          fidgetShadow: "0 2px 5px rgba(0,0,0,0.15)",
-          selectedDao: {
-            contract: "",
-            graphUrl:
-              "https://api.goldsky.com/api/public/project_cldf2o9pqagp43svvbk5u3kmo/subgraphs/nouns/prod/gn",
-            name: "Nouns DAO",
+          {
+            "fieldName": "fontColor",
+            "displayName": "Font Color",
+            "displayNameHint": "Color used for the text input (body text)",
+            "default": "var(--user-theme-font-color)",
+            "required": false,
+            "group": "style"
           },
-          showOnMobile: true,
-          url: "https://nouns.center",
-        },
-      },
-      fidgetType: "iframe",
-      id: "iframe:d1fcf325-dda8-4f1c-a995-b8fe953b264a",
+          {
+            "fieldName": "urlColor",
+            "displayName": "URL Color",
+            "displayNameHint": "Color used for links in the text input (body text).",
+            "required": false,
+            "default": "var(--user-theme-link-color)",
+            "group": "style"
+          },
+          {
+            "fieldName": "headingsFontFamily",
+            "displayName": "Headings Font Family",
+            "displayNameHint": "Font used for the title input. Set to Theme Font to inherit the Title Font from the Theme.",
+            "default": "var(--user-theme-headings-font)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "headingsFontColor",
+            "displayName": "Headings Font Color",
+            "displayNameHint": "Color used for the title input",
+            "default": "var(--user-theme-headings-font-color)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "showOnMobile",
+            "displayName": "Show on Mobile",
+            "displayNameHint": "Toggle whether this Fidget should be visible on mobile devices.",
+            "default": true,
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "customMobileDisplayName",
+            "displayName": "Mobile Display Name",
+            "displayNameHint": "Set a custom name to display for this Fidget in the mobile nav.",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "background",
+            "displayName": "Background",
+            "displayNameHint": "Color used for the background of the Fidget.",
+            "default": "var(--user-theme-fidget-background)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetBorderWidth",
+            "displayName": "Fidget Border Width",
+            "displayNameHint": "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
+            "default": "var(--user-theme-fidget-border-width)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetBorderColor",
+            "displayName": "Fidget Border Color",
+            "displayNameHint": "Color of the Fidget's Border.",
+            "default": "var(--user-theme-fidget-border-color)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetShadow",
+            "displayName": "Fidget Shadow",
+            "displayNameHint": "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+            "default": "var(--user-theme-fidget-shadow)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "css",
+            "displayName": "Custom CSS",
+            "default": "",
+            "required": false,
+            "group": "code"
+          }
+        ],
+        "size": {
+          "minHeight": 2,
+          "maxHeight": 36,
+          "minWidth": 3,
+          "maxWidth": 36
+        }
+      }
     },
+    "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c": {
+      "config": {
+        "editable": true,
+        "data": {},
+        "settings": {
+          "selectMediaSource": {
+            "name": "URL"
+          },
+          "imageUrl": "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+          "nftAddress": "",
+          "nftTokenId": "",
+          "Scale": 1,
+          "Link": "",
+          "badgeColor": "rgb(55, 114, 249)",
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)"
+        }
+      },
+      "fidgetType": "gallery",
+      "id": "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c",
+      "properties": {
+        "fidgetName": "Image",
+        "icon": 128444,
+        "fields": [
+          {
+            "fieldName": "selectMediaSource",
+            "displayName": "Source",
+            "required": false,
+            "default": {
+              "name": "URL"
+            },
+            "group": "settings"
+          },
+          {
+            "fieldName": "imageUploader",
+            "displayName": "Upload Image",
+            "required": false,
+            "group": "settings"
+          },
+          {
+            "fieldName": "imageUrl",
+            "displayName": "Image URL",
+            "displayNameHint": "Right click on a publicly hosted image to copy its address, then paste the image address here.",
+            "required": true,
+            "default": "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
+            "group": "settings"
+          },
+          {
+            "fieldName": "network",
+            "displayName": "Network",
+            "displayNameHint": "Choose the blockchain network where your NFTs are stored.",
+            "required": true,
+            "group": "settings"
+          },
+          {
+            "fieldName": "nftSelector",
+            "displayName": "NFT",
+            "displayNameHint": "Select a verified wallet address to view your NFTs.",
+            "required": true,
+            "group": "settings"
+          },
+          {
+            "fieldName": "nftAddress",
+            "displayName": "Collection Address",
+            "displayNameHint": "Contract address of the NFT collection",
+            "required": true,
+            "default": "",
+            "group": "settings"
+          },
+          {
+            "fieldName": "nftTokenId",
+            "displayName": "Token ID",
+            "displayNameHint": "Unique identifier of the NFT within the collection",
+            "required": true,
+            "default": "",
+            "group": "settings"
+          },
+          {
+            "fieldName": "Scale",
+            "displayName": "Scale",
+            "displayNameHint": "Adjust the image size",
+            "required": false,
+            "default": 1,
+            "group": "style"
+          },
+          {
+            "fieldName": "Link",
+            "displayName": "Links To",
+            "displayNameHint": "URL to open when image is clicked",
+            "required": false,
+            "default": "",
+            "group": "settings"
+          },
+          {
+            "fieldName": "badgeColor",
+            "displayName": "Badge Color",
+            "displayNameHint": "Color for the verification badge",
+            "required": false,
+            "group": "style",
+            "default": "rgb(55, 114, 249)"
+          },
+          {
+            "fieldName": "showOnMobile",
+            "displayName": "Show on Mobile",
+            "displayNameHint": "Toggle whether this Fidget should be visible on mobile devices.",
+            "default": true,
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "customMobileDisplayName",
+            "displayName": "Mobile Display Name",
+            "displayNameHint": "Set a custom name to display for this Fidget in the mobile nav.",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "background",
+            "displayName": "Background",
+            "displayNameHint": "Color used for the background of the Fidget.",
+            "default": "var(--user-theme-fidget-background)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetBorderWidth",
+            "displayName": "Fidget Border Width",
+            "displayNameHint": "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
+            "default": "var(--user-theme-fidget-border-width)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetBorderColor",
+            "displayName": "Fidget Border Color",
+            "displayNameHint": "Color of the Fidget's Border.",
+            "default": "var(--user-theme-fidget-border-color)",
+            "required": false,
+            "group": "style"
+          },
+          {
+            "fieldName": "fidgetShadow",
+            "displayName": "Fidget Shadow",
+            "displayNameHint": "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+            "default": "var(--user-theme-fidget-shadow)",
+            "required": false,
+            "group": "style"
+          }
+        ],
+        "size": {
+          "minHeight": 1,
+          "maxHeight": 36,
+          "minWidth": 1,
+          "maxWidth": 36
+        }
+      }
+    }
   },
-  isEditable: false,
-  fidgetTrayContents: [],
+  "fidgetTrayContents": [],
+  "isEditable": true,
+  "timestamp": "2025-06-19T07:51:23.810Z"
 };
 
 export const NOUNSPACE_TAB_CONFIG: SpaceConfig = {
