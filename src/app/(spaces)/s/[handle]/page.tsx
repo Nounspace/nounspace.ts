@@ -46,11 +46,9 @@ const loadUserSpaceData = async (
   return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
 };
 
-const ProfileSpacePage = async ({
-  params,
-}) => {
+const ProfileSpacePage = async ({ params }) => {
   const { handle, tabName: tabNameParam } = await params;
-  
+
   console.log("ProfileSpacePage rendering with params:", {
     handle,
     tabNameParam,
@@ -68,12 +66,12 @@ const ProfileSpacePage = async ({
   const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName } =
     await loadUserSpaceData(handle, decodedTabNameParam);
 
-  console.log("ProfileSpacePage data loaded:", {
-    spaceOwnerFid,
-    spaceOwnerUsername,
-    spaceId,
-    tabName,
-  });
+  // console.log("ProfileSpacePage data loaded:", {
+  //   spaceOwnerFid,
+  //   spaceOwnerUsername,
+  //   spaceId,
+  //   tabName,
+  // });
 
   return (
     <ProfileSpace

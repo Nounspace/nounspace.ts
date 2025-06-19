@@ -783,12 +783,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     );
   };
 
-  const handleCancelPreview = () => {
-    setPreviewConfig(null);
-    setIsPreviewMode(false);
-    toast.info("Preview cancelled. Returned to original configuration.");
-  };
-
   // Simple ping function for WebSocket testing
   const handlePing = () => {
     if (wsServiceRef.current?.isConnected()) {
@@ -938,48 +932,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   };
 
-  const handleTestContextMessage = () => {
-    if (!wsServiceRef.current?.isConnected()) {
-      toast.error("WebSocket not connected");
-      return;
-    }
-
-    // Prevent rapid duplicate calls (less than 2 seconds apart)
-    const now = Date.now();
-    if (now - lastTestMessageTime < 2000) {
-      toast.warning("Please wait before sending another test message");
-      return;
-    }
-    setLastTestMessageTime(now);
-
-    console.log("🧪 Sending SIMPLIFIED test context message");
-
-    // Use a simpler test method to avoid the complex sendUserMessageWithExplicitContext
-    const simpleTestMessage = {
-      type: "user_message",
-      message:
-        "TEST: Please confirm you received the space context with this message and tell me about the current fidgets and theme in my space",
-      sessionId: sessionId,
-      context: actualSpaceContext
-        ? JSON.stringify(actualSpaceContext, null, 2)
-        : null,
-      fid: currentFid || null,
-      name: currentFid || null,
-      timestamp: new Date().toISOString(),
-      isTestMessage: true,
-    };
-
-    const success = wsServiceRef.current?.send(simpleTestMessage);
-
-    if (success) {
-      toast.success(
-        "Simplified test message sent! Check console and wait for AI response."
-      );
-    } else {
-      toast.error("Failed to send test message");
-    }
-  };
-
   return (
     <aside
       className="h-screen flex-row flex bg-white transition-transform border-r"
@@ -1040,29 +992,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Test Context Button - for debugging */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleTestContextMessage}
-              className="text-blue-600 border-blue-300 hover:bg-blue-50 text-xs"
-              title="Send test message with context for debugging"
-            >
-              🧪 Test Context
-            </Button>
-
-            {/* Cancel Preview Button */}
-            {isPreviewMode && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCancelPreview}
-                className="text-orange-600 border-orange-300 hover:bg-orange-50"
-              >
-                <X className="w-4 h-4 mr-1" />
-                Cancel Preview
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="sm"

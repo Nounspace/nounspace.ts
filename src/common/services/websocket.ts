@@ -218,7 +218,6 @@ export class WebSocketService {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-
   /**
    * Send a ping message for connectivity testing (WORKING FINE)
    */
@@ -268,7 +267,7 @@ export class WebSocketService {
   }
 
   /**
-   * Send a user message to the AI (WE ARE NOT USING THIS )
+   * Send a user message to the AI (WE ARE NOT USING THIS)
    */
   sendUserMessage(message: string, spaceContext?: any): boolean {
     // Use provided context or fall back to stored context

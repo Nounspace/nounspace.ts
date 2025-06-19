@@ -1,11 +1,12 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import defaultTheme from "@/common/lib/theme/defaultTheme";
 import setGlobalStyleProperty from "@/common/lib/utils/setGlobalStyleProperty";
 import { UserTheme } from "@/common/lib/theme";
 import { useAppStore } from "@/common/data/stores/app";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
+import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export interface UserThemeContextValue {
   userTheme: UserTheme;
@@ -57,7 +58,31 @@ export const useUserTheme = () => {
 };
 
 export const UserThemeProvider = ({ children }) => {
+  const { previewConfig, isPreviewMode } = useSidebarContext();
   const userTheme = useUserTheme();
+
+  // Use preview theme if in preview mode, otherwise use regular theme
+  const activeTheme = useMemo(() => {
+    if (isPreviewMode && previewConfig?.theme) {
+      console.log("🎨 Using preview theme:", previewConfig.theme.name);
+      return previewConfig.theme;
+    }
+    console.log("🎨 Using regular theme:", userTheme?.name);
+    return userTheme;
+  }, [isPreviewMode, previewConfig?.theme, userTheme]);
+
+  // Debug logging for theme switching
+  useEffect(() => {
+    console.log("🎨 UserThemeProvider - Theme State:", {
+      isPreviewMode,
+      hasPreviewConfig: !!previewConfig,
+      hasPreviewTheme: !!previewConfig?.theme,
+      previewThemeName: previewConfig?.theme?.name,
+      regularThemeName: userTheme?.name,
+      activeThemeName: activeTheme?.name,
+      backgroundChanged: isPreviewMode ? previewConfig?.theme?.properties?.background : userTheme?.properties?.background
+    });
+  }, [isPreviewMode, previewConfig, userTheme, activeTheme]);
 
   const {
     background,
@@ -71,9 +96,17 @@ export const UserThemeProvider = ({ children }) => {
     fidgetShadow,
     fidgetBorderRadius,
     gridSpacing,
-  } = userTheme.properties;
+  } = activeTheme.properties;
+
+  // Log preview mode changes for debugging
+  useEffect(() => {
+    if (isPreviewMode && previewConfig?.theme) {
+      console.log("🎨 Preview mode: Applying preview theme", previewConfig.theme.name);
+    }
+  }, [isPreviewMode, previewConfig?.theme]);
 
   useEffect(() => {
+    console.log("🎨 Background CSS update:", background);
     setGlobalStyleProperty("--user-theme-background", background);
   }, [background]);
 
@@ -103,6 +136,7 @@ export const UserThemeProvider = ({ children }) => {
   }, [headingsFont]);
 
   useEffect(() => {
+    console.log("🎨 Fidget background CSS update:", fidgetBackground);
     setGlobalStyleProperty("--user-theme-fidget-background", fidgetBackground);
   }, [fidgetBackground]);
 

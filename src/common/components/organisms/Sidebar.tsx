@@ -6,6 +6,7 @@ import React, {
   useState,
   useRef,
   useMemo,
+  useCallback,
 } from "react";
 import { createPortal } from "react-dom";
 import Navigation from "./Navigation";
@@ -21,7 +22,8 @@ export type SidebarContextValue = {
   setEditWithAiMode: (value: boolean) => void;
   sidebarEditable: boolean;
   setSidebarEditable: (value: boolean) => void;
-  portalRef: React.RefObject<HTMLDivElement>;
+  portalRef: React.RefObject<HTMLDivElement>; // For manual editor
+  aiPortalRef: React.RefObject<HTMLDivElement>; // For AI chat
   previewConfig: any | null;
   setPreviewConfig: (config: any | null) => void;
   isPreviewMode: boolean;
@@ -40,17 +42,38 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
   const [sidebarEditable, setSidebarEditable] = useState(false);
   const [previewConfig, setPreviewConfig] = useState<any | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-  const portalRef = useRef<HTMLDivElement>(null);
+  const portalRef = useRef<HTMLDivElement>(null); // For manual editor
+  const aiPortalRef = useRef<HTMLDivElement>(null); // For AI chat
+
+  // Enhanced setters to handle mode conflicts
+  const handleSetEditMode = useCallback((value: boolean) => {
+    if (value && editWithAiMode) {
+      // If trying to enable edit mode while AI mode is active, disable AI mode first
+      setEditWithAiMode(false);
+      console.log("🔄 Switching from AI mode to manual edit mode");
+    }
+    setEditMode(value);
+  }, [editWithAiMode]);
+
+  const handleSetEditWithAiMode = useCallback((value: boolean) => {
+    if (value && editMode) {
+      // If trying to enable AI mode while edit mode is active, disable edit mode first
+      setEditMode(false);
+      console.log("🔄 Switching from manual edit mode to AI mode");
+    }
+    setEditWithAiMode(value);
+  }, [editMode]);
 
   const value = useMemo(
     () => ({
       editMode,
-      setEditMode,
+      setEditMode: handleSetEditMode,
       editWithAiMode,
-      setEditWithAiMode,
+      setEditWithAiMode: handleSetEditWithAiMode,
       sidebarEditable,
       setSidebarEditable,
       portalRef,
+      aiPortalRef,
       previewConfig,
       setPreviewConfig,
       isPreviewMode,
@@ -61,8 +84,11 @@ export const SidebarContextProvider: React.FC<SidebarContextProviderProps> = ({
       editWithAiMode,
       sidebarEditable,
       portalRef,
+      aiPortalRef,
       previewConfig,
       isPreviewMode,
+      handleSetEditMode,
+      handleSetEditWithAiMode,
     ]
   );
 
@@ -82,6 +108,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     setEditWithAiMode,
     sidebarEditable,
     portalRef,
+    aiPortalRef,
   } = useSidebarContext();
 
   const aiChatSidebarPortal = (portalNode: HTMLDivElement | null) => {
@@ -95,12 +122,21 @@ export const Sidebar: React.FC<SidebarProps> = () => {
 
   return (
     <>
+      {/* Separate portal for AI Chat */}
+      <div
+        ref={aiPortalRef}
+        className={editWithAiMode ? "w-full" : ""}
+      >
+        {aiChatSidebarPortal(aiPortalRef.current)}
+      </div>
+      
+      {/* Separate portal for Manual Editor - this is handled by Grid component */}
       <div
         ref={portalRef}
-        className={editMode || editWithAiMode ? "w-full" : ""}
-      >
-        {aiChatSidebarPortal(portalRef.current)}
-      </div>
+        className={editMode ? "w-full" : ""}
+      />
+      
+      {/* Navigation - hidden when either mode is active */}
       <div
         className={
           editMode || editWithAiMode

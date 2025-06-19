@@ -56,6 +56,7 @@ type SpaceArgs = {
   feed?: ReactNode;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
+  editWithAiMode?: boolean;
   setSidebarEditable: (v: boolean) => void;
   portalRef: React.RefObject<HTMLDivElement>;
 };
@@ -70,6 +71,7 @@ export default function Space({
   feed,
   setEditMode,
   editMode,
+  editWithAiMode = false,
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
@@ -292,7 +294,7 @@ export default function Space({
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !isMobile && editMode, // No edit mode on mobile
+      inEditMode: !isMobile && editMode && !editWithAiMode, // Manual edit mode only, not AI mode
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -310,6 +312,7 @@ export default function Space({
     config.fid,
     isMobile,
     editMode,
+    editWithAiMode,
     portalRef,
     profile,
     feed,
