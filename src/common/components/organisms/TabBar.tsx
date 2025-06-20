@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React from "react";
 import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
@@ -192,54 +192,31 @@ function TabBar({
     }
 
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-    
-    // Don't do anything if we're already on this tab
-    if (tabName === currentTab) {
-      console.log("Already on this tab, not switching");
-      return;
-    }
-    
-    // Force the component to update the UI immediately
-    if (inHomebase) {
-      console.log("Switching to tab in homebase:", tabName);
-    }
-    
-    // Call switchTabTo with a minimal delay to ensure event handling is complete
-    setTimeout(() => {
-      switchTabTo(tabName, true);
-    }, 0);
-  }, [switchTabTo, currentTab, inHomebase]);
+
+    switchTabTo(tabName, true);
+  }, [switchTabTo]);
 
   const isLoggedIn = getIsLoggedIn();
-  
-  // Remember the customization button to avoid unnecessary re-renders
-  const customizeButton = useMemo(() => {
-    if (!isEditable || inEditMode || (mobilePreview && !isMobile)) return null;
-    
-    return (
-      <Button
-        onClick={() => setEditMode(true)}
-        className={`items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold ${isMobile ? 'shadow-md' : ''}`}
-        aria-label="Customizar aparência"
-      >
-        <FaPaintbrush className={isMobile ? '' : 'mr-2'} />
-        {!isMobile && "Customize"}
-      </Button>
-    );
-  }, [isEditable, inEditMode, mobilePreview, isMobile, setEditMode]);
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-level-4 bg-white w-full">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white w-full">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-level-3 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="relative flex flex-auto h-16 z-level-3 bg-white">
+        <div className="relative flex flex-auto h-16 z-70 bg-white">
           {isMobile && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-level-4 bg-white flex gap-2">
-              {customizeButton}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white flex gap-2">
+              {!inEditMode && isEditable && (
+                <Button
+                  onClick={() => setEditMode(true)}
+                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <FaPaintbrush />
+                </Button>
+              )}
               <NogsGateButton
                 onClick={() => handleCreateTab(generateNewTabName())}
                 className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
@@ -269,14 +246,9 @@ function TabBar({
                 <AnimatePresence initial={false}>
                   {map(
                     inHomebase
-                      ? ["Feed", ...tabList.filter(name => name !== "Feed")]
+                      ? ["Feed", ...tabList]
                       : tabList,
                     (tabName: string) => {
-                      // Prevent duplicated Feed tab in homebase
-                      const uniqueTabs = new Set();
-                      if (uniqueTabs.has(tabName)) return null;
-                      uniqueTabs.add(tabName);
-                      
                       return (
                         <Tab
                           key={tabName}
@@ -284,7 +256,7 @@ function TabBar({
                           tabName={tabName}
                           inEditMode={inEditMode}
                           isSelected={currentTab === tabName}
-                          onClick={handleTabClick}
+                          onClick={() => handleTabClick(tabName)}
                           removeable={isEditableTab(tabName)}
                           draggable={inEditMode}
                           renameable={isEditableTab(tabName)}
@@ -303,7 +275,7 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode && !mobilePreview && !isMobile ? (
-          <div className="mr-36 flex flex-row z-level-5">
+          <div className="mr-36 flex flex-row z-infinity">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
               className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
@@ -315,9 +287,15 @@ function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
-        {!isMobile && customizeButton && (
+        {!inEditMode && !mobilePreview && isEditable && (
           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
-            {customizeButton}
+            <Button
+              onClick={() => setEditMode(true)}
+              className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+            >
+              <FaPaintbrush className="mr-2" />
+              Customize
+            </Button>
           </div>
         )}
       </div>
