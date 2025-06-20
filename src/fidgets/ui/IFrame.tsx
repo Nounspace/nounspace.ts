@@ -119,6 +119,20 @@ const frameConfig: FidgetProperties = {
   },
 };
 
+// Cache for iframe embed information
+const embedCache = new Map<string, {
+  data: {
+    directEmbed: boolean;
+    url?: string;
+    iframelyHtml?: string | null;
+  };
+  timestamp: number;
+  expiresAt: number;
+}>();
+
+// Cache duration: 1 hour
+const CACHE_DURATION = 60 * 60 * 1000;
+
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { 
     url, 
@@ -160,6 +174,21 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     async function checkEmbedInfo() {
       if (!isValid || !sanitizedUrl) return;
 
+      // Check cache first
+      const cached = embedCache.get(sanitizedUrl);
+      const now = Date.now();
+      
+      if (cached && now < cached.expiresAt) {
+        // Use cached data
+        setEmbedInfo(cached.data);
+        return;
+      }
+
+      // Clear expired cache entry
+      if (cached && now >= cached.expiresAt) {
+        embedCache.delete(sanitizedUrl);
+      }
+
       setLoading(true);
       setError(null);
 
@@ -175,6 +204,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         }
 
         const data = await response.json();
+        
+        // Cache the result
+        embedCache.set(sanitizedUrl, {
+          data,
+          timestamp: now,
+          expiresAt: now + CACHE_DURATION
+        });
+        
         setEmbedInfo(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -199,13 +236,77 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return (
       <div
         style={{
-          height: "100vh",
+          height: "100%",
+          width: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
+          padding: "16px",
+          gap: "12px",
         }}
       >
-        <ErrorWrapper icon="⏳" message="Loading embed..." />
+        {/* Header skeleton */}
+        <div style={{
+          height: "24px",
+          width: "60%",
+          backgroundColor: "#e5e7eb",
+          borderRadius: "4px",
+          animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+        }} />
+        
+        {/* Content skeleton squares */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+          gap: "12px",
+          flex: 1,
+        }}>
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              style={{
+                height: "80px",
+                backgroundColor: "#f3f4f6",
+                borderRadius: "8px",
+                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                animationDelay: `${i * 0.1}s`
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Bottom content skeleton */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          marginTop: "8px"
+        }}>
+          <div style={{
+            height: "16px",
+            width: "100%",
+            backgroundColor: "#e5e7eb",
+            borderRadius: "4px",
+            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+          }} />
+          <div style={{
+            height: "16px",
+            width: "80%",
+            backgroundColor: "#e5e7eb",
+            borderRadius: "4px",
+            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+          }} />
+        </div>
+        
+        <style>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: .5;
+            }
+          }
+        `}</style>
       </div>
     );
   }
