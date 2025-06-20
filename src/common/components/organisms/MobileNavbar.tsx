@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { UserTheme } from "@/common/lib/theme";
@@ -50,7 +50,11 @@ const TabItem = React.memo(({
     <TabsTrigger 
       key={tab.id} 
       value={tab.id}
-      onClick={() => onSelect(tab.id)}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        onSelect(tab.id);
+      }}
       className={mergeClasses(
         "flex flex-col items-center justify-center",
         "min-w-[72px] h-full py-2 px-0",
