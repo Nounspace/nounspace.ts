@@ -114,8 +114,9 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
       headingsFont: "Poppins",
       headingsFontColor: "#000000",
       musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
-      fidgetBorderRadius: "12px",
-      gridSpacing: "16",
+     // Properties removed to fix typing error
+      // fidgetBorderRadius: "12px",
+      // gridSpacing: "16",
     },
   },
   fidgetInstanceDatums: {
