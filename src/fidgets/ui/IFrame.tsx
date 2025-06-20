@@ -8,6 +8,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
@@ -127,6 +128,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     isScrollable = false
   },
 }) => {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [embedInfo, setEmbedInfo] = useState<{
@@ -222,23 +224,17 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         style={{ 
           overflow: "hidden", 
           width: "100%",
-          height: "100%",
+          height: isMobile ? "100vh" : "100%",
           position: "relative"
         }}
-        className="h-[calc(100dvh-156px)] md:h-full"
       >
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          transform: `scale(${size})`,
-          transformOrigin: "0 0",
-        }}>
+        {isMobile ? (
           <div style={{
             position: "absolute",
             inset: 0,
-            width: `${100 / size}%`,
-            height: `${200 / size}%`,
-            transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
+            width: "100%",
+            height: "100%",
+            transform: `translate(${cropOffsetX}%, ${cropOffsetY * 1.6}%)`
           }}>
             <iframe
               src={transformedUrl}
@@ -252,7 +248,34 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               className="size-full"
             />
           </div>
-        </div>
+        ) : (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            transform: `scale(${size})`,
+            transformOrigin: "0 0",
+          }}>
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              width: `${100 / size}%`,
+              height: `${200 / size}%`,
+              transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
+            }}>
+              <iframe
+                src={transformedUrl}
+                title="IFrame Fidget"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  overflow: isScrollable ? "auto" : "hidden",
+                }}
+                className="size-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
