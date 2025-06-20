@@ -230,7 +230,8 @@ const Navigation: React.FC<NavProps> = ({
           {!mobile && (
             <button
               onClick={toggleSidebar}
-              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 sidebar-expand-button"
+              style={{zIndex: 9999}}
               aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
             >
               {shrunk ? (

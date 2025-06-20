@@ -15,12 +15,14 @@ export default function Spinner({
   color,
   ballColors,
 }: SpinnerProps) {
+  const spinnerClass = `${className || ''} z-level-0`;
+  
   return (
     <FidgetSpinner
       backgroundColor={color || "#ffffff"} // Default color to white instead of green
       ballColors={ballColors} // Ball colors default to red, blue, yellow
       wrapperStyle={style}
-      wrapperClass={className}
+      wrapperClass={spinnerClass}
     />
   );
 }

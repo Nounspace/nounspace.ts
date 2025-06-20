@@ -174,7 +174,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="relative z-level-2 h-full">
             {/* Special case for consolidated media tab */}
             {isMobile && mediaFidgetIds.length > 1 && (
               <TabsContent
@@ -262,7 +262,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           {/* Tabs fixed to bottom of screen */}
           {processedFidgetIds.length > 1 && (
             <div
-              className={`${isMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-50 bg-white`}
+              className={`${isMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-level-3 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation
