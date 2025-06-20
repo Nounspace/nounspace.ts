@@ -514,7 +514,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   const [itemsVisible] = useState(true);
   // Consider using CSS animations or useLayoutEffect for the fade-in effect,
-  // so that SSR and hydration don’t render blank content.
+  // so that SSR and hydration don't render blank content.
 
   // Log initial config state
   useEffect(() => {
