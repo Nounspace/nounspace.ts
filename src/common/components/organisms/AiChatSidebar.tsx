@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Textarea } from "@/common/components/atoms/textarea";
 import { ScrollArea } from "@/common/components/atoms/scroll-area";
@@ -6,7 +12,6 @@ import {
   LucideSparkle,
   Send,
   User,
-  Bot,
   Loader2,
   Settings,
   Check,
@@ -14,8 +19,9 @@ import {
   Wifi,
   WifiOff,
   Eye,
-  X,
 } from "lucide-react";
+import { CgProfile } from "react-icons/cg";
+import { first } from "lodash";
 import { toast } from "sonner";
 import { useSidebarContext } from "./Sidebar";
 import {
@@ -24,6 +30,7 @@ import {
   type IncomingMessage,
 } from "@/common/services/websocket";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useAppStore } from "@/common/data/stores/app";
 import Image from "next/image";
 
@@ -69,6 +76,25 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
     useSidebarContext();
   const currentFid = useCurrentFid();
+
+  // Load user data for profile picture
+  const { data } = useLoadFarcasterUser(currentFid || 0);
+  const user = useMemo(() => first(data?.users), [data]);
+  const username = useMemo(() => user?.username, [user]);
+
+  const CurrentUserImage = useCallback(
+    () =>
+      user && user.pfp_url ? (
+        <img
+          className="w-8 h-8 rounded-full object-cover"
+          src={user.pfp_url}
+          alt={username || "User"}
+        />
+      ) : (
+        <CgProfile className="w-5 h-5 text-white" />
+      ),
+    [user, username]
+  );
 
   // Get current space configuration from app store
   const {
@@ -434,13 +460,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           setIsLoading(false);
           setLoadingType(null);
 
-          // Force a state update to ensure preview is visible
-          setTimeout(() => {
-            console.log("🔄 Preview mode should now be active:", {
-              isPreviewModeNow: true,
-              previewConfigSet: !!spaceConfig,
-            });
-          }, 100);
 
           toast.success(
             "🎨 New space configuration created! Preview is now active."
@@ -613,37 +632,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     );
   };
 
-  const handleCancelPreview = () => {
-    console.log("🔄 Canceling preview mode");
-    setPreviewConfig(null);
-    setIsPreviewMode(false);
-    toast.info("Preview cancelled. Returned to original configuration.");
-  };
-
-  // Simple ping function for WebSocket testing
-  const handlePing = () => {
-    if (wsServiceRef.current?.isConnected()) {
-      const success = wsServiceRef.current.ping();
-
-      if (success) {
-        // Add a user message to show the ping in chat
-        const userMessage: Message = {
-          id: `ping-${Date.now()}`,
-          role: "user",
-          content: "🏓 Ping sent to server...",
-          timestamp: new Date(),
-          type: "text",
-        };
-        setMessages((prev) => [...prev, userMessage]);
-
-        toast.info("Ping sent! Waiting for pong response...");
-      }
-    } else {
-      toast.error(
-        "WebSocket not connected! Please wait for connection or try reconnecting."
-      );
-    }
-  };
+  // const handleCancelPreview = () => {
+  //   console.log("🔄 Canceling preview mode");
+  //   setPreviewConfig(null);
+  //   setIsPreviewMode(false);
+  //   toast.info("Preview cancelled. Returned to original configuration.");
+  // };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -657,7 +651,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       className="h-screen flex-row flex bg-white transition-transform border-r"
       aria-label="AI Chat Sidebar"
     >
-      <div className="flex-1 w-[350px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
+      <div className="flex-1 w-[420px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 pb-4 border-b">
           <div className="flex items-center gap-2">
@@ -665,7 +659,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               <LucideSparkle className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg">AI Customization</h2>
+              <h2 className="font-semibold text-lg">Vibe Customization</h2>
               <div className="flex items-center gap-2">
                 {/* Preview Mode Indicator */}
                 {isPreviewMode && (
@@ -708,7 +702,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           </div>
           <div className="flex items-center gap-2">
             {/* Cancel Preview Button */}
-            {isPreviewMode && (
+            {/* {isPreviewMode && (
               <Button
                 variant="outline"
                 size="sm"
@@ -718,7 +712,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 <X className="w-4 h-4 mr-1" />
                 Cancel Preview
               </Button>
-            )}
+            )} */}
             <Button
               variant="ghost"
               size="sm"
@@ -731,31 +725,31 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 px-4 py-2">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 px-3 py-2">
+          <div className="space-y-4 pr-2">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
+                className={`flex gap-2 ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 {message.role === "assistant" && (
-                  <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="w-8 h-8 relative flex items-center justify-center flex-shrink-0 mt-1">
                     <Image
                       src="/images/tom_alerts.png"
                       alt="AI Avatar"
-                      width={40}
-                      height={40}
+                      width={32}
+                      height={32}
                       className="rounded-full object-cover"
                     />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                  className={`flex-1 min-w-0 rounded-lg px-3 py-2 break-words overflow-wrap-anywhere ${
                     message.role === "user"
-                      ? "bg-blue-500 text-white ml-auto"
+                      ? "bg-blue-500 text-white ml-auto max-w-[85%]"
                       : message.aiType === "builder"
                         ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900"
                         : "bg-gray-100 text-gray-900"
@@ -769,7 +763,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     </div>
                   )}
 
-                  <div className="text-sm whitespace-pre-wrap">
+                  <div className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere word-break hyphens-auto">
                     {message.content}
                   </div>
 
@@ -851,21 +845,25 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 </div>
 
                 {message.role === "user" && (
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-1">
-                    <User className="w-4 h-4 text-white" />
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
+                      user && user.pfp_url ? "" : "bg-blue-500"
+                    }`}
+                  >
+                    <CurrentUserImage />
                   </div>
                 )}
               </div>
             ))}
 
             {isLoading && (
-              <div className="flex gap-3 justify-start">
-                <div className="w-10 h-10 relative flex items-center justify-center flex-shrink-0 mt-1">
+              <div className="flex gap-2 justify-start">
+                <div className="w-8 h-8 relative flex items-center justify-center flex-shrink-0 mt-1">
                   <Image
                     src="/images/tom_alerts.png"
                     alt="AI Avatar"
-                    width={40}
-                    height={40}
+                    width={32}
+                    height={32}
                     className="rounded-full object-cover shadow-md"
                   />
                 </div>
@@ -931,47 +929,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               </Button>
             </div>
           )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="px-4 pb-4">
-          <div className="text-xs font-medium text-gray-700 mb-2">
-            Quick Actions:
-          </div>
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInputValue("Help me choose a color theme")}
-              className="text-xs h-8"
-            >
-              🎨 Pick Colors
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handlePing}
-              className="text-xs h-8 bg-green-50 border-green-300 text-green-700 hover:bg-green-100"
-            >
-              🏓 Ping Test
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInputValue("Apply a modern design to my space")}
-              className="text-xs h-8"
-            >
-              ✨ Apply Design
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInputValue("Test the dummy config")}
-              className="text-xs h-8 bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100"
-            >
-              🧪 Test Config
-            </Button>
-          </div>
         </div>
       </div>
     </aside>
