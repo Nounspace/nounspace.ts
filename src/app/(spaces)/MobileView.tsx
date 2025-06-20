@@ -87,6 +87,16 @@ const MobileView: React.FC<MobileViewProps> = ({
       window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }, [selectedTab])
+  
+  // Ensure that the tabs are always clickable, even in edit mode
+  const handleTabChange = (tabId: string) => {
+    if (tabId === selectedTab) {
+      setSelectedTab('');
+      setTimeout(() => setSelectedTab(tabId), 0);
+    } else {
+      setSelectedTab(tabId);
+    }
+  }
 
   // Create bundles for all fidgets
   const fidgetBundles = useMemo(() => {
@@ -147,7 +157,7 @@ const MobileView: React.FC<MobileViewProps> = ({
         <Tabs
           value={selectedTab}
           className="w-full h-full"
-          onValueChange={setSelectedTab}
+          onValueChange={handleTabChange}
         >
           <div className="h-full w-full">
             {/* Special case for consolidated media tab */}
@@ -247,7 +257,7 @@ const MobileView: React.FC<MobileViewProps> = ({
         <MobileNavbar
           tabs={tabItems}
           selected={selectedTab}
-          onSelect={setSelectedTab}
+          onSelect={handleTabChange}
           theme={theme}
           fidgetInstanceDatums={fidgetInstanceDatums}
           tabNames={tabNames}

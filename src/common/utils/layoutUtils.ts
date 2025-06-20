@@ -26,6 +26,7 @@ export const isPinnedCast = (
 
 /**
  * Processes fidget IDs for display in mobile tabs, potentially consolidating media fidgets
+ * Always includes Feed fidget regardless of visibility settings
  */
 export const processTabFidgetIds = (
   fidgetIds: string[],
@@ -44,13 +45,20 @@ export const processTabFidgetIds = (
   const mediaFidgetIds: string[] = [];
   const pinnedCastIds: string[] = [];
   const nonMediaFidgetIds: string[] = [];
+  const feedFidgetIds: string[] = [];
   
-  // First separate media, pinned casts, and non-media fidgets
+  // First separate feed, media, pinned casts, and non-media fidgets
   fidgetIds.forEach(id => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return;
     
-    // Skip fidgets that should be hidden on mobile
+    // Always include Feed fidget regardless of showOnMobile setting
+    if (fidgetData.fidgetType === 'feed') {
+      feedFidgetIds.push(id);
+      return; 
+    }
+    
+    // Skip non-feed fidgets that should be hidden on mobile
     if (fidgetData.config?.settings?.showOnMobile === false) return;
     
     if (isPinnedCast(id, fidgetInstanceDatums)) {
@@ -78,7 +86,8 @@ export const processTabFidgetIds = (
     consolidatedIds.push(...mediaFidgetIds);
   }
   
-  return [...consolidatedIds, ...nonMediaFidgetIds];
+  // Always include feed fidgets (immutable feed) at the beginning
+  return [...feedFidgetIds, ...consolidatedIds, ...nonMediaFidgetIds];
 };
 
 /**
