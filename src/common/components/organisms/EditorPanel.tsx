@@ -39,6 +39,7 @@ export interface EditorPanelProps {
   openFidgetPicker(): void;
   selectFidget(fidgetBundle: FidgetBundle): void;
   addFidgetToGrid(fidget: FidgetInstanceData): boolean;
+  onExportConfig?: () => void;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -60,6 +61,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   openFidgetPicker,
   selectFidget,
   addFidgetToGrid,
+  onExportConfig,
 }) => {
   function generateFidgetInstance(
     fidgetId: string,
@@ -141,6 +143,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   saveTheme={saveTheme}
                   saveExitEditMode={saveExitEditMode}
                   cancelExitEditMode={cancelExitEditMode}
+                  onExportConfig={onExportConfig}
                 />
               )}
             </>

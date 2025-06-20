@@ -31,6 +31,9 @@ import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEd
 import { debounce } from "lodash";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { analytics } from "@/common/providers/AnalyticsProvider";
+import { SpaceConfig } from "../../app/(spaces)/Space";
+import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
+import { v4 as uuidv4 } from "uuid";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -504,6 +507,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           openFidgetPicker={openFidgetPicker}
           selectFidget={selectFidget}
           addFidgetToGrid={addFidgetToGrid}
+          onExportConfig={exportSpaceConfig}
         />,
         portalNode,
       )
@@ -525,25 +529,79 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // });
   }, []);
 
+  // Export function to generate SpaceConfig JSON
+  const exportSpaceConfig = useCallback(() => {
+    // Convert theme to UserTheme if needed
+    let exportTheme: typeof defaultUserTheme = defaultUserTheme;
+    if (theme && 'properties' in theme) {
+      // Check if all required UserTheme properties exist
+      const requiredKeys = Object.keys(defaultUserTheme.properties);
+      const hasAllKeys = requiredKeys.every(key => key in theme.properties);
+      if (hasAllKeys) {
+        exportTheme = theme as typeof defaultUserTheme;
+      } else {
+        // Fill missing keys with defaults
+        exportTheme = {
+          ...theme,
+          properties: {
+            ...defaultUserTheme.properties,
+            ...theme.properties,
+          },
+        };
+      }
+    }
+    const spaceConfig: SpaceConfig = {
+      layoutID: uuidv4(),
+      layoutDetails: {
+        layoutConfig: {
+          layout: layoutConfig.layout,
+        },
+        layoutFidget: "grid",
+      },
+      theme: exportTheme,
+      fidgetInstanceDatums: fidgetInstanceDatums,
+      fidgetTrayContents: fidgetTrayContents,
+      isEditable: false,
+      timestamp: new Date().toISOString(),
+      fid: fid,
+    };
+
+    // Create and download the JSON file
+    const dataStr = JSON.stringify(spaceConfig, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `space-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success("Space configuration exported successfully!");
+  }, [fidgetInstanceDatums, fidgetTrayContents, layoutConfig, theme, fid]);
+
   return (
     <>
       {editorPanelPortal(element)}
 
       <div className="flex flex-col z-10">
         {inEditMode && (
-          <button
-            onClick={openFidgetPicker}
-            className={
-              hasProfile
-                ? "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-40 right-0"
-                : "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
-            }
-          >
-            <div className="ml-2 ">
-              <AddFidgetIcon />
-            </div>
-            <span className="ml-4 mr-2">Fidget</span>
-          </button>
+          <div className="flex gap-2 absolute top-0 right-0 m-3">
+            <button
+              onClick={openFidgetPicker}
+              className={
+                hasProfile
+                  ? "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  : "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              }
+            >
+              <div className="ml-2">
+                <AddFidgetIcon />
+              </div>
+              <span className="ml-4 mr-2">Fidget</span>
+            </button>
+          </div>
         )}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}

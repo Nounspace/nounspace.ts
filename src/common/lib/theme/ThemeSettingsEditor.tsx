@@ -51,6 +51,7 @@ export type ThemeSettingsEditorArgs = {
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
+  onExportConfig?: () => void;
 };
 
 export function ThemeSettingsEditor({
@@ -58,6 +59,7 @@ export function ThemeSettingsEditor({
   saveTheme,
   saveExitEditMode,
   cancelExitEditMode,
+  onExportConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
@@ -350,6 +352,26 @@ export function ThemeSettingsEditor({
                     backgroundHTML={backgroundHTML}
                     onChange={themePropSetter<string>("backgroundHTML")}
                   />
+                  {onExportConfig && (
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-sm font-medium">Export Configuration</h4>
+                        <p className="text-xs text-gray-500">
+                          Download your current space configuration as a JSON file.
+                        </p>
+                        <Button
+                          onClick={onExportConfig}
+                          variant="secondary"
+                          width="auto"
+                          withIcon
+                          className="w-full"
+                        >
+                          <FaFloppyDisk aria-hidden="true" />
+                          <span>Export Config</span>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>

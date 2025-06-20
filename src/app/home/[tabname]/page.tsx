@@ -9,7 +9,7 @@ import {
   PRESS_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
   NOUNSPACE_TAB_CONFIG,
-} from "@/constants/homePageTabsConfig";
+} from "./homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 const getTabConfig = (tabName: string) => {
