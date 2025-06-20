@@ -219,8 +219,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   if (embedInfo.directEmbed && transformedUrl) {
     return (
       <div
-        style={{ 
-          overflow: "hidden", 
+        style={{
+          overflow: "hidden",
           width: "100%",
           height: "100%",
           position: "relative"
@@ -241,7 +241,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
           }}>
             <iframe
-              src={transformedUrl}
+              src={`/api/iframe?url=${encodeURIComponent(transformedUrl)}`}
               title="IFrame Fidget"
               sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
               style={{
