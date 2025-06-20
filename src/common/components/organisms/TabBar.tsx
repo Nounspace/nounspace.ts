@@ -4,7 +4,6 @@ import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
-import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { useSidebarContext } from "./Sidebar";
@@ -271,7 +270,7 @@ function TabBar({
         )}
         {inEditMode ? (
           <div className="mr-36 flex flex-row z-infinity">
-            <NogsGateButton
+            <Button
               onClick={() => handleCreateTab(generateNewTabName())}
               className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
             >
@@ -279,7 +278,7 @@ function TabBar({
                 <FaPlus />
               </div>
               <span className="ml-4 mr-2">Tab</span>
-            </NogsGateButton>
+            </Button>
           </div>
         ) : null}
       </div>
