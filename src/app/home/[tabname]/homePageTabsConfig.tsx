@@ -483,43 +483,19 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
 };
 
 export const NOUNS_TAB_CONFIG = {
-  "layoutID": "exported-grid-layout",
+  "layoutID": "88b78f73-37fb-4921-9410-bc298311c0bb",
   "layoutDetails": {
     "layoutConfig": {
       "layout": [
         {
-          "w": 3,
-          "h": 2,
+          "w": 12,
+          "h": 10,
           "x": 0,
           "y": 0,
-          "i": "text:37020e2a-e4c1-47b5-b6e9-761cf905371e",
-          "minW": 3,
+          "i": "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26",
+          "minW": 2,
           "maxW": 36,
           "minH": 2,
-          "maxH": 36,
-          "moved": false,
-          "static": false,
-          "resizeHandles": [
-            "s",
-            "w",
-            "e",
-            "n",
-            "sw",
-            "nw",
-            "se",
-            "ne"
-          ],
-          "isBounded": false
-        },
-        {
-          "w": 1,
-          "h": 1,
-          "x": 0,
-          "y": 2,
-          "i": "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c",
-          "minW": 1,
-          "maxW": 36,
-          "minH": 1,
           "maxH": 36,
           "moved": false,
           "static": false,
@@ -540,335 +516,49 @@ export const NOUNS_TAB_CONFIG = {
     "layoutFidget": "grid"
   },
   "theme": {
-    "id": "Homebase-Tab 2-Theme",
-    "name": "Homebase-Tab 2-Theme",
+    "id": "Homebase-Tab 4 - 1-Theme",
+    "name": "Homebase-Tab 4 - 1-Theme",
     "properties": {
-      "font": "Inter",
-      "fontColor": "#000000",
-      "headingsFont": "Inter",
-      "headingsFontColor": "#000000",
       "background": "#ffffff",
       "backgroundHTML": "",
-      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
       "fidgetBackground": "#ffffff",
-      "fidgetBorderWidth": "1px",
       "fidgetBorderColor": "#eeeeee",
+      "fidgetBorderRadius": "0px",
+      "fidgetBorderWidth": "1px",
       "fidgetShadow": "none",
-      "fidgetBorderRadius": "12px",
-      "gridSpacing": "16"
+      "font": "Inter",
+      "fontColor": "#000000",
+      "gridSpacing": "0",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
     }
   },
   "fidgetInstanceDatums": {
-    "text:37020e2a-e4c1-47b5-b6e9-761cf905371e": {
+    "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26": {
       "config": {
-        "editable": true,
         "data": {},
+        "editable": true,
         "settings": {
-          "title": "Text Fidget",
-          "text": "Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.",
-          "fontFamily": "var(--user-theme-font)",
-          "fontColor": "var(--user-theme-font-color)",
-          "urlColor": "var(--user-theme-link-color)",
-          "headingsFontFamily": "var(--user-theme-headings-font)",
-          "headingsFontColor": "var(--user-theme-headings-font-color)",
-          "showOnMobile": true,
           "background": "var(--user-theme-fidget-background)",
-          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
-          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
-          "fidgetShadow": "var(--user-theme-fidget-shadow)",
-          "css": ""
+          "cropOffsetX": 0,
+          "cropOffsetY": -4,
+          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
+          "fidgetBorderWidth": "0",
+          "fidgetShadow": "none",
+          "isScrollable": false,
+          "showOnMobile": true,
+          "url": "https://www.nouns.com"
         }
       },
-      "fidgetType": "text",
-      "id": "text:37020e2a-e4c1-47b5-b6e9-761cf905371e",
-      "properties": {
-        "fidgetName": "Text",
-        "icon": 128196,
-        "fields": [
-          {
-            "fieldName": "title",
-            "displayName": "Title",
-            "displayNameHint": "Optional title for your Text Fidget.",
-            "default": "Text Fidget",
-            "required": false,
-            "group": "settings"
-          },
-          {
-            "fieldName": "text",
-            "displayName": "Text",
-            "displayNameHint": "Use Markdown syntax to format and embed content",
-            "default": "Add formatted text, links, images, or even code blocks with the Text Fidget. To format your text or embed content such as images, use Markdown Syntax.",
-            "required": true,
-            "group": "settings"
-          },
-          {
-            "fieldName": "fontFamily",
-            "displayName": "Font Family",
-            "displayNameHint": "Font used for the text input (body text). Set to Theme Font to inherit the Body Font from the Theme.",
-            "default": "var(--user-theme-font)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fontColor",
-            "displayName": "Font Color",
-            "displayNameHint": "Color used for the text input (body text)",
-            "default": "var(--user-theme-font-color)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "urlColor",
-            "displayName": "URL Color",
-            "displayNameHint": "Color used for links in the text input (body text).",
-            "required": false,
-            "default": "var(--user-theme-link-color)",
-            "group": "style"
-          },
-          {
-            "fieldName": "headingsFontFamily",
-            "displayName": "Headings Font Family",
-            "displayNameHint": "Font used for the title input. Set to Theme Font to inherit the Title Font from the Theme.",
-            "default": "var(--user-theme-headings-font)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "headingsFontColor",
-            "displayName": "Headings Font Color",
-            "displayNameHint": "Color used for the title input",
-            "default": "var(--user-theme-headings-font-color)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "showOnMobile",
-            "displayName": "Show on Mobile",
-            "displayNameHint": "Toggle whether this Fidget should be visible on mobile devices.",
-            "default": true,
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "customMobileDisplayName",
-            "displayName": "Mobile Display Name",
-            "displayNameHint": "Set a custom name to display for this Fidget in the mobile nav.",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "background",
-            "displayName": "Background",
-            "displayNameHint": "Color used for the background of the Fidget.",
-            "default": "var(--user-theme-fidget-background)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetBorderWidth",
-            "displayName": "Fidget Border Width",
-            "displayNameHint": "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
-            "default": "var(--user-theme-fidget-border-width)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetBorderColor",
-            "displayName": "Fidget Border Color",
-            "displayNameHint": "Color of the Fidget's Border.",
-            "default": "var(--user-theme-fidget-border-color)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetShadow",
-            "displayName": "Fidget Shadow",
-            "displayNameHint": "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
-            "default": "var(--user-theme-fidget-shadow)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "css",
-            "displayName": "Custom CSS",
-            "default": "",
-            "required": false,
-            "group": "code"
-          }
-        ],
-        "size": {
-          "minHeight": 2,
-          "maxHeight": 36,
-          "minWidth": 3,
-          "maxWidth": 36
-        }
-      }
-    },
-    "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c": {
-      "config": {
-        "editable": true,
-        "data": {},
-        "settings": {
-          "selectMediaSource": {
-            "name": "URL"
-          },
-          "imageUrl": "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
-          "nftAddress": "",
-          "nftTokenId": "",
-          "Scale": 1,
-          "Link": "",
-          "badgeColor": "rgb(55, 114, 249)",
-          "showOnMobile": true,
-          "background": "var(--user-theme-fidget-background)",
-          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
-          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
-          "fidgetShadow": "var(--user-theme-fidget-shadow)"
-        }
-      },
-      "fidgetType": "gallery",
-      "id": "gallery:047601e5-b2e5-4b6b-afb4-b182d22e1a3c",
-      "properties": {
-        "fidgetName": "Image",
-        "icon": 128444,
-        "fields": [
-          {
-            "fieldName": "selectMediaSource",
-            "displayName": "Source",
-            "required": false,
-            "default": {
-              "name": "URL"
-            },
-            "group": "settings"
-          },
-          {
-            "fieldName": "imageUploader",
-            "displayName": "Upload Image",
-            "required": false,
-            "group": "settings"
-          },
-          {
-            "fieldName": "imageUrl",
-            "displayName": "Image URL",
-            "displayNameHint": "Right click on a publicly hosted image to copy its address, then paste the image address here.",
-            "required": true,
-            "default": "https://storage.googleapis.com/papyrus_images/d467b07030969fab95a8f44b1de596ab.png",
-            "group": "settings"
-          },
-          {
-            "fieldName": "network",
-            "displayName": "Network",
-            "displayNameHint": "Choose the blockchain network where your NFTs are stored.",
-            "required": true,
-            "group": "settings"
-          },
-          {
-            "fieldName": "nftSelector",
-            "displayName": "NFT",
-            "displayNameHint": "Select a verified wallet address to view your NFTs.",
-            "required": true,
-            "group": "settings"
-          },
-          {
-            "fieldName": "nftAddress",
-            "displayName": "Collection Address",
-            "displayNameHint": "Contract address of the NFT collection",
-            "required": true,
-            "default": "",
-            "group": "settings"
-          },
-          {
-            "fieldName": "nftTokenId",
-            "displayName": "Token ID",
-            "displayNameHint": "Unique identifier of the NFT within the collection",
-            "required": true,
-            "default": "",
-            "group": "settings"
-          },
-          {
-            "fieldName": "Scale",
-            "displayName": "Scale",
-            "displayNameHint": "Adjust the image size",
-            "required": false,
-            "default": 1,
-            "group": "style"
-          },
-          {
-            "fieldName": "Link",
-            "displayName": "Links To",
-            "displayNameHint": "URL to open when image is clicked",
-            "required": false,
-            "default": "",
-            "group": "settings"
-          },
-          {
-            "fieldName": "badgeColor",
-            "displayName": "Badge Color",
-            "displayNameHint": "Color for the verification badge",
-            "required": false,
-            "group": "style",
-            "default": "rgb(55, 114, 249)"
-          },
-          {
-            "fieldName": "showOnMobile",
-            "displayName": "Show on Mobile",
-            "displayNameHint": "Toggle whether this Fidget should be visible on mobile devices.",
-            "default": true,
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "customMobileDisplayName",
-            "displayName": "Mobile Display Name",
-            "displayNameHint": "Set a custom name to display for this Fidget in the mobile nav.",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "background",
-            "displayName": "Background",
-            "displayNameHint": "Color used for the background of the Fidget.",
-            "default": "var(--user-theme-fidget-background)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetBorderWidth",
-            "displayName": "Fidget Border Width",
-            "displayNameHint": "Width of the Fidget's border. Set to Theme Border to inherit the Fidget Border Width from the Theme. Set to None to remove the border.",
-            "default": "var(--user-theme-fidget-border-width)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetBorderColor",
-            "displayName": "Fidget Border Color",
-            "displayNameHint": "Color of the Fidget's Border.",
-            "default": "var(--user-theme-fidget-border-color)",
-            "required": false,
-            "group": "style"
-          },
-          {
-            "fieldName": "fidgetShadow",
-            "displayName": "Fidget Shadow",
-            "displayNameHint": "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
-            "default": "var(--user-theme-fidget-shadow)",
-            "required": false,
-            "group": "style"
-          }
-        ],
-        "size": {
-          "minHeight": 1,
-          "maxHeight": 36,
-          "minWidth": 1,
-          "maxWidth": 36
-        }
-      }
+      "fidgetType": "iframe",
+      "id": "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26"
     }
   },
   "fidgetTrayContents": [],
-  "isEditable": true,
-  "timestamp": "2025-06-19T07:51:23.810Z"
-} as unknown as SpaceConfig;
+  "isEditable": false,
+  "timestamp": "2025-06-20T05:58:44.080Z"
+};
 
 export const NOUNSPACE_TAB_CONFIG: SpaceConfig = {
   fidgetInstanceDatums: {
