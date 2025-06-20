@@ -275,11 +275,11 @@ export default function Space({
 
   const mainContent = (
     <div className="flex flex-col h-full overflow-y-auto touch-auto">
-      <div style={{ position: "fixed", zIndex: 9999 }}>
+      <div style={{ position: "fixed" }} className="z-level-4">
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className={`z-50 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}>{profile}</div>
+        <div className={`z-level-3 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}>{profile}</div>
       ) : null}
 
       <div className="relative flex-shrink-0 bg-white">

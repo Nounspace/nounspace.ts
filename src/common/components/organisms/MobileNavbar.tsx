@@ -312,7 +312,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       value={selected}
       onValueChange={onSelect}
       className={mergeClasses(
-        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-50",
+        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-level-3",
         className
       )}
       style={{

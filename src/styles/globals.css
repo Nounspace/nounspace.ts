@@ -2,6 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Z-index utility classes */
+@layer utilities {
+  .z-level-0 {
+    z-index: 0;
+  }
+  .z-level-1 {
+    z-index: 1;
+  }
+  .z-level-2 {
+    z-index: 2;
+  }
+  .z-level-3 {
+    z-index: 3;
+  }
+  .z-level-4 {
+    z-index: 4;
+  }
+  .z-level-5 {
+    z-index: 5;
+  }
+}
+
+button[aria-label="Expand sidebar"],
+button[aria-label="Collapse sidebar"] {
+  position: relative;
+  z-index: 999 !important;
+}
+
+@layer {
+  .sidebar-expand-button {
+    position: absolute !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}
+
 .mobile-profile-container {
   transform: translateY(0);
   max-height: 200px;

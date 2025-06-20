@@ -230,15 +230,15 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white w-full">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-level-4 bg-white w-full">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-level-3 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="relative flex flex-auto h-16 z-70 bg-white">
+        <div className="relative flex flex-auto h-16 z-level-3 bg-white">
           {isMobile && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white flex gap-2">
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-level-4 bg-white flex gap-2">
               {customizeButton}
               <NogsGateButton
                 onClick={() => handleCreateTab(generateNewTabName())}
@@ -303,7 +303,7 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode && !mobilePreview && !isMobile ? (
-          <div className="mr-36 flex flex-row z-infinity">
+          <div className="mr-36 flex flex-row z-level-5">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
               className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
