@@ -482,7 +482,7 @@ export const PRESS_TAB_CONFIG: SpaceConfig = {
   fidgetTrayContents: [],
 };
 
-export const NOUNS_TAB_CONFIG: SpaceConfig = {
+export const NOUNS_TAB_CONFIG = {
   "layoutID": "exported-grid-layout",
   "layoutDetails": {
     "layoutConfig": {
@@ -868,7 +868,7 @@ export const NOUNS_TAB_CONFIG: SpaceConfig = {
   "fidgetTrayContents": [],
   "isEditable": true,
   "timestamp": "2025-06-19T07:51:23.810Z"
-};
+} as unknown as SpaceConfig;
 
 export const NOUNSPACE_TAB_CONFIG: SpaceConfig = {
   fidgetInstanceDatums: {
