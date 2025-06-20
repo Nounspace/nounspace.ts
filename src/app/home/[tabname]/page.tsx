@@ -9,7 +9,9 @@ import TabBar from "@/common/components/organisms/TabBar";
 import {
   RESOURCES_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
+  SOCIAL_TAB_CONFIG,
   GOVERNANCE_TAB_CONFIG,
+  FUNDED_WORKS_TAB_CONFIG,
 } from "./homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
@@ -19,7 +21,12 @@ const getTabConfig = (tabName: string) => {
       return GOVERNANCE_TAB_CONFIG;
     case "Resources":
       return RESOURCES_TAB_CONFIG;
+    case "Funded Works":
+      return FUNDED_WORKS_TAB_CONFIG;
+    case "Social":
+      return SOCIAL_TAB_CONFIG;
     case "Nouns":
+      return NOUNS_TAB_CONFIG;
     default:
       return NOUNS_TAB_CONFIG;
   }
@@ -36,7 +43,7 @@ const Home = () => {
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
-  const tabOrdering = ["Nouns", "Governance", "Resources"];
+  const tabOrdering = ["Nouns","Social", "Governance", "Resources", "Funded Works"];
   const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {

@@ -78,6 +78,85 @@ export const NOUNS_TAB_CONFIG = {
   "timestamp": "2025-06-20T05:58:44.080Z"
 };
 
+export const SOCIAL_TAB_CONFIG: SpaceConfig = {
+  "layoutID": "0bbe52be-5c9e-4d87-ad76-bd4b114c790a",
+  "layoutDetails": {
+    "layoutConfig": {
+      "layout": [
+        {
+          "w": 12,
+          "h": 10,
+          "x": 0,
+          "y": 0,
+          "i": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        }
+      ]
+    },
+    "layoutFidget": "grid"
+  },
+  "theme": {
+    "id": "Homebase-Tab 3-Theme",
+    "name": "Homebase-Tab 3-Theme",
+    "properties": {
+      "font": "Inter",
+      "fontColor": "#000000",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "background": "#ffffff",
+      "backgroundHTML": "",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+      "fidgetBackground": "#ffffff",
+      "fidgetBorderWidth": "0px",
+      "fidgetBorderColor": "#eeeeee",
+      "fidgetShadow": "none",
+      "fidgetBorderRadius": "12px",
+      "gridSpacing": "0"
+    }
+  },
+  "fidgetInstanceDatums": {
+    "iframe:d06b525b-54ff-4074-bfa3-a39807e42738": {
+      "id": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
+      "fidgetType": "iframe",
+      "config": {
+        "editable": true,
+        "data": {},
+        "settings": {
+          "url": "https://nouns.world/explore",
+          "size": 1.2,
+          "cropOffsetX": 0,
+          "cropOffsetY": -2,
+          "isScrollable": false,
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "0",
+          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
+          "fidgetShadow": "none"
+        }
+      }
+    }
+  },
+  "fidgetTrayContents": [],
+  "isEditable": false,
+  "timestamp": "2025-06-20T07:14:04.678Z"
+};
+
 export const GOVERNANCE_TAB_CONFIG: SpaceConfig = {
   "layoutID": "28dcce75-17c5-4c12-b5e2-8524ffc268cf",
   "layoutDetails": {
@@ -235,10 +314,91 @@ export const RESOURCES_TAB_CONFIG: SpaceConfig = {
   "timestamp": "2025-06-20T07:14:04.678Z"
 };
 
+export const FUNDED_WORKS_TAB_CONFIG: SpaceConfig = {
+  "layoutID": "0bbe52be-5c9e-4d87-ad76-bd4b114c790a",
+  "layoutDetails": {
+    "layoutConfig": {
+      "layout": [
+        {
+          "w": 12,
+          "h": 10,
+          "x": 0,
+          "y": 0,
+          "i": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        }
+      ]
+    },
+    "layoutFidget": "grid"
+  },
+  "theme": {
+    "id": "Homebase-Tab 3-Theme",
+    "name": "Homebase-Tab 3-Theme",
+    "properties": {
+      "font": "Inter",
+      "fontColor": "#000000",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "background": "#ffffff",
+      "backgroundHTML": "",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+      "fidgetBackground": "#ffffff",
+      "fidgetBorderWidth": "0px",
+      "fidgetBorderColor": "#eeeeee",
+      "fidgetShadow": "none",
+      "fidgetBorderRadius": "12px",
+      "gridSpacing": "0"
+    }
+  },
+  "fidgetInstanceDatums": {
+    "iframe:d06b525b-54ff-4074-bfa3-a39807e42738": {
+      "id": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
+      "fidgetType": "iframe",
+      "config": {
+        "editable": true,
+        "data": {},
+        "settings": {
+          "url": "https://nouns.world/explore",
+          "size": 1.2,
+          "cropOffsetX": 0,
+          "cropOffsetY": -2,
+          "isScrollable": false,
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "0",
+          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
+          "fidgetShadow": "none"
+        }
+      }
+    }
+  },
+  "fidgetTrayContents": [],
+  "isEditable": false,
+  "timestamp": "2025-06-20T07:14:04.678Z"
+};
+
 
 // Export all configurations
 export const HOMEBASE_TABS_CONFIG = {
   NOUNS_TAB_CONFIG,
+  SOCIAL_TAB_CONFIG,
   GOVERNANCE_TAB_CONFIG,
   RESOURCES_TAB_CONFIG,
+  FUNDED_WORKS_TAB_CONFIG,
 };
