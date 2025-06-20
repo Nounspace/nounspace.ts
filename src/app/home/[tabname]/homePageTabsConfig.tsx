@@ -42,7 +42,7 @@ export const NOUNS_TAB_CONFIG = {
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
       "fidgetBorderRadius": "0px",
-      "fidgetBorderWidth": "1px",
+      "fidgetBorderWidth": "0px",
       "fidgetShadow": "none",
       "font": "Inter",
       "fontColor": "#000000",
@@ -119,12 +119,12 @@ export const GOVERNANCE_TAB_CONFIG: SpaceConfig = {
       "backgroundHTML": "",
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
-      "fidgetBorderRadius": "12px",
-      "fidgetBorderWidth": "1px",
+      "fidgetBorderRadius": "0px",
+      "fidgetBorderWidth": "0px",
       "fidgetShadow": "none",
       "font": "Inter",
       "fontColor": "#000000",
-      "gridSpacing": "16",
+      "gridSpacing": "0",
       "headingsFont": "Inter",
       "headingsFontColor": "#000000",
       "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
@@ -138,9 +138,9 @@ export const GOVERNANCE_TAB_CONFIG: SpaceConfig = {
         "data": {},
         "editable": true,
         "settings": {
-          "url": "https://nouns.wtf/vote",
+          "url": "https://www.nouns.camp/?tab=proposals",
           "cropOffsetX": 0,
-          "cropOffsetY": -7,
+          "cropOffsetY": -3,
           "isScrollable": false,
           "showOnMobile": true,
           "background": "var(--user-theme-fidget-background)",
@@ -201,11 +201,11 @@ export const RESOURCES_TAB_CONFIG: SpaceConfig = {
       "backgroundHTML": "",
       "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
       "fidgetBackground": "#ffffff",
-      "fidgetBorderWidth": "1px",
+      "fidgetBorderWidth": "0px",
       "fidgetBorderColor": "#eeeeee",
       "fidgetShadow": "none",
       "fidgetBorderRadius": "12px",
-      "gridSpacing": "16"
+      "gridSpacing": "0"
     }
   },
   "fidgetInstanceDatums": {
