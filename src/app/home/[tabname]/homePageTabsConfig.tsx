@@ -79,16 +79,40 @@ export const NOUNS_TAB_CONFIG = {
 };
 
 export const SOCIAL_TAB_CONFIG: SpaceConfig = {
-  "layoutID": "0bbe52be-5c9e-4d87-ad76-bd4b114c790a",
+  "layoutID": "48073f43-70dd-459c-be6d-e31ac89f267f",
   "layoutDetails": {
     "layoutConfig": {
       "layout": [
         {
-          "w": 12,
+          "w": 8,
           "h": 10,
           "x": 0,
           "y": 0,
-          "i": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
+          "i": "feed:9f8f8e69-6323-4e7d-8f9a-210f522827f7",
+          "minW": 4,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 4,
+          "h": 4,
+          "x": 8,
+          "y": 0,
+          "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
           "minW": 2,
           "maxW": 36,
           "minH": 2,
@@ -115,46 +139,98 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
     "id": "Homebase-Tab 3-Theme",
     "name": "Homebase-Tab 3-Theme",
     "properties": {
-      "font": "Inter",
-      "fontColor": "#000000",
-      "headingsFont": "Inter",
-      "headingsFontColor": "#000000",
       "background": "#ffffff",
       "backgroundHTML": "",
-      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
       "fidgetBackground": "#ffffff",
-      "fidgetBorderWidth": "0px",
       "fidgetBorderColor": "#eeeeee",
-      "fidgetShadow": "none",
       "fidgetBorderRadius": "12px",
-      "gridSpacing": "0"
+      "fidgetBorderWidth": "1px",
+      "fidgetShadow": "none",
+      "font": "Inter",
+      "fontColor": "#000000",
+      "gridSpacing": "16",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
     }
   },
   "fidgetInstanceDatums": {
-    "iframe:d06b525b-54ff-4074-bfa3-a39807e42738": {
-      "id": "iframe:d06b525b-54ff-4074-bfa3-a39807e42738",
-      "fidgetType": "iframe",
+    "feed:9f8f8e69-6323-4e7d-8f9a-210f522827f7": {
       "config": {
-        "editable": true,
         "data": {},
+        "editable": true,
         "settings": {
-          "url": "https://nouns.world/explore",
-          "size": 1.2,
-          "cropOffsetX": 0,
-          "cropOffsetY": -2,
-          "isScrollable": false,
-          "showOnMobile": true,
+          "Xhandle": "thenounspace",
           "background": "var(--user-theme-fidget-background)",
-          "fidgetBorderWidth": "0",
-          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
-          "fidgetShadow": "none"
+          "channel": "nouns",
+          "feedType": "filter",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "filterType": "channel_id",
+          "fontColor": "var(--user-theme-font-color)",
+          "fontFamily": "var(--user-theme-font)",
+          "keyword": "",
+          "selectPlatform": {
+            "icon": "/images/farcaster.jpeg",
+            "name": "Farcaster"
+          },
+          "showOnMobile": true,
+          "style": "light",
+          "username": "",
+          "users": ""
+        }
+      },
+      "fidgetType": "feed",
+      "id": "feed:9f8f8e69-6323-4e7d-8f9a-210f522827f7"
+    },
+    "links:c96c96c9-c19d-47c7-b24d-b11985671470": {
+      "id": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+      "fidgetType": "links",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "showOnMobile": true,
+          "title": "Socials",
+          "links": [
+            {
+              "avatar": "https://assets1.chainstoreage.com/images/v/max_width_1440/2023-07/twitter-x-logo.png",
+              "description": "",
+              "text": "X",
+              "url": "https://x.com/nounsdao?lang=en"
+            },
+            {
+              "text": "Discord",
+              "url": "https://discord.gg/TMDzKuf5",
+              "avatar": "https://play-lh.googleusercontent.com/0oO5sAneb9lJP6l8c6DH4aj6f85qNpplQVHmPmbbBxAukDnlO7DarDW0b-kEIHa8SQ=w240-h480-rw",
+              "description": ""
+            },
+            {
+              "text": "Instagram",
+              "url": "https://www.instagram.com/nounish/?hl=en",
+              "avatar": "https://upload.wikimedia.org/wikipedia/commons/9/95/Instagram_logo_2022.svg",
+              "description": ""
+            }
+          ],
+          "viewMode": "list",
+          "headingsFontFamily": "'Londrina Solid', 'Londrina Solid Fallback'",
+          "fontFamily": "Theme Font",
+          "HeaderColor": "var(--user-theme-headings-font-color)",
+          "DescriptionColor": "var(--user-theme-font-color)",
+          "itemBackground": "var(--user-theme-fidget-background)",
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "css": ""
         }
       }
     }
   },
   "fidgetTrayContents": [],
   "isEditable": false,
-  "timestamp": "2025-06-20T07:14:04.678Z"
+  "timestamp": "2025-06-20T09:51:46.060Z"
 };
 
 export const GOVERNANCE_TAB_CONFIG: SpaceConfig = {
