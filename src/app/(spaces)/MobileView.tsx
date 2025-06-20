@@ -92,9 +92,14 @@ const MobileView: React.FC<MobileViewProps> = ({
   const handleTabChange = (tabId: string) => {
     if (tabId === selectedTab) {
       setSelectedTab('');
-      setTimeout(() => setSelectedTab(tabId), 0);
+      setTimeout(() => {
+        setSelectedTab(tabId);
+        // Reset scroll position
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }, 5);
     } else {
       setSelectedTab(tabId);
+      window.scrollTo({ top: 0, behavior: "instant" });
     }
   }
 
