@@ -176,7 +176,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
           <CardTitle
-            className="text-2xl font-bold"
+            className="text-2xl font-normal tracking-normal"
             style={{
               fontFamily: headingsFontFamily,
               color: headingsFontColor,

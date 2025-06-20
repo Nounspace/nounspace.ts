@@ -82,6 +82,8 @@ export default function PublicSpace({
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     getCurrentTabName: state.currentSpace.getCurrentTabName,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
+    currentSpaceId: state.currentSpace.currentSpaceId,
+    currentTabName: state.currentSpace.currentTabName,
     localSpaces: state.space.localSpaces,
     remoteSpaces: state.space.remoteSpaces,
     loadEditableSpaces: state.space.loadEditableSpaces,
@@ -223,14 +225,10 @@ export default function PublicSpace({
       // logic for proposal
     }
 
-    if (prevSpaceId.current !== nextSpaceId) {
-      setCurrentSpaceId(nextSpaceId);
-      prevSpaceId.current = nextSpaceId;
-    }
-    if (prevTabName.current !== nextTabName) {
-      setCurrentTabName(nextTabName);
-      prevTabName.current = nextTabName;
-    }
+    setCurrentSpaceId(nextSpaceId);
+    prevSpaceId.current = nextSpaceId;
+    setCurrentTabName(nextTabName);
+    prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
   }, [
     resolvedPageType,
