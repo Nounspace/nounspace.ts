@@ -53,7 +53,12 @@ const TabItem = React.memo(({
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        onSelect(tab.id);
+     // If you click on the same tab, force it to reload
+        if (isSelected) {
+          setTimeout(() => onSelect(tab.id), 0);
+        } else {
+          onSelect(tab.id);
+        }
       }}
       className={mergeClasses(
         "flex flex-col items-center justify-center",

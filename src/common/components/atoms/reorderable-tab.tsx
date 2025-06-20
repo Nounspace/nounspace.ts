@@ -8,7 +8,7 @@ interface Props {
   tabName: string;
   inEditMode: boolean;
   isSelected: boolean;
-  onClick: () => void;
+  onClick: (tabName: string, e?: React.MouseEvent) => void;
   removeable: boolean;
   draggable: boolean;
   renameable: boolean;
@@ -42,12 +42,23 @@ export const Tab = ({
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       whileDrag={{ backgroundColor: "#e3e3e3" }}
       className={isSelected ? "selected relative" : "relative"}
-      onPointerDown={onClick}
+      onPointerDown={(e) => {
+        if (!inEditMode) {
+          e.preventDefault();
+          onClick(tabName, e);
+        }
+      }}
       dragListener={draggable}
     >
       <Link
         href={getSpacePageUrl(tabName)}
         draggable={false}
+        onClick={(e) => {
+          if (!inEditMode) {
+            e.preventDefault();
+            onClick(tabName, e);
+          }
+        }}
         onDragStart={(e) => e.preventDefault()}
       >
         <div
@@ -62,14 +73,13 @@ export const Tab = ({
         >
           {/* Text */}
           <motion.span layout="position" className="whitespace-nowrap">
-            
-              {inEditMode && renameable && isSelected ? (
-                <div className="cursor-text">
-                  <EditableText initialText={tabName} updateMethod={renameTab} />
-                </div>
-              ) : (
-                tabName
-              )}
+            {inEditMode && renameable && isSelected ? (
+              <div className="cursor-text">
+                <EditableText initialText={tabName} updateMethod={renameTab} />
+              </div>
+            ) : (
+              tabName
+            )}
           </motion.span>
 
           {/* Close Icon */}

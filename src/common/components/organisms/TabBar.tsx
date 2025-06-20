@@ -192,9 +192,23 @@ function TabBar({
     }
 
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-
-    switchTabTo(tabName, true);
-  }, [switchTabTo]);
+    
+    // Don't do anything if we're already on this tab
+    if (tabName === currentTab) {
+      console.log("Already on this tab, not switching");
+      return;
+    }
+    
+    // Force the component to update the UI immediately
+    if (inHomebase) {
+      console.log("Switching to tab in homebase:", tabName);
+    }
+    
+    // Call switchTabTo with a minimal delay to ensure event handling is complete
+    setTimeout(() => {
+      switchTabTo(tabName, true);
+    }, 0);
+  }, [switchTabTo, currentTab, inHomebase]);
 
   const isLoggedIn = getIsLoggedIn();
   
@@ -255,9 +269,14 @@ function TabBar({
                 <AnimatePresence initial={false}>
                   {map(
                     inHomebase
-                      ? ["Feed", ...tabList]
+                      ? ["Feed", ...tabList.filter(name => name !== "Feed")]
                       : tabList,
                     (tabName: string) => {
+                      // Prevent duplicated Feed tab in homebase
+                      const uniqueTabs = new Set();
+                      if (uniqueTabs.has(tabName)) return null;
+                      uniqueTabs.add(tabName);
+                      
                       return (
                         <Tab
                           key={tabName}
@@ -265,7 +284,7 @@ function TabBar({
                           tabName={tabName}
                           inEditMode={inEditMode}
                           isSelected={currentTab === tabName}
-                          onClick={() => handleTabClick(tabName)}
+                          onClick={handleTabClick}
                           removeable={isEditableTab(tabName)}
                           draggable={inEditMode}
                           renameable={isEditableTab(tabName)}
