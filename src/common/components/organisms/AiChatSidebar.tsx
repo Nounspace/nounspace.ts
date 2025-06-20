@@ -23,16 +23,10 @@ import {
 import { CgProfile } from "react-icons/cg";
 import { first } from "lodash";
 import { toast } from "sonner";
-import { useSidebarContext } from "./Sidebar";
-import {
-  WebSocketService,
-  ConnectionStatus,
-  type IncomingMessage,
-} from "@/common/services/websocket";
-import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
-import { useAppStore } from "@/common/data/stores/app";
 import Image from "next/image";
+import { BASE_CONFIG } from "@/constants/homePageTabsConfig";
+import { useAppStore } from "@/common/data/stores/app";
+import { useSidebarContext } from "./Sidebar";
 
 // Configuration constants
 const AI_CHAT_CONFIG = {
@@ -65,22 +59,16 @@ interface Message {
 interface AiChatSidebarProps {
   onClose: () => void;
   onApplySpaceConfig?: (config: any) => Promise<void>;
-  wsUrl?: string; // WebSocket URL for AI communication
 }
 
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
   onApplySpaceConfig,
-  wsUrl = AI_CHAT_CONFIG.DEFAULT_WS_URL,
 }) => {
   const { previewConfig, setPreviewConfig, isPreviewMode, setIsPreviewMode } =
     useSidebarContext();
-  const currentFid = useCurrentFid();
-
-  // Load user data for profile picture
-  const { data } = useLoadFarcasterUser(currentFid || 0);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
+  const user = useMemo(() => ({ username: "Demo User", pfp_url: "" }), []);
+  const username = useMemo(() => user.username, [user]);
 
   const CurrentUserImage = useCallback(
     () =>
@@ -155,367 +143,18 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<
-    "thinking" | "building" | null
+    "thinking" | "planning" | "designing" | "building" | null
   >(null);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>("disconnected");
+  // const [connectionStatus, setConnectionStatus] =
+  //   useState<ConnectionStatus>("disconnected");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const wsServiceRef = useRef<WebSocketService | null>(null);
+  // const wsServiceRef = useRef<WebSocketService | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-
-  // Initialize WebSocket service
-  const initializeWebSocketService = useCallback(() => {
-    if (wsServiceRef.current) {
-      wsServiceRef.current.destroy();
-    }
-
-    console.log("🔧 Initializing WebSocket service with space context:", {
-      hasSpaceContext: !!currentTabConfig,
-      spaceContextType: currentTabConfig
-        ? typeof currentTabConfig
-        : "undefined",
-      currentSpaceId,
-      currentTabName,
-      hasCurrentSpaceConfig: !!currentSpaceConfig,
-      tabsInSpaceConfig: currentSpaceConfig
-        ? Object.keys(currentSpaceConfig.tabs)
-        : [],
-      currentTabConfigRaw: currentTabConfig,
-      fidgetCount: currentTabConfig?.fidgetInstanceDatums
-        ? Object.keys(currentTabConfig.fidgetInstanceDatums).length
-        : 0,
-      layoutID: currentTabConfig?.layoutID,
-      theme: currentTabConfig?.theme?.id,
-    });
-
-    const config = {
-      url: wsUrl,
-      maxReconnectAttempts: AI_CHAT_CONFIG.RECONNECT_ATTEMPTS,
-      reconnectBackoffMs: AI_CHAT_CONFIG.RECONNECT_BACKOFF,
-      spaceContext: currentTabConfig,
-      userFid: currentFid,
-    };
-
-    const callbacks = {
-      onStatusChange: (status: ConnectionStatus) => {
-        setConnectionStatus(status);
-      },
-      onMessage: (message: any) => {
-        handleWebSocketMessage(message);
-      },
-      onError: (error: string) => {
-        toast.error(error);
-      },
-    };
-
-    wsServiceRef.current = new WebSocketService(config, callbacks);
-    wsServiceRef.current.connect();
-  }, [wsUrl, currentTabConfig, currentFid]);
-
-  const handleWebSocketMessage = useCallback((wsMessage: IncomingMessage) => {
-    // Handle messages according to backend protocol: {type, name, message}
-    switch (wsMessage.type) {
-      case "pong": {
-        const pongMessage: Message = {
-          id: `pong-${Date.now()}`,
-          role: "assistant",
-          content: "🏓 Pong! WebSocket connection is working perfectly!",
-          timestamp: new Date(),
-          type: "text",
-        };
-        setMessages((prev) => [...prev, pongMessage]);
-        toast.success("Pong received! WebSocket is working!");
-        break;
-      }
-
-      case "REPLY": {
-        // Try to parse the message as JSON configuration
-        let spaceConfig = null;
-        const messageContent = wsMessage.message || "AI response received";
-
-        console.log("📥 Raw REPLY message:", {
-          type: wsMessage.type,
-          name: wsMessage.name,
-          messageLength: messageContent.length,
-          messagePreview: messageContent.substring(0, 200) + "...",
-          containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
-          fullMessage: messageContent,
-        });
-
-        try {
-          // Check if the message contains JSON configuration
-          if (messageContent.includes("fidgetInstanceDatums")) {
-            spaceConfig = JSON.parse(messageContent);
-            console.log("✅ AI generated space config:", spaceConfig);
-
-            // Log detailed config analysis
-            console.log("🔍 REPLY Config Analysis:", {
-              hasConfig: !!spaceConfig,
-              configType: typeof spaceConfig,
-              configKeys: spaceConfig ? Object.keys(spaceConfig) : [],
-              hasFidgetInstanceDatums: !!(spaceConfig as any)
-                ?.fidgetInstanceDatums,
-              fidgetCount: (spaceConfig as any)?.fidgetInstanceDatums
-                ? Object.keys((spaceConfig as any).fidgetInstanceDatums).length
-                : 0,
-              fidgetIds: (spaceConfig as any)?.fidgetInstanceDatums
-                ? Object.keys((spaceConfig as any).fidgetInstanceDatums)
-                : [],
-              hasTheme: !!(spaceConfig as any)?.theme,
-              hasLayoutID: !!(spaceConfig as any)?.layoutID,
-              fullConfig: JSON.stringify(spaceConfig, null, 2),
-            });
-          }
-        } catch (error) {
-          console.error("❌ Failed to parse REPLY message as JSON:", error);
-          // Silently handle non-JSON messages
-        }
-
-        if (spaceConfig) {
-          const aiMessage: Message = {
-            id: `ai-${Date.now()}`,
-            role: "assistant",
-            content:
-              "🎨 I've created a new space configuration for you! Check the preview below.",
-            timestamp: new Date(),
-            type: "config",
-            spaceConfig: spaceConfig,
-            aiType: "builder",
-            builderResponse: wsMessage,
-          };
-          setMessages((prev) => [...prev, aiMessage]);
-
-          // Auto-preview the configuration
-          console.log("🔄 Setting preview config from REPLY:", spaceConfig);
-          console.log("🎯 IMMEDIATE PREVIEW ACTIVATION (REPLY):", {
-            beforePreviewMode: isPreviewMode,
-            configBeingSet: {
-              fidgetCount: Object.keys(
-                (spaceConfig as any).fidgetInstanceDatums || {}
-              ).length,
-              fidgetIds: Object.keys(
-                (spaceConfig as any).fidgetInstanceDatums || {}
-              ),
-              hasTheme: !!(spaceConfig as any)?.theme,
-              themeId: (spaceConfig as any)?.theme?.id,
-            },
-          });
-
-          setPreviewConfig(spaceConfig);
-          setIsPreviewMode(true);
-          setIsLoading(false);
-          setLoadingType(null);
-
-          // Force a state update to ensure preview is visible
-          setTimeout(() => {
-            console.log("🔄 Preview mode should now be active (REPLY):", {
-              isPreviewModeNow: true,
-              previewConfigSet: !!spaceConfig,
-            });
-          }, 100);
-
-          toast.success(
-            "🎨 New space configuration created! Preview is now active."
-          );
-        } else {
-          // Regular text response
-          const aiMessage: Message = {
-            id: `ai-${Date.now()}`,
-            role: "assistant",
-            content: messageContent,
-            timestamp: new Date(),
-            type: "text",
-            aiType: "builder",
-          };
-          setMessages((prev) => [...prev, aiMessage]);
-          setIsLoading(false);
-          setLoadingType(null);
-        }
-        break;
-      }
-
-      case "PLANNER_LOGS": {
-        const logMessage: Message = {
-          id: `planner-log-${Date.now()}`,
-          role: "assistant",
-          content: wsMessage.message || "Planner is processing...",
-          timestamp: new Date(),
-          type: "text",
-          aiType: "planner",
-        };
-        setMessages((prev) => [...prev, logMessage]);
-        setLoadingType("thinking");
-        setIsLoading(true);
-        break;
-      }
-
-      case "BUILDER_LOGS": {
-        // Try to parse the message as JSON configuration
-        let spaceConfig = null;
-        const messageContent = wsMessage.message || "Builder is working...";
-
-        console.log("📥 Raw BUILDER_LOGS message:", {
-          type: wsMessage.type,
-          name: wsMessage.name,
-          messageLength: messageContent.length,
-          messagePreview: messageContent.substring(0, 200) + "...",
-          containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
-          fullMessage: messageContent,
-        });
-
-        try {
-          // Check if the message contains JSON configuration
-          if (messageContent.includes("fidgetInstanceDatums")) {
-            spaceConfig = JSON.parse(messageContent);
-            console.log("✅ AI generated space config:", spaceConfig);
-
-            // Log detailed config analysis
-            console.log("🔍 BUILDER_LOGS Config Analysis:", {
-              hasConfig: !!spaceConfig,
-              configType: typeof spaceConfig,
-              configKeys: spaceConfig ? Object.keys(spaceConfig) : [],
-              hasFidgetInstanceDatums: !!(spaceConfig as any)
-                ?.fidgetInstanceDatums,
-              fidgetCount: (spaceConfig as any)?.fidgetInstanceDatums
-                ? Object.keys((spaceConfig as any).fidgetInstanceDatums).length
-                : 0,
-              fidgetIds: (spaceConfig as any)?.fidgetInstanceDatums
-                ? Object.keys((spaceConfig as any).fidgetInstanceDatums)
-                : [],
-              hasTheme: !!(spaceConfig as any)?.theme,
-              hasLayoutID: !!(spaceConfig as any)?.layoutID,
-              fullConfig: JSON.stringify(spaceConfig, null, 2),
-            });
-          }
-        } catch (error) {
-          console.error(
-            "❌ Failed to parse BUILDER_LOGS message as JSON:",
-            error
-          );
-          // Silently handle non-JSON messages
-        }
-
-        const logMessage: Message = {
-          id: `builder-log-${Date.now()}`,
-          role: "assistant",
-          content: spaceConfig
-            ? "🎨 I've created a new space configuration for you! Check the preview below."
-            : messageContent,
-          timestamp: new Date(),
-          type: spaceConfig ? "config" : "text",
-          spaceConfig: spaceConfig,
-          aiType: "builder",
-          builderResponse: spaceConfig ? wsMessage : undefined,
-        };
-
-        console.log("📝 Creating message with config:", {
-          messageId: logMessage.id,
-          hasSpaceConfig: !!logMessage.spaceConfig,
-          messageType: logMessage.type,
-          contentPreview: logMessage.content.substring(0, 100),
-          finalConfigPreview: logMessage.spaceConfig
-            ? {
-                fidgetCount: Object.keys(
-                  (logMessage.spaceConfig as any).fidgetInstanceDatums || {}
-                ).length,
-                fidgetIds: Object.keys(
-                  (logMessage.spaceConfig as any).fidgetInstanceDatums || {}
-                ),
-                hasTheme: !!(logMessage.spaceConfig as any)?.theme,
-                themeId: (logMessage.spaceConfig as any)?.theme?.id,
-              }
-            : null,
-        });
-
-        setMessages((prev) => [...prev, logMessage]);
-
-        // Auto-preview the configuration if we have one
-        if (spaceConfig) {
-          console.log(
-            "🔄 Setting preview config from BUILDER_LOGS:",
-            spaceConfig
-          );
-          console.log("🎯 IMMEDIATE PREVIEW ACTIVATION:", {
-            beforePreviewMode: isPreviewMode,
-            configBeingSet: {
-              fidgetCount: Object.keys(
-                (spaceConfig as any).fidgetInstanceDatums || {}
-              ).length,
-              fidgetIds: Object.keys(
-                (spaceConfig as any).fidgetInstanceDatums || {}
-              ),
-              hasTheme: !!(spaceConfig as any)?.theme,
-              themeId: (spaceConfig as any)?.theme?.id,
-            },
-          });
-
-          // Set preview immediately
-          setPreviewConfig(spaceConfig);
-          setIsPreviewMode(true);
-          setIsLoading(false);
-          setLoadingType(null);
-
-
-          toast.success(
-            "🎨 New space configuration created! Preview is now active."
-          );
-        } else {
-          setLoadingType("building");
-          setIsLoading(true);
-        }
-        break;
-      }
-
-      case "COMM_LOGS": {
-        const logMessage: Message = {
-          id: `comm-log-${Date.now()}`,
-          role: "assistant",
-          content: wsMessage.message || "Communication update...",
-          timestamp: new Date(),
-          type: "text",
-          aiType: "planner",
-        };
-        setMessages((prev) => [...prev, logMessage]);
-        break;
-      }
-
-      default:
-        console.log(
-          "❓ Unknown WebSocket message type:",
-          wsMessage.type,
-          wsMessage
-        );
-        break;
-    }
-  }, []);
-
-  // Connect on mount, disconnect on unmount
-  useEffect(() => {
-    initializeWebSocketService();
-    return () => {
-      wsServiceRef.current?.destroy();
-    };
-  }, [initializeWebSocketService]);
-
-  // Update space context when it changes
-  useEffect(() => {
-    if (wsServiceRef.current) {
-      console.log("🔄 Updating WebSocket service with new space context:", {
-        hasSpaceContext: !!currentTabConfig,
-        fidgetCount: currentTabConfig?.fidgetInstanceDatums
-          ? Object.keys(currentTabConfig.fidgetInstanceDatums).length
-          : 0,
-        layoutID: currentTabConfig?.layoutID,
-        theme: currentTabConfig?.theme?.id,
-      });
-      wsServiceRef.current.updateSpaceContext(currentTabConfig);
-    }
-  }, [currentTabConfig]);
 
   useEffect(() => {
     scrollToBottom();
@@ -535,30 +174,37 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
+    setLoadingType("thinking");
 
-    try {
-      // Send message via WebSocket
-      if (wsServiceRef.current?.isConnected()) {
-        console.log(
-          "📤 Sending user message with current space config context"
-        );
-        const success = wsServiceRef.current.sendUserMessage(
-          userMessage.content
-        );
-        if (!success) {
-          throw new Error("Failed to send WebSocket message");
-        }
-      } else {
-        throw new Error("WebSocket not connected");
-      }
-    } catch (error) {
-      console.error("❌ Failed to send message:", error);
-      toast.error(
-        "Failed to send message. Please check your connection and try again."
-      );
-      setIsLoading(false);
-      setLoadingType(null);
-    }
+    setTimeout(() => {
+      setLoadingType("planning");
+      setTimeout(() => {
+        setLoadingType("designing");
+        setTimeout(() => {
+          setLoadingType("building");
+          setTimeout(() => {
+            const aiMessage: Message = {
+              id: `ai-${Date.now()}`,
+              role: "assistant",
+              content:
+                "I've created a new space configuration for you! Check the preview below.",
+              timestamp: new Date(),
+              type: "config",
+              spaceConfig: BASE_CONFIG,
+              aiType: "builder",
+            };
+            setMessages((prev) => [...prev, aiMessage]);
+            setPreviewConfig(BASE_CONFIG as any);
+            setIsPreviewMode(true);
+            setIsLoading(false);
+            setLoadingType(null);
+            toast.success(
+              "🎨 New space configuration created! Preview is now active."
+            );
+          }, 1000);
+        }, 1000);
+      }, 1000);
+    }, 1000);
   };
 
   const handleApplyConfig = async (message: Message) => {
@@ -670,7 +316,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 )}
                 {/* Connection Status Indicator */}
                 <div className="flex items-center gap-1">
-                  {connectionStatus === "connected" && (
+                  {/* {connectionStatus === "connected" && (
                     <>
                       <Wifi className="w-3 h-3 text-green-500" />
                       <span className="text-xs text-green-600">Connected</span>
@@ -695,7 +341,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                       <AlertCircle className="w-3 h-3 text-red-500" />
                       <span className="text-xs text-red-600">Error</span>
                     </>
-                  )}
+                  )} */}
                 </div>
               </div>
             </div>
@@ -872,6 +518,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm text-gray-600">
                       {loadingType === "thinking" && "Thinking..."}
+                      {loadingType === "planning" && "Planning..."}
+                      {loadingType === "designing" && "Designing..."}
                       {loadingType === "building" && "Building..."}
                       {!loadingType && "AI is processing..."}
                     </span>
@@ -915,7 +563,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           </div>
 
           {/* Reconnect button when disconnected */}
-          {(connectionStatus === "disconnected" ||
+          {/* {(connectionStatus === "disconnected" ||
             connectionStatus === "error") && (
             <div className="mt-2">
               <Button
@@ -928,7 +576,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 Reconnect to AI
               </Button>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </aside>

@@ -1138,3 +1138,328 @@ export const HOMEBASE_TABS_CONFIG = {
   NOUNS_TAB_CONFIG,
   NOUNSPACE_TAB_CONFIG,
 };
+
+export const BASE_CONFIG = {
+  "layoutID": "8e2558d9-a018-41d4-abc8-234fa055e2c6",
+  "layoutDetails": {
+    "layoutConfig": {
+      "layout": [
+        {
+          "w": 10,
+          "h": 3,
+          "x": 0,
+          "y": 0,
+          "i": "gallery:335df994-b129-4cca-9cc9-41c4b23f5c16",
+          "minW": 1,
+          "maxW": 36,
+          "minH": 1,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 2,
+          "h": 5,
+          "x": 10,
+          "y": 0,
+          "i": "Video:9dd1023f-2b79-4274-ac8a-674a3855813d",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 2,
+          "h": 5,
+          "x": 10,
+          "y": 5,
+          "i": "links:ca62505b-5e34-48b8-88dc-c367fa3d2c66",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 5,
+          "h": 7,
+          "x": 5,
+          "y": 3,
+          "i": "Swap:3eab3be9-03bb-4ab7-9630-8e1b1d565f93",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 3,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 5,
+          "h": 7,
+          "x": 0,
+          "y": 3,
+          "i": "feed:fc0b4b49-16d5-4f88-8a6e-77cfba2977d4",
+          "minW": 4,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        }
+      ]
+    },
+    "layoutFidget": "grid"
+  },
+  "theme": {
+    "id": "Homebase-Tab 9-Theme",
+    "name": "Homebase-Tab 9-Theme",
+    "properties": {
+      "background": "#ffffff",
+      "backgroundHTML": "<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Animated Gradient Background</title>\n<style>\n  body, html {\n    height: 100%;\n    margin: 0;\n    padding: 0;\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    background-color: #163FC0;\n  }\n  .gradient-background {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n    height: 100%;\n    background: linear-gradient(135deg, #3C50CC, #ffffff);\n    background-size: 200% 200%;\n    animation: moveGradient 10s linear infinite;\n  }\n  @keyframes moveGradient {\n    0% { background-position: 0% 50%; }\n    50% { background-position: 100% 50%; }\n    100% { background-position: 0% 50%; }\n  }\n</style>\n</head>\n<body>\n<div class=\"gradient-background\"></div>\n</body>\n</html>",
+      "fidgetBackground": "rgba(60, 80, 204, 0.51)",
+      "fidgetBorderColor": "rgb(22, 63, 192)",
+      "fidgetBorderRadius": "32px",
+      "fidgetBorderWidth": "4px",
+      "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)",
+      "font": "Inter",
+      "fontColor": "#000000",
+      "gridSpacing": "9",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
+    }
+  },
+  "fidgetInstanceDatums": {
+    "Swap:3eab3be9-03bb-4ab7-9630-8e1b1d565f93": {
+      "id": "Swap:3eab3be9-03bb-4ab7-9630-8e1b1d565f93",
+      "fidgetType": "Swap",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "showOnMobile": true,
+          "defaultSellToken": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "defaultBuyToken": "0x48c6740bcf807d6c47c864faeea15ed4da3910ab",
+          "fromChain": {
+            "id": "8453",
+            "name": "Base"
+          },
+          "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)",
+          "toChain": {
+            "id": "8453",
+            "name": "Base"
+          }
+        }
+      }
+    },
+    "Video:9dd1023f-2b79-4274-ac8a-674a3855813d": {
+      "id": "Video:9dd1023f-2b79-4274-ac8a-674a3855813d",
+      "fidgetType": "Video",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "url": "https://www.youtube.com/shorts/bMcDc6KjEDA",
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "4px",
+          "fidgetBorderColor": "rgba(22, 63, 192, 1)",
+          "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)"
+        }
+      }
+    },
+    "feed:fc0b4b49-16d5-4f88-8a6e-77cfba2977d4": {
+      "id": "feed:fc0b4b49-16d5-4f88-8a6e-77cfba2977d4",
+      "fidgetType": "feed",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "showOnMobile": true,
+          "selectPlatform": {
+            "icon": "/images/farcaster.jpeg",
+            "name": "Farcaster"
+          },
+          "feedType": "filter",
+          "Xhandle": "thenounspace",
+          "filterType": "channel_id",
+          "username": "",
+          "users": "",
+          "channel": "base",
+          "keyword": "base",
+          "style": "light",
+          "fontFamily": "var(--user-theme-font)",
+          "fontColor": "rgb(255, 255, 255)",
+          "background": "rgba(60, 80, 204, 1)",
+          "fidgetBorderWidth": "4px",
+          "fidgetBorderColor": "rgba(22, 63, 192, 1)",
+          "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)"
+        }
+      }
+    },
+    "gallery:335df994-b129-4cca-9cc9-41c4b23f5c16": {
+      "id": "gallery:335df994-b129-4cca-9cc9-41c4b23f5c16",
+      "fidgetType": "gallery",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "selectMediaSource": {
+            "name": "URL"
+          },
+          "imageUrl": "https://techcrunch.com/wp-content/uploads/2023/02/0-1.png?resize=2048,1024",
+          "nftAddress": "",
+          "nftTokenId": "",
+          "Scale": 1,
+          "Link": "",
+          "badgeColor": "rgb(55, 114, 249)",
+          "showOnMobile": true,
+          "background": "var(--user-theme-fidget-background)",
+          "fidgetBorderWidth": "4px",
+          "fidgetBorderColor": "rgba(22, 63, 192, 1)",
+          "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)"
+        }
+      }
+    },
+    "links:ca62505b-5e34-48b8-88dc-c367fa3d2c66": {
+      "id": "links:ca62505b-5e34-48b8-88dc-c367fa3d2c66",
+      "fidgetType": "links",
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "showOnMobile": true,
+          "title": "Based Links",
+          "links": [
+            {
+              "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAzCAMAAAANf8AYAAAAqFBMVEX//////v/+/v/+//8ATv8ATf8ATP////4ASv8AUP8AR/4AQf0ARf76/P8AP/4AP/vf6v4APP4QUfnn8P3y9/60yvyMpvsAOvcANvg3bf2kvfrJ2P5XhPuvx/2pwvzA0/1xmPs5b/kWV/ouZvtjjPxnkPkbWvjQ3P5Sfvvc5/5BdPq+0P4eV/hslfoqXvZKePaAovuZtfmQq/qAoPY3af17n/2OrP2RsvsQ8xqPAAADMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS41LjAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIgeG1sbnM6SXB0YzR4bXBFeHQ9Imh0dHA6Ly9pcHRjLm9yZy9zdGQvSXB0YzR4bXBFeHQvMjAwOC0wMi0yOS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgZXhpZjpEYXRlVGltZU9yaWdpbmFsPSIyMDI1LTA2LTA1VDIyOjUzOjE4KzAwOjAwIiBJcHRjNHhtcEV4dDpEaWdpdGFsU291cmNlRmlsZVR5cGU9Imh0dHA6Ly9jdi5pcHRjLm9yZy9uZXdzY29kZXMvZGlnaXRhbHNvdXJjZXR5cGUvY29tcG9zaXRlV2l0aFRyYWluZWRBbGdvcml0aG1pY01lZGlhIiBJcHRjNHhtcEV4dDpEaWdpdGFsU291cmNlVHlwZT0iaHR0cDovL2N2LmlwdGMub3JnL25ld3Njb2Rlcy9kaWdpdGFsc291cmNldHlwZS9jb21wb3NpdGVXaXRoVHJhaW5lZEFsZ29yaXRobWljTWVkaWEiIHBob3Rvc2hvcDpDcmVkaXQ9IkVkaXRlZCB3aXRoIEdvb2dsZSBBSSIgcGhvdG9zaG9wOkRhdGVDcmVhdGVkPSIyMDI1LTA2LTA1VDIyOjUzOjE4KzAwOjAwIi8+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+ICAgPD94cGFja2V0IGVuZD0idyI/PiJEeu0AAATtSURBVEiJbVaJduo4DFXsxHJskwCBdqBAKS1rKa/r9P//bLQkoZ3zBJyERLJk6erKACYjMQYgA2MN0K2xJHTPX7mQZBmApQ9YJFUStuqudMc/UmXrzIIxSFfRQzS2UyQX0OpmnX0r8k+fIX3EEmzGi6hZ7xCbu+VqeT+UMKway1fvyQaxdWNEp1muHzZ5iMmPH5/mQ3HWmrX+LGTwI0S83+5Clbwr8sKFVMfxYjpo9TWaPkJ+yk72Bx+9y6/i0yg9TLu4KSjL2lc3MPhysVDdUi+Fc97X6XBsY4PfNoDD0ygUrar3IXjnnSsKV/jR5lmzZyX9/f5gf6npPRn4VKd8vBmXqUpBNuZiPtdUGDDQ+SGTcyxI8iLWu6fVftg0x9XLJUWf00OX0lzXNn1clGHyQuJSPC0nfUkHd08+Op87l8JUVA3vh9BBvuyfiqJwPp7fsCu8rInPszrQtlwaH7kwRmoq7z9uPWe2Og3VbwZ9CJNt9BxCPDFEKVe8JXqxL4Oj/MbFAFo0ZApfwwl9rSiBuavfCLocnSyFTyNXkMmJS04NQfCXH/ujv7iuKLo87BrobAzsffJFGXZDiclKE1iOA7iTyJPsNr99B8mBhPJCzinJUgNSMnwx3HdkyOHAsQy03fRJoWeK6GYX2OSP7kDaSgys6cG8joQn5+/AtBidagKmIA1q4Zforo5jTyr1Gm2m79d1kdNuJl1kkNn/2+CCHOXhkYITPzhLtMH4xAlmziAK4DIzhvsmxRXruHwvWTLQjBnOYaXrsgnzTNvubQ/AcMxFr1coAIE7z7GOh/B3Ub4YzBLZ3H6jxIBLabTxyxfJ6+vNL3l9n7AR5eZAWsXtDUqucV5xn7mqqqu6vhX5R4Qv4Sj4AVhwq9QfbEM1WqW8LPPy8XH2Wz5JLrNhi3Ly43Ky4foYvGes+c0QBn+RiYCL9vPAiau/QflAUuLDc9fkWdeHXQ4ywQrlgOHF0KUlPvlv9SVIZ2ZkpjZyZ5icJO331K15kRN4pElwW3F9ZoOWXZnHxA2/JswJbQrgwrnRjsxgTtjJPQGwCyi7tqkQVAaTCwG7jAvsoDEsCQiu2l7Ve8bXWQHwFqnsLs3RgjYwLMTR+K5nyO6nZGZg8sgo4NA4VOngac1gSqcBXNMFLfGwCX4RjeRF/cKPMtAOm1WUEx+/2gGg+dRu45u550ERyqO+1lDIEU0Dl/5VpuFdt6TAKtMyMZdSNZR+dSFcjDznO960NeSxYZhG2EuZHPf+TuAK3fDDZsc1cr5eCClqowovTdaBR5hPaapTRJiU3+N9SDQVCl+f35trFnDydql4NhDFfgizmJ4vMsS5LudT3GyXDZPjoJmuL5HiosD8aItCfEqV3ZLzED3lx3kaO5uHw+Fw4slKeyebcLvlEwWfOTIDVyucbiq24dFG0ceUmAcdS0qvKGC0wkm9DTX58VRT7RzPYB5efKEbH0bnpepYI3PBdviSZ2/nEVdclXmE0f5G/uVHVmRg/UILNt8znaLkjg2qerPdI/4Eu/SHjC/pLXKMg+ftJY+xIqnDZjFvsBvuGWcBBaMyLmQGKPbJbL/6/nj9+F7d8WRFATKPeTpWWeSzmJEZY1tbwqAWDTUgjt3KGGIdvW/DbI8LytOEd9Me0/rdSiX1RMFHOp0wUi0ZyDr+dAscEOq4BGQMEL3hf7HSRDiCqYOpAAAAAElFTkSuQmCC",
+              "description": "",
+              "text": "Base.org",
+              "url": "https://base.org"
+            },
+            {
+              "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEGElEQVR4AbWWA5AcXRSFX2ytbe/+DNccx6vYtm3bTjm2jUGyVg/CRmzb6dwXdO12LaYHt+oMu/s797zbQMYWy7JVMzIyYkaPHjstOTlln1SmKBCJpDfFYukNqUxe2D459cCwESOmnz17Nh62rY4sVXfu3LGZOHHiJIlUdsfG1v577Tr12PLUyMaOFUuk9ydPnjqNJEl7k8HQRZWVK1f2a9Y8/GmduvU5gLHC+zRr3uL50uXLB+P0BMFfvnzZqHvPXkegY8Fgvho2smW79ehx8vXr17bGRu4qkyl05oL5kkikV+7fv+9RYecyOQe3uKRyBTZhV+aa9+7d95CloXx179HrRKkzsWLF6t4wwd/NBSQmibW7d+9OP3DgSFuscRMmbIY5KDETK1asGFQCjgckPDzysSU63LNnT2f+9SMqKuZ98W2aNw9//ubNGwduo6lTp46rW6+BRSI+efJkMuJVTEzca/4pOmHSpKnc2sNwMEIgdvaObOs2bTPaJaccxFK0bFXQoKGN0QawRCLJPWBXQ3B5Dbe1cxC09smpaSdh50rFYq4sb9kqV4gB3ARUMBo9evQkoTF36dJ1Ix+SnJy6V4iB6OjYV2CgAUpLS99dTtTf/fwDPvv5B3729PT+CmtnEQNOzq7fVq9e3QnhgqteXmlwX1//L0eOHGkFLp2x4CLlDXfBU+YawMs9d+78idyfIrGk1AFMSEy6iXi1YMGigeYYcHRy+Y6n/8/8qAiyK0qCe3qpBhJENxCvli1b1s9UAz4+fp8XLFo0/A9cSVxvqSq6rkVSqVxnbQPDho2gt27dKvvzPeMyFaYirj9TEuRF1LZd8hFrG4Cunf58Vhbd8FIR1E2InwUTO9CAQYPmW9kAVxcIOgDAzC84SEtORAcOH5bBZdgiBmDC2UKtNrE0uJKgoyDyhxwcS8tE43jqRsfEPjfXwPLly6fjO2op8VeCqIcC/GNxOHy/m5+fXw3hGjhw8HIhBrp3774GGVFKLekGsMMYyJdaS07nNtTr9b4BgcEfStzXE0UM4tWuXbu6QNRnzp8/H1oe2GBgq8P6DgTQ89Lg0P3Ls3rGkXeRWTA8MCjko5u757d//v3//dix45aUFmd54N1wZwVwK1UReYkH5WtUWY9ljiAvUH0koHYbDNXVBNlLWXSdqAAM3V+/cPw4WQOZWziN8zqqsVpLLeFNdzmibmYS11xNhp7SauvAQeJVWnoexHzZOCh3zt/O0FJhRsM2wimiKSRDNFo6WU1Qs2FqVXCgN4KgHJzKO1fIeCIhhc9RiHYCOH8rHMrpA+w/L/POnVrI1FLnUu5woGWg1wLA7yC1DcpLlB+yVGWTZH2NlkmBjtbCwTNg6h/BHHwF2FeY/qdwtcuB/zapdXSnzEt3bJCR9QPwKOxl9MLyXAAAAABJRU5ErkJggg==",
+              "description": "",
+              "text": "Basescan",
+              "url": "http://basescan.org/"
+            },
+            {
+              "avatar": "https://www.base.org/_next/static/media/logo.f6fdedfc.svg",
+              "description": "",
+              "text": "Onchain Kit",
+              "url": "https://www.base.org/builders/onchainkit"
+            },
+            {
+              "avatar": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAAAzCAMAAAANf8AYAAAAqFBMVEX//////v/+/v/+//8ATv8ATf8ATP////4ASv8AUP8AR/4AQf0ARf76/P8AP/4AP/vf6v4APP4QUfnn8P3y9/60yvyMpvsAOvcANvg3bf2kvfrJ2P5XhPuvx/2pwvzA0/1xmPs5b/kWV/ouZvtjjPxnkPkbWvjQ3P5Sfvvc5/5BdPq+0P4eV/hslfoqXvZKePaAovuZtfmQq/qAoPY3af17n/2OrP2RsvsQ8xqPAAADMmlUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS41LjAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIgeG1sbnM6SXB0YzR4bXBFeHQ9Imh0dHA6Ly9pcHRjLm9yZy9zdGQvSXB0YzR4bXBFeHQvMjAwOC0wMi0yOS8iIHhtbG5zOnBob3Rvc2hvcD0iaHR0cDovL25zLmFkb2JlLmNvbS9waG90b3Nob3AvMS4wLyIgZXhpZjpEYXRlVGltZU9yaWdpbmFsPSIyMDI1LTA2LTA1VDIyOjUzOjE4KzAwOjAwIiBJcHRjNHhtcEV4dDpEaWdpdGFsU291cmNlRmlsZVR5cGU9Imh0dHA6Ly9jdi5pcHRjLm9yZy9uZXdzY29kZXMvZGlnaXRhbHNvdXJjZXR5cGUvY29tcG9zaXRlV2l0aFRyYWluZWRBbGdvcml0aG1pY01lZGlhIiBJcHRjNHhtcEV4dDpEaWdpdGFsU291cmNlVHlwZT0iaHR0cDovL2N2LmlwdGMub3JnL25ld3Njb2Rlcy9kaWdpdGFsc291cmNldHlwZS9jb21wb3NpdGVXaXRoVHJhaW5lZEFsZ29yaXRobWljTWVkaWEiIHBob3Rvc2hvcDpDcmVkaXQ9IkVkaXRlZCB3aXRoIEdvb2dsZSBBSSIgcGhvdG9zaG9wOkRhdGVDcmVhdGVkPSIyMDI1LTA2LTA1VDIyOjUzOjE4KzAwOjAwIi8+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+ICAgPD94cGFja2V0IGVuZD0idyI/PiJEeu0AAATtSURBVEiJbVaJduo4DFXsxHJskwCBdqBAKS1rKa/r9P//bLQkoZ3zBJyERLJk6erKACYjMQYgA2MN0K2xJHTPX7mQZBmApQ9YJFUStuqudMc/UmXrzIIxSFfRQzS2UyQX0OpmnX0r8k+fIX3EEmzGi6hZ7xCbu+VqeT+UMKway1fvyQaxdWNEp1muHzZ5iMmPH5/mQ3HWmrX+LGTwI0S83+5Clbwr8sKFVMfxYjpo9TWaPkJ+yk72Bx+9y6/i0yg9TLu4KSjL2lc3MPhysVDdUi+Fc97X6XBsY4PfNoDD0ygUrar3IXjnnSsKV/jR5lmzZyX9/f5gf6npPRn4VKd8vBmXqUpBNuZiPtdUGDDQ+SGTcyxI8iLWu6fVftg0x9XLJUWf00OX0lzXNn1clGHyQuJSPC0nfUkHd08+Op87l8JUVA3vh9BBvuyfiqJwPp7fsCu8rInPszrQtlwaH7kwRmoq7z9uPWe2Og3VbwZ9CJNt9BxCPDFEKVe8JXqxL4Oj/MbFAFo0ZApfwwl9rSiBuavfCLocnSyFTyNXkMmJS04NQfCXH/ujv7iuKLo87BrobAzsffJFGXZDiclKE1iOA7iTyJPsNr99B8mBhPJCzinJUgNSMnwx3HdkyOHAsQy03fRJoWeK6GYX2OSP7kDaSgys6cG8joQn5+/AtBidagKmIA1q4Zforo5jTyr1Gm2m79d1kdNuJl1kkNn/2+CCHOXhkYITPzhLtMH4xAlmziAK4DIzhvsmxRXruHwvWTLQjBnOYaXrsgnzTNvubQ/AcMxFr1coAIE7z7GOh/B3Ub4YzBLZ3H6jxIBLabTxyxfJ6+vNL3l9n7AR5eZAWsXtDUqucV5xn7mqqqu6vhX5R4Qv4Sj4AVhwq9QfbEM1WqW8LPPy8XH2Wz5JLrNhi3Ly43Ky4foYvGes+c0QBn+RiYCL9vPAiau/QflAUuLDc9fkWdeHXQ4ywQrlgOHF0KUlPvlv9SVIZ2ZkpjZyZ5icJO331K15kRN4pElwW3F9ZoOWXZnHxA2/JswJbQrgwrnRjsxgTtjJPQGwCyi7tqkQVAaTCwG7jAvsoDEsCQiu2l7Ve8bXWQHwFqnsLs3RgjYwLMTR+K5nyO6nZGZg8sgo4NA4VOngac1gSqcBXNMFLfGwCX4RjeRF/cKPMtAOm1WUEx+/2gGg+dRu45u550ERyqO+1lDIEU0Dl/5VpuFdt6TAKtMyMZdSNZR+dSFcjDznO960NeSxYZhG2EuZHPf+TuAK3fDDZsc1cr5eCClqowovTdaBR5hPaapTRJiU3+N9SDQVCl+f35trFnDydql4NhDFfgizmJ4vMsS5LudT3GyXDZPjoJmuL5HiosD8aItCfEqV3ZLzED3lx3kaO5uHw+Fw4slKeyebcLvlEwWfOTIDVyucbiq24dFG0ceUmAcdS0qvKGC0wkm9DTX58VRT7RzPYB5efKEbH0bnpepYI3PBdviSZ2/nEVdclXmE0f5G/uVHVmRg/UILNt8znaLkjg2qerPdI/4Eu/SHjC/pLXKMg+ftJY+xIqnDZjFvsBvuGWcBBaMyLmQGKPbJbL/6/nj9+F7d8WRFATKPeTpWWeSzmJEZY1tbwqAWDTUgjt3KGGIdvW/DbI8LytOEd9Me0/rdSiX1RMFHOp0wUi0ZyDr+dAscEOq4BGQMEL3hf7HSRDiCqYOpAAAAAElFTkSuQmCC",
+              "description": "",
+              "text": "Base Names",
+              "url": "https://www.base.org/name/scores"
+            },
+            {
+              "avatar": "data:image/webp;base64,UklGRiABAABXRUJQVlA4IBQBAADQBwCdASozADMAPjEMjEYiERELACADBLSAZ/JXd2B/QGJAelr/AfbN0nf+zF32ZaSy9DKjZtEI6hCU12prb7zJ2hKIK2WVkAD+/lAOPDfIDrj6CohELMzf8ObgjZsK4HoioPlpaHV/9Oc6fzqtbEEp4UCYyaL8qPuOQvKX5XTHf667ZBcNIrr5yA6SKh0iL/3kvpz5g5n5/xegIzE2LeSH/3JH/DfOmPoOl3dGxNbtZuof1RoB7IFAtZtJfaoZkwcIRVtF/aI+y3pgz9If5hp1Ne2c36d0H5WYIP4j+qv6+C536NlsRVy8+1+Vd8Grs48S2kWZuYiBogvJIVvbXbt5q/Rty7BGesTATgYMXett4vLsAAA=",
+              "description": "",
+              "text": "Builder Score",
+              "url": "https://www.talentprotocol.com/"
+            }
+          ],
+          "viewMode": "list",
+          "headingsFontFamily": "var(--user-theme-headings-font)",
+          "fontFamily": "Theme Font",
+          "HeaderColor": "rgb(255, 255, 255)",
+          "DescriptionColor": "var(--user-theme-font-color)",
+          "itemBackground": "rgba(48, 72, 206, 0.54)",
+          "background": "rgba(60, 80, 204, 0.6)",
+          "fidgetBorderWidth": "4px",
+          "fidgetBorderColor": "rgba(22, 63, 192, 1)",
+          "fidgetShadow": "0 4px 8px rgba(0,0,0,0.25)",
+          "css": ""
+        }
+      }
+    }
+  },
+  "fidgetTrayContents": [
+    {
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "background": "rgba(115, 115, 226, 0.51)",
+          "css": "",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "fontColor": "rgb(241, 241, 241)",
+          "fontFamily": "var(--user-theme-font)",
+          "headingsFontColor": "rgb(245, 242, 242)",
+          "headingsFontFamily": "var(--user-theme-headings-font)",
+          "showOnMobile": true,
+          "text": "Base is an Ethereum Layer-2 (L2) network developed and incubated by Coinbase to make building and using on-chain applications cheaper, faster, and more accessible.\n",
+          "title": "Base is for everyone",
+          "urlColor": "var(--user-theme-link-color)"
+        }
+      },
+      "fidgetType": "text",
+      "id": "text:c9bb0625-c5d6-49a6-900a-b3fcff187418"
+    }
+  ],
+  "isEditable": false,
+  "timestamp": "2025-06-19T15:13:19.004Z"
+};
