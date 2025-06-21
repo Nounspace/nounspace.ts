@@ -45,7 +45,7 @@ export const getFidgetDisplayName = (
   }
   
   const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-  if (!fidgetModule) return 'Unknown';
+  if (!fidgetModule) return fidgetData.fidgetType; 
 
   if (isMobile) {
     // First check for user-defined custom mobile display name
@@ -114,18 +114,26 @@ export const processTabFidgetIds = (
     });
   }
   
-  // For mobile, process and potentially consolidate media fidgets
+   // For mobile, process and potentially consolidate media fidgets
+  const validFidgets = fidgetIds.filter(id => {
+    const fidgetData = fidgetInstanceDatums[id];
+    
+    if (!fidgetData) return false;
+    
+    if (fidgetData.config?.settings?.showOnMobile === false) return false;
+    
+    const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
+    if (!fidgetModule) return false;
+    
+    return true;
+  });
+  
   const mediaFidgetIds: string[] = [];
   const pinnedCastIds: string[] = [];
   const nonMediaFidgetIds: string[] = [];
   
-  // First separate media, pinned casts, and non-media fidgets
-  fidgetIds.forEach(id => {
+  validFidgets.forEach(id => {
     const fidgetData = fidgetInstanceDatums[id];
-    if (!fidgetData) return;
-    
-    // Skip fidgets that should be hidden on mobile
-    if (fidgetData.config?.settings?.showOnMobile === false) return;
     
     if (isPinnedCast(id, fidgetInstanceDatums)) {
       pinnedCastIds.push(id);
@@ -165,13 +173,14 @@ export const getValidFidgetIds = (
 ): string[] => {
   return fidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
+    
     if (!fidgetData) return false;
     
-    // On mobile, check showOnMobile setting
+    const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
+    if (!fidgetModule) return false;
+    
     if (isMobile) {
-      const showOnMobile = fidgetData.config?.settings?.showOnMobile;
-      // If showOnMobile is explicitly false, hide the fidget
-      if (showOnMobile === false) return false;
+      if (fidgetData.config?.settings?.showOnMobile === false) return false;
     }
     
     return true;

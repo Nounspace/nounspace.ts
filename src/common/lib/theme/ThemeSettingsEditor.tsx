@@ -80,22 +80,31 @@ export function ThemeSettingsEditor({
   }, [tabValue, setMobilePreview]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
-    return Object.values(fidgetInstanceDatums).map((d, i) => {
-      const props = CompleteFidgets[d.fidgetType]?.properties;
-      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
-      return {
-        id: d.id,
-        name: d.fidgetType,
-        mobileDisplayName:
-          (d.config.settings.customMobileDisplayName as string) ||
-          props?.mobileFidgetName ||
-          props?.fidgetName,
-        context: props?.fidgetName,
-        order: (d.config.settings.mobileOrder as number) || i + 1,
-        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
-        displayOnMobile: d.config.settings.showOnMobile !== false,
-      };
-    });
+    return Object.values(fidgetInstanceDatums)
+      .filter((d) => {
+        // Filter invalid fidgets
+        if (!d || !d.fidgetType) return false;
+        
+       // Check if the fidget type is known/valid
+        const fidgetModule = CompleteFidgets[d.fidgetType];
+        return !!fidgetModule && !!fidgetModule.properties;
+      })
+      .map((d, i) => {
+        const props = CompleteFidgets[d.fidgetType].properties;
+        const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
+        return {
+          id: d.id,
+          name: d.fidgetType,
+          mobileDisplayName:
+            (d.config.settings.customMobileDisplayName as string) ||
+            props.mobileFidgetName ||
+            props.fidgetName,
+          context: props.fidgetName,
+          order: (d.config.settings.mobileOrder as number) || i + 1,
+          icon: (d.config.settings.mobileIconName as string) || defaultIcon,
+          displayOnMobile: d.config.settings.showOnMobile !== false,
+        };
+      });
   }, [fidgetInstanceDatums]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
