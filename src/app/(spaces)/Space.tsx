@@ -412,7 +412,7 @@ export default function Space({
                             </div>
                           </div>
 
-                          {!isUndefined(feed) ? (
+                          {!isUndefined(feed) && !isMobile ? (
                             <div className="w-full overflow-auto bg-white">
                               {feed}
                             </div>
