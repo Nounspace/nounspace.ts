@@ -217,15 +217,17 @@ function TabBar({
                   <FaPaintbrush />
                 </Button>
               )}
-              <NogsGateButton
-                onClick={() => handleCreateTab(generateNewTabName())}
-                className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-              >
-                <div>
-                  <FaPlus />
-                </div>
-                <span className="ml-1">Tab</span>
-              </NogsGateButton>
+              {!inHomebase && (
+                <NogsGateButton
+                  onClick={() => handleCreateTab(generateNewTabName())}
+                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <div>
+                    <FaPlus />
+                  </div>
+                  <span className="ml-1">Tab</span>
+                </NogsGateButton>
+              )}
             </div>
           )}
           <div className={`flex-1 overflow-x-auto scrollbar-hide ${isMobile ? 'pr-16' : 'pr-4'}`}>
