@@ -250,8 +250,9 @@ export default function Space({
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
       saveConfig: saveLocalConfig,
-      hasProfile: !isMobile && !isNil(profile),
-      hasFeed: !isMobile && !isNil(feed),
+      hasProfile: !isNil(profile),
+      hasFeed: !isNil(feed),
+      feed: feed,
       tabNames: config.tabNames,
       fid: config.fid,
     };
