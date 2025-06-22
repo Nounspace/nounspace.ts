@@ -34,10 +34,14 @@ export async function generateMetadata({
   let priceChange = "";
   
   try {
-    const [tokenData, clankerData] = await Promise.all([
+    // Replace Promise.all with Promise.allSettled for more resilient error handling
+    const [tokenResult, clankerResult] = await Promise.allSettled([
       fetchTokenData(contractAddress, null, network as string),
       fetchClankerByAddress(contractAddress as Address),
     ]);
+    
+    const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
+    const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
 
     console.log("Token data fetched:", tokenData);
 
