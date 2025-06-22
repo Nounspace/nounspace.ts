@@ -287,7 +287,7 @@ function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
-        {!inEditMode && !mobilePreview && isEditable && !inHomebase && (
+        {!inEditMode && !mobilePreview && !isMobile && isEditable && (
           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
             <Button
               onClick={() => setEditMode(true)}
