@@ -29,7 +29,9 @@ export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
   layout: string[];
 }
 
-type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
+type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig> & {
+  feed?: React.ReactNode; 
+};
 
 /**
  * Main TabFullScreen Layout component
@@ -43,6 +45,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   theme,
   saveConfig,
   tabNames,
+  hasFeed,
+  feed,
 }) => {
   const viewportMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
@@ -95,26 +99,49 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   
   // Get ordered fidget IDs with feed prioritized (except in homebase)
   const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
+    // Start with the base fidget IDs
+    let ids = [...processedFidgetIds];
     
-    // If we're in homebase or home path, don't reorder
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
+    // Add feed tab at the beginning if it exists
+    if (hasFeed && feed) {
+      ids = ['feed', ...ids];
+      console.log("Added feed tab at the beginning", ids);
+    } else {
+      console.log("Feed not available", hasFeed, feed ? "feed exists" : "no feed");
+    }
     
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
+    if (ids.length <= 1) return ids;
     
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
+    // If we're in homebase or home path, don't reorder further
+    if (isHomebasePath || isHomePath) return ids;
     
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath]);
+    // For other paths, reorder to prioritize feed fidgets
+    const reorderedIds = [...ids];
+    
+    // Skip the first item if it's the main feed
+    if (hasFeed && feed) {
+      const withoutFirst = reorderedIds.slice(1);
+      withoutFirst.sort((a, b) => {
+        const aIsFeed = isFeedFidget(a);
+        const bIsFeed = isFeedFidget(b);
+        
+        if (aIsFeed && !bIsFeed) return -1; 
+        if (!aIsFeed && bIsFeed) return 1;  
+        return 0; 
+      });
+      return [reorderedIds[0], ...withoutFirst];
+    } else {
+      reorderedIds.sort((a, b) => {
+        const aIsFeed = isFeedFidget(a);
+        const bIsFeed = isFeedFidget(b);
+        
+        if (aIsFeed && !bIsFeed) return -1;
+        if (!aIsFeed && bIsFeed) return 1; 
+        return 0;
+      });
+      return reorderedIds;
+    }
+  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, hasFeed, feed]);
 
   // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
@@ -229,6 +256,21 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                     theme={theme}
                     saveFidgetConfig={saveFidgetConfig}
                   />
+                </div>
+              </TabsContent>
+            )}
+            
+            {hasFeed && feed && (
+              <TabsContent
+                key="feed"
+                value="feed"
+                className="h-full w-full"
+                style={{
+                  display: selectedTab === 'feed' ? 'block' : 'none',
+                }}
+              >
+                <div className="h-full w-full px-4 py-2">
+                  {feed}
                 </div>
               </TabsContent>
             )}

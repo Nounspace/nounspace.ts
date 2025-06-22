@@ -120,6 +120,10 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
+    if (fidgetId === 'feed') {
+      return 'Feed';
+    }
+    
     // Handle special consolidated views
     if (fidgetId === 'consolidated-media' || fidgetId === 'consolidated-pinned') {
       return getFidgetDisplayName(null, isMobile, fidgetId);
@@ -145,6 +149,16 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
+    if (fidgetId === 'feed') {
+      return selectedTab === fidgetId ? 
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="text-xl w-6 h-6">
+          <path fillRule="evenodd" d="M3.75 4.5a.75.75 0 0 1 .75-.75h.75c8.284 0 15 6.716 15 15v.75a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75C18 11.708 12.292 6 5.25 6H4.5a.75.75 0 0 1-.75-.75V4.5Zm0 6.75a.75.75 0 0 1 .75-.75h.75a8.25 8.25 0 0 1 8.25 8.25v.75a.75.75 0 0 1-.75.75H12a.75.75 0 0 1-.75-.75v-.75a6 6 0 0 0-6-6H4.5a.75.75 0 0 1-.75-.75v-.75Zm0 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" clipRule="evenodd" />
+        </svg> :
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="text-xl w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+        </svg>
+    }
+
     // Special case for consolidated media
     if (fidgetId === 'consolidated-media') {
       return selectedTab === fidgetId ? 
