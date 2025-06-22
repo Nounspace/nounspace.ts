@@ -172,7 +172,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
         <Tabs
           value={selectedTab}
           className="w-full h-full"
-          onValueChange={setSelectedTab}
+          onValueChange={(value) => {
+            console.log("Tab changed to:", value);
+            setSelectedTab(value);
+            window.scrollTo(0, 0);
+          }}
         >
           <div className="relative z-level-2 h-full">
             {/* Special case for consolidated media tab */}
@@ -180,8 +184,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full data-[state=inactive]:hidden"
-                forceMount
+                className="h-full w-full"
+                style={{
+                  display: selectedTab === 'consolidated-media' ? 'block' : 'none',
+                }}
               >
                 <div
                   className="h-full w-full"
@@ -205,8 +211,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full data-[state=inactive]:hidden"
-                forceMount
+                className="h-full w-full"
+                style={{
+                  display: selectedTab === 'consolidated-pinned' ? 'block' : 'none',
+                }}
               >
                 <div
                   className="h-full w-full"
@@ -243,8 +251,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   <TabsContent
                     key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full data-[state=inactive]:hidden"
-                    forceMount
+                    className="h-full w-full"
+                    style={{
+                      display: selectedTab === fidgetId ? 'block' : 'none',
+                    }}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}

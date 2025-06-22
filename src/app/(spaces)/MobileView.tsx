@@ -157,6 +157,8 @@ const MobileView: React.FC<MobileViewProps> = ({
         style={{
           paddingBottom:
             processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : "0",
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Tabs
@@ -166,12 +168,14 @@ const MobileView: React.FC<MobileViewProps> = ({
         >
           <div className="h-full w-full">
             {/* Special case for consolidated media tab */}
-            {mediaFidgetIds.length > 1 && selectedTab === "consolidated-media" && (
+            {mediaFidgetIds.length > 1 && (
               <TabsContent
                 key="consolidated-media"
                 value="consolidated-media"
-                className="h-full w-full block"
-                style={{ visibility: "visible", display: "block" }}
+                className="h-full w-full"
+                style={{ 
+                  display: selectedTab === "consolidated-media" ? "block" : "none" 
+                }}
               >
                 <div
                   className="h-full w-full"
@@ -191,12 +195,14 @@ const MobileView: React.FC<MobileViewProps> = ({
             )}
 
             {/* Special case for consolidated pinned tab */}
-            {pinnedCastIds.length > 1 && selectedTab === "consolidated-pinned" && (
+            {pinnedCastIds.length > 1 && (
               <TabsContent
                 key="consolidated-pinned"
                 value="consolidated-pinned"
-                className="h-full w-full block"
-                style={{ visibility: "visible", display: "block" }}
+                className="h-full w-full"
+                style={{ 
+                  display: selectedTab === "consolidated-pinned" ? "block" : "none" 
+                }}
               >
                 <div
                   className="h-full w-full"
@@ -222,8 +228,6 @@ const MobileView: React.FC<MobileViewProps> = ({
                   id !== "consolidated-media" && id !== "consolidated-pinned"
               )
               .map((fidgetId) => {
-                if (selectedTab !== fidgetId) return null
-                
                 const fidgetDatum = fidgetInstanceDatums[fidgetId]
                 if (!fidgetDatum) return null
 
@@ -239,8 +243,10 @@ const MobileView: React.FC<MobileViewProps> = ({
                   <TabsContent
                     key={fidgetId}
                     value={fidgetId}
-                    className="h-full w-full block"
-                    style={{ visibility: "visible", display: "block" }}
+                    className="h-full w-full"
+                    style={{ 
+                      display: selectedTab === fidgetId ? "block" : "none"
+                    }}
                   >
                     <FidgetContent
                       fidgetId={fidgetId}
@@ -266,6 +272,7 @@ const MobileView: React.FC<MobileViewProps> = ({
           theme={theme}
           fidgetInstanceDatums={fidgetInstanceDatums}
           tabNames={tabNames}
+          className="z-50"
         />
       )}
     </div>

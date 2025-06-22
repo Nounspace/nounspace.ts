@@ -209,7 +209,7 @@ function TabBar({
         <div className="relative flex flex-auto h-16 z-70 bg-white">
           {isMobile && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 bg-white flex gap-2">
-              {!inEditMode && isEditable && (
+              {!inEditMode && isEditable && !inHomebase && (
                 <Button
                   onClick={() => setEditMode(true)}
                   className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
@@ -287,7 +287,7 @@ function TabBar({
             </NogsGateButton>
           </div>
         ) : null}
-        {!inEditMode && !mobilePreview && isEditable && (
+        {!inEditMode && !mobilePreview && isEditable && !inHomebase && (
           <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4">
             <Button
               onClick={() => setEditMode(true)}
