@@ -57,7 +57,7 @@ export async function generateMetadata({
       });
       price = `$${formatted}`;
     } else if (tokenData?.price_usd === "0" || Number(tokenData?.price_usd) === 0) {
-      price = "TBD";
+      price = "TBD ";
     } else {
       price = "";
     }
