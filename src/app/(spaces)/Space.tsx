@@ -251,7 +251,7 @@ export default function Space({
       portalRef: portalRef,
       saveConfig: saveLocalConfig,
       hasProfile: !isMobile && !isNil(profile),
-      hasFeed: !isNil(feed),
+      hasFeed: !isMobile && !isNil(feed),
       tabNames: config.tabNames,
       fid: config.fid,
     };
@@ -296,10 +296,6 @@ export default function Space({
       <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
         {!isUndefined(feed) && !isMobile ? (
           <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
-        ) : null}
-
-        {!isUndefined(feed) && isMobile ? (
-          <div className="w-full overflow-y-auto touch-auto">{feed}</div>
         ) : null}
 
         <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
