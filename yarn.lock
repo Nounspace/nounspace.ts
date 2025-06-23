@@ -5803,10 +5803,10 @@
     eslint-visitor-keys "^4.2.0"
     espree "^10.3.0"
 
-"@stylistic/eslint-plugin-jsx@^2.1.0":
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-2.13.0.tgz#de57f1f9e16e3ddc7ceacb71ae9689d7474e3277"
-  integrity sha512-mRAJPYTASnjMZ3Z1hxMuRNI6xcvKNGvPN6oNiR30DG3CdIt/STWkDhVs+nrcdcKh7atGlK5yHhnCfkmoJmHTbw==
+"@stylistic/eslint-plugin-jsx@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-3.1.0.tgz#dfa0728550df671b96d6fd033563a99a1d40c29c"
+  integrity sha512-+4SYALAM+l6OH6ARGUJ5h0coQBq7Y1QQVS8JbVFPZWuxdXVLTTwpj8qCnpW0afzyS/sBu4MaPDdGnGL16KebAQ==
   dependencies:
     eslint-visitor-keys "^4.2.0"
     espree "^10.3.0"
