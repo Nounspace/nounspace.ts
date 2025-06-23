@@ -22,6 +22,11 @@ import {
   partializedSpaceStore,
   SpaceStore,
 } from "./space/spaceStore";
+import {
+  CheckpointStore,
+  createCheckpointStoreFunc,
+  partializedCheckpointStore,
+} from "./checkpoints/checkpointStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { createCurrentSpaceStoreFunc, CurrentSpaceStore } from "./currentSpace";
 
@@ -31,6 +36,7 @@ export type AppStore = {
   homebase: HomeBaseStore;
   space: SpaceStore;
   currentSpace: CurrentSpaceStore;
+  checkpoints: CheckpointStore;
   logout: () => void;
   getIsAccountReady: () => boolean;
   getIsInitializing: () => boolean;
@@ -45,11 +51,13 @@ const makeStoreFunc: MatativeConfig<AppStore> = (set, get, state) => ({
   homebase: createHomeBaseStoreFunc(set, get),
   space: createSpaceStoreFunc(set, get),
   currentSpace: createCurrentSpaceStoreFunc(set, get),
+  checkpoints: createCheckpointStoreFunc(set, get),
   logout: () => {
     get().account.reset();
     get().homebase.clearHomebase();
     get().homebase.clearHomebaseTabOrder();
     get().space.clear();
+    get().checkpoints.clearCheckpoints();
     localStorage.removeItem(LOCAL_STORAGE_LOCATION);
   },
   clearLocalSpaces: () => {
@@ -86,6 +94,7 @@ export function createAppStore() {
       account: partializedAccountStore(state),
       homebase: partializedHomebaseStore(state),
       space: partializedSpaceStore(state),
+      checkpoints: partializedCheckpointStore(state),
     }),
     merge: (persistedState, currentState: AppStore) => {
       return merge(currentState, persistedState);

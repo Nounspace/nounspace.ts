@@ -20,6 +20,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import { AiChatSidebar } from "@/common/components/organisms/AgentChat";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
@@ -38,7 +39,7 @@ import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { Slider } from "@mui/material";
 import { usePrivy } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { FaInfoCircle } from "react-icons/fa";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
@@ -52,6 +53,8 @@ export type ThemeSettingsEditorArgs = {
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
   onExportConfig?: () => void;
+  getCurrentSpaceContext?: () => any;
+  onApplySpaceConfig?: (config: any) => Promise<void>;
 };
 
 export function ThemeSettingsEditor({
@@ -60,10 +63,31 @@ export function ThemeSettingsEditor({
   saveExitEditMode,
   cancelExitEditMode,
   onExportConfig,
+  getCurrentSpaceContext,
+  onApplySpaceConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const [tabValue, setTabValue] = useState("fonts");
+  const [showVibeEditor, setShowVibeEditor] = useState(false);
+
+  // Use checkpoint store for theme change tracking
+  const { createCheckpointFromContext } = useAppStore((state) => ({
+    createCheckpointFromContext: state.checkpoints.createCheckpointFromContext,
+  }));
+
+  // Get fresh space context for AI chat
+  const getFreshSpaceContextForChat = useCallback(() => {
+    if (getCurrentSpaceContext) {
+      const context = getCurrentSpaceContext();
+      // Ensure the context includes the current theme being edited
+      return {
+        ...context,
+        theme: theme,
+      };
+    }
+    return { theme: theme };
+  }, [getCurrentSpaceContext, theme]);
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -122,6 +146,16 @@ export function ThemeSettingsEditor({
   } = theme.properties;
 
   function saveAndClose() {
+    // Create a checkpoint when saving theme changes
+    if (getCurrentSpaceContext) {
+      createCheckpointFromContext(
+        getCurrentSpaceContext,
+        () => ({ theme }),
+        `Theme saved: ${theme.name || 'Custom theme'}`,
+        'theme-editor'
+      );
+    }
+    
     saveTheme(theme);
     saveExitEditMode();
   }
@@ -131,9 +165,77 @@ export function ThemeSettingsEditor({
   }
 
   const handleApplyTheme = (selectedTheme: ThemeSettings) => {
+    // Create checkpoint before applying new theme
+    if (getCurrentSpaceContext) {
+      createCheckpointFromContext(
+        getCurrentSpaceContext,
+        () => ({ theme }),
+        `Before applying theme: ${selectedTheme.name}`,
+        'theme-editor'
+      );
+    }
+    
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
+
+  const handleVibeEditorApplyConfig = async (config: any) => {
+    // Create checkpoint before AI applies changes
+    if (getCurrentSpaceContext) {
+      createCheckpointFromContext(
+        getCurrentSpaceContext,
+        () => ({ theme }),
+        'Before AI vibe editor changes',
+        'theme-editor'
+      );
+    }
+    
+    // Apply the AI-generated configuration to the theme and potentially the full space
+    if (config && config.backgroundHTML) {
+      themePropSetter("backgroundHTML")(config.backgroundHTML);
+    }
+    
+    // Apply other theme properties if they exist in the config
+    if (config.theme?.properties) {
+      const themeProps = config.theme.properties;
+      Object.keys(themeProps).forEach(key => {
+        if (Object.prototype.hasOwnProperty.call(theme.properties, key)) {
+          themePropSetter(key)(themeProps[key]);
+        }
+      });
+    }
+
+    // If there's a complete space config and we have the ability to apply it, do so
+    if (config.fidgetInstanceDatums && onApplySpaceConfig) {
+      await onApplySpaceConfig(config);
+    }
+  };
+
+  // If showing vibe editor, render the AI chat interface
+  if (showVibeEditor) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header with back button */}
+        <div className="flex pb-4 m-2 border-b">
+          <button onClick={() => setShowVibeEditor(false)} className="my-auto">
+            <BackArrowIcon />
+          </button>
+          <h1 className="text-lg pl-4 font-semibold">
+            Vibe Editor
+          </h1>
+        </div>
+        
+        {/* AI Chat Sidebar with fresh context provider */}
+        <div className="flex-1 overflow-hidden">
+          <AiChatSidebar
+            onClose={() => setShowVibeEditor(false)}
+            onApplySpaceConfig={handleVibeEditorApplyConfig}
+            getCurrentSpaceContext={getFreshSpaceContextForChat}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -351,6 +453,7 @@ export function ThemeSettingsEditor({
                   <BackgroundGenerator
                     backgroundHTML={backgroundHTML}
                     onChange={themePropSetter<string>("backgroundHTML")}
+                    onOpenVibeEditor={() => setShowVibeEditor(true)}
                   />
                   {onExportConfig && (
                     <div className="mt-6 pt-4 border-t border-gray-200">
@@ -468,9 +571,11 @@ export function ThemeSettingsEditor({
 const BackgroundGenerator = ({
   backgroundHTML,
   onChange,
+  onOpenVibeEditor,
 }: {
   backgroundHTML: string;
   onChange: (value: string) => void;
+  onOpenVibeEditor: () => void;
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateText, setGenerateText] = useState("Generate");
@@ -594,21 +699,39 @@ const BackgroundGenerator = ({
         }}
         placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
       />
-      <Button
-        onClick={handleGenerateWrapper}
-        variant="primary"
-        width="auto"
-        withIcon
-        disabled={buttonDisabled || isGenerating}
-        className="w-full"
-      >
-        {isGenerating ? (
-          <Spinner className="size-6" />
-        ) : (
+      
+      {/* Button Container */}
+      <div className="flex gap-2">
+        {/* Vibe Editor Button */}
+        <Button
+          onClick={onOpenVibeEditor}
+          variant="primary"
+          width="auto"
+          withIcon
+          className="flex-1"
+        >
           <SparklesIcon className="size-5" />
-        )}
-        <span>{isGenerating ? generateText : "Generate"}</span>
-      </Button>
+          <span>Vibe Editor</span>
+        </Button>
+        
+        {/* Generate Button */}
+        <Button
+          onClick={handleGenerateWrapper}
+          variant="secondary"
+          width="auto"
+          withIcon
+          disabled={buttonDisabled || isGenerating}
+          className="flex-1"
+        >
+          {isGenerating ? (
+            <Spinner className="size-6" />
+          ) : (
+            <SparklesIcon className="size-5" />
+          )}
+          <span>{isGenerating ? generateText : "Generate"}</span>
+        </Button>
+      </div>
+      
       {showBanner && (
         <div className="flex gap-1 items-center border-2 border-red-600 text-red-600 bg-red-100 rounded-lg p-2 text-sm font-medium">
           <p>

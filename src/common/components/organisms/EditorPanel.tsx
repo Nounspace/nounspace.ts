@@ -40,6 +40,8 @@ export interface EditorPanelProps {
   selectFidget(fidgetBundle: FidgetBundle): void;
   addFidgetToGrid(fidget: FidgetInstanceData): boolean;
   onExportConfig?: () => void;
+  getCurrentSpaceContext?: () => any;
+  onApplySpaceConfig?: (config: any) => Promise<void>;
 }
 
 export const EditorPanel: React.FC<EditorPanelProps> = ({
@@ -62,6 +64,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   selectFidget,
   addFidgetToGrid,
   onExportConfig,
+  getCurrentSpaceContext,
+  onApplySpaceConfig,
 }) => {
   function generateFidgetInstance(
     fidgetId: string,
@@ -144,6 +148,8 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   saveExitEditMode={saveExitEditMode}
                   cancelExitEditMode={cancelExitEditMode}
                   onExportConfig={onExportConfig}
+                  getCurrentSpaceContext={getCurrentSpaceContext}
+                  onApplySpaceConfig={onApplySpaceConfig}
                 />
               )}
             </>
