@@ -1,51 +1,36 @@
 /* eslint-disable react/react-in-jsx-scope */
 import { Button } from "@/common/components/atoms/button";
 import BackArrowIcon from "@/common/components/atoms/icons/BackArrow";
-import Spinner from "@/common/components/atoms/spinner";
 import {
   Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
+  TabsContent
 } from "@/common/components/atoms/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/common/components/atoms/tooltip";
-import BorderSelector from "@/common/components/molecules/BorderSelector";
-import ColorSelector from "@/common/components/molecules/ColorSelector";
-import FontSelector from "@/common/components/molecules/FontSelector";
-import HTMLInput from "@/common/components/molecules/HTMLInput";
-import ShadowSelector from "@/common/components/molecules/ShadowSelector";
+import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
+import FontsTabContent from "./components/FontsTabContent";
+import StyleTabContent from "./components/StyleTabContent";
+import CodeTabContent from "./components/CodeTabContent";
+import MobileTabContent from "./components/MobileTabContent";
+import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
-import { useAppStore } from "@/common/data/stores/app";
-import { useToastStore } from "@/common/data/stores/toastStore";
 import { FidgetInstanceData } from "@/common/fidgets";
-import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
+import { ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import {
   tabContentClasses,
-  tabListClasses,
-  tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
 import { analytics } from "@/common/providers/AnalyticsProvider";
-import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
-import { Slider } from "@mui/material";
-import { usePrivy } from "@privy-io/react-auth";
-import { useEffect, useRef, useState } from "react";
-import { FaInfoCircle } from "react-icons/fa";
+import { useState, useEffect, useMemo } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
-import { Address, formatUnits, zeroAddress } from "viem";
-import { base } from "viem/chains";
-import { useBalance } from "wagmi";
+import { CompleteFidgets } from "@/fidgets";
+import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -65,10 +50,78 @@ export function ThemeSettingsEditor({
   saveExitEditMode,
   cancelExitEditMode,
   onExportConfig,
+  fidgetInstanceDatums,
+  saveFidgetInstanceDatums,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
-  const [tabValue, setTabValue] = useState("fonts");
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const [tabValue, setTabValue] = useState(mobilePreview ? "mobile" : "fonts");
+
+  useEffect(() => {
+    setMobilePreview(tabValue === "mobile");
+  }, [tabValue, setMobilePreview]);
+
+  const miniApps = useMemo<MiniApp[]>(() => {
+    return Object.values(fidgetInstanceDatums).map((d, i) => {
+      const props = CompleteFidgets[d.fidgetType]?.properties;
+      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
+      const mobileName = (d.config.settings.customMobileDisplayName as string) ||
+        props?.mobileFidgetName ||
+        props?.fidgetName;
+      
+      return {
+        id: d.id,
+        name: d.fidgetType,
+        mobileDisplayName: mobileName,
+        context: props?.fidgetName || d.fidgetType,
+        order: (d.config.settings.mobileOrder as number) || i + 1,
+        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
+        displayOnMobile: d.config.settings.showOnMobile !== false,
+      };
+    });
+  }, [fidgetInstanceDatums]);
+
+  const handleUpdateMiniApp = (app: MiniApp) => {
+    const datum = fidgetInstanceDatums[app.id];
+    if (!datum) return;
+    const newDatums = {
+      ...fidgetInstanceDatums,
+      [app.id]: {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+            customMobileDisplayName: app.mobileDisplayName,
+            mobileIconName: app.icon,
+            showOnMobile: app.displayOnMobile,
+            mobileOrder: app.order,
+          },
+        },
+      },
+    };
+    saveFidgetInstanceDatums(newDatums);
+  };
+
+  const handleReorderMiniApps = (apps: MiniApp[]) => {
+    const newDatums: { [key: string]: FidgetInstanceData } = {};
+    apps.forEach((app, index) => {
+      const datum = fidgetInstanceDatums[app.id];
+      if (!datum) return;
+      newDatums[app.id] = {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+            mobileOrder: index + 1,
+          },
+        },
+      };
+    });
+    saveFidgetInstanceDatums(newDatums);
+  };
 
   function themePropSetter<_T extends string>(
     property: string,
@@ -194,189 +247,45 @@ export function ThemeSettingsEditor({
             <div className="grid gap-2">
               <Tabs value={tabValue} onValueChange={setTabValue}>
                 {/* controlled Tabs */}
-                <TabsList className={tabListClasses}>
-                  <TabsTrigger value="style" className={tabTriggerClasses}>
-                    Style
-                  </TabsTrigger>
-                  <TabsTrigger value="fonts" className={tabTriggerClasses}>
-                    Fonts
-                  </TabsTrigger>
-                  <TabsTrigger value="code" className={tabTriggerClasses}>
-                    Code
-                  </TabsTrigger>
-                </TabsList>
+                <ThemeSettingsTabs activeTab={tabValue} onTabChange={setTabValue} />
                 {/* Fonts */}
                 <TabsContent value="fonts" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Headings</h4>
-                      <ThemeSettingsTooltip text="The primary, or header font that Fidgets can inherit." />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <ColorSelector
-                        className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                        innerClassName="rounded-full"
-                        value={headingsFontColor as Color}
-                        onChange={themePropSetter<Color>("headingsFontColor")}
-                      />
-                      <FontSelector
-                        className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={headingsFont}
-                        onChange={themePropSetter<FontFamily>("headingsFont")}
-                        hideGlobalSettings
-                        isThemeEditor
-                      />
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Body</h4>
-                      <ThemeSettingsTooltip text="The secondary, or body font that Fidgets can inherit." />
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <ColorSelector
-                        className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                        innerClassName="rounded-full"
-                        value={fontColor as Color}
-                        onChange={themePropSetter<Color>("fontColor")}
-                      />
-                      <FontSelector
-                        className="ring-0 focus:ring-0 border-0 shadow-none"
-                        value={font}
-                        onChange={themePropSetter<FontFamily>("font")}
-                        hideGlobalSettings
-                        isThemeEditor
-                      />
-                    </div>
-                  </div>
+                  <FontsTabContent 
+                    headingsFontColor={headingsFontColor}
+                    headingsFont={headingsFont}
+                    fontColor={fontColor}
+                    font={font}
+                    onPropertyChange={themePropSetter}
+                  />
                 </TabsContent>
                 {/* Style */}
                 <TabsContent value="style" className={tabContentClasses}>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold my-2">Space Settings</h4>
-                    <div className="flex flex-row gap-1">
-                      <h4 className="text-sm">Background color</h4>
-                      <ThemeSettingsTooltip text="Set a solid background or gradient color. You can also add custom backgrounds with HTML/CSS on the Code tab." />
-                    </div>
-                    <ColorSelector
-                      className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                      innerClassName="rounded-full"
-                      value={background as Color}
-                      onChange={themePropSetter<Color>("background")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <h4 className="text-sm font-bold my-2">Fidget Settings</h4>
-                    <div className="flex flex-col gap-1">
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Background color</h5>
-                          <ThemeSettingsTooltip text="Set the default background color for all Fidgets on your Space." />
-                        </div>
-                        <ColorSelector
-                          className="rounded-full overflow-hidden w-6 h-6 shrink-0 my-2"
-                          innerClassName="rounded-full"
-                          value={fidgetBackground as Color}
-                          onChange={themePropSetter<Color>("fidgetBackground")}
-                        />
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Border</h5>
-                          <ThemeSettingsTooltip text="Set the default border width and color for all Fidgets on your Space." />
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <ColorSelector
-                            className="rounded-full overflow-hidden w-6 h-6 shrink-0"
-                            innerClassName="rounded-full"
-                            value={fidgetBorderColor as Color}
-                            onChange={themePropSetter<Color>(
-                              "fidgetBorderColor",
-                            )}
-                          />
-                          <BorderSelector
-                            className="ring-0 focus:ring-0 border-0 shadow-none"
-                            value={fidgetBorderWidth as string}
-                            onChange={themePropSetter<string>(
-                              "fidgetBorderWidth",
-                            )}
-                            hideGlobalSettings
-                          />
-                        </div>
-                      </div>
-                      <div className="">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Shadow</h5>
-                          <ThemeSettingsTooltip text="Set the default shadow for all Fidgets on your Space." />
-                        </div>
-                        <ShadowSelector
-                          className="ring-0 focus:ring-0 border-0 shadow-none"
-                          value={fidgetShadow as string}
-                          onChange={themePropSetter<string>("fidgetShadow")}
-                          hideGlobalSettings
-                        />
-                      </div>
-                      <div className="mt-2">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Border Radius</h5>
-                          <ThemeSettingsTooltip text="Set the border radius for all Fidgets on your Space." />
-                        </div>
-                        <Slider
-                          value={parseInt(fidgetBorderRadius)}
-                          min={0}
-                          max={32}
-                          step={1}
-                          onChange={(_, v) =>
-                            themePropSetter<string>("fidgetBorderRadius")(
-                              `${v}px`,
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="mt-2">
-                        <div className="flex flex-row gap-1">
-                          <h5 className="text-sm">Spacing</h5>
-                          <ThemeSettingsTooltip text="Set spacing between Fidgets on the grid." />
-                        </div>
-                        <Slider
-                          value={parseInt(gridSpacing)}
-                          min={0}
-                          max={40}
-                          step={1}
-                          onChange={(_, v) =>
-                            themePropSetter<string>("gridSpacing")(String(v))
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <StyleTabContent 
+                    background={background}
+                    fidgetBackground={fidgetBackground}
+                    fidgetBorderColor={fidgetBorderColor}
+                    fidgetBorderWidth={fidgetBorderWidth}
+                    fidgetShadow={fidgetShadow}
+                    fidgetBorderRadius={fidgetBorderRadius}
+                    gridSpacing={gridSpacing}
+                    onPropertyChange={themePropSetter}
+                  />
                 </TabsContent>
                 {/* Code */}
                 <TabsContent value="code" className={tabContentClasses}>
-                  <BackgroundGenerator
+                  <CodeTabContent 
                     backgroundHTML={backgroundHTML}
-                    onChange={themePropSetter<string>("backgroundHTML")}
+                    onPropertyChange={themePropSetter}
+                    onExportConfig={onExportConfig}
                   />
-                  {onExportConfig && (
-                    <div className="mt-6 pt-4 border-t border-gray-200">
-                      <div className="flex flex-col gap-2">
-                        <h4 className="text-sm font-medium">Export Configuration</h4>
-                        <p className="text-xs text-gray-500">
-                          Download your current space configuration as a JSON file.
-                        </p>
-                        <Button
-                          onClick={onExportConfig}
-                          variant="secondary"
-                          width="auto"
-                          withIcon
-                          className="w-full"
-                        >
-                          <FaFloppyDisk aria-hidden="true" />
-                          <span>Export Config</span>
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                </TabsContent>
+                {/* Mobile */}
+                <TabsContent value="mobile" className={tabContentClasses}>
+                  <MobileTabContent 
+                    miniApps={miniApps}
+                    onUpdateMiniApp={handleUpdateMiniApp}
+                    onReorderMiniApps={handleReorderMiniApps}
+                  />
                 </TabsContent>
               </Tabs>
             </div>
@@ -470,196 +379,6 @@ export function ThemeSettingsEditor({
   );
 }
 
-const BackgroundGenerator = ({
-  backgroundHTML,
-  onChange,
-}: {
-  backgroundHTML: string;
-  onChange: (value: string) => void;
-}) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateText, setGenerateText] = useState("Generate");
-  const [showBanner, setShowBanner] = useState(false);
-  const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [internalBackgroundHTML, setInternalBackgroundHTML] =
-    useState(backgroundHTML);
-  const timersRef = useRef<number[]>([]);
-  const { showToast } = useToastStore();
-
-  // Sync internal state with props when backgroundHTML changes
-  useEffect(() => {
-    setInternalBackgroundHTML(backgroundHTML);
-  }, [backgroundHTML]);
-
-  // Random prompt choices
-  const randomPrompts = [
-    "Warm sunset gradient",
-    "Soft pastel stripes",
-    "Floating bubble circles",
-    "Calm teal radial glow",
-    "Lush green rainforest",
-    "Animated purple gradient",
-  ];
-
-  const { user } = usePrivy();
-  const result = useBalance({
-    address: (user?.wallet?.address as Address) || zeroAddress,
-    token: SPACE_CONTRACT_ADDR,
-    chainId: base.id,
-  });
-  const spaceHoldAmount = result?.data
-    ? parseInt(formatUnits(result.data.value, result.data.decimals))
-    : 0;
-  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
-  const { hasNogs } = useAppStore((state) => ({
-    hasNogs: state.account.hasNogs,
-  }));
-
-  const handleGenerateBackground = async (promptText: string) => {
-    try {
-      analytics.track(AnalyticsEvent.GENERATE_BACKGROUND, {
-        user_input: promptText,
-      });
-      const response = await fetch(`/api/venice/background`, {
-        method: "POST",
-        body: JSON.stringify({ text: promptText }),
-      });
-      if (!response.ok) {
-        throw new Error(`Network response was not ok: ${response.statusText}`);
-      }
-      const data = await response.json();
-      onChange(data.response);
-      showToast(
-        "Hope you love your new background! To refine it, try adding a prompt before the code and click 'Generate' again.",
-        10000,
-        "background-generated",
-        true,
-      );
-    } catch (error) {
-      console.error("Error generating background:", error);
-    } finally {
-      timersRef.current.forEach((timer) => clearInterval(timer));
-      timersRef.current = [];
-      setGenerateText("Generate");
-      setIsGenerating(false);
-    }
-  };
-
-  const handleGenerate = () => {
-    if (isGenerating) return;
-    setIsGenerating(true);
-    const messages = [
-      "Analyzing…",
-      "Imagining…",
-      "Coding…",
-      "Reviewing…",
-      "Improving…",
-    ];
-    let index = 0;
-    setGenerateText(messages[index]);
-    const intervalId = window.setInterval(() => {
-      index = (index + 1) % messages.length;
-      setGenerateText(messages[index]);
-    }, 8000);
-    timersRef.current = [intervalId];
-
-    // If field is empty, use a random prompt from the list
-    const inputText =
-      internalBackgroundHTML.trim() === ""
-        ? randomPrompts[Math.floor(Math.random() * randomPrompts.length)]
-        : internalBackgroundHTML;
-
-    if (process.env.NODE_ENV !== "production")
-      console.log(`inputText: ${inputText}`);
-
-    handleGenerateBackground(inputText);
-  };
-
-  const handleGenerateWrapper = () => {
-    // Allow generation if user holds enough SPACE or has nOGs
-    if (!userHoldEnoughSpace && !hasNogs) {
-      setButtonDisabled(true);
-      setShowBanner(true);
-      return;
-    }
-    handleGenerate();
-  };
-
-  return (
-    <div className="flex flex-col gap-1">
-      <div className="flex flex-row gap-1">
-        <h4 className="text-sm">Prompt and/or HTML/CSS</h4>
-        <ThemeSettingsTooltip text="Customize your background with HTML/CSS, or describe your dream background and click Generate. To modify existing code, add a prompt before the code and click Generate." />
-      </div>
-      <HTMLInput
-        value={backgroundHTML}
-        onChange={(value) => {
-          setInternalBackgroundHTML(value);
-          onChange(value);
-        }}
-        placeholder="Customize your background with HTML/CSS, or describe your dream background and click Generate."
-      />
-      <Button
-        onClick={handleGenerateWrapper}
-        variant="primary"
-        width="auto"
-        withIcon
-        disabled={buttonDisabled || isGenerating}
-        className="w-full"
-      >
-        {isGenerating ? (
-          <Spinner className="size-6" />
-        ) : (
-          <SparklesIcon className="size-5" />
-        )}
-        <span>{isGenerating ? generateText : "Generate"}</span>
-      </Button>
-      {showBanner && (
-        <div className="flex gap-1 items-center border-2 border-red-600 text-red-600 bg-red-100 rounded-lg p-2 text-sm font-medium">
-          <p>
-            Hold at least 1,111{" "}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://www.nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab"
-              className="font-bold underline"
-            >
-              $SPACE
-            </a>{" "}
-            or 1{" "}
-            <a
-              target="_blank"
-              rel="noreferrer"
-              href="https://highlight.xyz/mint/base:0xD094D5D45c06c1581f5f429462eE7cCe72215616"
-              className="font-bold underline"
-            >
-              nOGs
-            </a>{" "}
-            to unlock generation
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const ThemeSettingsTooltip = ({ text }: { text: string }) => {
-  return (
-    <div className="flex grow flex-row-reverse">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-1 pl-1">
-              <FaInfoCircle color="#D1D5DB" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div className="max-w-44">{text}</div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-};
+// Componentes foram movidos para arquivos separados
 
 export default ThemeSettingsEditor;
