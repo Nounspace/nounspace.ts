@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useState,
   useCallback,
+  useRef,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -25,13 +26,14 @@ import {
   getSettingsWithDefaults,
 } from "@/common/fidgets/FidgetWrapper";
 import { map, reject } from "lodash";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
+import { SpaceConfig } from "../../app/(spaces)/Space";
+import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
+import { v4 as uuidv4 } from "uuid";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -164,14 +166,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       makeGridDetails(
         hasProfile,
         hasFeed,
-        parseInt(theme.properties.gridSpacing ?? "16"),
-        theme.properties.fidgetBorderRadius ?? "12px",
+        parseInt(theme?.properties?.gridSpacing ?? "16"),
+        theme?.properties?.fidgetBorderRadius ?? "12px",
       ),
     [
       hasProfile,
       hasFeed,
-      theme.properties.gridSpacing,
-      theme.properties.fidgetBorderRadius,
+      theme?.properties?.gridSpacing,
+      theme?.properties?.fidgetBorderRadius,
     ],
   );
 
@@ -203,17 +205,34 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
+  const fidgetInstanceDatumsRef = useRef(fidgetInstanceDatums);
+
+  useEffect(() => {
+    fidgetInstanceDatumsRef.current = fidgetInstanceDatums;
+  }, [fidgetInstanceDatums]);
+
   const saveFidgetConfig = useCallback(
-    (id: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-      return await saveFidgetInstanceDatums({
-        ...fidgetInstanceDatums,
-        [id]: {
-          ...fidgetInstanceDatums[id],
+    (id: string, fidgetType?: string) =>
+      async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+        const currentDatums = fidgetInstanceDatumsRef.current;
+        const existing = currentDatums[id];
+        
+        // Safer approach: don't rely on splitting the id string
+        // Use existing fidgetType, provided fidgetType, or fallback to "unknown"
+        const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
+        
+        const updatedDatum: FidgetInstanceData = {
+          id: existing?.id ?? id,
+          fidgetType: determinedFidgetType,
           config: newInstanceConfig,
-        },
-      });
-    },
-    [fidgetInstanceDatums, saveFidgetInstanceDatums],
+        };
+
+        return await saveFidgetInstanceDatums({
+          ...currentDatums,
+          [id]: updatedDatum,
+        });
+      },
+    [saveFidgetInstanceDatums],
   );
 
   // Debounced save function
@@ -244,7 +263,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       shouldUnselect?: boolean,
     ) => {
       try {
-        await saveFidgetConfig(bundle.id)({
+        await saveFidgetConfig(bundle.id, bundle.fidgetType)({
           ...bundle.config,
           settings: newSettings,
         });
@@ -284,7 +303,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       : gridDetails.rowHeight;
   }, [height, hasProfile, gridDetails.margin, gridDetails.containerPadding]);
 
-  function handleDrop(
+  async function handleDrop(
     _layout: PlacedGridItem[],
     item: PlacedGridItem,
     e: DragEvent<HTMLDivElement>,
@@ -292,11 +311,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const fidgetData: FidgetInstanceData = JSON.parse(
       e.dataTransfer.getData("text/plain"),
     );
-
-    saveFidgetInstanceDatums({
-      ...fidgetInstanceDatums,
-      [fidgetData.id]: fidgetData,
-    });
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
@@ -311,7 +325,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       resizeHandles: resizeDirections,
     };
 
-    saveLayout([...layoutConfig.layout, newItem]);
+    // Save layout and fidget data immediately so editing has the latest state
+    await saveConfig({
+      layoutConfig: { layout: [...layoutConfig.layout, newItem] },
+      fidgetInstanceDatums: { ...fidgetInstanceDatums, [fidgetData.id]: fidgetData },
+    });
 
     removeFidgetFromTray(fidgetData.id);
     analytics.track(AnalyticsEvent.ADD_FIDGET, {
@@ -489,6 +507,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           openFidgetPicker={openFidgetPicker}
           selectFidget={selectFidget}
           addFidgetToGrid={addFidgetToGrid}
+          onExportConfig={exportSpaceConfig}
         />,
         portalNode,
       )
@@ -498,6 +517,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   const [itemsVisible] = useState(true);
+  // Consider using CSS animations or useLayoutEffect for the fade-in effect,
+  // so that SSR and hydration don't render blank content.
 
   // Log initial config state
   useEffect(() => {
@@ -508,25 +529,79 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // });
   }, []);
 
+  // Export function to generate SpaceConfig JSON
+  const exportSpaceConfig = useCallback(() => {
+    // Convert theme to UserTheme if needed
+    let exportTheme: typeof defaultUserTheme = defaultUserTheme;
+    if (theme && 'properties' in theme) {
+      // Check if all required UserTheme properties exist
+      const requiredKeys = Object.keys(defaultUserTheme.properties);
+      const hasAllKeys = requiredKeys.every(key => key in theme.properties);
+      if (hasAllKeys) {
+        exportTheme = theme as typeof defaultUserTheme;
+      } else {
+        // Fill missing keys with defaults
+        exportTheme = {
+          ...theme,
+          properties: {
+            ...defaultUserTheme.properties,
+            ...theme.properties,
+          },
+        };
+      }
+    }
+    const spaceConfig: SpaceConfig = {
+      layoutID: uuidv4(),
+      layoutDetails: {
+        layoutConfig: {
+          layout: layoutConfig.layout,
+        },
+        layoutFidget: "grid",
+      },
+      theme: exportTheme,
+      fidgetInstanceDatums: fidgetInstanceDatums,
+      fidgetTrayContents: fidgetTrayContents,
+      isEditable: false,
+      timestamp: new Date().toISOString(),
+      fid: fid,
+    };
+
+    // Create and download the JSON file
+    const dataStr = JSON.stringify(spaceConfig, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `space-config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success("Space configuration exported successfully!");
+  }, [fidgetInstanceDatums, fidgetTrayContents, layoutConfig, theme, fid]);
+
   return (
     <>
       {editorPanelPortal(element)}
 
       <div className="flex flex-col z-10">
         {inEditMode && (
-          <button
-            onClick={openFidgetPicker}
-            className={
-              hasProfile
-                ? "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-40 right-0"
-                : "z-infinity flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold absolute top-0 right-0"
-            }
-          >
-            <div className="ml-2 ">
-              <AddFidgetIcon />
-            </div>
-            <span className="ml-4 mr-2">Fidget</span>
-          </button>
+          <div className="flex gap-2 absolute top-0 right-0 m-3">
+            <button
+              onClick={openFidgetPicker}
+              className={
+                hasProfile
+                  ? "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  : "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              }
+            >
+              <div className="ml-2">
+                <AddFidgetIcon />
+              </div>
+              <span className="ml-4 mr-2">Fidget</span>
+            </button>
+          </div>
         )}
         <div className="flex-1 grid-container grow">
           {inEditMode && <Gridlines {...gridDetails} rowHeight={rowHeight} />}
@@ -570,7 +645,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                         : undefined,
                     outlineOffset:
                       selectedFidgetID === gridItem.i
-                        ? -parseInt(theme.properties.fidgetBorderWidth ?? "0")
+                        ? -parseInt(theme?.properties?.fidgetBorderWidth ?? "0")
                         : undefined,
                   }}
                 >
