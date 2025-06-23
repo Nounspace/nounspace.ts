@@ -78,7 +78,16 @@ const nextConfig = {
       },
     ];
   },
-  
+  webpack: (config) => {
+    // Prevent webpack from attempting to bundle Node "os" module
+    // which can cause erroneous imports of @walletconnect/types
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      os: false,
+    };
+    return config;
+  },
+
   // async headers() {
   //   return [
   //     {
