@@ -32,6 +32,9 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   selectedFidgetID,
   selectFidget,
 }) => {
+  if (contents.length === 0) {
+    return null;
+  }
   return (
     <div className="w-full h-screen flex flex-col justify-start items-center gap-2 bg-sky-50 py-7 px-6 overflow-auto">
       <TooltipProvider>
