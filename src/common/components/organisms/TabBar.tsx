@@ -210,7 +210,7 @@ function TabBar({
         <div
           className={mergeClasses(
             "flex flex-auto justify-start h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-x-auto no-scrollbar",
-            showButtons && "w-64 pr-8",
+            showButtons && "pr-8",
           )}
         >
           {tabList && (
