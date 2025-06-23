@@ -16226,10 +16226,10 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
-ts-key-enum@^2.0.12:
-  version "2.0.13"
-  resolved "https://registry.yarnpkg.com/ts-key-enum/-/ts-key-enum-2.0.13.tgz#527e7b9534ab6568b369ee21a155563358cd1482"
-  integrity sha512-zixs6j8+NhzazLUQ1SiFrlo1EFWG/DbqLuUGcWWZ5zhwjRT7kbi1hBlofxdqel+h28zrby2It5TrOyKp04kvqw==
+ts-key-enum@^3.0.13:
+  version "3.0.13"
+  resolved "https://registry.yarnpkg.com/ts-key-enum/-/ts-key-enum-3.0.13.tgz#e39169cb9009cb67dd67efb51e21a8f2db3dbdd4"
+  integrity sha512-2J5QVm+HLfToI6IpJQADzYYWvJQ0P9i8qV0loewy5UQ9PBcwILkw09te/+NPu6aw8OXIn9jVYOT6xCBZnGg8Yg==
 
 ts-mixer@^6.0.3:
   version "6.0.4"
