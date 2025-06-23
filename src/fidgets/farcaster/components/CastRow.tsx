@@ -501,7 +501,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           <PriorityLink
             key={`cast-${cast.hash}-channel-name`}
             href={`/channel/${cast.channel.name}`}
-            className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
+            className="mt-1.5 flex align-center text-sm opacity-40 hover:text-blue-500 hover:opacity-100 hover:underline cursor-pointer py-1 px-1.5 rounded-md"
           >
             /{cast.channel.name}
           </PriorityLink>
