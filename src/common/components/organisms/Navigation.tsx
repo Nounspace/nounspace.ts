@@ -17,8 +17,6 @@ import {
 import { Button } from "../atoms/button";
 import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
-// RiQuillPenAiLine does not exist in `react-icons/ri`. The correct icon name
-// is `RiQuillPenLine`. Update the import to prevent build errors.
 import { Badge } from "@/common/components/atoms/badge";
 import SearchModal from "@/common/components/organisms/SearchModal";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
