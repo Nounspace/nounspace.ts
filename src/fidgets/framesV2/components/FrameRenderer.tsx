@@ -214,6 +214,7 @@ export default function FrameRenderer({
     );
   }
 
+  // Only render full iframe if not collapsed and has postUrl
   if (!collapsed && frameData.postUrl) {
     return (
       <div style={{ width: "100%", height: "100%" }}>
@@ -228,28 +229,175 @@ export default function FrameRenderer({
   }
 
   // Responsive layout for fidget container
+  if (collapsed) {
+    // Collapsed (feed) layout - overlay style
+    return (
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          height: "200px",
+          minHeight: "200px",
+          minWidth: 0,
+          background: "#fff",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Frame image (responsive, fills container) */}
+        {frameData.image && !imgError ? (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "150px",
+              zIndex: 1,
+            }}
+          >
+            <Image
+              src={frameData.image}
+              alt={frameData.title || "Frame image"}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, 400px"
+              priority
+              onError={() => setImgError(true)}
+            />
+          </div>
+        ) : null}
+        {/* Overlay for title, input, and buttons (centered, responsive) */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 2,
+            width: "100%",
+            background: "rgba(255,255,255,0.95)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "16px 0 24px 0",
+          }}
+        >
+          {frameData.title && (
+            <div
+              style={{
+                fontWeight: 500,
+                color: "#1f2937",
+                fontSize: 16,
+                marginBottom: 8,
+                textAlign: "center",
+                width: "100%",
+                wordBreak: "break-word",
+              }}
+            >
+              {frameData.title}
+            </div>
+          )}
+          {frameData.inputText && (
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 600,
+                marginBottom: 8,
+                padding: "0 16px",
+              }}
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{
+                  padding: 8,
+                  border: "1px solid #d1d5db",
+                  borderRadius: 4,
+                  width: "100%",
+                  color: "#1f2937",
+                  fontSize: 16,
+                }}
+                placeholder="Enter text..."
+              />
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              width: "100%",
+              maxWidth: 600,
+              justifyContent: "center",
+              flexDirection: "column",
+              padding: "0 16px",
+            }}
+          >
+            {frameData.buttons.map((button, index) => (
+              <button
+                key={index}
+                onClick={() => handleButtonClick(index + 1)}
+                style={{
+                  border: "1px solid #d1d5db",
+                  fontSize: 16,
+                  color: "#374151",
+                  borderRadius: 4,
+                  backgroundColor: "#fff",
+                  padding: 12,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  minWidth: 0,
+                  width: "100%",
+                  boxSizing: "border-box",
+                }}
+              >
+                {button.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Modal for button actions */}
+        <FrameActionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          frameUrl={frameUrl}
+          buttonIndex={activeButton || 1}
+          fid={fid || 20721}
+          currentFrameData={frameData}
+          modalTitle={customTitle}
+        />
+      </div>
+    );
+  }
+
+  // Full (uncollapsed) layout - overlay layout similar to collapsed but larger
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
         width: "100%",
-        height: "100%",
-        minHeight: 0,
-        minWidth: 0,
+        maxWidth: "600px",
+        height: "400px", // Fixed height for fidget display
+        margin: "0 auto",
         background: "#fff",
-        position: "relative",
+        borderRadius: "8px",
         overflow: "hidden",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        position: "relative",
       }}
     >
-      {/* Frame image (responsive, fills container) */}
+      {/* Frame image fills the entire container */}
       {frameData.image && !imgError ? (
         <div
           style={{
-            position: "relative",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             width: "100%",
             height: "100%",
-            zIndex: 1,
           }}
         >
           <Image
@@ -257,13 +405,32 @@ export default function FrameRenderer({
             alt={frameData.title || "Frame image"}
             fill
             style={{ objectFit: "cover" }}
-            sizes="100vw"
+            sizes="(max-width: 768px) 100vw, 600px"
             priority
             onError={() => setImgError(true)}
           />
         </div>
-      ) : null}
-      {/* Overlay for title, input, and buttons (centered, responsive) */}
+      ) : (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "#f3f4f6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#6b7280",
+            fontSize: "16px",
+          }}
+        >
+          No image available
+        </div>
+      )}
+
+      {/* Overlay for title, input, and buttons - same style as feed version */}
       <div
         style={{
           position: "absolute",
@@ -353,6 +520,7 @@ export default function FrameRenderer({
           ))}
         </div>
       </div>
+
       {/* Modal for button actions */}
       <FrameActionModal
         isOpen={isModalOpen}

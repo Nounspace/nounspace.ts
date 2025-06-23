@@ -6,7 +6,7 @@ import NounsBuildEmbed from "./NounsBuildEmbed";
 import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
-import FrameEmbed from "./FrameEmbed";
+import FrameV2WithFallback from "./FrameV2WithFallback";
 import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
 import CreateCastImage from "./createCastImage";
 
@@ -53,10 +53,8 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast:
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
   } else if (!isImageUrl(url)) {
-    // NOTE: Need a better resolver
-    // Currently all URLs that aren't otherise caputured try
-    // To be frames, including things like youtube videos
-    return <FrameEmbed url={url} showError={false} key={key} />;
+    // Try Frame v2 first, fall back to legacy frame if not compatible
+    return <FrameV2WithFallback url={url} showError={false} key={key} />;
   } else {
     return null;
   }
