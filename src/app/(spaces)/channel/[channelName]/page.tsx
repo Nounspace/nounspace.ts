@@ -29,6 +29,8 @@ async function getChannelSpace(channel: string) {
   return data[0].spaceId as string;
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ChannelSpacePage({ params }: any) {
   const { channelName, tabName } = params as {
     channelName?: string;
@@ -37,7 +39,6 @@ export default async function ChannelSpacePage({ params }: any) {
   if (!channelName) return <SpaceNotFound />;
 
   const info = await loadChannelInfo(channelName);
-  if (!info) return <SpaceNotFound />;
 
   const spaceId = await getChannelSpace(channelName);
 
@@ -46,7 +47,7 @@ export default async function ChannelSpacePage({ params }: any) {
       channelName={channelName}
       spaceId={spaceId}
       tabName={tabName ?? "Feed"}
-      spaceOwnerFid={info.host?.fid}
+      spaceOwnerFid={info?.host?.fid}
     />
   );
 }

@@ -51,16 +51,17 @@ const renderLink = ({ attributes, content }: RenderFunctionArgs) => {
 };
 
 const renderChannel = ({ content }: RenderFunctionArgs) => {
+  const channelName = content.startsWith("/") ? content.slice(1) : content;
   return (
-    <span
+    <Link
+      href={`/channel/${channelName}`}
       className="cursor-pointer text-blue-500 text-font-medium hover:underline hover:text-blue-500/70"
       onClick={(event) => {
         event.stopPropagation();
       }}
-      rel="noopener noreferrer"
     >
       {content}
-    </span>
+    </Link>
   );
 };
 
