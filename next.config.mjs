@@ -79,21 +79,15 @@ const nextConfig = {
     ];
   },
 
-  webpack(config, { isServer }) {
-    if (!isServer) {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        os: require.resolve("os-browserify/browser"),
-      };
-      config.resolve.fallback = {
-        ...(config.resolve.fallback || {}),
-        os: require.resolve("os-browserify/browser"),
-      };
-    } else {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-      };
-    }
+  webpack(config) {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      os: require.resolve("os-browserify/browser"),
+    };
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      os: require.resolve("os-browserify/browser"),
+    };
     return config;
   },
   

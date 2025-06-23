@@ -729,7 +729,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     <ChannelPicker
                       getChannels={debouncedGetChannels}
                       onSelect={(selectedChannel) => {
-                        setChannel(selectedChannel);
+                        setChannel(selectedChannel as unknown as ModChannel);
                       }}
                       value={channel}
                       initialChannels={initialChannels}
