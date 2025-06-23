@@ -84,7 +84,7 @@ We wrote this notice in plain English so you can quickly understand what data we
 
 ---
 
-## **1\. Who we are**
+## **1. Who we are**
 
 * **Nounspace** is an open‑source social app built on the Farcaster protocol.
 
@@ -94,7 +94,7 @@ We wrote this notice in plain English so you can quickly understand what data we
 
 ---
 
-## **2\. What data we collect**
+## **2. What data we collect**
 
 | Category | Examples | How we collect it | Why we collect it |
 | ----- | ----- | ----- | ----- |
@@ -108,13 +108,13 @@ We wrote this notice in plain English so you can quickly understand what data we
 
 ---
 
-## **3\. Cookies & similar tech**
+## **3. Cookies & similar tech**
 
 We use first‑party cookies (or local‑storage tokens) plus Segment & Mixpanel cookies to remember you and measure product usage. You can clear or block these in your browser settings; the core app will still work but analytics accuracy drops.
 
 ---
 
-## **4\. How we use your data**
+## **4. How we use your data**
 
 1. **Provide the service** – load your Spaces, verify token‑gated features.
 
@@ -128,7 +128,7 @@ We **do not** sell or rent your personal data.
 
 ---
 
-## **5\. When we share data**
+## **5. When we share data**
 
 | Who | What they see | Purpose |
 | ----- | ----- | ----- |
@@ -140,7 +140,7 @@ We **do not** sell or rent your personal data.
 
 ---
 
-## **6\. How long we keep data**
+## **6. How long we keep data**
 
 | Data | Retention period |
 | ----- | ----- |
@@ -151,7 +151,7 @@ We **do not** sell or rent your personal data.
 
 ---
 
-## **7\. Your choices & rights**
+## **7. Your choices & rights**
 
 * **Opt‑out of analytics:** Block cookies or use a tracker‑blocking browser extension.
 
@@ -165,13 +165,13 @@ We **do not** sell or rent your personal data.
 
 ---
 
-## **8\. Children’s privacy**
+## **8. Children’s privacy**
 
 Nounspace is **not intended for children under 13**. If we learn someone under 13 is using nounspace, we’ll disable analytics for that user and limit data processing to run the core service.
 
 ---
 
-## **9\. Security**
+## **9. Security**
 
 * **Encryption in transit & at rest** for all data.
 
@@ -183,27 +183,27 @@ No online service is 100 % secure, but we take reasonable technical and organi
 
 ---
 
-## **10\. International transfers**
+## **10. International transfers**
 
 We host data in the United States. If you access nounspace from outside the U.S., you consent to transferring your data to the U.S., which may have different data‑protection laws than your country.
 
 ---
 
-## **11\. Changes to this notice**
+## **11. Changes to this notice**
 
 We may update this Privacy Notice as the project evolves. Material changes will be announced in‑app and on our Discord. Continued use after an update means you accept the new version.
 
 ---
 
-## **12\. Contact us**
+## **12. Contact us**
 
 Questions or concerns?
 
 * **Email:** privacy@nounspace.com
 
-* **Discord:** \#support channel
+* **Discord:** #support channel
 
-We’re committed to making nounspace transparent and user‑controlled. Thanks for helping us build a better decentralized social web\!
+We’re committed to making nounspace transparent and user‑controlled. Thanks for helping us build a better decentralized social web!
 
 `;
 
