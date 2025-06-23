@@ -244,7 +244,7 @@ export function ThemeSettingsEditor({
             </label>
 
             {/* Templates Dropdown */}
-            <div className="grid gap-2">
+            <div className="min-w-0">
               <Tabs value={tabValue} onValueChange={setTabValue}>
                 {/* controlled Tabs */}
                 <ThemeSettingsTabs activeTab={tabValue} onTabChange={setTabValue} />
