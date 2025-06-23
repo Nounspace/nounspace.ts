@@ -1,23 +1,22 @@
 "use client";
-import React, { useEffect } from "react";
-import { usePrivy } from "@privy-io/react-auth";
+import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useAppStore, useLogout } from "@/common/data/stores/app";
 import { useSignMessage } from "@/common/data/stores/app/accounts/privyStore";
 import { SetupStep } from "@/common/data/stores/app/setup";
-import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
-import { isEqual, isUndefined } from "lodash";
+import useValueHistory from "@/common/lib/hooks/useValueHistory";
+
+import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
 import requiredAuthenticators from "@/constants/requiredAuthenticators";
-import { bytesToHex } from "@noble/ciphers/utils";
-import LoginModal from "../components/templates/LoginModal";
 import { ALCHEMY_API } from "@/constants/urls";
 import { AlchemyIsHolderOfContract } from "@/pages/api/signerRequests";
+import { bytesToHex } from "@noble/ciphers/utils";
+import { usePrivy } from "@privy-io/react-auth";
 import axios from "axios";
-import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
-import useValueHistory from "@/common/lib/hooks/useValueHistory";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
+import { isEqual, isUndefined } from "lodash";
+import React, { useEffect } from "react";
+import LoginModal from "../components/templates/LoginModal";
+import { AnalyticsEvent } from "../constants/analyticsEvents";
+import { analytics } from "./AnalyticsProvider";
 
 type LoggedInLayoutProps = { children: React.ReactNode };
 

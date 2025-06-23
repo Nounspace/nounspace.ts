@@ -1,5 +1,8 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 import packageInfo from "./package.json" with { type: "json" };
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
 
 const withBundleAnalyzer = bundlerAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -71,26 +74,20 @@ const nextConfig = {
     return [
       {
         source: "/home",
-        destination: "/home/Nouns", 
+        destination: "/home/Nouns",
       },
     ];
   },
 
-  webpack(config, { isServer }) {
-    if (!isServer) {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-        os: false,
-      };
-      config.resolve.fallback = {
-        ...(config.resolve.fallback || {}),
-        os: false,
-      };
-    } else {
-      config.resolve.alias = {
-        ...(config.resolve.alias || {}),
-      };
-    }
+  webpack(config) {
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      os: require.resolve("os-browserify/browser"),
+    };
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      os: require.resolve("os-browserify/browser"),
+    };
     return config;
   },
   

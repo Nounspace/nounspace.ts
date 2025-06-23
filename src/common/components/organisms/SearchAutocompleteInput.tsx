@@ -2,6 +2,7 @@ import React, { useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import useSearchUsers from "@/common/lib/hooks/useSearchUsers";
 import { useChannelsByName } from "@/common/lib/hooks/useChannels";
+import useSearchTokens, { TokenResult } from "@/common/lib/hooks/useSearchTokens";
 import { User } from "@neynar/nodejs-sdk/build/api";
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import {
@@ -34,8 +35,10 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState<string | null>(null);
-  const { users, loading } = useSearchUsers(query);
+  const { users, loading: loadingUsers } = useSearchUsers(query);
   const { data: channels } = useChannelsByName(query || "");
+  const { tokens, loading: loadingTokens } = useSearchTokens(query);
+  const loading = loadingUsers || loadingTokens;
 
   const handleFocus = useCallback(() => {
     setIsFocused(true);
@@ -64,11 +67,18 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
     onSelect && onSelect();
   }, []);
 
+  const onSelectToken = useCallback(
+    (token: TokenResult) => {
+      router.push(`/t/${token.network}/${token.contractAddress}`);
+      onSelect?.();
+    },
+    [router, onSelect],
+  );
   return (
     <Command className="rounded-md border" shouldFilter={false} loop={true}>
       <div className={loading ? "animated-loading-bar" : ""}>
         <CommandInput
-          placeholder="Search users or channels"
+          placeholder="Search users, tokens, or channels"
           onValueChange={setQuery}
           value={query || ""}
           onFocus={handleFocus}
@@ -130,6 +140,28 @@ const SearchAutocompleteInputContent: React.FC<SearchAutocompleteInputProps> = (
                   <div className="leading-[1.3]">
                     <p className="font-bold opacity-80">{ch.name}</p>
                     <p className="font-normal opacity-80">/{ch.id}</p>
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {tokens?.length > 0 && (
+            <CommandGroup heading="Tokens">
+              {tokens.map((token: TokenResult, i: number) => (
+                <CommandItem
+                  key={`t-${i}`}
+                  onSelect={() => onSelectToken(token)}
+                  value={token.name}
+                  className="gap-x-2 cursor-pointer"
+                >
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={token.image || ""} alt={token.name} />
+                  </Avatar>
+                  <div className="leading-[1.3]">
+                    <p className="font-bold opacity-80">{token.name}</p>
+                    <p className="font-normal opacity-80">
+                      {token.symbol} • {token.contractAddress}
+                    </p>
                   </div>
                 </CommandItem>
               ))}

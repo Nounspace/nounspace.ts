@@ -4,10 +4,6 @@ import {
 } from "@/app/(spaces)/Space";
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
@@ -48,6 +44,8 @@ import { AppStore } from "..";
 import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
 import { StoreGet, StoreSet } from "../../createStore";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 type SpaceId = string;
 
 // SpaceConfig includes all of the Fidget Config
@@ -388,6 +386,7 @@ export const createSpaceStoreFunc = (
           // Update timestamps
           const timestamp = moment().toISOString();
           draft.space.localSpaces[spaceId].updatedAt = timestamp;
+          draft.space.localSpaces[spaceId].orderUpdatedAt = timestamp;
           draft.space.remoteSpaces[spaceId].updatedAt = timestamp;
         }, "deleteSpaceTab");
         return get().space.commitSpaceOrderToDatabase(spaceId, network);
@@ -436,6 +435,9 @@ export const createSpaceStoreFunc = (
       };
 
       draft.space.localSpaces[spaceId].order.push(tabName);
+      const timestampNow = moment().toISOString();
+      draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
+      draft.space.localSpaces[spaceId].updatedAt = timestampNow;
     }, "createSpaceTab");
     analytics.track(AnalyticsEvent.CREATE_NEW_TAB);
 
@@ -556,6 +558,9 @@ export const createSpaceStoreFunc = (
   updateLocalSpaceOrder: async (spaceId, newOrder) => {
     set((draft) => {
       draft.space.localSpaces[spaceId].order = newOrder;
+      const timestampNow = moment().toISOString();
+      draft.space.localSpaces[spaceId].orderUpdatedAt = timestampNow;
+      draft.space.localSpaces[spaceId].updatedAt = timestampNow;
     });
   },
   commitSpaceOrderToDatabase: debounce(

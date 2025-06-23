@@ -29,12 +29,25 @@ query Spaces {
       onlyMembers
     }
     plugins
+    voting {
+      delay
+      period
+      type
+      quorum
+      blind
+      hideAbstain
+      privacy
+    }
+    validation {
+      name
+      params
+    }
   }
 }
 `;
 
 export const useSnapShotInfo = ({ ens }: FetchSpaceParams) => {
-  const [snapShotInfo, setSnapShotInfo] = useState<any[]>([]);
+  const [snapShotInfo, setSnapShotInfo] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

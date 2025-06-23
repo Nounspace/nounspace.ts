@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const revalidate = 3600; // Cache responses for 1 hour
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const url = searchParams.get("url");
@@ -40,13 +42,14 @@ export async function GET(req: NextRequest) {
 
 async function checkEmbeddability(url: string): Promise<boolean> {
   try {
-    // Make a HEAD request to check headers
+    // Make a HEAD request to check headers and cache the result
     const response = await fetch(url, {
       method: "HEAD",
       headers: {
         // Some servers require a user-agent
         "User-Agent": "Mozilla/5.0 NounspaceBot/1.0",
       },
+      next: { revalidate: 3600 },
     });
 
     if (!response.ok) {
