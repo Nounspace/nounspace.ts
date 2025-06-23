@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
-const PRIVACY_MD = String.raw`
+const PRIVACY_MD = `
 **Nounspace Privacy Notice**
 *Effective date: 23 June 2025*
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
@@ -78,7 +78,7 @@ Questions or concerns?
 * **Email:** privacy@nounspace.com
 * **Discord:** #support channel
 We're committed to making nounspace transparent and user-controlled. Thanks for helping us build a better decentralized social web!
-`;
+
 
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
 
