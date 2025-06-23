@@ -72,6 +72,10 @@ export function FidgetWrapper({
   }));
 
   const themeProps = (context?.theme ?? homebaseConfig?.theme)?.properties;
+  const hasRoundedCorners = Boolean(
+    themeProps?.fidgetBorderRadius &&
+      !/^0(px)?$/i.test(themeProps.fidgetBorderRadius.trim()),
+  );
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -262,11 +266,10 @@ export function FidgetWrapper({
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
           borderRadius: themeProps?.fidgetBorderRadius,
-          overflow:
-            themeProps?.fidgetBorderRadius &&
-            themeProps?.fidgetBorderRadius !== "0px"
-              ? "hidden"
-              : "visible",
+          overflow: hasRoundedCorners ? "hidden" : "visible",
+          clipPath: hasRoundedCorners
+            ? `inset(0 round ${themeProps?.fidgetBorderRadius})`
+            : undefined,
         }}
       >
         {bundle.config.editable && (
@@ -280,11 +283,10 @@ export function FidgetWrapper({
           <CardContent
             className="size-full"
             style={{
-              overflow:
-                themeProps?.fidgetBorderRadius &&
-                themeProps?.fidgetBorderRadius !== "0px"
-                  ? "hidden"
-                  : "visible",
+              overflow: hasRoundedCorners ? "hidden" : "visible",
+              clipPath: hasRoundedCorners
+                ? `inset(0 round ${themeProps?.fidgetBorderRadius})`
+                : undefined,
             }}
           >
             <Fidget
