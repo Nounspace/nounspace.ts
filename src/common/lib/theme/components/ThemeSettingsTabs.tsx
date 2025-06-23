@@ -18,36 +18,38 @@ export const ThemeSettingsTabs: React.FC<ThemeSettingsTabsProps> = ({
   onTabChange 
 }) => {
   return (
-    <TabsList className={tabListClasses}>
-      <TabsTrigger 
-        value="style" 
-        className={tabTriggerClasses}
-        onClick={() => onTabChange("style")}
-      >
-        Style
-      </TabsTrigger>
-      <TabsTrigger 
-        value="fonts" 
-        className={tabTriggerClasses}
-        onClick={() => onTabChange("fonts")}
-      >
-        Fonts
-      </TabsTrigger>
-      <TabsTrigger 
-        value="code" 
-        className={tabTriggerClasses}
-        onClick={() => onTabChange("code")}
-      >
-        Code
-      </TabsTrigger>
-      <TabsTrigger 
-        value="mobile" 
-        className={tabTriggerClasses}
-        onClick={() => onTabChange("mobile")}
-      >
-        Mobile
-      </TabsTrigger>
-    </TabsList>
+    <div className="w-full overflow-x-auto">
+      <TabsList className={`${tabListClasses} flex-nowrap`}>
+        <TabsTrigger 
+          value="style" 
+          className={`${tabTriggerClasses} flex-shrink-0 px-2 pl-0`}
+          onClick={() => onTabChange("style")}
+        >
+          Style
+        </TabsTrigger>
+        <TabsTrigger 
+          value="fonts" 
+          className={`${tabTriggerClasses} flex-shrink-0 px-2`}
+          onClick={() => onTabChange("fonts")}
+        >
+          Fonts
+        </TabsTrigger>
+        <TabsTrigger 
+          value="code" 
+          className={`${tabTriggerClasses} flex-shrink-0 px-2`}
+          onClick={() => onTabChange("code")}
+        >
+          Code
+        </TabsTrigger>
+        <TabsTrigger 
+          value="mobile" 
+          className={`${tabTriggerClasses} flex-shrink-0 px-2`}
+          onClick={() => onTabChange("mobile")}
+        >
+          Mobile
+        </TabsTrigger>
+      </TabsList>
+    </div>
   );
 };
 
