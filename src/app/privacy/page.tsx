@@ -76,7 +76,8 @@ We may update this Privacy Notice as the project evolves. Material changes will 
 Questions or concerns?
 * **Email:** privacy@nounspace.com
 * **Discord:** \#support channel
-We're committed to making nounspace transparent and user-controlled. Thanks for helping us build a better decentralized social web!`;
+We're committed to making nounspace transparent and user-controlled. Thanks for helping us build a better decentralized social web!
+`;
 
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
 
