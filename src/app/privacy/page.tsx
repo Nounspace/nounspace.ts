@@ -18,7 +18,7 @@ We wrote this notice in plain English so you can quickly understand what data we
 | ----- | ----- | ----- | ----- |
 | **Account basics** | Farcaster username, wallet address (public key) | You connect a wallet / log in with Farcaster | To recognise you, check token-gated access, show your profile |
 | **Public space settings** | Title, theme, layout, bio | You configure a Space | To display your Space to you and the public |
-| **Dashboard (\u201cHomebase\u201d) settings** | Feeds you follow, layout, filters | Saved client-side and synced to us **encrypted** | So your private dashboard loads the same on any device |
+| **Dashboard ("Homebase") settings** | Feeds you follow, layout, filters | Saved client-side and synced to us **encrypted** | So your private dashboard loads the same on any device |
 | **Usage analytics** | Page views, button clicks, feature usage, event timestamps, truncated/hashed device ID; **IP address used momentarily for geolocation lookup only** | Automatically via **Segment** and **Mixpanel** SDKs | To troubleshoot bugs, understand which features people like, and improve the app |
 | **Device & browser info** | Browser type, OS, screen size | Segment / Mixpanel | Same as above |
 **We do *not* collect:** real name, email, phone number, private keys, or full IP addresses stored alongside your profile.
@@ -27,10 +27,10 @@ We wrote this notice in plain English so you can quickly understand what data we
 We use first-party cookies (or local-storage tokens) plus Segment & Mixpanel cookies to remember you and measure product usage. You can clear or block these in your browser settings; the core app will still work but analytics accuracy drops.
 ---
 ## **4. How we use your data**
-1. **Provide the service** \u2013 load your Spaces, verify token-gated features.
-2. **Improve nounspace** \u2013 aggregate analytics help us see what breaks or what\u2019s popular.
-3. **Security & fraud prevention** \u2013 spot abuse or automated attacks.
-4. **Legal compliance** \u2013 keep records required by law or to defend our rights.
+1. **Provide the service** - load your Spaces, verify token-gated features.
+2. **Improve nounspace** - aggregate analytics help us see what breaks or what's popular.
+3. **Security & fraud prevention** - spot abuse or automated attacks.
+4. **Legal compliance** - keep records required by law or to defend our rights.
 We **do not** sell or rent your personal data.
 ---
 ## **5. When we share data**
@@ -52,13 +52,13 @@ We **do not** sell or rent your personal data.
 ---
 ## **7. Your choices & rights**
 * **Opt-out of analytics:** Block cookies or use a tracker-blocking browser extension.
-* **Access / download your data:** DM a mod on Discord or email privacy@nounspace.com with your Farcaster username; we\u2019ll export what we have.
+* **Access / download your data:** DM a mod on Discord or email privacy@nounspace.com with your Farcaster username; we'll export what we have.
 * **Delete dashboard or Space:** Use in-app controls; dashboard data is wiped server-side, Space config removed from our DB (posts on Farcaster remain public).
 * **California & GDPR rights:** You can request deletion, correction, or a copy of your personal data. We honour valid requests within 30 days.
 * **Do-Not-Track signals:** We respect DNT headers by disabling Segment & Mixpanel when DNT = 1.
 ---
-## **8. Children\u2019s privacy**
-Nounspace is **not intended for children under 13**. If we learn someone under 13 is using nounspace, we\u2019ll disable analytics for that user and limit data processing to run the core service.
+## **8. Children's privacy**
+Nounspace is **not intended for children under 13**. If we learn someone under 13 is using nounspace, we'll disable analytics for that user and limit data processing to run the core service.
 ---
 ## **9. Security**
 * **Encryption in transit & at rest** for all data.
@@ -76,7 +76,7 @@ We may update this Privacy Notice as the project evolves. Material changes will 
 Questions or concerns?
 * **Email:** privacy@nounspace.com
 * **Discord:** \#support channel
-We\u2019re committed to making nounspace transparent and user-controlled. Thanks for helping us build a better decentralized social web!`;
+We're committed to making nounspace transparent and user-controlled. Thanks for helping us build a better decentralized social web!`;
 
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
 
