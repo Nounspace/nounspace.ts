@@ -28,9 +28,10 @@ function isReservedIpv6(addr: string): boolean {
   return (
     lower === "::" ||
     lower === "::1" ||
-    lower.startsWith("fc") ||
-    lower.startsWith("fd") ||
-    /^fe[89ab]/.test(lower) ||
+    /^f[cd]/.test(lower) ||      // ULA (Unique Local Addresses)
+    /^fe[89ab]/.test(lower) ||   // Link-local
+    /^2001:db8/.test(lower) ||   // Documentation
+    /^2001:10/.test(lower) ||    // ORCHID
     lower.startsWith("ff")
   );
 }
