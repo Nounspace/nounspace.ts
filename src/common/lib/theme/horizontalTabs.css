@@ -1,9 +1,8 @@
-/* Esconde a barra de rolagem horizontal para vários navegadores */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE e Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  
+  scrollbar-width: none; 
 }
