@@ -168,7 +168,7 @@
     "@next/bundle-analyzer": "^14.2.4",
     "@next/eslint-plugin-next": "^14.2.3",
     "@solana/web3.js": "^1.98.0",
-    "@stylistic/eslint-plugin": "^2.1.0",
+    "@stylistic/eslint-plugin": "^3.1.0",
     "@stylistic/eslint-plugin-js": "^2.1.0",
     "@stylistic/eslint-plugin-jsx": "^2.1.0",
     "@stylistic/eslint-plugin-ts": "^2.1.0",
