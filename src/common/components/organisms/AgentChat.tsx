@@ -19,6 +19,7 @@ import {
   WifiOff,
   RotateCcw,
   Clock,
+  History,
 } from "lucide-react";
 import { CgProfile } from "react-icons/cg";
 import { first } from "lodash";
@@ -194,6 +195,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   >(null);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
+  const [showHistory, setShowHistory] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -234,9 +236,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     deleteCheckpoint(checkpointId);
     toast.info("Checkpoint deleted");
   };
-
-  // Get recent checkpoints for display
-  const recentCheckpoints = getRecentCheckpoints(3);
 
   // Initialize WebSocket service
   const initializeWebSocketService = useCallback(() => {
@@ -563,13 +562,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             <div>
               <h2 className="font-semibold text-lg">Vibe Customization</h2>
               <div className="flex items-center gap-2">
-                {/* Checkpoints Indicator */}
-                {checkpoints.length > 0 && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-xs font-medium">{checkpoints.length} checkpoint{checkpoints.length !== 1 ? 's' : ''}</span>
-                  </div>
-                )}
                 {/* Connection Status Indicator */}
                 <div className="flex items-center gap-1">
                   {connectionStatus === "connected" && (
@@ -614,63 +606,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           </div>
         </div>
 
-        {/* Checkpoints Section */}
-        {recentCheckpoints.length > 0 && (
-          <div className="px-4 py-2 border-b bg-gray-50">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-700">Space Checkpoints</h3>
-              <span className="text-xs text-gray-500">{checkpoints.length} saved</span>
-            </div>
-            <div className="space-y-1 max-h-24 overflow-y-auto">
-              {recentCheckpoints.map((checkpoint) => (
-                <div key={checkpoint.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-gray-700 truncate">
-                      {checkpoint.name}
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1">
-                      <span className={`px-1 py-0.5 rounded text-xs ${{
-                        'theme-editor': 'bg-orange-100 text-orange-700',
-                        'ai-chat': 'bg-purple-100 text-purple-700',
-                        'manual': 'bg-blue-100 text-blue-700'
-                      }[checkpoint.source]}`}>
-                        {checkpoint.source}
-                      </span>
-                      {new Date(checkpoint.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRestoreCheckpoint(checkpoint)}
-                      disabled={isRestoring}
-                      className="h-6 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteCheckpoint(checkpoint.id)}
-                      className="h-6 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {checkpoints.length > 3 && (
-              <div className="text-xs text-gray-500 mt-1 text-center">
-                Showing last 3 checkpoints
-              </div>
-            )}
-          </div>
-        )}
+
 
         {/* Messages */}
         <ScrollArea className="flex-1 px-3 py-2">
@@ -841,8 +777,80 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           </div>
         </ScrollArea>
 
+        {/* History Panel */}
+        {showHistory && (
+          <div className="border-t bg-gray-50 max-h-80 overflow-y-auto">
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900">Space History</h3>
+                <span className="text-sm text-gray-500">{checkpoints.length} checkpoint{checkpoints.length !== 1 ? 's' : ''}</span>
+              </div>
+              
+              {checkpoints.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No checkpoints yet</p>
+                  <p className="text-xs">Make changes to your space to create history</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {checkpoints.map((checkpoint) => (
+                    <div key={checkpoint.id} className="bg-white border rounded-lg p-3 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm text-gray-900 truncate">
+                            {checkpoint.name}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${{
+                              'theme-editor': 'bg-orange-100 text-orange-700',
+                              'ai-chat': 'bg-purple-100 text-purple-700',
+                              'manual': 'bg-blue-100 text-blue-700'
+                            }[checkpoint.source]}`}>
+                              {checkpoint.source === 'ai-chat' ? 'AI Chat' : 
+                               checkpoint.source === 'theme-editor' ? 'Theme Editor' : 
+                               'Manual'}
+                            </span>
+                                                         <span className="text-xs text-gray-500">
+                               {new Date(checkpoint.timestamp).toLocaleDateString()} at{' '}
+                               {new Date(checkpoint.timestamp).toLocaleTimeString([], {
+                                 hour: "2-digit",
+                                 minute: "2-digit",
+                               })}
+                             </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 ml-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRestoreCheckpoint(checkpoint)}
+                            disabled={isRestoring}
+                            className="h-8 px-3 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                          >
+                            <RotateCcw className="w-3 h-3 mr-1" />
+                            Restore
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteCheckpoint(checkpoint.id)}
+                            className="h-8 px-3 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Input */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t relative">
           <div className="flex gap-2">
             <Textarea
               ref={textareaRef}
@@ -853,6 +861,20 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               className="flex-1 min-h-[40px] max-h-[120px] resize-none"
               disabled={isLoading}
             />
+            <Button
+              onClick={() => setShowHistory(!showHistory)}
+              size="icon"
+              variant={showHistory ? "default" : "outline"}
+              className="self-end relative"
+              title={showHistory ? "Hide History" : "Show History"}
+            >
+              <History className="w-4 h-4" />
+              {checkpoints.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {checkpoints.length > 9 ? '9+' : checkpoints.length}
+                </span>
+              )}
+            </Button>
             <Button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || isLoading}
