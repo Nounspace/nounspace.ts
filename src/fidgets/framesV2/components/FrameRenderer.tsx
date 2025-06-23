@@ -162,29 +162,27 @@ export default function FrameRenderer({
     return (
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          width: "100%",
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
+          minWidth: "500px", // Minimum width for better responsiveness
+          maxWidth: "800px", // Maximum width for larger screens
+          height: "400px", // Optimized height for feed display
+          minHeight: "400px",
+          maxHeight: "700px", // Maximum height for larger screens
+          borderRadius: "12px",
           overflow: "hidden",
-          backgroundColor: "white",
-          position: "relative",
-          padding: "16px",
+          backgroundColor: "#fff",
+          border: "1px solid #e5e7eb",
+          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+          display: "flex", // Use flexbox for proper sizing
+          flexDirection: "column",
+          position: "relative", // Ensure proper positioning
         }}
       >
         <div
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "#e5e7eb",
+            width: "100%",
+            height: "100%",
+            flex: 1,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 10,
           }}
         >
           <p style={{ color: "#4b5563", fontWeight: 500 }}>Loading frame...</p>
