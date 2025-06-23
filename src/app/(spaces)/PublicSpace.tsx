@@ -17,12 +17,7 @@ import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
-import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { MasterToken } from "@/common/providers/TokenProvider";
-import Profile from "@/fidgets/ui/profile";
 import Channel from "@/fidgets/ui/channel";
-import { createEditabilityChecker } from "@/common/utils/spaceEditability";
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
@@ -129,27 +124,6 @@ export default function PublicSpace({
     registerSpaceContract: state.space.registerSpaceContract,
   }));
 
-  console.log("PublicSpace mounted:", {
-    spaceId: providedSpaceId,
-    tabName: providedTabName,
-    isTokenPage,
-    contractAddress,
-    pageType, // Log the page type
-  });
-
-  const router = useRouter();
-
-  const initialLoading =
-    providedSpaceId !== null &&
-    providedSpaceId !== "" &&
-    !localSpaces[providedSpaceId];
-
-  const [loading, setLoading] = useState<boolean>(initialLoading);
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
-  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
-  const { wallets } = useWallets();
-
-  
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
