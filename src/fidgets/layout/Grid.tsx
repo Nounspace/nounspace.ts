@@ -508,6 +508,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           selectFidget={selectFidget}
           addFidgetToGrid={addFidgetToGrid}
           onExportConfig={exportSpaceConfig}
+          getCurrentSpaceContext={() => ({
+            fidgetInstanceDatums,
+            fidgetTrayContents,
+            layoutConfig,
+            theme,
+            layoutID: layoutConfig.layout.length > 0 ? 'grid' : undefined,
+          })}
+          onApplySpaceConfig={saveConfig}
         />,
         portalNode,
       )

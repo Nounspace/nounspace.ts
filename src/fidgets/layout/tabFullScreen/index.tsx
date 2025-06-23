@@ -18,7 +18,7 @@ import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent"
 import FidgetContent from "./components/FidgetContent"
 import MobileNavbar from "@/common/components/organisms/MobileNavbar"
 import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils"
-import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds"
+import useProcessedFidgetIds from "@/common/lib/hooks/useProcessedFidgetIds"
 import { UserTheme } from "@/common/lib/theme"
 import defaultUserTheme from "@/common/lib/theme/defaultTheme"
 

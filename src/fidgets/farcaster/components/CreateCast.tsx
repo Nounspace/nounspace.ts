@@ -32,7 +32,7 @@ import {
 } from "@/common/components/atoms/popover";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
-import { useBannerStore } from "@/stores/bannerStore";
+import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
