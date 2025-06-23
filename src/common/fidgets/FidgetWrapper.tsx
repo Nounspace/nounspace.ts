@@ -76,6 +76,9 @@ export function FidgetWrapper({
     themeProps?.fidgetBorderRadius &&
       !/^0(px)?$/i.test(themeProps.fidgetBorderRadius.trim()),
   );
+  const clipPathStyle = hasRoundedCorners
+    ? `inset(0 round ${themeProps?.fidgetBorderRadius})`
+    : undefined;
 
   function onClickEdit() {
     setSelectedFidgetID(bundle.id);
@@ -241,6 +244,8 @@ export function FidgetWrapper({
         style={{
           borderRadius: themeProps?.fidgetBorderRadius,
           overflow: hasRoundedCorners ? "hidden" : "visible",
+          clipPath: clipPathStyle,
+          WebkitClipPath: clipPathStyle,
         }}
         className="size-full"
       >
