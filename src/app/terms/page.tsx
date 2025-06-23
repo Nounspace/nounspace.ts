@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
-const TERMS_MD = `# **Nounspace Terms and Conditions**
+const TERMS_MD = String.raw`# **Nounspace Terms and Conditions**
 
 ## **Introduction**
 
