@@ -19,24 +19,33 @@ export type CastEmbed = {
   key?: string;
 };
 
-export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast: boolean) => {
-
+export const renderEmbedForUrl = (
+  { url, castId, key }: CastEmbed,
+  isCreateCast: boolean
+) => {
   if (castId) {
     return <EmbededCast castId={castId} key={key} />;
   }
   if (!url) return null;
 
   if (isImageUrl(url)) {
-    return !isCreateCast ? <ImageEmbed url={url} key={key} /> : <CreateCastImage url={url} key={key} />;
+    return !isCreateCast ? (
+      <ImageEmbed url={url} key={key} />
+    ) : (
+      <CreateCastImage url={url} key={key} />
+    );
   }
 
   if (
     url.includes("i.imgur.com") ||
     url.startsWith("https://imagedelivery.net")
   ) {
-    return !isCreateCast ? <ImageEmbed url={url} key={key} /> : <CreateCastImage url={url} key={key} />;
-  }
-  else if (url.startsWith('"chain:')) {
+    return !isCreateCast ? (
+      <ImageEmbed url={url} key={key} />
+    ) : (
+      <CreateCastImage url={url} key={key} />
+    );
+  } else if (url.startsWith('"chain:')) {
     return <OnchainEmbed url={url} key={key} />;
   } else if (isVideoUrl(url)) {
     return <VideoEmbed url={url} key={key} />;

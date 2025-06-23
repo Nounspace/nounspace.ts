@@ -68,7 +68,6 @@ export default function FrameRenderer({
         }
 
         const data = await response.json();
-        console.log("Fetched frame data:", data);
 
         setFrameData({
           image: data.image || null,
@@ -162,30 +161,59 @@ export default function FrameRenderer({
     return (
       <div
         style={{
-          minWidth: "500px", // Minimum width for better responsiveness
-          maxWidth: "800px", // Maximum width for larger screens
-          height: "400px", // Optimized height for feed display
-          minHeight: "400px",
-          maxHeight: "700px", // Maximum height for larger screens
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          height: "400px",
           borderRadius: "12px",
           overflow: "hidden",
-          backgroundColor: "#fff",
+          backgroundColor: "#f8f9fa",
+          position: "relative",
           border: "1px solid #e5e7eb",
-          boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-          display: "flex", // Use flexbox for proper sizing
-          flexDirection: "column",
-          position: "relative", // Ensure proper positioning
         }}
       >
         <div
           style={{
-            width: "100%",
-            height: "100%",
-            flex: 1,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10,
           }}
         >
-          <p style={{ color: "#4b5563", fontWeight: 500 }}>Loading frame...</p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                border: "2px solid #e5e7eb",
+                borderTop: "2px solid #3b82f6",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+            ></div>
+            <p
+              style={{
+                color: "#6b7280",
+                fontWeight: 500,
+                fontSize: "14px",
+                margin: 0,
+              }}
+            >
+              Loading frame...
+            </p>
+          </div>
         </div>
       </div>
     );
