@@ -129,15 +129,27 @@ const rateLimiter = {
     
     // Remove old requests outside the window
     const recentRequests = domainRequests.filter(timestamp => timestamp > windowStart);
-    this.requests.set(domain, recentRequests);
+    
+    // Clean up memory: remove domain key if no recent requests
+    if (recentRequests.length === 0) {
+      this.requests.delete(domain);
+    } else {
+      this.requests.set(domain, recentRequests);
+    }
     
     // Check if we can make another request
     if (recentRequests.length >= this.maxRequestsPerMinute) {
       return false;
     }
     
-    // Add current request timestamp
-    recentRequests.push(now);
+    // Add current request timestamp - need to re-set or create the array
+    if (recentRequests.length === 0) {
+      this.requests.set(domain, [now]);
+    } else {
+      recentRequests.push(now);
+      this.requests.set(domain, recentRequests);
+    }
+    
     return true;
   }
 };
@@ -312,7 +324,8 @@ export async function batchCheckFrameUrls(urls: string[]): Promise<Map<string, b
   }
   
   // Process chunks sequentially with a small delay
-  for (const chunk of chunks) {
+  for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+    const chunk = chunks[chunkIndex];
     const chunkPromises = chunk.map(async (url) => {
       const isFrame = await isFrameV2Url(url);
       results.set(url, isFrame);
@@ -322,7 +335,7 @@ export async function batchCheckFrameUrls(urls: string[]): Promise<Map<string, b
     await Promise.all(chunkPromises);
     
     // Small delay between chunks to be API-friendly
-    if (chunks.indexOf(chunk) < chunks.length - 1) {
+    if (chunkIndex < chunks.length - 1) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
   }
