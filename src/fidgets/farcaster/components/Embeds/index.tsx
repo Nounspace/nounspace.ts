@@ -6,7 +6,7 @@ import NounsBuildEmbed from "./NounsBuildEmbed";
 import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
-import FrameEmbed from "./FrameEmbed";
+import SmartFrameEmbed from "./SmartFrameEmbed";
 import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
 import CreateCastImage from "./createCastImage";
 
@@ -53,10 +53,9 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast:
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
   } else if (!isImageUrl(url)) {
-    // NOTE: Need a better resolver
-    // Currently all URLs that aren't otherise caputured try
-    // To be frames, including things like youtube videos
-    return <FrameEmbed url={url} showError={false} key={key} />;
+    // Use smart frame detection to render Frame v2 when possible
+    // Falls back to legacy frame system if Frame v2 metadata is not detected
+    return <SmartFrameEmbed url={url} key={key} />;
   } else {
     return null;
   }
