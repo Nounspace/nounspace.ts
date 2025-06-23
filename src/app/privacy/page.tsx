@@ -88,9 +88,9 @@ We wrote this notice in plain English so you can quickly understand what data we
 
 * **Nounspace** is an open‑source social app built on the Farcaster protocol.
 
-* **Owner:** nounspace DAO
+* **Owner:** nounspace DAO
 
-* **Developer & data controller (for U.S. law purposes):** FrFr LLC (Texas, USA)
+* **Developer & data controller (for U.S. law purposes):** FrFr LLC (Texas, USA)
 
 ---
 
@@ -145,9 +145,9 @@ We **do not** sell or rent your personal data.
 | Data | Retention period |
 | ----- | ----- |
 | Public Space configs | Until you delete the Space or nounspace sunsets |
-| Encrypted dashboard data | Until you delete it or 12 months after your last login, whichever is later |
-| Analytics events | 18 months, then permanently deleted or aggregated |
-| Server logs | Up to 30 days for security, then deleted |
+| Encrypted dashboard data | Until you delete it or 12 months after your last login, whichever is later |
+| Analytics events | 18 months, then permanently deleted or aggregated |
+| Server logs | Up to 30 days for security, then deleted |
 
 ---
 
@@ -159,9 +159,9 @@ We **do not** sell or rent your personal data.
 
 * **Delete dashboard or Space:** Use in‑app controls; dashboard data is wiped server‑side, Space config removed from our DB (posts on Farcaster remain public).
 
-* **California & GDPR rights:** You can request deletion, correction, or a copy of your personal data. We honour valid requests within 30 days.
+* **California & GDPR rights:** You can request deletion, correction, or a copy of your personal data. We honour valid requests within 30 days.
 
-* **Do‑Not‑Track signals:** We respect DNT headers by disabling Segment & Mixpanel when DNT = 1.
+* **Do‑Not‑Track signals:** We respect DNT headers by disabling Segment & Mixpanel when DNT = 1.
 
 ---
 
@@ -179,7 +179,7 @@ Nounspace is **not intended for children under 13**. If we learn someone under 1
 
 * Least‑privilege access controls for staff; each DAO contributor only sees what they need.
 
-No online service is 100 % secure, but we take reasonable technical and organisational measures to protect your data.
+No online service is 100% secure, but we take reasonable technical and organisational measures to protect your data.
 
 ---
 
@@ -191,7 +191,7 @@ We host data in the United States. If you access nounspace from outside the U.S.
 
 ## **11. Changes to this notice**
 
-We may update this Privacy Notice as the project evolves. Material changes will be announced in‑app and on our Discord. Continued use after an update means you accept the new version.
+We may update this Privacy Notice as the project evolves. Material changes will be announced in‑app and on our Discord. Continued use after an update means you accept the new version.
 
 ---
 
