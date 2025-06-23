@@ -633,27 +633,23 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 : null;
               if (!fidgetModule) return null;
 
+              const shouldClipCorners =
+                gridDetails.borderRadius &&
+                !/^0(px)?$/i.test(gridDetails.borderRadius.trim());
+
               return (
                 <div
                   key={gridItem.i}
                   className="grid-item"
                   style={{
                     borderRadius: gridDetails.borderRadius,
-                    overflow:
-                      gridDetails.borderRadius &&
-                      !/^0(px)?$/i.test(gridDetails.borderRadius.trim())
-                        ? "hidden"
-                        : undefined,
-                    clipPath:
-                      gridDetails.borderRadius &&
-                      !/^0(px)?$/i.test(gridDetails.borderRadius.trim())
-                        ? `inset(0 round ${gridDetails.borderRadius})`
-                        : undefined,
-                    WebkitClipPath:
-                      gridDetails.borderRadius &&
-                      !/^0(px)?$/i.test(gridDetails.borderRadius.trim())
-                        ? `inset(0 round ${gridDetails.borderRadius})`
-                        : undefined,
+                    overflow: shouldClipCorners ? "hidden" : undefined,
+                    clipPath: shouldClipCorners
+                      ? `inset(0 round ${gridDetails.borderRadius})`
+                      : undefined,
+                    WebkitClipPath: shouldClipCorners
+                      ? `inset(0 round ${gridDetails.borderRadius})`
+                      : undefined,
                     outline:
                       selectedFidgetID === gridItem.i
                         ? "4px solid rgb(2 132 199)" /* sky-600 */

@@ -277,7 +277,6 @@ export function FidgetWrapper({
             boxShadow: settingsWithDefaults.useDefaultColors
               ? homebaseConfig?.theme?.properties.fidgetShadow
               : settingsWithDefaults.fidgetShadow,
-            borderRadius: themeProps?.fidgetBorderRadius,
           }}
         >
           {bundle.config.editable && (
