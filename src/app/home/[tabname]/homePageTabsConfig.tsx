@@ -38,7 +38,114 @@ export const NOUNS_TAB_CONFIG = {
     "name": "Homebase-Tab 4 - 1-Theme",
     "properties": {
       "background": "#ffffff",
-      "backgroundHTML": "",
+      "backgroundHTML": `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nouns DAO Fun Animated Background</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .background {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        160deg,
+        #FCCD04 0%,
+        #E80173 20%,
+        #45AAF2 40%,
+        #23D160 60%,
+        #FDB900 80%,
+        #C8A2C8 100%
+      );
+      background-size: 400% 400%;
+      animation: gradientFlow 30s ease-in-out infinite;
+    }
+
+    @keyframes gradientFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .noggles {
+      position: absolute;
+      bottom: -15%;
+      width: 60px;
+      height: 60px;
+      background-image: url("https://nouns.wtf/brand-assets/color_noggles.png");
+      background-repeat: no-repeat;
+      background-size: contain;
+      opacity: 0;
+      animation-name: floatUp;
+      animation-iteration-count: infinite;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-120vh) rotate(1080deg); opacity: 0; }
+    }
+
+    .noggles:nth-child(1) { left: 5%; animation-duration: 8s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(2) { left: 15%; animation-duration: 9s; animation-delay: 2s; animation-timing-function: linear; }
+    .noggles:nth-child(3) { left: 25%; animation-duration: 10s; animation-delay: 4s; animation-timing-function: ease; }
+    .noggles:nth-child(4) { left: 35%; animation-duration: 11s; animation-delay: 1s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(5) { left: 45%; animation-duration: 13s; animation-delay: 3s; animation-timing-function: linear; }
+    .noggles:nth-child(6) { left: 55%; animation-duration: 9s; animation-delay: 5s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(7) { left: 65%; animation-duration: 12s; animation-delay: 1s; animation-timing-function: ease; }
+    .noggles:nth-child(8) { left: 75%; animation-duration: 10s; animation-delay: 6s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(9) { left: 85%; animation-duration: 12s; animation-delay: 2s; animation-timing-function: linear; }
+    .noggles:nth-child(10) { left: 92%; animation-duration: 14s; animation-delay: 4s; animation-timing-function: ease; }
+    .noggles:nth-child(11) { left: 10%; animation-duration: 11s; animation-delay: 7s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(12) { left: 20%; animation-duration: 9s; animation-delay: 3s; animation-timing-function: linear; }
+    .noggles:nth-child(13) { left: 30%; animation-duration: 8s; animation-delay: 1s; animation-timing-function: ease; }
+    .noggles:nth-child(14) { left: 40%; animation-duration: 12s; animation-delay: 5s; animation-timing-function: ease; }
+    .noggles:nth-child(15) { left: 50%; animation-duration: 10s; animation-delay: 2s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(16) { left: 60%; animation-duration: 14s; animation-delay: 6s; animation-timing-function: linear; }
+    .noggles:nth-child(17) { left: 70%; animation-duration: 11s; animation-delay: 4s; animation-timing-function: ease; }
+    .noggles:nth-child(18) { left: 80%; animation-duration: 8s; animation-delay: 7s; animation-timing-function: ease-in-out; }
+    .noggles:nth-child(19) { left: 88%; animation-duration: 10s; animation-delay: 3s; animation-timing-function: ease; }
+    .noggles:nth-child(20) { left: 95%; animation-duration: 13s; animation-delay: 1s; animation-timing-function: linear; }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+    <div class="noggles"></div>
+  </div>
+</body>
+</html>`,
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
       "fidgetBorderRadius": "0px",
@@ -112,7 +219,31 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
           "h": 4,
           "x": 8,
           "y": 0,
-          "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+        "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+        "minW": 2,
+        "maxW": 36,
+        "minH": 2,
+        "maxH": 36,
+        "moved": false,
+        "static": false,
+        "resizeHandles": [
+          "s",
+          "w",
+          "e",
+          "n",
+          "sw",
+          "nw",
+          "se",
+          "ne"
+        ],
+        "isBounded": false
+        },
+        {
+          "w": 4,
+          "h": 6,
+          "x": 8,
+          "y": 4,
+          "i": "feed:Ns29YIhpl9SWpf5O36d2",
           "minW": 2,
           "maxW": 36,
           "minH": 2,
@@ -225,8 +356,37 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
           "fidgetShadow": "var(--user-theme-fidget-shadow)",
           "css": ""
         }
-      }
-    }
+      },
+    },
+    "feed:Ns29YIhpl9SWpf5O36d2": {
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "Xhandle": "nounsdao",
+          "background": "var(--user-theme-fidget-background)",
+          "channel": "",
+          "feedType": "filter",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "filterType": "channel_id",
+          "fontColor": "var(--user-theme-font-color)",
+          "fontFamily": "var(--user-theme-font)",
+          "keyword": "",
+          "selectPlatform": {
+            "icon": "/images/twitter.avif",
+            "name": "X"
+          },
+          "showOnMobile": true,
+          "style": "light",
+          "username": "",
+          "users": ""
+        }
+      },
+      "fidgetType": "feed",
+      "id": "feed:Ns29YIhpl9SWpf5O36d2"
+    },
   },
   "fidgetTrayContents": [],
   "isEditable": false,
