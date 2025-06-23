@@ -38,6 +38,132 @@ export const NOUNS_TAB_CONFIG = {
     "name": "Homebase-Tab 4 - 1-Theme",
     "properties": {
       "background": "#ffffff",
+      "backgroundHTML": "",
+      "fidgetBackground": "#ffffff",
+      "fidgetBorderColor": "#eeeeee",
+      "fidgetBorderRadius": "0px",
+      "fidgetBorderWidth": "0px",
+      "fidgetShadow": "none",
+      "font": "Inter",
+      "fontColor": "#000000",
+      "gridSpacing": "0",
+      "headingsFont": "Inter",
+      "headingsFontColor": "#000000",
+      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
+    }
+  },
+  "fidgetInstanceDatums": {
+    "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26": {
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "background": "var(--user-theme-fidget-background)",
+          "cropOffsetX": 0,
+          "cropOffsetY": -4,
+          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
+          "fidgetBorderWidth": "0",
+          "fidgetShadow": "none",
+          "isScrollable": false,
+          "showOnMobile": true,
+          "url": "https://www.nouns.com"
+        }
+      },
+      "fidgetType": "iframe",
+      "id": "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26"
+    }
+  },
+  "fidgetTrayContents": [],
+  "isEditable": false,
+  "timestamp": "2025-06-20T05:58:44.080Z"
+};
+
+export const SOCIAL_TAB_CONFIG: SpaceConfig = {
+  "layoutID": "48073f43-70dd-459c-be6d-e31ac89f267f",
+  "layoutDetails": {
+    "layoutConfig": {
+      "layout": [
+        {
+          "w": 8,
+          "h": 10,
+          "x": 0,
+          "y": 0,
+          "i": "feed:9f8f8e69-6323-4e7d-8f9a-210f522827f7",
+          "minW": 4,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        },
+        {
+          "w": 4,
+          "h": 4,
+          "x": 8,
+          "y": 6,
+        "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+        "minW": 2,
+        "maxW": 36,
+        "minH": 2,
+        "maxH": 36,
+        "moved": false,
+        "static": false,
+        "resizeHandles": [
+          "s",
+          "w",
+          "e",
+          "n",
+          "sw",
+          "nw",
+          "se",
+          "ne"
+        ],
+        "isBounded": false
+        },
+        {
+          "w": 4,
+          "h": 6,
+          "x": 8,
+          "y": 0,
+          "i": "feed:Ns29YIhpl9SWpf5O36d2",
+          "minW": 2,
+          "maxW": 36,
+          "minH": 2,
+          "maxH": 36,
+          "moved": false,
+          "static": false,
+          "resizeHandles": [
+            "s",
+            "w",
+            "e",
+            "n",
+            "sw",
+            "nw",
+            "se",
+            "ne"
+          ],
+          "isBounded": false
+        }
+      ]
+    },
+    "layoutFidget": "grid"
+  },
+  "theme": {
+    "id": "Homebase-Tab 3-Theme",
+    "name": "Homebase-Tab 3-Theme",
+    "properties": {
+      "background": "#ffffff",
       "backgroundHTML": `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -146,132 +272,6 @@ export const NOUNS_TAB_CONFIG = {
   </div>
 </body>
 </html>`,
-      "fidgetBackground": "#ffffff",
-      "fidgetBorderColor": "#eeeeee",
-      "fidgetBorderRadius": "0px",
-      "fidgetBorderWidth": "0px",
-      "fidgetShadow": "none",
-      "font": "Inter",
-      "fontColor": "#000000",
-      "gridSpacing": "0",
-      "headingsFont": "Inter",
-      "headingsFontColor": "#000000",
-      "musicURL": "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804"
-    }
-  },
-  "fidgetInstanceDatums": {
-    "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26": {
-      "config": {
-        "data": {},
-        "editable": true,
-        "settings": {
-          "background": "var(--user-theme-fidget-background)",
-          "cropOffsetX": 0,
-          "cropOffsetY": -4,
-          "fidgetBorderColor": "rgba(238, 238, 238, 0)",
-          "fidgetBorderWidth": "0",
-          "fidgetShadow": "none",
-          "isScrollable": false,
-          "showOnMobile": true,
-          "url": "https://www.nouns.com"
-        }
-      },
-      "fidgetType": "iframe",
-      "id": "iframe:d96fd12e-9006-4e48-bf0f-8124cd73df26"
-    }
-  },
-  "fidgetTrayContents": [],
-  "isEditable": false,
-  "timestamp": "2025-06-20T05:58:44.080Z"
-};
-
-export const SOCIAL_TAB_CONFIG: SpaceConfig = {
-  "layoutID": "48073f43-70dd-459c-be6d-e31ac89f267f",
-  "layoutDetails": {
-    "layoutConfig": {
-      "layout": [
-        {
-          "w": 8,
-          "h": 10,
-          "x": 0,
-          "y": 0,
-          "i": "feed:9f8f8e69-6323-4e7d-8f9a-210f522827f7",
-          "minW": 4,
-          "maxW": 36,
-          "minH": 2,
-          "maxH": 36,
-          "moved": false,
-          "static": false,
-          "resizeHandles": [
-            "s",
-            "w",
-            "e",
-            "n",
-            "sw",
-            "nw",
-            "se",
-            "ne"
-          ],
-          "isBounded": false
-        },
-        {
-          "w": 4,
-          "h": 4,
-          "x": 8,
-          "y": 0,
-        "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
-        "minW": 2,
-        "maxW": 36,
-        "minH": 2,
-        "maxH": 36,
-        "moved": false,
-        "static": false,
-        "resizeHandles": [
-          "s",
-          "w",
-          "e",
-          "n",
-          "sw",
-          "nw",
-          "se",
-          "ne"
-        ],
-        "isBounded": false
-        },
-        {
-          "w": 4,
-          "h": 6,
-          "x": 8,
-          "y": 4,
-          "i": "feed:Ns29YIhpl9SWpf5O36d2",
-          "minW": 2,
-          "maxW": 36,
-          "minH": 2,
-          "maxH": 36,
-          "moved": false,
-          "static": false,
-          "resizeHandles": [
-            "s",
-            "w",
-            "e",
-            "n",
-            "sw",
-            "nw",
-            "se",
-            "ne"
-          ],
-          "isBounded": false
-        }
-      ]
-    },
-    "layoutFidget": "grid"
-  },
-  "theme": {
-    "id": "Homebase-Tab 3-Theme",
-    "name": "Homebase-Tab 3-Theme",
-    "properties": {
-      "background": "#ffffff",
-      "backgroundHTML": "",
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
       "fidgetBorderRadius": "12px",
