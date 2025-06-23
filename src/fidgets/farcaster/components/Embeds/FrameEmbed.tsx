@@ -80,7 +80,8 @@ async function createFrameActionMessage(
       buttonIndex,
       castId,
       state,
-      inputText: inputText !== undefined ? Buffer.from(inputText) : undefined,
+      inputText:
+        inputText !== undefined ? new Uint8Array(inputText) : undefined,
       address,
       transactionId,
     }),
