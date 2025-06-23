@@ -102,6 +102,121 @@ function isDomainBlacklisted(url: string): boolean {
   }
 }
 
+// Cache interface for frame detection results
+interface FrameCacheEntry {
+  isFrame: boolean;
+  timestamp: number;
+  ttl: number;
+}
+
+// In-memory cache for frame detection results
+const frameCache = new Map<string, FrameCacheEntry>();
+
+// Rate limiting
+const rateLimiter = {
+  requests: new Map<string, number[]>(), // domain -> timestamps
+  maxRequestsPerMinute: 10,
+  
+  canMakeRequest(domain: string): boolean {
+    const now = Date.now();
+    const windowStart = now - 60000; // 1 minute window
+    
+    if (!this.requests.has(domain)) {
+      this.requests.set(domain, []);
+    }
+    
+    const domainRequests = this.requests.get(domain)!;
+    
+    // Remove old requests outside the window
+    const recentRequests = domainRequests.filter(timestamp => timestamp > windowStart);
+    this.requests.set(domain, recentRequests);
+    
+    // Check if we can make another request
+    if (recentRequests.length >= this.maxRequestsPerMinute) {
+      return false;
+    }
+    
+    // Add current request timestamp
+    recentRequests.push(now);
+    return true;
+  }
+};
+
+// Batch processing queue
+const batchQueue = {
+  pending: new Map<string, Promise<boolean>>(),
+  
+  // Get or create a promise for URL detection
+  getOrCreateDetection(url: string): Promise<boolean> {
+    if (this.pending.has(url)) {
+      return this.pending.get(url)!;
+    }
+    
+    const promise = this.detectSingle(url);
+    this.pending.set(url, promise);
+    
+    // Clean up after completion
+    promise.finally(() => {
+      this.pending.delete(url);
+    });
+    
+    return promise;
+  },
+  
+  async detectSingle(url: string): Promise<boolean> {
+    try {
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname.toLowerCase();
+      
+      // Check rate limit
+      if (!rateLimiter.canMakeRequest(domain)) {
+        console.warn(`Rate limit exceeded for domain: ${domain}`);
+        return false;
+      }
+      
+      const response = await fetch(`/api/frames?url=${encodeURIComponent(url)}`);
+      
+      if (!response.ok) {
+        return false;
+      }
+      
+      const frameData = await response.json();
+      
+      // Check if we get back frame data (image, title, buttons, etc.)
+      const isFrame = !!(frameData.image || frameData.title || frameData.buttons?.length > 0);
+      
+      // Cache the result
+      const ttl = 5 * 60 * 1000; // 5 minutes TTL
+      frameCache.set(url, {
+        isFrame,
+        timestamp: Date.now(),
+        ttl
+      });
+      
+      return isFrame;
+    } catch (error) {
+      console.warn(`Frame detection failed for URL: ${url}`, error);
+      return false;
+    }
+  }
+};
+
+// Helper function to check cache validity
+function getCachedResult(url: string): boolean | null {
+  const cached = frameCache.get(url);
+  if (!cached) return null;
+  
+  const now = Date.now();
+  const isExpired = (now - cached.timestamp) > cached.ttl;
+  
+  if (isExpired) {
+    frameCache.delete(url);
+    return null;
+  }
+  
+  return cached.isFrame;
+}
+
 // Utility to detect if a URL has Frame v2 metadata
 export async function isFrameV2Url(url: string): Promise<boolean> {
   try {
@@ -110,19 +225,16 @@ export async function isFrameV2Url(url: string): Promise<boolean> {
       return false;
     }
     
-    // Use your existing frames API to check for frame metadata
-    const response = await fetch(`/api/frames?url=${encodeURIComponent(url)}`);
-    
-    if (!response.ok) {
-      return false;
+    // Check cache first
+    const cachedResult = getCachedResult(url);
+    if (cachedResult !== null) {
+      return cachedResult;
     }
     
-    const frameData = await response.json();
-    
-    // If we get back frame data (image, title, buttons, etc.), it's a frame
-    return !!(frameData.image || frameData.title || frameData.buttons?.length > 0);
+    // Use batch queue to prevent duplicate requests
+    return await batchQueue.getOrCreateDetection(url);
   } catch (error) {
-    // Removed console.warn to clean up logs
+    console.warn(`Frame detection error for URL: ${url}`, error);
     return false;
   }
 }
@@ -143,5 +255,77 @@ export function isLikelyFrameUrl(url: string): boolean {
     // Add more patterns based on common frame domains
   ];
   
-  return framePatterns.some(pattern => pattern.test(url));
+  // If it matches frame patterns, it's likely a frame
+  const matchesPattern = framePatterns.some(pattern => pattern.test(url));
+  
+  // If it doesn't match patterns but isn't blacklisted, let it through for API check
+  // This is more permissive - we'll let the API determine if it's a frame
+  return !isDomainBlacklisted(url);
+}
+
+// Utility functions for cache and batch management
+
+// Clear expired cache entries (can be called periodically)
+export function clearExpiredCache(): number {
+  const now = Date.now();
+  let clearedCount = 0;
+  
+  for (const [url, entry] of frameCache.entries()) {
+    const isExpired = (now - entry.timestamp) > entry.ttl;
+    if (isExpired) {
+      frameCache.delete(url);
+      clearedCount++;
+    }
+  }
+  
+  return clearedCount;
+}
+
+// Clear all cache entries
+export function clearCache(): void {
+  frameCache.clear();
+}
+
+// Get cache statistics
+export function getCacheStats() {
+  return {
+    size: frameCache.size,
+    entries: Array.from(frameCache.entries()).map(([url, entry]) => ({
+      url,
+      isFrame: entry.isFrame,
+      age: Date.now() - entry.timestamp,
+      ttl: entry.ttl
+    }))
+  };
+}
+
+// Batch process multiple URLs (useful for feed loading)
+export async function batchCheckFrameUrls(urls: string[]): Promise<Map<string, boolean>> {
+  const results = new Map<string, boolean>();
+  
+  // Process URLs in chunks to avoid overwhelming the API
+  const chunkSize = 3;
+  const chunks: string[][] = [];
+  
+  for (let i = 0; i < urls.length; i += chunkSize) {
+    chunks.push(urls.slice(i, i + chunkSize));
+  }
+  
+  // Process chunks sequentially with a small delay
+  for (const chunk of chunks) {
+    const chunkPromises = chunk.map(async (url) => {
+      const isFrame = await isFrameV2Url(url);
+      results.set(url, isFrame);
+      return { url, isFrame };
+    });
+    
+    await Promise.all(chunkPromises);
+    
+    // Small delay between chunks to be API-friendly
+    if (chunks.indexOf(chunk) < chunks.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+  
+  return results;
 }

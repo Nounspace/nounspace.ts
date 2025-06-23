@@ -10,11 +10,11 @@ const FrameV2Embed: React.FC<FrameV2EmbedProps> = ({ url }) => {
   return (
     <div
       style={{
-        minWidth: "500px", // Minimum width for better responsiveness
-        maxWidth: "800px", // Maximum width for larger screens
-        height: "400px", // Optimized height for feed display
-        minHeight: "400px",
-        maxHeight: "700px", // Maximum height for larger screens
+        minWidth: "min(500px, 100vw - 2rem)", // Responsive minimum width
+        maxWidth: "min(800px, 100vw - 2rem)", // Responsive maximum width
+        height: "clamp(300px, 50vh, 700px)", // Responsive height
+        minHeight: "300px",
+        maxHeight: "min(700px, 80vh)", // Responsive maximum height
         borderRadius: "12px",
         overflow: "hidden",
         backgroundColor: "#fff",

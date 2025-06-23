@@ -5,10 +5,8 @@ import {
   isFrameV2Url,
   isLikelyFrameUrl,
 } from "@/common/lib/utils/frameDetection";
-
 interface SmartFrameEmbedProps {
   url: string;
-  key?: string;
 }
 
 const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
@@ -16,53 +14,64 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const abortController = new AbortController();
+    let isCancelled = false;
+
     const checkFrameType = async () => {
-      setIsLoading(true);
-
-      // Quick heuristic check first
-      if (!isLikelyFrameUrl(url)) {
-        // If it doesn't look like a frame URL or is blacklisted, skip expensive check
-        setIsFrameV2(false);
-        setIsLoading(false);
-        return;
+      // Only set loading if not already cancelled
+      if (!isCancelled) {
+        setIsLoading(true);
       }
-      
-      // Looks like a frame URL, check thoroughly
+
       try {
-        const isV2 = await isFrameV2Url(url);
-        setIsFrameV2(isV2);
-      } catch {
-        setIsFrameV2(false);
-      }
+        // Quick heuristic check first
+        if (!isLikelyFrameUrl(url)) {
+          // If it doesn't look like a frame URL or is blacklisted, skip expensive check
+          if (!isCancelled) {
+            setIsFrameV2(false);
+            setIsLoading(false);
+          }
+          return;
+        }
 
-      setIsLoading(false);
+        // Looks like a frame URL, check thoroughly
+        const isV2 = await isFrameV2Url(url);
+
+        // Only update state if this effect hasn't been cancelled
+        if (!isCancelled) {
+          setIsFrameV2(isV2);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        // Enhanced error handling with explicit logging
+        if (!isCancelled) {
+          console.warn(`Frame detection failed for URL: ${url}`, {
+            error: error instanceof Error ? error.message : error,
+            url,
+            timestamp: new Date().toISOString(),
+          });
+
+          // On error, default to false (use legacy frame system)
+          setIsFrameV2(false);
+          setIsLoading(false);
+        }
+      }
     };
 
     checkFrameType();
+
+    // Cleanup function to prevent race conditions
+    return () => {
+      isCancelled = true;
+      abortController.abort();
+    };
   }, [url]);
 
-  // Show loading state briefly
-  if (isLoading) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "200px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#f5f5f5",
-          borderRadius: "8px",
-          color: "#666",
-        }}
-      >
-        Loading frame...
-      </div>
-    );
-  }
+  // Don't show loading state here - let FrameRenderer handle it
+  // This eliminates the double loading issue
 
   // If we detected frame metadata, use FrameV2, otherwise fallback to legacy
-  if (isFrameV2) {
+  if (isFrameV2 || isLoading) {
     return <FrameV2Embed url={url} />;
   } else {
     return <FrameEmbed url={url} showError={false} />;
