@@ -21,21 +21,18 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
 
       // Quick heuristic check first
       if (!isLikelyFrameUrl(url)) {
-        // If it doesn't look like a frame URL, still check but with lower priority
-        try {
-          const isV2 = await isFrameV2Url(url);
-          setIsFrameV2(isV2);
-        } catch {
-          setIsFrameV2(false);
-        }
-      } else {
-        // Looks like a frame URL, check thoroughly
-        try {
-          const isV2 = await isFrameV2Url(url);
-          setIsFrameV2(isV2);
-        } catch {
-          setIsFrameV2(false);
-        }
+        // If it doesn't look like a frame URL or is blacklisted, skip expensive check
+        setIsFrameV2(false);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Looks like a frame URL, check thoroughly
+      try {
+        const isV2 = await isFrameV2Url(url);
+        setIsFrameV2(isV2);
+      } catch {
+        setIsFrameV2(false);
       }
 
       setIsLoading(false);
