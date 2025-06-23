@@ -639,6 +639,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   className="grid-item"
                   style={{
                     borderRadius: gridDetails.borderRadius,
+                    overflow:
+                      gridDetails.borderRadius &&
+                      !/^0(px)?$/i.test(gridDetails.borderRadius.trim())
+                        ? "hidden"
+                        : undefined,
                     outline:
                       selectedFidgetID === gridItem.i
                         ? "4px solid rgb(2 132 199)" /* sky-600 */
