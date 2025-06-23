@@ -68,15 +68,6 @@ export default function PublicSpace({
   });
 
   const router = useRouter();
-  const initialLoading =
-    providedSpaceId !== null &&
-    providedSpaceId !== "" &&
-    !localSpaces[providedSpaceId];
-
-  const [loading, setLoading] = useState<boolean>(initialLoading);
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
-  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
-  const { wallets } = useWallets();
 
   const {
     clearLocalSpaces,
@@ -123,6 +114,16 @@ export default function PublicSpace({
     registerChannelSpace: state.space.registerChannelSpace,
     registerSpaceContract: state.space.registerSpaceContract,
   }));
+
+  const initialLoading =
+    providedSpaceId !== null &&
+    providedSpaceId !== "" &&
+    !localSpaces[providedSpaceId];
+
+  const [loading, setLoading] = useState<boolean>(initialLoading);
+  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
+  const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
+  const { wallets } = useWallets();
 
   // Clear cache only when switching to a different space
   useEffect(() => {

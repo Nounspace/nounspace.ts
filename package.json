@@ -157,7 +157,8 @@
     "viem": "^2.31.0",
     "wagmi": "^2.10.2",
     "zod": "^3.22.4",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "os-browserify": "^0.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",

@@ -83,11 +83,11 @@ const nextConfig = {
     if (!isServer) {
       config.resolve.alias = {
         ...(config.resolve.alias || {}),
-        os: false,
+        os: require.resolve("os-browserify/browser"),
       };
       config.resolve.fallback = {
         ...(config.resolve.fallback || {}),
-        os: false,
+        os: require.resolve("os-browserify/browser"),
       };
     } else {
       config.resolve.alias = {
