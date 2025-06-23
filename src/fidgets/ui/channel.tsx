@@ -69,14 +69,14 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({ settings }) => {
         </div>
       </div>
       {data.description && <p className="text-sm">{data.description}</p>}
-      {data.parent_url && (
+      {data.external_link?.url && (
         <a
-          href={data.parent_url}
+          href={data.external_link.url}
           target="_blank"
           rel="noreferrer"
           className="text-blue-600 hover:underline text-sm"
         >
-          {data.parent_url}
+          {data.external_link.title}
         </a>
       )}
       <div className="flex gap-4 text-sm">
