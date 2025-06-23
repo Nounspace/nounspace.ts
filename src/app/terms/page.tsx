@@ -6,12 +6,11 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
-const TERMS_MD = fs.readFileSync(
-  path.join(process.cwd(), "src/app/terms/terms.md"),
-  "utf8",
-);
-
 export default function TermsPage() {
+  const TERMS_MD = fs.readFileSync(
+    path.join(process.cwd(), "src/app/terms/terms.md"),
+    "utf8",
+  );
   return (
     <div className="max-w-screen-md mx-auto p-8">
       <ReactMarkdown

@@ -6,11 +6,10 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
-const PRIVACY_MD = fs.readFileSync(
-  path.join(process.cwd(), "src/app/privacy/notice.md"),
-  "utf8",
-);
-
+  const PRIVACY_MD = fs.readFileSync(
+    path.join(process.cwd(), "src/app/privacy/notice.md"),
+    "utf8",
+  );
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
 
 ---
