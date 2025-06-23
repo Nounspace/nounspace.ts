@@ -237,58 +237,53 @@ export function FidgetWrapper({
   return (
     <>
       {renderActionIcons()}
-      <Card
-        ref={fidgetRef}
-        className={
-          selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 rounded-2xl"
-            : "size-full"
-        }
+      <div
         style={{
-          outline:
-            selectedFidgetID === bundle.id
-              ? "4px solid rgb(2 132 199)" /* sky-600 */
-              : undefined,
-          outlineOffset:
-            selectedFidgetID === bundle.id
-              ? -parseInt(themeProps?.fidgetBorderWidth ?? "0")
-              : undefined,
-          background: settingsWithDefaults.useDefaultColors
-            ? homebaseConfig?.theme?.properties.fidgetBackground
-            : settingsWithDefaults.background,
-          borderColor: settingsWithDefaults.useDefaultColors
-            ? homebaseConfig?.theme?.properties.fidgetBorderColor
-            : settingsWithDefaults.fidgetBorderColor,
-          borderWidth: settingsWithDefaults.useDefaultColors
-            ? homebaseConfig?.theme?.properties.fidgetBorderWidth
-            : settingsWithDefaults.fidgetBorderWidth,
-          boxShadow: settingsWithDefaults.useDefaultColors
-            ? homebaseConfig?.theme?.properties.fidgetShadow
-            : settingsWithDefaults.fidgetShadow,
           borderRadius: themeProps?.fidgetBorderRadius,
           overflow: hasRoundedCorners ? "hidden" : "visible",
-          clipPath: hasRoundedCorners
-            ? `inset(0 round ${themeProps?.fidgetBorderRadius})`
-            : undefined,
         }}
+        className="size-full"
       >
-        {bundle.config.editable && (
-          <button
-            onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50"
-            style={{ borderRadius: themeProps?.fidgetBorderRadius }}
-          ></button>
-        )}
-        <ScopedStyles cssStyles={userStyles} className="size-full">
-          <CardContent
-            className="size-full"
-            style={{
-              overflow: hasRoundedCorners ? "hidden" : "visible",
-              clipPath: hasRoundedCorners
-                ? `inset(0 round ${themeProps?.fidgetBorderRadius})`
+        <Card
+          ref={fidgetRef}
+          className={
+            selectedFidgetID === bundle.id
+              ? "size-full border-solid border-sky-600 border-4 rounded-2xl"
+              : "size-full"
+          }
+          style={{
+            outline:
+              selectedFidgetID === bundle.id
+                ? "4px solid rgb(2 132 199)" /* sky-600 */
                 : undefined,
-            }}
-          >
+            outlineOffset:
+              selectedFidgetID === bundle.id
+                ? -parseInt(themeProps?.fidgetBorderWidth ?? "0")
+                : undefined,
+            background: settingsWithDefaults.useDefaultColors
+              ? homebaseConfig?.theme?.properties.fidgetBackground
+              : settingsWithDefaults.background,
+            borderColor: settingsWithDefaults.useDefaultColors
+              ? homebaseConfig?.theme?.properties.fidgetBorderColor
+              : settingsWithDefaults.fidgetBorderColor,
+            borderWidth: settingsWithDefaults.useDefaultColors
+              ? homebaseConfig?.theme?.properties.fidgetBorderWidth
+              : settingsWithDefaults.fidgetBorderWidth,
+            boxShadow: settingsWithDefaults.useDefaultColors
+              ? homebaseConfig?.theme?.properties.fidgetShadow
+              : settingsWithDefaults.fidgetShadow,
+            borderRadius: themeProps?.fidgetBorderRadius,
+          }}
+        >
+          {bundle.config.editable && (
+            <button
+              onMouseDown={onClickEdit}
+              className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50"
+              style={{ borderRadius: themeProps?.fidgetBorderRadius }}
+            ></button>
+          )}
+          <ScopedStyles cssStyles={userStyles} className="size-full">
+          <CardContent className="size-full">
             <Fidget
               {...{
                 settings: settingsWithDefaults,
@@ -298,7 +293,8 @@ export function FidgetWrapper({
             />
           </CardContent>
         </ScopedStyles>
-      </Card>
+        </Card>
+      </div>
     </>
   );
 }
