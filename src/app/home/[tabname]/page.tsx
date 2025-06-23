@@ -4,21 +4,29 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 import TabBar from "@/common/components/organisms/TabBar";
 import {
-  PRESS_TAB_CONFIG,
+  RESOURCES_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
-  NOUNSPACE_TAB_CONFIG,
-} from "@/constants/homePageTabsConfig";
+  SOCIAL_TAB_CONFIG,
+  GOVERNANCE_TAB_CONFIG,
+  FUNDED_WORKS_TAB_CONFIG,
+} from "./homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 const getTabConfig = (tabName: string) => {
   switch (tabName) {
-    case "Nounspace":
-      return NOUNSPACE_TAB_CONFIG;
-    case "Press":
-      return PRESS_TAB_CONFIG;
+    case "Governance":
+      return GOVERNANCE_TAB_CONFIG;
+    case "Resources":
+      return RESOURCES_TAB_CONFIG;
+    case "Funded Works":
+      return FUNDED_WORKS_TAB_CONFIG;
+    case "Social":
+      return SOCIAL_TAB_CONFIG;
     case "Nouns":
+      return NOUNS_TAB_CONFIG;
     default:
       return NOUNS_TAB_CONFIG;
   }
@@ -27,15 +35,15 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
-    getIsLoggedIn: state.getIsAccountReady,
+  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
+    getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
   }));
-  const isLoggedIn = getIsLoggedIn();
+  const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
-  const tabOrdering = ["Nouns", "Nounspace", "Press"];
+  const tabOrdering = ["Nouns","Social", "Governance", "Resources", "Funded Works"];
   const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {
@@ -69,7 +77,7 @@ const Home = () => {
 
   const args: SpacePageArgs = isInitializing
     ? {
-        config: { ...INITIAL_SPACE_CONFIG_EMPTY, isEditable: false },
+        config: { ...INITIAL_SPACE_CONFIG_EMPTY, isEditable: false } as SpaceConfig,
         saveConfig: async () => {},
         commitConfig: async () => {},
         resetConfig: async () => {},
@@ -77,14 +85,14 @@ const Home = () => {
       }
     : !isLoggedIn
       ? {
-          config: getTabConfig(tabName),
+          config: getTabConfig(tabName) as SpaceConfig,
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
         }
       : {
-          config: getTabConfig(tabName),
+          config: getTabConfig(tabName) as SpaceConfig,
           saveConfig: async () => {},
           commitConfig: async () => {},
           resetConfig: async () => {},

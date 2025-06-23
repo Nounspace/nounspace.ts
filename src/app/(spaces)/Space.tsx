@@ -14,8 +14,8 @@ import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import SpaceLoading from "./SpaceLoading";
-// Import the LayoutFidgets directly
-import { LayoutFidgets } from "@/fidgets";
+import MobileView from "./MobileView";
+import DesktopView from "./DesktopView";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
@@ -177,9 +177,11 @@ export default function Space({
       }
 
       if (!datum.fidgetType || !datum.id) {
+        // Safer approach: don't rely on splitting the id string
+        // Use existing fidgetType or fallback to "unknown"
         cleanedFidgetInstanceDatums[id] = {
           ...datum,
-          fidgetType: datum.fidgetType || id.split(":")[0],
+          fidgetType: datum.fidgetType || "unknown",
           id: datum.id || id,
         };
         datumFieldsUpdated = true;
@@ -245,84 +247,23 @@ export default function Space({
     });
   }
 
-  // Memoize the LayoutFidget component selection based on mobile state
-  const LayoutFidget = useMemo(() => {
-    if (isMobile) {
-      // Use TabFullScreen for mobile
-      return LayoutFidgets["tabFullScreen"];
-    } else {
-      // Use the configured layout for desktop or fallback to "grid"
-      const layoutFidgetKey =
-        config?.layoutDetails?.layoutFidget &&
-        LayoutFidgets[config.layoutDetails.layoutFidget]
-          ? config.layoutDetails.layoutFidget
-          : "grid";
-      return LayoutFidgets[layoutFidgetKey];
-    }
-  }, [isMobile, config?.layoutDetails?.layoutFidget]);
-
-  // Memoize the layoutConfig to prevent unnecessary re-renders
-  const layoutConfig = useMemo(() => {
-    if (isMobile) {
-      // Extract fidget IDs from the current config to use in TabFullScreen
-      const fidgetIds = Object.keys(config.fidgetInstanceDatums || {});
-
-      // Create a layout config for TabFullScreen with all available fidget IDs
-      return {
-        layout: fidgetIds,
-        layoutFidget: "tabFullScreen",
-      };
-    } else {
-      return (
-        config?.layoutDetails?.layoutConfig ?? {
-          layout: [],
-          layoutFidget: "grid",
-        }
-      );
-    }
-  }, [
-    isMobile,
-    config?.layoutDetails?.layoutConfig,
-    config?.fidgetInstanceDatums,
-  ]);
-
-  // Memoize the LayoutFidget render props that don't change during fidget movement
-  const layoutFidgetProps = useMemo(() => {
-    return {
-      theme: config.theme,
-      fidgetInstanceDatums: config.fidgetInstanceDatums,
-      fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !isMobile && editMode, // No edit mode on mobile
-      saveExitEditMode: saveExitEditMode,
-      cancelExitEditMode: cancelExitEditMode,
-      portalRef: portalRef,
-      saveConfig: saveLocalConfig,
-      hasProfile: !isMobile && !isNil(profile),
-      hasFeed: !isNil(feed),
-      tabNames: config.tabNames,
-      fid: config.fid,
-    };
-  }, [
-    config.theme,
-    config.fidgetInstanceDatums,
-    config.fidgetTrayContents,
-    config.tabNames,
-    config.fid,
-    isMobile,
-    editMode,
-    portalRef,
-    profile,
-    feed,
-  ]);
-
-  if (!LayoutFidget) {
-    console.error("LayoutFidget is undefined");
-  }
+  // Get mobile fidget IDs from the current config
+  const mobileFidgetIds = useMemo(() => 
+    Object.keys(config.fidgetInstanceDatums || {}),
+  [config?.fidgetInstanceDatums]);
+  
+  // Get desktop layout config from config or use default
+  const desktopLayoutConfig = useMemo(() => 
+    config?.layoutDetails?.layoutConfig ?? {
+      layout: [],
+      layoutFidget: "grid",
+    },
+  [config?.layoutDetails?.layoutConfig]);
 
   return (
-    <div className="user-theme-background w-full h-full relative flex-col">
+    <div className="user-theme-background size-full relative overflow-hidden">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full transition-all duration-100 ease-out">
+      <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
         <div className="flex flex-col h-full">
           <div style={{ position: "fixed", zIndex: 9999 }}>
             <InfoToast />
@@ -333,24 +274,30 @@ export default function Space({
 
           <div className="relative">
             <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
-            {/* Gradient overlay for tabs on mobile */}
-            {isMobile && (
-              <div
-                className="absolute right-0 top-0 bottom-0 w-12 pointer-events-none opacity-90 z-50"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 1) 100%)",
-                }}
-              />
-            )}
           </div>
 
-          <div className={isMobile ? "w-full h-full" : "flex h-full"}>
+          <div className={isMobile ? "size-full" : "flex h-full"}>
             {!isUndefined(feed) && !isMobile ? (
-              <div className="w-6/12 h-[calc(100vh-64px)]">{feed}</div>
+              <div
+                className={
+                  !isUndefined(profile)
+                    ? "w-6/12 h-[calc(100vh-224px)]"
+                    : "w-6/12 h-[calc(100vh-64px)]"
+                }
+              >
+                {feed}
+              </div>
             ) : null}
 
-            <div className={isMobile ? "w-full h-full" : "grow"}>
+            <div
+              className={
+                isMobile
+                  ? "size-full"
+                  : !isUndefined(profile)
+                    ? "grow h-[calc(100vh-224px)]"
+                    : "grow h-[calc(100vh-64px)]"
+              }
+            >
               <Suspense
                 fallback={
                   <SpaceLoading
@@ -359,18 +306,30 @@ export default function Space({
                   />
                 }
               >
-                {LayoutFidget ? (
-                  <LayoutFidget
-                    layoutConfig={{ ...layoutConfig }}
-                    {...layoutFidgetProps}
+                {isMobile ? (
+                  <MobileView
+                    fidgetInstanceDatums={config.fidgetInstanceDatums}
+                    layoutFidgetIds={mobileFidgetIds}
+                    theme={config.theme}
+                    saveConfig={saveLocalConfig}
+                    tabNames={config.tabNames}
                   />
                 ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <SpaceLoading
-                      hasProfile={!isNil(profile)}
-                      hasFeed={!isNil(feed)}
-                    />
-                  </div>
+                  <DesktopView
+                    layoutConfig={{ ...desktopLayoutConfig }}
+                    theme={config.theme}
+                    fidgetInstanceDatums={config.fidgetInstanceDatums}
+                    fidgetTrayContents={config.fidgetTrayContents}
+                    inEditMode={editMode}
+                    saveExitEditMode={saveExitEditMode}
+                    cancelExitEditMode={cancelExitEditMode}
+                    portalRef={portalRef}
+                    saveConfig={saveLocalConfig}
+                    hasProfile={!isNil(profile)}
+                    hasFeed={!isNil(feed)}
+                    tabNames={config.tabNames}
+                    fid={config.fid}
+                  />
                 )}
               </Suspense>
             </div>

@@ -11,8 +11,6 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
-import SpaceLoading from "@/app/(spaces)/SpaceLoading";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
@@ -20,7 +18,7 @@ import { FeedType } from "@neynar/nodejs-sdk/build/api";
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
-function PrivateSpace({ tabName }: { tabName: string }) {
+function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -38,7 +36,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     setCurrentSpaceId,
     setCurrentTabName,
     loadTabNames,
-    getIsLoggedIn,
+    getIsAccountReady,
     loadTabOrder,
     updateTabOrder,
     createTab: originalCreateTab,
@@ -59,7 +57,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     loadFeedConfig: state.homebase.loadHomebase,
     commitConfig: state.homebase.commitHomebaseToDatabase,
     resetConfig: state.homebase.resetHomebaseConfig,
-    getIsLoggedIn: state.getIsAccountReady,
+    getIsAccountReady: state.getIsAccountReady,
     setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     setCurrentTabName: state.currentSpace.setCurrentTabName,
     loadTabNames: state.homebase.loadTabNames,
@@ -73,8 +71,26 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   }));
 
   const router = useRouter(); // Hook for navigation
-  const isLoggedIn = getIsLoggedIn(); // Check if the user is logged in
+  const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
   const currentFid = useCurrentFid(); // Get the current FID
+
+  // Remove onboarding fidgets when the user is logged out
+  const sanitizedHomebaseConfig = useMemo(() => {
+    if (!homebaseConfig) return undefined;
+    if (isLoggedIn) return homebaseConfig;
+    return {
+      ...homebaseConfig,
+      layoutDetails: {
+        ...homebaseConfig.layoutDetails,
+        layoutConfig: {
+          ...homebaseConfig.layoutDetails.layoutConfig,
+          layout: [],
+        },
+      },
+      fidgetInstanceDatums: {},
+      fidgetTrayContents: [],
+    };
+  }, [homebaseConfig, isLoggedIn]);
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
@@ -200,11 +216,12 @@ function PrivateSpace({ tabName }: { tabName: string }) {
   // Define the arguments for the SpacePage component
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
+      const sourceConfig =
+        tabName === "Feed"
+          ? sanitizedHomebaseConfig
+          : tabConfigs[tabName]?.config;
       const { timestamp, ...restConfig } = {
-        ...((tabName === "Feed" 
-            ? homebaseConfig 
-            : tabConfigs[tabName]?.config)
-            ?? INITIAL_SPACE_CONFIG_EMPTY),
+        ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
         isEditable: true,
       };
       return restConfig;
@@ -213,7 +230,7 @@ function PrivateSpace({ tabName }: { tabName: string }) {
     commitConfig: commitConfigHandler,
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
-    feed: tabName === "Feed" && currentFid ? (
+    feed: tabName === "Feed" ? (
       <FeedModule.fidget
         settings={{
           feedType: FeedType.Following,
@@ -226,35 +243,19 @@ function PrivateSpace({ tabName }: { tabName: string }) {
           fontColor: "var(--user-theme-font-color)" as any,
         }}
         saveData={async () => noop()}
-        data={{}}
+        data={{ initialHash: castHash, updateUrl: true }}
       />
     ) : undefined,
   }), [
     tabName,
-    tabName === "Feed" 
-      ? homebaseConfig 
+    tabName === "Feed"
+      ? sanitizedHomebaseConfig
       : tabConfigs[tabName]?.config,
     tabOrdering.local,
-    editMode
+    editMode,
+    castHash,
   ]);
 
-  // If not logged in, show a loading state with the login modal
-  if (!isLoggedIn) {
-    return (
-      <div className="user-theme-background w-full h-full relative flex-col">
-        <div className="w-full transition-all duration-100 ease-out">
-          <div className="flex flex-col h-full">
-            <TabBarSkeleton />
-            <div className="flex h-full">
-              <div className={"grow"}>
-                <SpaceLoading hasProfile={false} hasFeed={tabName === "Feed"} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Render the SpacePage component with the defined arguments
   return (

@@ -64,4 +64,6 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   );
 };
 
-export default Sidebar;
+export default Object.assign(Sidebar, {
+  ContextProvider: SidebarContextProvider
+});

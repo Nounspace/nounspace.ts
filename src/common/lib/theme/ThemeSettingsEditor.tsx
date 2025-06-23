@@ -20,7 +20,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
-import { Slider } from "@mui/material";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useAppStore } from "@/common/data/stores/app";
 import { useToastStore } from "@/common/data/stores/toastStore";
 import { Color, FontFamily, ThemeSettings } from "@/common/lib/theme";
@@ -32,13 +32,11 @@ import {
   tabListClasses,
   tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
-import {
-  analytics,
-  AnalyticsEvent,
-} from "@/common/providers/AnalyticsProvider";
+import { analytics } from "@/common/providers/AnalyticsProvider";
 import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
+import { Slider } from "@mui/material";
 import { usePrivy } from "@privy-io/react-auth";
 import { useEffect, useRef, useState } from "react";
 import { FaInfoCircle } from "react-icons/fa";
@@ -53,6 +51,7 @@ export type ThemeSettingsEditorArgs = {
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
+  onExportConfig?: () => void;
 };
 
 export function ThemeSettingsEditor({
@@ -60,6 +59,7 @@ export function ThemeSettingsEditor({
   saveTheme,
   saveExitEditMode,
   cancelExitEditMode,
+  onExportConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
@@ -352,6 +352,26 @@ export function ThemeSettingsEditor({
                     backgroundHTML={backgroundHTML}
                     onChange={themePropSetter<string>("backgroundHTML")}
                   />
+                  {onExportConfig && (
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-sm font-medium">Export Configuration</h4>
+                        <p className="text-xs text-gray-500">
+                          Download your current space configuration as a JSON file.
+                        </p>
+                        <Button
+                          onClick={onExportConfig}
+                          variant="secondary"
+                          width="auto"
+                          withIcon
+                          className="w-full"
+                        >
+                          <FaFloppyDisk aria-hidden="true" />
+                          <span>Export Config</span>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             </div>
