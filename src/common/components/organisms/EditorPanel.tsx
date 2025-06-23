@@ -156,18 +156,20 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           )}
         </div>
       </div>
-      <div className="w-24">
-        <FidgetTray
-          setCurrentlyDragging={setCurrentlyDragging}
-          setExternalDraggedItem={setExternalDraggedItem}
-          contents={fidgetTrayContents}
-          openFidgetPicker={openFidgetPicker}
-          saveTrayContents={saveTrayContents}
-          removeFidget={removeFidget}
-          selectedFidgetID={selectedFidgetID}
-          selectFidget={selectFidget}
-        />
-      </div>
+      {fidgetTrayContents.length > 0 && (
+        <div className="w-24">
+          <FidgetTray
+            setCurrentlyDragging={setCurrentlyDragging}
+            setExternalDraggedItem={setExternalDraggedItem}
+            contents={fidgetTrayContents}
+            openFidgetPicker={openFidgetPicker}
+            saveTrayContents={saveTrayContents}
+            removeFidget={removeFidget}
+            selectedFidgetID={selectedFidgetID}
+            selectFidget={selectFidget}
+          />
+        </div>
+      )}
     </aside>
   );
 };
