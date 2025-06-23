@@ -38,6 +38,10 @@ export interface Channel {
   member_count?: number;
   followers?: number;
   host?: { fid: number };
+  external_link?: {
+    title: string;
+    url: string;
+  };
 }
 
 type FarcasterUrlEmbed = {
