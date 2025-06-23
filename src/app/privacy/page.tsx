@@ -4,9 +4,79 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { MarkdownRenderers } from "@/common/lib/utils/markdownRenderers";
 
-const PRIVACY_MD = `**Nounspace Privacy Notice**
-
-*Effective date: 23 June 2025*
+const PRIVACY_MD = `**Nounspace Privacy\u202fNotice**
+*Effective\u202fdate:\u202f23\u202fJune\u202f2025*
+We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
+---
+## **1. Who we are**
+* **Nounspace** is an open\u2011source social app built on the Farcaster protocol.
+* **Owner:** nounspace\u202fDAO
+* **Developer & data controller (for U.S. law purposes):** FrFr\u202fLLC (Texas, USA)
+---
+## **2. What data we collect**
+| Category | Examples | How we collect it | Why we collect it |
+| ----- | ----- | ----- | ----- |
+| **Account basics** | Farcaster username, wallet address (public key) | You connect a wallet / log in with Farcaster | To recognise you, check token\u2011gated access, show your profile |
+| **Public space settings** | Title, theme, layout, bio | You configure a Space | To display your Space to you and the public |
+| **Dashboard (\u201cHomebase\u201d) settings** | Feeds you follow, layout, filters | Saved client\u2011side and synced to us **encrypted** | So your private dashboard loads the same on any device |
+| **Usage analytics** | Page views, button clicks, feature usage, event timestamps, truncated/hashed device ID; **IP address used momentarily for geolocation lookup only** | Automatically via **Segment** and **Mixpanel** SDKs | To troubleshoot bugs, understand which features people like, and improve the app |
+| **Device & browser info** | Browser type, OS, screen size | Segment / Mixpanel | Same as above |
+**We do *not* collect:** real name, email, phone number, private keys, or full IP addresses stored alongside your profile.
+---
+## **3. Cookies & similar tech**
+We use first\u2011party cookies (or local\u2011storage tokens) plus Segment & Mixpanel cookies to remember you and measure product usage. You can clear or block these in your browser settings; the core app will still work but analytics accuracy drops.
+---
+## **4. How we use your data**
+1. **Provide the service** \u2013 load your Spaces, verify token\u2011gated features.
+2. **Improve nounspace** \u2013 aggregate analytics help us see what breaks or what\u2019s popular.
+3. **Security & fraud prevention** \u2013 spot abuse or automated attacks.
+4. **Legal compliance** \u2013 keep records required by law or to defend our rights.
+We **do not** sell or rent your personal data.
+---
+## **5. When we share data**
+| Who | What they see | Purpose |
+| ----- | ----- | ----- |
+| **Segment** (Twilio Inc.) | Event data, hashed device ID, truncated IP for routing | Routing analytics events to Mixpanel |
+| **Mixpanel Inc.** | Event data, hashed device ID, geolocation derived from IP (city/region), **no raw IP stored** | Product analytics |
+| **Infrastructure providers** (e.g., cloud hosting) | Encrypted or pseudonymised data in transit/storage | Operate the platform |
+| **Law enforcement** | Data we hold, if legally compelled | Legal compliance |
+| **Community forks** | Open\u2011source code *only*, never your analytics data | GPLv3 requirement |
+---
+## **6. How long we keep data**
+| Data | Retention period |
+| ----- | ----- |
+| Public Space configs | Until you delete the Space or nounspace sunsets |
+| Encrypted dashboard data | Until you delete it or 12\u202fmonths after your last login, whichever is later |
+| Analytics events | 18\u202fmonths, then permanently deleted or aggregated |
+| Server logs | Up to 30\u202fdays for security, then deleted |
+---
+## **7. Your choices & rights**
+* **Opt\u2011out of analytics:** Block cookies or use a tracker\u2011blocking browser extension.
+* **Access / download your data:** DM a mod on Discord or email privacy@nounspace.com with your Farcaster username; we\u2019ll export what we have.
+* **Delete dashboard or Space:** Use in\u2011app controls; dashboard data is wiped server\u2011side, Space config removed from our DB (posts on Farcaster remain public).
+* **California & GDPR rights:** You can request deletion, correction, or a copy of your personal data. We honour valid requests within 30\u202fdays.
+* **Do\u2011Not\u2011Track signals:** We respect DNT headers by disabling Segment & Mixpanel when DNT\u202f= 1.
+---
+## **8. Children\u2019s privacy**
+Nounspace is **not intended for children under 13**. If we learn someone under 13 is using nounspace, we\u2019ll disable analytics for that user and limit data processing to run the core service.
+---
+## **9. Security**
+* **Encryption in transit & at rest** for all data.
+* **Dashboard data** is encrypted client\u2011side with your wallet key; we cannot decrypt it.
+* Least\u2011privilege access controls for staff; each DAO contributor only sees what they need.
+No online service is 100\u202f% secure, but we take reasonable technical and organisational measures to protect your data.
+---
+## **10. International transfers**
+We host data in the United States. If you access nounspace from outside the U.S., you consent to transferring your data to the U.S., which may have different data\u2011protection laws than your country.
+---
+## **11. Changes to this notice**
+We may update this Privacy\u202fNotice as the project evolves. Material changes will be announced in\u2011app and on our Discord. Continued use after an update means you accept the new version.
+---
+## **12. Contact us**
+Questions or concerns?
+* **Email:** privacy@nounspace.com
+* **Discord:** \#support channel
+We\u2019re committed to making nounspace transparent and user\u2011controlled. Thanks for helping us build a better decentralized social web!`;
 
 We wrote this notice in plain English so you can quickly understand what data we collect, why we collect it, and how you can control it. If anything is unclear, ping us on Discord or email **privacy@nounspace.com**.
 
