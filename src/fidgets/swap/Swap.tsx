@@ -128,7 +128,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
     fromChain = { id: "8453", name: "Base" },
     toChain = { id: "8453", name: "Base" },
     optionalFeeRecipient,
-    size = 1,
+    size = 0.8,
   },
 }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
