@@ -223,8 +223,8 @@ const Navigation: React.FC<NavProps> = ({
             mobile
               ? "w-[270px]"
               : shrunk
-                ? "w-[90px] ml-auto"
-                : "w-[270px] ml-auto"
+              ? "w-[90px]"
+              : "w-[270px]"
           )}
         >
           {!mobile && (
@@ -368,7 +368,9 @@ const Navigation: React.FC<NavProps> = ({
                   <FaDiscord className="text-[#5865f2] w-6 h-6" />
                   {!shrunk && "Join"}
                 </Link>
-                <div className="flex flex-col items-center text-xs text-gray-500">
+                <div
+                  className="flex flex-col items-center text-xs text-gray-500 mt-[10px]"
+                >
                   <Link href="/terms" className="hover:underline">
                     Terms
                   </Link>
