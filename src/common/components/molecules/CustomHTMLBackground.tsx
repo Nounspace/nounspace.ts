@@ -21,7 +21,7 @@ const CustomHTMLBackground: React.FC<CustomHTMLBackgroundProps> = ({
         html: true,
         svg: true,
       },
-      ALLOWED_TAGS: ["style", "div", "html", "head", "body"],
+      ALLOWED_TAGS: ["style"],
     });
   }, [html]);
 
