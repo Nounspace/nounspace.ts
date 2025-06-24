@@ -158,10 +158,17 @@ export default function FrameActionModal({
       >
         {loading ? (
           <div
-            className="flex items-center justify-center h-full w-full bg-gray-50"
-            style={{ minHeight: "100%" }}
+            className="flex items-center justify-center w-full"
+            style={{ minHeight: "90vh", height: "90vh" }}
           >
-            <p className="text-gray-500">Loading...</p>
+            <FidgetSpinner
+              visible={true}
+              height="80"
+              width="80"
+              ariaLabel="fidget-spinner-loading"
+              wrapperStyle={{}}
+              wrapperClass="fidget-spinner-wrapper"
+            />
           </div>
         ) : frameData.error ? (
           <div className="flex items-center justify-center h-full bg-gray-50">
