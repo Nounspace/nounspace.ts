@@ -223,8 +223,8 @@ const Navigation: React.FC<NavProps> = ({
             mobile
               ? "w-[270px]"
               : shrunk
-                ? "w-[90px] ml-auto"
-                : "w-[270px] ml-auto"
+              ? "w-[90px]"
+              : "w-[270px]"
           )}
         >
           {!mobile && (
