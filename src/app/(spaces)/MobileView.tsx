@@ -11,7 +11,7 @@ import { createFidgetBundle } from "@/fidgets/layout/tabFullScreen/utils"
 import { CompleteFidgets } from "@/fidgets"
 import MobileNavbar from "@/common/components/organisms/MobileNavbar"
 import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils"
-import useProcessedFidgetIds from "@/common/hooks/useProcessedFidgetIds"
+import useProcessedFidgetIds from "@/common/lib/hooks/useProcessedFidgetIds"
 
 // Import the content components
 import ConsolidatedMediaContent from "@/fidgets/layout/tabFullScreen/components/ConsolidatedMediaContent"

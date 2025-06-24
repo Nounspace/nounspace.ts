@@ -7,13 +7,13 @@ export interface TextInputProps extends Omit<InputProps, "onChange"> {
   onChange?: (value: string) => void;
 }
 
-const TextFieldRoot = styled.div<{ isActive: boolean }>`
+const TextFieldRoot = styled.div<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   position: relative;
   background: white;
-  border: ${({ isActive }) =>
-    isActive ? "1px solid lightblue" : "1px solid lightgray"};
+  border: ${({ $isActive }) =>
+    $isActive ? "1px solid lightblue" : "1px solid lightgray"};
   border-radius: 4px;
   width: 100%;
 `;
@@ -44,7 +44,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   };
 
   return (
-    <TextFieldRoot isActive={isActive}>
+    <TextFieldRoot $isActive={isActive}>
       <TextFieldInput
         {...props}
         ref={ref}
