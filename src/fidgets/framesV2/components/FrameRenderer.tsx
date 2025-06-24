@@ -190,6 +190,9 @@ export default function FrameRenderer({
             justifyContent: "center",
             zIndex: 10,
           }}
+          role="status"
+          aria-live="polite"
+          aria-label="Loading frame"
         >
           <div
             style={{
@@ -208,6 +211,7 @@ export default function FrameRenderer({
                 borderRadius: "50%",
                 animation: "spin 1s linear infinite",
               }}
+              aria-hidden="true"
             ></div>
             <p
               style={{
