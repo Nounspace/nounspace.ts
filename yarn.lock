@@ -5608,10 +5608,10 @@
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.27.8.tgz#6667fac16c436b5434a387a34dedb013198f6e6e"
   integrity sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==
 
-"@snapshot-labs/snapshot.js@^0.12.65":
-  version "0.12.65"
-  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.12.65.tgz#19966df6ddb048140061b1b6bc380bb3ce6d8b77"
-  integrity sha512-Z4XQoREuu5GwQJBTk6ZooEGgtZ/VjrczolZ6xtSSBc/Kk5wJuUgtvd7vTo4Pl3virntejV/KX/YEGhOo0HOa/w==
+"@snapshot-labs/snapshot.js@^0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@snapshot-labs/snapshot.js/-/snapshot.js-0.13.0.tgz#40fed68d8d7d6772e586570772cf1c2edd03a9c5"
+  integrity sha512-lVKvwsMh1UhQU4A9mOp2Z4zrq+8l+FaNBGS+Lzm8E5p/Zwr/fcQ2TUlOl5D58XbY5Fqb3XITOyNwGOzk+6BIFA==
   dependencies:
     "@ensdomains/eth-ens-namehash" "^2.0.15"
     "@ethersproject/abi" "^5.6.4"
@@ -5803,10 +5803,10 @@
     eslint-visitor-keys "^4.2.0"
     espree "^10.3.0"
 
-"@stylistic/eslint-plugin-jsx@^2.1.0":
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-2.13.0.tgz#de57f1f9e16e3ddc7ceacb71ae9689d7474e3277"
-  integrity sha512-mRAJPYTASnjMZ3Z1hxMuRNI6xcvKNGvPN6oNiR30DG3CdIt/STWkDhVs+nrcdcKh7atGlK5yHhnCfkmoJmHTbw==
+"@stylistic/eslint-plugin-jsx@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin-jsx/-/eslint-plugin-jsx-3.1.0.tgz#dfa0728550df671b96d6fd033563a99a1d40c29c"
+  integrity sha512-+4SYALAM+l6OH6ARGUJ5h0coQBq7Y1QQVS8JbVFPZWuxdXVLTTwpj8qCnpW0afzyS/sBu4MaPDdGnGL16KebAQ==
   dependencies:
     eslint-visitor-keys "^4.2.0"
     espree "^10.3.0"
@@ -5822,10 +5822,10 @@
     eslint-visitor-keys "^4.2.0"
     espree "^10.3.0"
 
-"@stylistic/eslint-plugin@^2.1.0":
-  version "2.13.0"
-  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin/-/eslint-plugin-2.13.0.tgz#53bf175dac8c1ec055b370a6ff77d491cae9a70d"
-  integrity sha512-RnO1SaiCFHn666wNz2QfZEFxvmiNRqhzaMXHXxXXKt+MEP7aajlPxUSMIQpKAaJfverpovEYqjBOXDq6dDcaOQ==
+"@stylistic/eslint-plugin@^3.1.0":
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/@stylistic/eslint-plugin/-/eslint-plugin-3.1.0.tgz#a9f655c518f76bfc5feb46b467d0f06e511b289d"
+  integrity sha512-pA6VOrOqk0+S8toJYhQGv2MWpQQR0QpeUo9AhNkC49Y26nxBQ/nH1rta9bUU1rPw2fJ1zZEMV5oCX5AazT7J2g==
   dependencies:
     "@typescript-eslint/utils" "^8.13.0"
     eslint-visitor-keys "^4.2.0"
@@ -16226,10 +16226,10 @@ ts-interface-checker@^0.1.9:
   resolved "https://registry.yarnpkg.com/ts-interface-checker/-/ts-interface-checker-0.1.13.tgz#784fd3d679722bc103b1b4b8030bcddb5db2a699"
   integrity sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==
 
-ts-key-enum@^2.0.12:
-  version "2.0.13"
-  resolved "https://registry.yarnpkg.com/ts-key-enum/-/ts-key-enum-2.0.13.tgz#527e7b9534ab6568b369ee21a155563358cd1482"
-  integrity sha512-zixs6j8+NhzazLUQ1SiFrlo1EFWG/DbqLuUGcWWZ5zhwjRT7kbi1hBlofxdqel+h28zrby2It5TrOyKp04kvqw==
+ts-key-enum@^3.0.13:
+  version "3.0.13"
+  resolved "https://registry.yarnpkg.com/ts-key-enum/-/ts-key-enum-3.0.13.tgz#e39169cb9009cb67dd67efb51e21a8f2db3dbdd4"
+  integrity sha512-2J5QVm+HLfToI6IpJQADzYYWvJQ0P9i8qV0loewy5UQ9PBcwILkw09te/+NPu6aw8OXIn9jVYOT6xCBZnGg8Yg==
 
 ts-mixer@^6.0.3:
   version "6.0.4"

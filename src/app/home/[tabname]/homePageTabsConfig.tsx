@@ -453,7 +453,7 @@ export const FUNDED_WORKS_TAB_CONFIG: SpaceConfig = {
           "url": "https://nouns.world/explore",
           "size": 1.2,
           "cropOffsetX": 0,
-          "cropOffsetY": -2,
+          "cropOffsetY": -4,
           "isScrollable": false,
           "showOnMobile": true,
           "background": "var(--user-theme-fidget-background)",
