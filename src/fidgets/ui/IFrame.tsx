@@ -8,6 +8,7 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
+import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
@@ -118,6 +119,20 @@ const frameConfig: FidgetProperties = {
   },
 };
 
+// Cache for iframe embed information
+const embedCache = new Map<string, {
+  data: {
+    directEmbed: boolean;
+    url?: string;
+    iframelyHtml?: string | null;
+  };
+  timestamp: number;
+  expiresAt: number;
+}>();
+
+// Cache duration: 1 hour
+const CACHE_DURATION = 60 * 60 * 1000;
+
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { 
     url, 
@@ -127,6 +142,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     isScrollable = false
   },
 }) => {
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [embedInfo, setEmbedInfo] = useState<{
@@ -158,6 +174,21 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     async function checkEmbedInfo() {
       if (!isValid || !sanitizedUrl) return;
 
+      // Check cache first
+      const cached = embedCache.get(sanitizedUrl);
+      const now = Date.now();
+      
+      if (cached && now < cached.expiresAt) {
+        // Use cached data
+        setEmbedInfo(cached.data);
+        return;
+      }
+
+      // Clear expired cache entry
+      if (cached && now >= cached.expiresAt) {
+        embedCache.delete(sanitizedUrl);
+      }
+
       setLoading(true);
       setError(null);
 
@@ -173,6 +204,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         }
 
         const data = await response.json();
+        
+        // Cache the result
+        embedCache.set(sanitizedUrl, {
+          data,
+          timestamp: now,
+          expiresAt: now + CACHE_DURATION
+        });
+        
         setEmbedInfo(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -197,13 +236,77 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     return (
       <div
         style={{
-          height: "100vh",
+          height: "100%",
+          width: "100%",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          flexDirection: "column",
+          padding: "16px",
+          gap: "12px",
         }}
       >
-        <ErrorWrapper icon="⏳" message="Loading embed..." />
+        {/* Header skeleton */}
+        <div style={{
+          height: "24px",
+          width: "60%",
+          backgroundColor: "#e5e7eb",
+          borderRadius: "4px",
+          animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+        }} />
+        
+        {/* Content skeleton squares */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+          gap: "12px",
+          flex: 1,
+        }}>
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              style={{
+                height: "80px",
+                backgroundColor: "#f3f4f6",
+                borderRadius: "8px",
+                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                animationDelay: `${i * 0.1}s`
+              }}
+            />
+          ))}
+        </div>
+        
+        {/* Bottom content skeleton */}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          marginTop: "8px"
+        }}>
+          <div style={{
+            height: "16px",
+            width: "100%",
+            backgroundColor: "#e5e7eb",
+            borderRadius: "4px",
+            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+          }} />
+          <div style={{
+            height: "16px",
+            width: "80%",
+            backgroundColor: "#e5e7eb",
+            borderRadius: "4px",
+            animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
+          }} />
+        </div>
+        
+        <style>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: .5;
+            }
+          }
+        `}</style>
       </div>
     );
   }
@@ -222,23 +325,17 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         style={{ 
           overflow: "hidden", 
           width: "100%",
-          height: "100%",
+          height: isMobile ? "100vh" : "100%",
           position: "relative"
         }}
-        className="h-[calc(100dvh-156px)] md:h-full"
       >
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          transform: `scale(${size})`,
-          transformOrigin: "0 0",
-        }}>
+        {isMobile ? (
           <div style={{
             position: "absolute",
             inset: 0,
-            width: `${100 / size}%`,
-            height: `${200 / size}%`,
-            transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
+            width: "100%",
+            height: "100%",
+            transform: `translate(${cropOffsetX}%, ${cropOffsetY * 1.6}%)`
           }}>
             <iframe
               src={transformedUrl}
@@ -252,7 +349,34 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               className="size-full"
             />
           </div>
-        </div>
+        ) : (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            transform: `scale(${size})`,
+            transformOrigin: "0 0",
+          }}>
+            <div style={{
+              position: "absolute",
+              inset: 0,
+              width: `${100 / size}%`,
+              height: `${200 / size}%`,
+              transform: `translate(${cropOffsetX}%, ${cropOffsetY}%)`
+            }}>
+              <iframe
+                src={transformedUrl}
+                title="IFrame Fidget"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  overflow: isScrollable ? "auto" : "hidden",
+                }}
+                className="size-full"
+              />
+            </div>
+          </div>
+        )}
       </div>
     );
   }
