@@ -270,9 +270,8 @@ export function isLikelyFrameUrl(url: string): boolean {
   // If it matches frame patterns, it's likely a frame
   const matchesPattern = framePatterns.some(pattern => pattern.test(url));
   
-  // If it doesn't match patterns but isn't blacklisted, let it through for API check
-  // This is more permissive - we'll let the API determine if it's a frame
-  return !isDomainBlacklisted(url);
+  // Return true if it matches patterns, otherwise let non-blacklisted URLs through for API check
+  return matchesPattern || !isDomainBlacklisted(url);
 }
 
 // Utility functions for cache and batch management
