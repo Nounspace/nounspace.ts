@@ -4,6 +4,7 @@ import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
 import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
+import { useAppStore } from "@/common/data/stores/app";
 import { formatTimeAgo } from "@/common/lib/utils/date";
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
 import { useFarcasterSigner } from "@/fidgets/farcaster/index";
@@ -263,6 +264,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   );
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
   const { showToast } = useToastStore();
+  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsAccountReady: state.getIsAccountReady,
+  }));
 
   const authorFid = cast.author.fid;
   const castHashBytes = hexToBytes(cast.hash.slice(2));
@@ -308,6 +313,11 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   const onClickReaction = async (key: CastReactionType, isActive: boolean) => {
     if (key === CastReactionType.links) {
+      return;
+    }
+
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
       return;
     }
 
@@ -392,6 +402,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   };
 
   const onReply = () => {
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
+      return;
+    }
     trackAnalyticsEvent(AnalyticsEvent.REPLY, {
       username: cast.author.username,
       castId: cast.hash,
@@ -422,6 +436,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
   };
 
   const onQuote = () => {
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
+      return;
+    }
     trackAnalyticsEvent(AnalyticsEvent.RECAST, {
       username: cast.author.username,
       castId: cast.hash,
