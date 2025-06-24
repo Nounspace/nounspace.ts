@@ -11,7 +11,7 @@ import { isValidUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
 import SwitchButton from "@/common/components/molecules/SwitchButton";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
-import Frameslayout from "./Frameslayout";
+import FrameRenderer from "./FrameRenderer";
 
 export type FramesFidgetSettings = {
   url: string;
@@ -105,13 +105,14 @@ const FramesFidget: React.FC<FidgetArgs<FramesFidgetSettings>> = ({
   if (!isValidUrl(url)) {
     return <ErrorWrapper icon="❌" message={`This URL is invalid (${url}).`} />;
   }
-  // Pass the URL and collapsed state as props to Frameslayout
+  // Pass the URL and collapsed state as props to FrameRenderer
   return (
-    <Frameslayout
+    <FrameRenderer
       frameUrl={url}
       collapsed={collapsed}
       title={title}
       headingFont={headingFont}
+      showTitle={true}
     />
   );
 };

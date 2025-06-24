@@ -1,5 +1,5 @@
 import React from "react";
-import Frameslayout from "@/fidgets/framesV2/components/Frameslayout";
+import FrameRenderer from "@/fidgets/framesV2/components/FrameRenderer";
 
 interface FrameV2EmbedProps {
   url: string;
@@ -33,10 +33,10 @@ const FrameV2Embed: React.FC<FrameV2EmbedProps> = ({ url }) => {
           display: "flex",
         }}
       >
-        <Frameslayout
+        <FrameRenderer
           frameUrl={url}
           collapsed={true} // Always use collapsed mode for inline cast embeds
-          title={undefined} // No title in cast embeds to save space for feed
+          showTitle={false} // No title in cast embeds to save space for feed
         />
       </div>
     </div>
