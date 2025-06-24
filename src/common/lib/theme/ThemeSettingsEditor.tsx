@@ -255,6 +255,7 @@ export function ThemeSettingsEditor({
                     headingsFont={headingsFont}
                     fontColor={fontColor}
                     font={font}
+                    backgroundHTML={backgroundHTML}
                     onPropertyChange={themePropSetter}
                   />
                 </TabsContent>

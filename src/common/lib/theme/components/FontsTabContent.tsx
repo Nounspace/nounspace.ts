@@ -3,12 +3,14 @@ import { Color } from "@/common/lib/theme";
 import ColorSelector from "@/common/components/molecules/ColorSelector";
 import FontSelector from "@/common/components/molecules/FontSelector";
 import ThemeSettingsTooltip from "./ThemeSettingsTooltip";
+import BackgroundGenerator from "../BackgroundGenerator";
 
 interface FontsTabContentProps {
   headingsFontColor: Color | string;
   headingsFont: string;
   fontColor: Color | string;
   font: string;
+  backgroundHTML: string;
   onPropertyChange: (property: string) => (value: string) => void;
 }
 
@@ -17,6 +19,7 @@ export const FontsTabContent: React.FC<FontsTabContentProps> = ({
   headingsFont,
   fontColor,
   font,
+  backgroundHTML,
   onPropertyChange,
 }) => {
   return (
@@ -62,6 +65,12 @@ export const FontsTabContent: React.FC<FontsTabContentProps> = ({
             isThemeEditor
           />
         </div>
+      </div>
+      <div className="flex flex-col gap-1">
+        <BackgroundGenerator
+          backgroundHTML={backgroundHTML}
+          onChange={onPropertyChange("backgroundHTML")}
+        />
       </div>
     </div>
   );
