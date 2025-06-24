@@ -4,6 +4,8 @@ import React from "react";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import { Address } from "viem";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {
@@ -32,29 +34,34 @@ export async function generateMetadata({
   let priceChange = "";
   
   try {
-    const tokenData = await fetchTokenData(
-      contractAddress,
-      null,
-      network as string
-    );
+    // Replace Promise.all with Promise.allSettled for more resilient error handling
+    const [tokenResult, clankerResult] = await Promise.allSettled([
+      fetchTokenData(contractAddress, null, network as string),
+      fetchClankerByAddress(contractAddress as Address),
+    ]);
+    
+    const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
+    const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
 
     console.log("Token data fetched:", tokenData);
-    
-    // Get symbol and price from tokenData
-    symbol = tokenData?.symbol || "";
-    name = tokenData?.name || "";
-    imageUrl = tokenData?.image_url || "";
+
+    symbol = clankerData?.symbol || tokenData?.symbol || "";
+    name = clankerData?.name || tokenData?.name || "";
+    imageUrl =
+      clankerData?.img_url ||
+      (tokenData?.image_url !== "missing.png" ? tokenData?.image_url || "" : "");
     marketCap = tokenData?.market_cap_usd || "";
     priceChange = tokenData?.priceChange || "";
-    
-    // Format price with extra precision for small values
-    if (tokenData?.price_usd) {
+
+    if (tokenData?.price_usd && Number(tokenData.price_usd) !== 0) {
       const priceNumber = Number(tokenData.price_usd);
       const formatted = priceNumber.toLocaleString(undefined, {
         minimumFractionDigits: priceNumber < 0.01 ? 4 : 2,
         maximumFractionDigits: priceNumber < 0.01 ? 6 : 2,
       });
       price = `$${formatted}`;
+    } else if (tokenData?.price_usd === "0" || Number(tokenData?.price_usd) === 0) {
+      price = "TBD ";
     } else {
       price = "";
     }
