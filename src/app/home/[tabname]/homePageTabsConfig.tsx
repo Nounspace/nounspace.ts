@@ -168,109 +168,48 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Nouns DAO Fun Animated Background</title>
+  <title>Nouns DAO Animated Background</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    html,body{height:100%;margin:0;overflow:hidden;}
+    body{
+      position:relative;
+      background:linear-gradient(160deg,#FCCD04 0%,#E80173 20%,#45AAF2 40%,#23D160 60%,#FDB900 80%,#C8A2C8 100%);
+      background-size:400% 400%;
+      animation:gradientFlow 30s ease-in-out infinite;
     }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+    body::before,
+    body::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-15%;
+      height:200%;
+      background-image:url("https://nouns.wtf/brand-assets/color_noggles.png");
+      background-repeat:repeat-x;
+      background-size:60px 60px;
+      opacity:0.6;
+      animation:floatUp 20s linear infinite;
     }
-
-    .background {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(
-        160deg,
-        #FCCD04 0%,
-        #E80173 20%,
-        #45AAF2 40%,
-        #23D160 60%,
-        #FDB900 80%,
-        #C8A2C8 100%
-      );
-      background-size: 400% 400%;
-      animation: gradientFlow 30s ease-in-out infinite;
+    body::after{
+      bottom:-30%;
+      background-size:40px 40px;
+      opacity:0.4;
+      animation-duration:25s;
+      animation-direction:reverse;
     }
-
-    @keyframes gradientFlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    @keyframes gradientFlow{
+      0%{background-position:0% 50%;}
+      50%{background-position:100% 50%;}
+      100%{background-position:0% 50%;}
     }
-
-    .noggles {
-      position: absolute;
-      bottom: -15%;
-      width: 60px;
-      height: 60px;
-      background-image: url("https://nouns.wtf/brand-assets/color_noggles.png");
-      background-repeat: no-repeat;
-      background-size: contain;
-      opacity: 0;
-      animation-name: floatUp;
-      animation-iteration-count: infinite;
-      animation-fill-mode: forwards;
+    @keyframes floatUp{
+      from{transform:translateY(0);}
+      to{transform:translateY(-50%);}
     }
-
-    @keyframes floatUp {
-      0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-      10% { opacity: 1; }
-      100% { transform: translateY(-120vh) rotate(1080deg); opacity: 0; }
-    }
-
-    .noggles:nth-child(1) { left: 5%; animation-duration: 8s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(2) { left: 15%; animation-duration: 9s; animation-delay: 2s; animation-timing-function: linear; }
-    .noggles:nth-child(3) { left: 25%; animation-duration: 10s; animation-delay: 4s; animation-timing-function: ease; }
-    .noggles:nth-child(4) { left: 35%; animation-duration: 11s; animation-delay: 1s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(5) { left: 45%; animation-duration: 13s; animation-delay: 3s; animation-timing-function: linear; }
-    .noggles:nth-child(6) { left: 55%; animation-duration: 9s; animation-delay: 5s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(7) { left: 65%; animation-duration: 12s; animation-delay: 1s; animation-timing-function: ease; }
-    .noggles:nth-child(8) { left: 75%; animation-duration: 10s; animation-delay: 6s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(9) { left: 85%; animation-duration: 12s; animation-delay: 2s; animation-timing-function: linear; }
-    .noggles:nth-child(10) { left: 92%; animation-duration: 14s; animation-delay: 4s; animation-timing-function: ease; }
-    .noggles:nth-child(11) { left: 10%; animation-duration: 11s; animation-delay: 7s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(12) { left: 20%; animation-duration: 9s; animation-delay: 3s; animation-timing-function: linear; }
-    .noggles:nth-child(13) { left: 30%; animation-duration: 8s; animation-delay: 1s; animation-timing-function: ease; }
-    .noggles:nth-child(14) { left: 40%; animation-duration: 12s; animation-delay: 5s; animation-timing-function: ease; }
-    .noggles:nth-child(15) { left: 50%; animation-duration: 10s; animation-delay: 2s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(16) { left: 60%; animation-duration: 14s; animation-delay: 6s; animation-timing-function: linear; }
-    .noggles:nth-child(17) { left: 70%; animation-duration: 11s; animation-delay: 4s; animation-timing-function: ease; }
-    .noggles:nth-child(18) { left: 80%; animation-duration: 8s; animation-delay: 7s; animation-timing-function: ease-in-out; }
-    .noggles:nth-child(19) { left: 88%; animation-duration: 10s; animation-delay: 3s; animation-timing-function: ease; }
-    .noggles:nth-child(20) { left: 95%; animation-duration: 13s; animation-delay: 1s; animation-timing-function: linear; }
   </style>
 </head>
-<body>
-  <div class="background">
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-    <div class="noggles"></div>
-  </div>
-</body>
+<body></body>
 </html>`,
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
