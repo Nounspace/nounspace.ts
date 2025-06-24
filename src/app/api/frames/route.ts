@@ -93,7 +93,6 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     .map((match) => {
       const index = parseInt(match[1]);
       const label = match[2] || match[3] || "Button";
-      console.log("Button found:", { index, label });
       return { index, label, action: "post" };
     })
     .sort((a, b) => a.index - b.index);
@@ -118,11 +117,7 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   }
   const title: string | null = titleMatch ? titleMatch[1] || titleMatch[2] || null : null;
   const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || postUrlMatch[2] || url : url;
-  // console.log button labels
-  buttons.forEach((button) => {
-    const buttonLabel = button.label || "Open";
-    console.log("Button label:", buttonLabel);
-  });
+  
   return {
     image: imageUrl,
     title,
@@ -190,11 +185,10 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (fid) {
       const fidNumber = parseInt(fid as string);
       if (!isNaN(fidNumber)) {
-        console.log(`Using FID ${fidNumber} for frame authentication`);
+        // FID provided for frame authentication
       }
     }
 
-    console.log("Frame parsed successfully:", frameData);
     return NextResponse.json(frameData);
   } catch (err) {
     console.error("Error fetching frame:", err);

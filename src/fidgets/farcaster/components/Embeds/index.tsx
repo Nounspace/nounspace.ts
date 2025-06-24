@@ -6,7 +6,7 @@ import NounsBuildEmbed from "./NounsBuildEmbed";
 import ParagraphXyzEmbed from "./ParagraphXyzEmbed";
 import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
-import FrameEmbed from "./FrameEmbed";
+import SmartFrameEmbed from "./SmartFrameEmbed";
 import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
 import CreateCastImage from "./createCastImage";
 
@@ -19,24 +19,33 @@ export type CastEmbed = {
   key?: string;
 };
 
-export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast: boolean) => {
-
+export const renderEmbedForUrl = (
+  { url, castId, key }: CastEmbed,
+  isCreateCast: boolean
+) => {
   if (castId) {
     return <EmbededCast castId={castId} key={key} />;
   }
   if (!url) return null;
 
   if (isImageUrl(url)) {
-    return !isCreateCast ? <ImageEmbed url={url} key={key} /> : <CreateCastImage url={url} key={key} />;
+    return !isCreateCast ? (
+      <ImageEmbed url={url} key={key} />
+    ) : (
+      <CreateCastImage url={url} key={key} />
+    );
   }
 
   if (
     url.includes("i.imgur.com") ||
     url.startsWith("https://imagedelivery.net")
   ) {
-    return !isCreateCast ? <ImageEmbed url={url} key={key} /> : <CreateCastImage url={url} key={key} />;
-  }
-  else if (url.startsWith('"chain:')) {
+    return !isCreateCast ? (
+      <ImageEmbed url={url} key={key} />
+    ) : (
+      <CreateCastImage url={url} key={key} />
+    );
+  } else if (url.startsWith('"chain:')) {
     return <OnchainEmbed url={url} key={key} />;
   } else if (isVideoUrl(url)) {
     return <VideoEmbed url={url} key={key} />;
@@ -53,10 +62,9 @@ export const renderEmbedForUrl = ({ url, castId, key }: CastEmbed, isCreateCast:
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
   } else if (!isImageUrl(url)) {
-    // NOTE: Need a better resolver
-    // Currently all URLs that aren't otherise caputured try
-    // To be frames, including things like youtube videos
-    return <FrameEmbed url={url} showError={false} key={key} />;
+    // Use smart frame detection to render Frame v2 when possible
+    // Falls back to legacy frame system if Frame v2 metadata is not detected
+    return <SmartFrameEmbed url={url} key={key} />;
   } else {
     return null;
   }
