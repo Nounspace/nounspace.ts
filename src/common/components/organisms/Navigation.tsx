@@ -223,8 +223,8 @@ const Navigation: React.FC<NavProps> = ({
             mobile
               ? "w-[270px]"
               : shrunk
-                ? "w-[90px] ml-auto"
-                : "w-[270px] ml-auto"
+              ? "w-[90px]"
+              : "w-[270px]"
           )}
         >
           {!mobile && (
@@ -356,18 +356,30 @@ const Navigation: React.FC<NavProps> = ({
               </div>
             )}
             {!isLoggedIn && (
-              <Link
-                href="https://discord.gg/eYQeXU2WuH"
-                className={mergeClasses(
-                  "flex items-center p-2 text-gray-900 rounded-lg dark:text-white group w-full gap-2 text-lg font-medium",
-                  shrunk ? "justify-center gap-0" : ""
-                )}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <FaDiscord className="text-[#5865f2] w-6 h-6" />
-                {!shrunk && "Join"}
-              </Link>
+              <div className="flex flex-col items-center gap-2">
+                <Link
+                  href="https://discord.gg/eYQeXU2WuH"
+                  className={mergeClasses(
+                    "flex items-center p-2 text-gray-900 rounded-lg dark:text-white group w-full gap-2 text-lg font-medium",
+                    shrunk ? "justify-center gap-0" : ""
+                  )}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <FaDiscord className="text-[#5865f2] w-6 h-6" />
+                  {!shrunk && "Join"}
+                </Link>
+                <div
+                  className="flex flex-col items-center text-xs text-gray-500 mt-5"
+                >
+                  <Link href="/terms" className="hover:underline">
+                    Terms
+                  </Link>
+                  <Link href="/privacy" className="hover:underline">
+                    Privacy
+                  </Link>
+                </div>
+              </div>
             )}
           </div>
         </div>

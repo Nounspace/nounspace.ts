@@ -111,8 +111,32 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
           "w": 4,
           "h": 4,
           "x": 8,
+          "y": 6,
+        "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+        "minW": 2,
+        "maxW": 36,
+        "minH": 2,
+        "maxH": 36,
+        "moved": false,
+        "static": false,
+        "resizeHandles": [
+          "s",
+          "w",
+          "e",
+          "n",
+          "sw",
+          "nw",
+          "se",
+          "ne"
+        ],
+        "isBounded": false
+        },
+        {
+          "w": 4,
+          "h": 6,
+          "x": 8,
           "y": 0,
-          "i": "links:c96c96c9-c19d-47c7-b24d-b11985671470",
+          "i": "feed:Ns29YIhpl9SWpf5O36d2",
           "minW": 2,
           "maxW": 36,
           "minH": 2,
@@ -140,7 +164,53 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
     "name": "Homebase-Tab 3-Theme",
     "properties": {
       "background": "#ffffff",
-      "backgroundHTML": "",
+      "backgroundHTML": `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Nouns DAO Animated Background</title>
+  <style>
+    html,body{height:100%;margin:0;overflow:hidden;}
+    body{
+      position:relative;
+      background:linear-gradient(160deg,#FCCD04 0%,#E80173 20%,#45AAF2 40%,#23D160 60%,#FDB900 80%,#C8A2C8 100%);
+      background-size:400% 400%;
+      animation:gradientFlow 30s ease-in-out infinite;
+    }
+    body::before,
+    body::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:-15%;
+      height:200%;
+      background-image:url("https://nouns.wtf/brand-assets/color_noggles.png");
+      background-repeat:repeat-x;
+      background-size:60px 60px;
+      opacity:0.6;
+      animation:floatUp 20s linear infinite;
+    }
+    body::after{
+      bottom:-30%;
+      background-size:40px 40px;
+      opacity:0.4;
+      animation-duration:25s;
+      animation-direction:reverse;
+    }
+    @keyframes gradientFlow{
+      0%{background-position:0% 50%;}
+      50%{background-position:100% 50%;}
+      100%{background-position:0% 50%;}
+    }
+    @keyframes floatUp{
+      from{transform:translateY(0);}
+      to{transform:translateY(-50%);}
+    }
+  </style>
+</head>
+<body></body>
+</html>`,
       "fidgetBackground": "#ffffff",
       "fidgetBorderColor": "#eeeeee",
       "fidgetBorderRadius": "12px",
@@ -195,7 +265,7 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
           "title": "Socials",
           "links": [
             {
-              "avatar": "https://assets1.chainstoreage.com/images/v/max_width_1440/2023-07/twitter-x-logo.png",
+              "avatar": "data:image/webp;base64,UklGRjwDAABXRUJQVlA4IDADAAAwEwCdASozADMAPjEOjEYiEREJgCADBLSACvAP4B1T+gX7tewH7b7oB5Bfpx86/Hf8rtYJ/gv8+/KjJh/5b8t+FX/gPUh/Mf7zxg0d3nBfyH9O/Lv2R/PP+t9wD+Nf0P/O/2f94P8T8kHrM/aL2Lv1OTvFCx/7T977b/Lxb0GppIsSCShxNPS4ejN2Tn2Gpsha3mMHbq7Qs5OMbf/HXssqIPwA/v+r8lxFe+i8+zEOmpnbq/gZJ9n/r/gyvizFRxlqP83vEb2tMrQvF7HQPwRbHqDnQ7/waPUr+H6qkSp88nrrBnY8Rn9a+VTSJyR1ZeqwigXOSIguFtM78A3xJRz9VXOw2YgJtm7V9YTW92mv3Hg9mhimC3F0bEih9tQcZsbkJWOORQ4YejsAENCRdVcV7VrALnmzdwMSsfLfadMuf9Bp+S0KsKfCmCJvqWNTwGn2Vs8L7szaXFxMe+qLL708+z6/vx3Hyz23wF0LZhLVT3R2hB9KnLAmnxiFfh9KIr3hgLPEapK7qAtT5Q+GQTbPXo34M7SDx8tXrJ7PNF89N4ITkuMKvE8RWoyL3g6ep/5j1Y+wiIteNZe/D6f5UUyE5q/6GJevQ+AqIrO7abTGIO5Td2xsjIRuV/jV5A36uRO/3PH6v/8cOlr8ZE4uzHNak98aet9a+7iP/6p3u6HvENLHt1y13LZ34IE+ImLfFf+zFJsAiafcSOUgc2GtRpxJP+vJK+3pr/VEnNk4qMaL3hSyYZTJ6ND++XiV5vMrdm72LcJzYaNIZZpsF5vxR2/lPW/R57fvlJszqeK4gmQ/lqM6WX22ypXI7OPAMihJygPEvWbI/5CW0uMO8Ah2hiPwM/i0fiB/R+HLGoDa19/vOlnbedr+0U79UhB9VKvoCB3FVr4lpU8t8fE+8LOWWg8KN4IA4jRDOHBm59LX1IzhYZWeRSBrp8UHanycHuqqFa8JUSbJp6pYuD9KsfQR+en+P+kjg7eYFwQ8X6055LrJLTr4Metf8JGluIXMfgg0zBLor1XQwO73rj3+7164syNPA0zWJycUZ0jX2DSoE1os8KWbqlVdC4Y6sFWKEoEAAAA=",
               "description": "",
               "text": "X",
               "url": "https://x.com/nounsdao?lang=en"
@@ -225,8 +295,37 @@ export const SOCIAL_TAB_CONFIG: SpaceConfig = {
           "fidgetShadow": "var(--user-theme-fidget-shadow)",
           "css": ""
         }
-      }
-    }
+      },
+    },
+    "feed:Ns29YIhpl9SWpf5O36d2": {
+      "config": {
+        "data": {},
+        "editable": true,
+        "settings": {
+          "Xhandle": "nounsdao",
+          "background": "var(--user-theme-fidget-background)",
+          "channel": "",
+          "feedType": "filter",
+          "fidgetBorderColor": "var(--user-theme-fidget-border-color)",
+          "fidgetBorderWidth": "var(--user-theme-fidget-border-width)",
+          "fidgetShadow": "var(--user-theme-fidget-shadow)",
+          "filterType": "channel_id",
+          "fontColor": "var(--user-theme-font-color)",
+          "fontFamily": "var(--user-theme-font)",
+          "keyword": "",
+          "selectPlatform": {
+            "icon": "/images/twitter.avif",
+            "name": "X"
+          },
+          "showOnMobile": true,
+          "style": "light",
+          "username": "",
+          "users": ""
+        }
+      },
+      "fidgetType": "feed",
+      "id": "feed:Ns29YIhpl9SWpf5O36d2"
+    },
   },
   "fidgetTrayContents": [],
   "isEditable": false,

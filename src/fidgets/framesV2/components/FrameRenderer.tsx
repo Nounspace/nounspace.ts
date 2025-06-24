@@ -10,6 +10,9 @@ interface FrameRendererProps {
   fid?: number | null;
   collapsed?: boolean;
   customTitle?: string;
+  title?: string;
+  headingFont?: string;
+  showTitle?: boolean;
 }
 
 interface FrameMetadata {
@@ -28,6 +31,9 @@ export default function FrameRenderer({
   fid = null,
   collapsed = false,
   customTitle,
+  title,
+  headingFont,
+  showTitle = true,
 }: FrameRendererProps) {
   const [frameData, setFrameData] = useState<FrameMetadata>({
     image: null,
@@ -68,7 +74,6 @@ export default function FrameRenderer({
         }
 
         const data = await response.json();
-        console.log("Fetched frame data:", data);
 
         setFrameData({
           image: data.image || null,
@@ -165,12 +170,12 @@ export default function FrameRenderer({
           display: "flex",
           flexDirection: "column",
           width: "100%",
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
+          height: "400px",
+          borderRadius: "12px",
           overflow: "hidden",
-          backgroundColor: "white",
+          backgroundColor: "#f8f9fa",
           position: "relative",
-          padding: "16px",
+          border: "1px solid #e5e7eb",
         }}
       >
         <div
@@ -180,14 +185,45 @@ export default function FrameRenderer({
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "#e5e7eb",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             zIndex: 10,
           }}
+          role="status"
+          aria-live="polite"
+          aria-label="Loading frame"
         >
-          <p style={{ color: "#4b5563", fontWeight: 500 }}>Loading frame...</p>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <div
+              style={{
+                width: "20px",
+                height: "20px",
+                border: "2px solid #e5e7eb",
+                borderTop: "2px solid #3b82f6",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+              }}
+              aria-hidden="true"
+            ></div>
+            <p
+              style={{
+                color: "#6b7280",
+                fontWeight: 500,
+                fontSize: "14px",
+                margin: 0,
+              }}
+            >
+              Loading frame...
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -231,138 +267,168 @@ export default function FrameRenderer({
   return (
     <div
       style={{
-        display: "flex",
-        flexDirection: "column",
         width: "100%",
         height: "100%",
-        minHeight: 0,
-        minWidth: 0,
         background: "#fff",
-        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "stretch",
+        justifyContent: "stretch",
+        padding: 0,
+        margin: 0,
         overflow: "hidden",
       }}
     >
-      {/* Frame image (responsive, fills container) */}
-      {frameData.image && !imgError ? (
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            zIndex: 1,
-          }}
-        >
-          <Image
-            src={frameData.image}
-            alt={frameData.title || "Frame image"}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="100vw"
-            priority
-            onError={() => setImgError(true)}
-          />
-        </div>
-      ) : null}
-      {/* Overlay for title, input, and buttons (centered, responsive) */}
-      <div
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 2,
-          width: "100%",
-          background: "rgba(255,255,255,0.95)",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "16px 0 24px 0",
-        }}
-      >
-        {frameData.title && (
-          <div
+      {/* Optional title header */}
+      {!collapsed && showTitle && title ? (
+        <div style={{ padding: "12px" }}>
+          <h2
+            className="text-xl font-bold"
             style={{
-              fontWeight: 500,
-              color: "#1f2937",
-              fontSize: 16,
-              marginBottom: 8,
-              textAlign: "center",
-              width: "100%",
-              wordBreak: "break-word",
+              fontFamily: headingFont || "var(--user-theme-headings-font)",
             }}
           >
-            {frameData.title}
-          </div>
-        )}
-        {frameData.inputText && (
+            {title}
+          </h2>
+        </div>
+      ) : null}
+
+      {/* Frame content */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          background: "#fff",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Frame image (responsive, fills container) */}
+        {frameData.image && !imgError ? (
           <div
             style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              zIndex: 1,
+            }}
+          >
+            <Image
+              src={frameData.image}
+              alt={frameData.title || "Frame image"}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="100vw"
+              priority
+              onError={() => setImgError(true)}
+            />
+          </div>
+        ) : null}
+        {/* Overlay for title, input, and buttons (centered, responsive) */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 2,
+            width: "100%",
+            background: "rgba(255,255,255,0.95)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "16px 0 24px 0",
+          }}
+        >
+          {frameData.title && (
+            <div
+              style={{
+                fontWeight: 500,
+                color: "#1f2937",
+                fontSize: 16,
+                marginBottom: 8,
+                textAlign: "center",
+                width: "100%",
+                wordBreak: "break-word",
+              }}
+            >
+              {frameData.title}
+            </div>
+          )}
+          {frameData.inputText && (
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 600,
+                marginBottom: 8,
+                padding: "0 16px",
+              }}
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                style={{
+                  padding: 8,
+                  border: "1px solid #d1d5db",
+                  borderRadius: 4,
+                  width: "100%",
+                  color: "#1f2937",
+                  fontSize: 16,
+                }}
+                placeholder="Enter text..."
+              />
+            </div>
+          )}
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
               width: "100%",
               maxWidth: 600,
-              marginBottom: 8,
+              justifyContent: "center",
+              flexDirection: "column",
               padding: "0 16px",
             }}
           >
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              style={{
-                padding: 8,
-                border: "1px solid #d1d5db",
-                borderRadius: 4,
-                width: "100%",
-                color: "#1f2937",
-                fontSize: 16,
-              }}
-              placeholder="Enter text..."
-            />
+            {frameData.buttons.map((button, index) => (
+              <button
+                key={index}
+                onClick={() => handleButtonClick(index + 1)}
+                style={{
+                  border: "1px solid #d1d5db",
+                  fontSize: 16,
+                  color: "#374151",
+                  borderRadius: 4,
+                  backgroundColor: "#fff",
+                  padding: 12,
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  minWidth: 0,
+                  width: "100%",
+                  boxSizing: "border-box",
+                }}
+              >
+                {button.label}
+              </button>
+            ))}
           </div>
-        )}
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            width: "100%",
-            maxWidth: 600,
-            justifyContent: "center",
-            flexDirection: "column",
-            padding: "0 16px",
-          }}
-        >
-          {frameData.buttons.map((button, index) => (
-            <button
-              key={index}
-              onClick={() => handleButtonClick(index + 1)}
-              style={{
-                border: "1px solid #d1d5db",
-                fontSize: 16,
-                color: "#374151",
-                borderRadius: 4,
-                backgroundColor: "#fff",
-                padding: 12,
-                fontWeight: 500,
-                cursor: "pointer",
-                minWidth: 0,
-                width: "100%",
-                boxSizing: "border-box",
-              }}
-            >
-              {button.label}
-            </button>
-          ))}
         </div>
+        {/* Modal for button actions */}
+        <FrameActionModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          frameUrl={frameUrl}
+          buttonIndex={activeButton || 1}
+          fid={fid || 20721}
+          currentFrameData={frameData}
+          modalTitle={customTitle}
+        />
       </div>
-      {/* Modal for button actions */}
-      <FrameActionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        frameUrl={frameUrl}
-        buttonIndex={activeButton || 1}
-        fid={fid || 20721}
-        currentFrameData={frameData}
-        modalTitle={customTitle}
-      />
     </div>
   );
 }
