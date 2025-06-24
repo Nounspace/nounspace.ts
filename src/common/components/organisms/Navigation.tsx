@@ -369,7 +369,7 @@ const Navigation: React.FC<NavProps> = ({
                   {!shrunk && "Join"}
                 </Link>
                 <div
-                  className="flex flex-col items-center text-xs text-gray-500 mt-[10px]"
+                  className="flex flex-col items-center text-xs text-gray-500 mt-5"
                 >
                   <Link href="/terms" className="hover:underline">
                     Terms
