@@ -59,10 +59,22 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     setEditMode(true);
   }
 
+  // Revertendo para o estilo original com controle de visibilidade
+  const navStyles = {
+    zIndex: 999,
+    position: "relative" as const,
+  };
+
+  // Retornando às classes originais para preservar funcionalidade completa
+  // Isso mantém o comportamento de expansão/contração da barra lateral
+  const navWrapperClass = editMode 
+    ? "hidden" 
+    : "md:flex mx-auto h-full hidden relative";
+
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
-      <div className={editMode ? "hidden" : "md:flex mx-auto h-full hidden relative"} style={{zIndex: 999}}>
+      <div className={navWrapperClass} style={navStyles}>
         <Navigation
           isEditable={sidebarEditable}
           enterEditMode={enterEditMode}
