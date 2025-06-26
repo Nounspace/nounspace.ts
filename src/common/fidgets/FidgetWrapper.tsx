@@ -35,6 +35,7 @@ export type FidgetWrapperProps = {
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  borderRadius?: string;
 };
 
 export const getSettingsWithDefaults = (
@@ -63,6 +64,7 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
+  borderRadius,
 }: FidgetWrapperProps) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
@@ -182,7 +184,7 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 rounded-2xl overflow-hidden"
+            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
             : "size-full overflow-hidden"
         }
         style={{
@@ -198,7 +200,8 @@ export function FidgetWrapper({
           boxShadow: settingsWithDefaults.useDefaultColors
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
-             overflow: "hidden" 
+          borderRadius: borderRadius ?? homebaseConfig?.theme?.properties.fidgetBorderRadius ?? "12px",
+          overflow: "hidden"
         }}
       >
         {bundle.config.editable && (
