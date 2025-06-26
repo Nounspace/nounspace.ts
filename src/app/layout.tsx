@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     ],
     apple: '/images/apple-touch-icon.png',
   },
+  manifest: '/manifest.json',
   other: {
     'fc:frame': JSON.stringify(defaultFrame),
   },
