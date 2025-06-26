@@ -23,7 +23,7 @@ interface IconSelectorProps {
 export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelectorProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState<'library' | 'custom'>('library')
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 })
+  const [position, setPosition] = useState({ top: 0, left: 0, width: 0, maxHeight: 400 })
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   const iconLibrary = [
@@ -55,16 +55,23 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
       const windowHeight = window.innerHeight
       const windowWidth = window.innerWidth
       const dropdownWidth = Math.max(320, rect.width)
-      const dropdownHeight = 400
+      const spaceBelow = windowHeight - rect.bottom - 16
+      const spaceAbove = rect.top - 16
+      let maxDropdownHeight = 400
       let top = rect.bottom + window.scrollY + 4
-      let left = rect.left + window.scrollX
-      if (rect.bottom + dropdownHeight > windowHeight) {
-        top = rect.top + window.scrollY - dropdownHeight - 4
+      if (spaceBelow >= 300 || spaceBelow > spaceAbove) {
+        maxDropdownHeight = Math.min(400, spaceBelow)
+        top = rect.bottom + window.scrollY + 4
+      } else {
+        maxDropdownHeight = Math.min(400, spaceAbove)
+        top = rect.top + window.scrollY - maxDropdownHeight - 4
+        if (top < 16) top = 16 
       }
+      let left = rect.left + window.scrollX
       if (left + dropdownWidth > windowWidth) {
         left = windowWidth - dropdownWidth - 16
       }
-      setPosition({ top, left, width: dropdownWidth })
+      setPosition({ top, left, width: dropdownWidth, maxHeight: maxDropdownHeight })
     }
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -88,8 +95,8 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
   return createPortal(
     <div
       ref={dropdownRef}
-      className="fixed bg-white border border-gray-200 rounded-md shadow-lg z-50 max-h-80 overflow-auto"
-      style={{ top: `${position.top}px`, left: `${position.left}px`, width: `${position.width}px` }}
+      className="fixed bg-white border border-gray-200 rounded-md shadow-lg z-[99999] overflow-auto"
+      style={{ top: `${position.top}px`, left: `${position.left}px`, width: `${position.width}px`, maxHeight: `${position.maxHeight}px` }}
     >
       <div className="p-3 border-b border-gray-200">
         <div className="relative">
@@ -120,7 +127,7 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
         </button>
       </div>
       {activeTab === 'library' ? (
-        <div className="p-3 grid grid-cols-5 gap-2">
+        <div className="p-3 grid grid-cols-5 gap-2 overflow-auto max-h-[calc(100vh-100px)]" style={{ maxHeight: 'calc(100vh - 140px)' }}>
           {filteredIcons.length > 0 ? (
             filteredIcons.map((icon) => {
               const Icon = ICON_PACK[icon] as IconType | undefined
@@ -144,7 +151,7 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
           )}
         </div>
       ) : (
-        <div className="p-6 flex flex-col items-center justify-center">
+        <div className="p-6 flex flex-col items-center justify-center overflow-auto max-h-[calc(100vh-100px)]" style={{ maxHeight: 'calc(100vh - 140px)' }}>
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
             <UploadIcon className="h-8 w-8 text-gray-400" />
           </div>
