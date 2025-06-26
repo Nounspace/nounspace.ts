@@ -650,6 +650,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}
+                    borderRadius={gridDetails.borderRadius}
                     removeFidget={removeFidget}
                     minimizeFidget={moveFidgetFromGridToTray}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}
