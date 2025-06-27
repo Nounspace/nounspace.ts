@@ -100,6 +100,14 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
+    // Handle special consolidated tabs first
+    if (fidgetId === 'consolidated-media') {
+      return getFidgetDisplayName(null, isMobile, 'consolidated-media');
+    }
+    if (fidgetId === 'consolidated-pinned') {
+      return getFidgetDisplayName(null, isMobile, 'consolidated-pinned');
+    }
+    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
     // Get valid fidget IDs and find index for custom tab name
