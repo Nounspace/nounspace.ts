@@ -116,6 +116,30 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     );
   };
 
+  // Function to validate if a URL is safe for use in img src
+  const isValidImageUrl = (url: string): boolean => {
+    try {
+      const urlObj = new URL(url);
+      // Only allow HTTP and HTTPS protocols
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        return false;
+      }
+      // Basic hostname validation to prevent obviously malicious URLs
+      const hostname = urlObj.hostname;
+      if (!hostname || hostname.length === 0) {
+        return false;
+      }
+      // Prevent data URLs and other potentially dangerous schemes
+      if (url.toLowerCase().includes('javascript:') || url.toLowerCase().includes('data:')) {
+        return false;
+      }
+      return true;
+    } catch {
+      // Invalid URL format
+      return false;
+    }
+  };
+
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
@@ -125,7 +149,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     if (isMobile) {
       const customIcon = fidgetDatum.config.settings.mobileIconName as string | undefined;
       if (customIcon) {
-        if (customIcon.startsWith('http')) {
+        if (customIcon.startsWith('http') && isValidImageUrl(customIcon)) {
           return <img src={customIcon} alt="icon" className="w-5 h-5" />;
         }
         const Icon = ICON_PACK[customIcon] as IconType | undefined;

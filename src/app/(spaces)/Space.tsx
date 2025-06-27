@@ -18,11 +18,10 @@ import { createPortal } from "react-dom";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { cleanupLayout } from "@/common/lib/utils/gridCleanup";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { LayoutFidgets } from "@/fidgets";
 import Image from "next/image";
-
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -80,8 +79,14 @@ export default function Space({
   const viewportMobile = useIsMobile();
   const { mobilePreview, setMobilePreview } = useMobilePreview();
 
-  const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
-  const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
+  const isMobile = useMemo(
+    () => viewportMobile || mobilePreview,
+    [viewportMobile, mobilePreview]
+  );
+  const showMobileContainer = useMemo(
+    () => mobilePreview && !viewportMobile,
+    [mobilePreview, viewportMobile]
+  );
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
@@ -130,7 +135,7 @@ export default function Space({
       !isNil(feed)
     );
     const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    removedFidgetIds.forEach(id => {
+    removedFidgetIds.forEach((id) => {
       delete cleanedFidgetInstanceDatums[id];
     });
     let settingsChanged = false;
@@ -143,17 +148,17 @@ export default function Space({
         delete settings["fidget Shadow"];
         settingsChanged = true;
       }
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
-      }
     });
     // Make Queued Changes
-    if (removedFidgetIds.length > 0 ||
-      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
-        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-      settingsChanged) {
+    if (
+      removedFidgetIds.length > 0 ||
+      cleanedLayout.some(
+        (item, i) =>
+          item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
+          item.y !== config.layoutDetails.layoutConfig.layout[i].y
+      ) ||
+      settingsChanged
+    ) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
@@ -193,8 +198,8 @@ export default function Space({
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
-          layoutConfig,
-        }
+            layoutConfig,
+          }
         : undefined,
       theme,
       fidgetInstanceDatums,
@@ -209,7 +214,7 @@ export default function Space({
     } else {
       const layoutFidgetKey =
         config?.layoutDetails?.layoutFidget &&
-          LayoutFidgets[config.layoutDetails.layoutFidget]
+        LayoutFidgets[config.layoutDetails.layoutFidget]
           ? config.layoutDetails.layoutFidget
           : "grid";
       return LayoutFidgets[layoutFidgetKey];
@@ -280,7 +285,11 @@ export default function Space({
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className={`z-level-3 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}>{profile}</div>
+        <div
+          className={`z-level-3 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`}
+        >
+          {profile}
+        </div>
       ) : null}
 
       <div className="relative flex-shrink-0 bg-white">
@@ -288,19 +297,35 @@ export default function Space({
           <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
         )}
         {isMobile && (
-          <div className="w-full border-b flex-shrink-0" style={{ backgroundColor: 'white' }}>
+          <div
+            className="w-full border-b flex-shrink-0"
+            style={{ backgroundColor: "white" }}
+          >
             <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
           </div>
         )}
       </div>
 
-      <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
+      <div
+        className={
+          isMobile
+            ? "w-full h-full flex-grow overflow-y-auto touch-auto"
+            : "flex h-full flex-grow overflow-y-auto touch-auto"
+        }
+      >
         {!isUndefined(feed) && !isMobile ? (
-          <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
+          <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">
+            {feed}
+          </div>
         ) : null}
 
-        <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
-
+        <div
+          className={
+            isMobile
+              ? "w-full h-full flex-grow overflow-y-auto touch-auto"
+              : "grow overflow-y-auto touch-auto"
+          }
+        >
           <Suspense
             fallback={
               <SpaceLoading
@@ -332,36 +357,37 @@ export default function Space({
     <>
       {showMobileContainer && editMode && portalRef.current
         ? createPortal(
-          <aside
-            id="logo-sidebar"
-            className="h-screen flex-row flex bg-white"
-            aria-label="Sidebar"
-          >
-            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
-              <ThemeSettingsEditor
-                theme={config.theme}
-                saveTheme={(newTheme) =>
-                  saveLocalConfig({ theme: newTheme })
-                }
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                fidgetInstanceDatums={config.fidgetInstanceDatums}
-                saveFidgetInstanceDatums={(datums) =>
-                  saveLocalConfig({ fidgetInstanceDatums: datums })
-                }
-              />
-            </div>
-          </aside>,
-          portalRef.current,
-        )
+            <aside
+              id="logo-sidebar"
+              className="h-screen flex-row flex bg-white"
+              aria-label="Sidebar"
+            >
+              <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+                <ThemeSettingsEditor
+                  theme={config.theme}
+                  saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
+                  saveExitEditMode={saveExitEditMode}
+                  cancelExitEditMode={cancelExitEditMode}
+                  fidgetInstanceDatums={config.fidgetInstanceDatums}
+                  saveFidgetInstanceDatums={(datums) =>
+                    saveLocalConfig({ fidgetInstanceDatums: datums })
+                  }
+                />
+              </div>
+            </aside>,
+            portalRef.current
+          )
         : null}
       <div
-        className={`w-full h-full relative ${showMobileContainer
-          ? "flex flex-col items-center justify-center"
-          : "user-theme-background flex flex-col"
-          }`}
+        className={`w-full h-full relative ${
+          showMobileContainer
+            ? "flex flex-col items-center justify-center"
+            : "user-theme-background flex flex-col"
+        }`}
         style={{
-          backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background
+          backgroundColor: showMobileContainer
+            ? undefined
+            : config.theme?.properties.background,
         }}
       >
         {showMobileContainer && (
@@ -380,19 +406,19 @@ export default function Space({
                   <div
                     className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
                     style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: config.theme?.properties.background || 'white',
-                      transform: 'scale(1.0)',
-                      transformOrigin: 'top left'
+                      display: "flex",
+                      flexDirection: "column",
+                      backgroundColor:
+                        config.theme?.properties.background || "white",
+                      transform: "scale(1.0)",
+                      transformOrigin: "top left",
                     }}
                   >
                     <CustomHTMLBackground
                       html={config.theme?.properties.backgroundHTML}
                       className="absolute inset-0 pointer-events-none w-full h-full"
                     />
-                          <div className="flex-1 w-full overflow-auto" >
-                   
+                    <div className="flex-1 w-full overflow-auto">
                       <div className="relative w-full h-full flex flex-col">
                         <div className="w-full bg-white">
                           {!isUndefined(profile) ? (
@@ -416,24 +442,33 @@ export default function Space({
                           ) : null}
                         </div>
 
-                        <Suspense fallback={
-                          <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                          />
-                        }>
+                        <Suspense
+                          fallback={
+                            <SpaceLoading
+                              hasProfile={!isNil(profile)}
+                              hasFeed={!isNil(feed)}
+                            />
+                          }
+                        >
                           {LayoutFidget ? (
                             <LayoutFidget
                               layoutConfig={{ ...layoutConfig }}
                               {...layoutFidgetProps}
-                              style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', zIndex: 9999 }}
-                            /> 
+                              style={{
+                                position: "fixed",
+                                top: 0,
+                                left: 0,
+                                width: "100%",
+                                height: "100%",
+                                overflow: "hidden",
+                                zIndex: 9999,
+                              }}
+                            />
                           ) : (
-                              <SpaceLoading
-                                hasProfile={!isNil(profile)}
-                                hasFeed={!isNil(feed)}
-                              />
-                          
+                            <SpaceLoading
+                              hasProfile={!isNil(profile)}
+                              hasFeed={!isNil(feed)}
+                            />
                           )}
                         </Suspense>
                       </div>
@@ -451,7 +486,9 @@ export default function Space({
             </div>
           ) : (
             <>
-              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              <CustomHTMLBackground
+                html={config.theme?.properties.backgroundHTML}
+              />
               {mainContent}
             </>
           )}
