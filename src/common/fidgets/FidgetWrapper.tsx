@@ -109,18 +109,16 @@ export function FidgetWrapper<
     bundle.properties,
   );
 
-  const onSave = async (
+  const onSave = (
     newSettings: S,
     shouldUnselect?: boolean,
-  ) => {
-    try {
-      await saveConfig({
-        ...bundle.config,
-        settings: newSettings,
-      });
-    } catch (e) {
+  ): void => {
+    saveConfig({
+      ...bundle.config,
+      settings: newSettings,
+    }).catch(() => {
       toast.error("Failed to save fidget settings", { duration: 1000 });
-    }
+    });
 
     if (shouldUnselect) {
       unselect();
