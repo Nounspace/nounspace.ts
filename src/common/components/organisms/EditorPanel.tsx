@@ -152,7 +152,12 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           )}
         </div>
       </div>
-      <div className="w-24">
+      <div 
+        className={`
+          transition-all duration-300 ease-in-out overflow-hidden
+          ${fidgetTrayContents.length > 0 ? 'w-24 opacity-100' : 'w-0 opacity-0'}
+        `}
+      >
         <FidgetTray
           setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}
