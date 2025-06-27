@@ -24,70 +24,21 @@ export const isPinnedCast = (
   return fidgetData?.fidgetType === 'cast';
 };
 
-/**
- * Processes fidget IDs for display in mobile tabs, potentially consolidating media fidgets
- * Always includes Feed fidget regardless of visibility settings
- */
+
 export const processTabFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   isMobile: boolean
 ): string[] => {
   if (!isMobile) {
-    // On desktop, use all fidgets as is
-    return fidgetIds.filter(id => {
-      const fidgetData = fidgetInstanceDatums[id];
-      return !!fidgetData;
-    });
+    return fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
   }
-  
-  // For mobile, process and potentially consolidate media fidgets
-  const mediaFidgetIds: string[] = [];
-  const pinnedCastIds: string[] = [];
-  const nonMediaFidgetIds: string[] = [];
-  const feedFidgetIds: string[] = [];
-  
-  // First separate feed, media, pinned casts, and non-media fidgets
-  fidgetIds.forEach(id => {
+  return fidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
-    if (!fidgetData) return;
-    
-    // Always include Feed fidget regardless of showOnMobile setting
-    if (fidgetData.fidgetType === 'feed') {
-      feedFidgetIds.push(id);
-      return; 
-    }
-    
-    // Skip non-feed fidgets that should be hidden on mobile
-    if (fidgetData.config?.settings?.showOnMobile === false) return;
-    
-    if (isPinnedCast(id, fidgetInstanceDatums)) {
-      pinnedCastIds.push(id);
-    } else if (isMediaFidget(fidgetData.fidgetType)) {
-      mediaFidgetIds.push(id);
-    } else {
-      nonMediaFidgetIds.push(id);
-    }
+    if (!fidgetData) return false;
+    if (fidgetData.config?.settings?.showOnMobile === false) return false;
+    return true;
   });
-  
-  const consolidatedIds: string[] = [];
-  
-  // If we have multiple pinned casts, return them under a special id
-  if (pinnedCastIds.length > 1) {
-    consolidatedIds.push('consolidated-pinned');
-  } else {
-    consolidatedIds.push(...pinnedCastIds);
-  }
-  
-  // If we have multiple media fidgets, add them under a special id
-  if (mediaFidgetIds.length > 1) {
-    consolidatedIds.push('consolidated-media');
-  } else {
-    consolidatedIds.push(...mediaFidgetIds);
-  }
-  
-  // Always include feed fidgets (immutable feed) at the beginning
-  return [...feedFidgetIds, ...consolidatedIds, ...nonMediaFidgetIds];
 };
 
 /**
