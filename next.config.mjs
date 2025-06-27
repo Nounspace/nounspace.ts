@@ -85,6 +85,10 @@ const nextConfig = {
       ...config.resolve.fallback,
       os: false,
     };
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      os: false,
+    };
     return config;
   },
 
