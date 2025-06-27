@@ -47,18 +47,18 @@ export const getSettingsWithDefaults = <
   settings: S | undefined,
   config: FidgetProperties<S>,
 ): S => {
-  const safeSettings = settings ?? {};
+  const safeSettings = settings ?? ({} as Partial<S>);
   return reduce(
     config.fields,
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
         f.fieldName in safeSettings
-          ? safeSettings[f.fieldName]
-          : (f.default ?? undefined),
+          ? (safeSettings as Record<string, unknown>)[f.fieldName]
+          : f.default ?? undefined,
     }),
-    {},
-  );
+    {} as Partial<S>,
+  ) as S;
 };
 
 export function FidgetWrapper<
