@@ -12,9 +12,7 @@ export default function useWindowSize() {
     };
   }
 
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions(),
-  );
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
 
   function handleResize() {
     setWindowDimensions(getWindowDimensions());
@@ -22,6 +20,8 @@ export default function useWindowSize() {
 
   useEffect(() => {
     if (hasWindow) {
+      // Set initial dimensions on mount
+      handleResize();
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
