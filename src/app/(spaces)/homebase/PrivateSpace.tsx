@@ -4,12 +4,15 @@ import React, { useEffect, useMemo, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
+import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import { dummyFunctions } from "@/fidgets/layout/tabFullScreen/utils";
 import { isNil, noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
+import INITIAL_HOMEBASE_CONFIG, { HOMEBASE_FEED_FIDGET_ID } from "@/constants/intialHomebase";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
@@ -213,6 +216,18 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   ), [tabName, tabOrdering.local, editMode]);
 
   // Define the arguments for the SpacePage component
+  const feedBundle = useMemo(() => {
+    const datum = sanitizedHomebaseConfig?.feedInstanceDatum ??
+      INITIAL_HOMEBASE_CONFIG.feedInstanceDatum!;
+    return { ...datum, properties: FeedModule.properties };
+  }, [sanitizedHomebaseConfig]);
+
+  const saveFeedConfig = async (newConfig) => {
+    await saveConfigHandler({
+      feedInstanceDatum: { ...feedBundle, config: newConfig },
+    });
+  };
+
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
       const sourceConfig =
@@ -230,19 +245,22 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
     feed: tabName === "Feed" ? (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any,
+      <FidgetWrapper
+        fidget={FeedModule.fidget}
+        context={{ theme: sanitizedHomebaseConfig?.theme }}
+        bundle={{
+          ...feedBundle,
+          config: {
+            ...feedBundle.config,
+            data: { ...feedBundle.config.data, initialHash: castHash, updateUrl: true },
+          },
         }}
-        saveData={async () => noop()}
-        data={{ initialHash: castHash, updateUrl: true }}
+        saveConfig={saveFeedConfig}
+        setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
+        setSelectedFidgetID={dummyFunctions.setSelectedFidgetID}
+        selectedFidgetID={HOMEBASE_FEED_FIDGET_ID}
+        removeFidget={dummyFunctions.removeFidget}
+        minimizeFidget={dummyFunctions.minimizeFidget}
       />
     ) : undefined,
   }), [
@@ -253,6 +271,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     tabOrdering.local,
     editMode,
     castHash,
+    feedBundle,
   ]);
 
 
