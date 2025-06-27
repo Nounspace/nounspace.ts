@@ -283,32 +283,35 @@ export default function Space({
             {!isUndefined(feed) && (!isMobile || showFeedOnMobile) ? (
               <div
                 className={
-                  !isUndefined(profile)
-                    ? "w-6/12 h-[calc(100vh-224px)]"
-                    : "w-6/12 h-[calc(100vh-64px)]"
+                  isMobile && showFeedOnMobile
+                    ? "size-full"
+                    : !isUndefined(profile)
+                      ? "w-6/12 h-[calc(100vh-224px)]"
+                      : "w-6/12 h-[calc(100vh-64px)]"
                 }
               >
                 {feed}
               </div>
             ) : null}
 
-            <div
-              className={
-                isMobile
-                  ? "size-full"
-                  : !isUndefined(profile)
-                    ? "grow h-[calc(100vh-224px)]"
-                    : "grow h-[calc(100vh-64px)]"
-              }
-            >
-              <Suspense
-                fallback={
-                  <SpaceLoading
-                    hasProfile={!isNil(profile)}
-                    hasFeed={!isNil(feed)}
-                  />
+            {!(isMobile && showFeedOnMobile) && (
+              <div
+                className={
+                  isMobile
+                    ? "size-full"
+                    : !isUndefined(profile)
+                      ? "grow h-[calc(100vh-224px)]"
+                      : "grow h-[calc(100vh-64px)]"
                 }
               >
+                <Suspense
+                  fallback={
+                    <SpaceLoading
+                      hasProfile={!isNil(profile)}
+                      hasFeed={!isNil(feed)}
+                    />
+                  }
+                >
                 {isMobile ? (
                   <MobileView
                     fidgetInstanceDatums={config.fidgetInstanceDatums}
@@ -335,7 +338,8 @@ export default function Space({
                   />
                 )}
               </Suspense>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
