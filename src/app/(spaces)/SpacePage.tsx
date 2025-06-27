@@ -10,6 +10,8 @@ export type SpacePageArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
+  /** When true, render the feed on mobile layouts. */
+  showFeedOnMobile?: boolean;
 };
 
 export default function SpacePage({
@@ -20,6 +22,7 @@ export default function SpacePage({
   tabBar,
   profile,
   feed,
+  showFeedOnMobile,
 }: SpacePageArgs) {
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
@@ -34,6 +37,7 @@ export default function SpacePage({
         tabBar={tabBar}
         profile={profile}
         feed={feed}
+        showFeedOnMobile={showFeedOnMobile}
         setEditMode={setEditMode}
         editMode={editMode}
         setSidebarEditable={setSidebarEditable}

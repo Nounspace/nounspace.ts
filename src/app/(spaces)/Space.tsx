@@ -54,6 +54,8 @@ type SpaceArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
+  /** When true, render the feed on mobile layouts. */
+  showFeedOnMobile?: boolean;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
   setSidebarEditable: (v: boolean) => void;
@@ -68,6 +70,7 @@ export default function Space({
   tabBar,
   profile,
   feed,
+  showFeedOnMobile,
   setEditMode,
   editMode,
   setSidebarEditable,
@@ -277,7 +280,7 @@ export default function Space({
           </div>
 
           <div className={isMobile ? "size-full" : "flex h-full"}>
-            {!isUndefined(feed) && !isMobile ? (
+            {!isUndefined(feed) && (!isMobile || showFeedOnMobile) ? (
               <div
                 className={
                   !isUndefined(profile)

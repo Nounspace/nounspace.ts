@@ -246,6 +246,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
         data={{ initialHash: castHash, updateUrl: true }}
       />
     ) : undefined,
+    showFeedOnMobile: Boolean(castHash),
   }), [
     tabName,
     tabName === "Feed"
