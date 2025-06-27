@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
-import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
 import * as FaIcons from "react-icons/fa6";
 import * as BsIcons from "react-icons/bs";
@@ -14,7 +13,6 @@ const ICON_PACK: Record<string, IconType> = {
   ...BsIcons,
   ...GiIcons,
 };
-import { usePathname } from "next/navigation";
 
 interface TabNavigationProps {
   processedFidgetIds: string[];
@@ -47,39 +45,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
   if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
-  
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  const pathname = usePathname();
-  const isHomebasePath = pathname?.startsWith('/homebase');
-  const isHomePath = pathname?.startsWith('/home');
 
   // Reorder tabs to prioritize feed fidgets
   const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
-    
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
-    
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, isHomePath]);
+    return processedFidgetIds;
+  }, [processedFidgetIds]);
 
   // Enhanced scroll handler to calculate gradient opacities based on scroll position
   const handleScroll = () => {
@@ -130,21 +100,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
-     if (fidgetId === 'feed') {
-      return 'Feed';
-    }
-    // Handle special consolidated views
-    if (fidgetId === 'consolidated-media' || fidgetId === 'consolidated-pinned') {
-      return getFidgetDisplayName(null, isMobile, fidgetId);
-    }
-    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
-    
     // Get valid fidget IDs and find index for custom tab name
     const validFidgetIds = Object.keys(fidgetInstanceDatums);
     const fidgetIdIndex = validFidgetIds.indexOf(fidgetId);
-    
     // Use the centralized utility function to get the display name
     return getFidgetDisplayName(
       fidgetDatum,
@@ -158,56 +118,28 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
-     if (fidgetId === 'feed') {
-      return selectedTab === fidgetId ? 
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="text-xl w-6 h-6">
-          <path fillRule="evenodd" d="M3.75 4.5a.75.75 0 0 1 .75-.75h.75c8.284 0 15 6.716 15 15v.75a.75.75 0 0 1-.75.75h-.75a.75.75 0 0 1-.75-.75v-.75C18 11.708 12.292 6 5.25 6H4.5a.75.75 0 0 1-.75-.75V4.5Zm0 6.75a.75.75 0 0 1 .75-.75h.75a8.25 8.25 0 0 1 8.25 8.25v.75a.75.75 0 0 1-.75.75H12a.75.75 0 0 1-.75-.75v-.75a6 6 0 0 0-6-6H4.5a.75.75 0 0 1-.75-.75v-.75Zm0 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" clipRule="evenodd" />
-        </svg> :
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="text-xl w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 19.5v-.75a7.5 7.5 0 0 0-7.5-7.5H4.5m0-6.75h.75c7.87 0 14.25 6.38 14.25 14.25v.75M6 18.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-        </svg>
-    }
-    // Special case for consolidated media
-    if (fidgetId === 'consolidated-media') {
-      return selectedTab === fidgetId ? 
-        <BsImageFill className="text-xl" /> : 
-        <BsImage className="text-xl" />;
-    }
-
-    // Special case for consolidated pinned casts
-    if (fidgetId === 'consolidated-pinned') {
-      return selectedTab === fidgetId ? 
-        <BsFillPinFill size={22} /> : 
-        <BsPin size={22} />;
-    }
-    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return <MdGridView className="text-xl" />;  // Default icon
-    
+    if (!fidgetDatum) return <MdGridView className="text-xl" />;
     const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-    if (!fidgetModule) return <MdGridView className="text-xl" />;  // Default icon
-
-    // On mobile, use custom mobile icons if available
+    if (!fidgetModule) return <MdGridView className="text-xl" />;
     if (isMobile) {
-      const customIcon = fidgetDatum.config.settings.mobileIconName as string | undefined
+      const customIcon = fidgetDatum.config.settings.mobileIconName as string | undefined;
       if (customIcon) {
         if (customIcon.startsWith('http')) {
-          return <img src={customIcon} alt="icon" className="w-5 h-5" />
+          return <img src={customIcon} alt="icon" className="w-5 h-5" />;
         }
-        const Icon = ICON_PACK[customIcon] as IconType | undefined
+        const Icon = ICON_PACK[customIcon] as IconType | undefined;
         if (Icon) {
-          return <Icon className="text-xl" />
+          return <Icon className="text-xl" />;
         }
       }
-
-      const isSelected = selectedTab === fidgetId
+      const isSelected = selectedTab === fidgetId;
       if (isSelected && fidgetModule.properties.mobileIconSelected) {
-        return fidgetModule.properties.mobileIconSelected
+        return fidgetModule.properties.mobileIconSelected;
       } else if (fidgetModule.properties.mobileIcon) {
-        return fidgetModule.properties.mobileIcon
+        return fidgetModule.properties.mobileIcon;
       }
     }
-    
     // Fallback to emoji icon
     return (
       <span 

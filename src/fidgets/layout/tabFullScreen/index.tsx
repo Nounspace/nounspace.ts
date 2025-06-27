@@ -3,11 +3,9 @@ import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
 import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import { usePathname } from "next/navigation";
 import { 
   FidgetBundle, 
   FidgetConfig, 
-  FidgetInstanceData, 
   LayoutFidget, 
   LayoutFidgetConfig, 
   LayoutFidgetProps 
@@ -51,9 +49,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   const viewportMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
   const isMobile = viewportMobile || mobilePreview;
-  const pathname = usePathname();
-  const isHomebasePath = pathname?.startsWith('/homebase');
-  const isHomePath = pathname?.startsWith('/home');
   
   // Process fidgets and prepare data for rendering
   const validFidgetIds = useMemo(() => 
@@ -89,59 +84,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     return bundles;
   }, [validFidgetIds, fidgetInstanceDatums]);
 
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  // Get ordered fidget IDs with feed prioritized (except in homebase)
-  const orderedFidgetIds = useMemo(() => {
-    // Start with the base fidget IDs
-    let ids = [...processedFidgetIds];
-    
-    // Add feed tab at the beginning if it exists
-    if (hasFeed && feed) {
-      ids = ['feed', ...ids];
-      console.log("Added feed tab at the beginning", ids);
-    } else {
-      console.log("Feed not available", hasFeed, feed ? "feed exists" : "no feed");
-    }
-    
-    if (ids.length <= 1) return ids;
-    
-    // If we're in homebase or home path, don't reorder further
-    if (isHomebasePath || isHomePath) return ids;
-    
-    // For other paths, reorder to prioritize feed fidgets
-    const reorderedIds = [...ids];
-    
-    // Skip the first item if it's the main feed
-    if (hasFeed && feed) {
-      const withoutFirst = reorderedIds.slice(1);
-      withoutFirst.sort((a, b) => {
-        const aIsFeed = isFeedFidget(a);
-        const bIsFeed = isFeedFidget(b);
-        
-        if (aIsFeed && !bIsFeed) return -1; 
-        if (!aIsFeed && bIsFeed) return 1;  
-        return 0; 
-      });
-      return [reorderedIds[0], ...withoutFirst];
-    } else {
-      reorderedIds.sort((a, b) => {
-        const aIsFeed = isFeedFidget(a);
-        const bIsFeed = isFeedFidget(b);
-        
-        if (aIsFeed && !bIsFeed) return -1;
-        if (!aIsFeed && bIsFeed) return 1; 
-        return 0;
-      });
-      return reorderedIds;
-    }
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, hasFeed, feed]);
+  const orderedFidgetIds = useMemo(() => processedFidgetIds, [processedFidgetIds]);
 
   // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
