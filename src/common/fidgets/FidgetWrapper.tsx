@@ -26,11 +26,14 @@ import {
 } from "../components/atoms/tooltip";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
-export type FidgetWrapperProps = {
-  fidget: React.FC<FidgetArgs>;
-  bundle: FidgetBundle;
+export type FidgetWrapperProps<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+> = {
+  fidget: React.FC<FidgetArgs<S, D>>;
+  bundle: FidgetBundle<S, D>;
   context?: FidgetRenderContext;
-  saveConfig: (conf: FidgetConfig) => Promise<void>;
+  saveConfig: (conf: FidgetConfig<S, D>) => Promise<void>;
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
@@ -38,10 +41,12 @@ export type FidgetWrapperProps = {
   minimizeFidget: (fidgetId: string) => void;
 };
 
-export const getSettingsWithDefaults = (
-  settings: FidgetSettings | undefined,
-  config: FidgetProperties,
-): FidgetSettings => {
+export const getSettingsWithDefaults = <
+  S extends FidgetSettings = FidgetSettings,
+>(
+  settings: S | undefined,
+  config: FidgetProperties<S>,
+): S => {
   const safeSettings = settings ?? {};
   return reduce(
     config.fields,
@@ -56,7 +61,10 @@ export const getSettingsWithDefaults = (
   );
 };
 
-export function FidgetWrapper({
+export function FidgetWrapper<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+>({
   fidget,
   bundle,
   context,
@@ -66,7 +74,7 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
-}: FidgetWrapperProps) {
+}: FidgetWrapperProps<S, D>) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -89,7 +97,7 @@ export function FidgetWrapper({
 
   const Fidget = fidget;
 
-  const saveData = (data: FidgetData) => {
+  const saveData = (data: D) => {
     return saveConfig({
       ...bundle.config,
       data,
@@ -102,7 +110,7 @@ export function FidgetWrapper({
   );
 
   const onSave = async (
-    newSettings: FidgetSettings,
+    newSettings: S,
     shouldUnselect?: boolean,
   ) => {
     try {
