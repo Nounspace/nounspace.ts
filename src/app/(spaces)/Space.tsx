@@ -9,6 +9,7 @@ import {
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
+import type { FeedFidgetSettings, FeedFidgetData } from "@/fidgets/farcaster/Feed";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
@@ -30,6 +31,7 @@ export type SpaceConfig = {
   fidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   };
+  feedInstanceDatum?: FidgetInstanceData<FeedFidgetSettings, FeedFidgetData>;
   layoutID: string;
   layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
   isEditable: boolean;

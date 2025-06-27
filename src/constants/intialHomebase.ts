@@ -1,5 +1,7 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
+import type { FeedFidgetSettings, FeedFidgetData } from "@/fidgets/farcaster/Feed";
 const tutorialText = `
 ### 🖌️ Click the paintbrush in the bottom-left corner to open Customization Mode
 
@@ -74,6 +76,30 @@ const onboardingFidgetConfig = {
   id: onboardingFidgetID,
 };
 
+export const HOMEBASE_FEED_FIDGET_ID = "feed:homebase";
+
+const homebaseFeedFidget: {
+  config: { editable: boolean; settings: FeedFidgetSettings; data: FeedFidgetData };
+  fidgetType: string;
+  id: string;
+} = {
+  config: {
+    editable: true,
+    settings: {
+      feedType: FeedType.Following,
+      filterType: FilterType.Users,
+      selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+      Xhandle: "",
+      style: "",
+      fontFamily: "var(--user-theme-font)",
+      fontColor: "var(--user-theme-font-color)" as any,
+    } as FeedFidgetSettings,
+    data: {},
+  },
+  fidgetType: "feed",
+  id: HOMEBASE_FEED_FIDGET_ID,
+};
+
 const layoutID = "";
 const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   layoutID,
@@ -98,6 +124,7 @@ const INITIAL_HOMEBASE_CONFIG: SpaceConfig = {
   fidgetInstanceDatums: {
     [onboardingFidgetID]: onboardingFidgetConfig,
   },
+  feedInstanceDatum: homebaseFeedFidget,
   isEditable: true,
   fidgetTrayContents: [],
 };
