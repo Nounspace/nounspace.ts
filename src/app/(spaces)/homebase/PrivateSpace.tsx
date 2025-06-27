@@ -13,6 +13,7 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
 import INITIAL_HOMEBASE_CONFIG, { HOMEBASE_FEED_FIDGET_ID } from "@/constants/intialHomebase";
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
@@ -247,7 +248,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     feed: tabName === "Feed" ? (
       <FidgetWrapper
         fidget={FeedModule.fidget}
-        context={{ theme: sanitizedHomebaseConfig?.theme }}
+        context={{ theme: sanitizedHomebaseConfig?.theme ?? DEFAULT_THEME }}
         bundle={{
           ...feedBundle,
           config: {
