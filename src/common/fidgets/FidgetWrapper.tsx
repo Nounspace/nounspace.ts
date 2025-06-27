@@ -26,11 +26,14 @@ import {
 } from "../components/atoms/tooltip";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
-export type FidgetWrapperProps = {
-  fidget: React.FC<FidgetArgs>;
-  bundle: FidgetBundle;
+export type FidgetWrapperProps<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+> = {
+  fidget: React.FC<FidgetArgs<S, D>>;
+  bundle: FidgetBundle<S, D>;
   context?: FidgetRenderContext;
-  saveConfig: (conf: FidgetConfig) => Promise<void>;
+  saveConfig: (conf: FidgetConfig<S, D>) => Promise<void>;
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
@@ -38,25 +41,30 @@ export type FidgetWrapperProps = {
   minimizeFidget: (fidgetId: string) => void;
 };
 
-export const getSettingsWithDefaults = (
-  settings: FidgetSettings | undefined,
-  config: FidgetProperties,
-): FidgetSettings => {
-  const safeSettings = settings ?? {};
+export const getSettingsWithDefaults = <
+  S extends FidgetSettings = FidgetSettings,
+>(
+  settings: S | undefined,
+  config: FidgetProperties<S>,
+): S => {
+  const safeSettings = settings ?? ({} as Partial<S>);
   return reduce(
     config.fields,
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
         f.fieldName in safeSettings
-          ? safeSettings[f.fieldName]
-          : (f.default ?? undefined),
+          ? (safeSettings as Record<string, unknown>)[f.fieldName]
+          : f.default ?? undefined,
     }),
-    {},
-  );
+    {} as Partial<S>,
+  ) as S;
 };
 
-export function FidgetWrapper({
+export function FidgetWrapper<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+>({
   fidget,
   bundle,
   context,
@@ -66,7 +74,7 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
-}: FidgetWrapperProps) {
+}: FidgetWrapperProps<S, D>) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -80,7 +88,9 @@ export function FidgetWrapper({
         fidgetId={bundle.id}
         properties={bundle.properties}
         settings={settingsWithDefaults}
-        onSave={onSave}
+        onSave={
+          onSave as (settings: FidgetSettings, shouldUnselect?: boolean) => void
+        }
         unselect={unselect}
         removeFidget={removeFidget}
       />,
@@ -89,7 +99,7 @@ export function FidgetWrapper({
 
   const Fidget = fidget;
 
-  const saveData = (data: FidgetData) => {
+  const saveData = (data: D) => {
     return saveConfig({
       ...bundle.config,
       data,
@@ -101,18 +111,16 @@ export function FidgetWrapper({
     bundle.properties,
   );
 
-  const onSave = async (
-    newSettings: FidgetSettings,
+  const onSave = (
+    newSettings: S,
     shouldUnselect?: boolean,
-  ) => {
-    try {
-      await saveConfig({
-        ...bundle.config,
-        settings: newSettings,
-      });
-    } catch (e) {
+  ): void => {
+    saveConfig({
+      ...bundle.config,
+      settings: newSettings,
+    }).catch(() => {
       toast.error("Failed to save fidget settings", { duration: 1000 });
-    }
+    });
 
     if (shouldUnselect) {
       unselect();
