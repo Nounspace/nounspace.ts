@@ -39,6 +39,7 @@ export type FidgetWrapperProps<
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  allowDelete?: boolean;
 };
 
 export const getSettingsWithDefaults = <
@@ -74,6 +75,7 @@ export function FidgetWrapper<
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
+  allowDelete = true,
 }: FidgetWrapperProps<S, D>) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
@@ -93,6 +95,7 @@ export function FidgetWrapper<
         }
         unselect={unselect}
         removeFidget={removeFidget}
+        showRemoveButton={allowDelete}
       />,
     );
   }
@@ -217,22 +220,24 @@ export function FidgetWrapper<
             </TooltipProvider>
           </Card>
         </button>
-        <button
-          onClick={() => {
-            removeFidget(bundle.id);
-          }}
-        >
-          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <FaX className="w-5/12" />
-                </TooltipTrigger>
-                <TooltipContent>Remove Fidget</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Card>
-        </button>
+        {allowDelete && (
+          <button
+            onClick={() => {
+              removeFidget(bundle.id);
+            }}
+          >
+            <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <FaX className="w-5/12" />
+                  </TooltipTrigger>
+                  <TooltipContent>Remove Fidget</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Card>
+          </button>
+        )}
       </div>,
       document.body
     );
