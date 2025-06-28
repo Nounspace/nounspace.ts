@@ -283,8 +283,8 @@ export default function Space({
               <div
                 className={
                   !isUndefined(profile)
-                    ? "w-6/12 h-[calc(100vh-224px)]"
-                    : "w-6/12 h-[calc(100vh-64px)]"
+                    ? "w-5/12 h-[calc(100vh-224px)]"
+                    : "w-5/12 h-[calc(100vh-64px)]"
                 }
                 style={{
                   padding: `${parseInt(config.theme?.properties?.gridSpacing ?? "16")}px`,

@@ -80,7 +80,7 @@ const makeGridDetails = (
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
-  cols: hasFeed ? 6 : 12,
+  cols: hasFeed ? 7 : 12,
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
