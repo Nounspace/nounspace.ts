@@ -153,6 +153,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   onSave,
   unselect,
   removeFidget,
+  showRemoveButton,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
 
