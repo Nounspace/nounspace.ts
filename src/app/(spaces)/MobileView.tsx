@@ -141,7 +141,7 @@ const MobileView: React.FC<MobileViewProps> = ({
         className="w-full h-full overflow-hidden"
         style={{
           paddingBottom:
-            processedFidgetIds.length > 1 ? `${TAB_HEIGHT}px` : "0",
+            processedFidgetIds.length > 0 ? `${TAB_HEIGHT}px` : "0",
         }}
       >
         <Tabs
@@ -243,7 +243,7 @@ const MobileView: React.FC<MobileViewProps> = ({
       </div>
 
       {/* Mobile Navbar at bottom of screen */}
-      {processedFidgetIds.length > 1 && (
+      {processedFidgetIds.length > 0 && (
         <MobileNavbar
           tabs={tabItems}
           selected={selectedTab}
