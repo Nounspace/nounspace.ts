@@ -88,6 +88,9 @@ const nextConfig = {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
       os: path.resolve("./src/common/stubs/os.ts"),
+      "@walletconnect/types": path.resolve(
+        "./src/common/stubs/walletconnect-types.ts",
+      ),
     };
     return config;
   },

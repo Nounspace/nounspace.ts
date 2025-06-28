@@ -1,7 +1,8 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import type { FeedFidgetSettings, FeedFidgetData } from "@/fidgets/farcaster/Feed";
+import { FilterType } from "@/fidgets/farcaster/Feed";
 const tutorialText = `
 ### 🖌️ Click the paintbrush in the bottom-left corner to open Customization Mode
 
