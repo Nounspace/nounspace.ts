@@ -96,7 +96,8 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     };
   }, [homebaseConfig, isLoggedIn]);
 
-  const { editMode, portalRef } = useSidebarContext(); // Get the edit mode status and portal ref from the sidebar context
+  // Get the edit mode status and portal ref from the sidebar context
+  const { editMode, portalRef } = useSidebarContext();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(<></>);
 
