@@ -32,6 +32,12 @@
       ],
       "@public/*": [
         "public/*"
+      ],
+      "os": [
+        "src/common/stubs/os.ts"
+      ],
+      "@walletconnect/types": [
+        "src/common/stubs/walletconnect-types.ts"
       ]
     },
     "types": [
