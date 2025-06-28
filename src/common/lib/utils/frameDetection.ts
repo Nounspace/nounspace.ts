@@ -26,6 +26,7 @@ const NON_FRAME_DOMAINS = [
   'imgur.com',
   'giphy.com',
   'tenor.com',
+  'media.tenor.com',
   'pinterest.com',
   'flickr.com',
   'unsplash.com',
