@@ -162,7 +162,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const editorCtx = useFidgetEditorContext();
   const [selectedFidgetIDState, setSelectedFidgetIDState] = useState("");
   const [currentFidgetSettingsState, setCurrentFidgetSettingsState] =
-    useState<React.ReactNode>(<></>);
+    useState<React.ReactNode>(null);
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
 
   const selectedFidgetID = editorCtx?.selectedFidgetID ?? selectedFidgetIDState;

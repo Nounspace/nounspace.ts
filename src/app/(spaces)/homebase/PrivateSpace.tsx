@@ -117,7 +117,7 @@ function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: 
   useEffect(() => {
     if (!editMode) {
       setSelectedFidgetID("");
-      setCurrentFidgetSettings(<></>);
+      setCurrentFidgetSettings(null);
     }
   }, [editMode]);
 

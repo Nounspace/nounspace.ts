@@ -54,7 +54,8 @@ export type Color =
   | HSLColor
   | HSLAColor
   | NamedColor
-  | LinearGradientColor;
+  | LinearGradientColor
+  | CSSCustomProperty;
 export type HexColor = `#${string}`;
 export type RGBColor =
   `rgb\\s*\\(\\s*${number}\\s*,\\s*${number}\\s*,\\s*${number}\\s*\\)\\s*|\\s*rgb\\s*\\(\\s*${number}%\\s*,\\s*${number}%\\s*,\\s*${number}%\\s*\\)`;
@@ -65,6 +66,7 @@ export type HSLColor =
 export type HSLAColor =
   `hsla\\s*\\(\\s*${number}\\s*,\\s*${number}%\\s*,\\s*${number}%\\s*,\\s*${number | `${number}%`}\\s*\\)`;
 export type LinearGradientColor = `linear-gradient(${string})`;
+export type CSSCustomProperty = `var(--${string})`;
 export type NamedColor =
   | "aliceblue"
   | "antiquewhite"
