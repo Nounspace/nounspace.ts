@@ -12,9 +12,17 @@ export default function useWindowSize() {
     };
   }
 
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions(),
-  );
+  // Initialize with null values to avoid hydration mismatch
+  const [windowDimensions, setWindowDimensions] = useState<{
+    width: number | null;
+    height: number | null;
+  }>({
+    width: null,
+    height: null,
+  });
+
+  // Set initial dimensions after component mounts (client-side only)
+  const [isClient, setIsClient] = useState(false);
 
   const debounce = <T extends (...args: any[]) => any>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
     let timeout: NodeJS.Timeout | null = null;
@@ -33,11 +41,17 @@ export default function useWindowSize() {
   );
 
   useEffect(() => {
-    if (hasWindow) {
+    // Set client flag and initial dimensions on mount
+    setIsClient(true);
+    setWindowDimensions(getWindowDimensions());
+  }, []);
+
+  useEffect(() => {
+    if (hasWindow && isClient) {
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
-  }, [hasWindow, handleResize]);
+  }, [hasWindow, handleResize, isClient]);
 
   return windowDimensions;
 }
