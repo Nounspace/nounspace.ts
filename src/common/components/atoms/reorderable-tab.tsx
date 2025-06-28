@@ -42,12 +42,7 @@ export const Tab = ({
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       whileDrag={{ backgroundColor: "#e3e3e3" }}
       className={isSelected ? "selected relative" : "relative"}
-      onPointerDown={(e) => {
-        if (!inEditMode) {
-          e.preventDefault();
-          onClick(tabName, e);
-        }
-      }}
+      onPointerDown={inEditMode ? undefined : (e) => e.preventDefault()}
       dragListener={draggable}
     >
       <Link
