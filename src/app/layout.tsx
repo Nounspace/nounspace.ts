@@ -2,10 +2,11 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
-import Sidebar from "@/common/components/organisms/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
+import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
 
 export const metadata = {
   title: "Nounspace",
@@ -71,10 +72,16 @@ export default function RootLayout({
 const sidebarLayout = (page: React.ReactNode) => {
   return (
     <>
-      <div className="min-h-screen max-w-screen h-screen w-screen">
-        <div className="flex w-full h-full">
-          <div className="mx-auto transition-all duration-100 ease-out" style={{zIndex: 999, position: "relative"}}>
-            <Sidebar />
+      <div className="min-h-screen max-w-screen w-screen flex flex-col">
+        {/* App Navigation Bar */}
+        <div className="w-full flex-shrink-0 md:hidden">
+          <ClientMobileHeaderWrapper />
+        </div>
+
+        {/* Main Content with Sidebar */}
+        <div className="flex w-full h-full flex-grow">
+          <div className="transition-all duration-100 ease-out z-10 hidden md:block flex-shrink-0">
+            <ClientSidebarWrapper />
           </div>
           {page}
         </div>

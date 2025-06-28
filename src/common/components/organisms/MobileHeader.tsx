@@ -148,6 +148,11 @@ const MobileHeader = () => {
           <Navigation
             isEditable={sidebarEditable}
             enterEditMode={enterEditMode}
+            mobile
+            onNavigate={() => {
+              setNavOpen(false);
+              window.scrollTo({ top: 0 });
+            }}
           />
         </DrawerContent>
       </Drawer>
