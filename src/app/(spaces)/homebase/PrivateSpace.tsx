@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, lazy } from "react";
+import React, { useEffect, useMemo, useState, lazy } from "react";
+import { createPortal } from "react-dom";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -12,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import INITIAL_HOMEBASE_CONFIG, { HOMEBASE_FEED_FIDGET_ID } from "@/constants/intialHomebase";
+import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
@@ -95,7 +96,16 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     };
   }, [homebaseConfig, isLoggedIn]);
 
-  const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
+  const { editMode, portalRef } = useSidebarContext(); // Get the edit mode status and portal ref from the sidebar context
+  const [selectedFidgetID, setSelectedFidgetID] = useState("");
+  const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(<></>);
+
+  useEffect(() => {
+    if (!editMode) {
+      setSelectedFidgetID("");
+      setCurrentFidgetSettings(<></>);
+    }
+  }, [editMode]);
 
   // Effect to handle login modal when user is not logged in
   useEffect(() => {
@@ -253,15 +263,17 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
           ...feedBundle,
           config: {
             ...feedBundle.config,
+            editable: editMode,
             data: { ...feedBundle.config.data, initialHash: castHash, updateUrl: true },
           },
         }}
         saveConfig={saveFeedConfig}
-        setCurrentFidgetSettings={dummyFunctions.setCurrentFidgetSettings}
-        setSelectedFidgetID={dummyFunctions.setSelectedFidgetID}
-        selectedFidgetID={HOMEBASE_FEED_FIDGET_ID}
-        removeFidget={dummyFunctions.removeFidget}
+        setCurrentFidgetSettings={setCurrentFidgetSettings}
+        setSelectedFidgetID={setSelectedFidgetID}
+        selectedFidgetID={selectedFidgetID}
+        removeFidget={noop}
         minimizeFidget={dummyFunctions.minimizeFidget}
+        allowDelete={false}
       />
     ) : undefined,
   }), [
@@ -273,12 +285,17 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     editMode,
     castHash,
     feedBundle,
+    selectedFidgetID,
   ]);
 
 
   // Render the SpacePage component with the defined arguments
   return (
-    <SpacePage key={tabName} {...args} />
+    <>
+      {editMode && portalRef.current &&
+        createPortal(currentFidgetSettings, portalRef.current)}
+      <SpacePage key={tabName} {...args} />
+    </>
   );
 }
 
