@@ -90,7 +90,7 @@ export function FidgetWrapper<
         fidgetId={bundle.id}
         properties={bundle.properties}
         settings={settingsWithDefaults}
-        onSave={onSave}
+        onSave={onSave as (settings: FidgetSettings, shouldUnselect?: boolean) => void}
         unselect={unselect}
         removeFidget={removeFidget}
         showRemoveButton={allowDelete}

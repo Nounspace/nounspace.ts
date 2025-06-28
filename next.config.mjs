@@ -81,10 +81,6 @@ const nextConfig = {
   },
   webpack: (config) => {
     // Prevent bundling Node's "os" module which causes WalletConnect issues
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      os: false,
-    };
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
       os: path.resolve("./src/common/stubs/os.ts"),

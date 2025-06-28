@@ -15,7 +15,7 @@ export const FidgetEditorProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
-  const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(<></>);
+  const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(null);
 
   return (
     <FidgetEditorContext.Provider
