@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, lazy } from "react";
+import React, { useEffect, useMemo, lazy } from "react";
 import { createPortal } from "react-dom";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
@@ -17,12 +17,16 @@ import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import {
+  FidgetEditorProvider,
+  useFidgetEditorContext,
+} from "@/common/providers/FidgetEditorProvider";
 
 // Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
-// Main component for the private space
-function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
+// Main component for the private space content
+function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: string }) {
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -98,8 +102,17 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Get the edit mode status and portal ref from the sidebar context
   const { editMode, portalRef } = useSidebarContext();
-  const [selectedFidgetID, setSelectedFidgetID] = useState("");
-  const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(<></>);
+  const {
+    selectedFidgetID,
+    setSelectedFidgetID,
+    currentFidgetSettings,
+    setCurrentFidgetSettings,
+  } = useFidgetEditorContext() || {
+    selectedFidgetID: "",
+    setSelectedFidgetID: () => {},
+    currentFidgetSettings: <></>,
+    setCurrentFidgetSettings: () => {},
+  };
 
   useEffect(() => {
     if (!editMode) {
@@ -300,4 +313,10 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   );
 }
 
-export default PrivateSpace; 
+export default function PrivateSpace(props: { tabName: string; castHash?: string }) {
+  return (
+    <FidgetEditorProvider>
+      <PrivateSpaceInner {...props} />
+    </FidgetEditorProvider>
+  );
+}
