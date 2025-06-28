@@ -285,8 +285,8 @@ function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: 
         setCurrentFidgetSettings={setCurrentFidgetSettings}
         setSelectedFidgetID={setSelectedFidgetID}
         selectedFidgetID={selectedFidgetID}
-        removeFidget={noop}
-        minimizeFidget={dummyFunctions.minimizeFidget}
+        removeFidget={() => {}}
+        minimizeFidget={() => {}}
         allowDelete={false}
       />
     ) : undefined,
