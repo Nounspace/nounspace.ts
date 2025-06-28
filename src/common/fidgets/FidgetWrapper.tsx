@@ -249,9 +249,9 @@ export function FidgetWrapper<
       <Card
         ref={fidgetRef}
         className={
-          selectedFidgetID === bundle.id
+          (selectedFidgetID === bundle.id
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl"
-            : "size-full"
+            : "size-full") + " relative"
         }
         style={{
           outline:
