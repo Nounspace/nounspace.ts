@@ -286,6 +286,9 @@ export default function Space({
                     ? "w-6/12 h-[calc(100vh-224px)]"
                     : "w-6/12 h-[calc(100vh-64px)]"
                 }
+                style={{
+                  padding: `${parseInt(config.theme?.properties?.gridSpacing ?? "16")}px`,
+                }}
               >
                 {feed}
               </div>

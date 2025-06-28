@@ -95,6 +95,10 @@ export const createHomeBaseStoreFunc = (
       }, "loadHomebase-found");
       return spaceConfig;
     } catch (e) {
+      const existing = get().homebase.homebaseConfig;
+      if (existing) {
+        return existing;
+      }
       set((draft) => {
         draft.homebase.homebaseConfig = {
           ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
