@@ -1,7 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 
 import {
-  DEBUG_PROMPTS,
   MAX_TRENDING_CASTS,
   MODEL_TEMPERATURE_CREATIVE,
   TODAY_TIME_DATE,

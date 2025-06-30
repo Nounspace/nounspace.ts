@@ -1,32 +1,31 @@
-import React, { useState, useMemo, useEffect } from "react"
-import { TabsContent, Tabs } from "@/common/components/atoms/tabs"
-import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout"
-import useIsMobile from "@/common/lib/hooks/useIsMobile"
-import { usePathname } from "next/navigation"
+import React, { useState, useMemo, useEffect } from "react";
+import { TabsContent, Tabs } from "@/common/components/atoms/tabs";
+import { MOBILE_PADDING, TAB_HEIGHT } from "@/constants/layout";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { usePathname } from "next/navigation";
 import {
   FidgetBundle,
   FidgetConfig,
-  FidgetInstanceData,
   LayoutFidget,
   LayoutFidgetConfig,
   LayoutFidgetProps,
-} from "@/common/fidgets"
-import { CompleteFidgets } from "@/fidgets"
-import { createFidgetBundle } from "./utils"
-import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent"
-import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent"
-import FidgetContent from "./components/FidgetContent"
-import MobileNavbar from "@/common/components/organisms/MobileNavbar"
-import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils"
-import useProcessedFidgetIds from "@/common/lib/hooks/useProcessedFidgetIds"
-import { UserTheme } from "@/common/lib/theme"
-import defaultUserTheme from "@/common/lib/theme/defaultTheme"
+} from "@/common/fidgets";
+import { CompleteFidgets } from "@/fidgets";
+import { createFidgetBundle } from "./utils";
+import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
+import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
+import FidgetContent from "./components/FidgetContent";
+import MobileNavbar from "@/common/components/organisms/MobileNavbar";
+import { createTabItemsFromFidgetIds } from "@/common/utils/layoutUtils";
+import useProcessedFidgetIds from "@/common/lib/hooks/useProcessedFidgetIds";
+import { UserTheme } from "@/common/lib/theme";
+import defaultUserTheme from "@/common/lib/theme/defaultTheme";
 
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
-  layout: string[]
+  layout: string[];
 }
 
-type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>
+type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig>;
 
 /**
  * Main TabFullScreen Layout component
@@ -41,10 +40,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   saveConfig,
   tabNames,
 }) => {
-  const isMobile = useIsMobile()
-  const pathname = usePathname()
-  const isHomebasePath = pathname?.startsWith("/homebase")
-  const isHomePath = pathname?.startsWith("/home")
+  const isMobile = useIsMobile();
+  const pathname = usePathname();
 
   // Use the unified hook to process fidget IDs
   const {
@@ -53,7 +50,11 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
     mediaFidgetIds,
     pinnedCastIds,
     orderedFidgetIds,
-  } = useProcessedFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile)
+  } = useProcessedFidgetIds(
+    layoutConfig.layout,
+    fidgetInstanceDatums,
+    isMobile
+  );
 
   // Create tab items for the MobileNavbar
   const tabItems = useMemo(
@@ -64,48 +65,48 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
         tabNames
       ),
     [orderedFidgetIds, fidgetInstanceDatums, tabNames]
-  )
+  );
 
   // Initialize with the first fidget ID
   const [selectedTab, setSelectedTab] = useState(
     orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
-  )
+  );
 
   // Create bundles for all fidgets
   const fidgetBundles = useMemo(() => {
-    const bundles: Record<string, FidgetBundle> = {}
+    const bundles: Record<string, FidgetBundle> = {};
 
     validFidgetIds.forEach((id) => {
-      const fidgetData = fidgetInstanceDatums[id]
-      if (!fidgetData) return
+      const fidgetData = fidgetInstanceDatums[id];
+      if (!fidgetData) return;
 
-      const bundle = createFidgetBundle(fidgetData, false)
+      const bundle = createFidgetBundle(fidgetData, false);
       if (bundle) {
-        bundles[id] = bundle
+        bundles[id] = bundle;
       }
-    })
+    });
 
-    return bundles
-  }, [validFidgetIds, fidgetInstanceDatums])
+    return bundles;
+  }, [validFidgetIds, fidgetInstanceDatums]);
 
   // Update selected tab when orderedFidgetIds changes
   useEffect(() => {
     // If there are no fidget IDs, do nothing
-    if (orderedFidgetIds.length === 0) return
+    if (orderedFidgetIds.length === 0) return;
 
     // If current selection is invalid, select the first one
     if (!orderedFidgetIds.includes(selectedTab)) {
-      setSelectedTab(orderedFidgetIds[0])
+      setSelectedTab(orderedFidgetIds[0]);
     }
-  }, [orderedFidgetIds, selectedTab])
+  }, [orderedFidgetIds, selectedTab]);
 
   // Reset scroll position when switching between tabs on mobile
   useEffect(() => {
     if (isMobile && selectedTab) {
       // Reset scroll position to top when switching tabs
-      window.scrollTo({ top: 0, behavior: "smooth" })
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
-  }, [selectedTab, isMobile])
+  }, [selectedTab, isMobile]);
 
   // Configuration saving function
   const saveFidgetConfig =
@@ -119,8 +120,8 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
             config: newConfig,
           },
         },
-      })
-    }
+      });
+    };
 
   // If no valid fidgets, show empty state
   if (processedFidgetIds.length === 0) {
@@ -133,7 +134,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -209,16 +210,16 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                   id !== "consolidated-media" && id !== "consolidated-pinned"
               )
               .map((fidgetId) => {
-                const fidgetDatum = fidgetInstanceDatums[fidgetId]
-                if (!fidgetDatum) return null
+                const fidgetDatum = fidgetInstanceDatums[fidgetId];
+                if (!fidgetDatum) return null;
 
-                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType]
-                if (!fidgetModule) return null
+                const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
+                if (!fidgetModule) return null;
 
                 const bundle =
                   fidgetBundles[fidgetId] ||
-                  createFidgetBundle(fidgetDatum, false)
-                if (!bundle) return null
+                  createFidgetBundle(fidgetDatum, false);
+                if (!bundle) return null;
 
                 // Only render the content for the selected tab
                 return (
@@ -237,7 +238,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
                       mobilePadding={MOBILE_PADDING}
                     />
                   </TabsContent>
-                )
+                );
               })}
           </div>
 
@@ -255,7 +256,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
         </Tabs>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TabFullScreen
+export default TabFullScreen;

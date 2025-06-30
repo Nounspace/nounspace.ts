@@ -24,7 +24,11 @@ import {
   type FidgetSettingsStyle,
 } from "@/common/fidgets";
 import { Color } from "@/common/lib/theme";
-import { defaultStyleFields, ErrorWrapper, WithMargin } from "@/fidgets/helpers";
+import {
+  defaultStyleFields,
+  ErrorWrapper,
+  WithMargin,
+} from "@/fidgets/helpers";
 import React, { CSSProperties, useEffect, useState } from "react";
 
 export type GalleryFidgetSettings = {
@@ -60,14 +64,11 @@ const galleryConfig: FidgetProperties = {
       fieldName: "imageUploader",
       displayName: "Upload Image",
       inputSelector: ({ updateSettings }) => {
-        const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
-
         const handleImageUploaded = (Upload: string) => {
           console.log("Image uploaded, URL:", Upload);
-          setLocalImageUrl(Upload);
           updateSettings?.({
             uploadedImage: Upload,
-            imageUrl: Upload
+            imageUrl: Upload,
           });
         };
 
@@ -87,7 +88,8 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "imageUrl",
       displayName: "Image URL",
-      displayNameHint: "Right click on a publicly hosted image to copy its address, then paste the image address here.",
+      displayNameHint:
+        "Right click on a publicly hosted image to copy its address, then paste the image address here.",
       required: true,
       inputSelector: (props) => (
         <WithMargin>
@@ -103,7 +105,8 @@ const galleryConfig: FidgetProperties = {
     {
       fieldName: "network",
       displayName: "Network",
-      displayNameHint: "Choose the blockchain network where your NFTs are stored.",
+      displayNameHint:
+        "Choose the blockchain network where your NFTs are stored.",
       inputSelector: (props) => (
         <WithMargin>
           <AlchemyChainSelector {...props} />
@@ -230,17 +233,19 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   const [nftImageUrl, setNftImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [badgeColor, setBadgeColor] = useState<Color>(settings.badgeColor);
-  const [uploadedImage, setuploadedImage] = useState<string | null>(settings.uploadedImage || null);
+  const [uploadedImage, setuploadedImage] = useState<string | null>(
+    settings.uploadedImage || null
+  );
 
   React.useEffect(() => {
     if (uploadedImage) {
-      localStorage.setItem('galleryuploadedImage', uploadedImage);
+      localStorage.setItem("galleryuploadedImage", uploadedImage);
     }
 
     window.handleGalleryImageUpload = (url: string) => {
       console.log("Global handler called with URL:", url);
       setuploadedImage(url);
-      localStorage.setItem('galleryuploadedImage', url);
+      localStorage.setItem("galleryuploadedImage", url);
     };
 
     return () => {
@@ -249,8 +254,11 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
   }, [uploadedImage]);
 
   React.useEffect(() => {
-    const savedImageUrl = localStorage.getItem('galleryuploadedImage');
-    if (savedImageUrl && settings.selectMediaSource?.name === MediaSourceTypes.UPLOAD) {
+    const savedImageUrl = localStorage.getItem("galleryuploadedImage");
+    if (
+      savedImageUrl &&
+      settings.selectMediaSource?.name === MediaSourceTypes.UPLOAD
+    ) {
       setuploadedImage(savedImageUrl);
     }
   }, [settings.selectMediaSource?.name]);
@@ -272,12 +280,12 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
             setError(null);
           } else {
             setError(
-              "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct.",
+              "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct."
             );
           }
         } catch (err) {
           setError(
-            "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct.",
+            "Error fetching image from NFT. Make sure the Network, Contract Address, and Token ID are all correct."
           );
         }
       };

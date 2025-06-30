@@ -17,8 +17,7 @@ import SpaceLoading from "./SpaceLoading";
 import MobileView from "./MobileView";
 import DesktopView from "./DesktopView";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
-import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { cleanupLayout } from "@/common/lib/utils/gridCleanup";
 
 export type SpaceFidgetConfig = {
   instanceConfig: FidgetConfig<FidgetSettings>;
@@ -109,9 +108,10 @@ export default function Space({
     );
 
     // Remove orphaned layout items
-    const layoutWithoutOrphans = config.layoutDetails.layoutConfig.layout.filter(
-      (item) => !!config.fidgetInstanceDatums[item.i]
-    );
+    const layoutWithoutOrphans =
+      config.layoutDetails.layoutConfig.layout.filter(
+        (item) => !!config.fidgetInstanceDatums[item.i]
+      );
 
     const orphanedIds = orphanedLayoutItems.map((item) => item.i);
 
@@ -139,28 +139,31 @@ export default function Space({
     }
 
     // Check for and handle overlapping fidgets on the filtered layout
-    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } = cleanupLayout(
-      layoutWithoutOrphans,
-      config.fidgetInstanceDatums,
-      !isNil(profile),
-      !isNil(feed)
-    );
+    const { cleanedLayout: cleanedAfterOverlap, removedFidgetIds } =
+      cleanupLayout(
+        layoutWithoutOrphans,
+        config.fidgetInstanceDatums,
+        !isNil(profile),
+        !isNil(feed)
+      );
 
     const cleanedLayout = cleanedAfterOverlap;
     const allRemovedIds = [...removedFidgetIds, ...orphanedIds];
 
     const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    allRemovedIds.forEach(id => {
+    allRemovedIds.forEach((id) => {
       delete cleanedFidgetInstanceDatums[id];
     });
-    
+
     let settingsChanged = false;
     let datumFieldsUpdated = false;
 
     // Normalize configuration keys and ensure required fields
     Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
       const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown> | undefined;
+      const settings = datum.config?.settings as
+        | Record<string, unknown>
+        | undefined;
 
       if (settings) {
         const keyMap: Record<string, string> = {
@@ -190,7 +193,8 @@ export default function Space({
 
     // Make Queued Changes
     const layoutChanged =
-      cleanedLayout.length !== config.layoutDetails.layoutConfig.layout.length ||
+      cleanedLayout.length !==
+        config.layoutDetails.layoutConfig.layout.length ||
       cleanedLayout.some(
         (item, i) =>
           item.x !== config.layoutDetails.layoutConfig.layout[i]?.x ||
@@ -200,7 +204,12 @@ export default function Space({
           item.h !== config.layoutDetails.layoutConfig.layout[i]?.h
       );
 
-    if (allRemovedIds.length > 0 || layoutChanged || settingsChanged || datumFieldsUpdated) {
+    if (
+      allRemovedIds.length > 0 ||
+      layoutChanged ||
+      settingsChanged ||
+      datumFieldsUpdated
+    ) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
@@ -248,17 +257,20 @@ export default function Space({
   }
 
   // Get mobile fidget IDs from the current config
-  const mobileFidgetIds = useMemo(() => 
-    Object.keys(config.fidgetInstanceDatums || {}),
-  [config?.fidgetInstanceDatums]);
-  
+  const mobileFidgetIds = useMemo(
+    () => Object.keys(config.fidgetInstanceDatums || {}),
+    [config?.fidgetInstanceDatums]
+  );
+
   // Get desktop layout config from config or use default
-  const desktopLayoutConfig = useMemo(() => 
-    config?.layoutDetails?.layoutConfig ?? {
-      layout: [],
-      layoutFidget: "grid",
-    },
-  [config?.layoutDetails?.layoutConfig]);
+  const desktopLayoutConfig = useMemo(
+    () =>
+      config?.layoutDetails?.layoutConfig ?? {
+        layout: [],
+        layoutFidget: "grid",
+      },
+    [config?.layoutDetails?.layoutConfig]
+  );
 
   return (
     <div className="user-theme-background size-full relative overflow-hidden">
