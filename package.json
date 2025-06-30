@@ -98,7 +98,7 @@
     "clsx": "^2.0.0",
     "cmdk": "0.2.1",
     "command-score": "^0.1.2",
-    "emoji-picker-react": "^4.12.0",
+    "emoji-picker-react": "^4.12.3",
     "encoding": "^0.1.13",
     "esbuild": "^0.25.4",
     "fast-json-stable-stringify": "^2.1.0",
