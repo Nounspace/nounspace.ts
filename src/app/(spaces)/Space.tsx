@@ -275,7 +275,7 @@ export default function Space({
   }
 
   const mainContent = (
-    <div className="flex flex-col h-full overflow-y-auto touch-auto">
+    <div className="flex flex-col h-full overflow-y-auto md:overflow-y-visible touch-auto">
       <div style={{ position: "fixed" }} className="z-level-4">
         <InfoToast />
       </div>
@@ -294,12 +294,12 @@ export default function Space({
         )}
       </div>
 
-      <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow overflow-y-auto touch-auto"}>
+      <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "flex h-full flex-grow touch-auto"}>
         {!isUndefined(feed) && !isMobile ? (
           <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
         ) : null}
 
-        <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow overflow-y-auto touch-auto"}>
+        <div className={isMobile ? "w-full h-full flex-grow overflow-y-auto touch-auto" : "grow touch-auto"}>
 
           <Suspense
             fallback={
