@@ -209,6 +209,7 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
+        () => ({ theme }),
         `Theme saved: ${theme.name || 'Custom theme'}`,
         'theme-editor'
       );
@@ -227,6 +228,7 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
+        () => ({ theme }),
         `Before applying theme: ${selectedTheme.name}`,
         'theme-editor'
       );

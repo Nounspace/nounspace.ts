@@ -585,16 +585,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     const messageContent = wsMessage.message || "Builder is working...";
     const spaceConfig = tryParseSpaceConfig(messageContent);
 
-    // Log raw message if it contains config data
-    if (messageContent.includes("fidgetInstanceDatums")) {
-      console.log("🔧 Raw BUILDER_LOGS message with config:", {
-        type: wsMessage.type,
-        name: wsMessage.name,
-        messageLength: messageContent.length,
-        rawMessage: messageContent, // Full raw message content
-      });
-    }
-
     const logMessage: Message = {
       id: createMessageId("builder-log"),
       role: "assistant",
@@ -824,8 +814,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                 >
                   {/* Checkpoint button */}
                   {message.type === "checkpoint" && message.checkpointId && (
-                    <div>
-                      {/* Screenshot with overlaid reset button */}
+                    <div className="space-y-2">
+                      {/* Screenshot */}
                       {message.screenshot && (
                         <div className="relative">
                           <img
@@ -834,23 +824,28 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                             className="w-full h-20 object-cover rounded border"
                           />
                           <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
-                          
-                          {/* Overlay reset button */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
-                            disabled={isRestoring}
-                            className={`absolute top-1 right-1 h-6 w-6 p-0 shadow-sm border-0 ${
-                              message.role === "user" 
-                                ? "bg-green-500/80 hover:bg-green-500/90 text-white hover:text-white" 
-                                : "bg-white/80 hover:bg-white/90 text-gray-600 hover:text-gray-800"
-                            }`}
-                          >
-                            <RotateCcw className="w-3 h-3" />
-                          </Button>
                         </div>
                       )}
+                      
+                      {/* Checkpoint controls */}
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-medium ${message.role === "user" ? "text-green-100" : "text-green-800"}`}>
+                          {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
+                          disabled={isRestoring}
+                          className={`h-7 w-7 p-0 ${
+                            message.role === "user" 
+                              ? "text-green-200 hover:text-white hover:bg-green-600" 
+                              : "text-green-600 hover:text-green-700 hover:bg-green-100"
+                          }`}
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </Button>
+                      </div>
                     </div>
                   )}
 
@@ -878,8 +873,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                   {message.type === "config" && message.spaceConfig && message.configApplied && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       {message.checkpointId ? (
-                        <div>
-                          {/* Screenshot with overlaid reset button */}
+                        <div className="space-y-2">
+                          {/* Screenshot */}
                           {message.screenshot && (
                             <div className="relative">
                               <img
@@ -888,25 +883,30 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                                 className="w-full h-20 object-cover rounded border"
                               />
                               <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
-                              
-                              {/* Overlay reset button */}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
-                                disabled={isRestoring}
-                                className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80 hover:bg-white/90 text-gray-600 hover:text-gray-800 shadow-sm border-0"
-                              >
-                                <RotateCcw className="w-3 h-3" />
-                              </Button>
                             </div>
                           )}
+                          
+                          {/* Checkpoint controls */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-800">
+                              {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
+                              disabled={isRestoring}
+                              className="h-7 w-7 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                            </Button>
+                          </div>
                         </div>
                       ) : (
                         <div className="text-xs text-gray-600 bg-green-50 p-2 rounded">
                           ✅ Configuration automatically applied
                         </div>
-                      )}
+                      ) }
                     </div>
                   )}
 
