@@ -54,9 +54,9 @@ export const MobileContractDefinedSpace = ({
           : "",
         tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
         !!tokenData?.clankerData,
-        tokenData?.network,
+        tokenData?.network
       ),
-    [contractAddress, tokenData, tokenData?.network],
+    [contractAddress, tokenData, tokenData?.network]
   );
 
   const { getCurrentSpaceConfig } = useAppStore((state) => ({
@@ -116,7 +116,7 @@ export const MobileContractDefinedSpace = ({
       onClick={() => setTab(label)}
       className={cn(
         "gap-1 text-sm font-semibold flex flex-col items-center cursor-pointer",
-        currentTab === label && "text-purple-500",
+        currentTab === label && "text-purple-500"
       )}
     >
       <Icon size={size} /> {label}
@@ -147,7 +147,7 @@ export const MobileContractDefinedSpace = ({
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -175,13 +175,13 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn(
             "w-full h-full overflow-hidden",
-            tab !== "Price" && "hidden",
+            tab !== "Price" && "hidden"
           )}
         >
           <iframe
             src={getGeckoIframe(
               contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
+              tokenData?.network as EtherScanChainName
             )}
             title="Market Data"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -191,13 +191,13 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn(
             "w-full h-full overflow-hidden",
-            tab !== "Swaps" && "hidden",
+            tab !== "Swaps" && "hidden"
           )}
         >
           <iframe
             src={getMatchaUrl(
               contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
+              tokenData?.network as EtherScanChainName
             )}
             title="Swap Fidget"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -207,7 +207,7 @@ export const MobileContractDefinedSpace = ({
         <div
           className={cn(
             "w-full h-full overflow-hidden",
-            tab !== "Chat" && "hidden",
+            tab !== "Chat" && "hidden"
           )}
         >
           <iframe
@@ -231,7 +231,7 @@ export const MobileContractDefinedSpace = ({
           <LinkItem
             href={getGeckoUrl(
               contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
+              tokenData?.network as EtherScanChainName
             )}
             imgSrc="https://www.geckoterminal.com/_next/image?url=https%3A%2F%2Fs.geckoterminal.com%2F_next%2Fstatic%2Fmedia%2Flogo_icon.845c1574.png&w=64&q=75"
             alt="CoinGecko"
@@ -289,9 +289,9 @@ export const MobileContractDefinedSpace = ({
           </>
         </div>
       </div>
-      <div 
+      <div
         className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200"
-        style={{ touchAction: 'manipulation' }}
+        style={{ touchAction: "manipulation" }}
       >
         <IconButton
           size={20}

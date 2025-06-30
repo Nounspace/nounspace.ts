@@ -53,14 +53,14 @@ export default function FrameActionModal({
 
   // TODO: FIX BUTTON LABELS
 
-  const getOriginalButtonLabel = (): string => {
-    if (!currentFrameData?.buttons || !buttonIndex || buttonIndex < 1) {
-      return "Open";
-    }
+  // const getOriginalButtonLabel = (): string => {
+  //   if (!currentFrameData?.buttons || !buttonIndex || buttonIndex < 1) {
+  //     return "Open";
+  //   }
 
-    const btn = currentFrameData.buttons[buttonIndex - 1];
-    return btn?.label || "Open";
-  };
+  //   const btn = currentFrameData.buttons[buttonIndex - 1];
+  //   return btn?.label || "Open";
+  // };
 
   useEffect(() => {
     if (!isOpen || !frameUrl) return;

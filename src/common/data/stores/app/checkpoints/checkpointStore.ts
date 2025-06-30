@@ -1,7 +1,6 @@
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { cloneDeep } from "lodash";
-import moment from "moment";
 
 export interface SpaceCheckpoint {
   id: string;

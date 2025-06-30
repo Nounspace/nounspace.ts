@@ -25,7 +25,7 @@ type Props = {
 
 export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isFocused, setIsFocused] = useState(true);
+  // const [isFocused, setIsFocused] = useState(true);
 
   const selectItem = debounce((index: number) => {
     const item = props.items[index];
@@ -38,7 +38,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
 
   const upHandler = () => {
     setSelectedIndex(
-      (selectedIndex + props.items.length - 1) % props.items.length,
+      (selectedIndex + props.items.length - 1) % props.items.length
     );
   };
 
@@ -88,8 +88,8 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
       tabIndex={0}
       className="overflow-y-auto z-100 min-w-[20rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2"
       style={{ maxHeight: "300px", pointerEvents: "auto" }}
-      onBlur={() => setIsFocused(false)}
-      onFocus={() => setIsFocused(true)}
+      // onBlur={() => setIsFocused(false)}
+      // onFocus={() => setIsFocused(true)}
     >
       {props.items.length && !noResults ? (
         props.items.map((item, index) =>
@@ -97,7 +97,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
             <div
               className={cn(
                 "flex flex-row p-2 px-3 cursor-pointer gap-2 items-center hover:bg-accent hover:text-accent-foreground",
-                index === selectedIndex && "bg-accent text-accent-foreground",
+                index === selectedIndex && "bg-accent text-accent-foreground"
               )}
               key={item.username}
               onClick={() => selectItem(index)}
@@ -120,7 +120,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
                 </div>
               </div>
             </div>
-          ),
+          )
         )
       ) : noResults ? (
         <div className="flex flex-row p-2 px-3">Not found</div>

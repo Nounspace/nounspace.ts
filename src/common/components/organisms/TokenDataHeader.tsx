@@ -22,7 +22,7 @@ const TokenDataHeader: React.FC = () => {
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -43,7 +43,7 @@ const TokenDataHeader: React.FC = () => {
   const handleOpenNetscan = () => {
     window.open(
       `https://${tokenData?.network}scan.org/address/${contractAddress}`,
-      "_blank",
+      "_blank"
     );
   };
 

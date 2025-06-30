@@ -1,15 +1,15 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useInView } from 'react-intersection-observer';
+import React, { useEffect, useMemo, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
-const LazyImageComponent = ({ 
-  src, 
-  alt, 
-  className = '', 
-  onLoad, 
+const LazyImageComponent = ({
+  src,
+  alt,
+  className = "",
+  onLoad,
   onError,
   referrerPolicy,
-  ...props 
+  ...props
 }: React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
   alt?: string;
@@ -21,7 +21,7 @@ const LazyImageComponent = ({
   const [loaded, setLoaded] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(false);
   const { ref, inView } = useInView({
-    rootMargin: '200px',
+    rootMargin: "200px",
     threshold: 0,
   });
 
@@ -35,23 +35,23 @@ const LazyImageComponent = ({
     setLoaded(true);
     if (onLoad) onLoad(e);
   };
-  
+
   const placeholder = useMemo(() => {
-   // We convert to number explicitly to avoid type errors
+    // We convert to number explicitly to avoid type errors
     const heightNum = props.height ? Number(props.height) : 0;
     const widthNum = props.width ? Number(props.width) : 0;
-    
-    const ratio = (heightNum && widthNum) ? (heightNum / widthNum * 100) : 56.25; 
+
+    const ratio = heightNum && widthNum ? (heightNum / widthNum) * 100 : 56.25;
     return (
       <div
         className={classNames(
-          'bg-gray-200 animate-pulse rounded overflow-hidden',
+          "bg-gray-200 animate-pulse rounded overflow-hidden",
           className
         )}
         style={{
           paddingBottom: `${ratio}%`,
-          width: '100%',
-          height: props.height ? `${props.height}px` : 'auto',
+          width: "100%",
+          height: props.height ? `${props.height}px` : "auto",
         }}
       />
     );
@@ -66,7 +66,7 @@ const LazyImageComponent = ({
           alt={alt}
           className={classNames(
             className,
-            !loaded ? 'opacity-0 absolute top-0 left-0' : 'opacity-100'
+            !loaded ? "opacity-0 absolute top-0 left-0" : "opacity-100"
           )}
           onLoad={handleLoad}
           onError={onError}
@@ -79,4 +79,4 @@ const LazyImageComponent = ({
 };
 
 export const LazyImage = React.memo(LazyImageComponent);
-LazyImage.displayName = 'LazyImage';
+LazyImage.displayName = "LazyImage";

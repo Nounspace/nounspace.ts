@@ -97,7 +97,6 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
               totalScores > 0
                 ? ((score / totalScores) * 100).toFixed(1)
                 : "0.0";
-            const isWinning = index === winningIndex && score > 0;
 
             return (
               <div key={index} className="mb-2">

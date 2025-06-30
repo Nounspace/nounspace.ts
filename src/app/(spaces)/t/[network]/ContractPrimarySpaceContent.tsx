@@ -16,7 +16,6 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   contractAddress,
   owningIdentities,
   network,
-  tokenData,
 }) => {
   console.log("ContractPrimarySpaceContent received props:", {
     spaceId,
@@ -28,15 +27,13 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     network,
   });
 
-  const {
-    loadEditableSpaces,
-    addContractEditableSpaces,
-    registerSpaceContract,
-  } = useAppStore((state) => ({
-    loadEditableSpaces: state.space.loadEditableSpaces,
-    addContractEditableSpaces: state.space.addContractEditableSpaces,
-    registerSpaceContract: state.space.registerSpaceContract,
-  }));
+  const { loadEditableSpaces, addContractEditableSpaces } = useAppStore(
+    (state) => ({
+      loadEditableSpaces: state.space.loadEditableSpaces,
+      addContractEditableSpaces: state.space.addContractEditableSpaces,
+      registerSpaceContract: state.space.registerSpaceContract,
+    })
+  );
 
   useEffect(() => {
     console.log("addContractEditableSpaces called with:", {
@@ -68,12 +65,12 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
   const hasSpaceId = !isNil(spaceId);
 
-  console.log("Rendering conditions:", {
-    hasOwnerAndContract,
-    shouldShowProfile,
-    hasSpaceId,
-    currentSpaceId: spaceId,
-  });
+  // console.log("Rendering conditions:", {
+  //   hasOwnerAndContract,
+  //   shouldShowProfile,
+  //   hasSpaceId,
+  //   currentSpaceId: spaceId,
+  // });
 
   // Only show 404 if we don't have a valid contract address
   if (isNil(contractAddress)) {
@@ -82,7 +79,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   }
 
   // If we have a contract address, show the space even if it doesn't exist yet
-  console.log("Rendering ContractDefinedSpace with spaceId:", spaceId);
+  // console.log("Rendering ContractDefinedSpace with spaceId:", spaceId);
   return (
     <>
       <ContractDefinedSpace

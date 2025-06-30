@@ -22,7 +22,7 @@ function isInternalUrl(url: string): boolean {
     // Block private IP ranges
     const ip = hostname.split('.');
     if (ip.length === 4 && ip.every(octet => /^\d+$/.test(octet))) {
-      const [a, b, c, d] = ip.map(Number);
+      const [a, b] = ip.map(Number);
       
       // 10.0.0.0/8 (10.0.0.0 - 10.255.255.255)
       if (a === 10) return true;
@@ -203,7 +203,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
-    const { frameUrl, buttonIndex } = body;
+    const { frameUrl } = body;
     const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
 
     if (!frameUrl) {

@@ -1,10 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
-import {
-  CastAddBody,
-  FarcasterNetwork,
-  makeCastAdd,
-} from "@farcaster/core";
+import { CastAddBody, FarcasterNetwork, makeCastAdd } from "@farcaster/core";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
 import {
@@ -53,7 +49,6 @@ import {
 import { ChannelPicker } from "./channelPicker";
 import { renderEmbedForUrl } from "./Embeds";
 
-
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
 
 // Fixed missing imports and incorrect object types
@@ -70,13 +65,13 @@ type FarcasterMention = {
 const mentionFidCache = new Map<string, string>();
 
 const fetchNeynarMentions = async (
-  query: string,
+  query: string
 ): Promise<FarcasterMention[]> => {
   try {
     if (query == "") return [];
 
     const res = await fetch(
-      `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
+      `/api/search/users?q=${encodeURIComponent(query)}&limit=10`
     );
     const data = await res.json();
     const users = data?.value?.users || [];
@@ -136,7 +131,7 @@ const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const isMobile = useIsMobile();
   const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
@@ -165,15 +160,16 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
     if (!apiKey) throw new Error("imgBB API key not found");
     // Convert file to base64
-    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        resolve(base64);
-      };
-      reader.onerror = error => reject(error);
-    });
+    const toBase64 = (file: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+      });
     const imageBase64 = await toBase64(file);
     const formData = new FormData();
     formData.append("key", apiKey);
@@ -229,7 +225,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       for (let i = 0; i < e.clipboardData.items.length; i++) {
         const item = e.clipboardData.items[i];
         const file = item.getAsFile();
-        console.log('Clipboard item', i, 'type:', item.type, file);
+        console.log("Clipboard item", i, "type:", item.type, file);
         if (file && file.type.startsWith("image/")) {
           e.preventDefault();
           setIsUploadingImage(true);
@@ -282,9 +278,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
         return await fetchChannelsByName(query);
       },
       200,
-      { leading: true, trailing: false },
+      { leading: true, trailing: false }
     ),
-    [],
+    []
   );
 
   const onSubmitPost = async (): Promise<boolean> => {
@@ -295,7 +291,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           draftText: draft?.text,
           draftEmbedsLength: draft?.embeds?.length,
           signerUndefined: isUndefined(signer),
-        },
+        }
       );
       return false;
     }
@@ -323,7 +319,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         }, 3000);
       } else {
         console.error(
-          `Failed to publish post: ${result.message || "Unknown error"}`,
+          `Failed to publish post: ${result.message || "Unknown error"}`
         );
         setSubmitStatus("error");
         setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
@@ -333,7 +329,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     } catch (error) {
       console.error(
         "An unexpected error occurred during post submission:",
-        error,
+        error
       );
       setSubmitStatus("error");
       setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
@@ -350,7 +346,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     getText,
     addEmbed,
     getEmbeds,
-    setEmbeds,
     setChannel,
     getChannel,
     handleSubmit,
@@ -382,7 +377,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         true,
         {
           preserveWhitespace: "full",
-        },
+        }
       );
     }
 
@@ -419,7 +414,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       }));
 
       const uniqueUsernames = Array.from(
-        new Set(usernamesWithPositions.map((u) => u.username)),
+        new Set(usernamesWithPositions.map((u) => u.username))
       );
 
       // console.log("Parsed mentions from text:", usernamesWithPositions);
@@ -431,11 +426,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
       if (uniqueUsernames.length > 0) {
         // Filter out usernames that are already in cache with valid FIDs
         const uncachedUsernames = uniqueUsernames.filter(
-          username => !mentionFidCache.has(username) || !mentionFidCache.get(username)
+          (username) =>
+            !mentionFidCache.has(username) || !mentionFidCache.get(username)
         );
 
         // Add cached usernames to mentionsToFids only if they have valid FIDs
-        uniqueUsernames.forEach(username => {
+        uniqueUsernames.forEach((username) => {
           const cachedFid = mentionFidCache.get(username);
           if (cachedFid) {
             mentionsToFids[username] = cachedFid;
@@ -446,11 +442,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
         if (uncachedUsernames.length > 0) {
           try {
             const query = encodeURIComponent(uncachedUsernames.join(","));
-            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
+            const res = await fetch(
+              `/api/farcaster/neynar/getFids?usernames=${query}`
+            );
             const fetchedMentions = await res.json();
 
             if (Array.isArray(fetchedMentions)) {
-              fetchedMentions.forEach(mention => {
+              fetchedMentions.forEach((mention) => {
                 if (mention && mention.username && mention.fid) {
                   const fid = mention.fid.toString();
                   mentionsToFids[mention.username] = fid;
@@ -469,7 +467,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
         for (const match of mentionMatches) {
           const fullMatch = match[0]; // e.g. " @bob"
-          const username = match[1];  // "bob"
+          const username = match[1]; // "bob"
           const atIndex = match.index! + fullMatch.indexOf("@");
 
           // Adjust position based on previous removals
@@ -479,7 +477,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
             mentionsPositions.push(adjustedPosition);
 
             // Remove `@username` from mentionsText
-            mentionsText = mentionsText.slice(0, adjustedPosition) +
+            mentionsText =
+              mentionsText.slice(0, adjustedPosition) +
               mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
 
             // Update offset so future positions shift correctly
@@ -492,7 +491,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
             console.error(
               "Mismatch between mentions and their positions:",
               mentionsToFids,
-              mentionsPositions,
+              mentionsPositions
             );
           }
       }
@@ -576,7 +575,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   }
 
-
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
     if (isPublishing) return "Publishing...";
@@ -644,13 +642,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
           >
             {isDragging && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
-                <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
+                <span className="text-blue-700 font-semibold text-lg">
+                  Drop the image here…
+                </span>
               </div>
             )}
             {isUploadingImage && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
-                <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+                <span className="ml-2 text-gray-700 font-medium">
+                  Uploading image…
+                </span>
               </div>
             )}
             <EditorContent
@@ -659,12 +661,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
               onPaste={async (e) => {
-                console.log('onPaste fired', e);
+                console.log("onPaste fired", e);
                 if (!e.clipboardData || !e.clipboardData.items) return;
                 for (let i = 0; i < e.clipboardData.items.length; i++) {
                   const item = e.clipboardData.items[i];
                   const file = item.getAsFile();
-                  console.log('Clipboard item', i, 'type:', item.type, file);
+                  console.log("Clipboard item", i, "type:", item.type, file);
                   if (file && file.type.startsWith("image/")) {
                     e.preventDefault();
                     setIsUploadingImage(true);
@@ -689,9 +691,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        <div className={isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"}>
+        <div
+          className={
+            isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"
+          }
+        >
           {/* First row for mobile: Channel picker + icon buttons */}
-          <div className={isMobile ? "flex flex-row justify-between w-full" : "flex flex-row gap-1 md:justify-start"}>
+          <div
+            className={
+              isMobile
+                ? "flex flex-row justify-between w-full"
+                : "flex flex-row gap-1 md:justify-start"
+            }
+          >
             {/* Left side: Channel picker and Add media button for mobile */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
               {!isReply && (
@@ -710,7 +722,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   )}
                 </div>
               )}
-              
+
               {/* Add media button moved to left side on mobile */}
               {isMobile && (
                 <Button
@@ -725,7 +737,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 </Button>
               )}
             </div>
-            
+
             {/* Right side: Other action buttons */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
               {/* Only show Add button here for desktop */}
@@ -741,7 +753,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   Add
                 </Button>
               )}
-              
+
               <Button
                 className="h-10"
                 type="button"
@@ -781,7 +793,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </Button>
             </div>
           )}
-          
+
           <div
             ref={parentRef}
             style={{
@@ -825,7 +837,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </div>
             </PopoverContent>
           </Popover>
-          
+
           {/* Desktop cast button */}
           {!isMobile && (
             <>
@@ -834,7 +846,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               <div className="flex flex-row pt-0 justify-end">
                 <Button
                   size="lg"
-              variant="primary"
+                  variant="primary"
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
                   disabled={isPublishing || isLoadingSigner}
@@ -886,7 +898,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
           {map(draft.embeds, (embed) => (
             <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
+              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : typeof embed.castId?.hash === "string" ? embed.castId.hash : Array.from(embed.castId?.hash || []).join("-")}`}
             >
               {renderEmbedForUrl(embed, true)}
             </div>
