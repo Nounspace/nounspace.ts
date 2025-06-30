@@ -3,7 +3,6 @@
 import React from "react";
 import { OwnerType } from "@/common/data/api/etherscan";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
 
 export interface ContractDefinedSpaceProps {
   spaceId: string | null;

@@ -36,34 +36,29 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   );
 
   useEffect(() => {
-    console.log("addContractEditableSpaces called with:", {
-      spaceId,
-      owningIdentities,
-    });
+    // console.log("addContractEditableSpaces called with:", {
+    //   spaceId,
+    //   owningIdentities,
+    // });
     addContractEditableSpaces(spaceId, owningIdentities);
   }, [spaceId]);
 
   useEffect(() => {
-    console.log("loadEditableSpaces called");
+    // console.log("loadEditableSpaces called");
     loadEditableSpaces();
 
-    console.log("ContractPrimarySpaceContent rendered with props:", {
-      spaceId,
-      tabName,
-      ownerId,
-      ownerIdType,
-      contractAddress,
-      owningIdentities,
-      network,
-    });
+    // console.log("ContractPrimarySpaceContent rendered with props:", {
+    //   spaceId,
+    //   tabName,
+    //   ownerId,
+    //   ownerIdType,
+    //   contractAddress,
+    //   owningIdentities,
+    //   network,
+    // });
   }, []);
 
   // Log the conditions that determine rendering
-  const hasOwnerAndContract = !isNil(ownerId) && !isNil(contractAddress);
-  const shouldShowProfile =
-    isNil(spaceId) &&
-    (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
-  const hasSpaceId = !isNil(spaceId);
 
   // console.log("Rendering conditions:", {
   //   hasOwnerAndContract,
