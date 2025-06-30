@@ -149,13 +149,10 @@ export const processTabFidgetIds = (
     result[pinnedPosition] = pinnedCastPositions[0].id;
   }
   
-  // Handle media fidgets - consolidate if multiple, preserve position of first one
-  if (mediaFidgetPositions.length > 1) {
+  // Handle media fidgets - always consolidate on mobile, preserve position of first one
+  if (mediaFidgetPositions.length >= 1) {
     const firstMediaPosition = mediaFidgetPositions[0].position;
     result[firstMediaPosition] = 'consolidated-media';
-  } else if (mediaFidgetPositions.length === 1) {
-    const mediaPosition = mediaFidgetPositions[0].position;
-    result[mediaPosition] = mediaFidgetPositions[0].id;
   }
   
   // Filter out undefined values and return
