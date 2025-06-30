@@ -150,7 +150,6 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
-        () => ({ theme }),
         `Theme saved: ${theme.name || 'Custom theme'}`,
         'theme-editor'
       );
@@ -169,7 +168,6 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
-        () => ({ theme }),
         `Before applying theme: ${selectedTheme.name}`,
         'theme-editor'
       );
@@ -184,7 +182,6 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
-        () => ({ theme }),
         'Before AI vibe editor changes',
         'theme-editor'
       );
@@ -216,7 +213,7 @@ export function ThemeSettingsEditor({
     return (
       <div className="flex flex-col h-full">
         {/* Header with back button */}
-        <div className="flex pb-4 m-2 border-b">
+        <div className="flex pb-3 px-2 border-b">
           <button onClick={() => setShowVibeEditor(false)} className="my-auto">
             <BackArrowIcon />
           </button>
