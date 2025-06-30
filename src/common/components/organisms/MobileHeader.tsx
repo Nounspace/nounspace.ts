@@ -1,26 +1,25 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import BrandHeader from "../molecules/BrandHeader";
-import { Button } from "../atoms/button";
-import { Drawer, DrawerContent } from "../atoms/drawer";
-import Modal from "../molecules/Modal";
-import CreateCast from "@/fidgets/farcaster/components/CreateCast";
-import Navigation from "./Navigation";
+import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useAppStore } from "@/common/data/stores/app";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
+import CreateCast from "@/fidgets/farcaster/components/CreateCast";
 import { first } from "lodash";
-import { CgProfile } from "react-icons/cg";
-import { useSidebarContext } from "./Sidebar";
 import { LogIn, Menu } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { CgProfile } from "react-icons/cg";
 import { RiQuillPenLine } from "react-icons/ri";
+import { Button } from "../atoms/button";
+import { Drawer, DrawerContent } from "../atoms/drawer";
+import BrandHeader from "../molecules/BrandHeader";
+import Modal from "../molecules/Modal";
+import Navigation from "./Navigation";
+import { useSidebarContext } from "./Sidebar";
 
 const MobileHeader = () => {
-  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
-    setModalOpen: state.setup.setModalOpen,
-    getIsAccountReady: state.getIsAccountReady,
-  }));
+  const setModalOpen = useAppStore((state) => state.setup.setModalOpen);
+  const isLoggedIn = useAppStore((state) => state.getIsAccountReady());
+  const isInitializing = useAppStore((state) => state.getIsInitializing());
 
   const { setEditMode, sidebarEditable } = useSidebarContext();
 
@@ -64,13 +63,16 @@ const MobileHeader = () => {
     };
   }, [handleTouchStart, handleTouchEnd]);
 
-  // Memoize the isLoggedIn check to avoid re-computation on every render
-  const isLoggedIn = useMemo(() => getIsAccountReady(), [getIsAccountReady]);
+  // Logging for detailed debugging
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      console.log("[MobileHeader] isLoggedIn:", isLoggedIn, "isInitializing:", isInitializing);
+    }
+  }, [isLoggedIn, isInitializing]);
 
   // Memoize the component parts to avoid re-renders
   const userAvatar = useMemo(() => {
     if (!isLoggedIn) return null;
-    
     return (
       <button
         onClick={openNav}
@@ -91,7 +93,6 @@ const MobileHeader = () => {
   
   const menuButton = useMemo(() => {
     if (isLoggedIn) return null;
-    
     return (
       <Button variant="ghost" size="icon" onClick={openNav} aria-label="Menu">
         <Menu className="w-5 h-5" />
@@ -99,7 +100,26 @@ const MobileHeader = () => {
     );
   }, [isLoggedIn, openNav]);
   
+ // fallback: if it takes more than 3s to initialize, it shows the login/cast button normally
+  const [timedOut, setTimedOut] = React.useState(false);
+  useEffect(() => {
+    if (isInitializing) {
+      const t = setTimeout(() => setTimedOut(true), 3000);
+      return () => clearTimeout(t);
+    } else {
+      setTimedOut(false);
+    }
+  }, [isInitializing]);
+
   const actionButton = useMemo(() => {
+    if (isInitializing && !timedOut) {
+     // Shows a loading while initializing
+      return (
+        <Button variant="primary" size="icon" disabled>
+          <span className="animate-spin">⏳</span>
+        </Button>
+      );
+    }
     if (isLoggedIn) {
       return (
         <Button
@@ -112,14 +132,13 @@ const MobileHeader = () => {
         </Button>
       );
     }
-    
     return (
       <Button variant="primary" size="sm" onClick={openLogin} withIcon>
         <LogIn size={16} />
         Sign In
       </Button>
     );
-  }, [isLoggedIn, openLogin]);
+  }, [isLoggedIn, isInitializing, timedOut, openLogin]);
 
   // Memoize drawer change handler
   const handleDrawerOpenChange = useCallback((open: boolean) => {
