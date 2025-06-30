@@ -41,7 +41,6 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   tabNames,
 }) => {
   const isMobile = useIsMobile();
-  const pathname = usePathname();
 
   // Use the unified hook to process fidget IDs
   const {
