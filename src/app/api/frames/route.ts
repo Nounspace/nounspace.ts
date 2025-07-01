@@ -137,7 +137,7 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
 
   let imageUrl: string | null = null;
   let title: string | null = null;
-  let buttons: { index: number; label: string; action: string }[] = [];
+  const buttons: { index: number; label: string; action: string }[] = [];
 
   // First, try to extract from JSON frame data
   if (jsonFrameData) {
