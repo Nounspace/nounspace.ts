@@ -91,12 +91,20 @@ const MobileView: React.FC<MobileViewProps> = ({
   // Ensure that the tabs are always clickable, even in edit mode
   const handleTabChange = (tabId: string) => {
     if (tabId === selectedTab) {
-      setSelectedTab('');
-      setTimeout(() => {
+      // Force a re-render by using a callback pattern
+      setSelectedTab(prev => {
+        if (prev === tabId) {
+          // Scroll immediately when re-selecting the same tab
+          window.scrollTo({ top: 0, behavior: "instant" });
+          // Return the same value to trigger any dependent effects
+          return '';
+        }
+        return tabId;
+      });
+      // Use requestAnimationFrame to ensure state update has been processed
+      requestAnimationFrame(() => {
         setSelectedTab(tabId);
-        // Reset scroll position
-        window.scrollTo({ top: 0, behavior: "instant" });
-      }, 5);
+      });
     } else {
       setSelectedTab(tabId);
       window.scrollTo({ top: 0, behavior: "instant" });
