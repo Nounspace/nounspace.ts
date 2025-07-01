@@ -65,6 +65,8 @@ interface FrameData {
 
 // Helper: Regex-based fallback parser for frame metadata
 async function parseFrameFallback(url: string): Promise<FrameData> {
+  console.log('parseFrameFallback - Starting manual parsing for:', url);
+  
   const response = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; FrameViewer/1.0)",
@@ -75,35 +77,85 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
 
   // Check for fc:frame metadata to determine if this is actually a frame
   const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
+  console.log('parseFrameFallback - Has frame metadata:', hasFrameMetadata);
+
+  // Log a sample of the HTML to see what we're working with
+  const metaTags = html.match(/<meta[^>]*>/gi) || [];
+  const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
+  console.log('parseFrameFallback - Frame meta tags found:', frameMetaTags);
+
+  // Check for JSON-based frame format (name="fc:frame" with JSON content)
+  const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||
+                         html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
+  
+  let jsonFrameData: any = null;
+  if (jsonFrameMatch) {
+    try {
+      jsonFrameData = JSON.parse(jsonFrameMatch[1]);
+      console.log('parseFrameFallback - JSON frame data found:', jsonFrameData);
+    } catch (e) {
+      console.error('parseFrameFallback - Failed to parse JSON frame data:', e);
+    }
+  }
 
   const imageMatch =
-    html.match(/<meta\s+property="fc:frame:image"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i) ||
-    html.match(/<meta\s+property="og:image"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i);
+    html.match(/<meta\s+property="fc:frame:image"\s+content="([^"]+)"/i) ||
+    html.match(/<meta\s+content="([^"]+)"\s+property="fc:frame:image"/i) ||
+    html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) ||
+    html.match(/<meta\s+content="([^"]+)"\s+property="og:image"/i);
   const titleMatch =
-    html.match(/<meta\s+property="fc:frame:title"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i) ||
-    html.match(/<meta\s+property="og:title"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i) ||
+    html.match(/<meta\s+property="fc:frame:title"\s+content="([^"]+)"/i) ||
+    html.match(/<meta\s+content="([^"]+)"\s+property="fc:frame:title"/i) ||
+    html.match(/<meta\s+property="og:title"\s+content="([^"]+)"/i) ||
+    html.match(/<meta\s+content="([^"]+)"\s+property="og:title"/i) ||
     html.match(/<title>([^<]+)<\/title>/i);
   const buttonsMatch = Array.from(
-    html.matchAll(/<meta\s+property="fc:frame:button:(\d+)"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/gi)
-  );
+    html.matchAll(/<meta\s+property="fc:frame:button:(\d+)"\s+content="([^"]+)"/gi)
+  ).concat(Array.from(
+    html.matchAll(/<meta\s+content="([^"]+)"\s+property="fc:frame:button:(\d+)"/gi)
+  ));
   const inputTextMatch = html.match(
-    /<meta\s+property="fc:frame:input:text"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i
+    /<meta\s+property="fc:frame:input:text"\s+content="([^"]+)"/i
+  ) || html.match(
+    /<meta\s+content="([^"]+)"\s+property="fc:frame:input:text"/i
   );
   const postUrlMatch = html.match(
-    /<meta\s+property="fc:frame:post_url"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i
+    /<meta\s+property="fc:frame:post_url"\s+content="([^"]+)"/i
+  ) || html.match(
+    /<meta\s+content="([^"]+)"\s+property="fc:frame:post_url"/i
   );
 
-  const buttons = buttonsMatch
-    .map((match) => {
-      const index = parseInt(match[1]);
-      const label = match[2] || match[3] || "Button";
-      return { index, label, action: "post" };
-    })
-    .sort((a, b) => a.index - b.index);
+  console.log('parseFrameFallback - Parsed metadata:', {
+    url,
+    hasImageMatch: !!imageMatch,
+    imageMatchValue: imageMatch ? imageMatch[1] : null,
+    hasTitleMatch: !!titleMatch,
+    buttonsCount: buttonsMatch.length,
+    hasInputText: !!inputTextMatch,
+    hasPostUrl: !!postUrlMatch,
+  });
 
   let imageUrl: string | null = null;
-  if (imageMatch) {
-    imageUrl = imageMatch[1] || imageMatch[2] || null;
+  let title: string | null = null;
+  let buttons: { index: number; label: string; action: string }[] = [];
+
+  // First, try to extract from JSON frame data
+  if (jsonFrameData) {
+    if (jsonFrameData.imageUrl) {
+      imageUrl = jsonFrameData.imageUrl;
+    }
+    if (jsonFrameData.button) {
+      buttons.push({
+        index: 1,
+        label: jsonFrameData.button.title || "Open",
+        action: "post"
+      });
+    }
+  }
+
+  // If no image found in JSON, try traditional meta tags
+  if (!imageUrl && imageMatch) {
+    imageUrl = imageMatch[1] || null;
     if (
       imageUrl &&
       typeof imageUrl === "string" &&
@@ -119,10 +171,31 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
       }
     }
   }
-  const title: string | null = titleMatch ? titleMatch[1] || titleMatch[2] || null : null;
-  const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || postUrlMatch[2] || url : url;
+
+  // Extract title (prefer traditional meta tags)
+  title = titleMatch ? titleMatch[1] || null : null;
+
+  // If no buttons found in JSON, try traditional meta tags
+  if (buttons.length === 0) {
+    buttonsMatch.forEach((match) => {
+      if (match[2] && match[1]) {
+        // Pattern: property="fc:frame:button:X" content="label"
+        const index = parseInt(match[1]);
+        const label = match[2] || "Button";
+        buttons.push({ index, label, action: "post" });
+      } else if (match[1] && match[3]) {
+        // Pattern: content="label" property="fc:frame:button:X"
+        const index = parseInt(match[3]);
+        const label = match[1] || "Button";
+        buttons.push({ index, label, action: "post" });
+      }
+    });
+    
+    buttons.sort((a, b) => a.index - b.index);
+  }
+  const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || url : url;
   
-  return {
+  const result = {
     image: imageUrl,
     title,
     buttons: buttons.length > 0 ? buttons.map((b) => ({ label: b.label, action: b.action })) : [{ label: "Open", action: "post" }],
@@ -130,6 +203,17 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     postUrl,
     isFrame: hasFrameMetadata,
   };
+
+  console.log('parseFrameFallback - Final result:', {
+    url,
+    finalImageUrl: result.image,
+    isFrame: result.isFrame,
+    buttonsCount: result.buttons.length,
+    hasJsonFrame: !!jsonFrameData,
+    extractedFromJson: !!jsonFrameData && !!jsonFrameData.imageUrl,
+  });
+
+  return result;
 }
 
 // Removed extractFrameData function since we're using parseFrameFallback directly
@@ -151,6 +235,8 @@ export async function GET(request: NextRequest): Promise<Response> {
   }
 
   try {
+    console.log('Frames API - GET request:', { url, specification, fid });
+    
     let html: string;
     {
       const urlRes = await fetch(url, {
@@ -163,6 +249,13 @@ export async function GET(request: NextRequest): Promise<Response> {
       htmlString: html,
       url: url,
       specification: specification,
+    });
+
+    console.log('Frames API - getFrame result:', {
+      url,
+      status: frameResult.status,
+      hasFrame: frameResult.status === "success" && !!frameResult.frame,
+      frameImage: frameResult.status === "success" && frameResult.frame ? frameResult.frame.image : null,
     });
 
     let frameData: FrameData;
@@ -180,6 +273,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         isFrame: true, // frames.js successfully parsed frame metadata
       };
     } else {
+      console.log('Frames API - getFrame failed, falling back to manual parsing');
       // Fall back to manual parsing if getFrame fails
       frameData = await parseFrameFallback(url);
     }
@@ -187,6 +281,14 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (!frameData.buttons || frameData.buttons.length === 0) {
       frameData.buttons = [{ label: "Open", action: "post" }];
     }
+
+    console.log('Frames API - Final frame data:', {
+      url,
+      image: frameData.image,
+      isFrame: frameData.isFrame,
+      hasButtons: frameData.buttons?.length > 0,
+      buttonCount: frameData.buttons?.length,
+    });
 
     if (fid) {
       const fidNumber = parseInt(fid as string);
@@ -197,7 +299,12 @@ export async function GET(request: NextRequest): Promise<Response> {
 
     return NextResponse.json(frameData);
   } catch (err) {
-    console.error("Error fetching frame:", err);
+    console.error("Frames API - Error fetching frame:", {
+      url,
+      error: err,
+      errorMessage: err instanceof Error ? err.message : "Unknown error",
+      stack: err instanceof Error ? err.stack : undefined,
+    });
     return NextResponse.json(
       { message: err instanceof Error ? err.message : "Unknown error" },
       { status: 500 }
