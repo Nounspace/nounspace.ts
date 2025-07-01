@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, lazy } from "react";
-import { createPortal } from "react-dom";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -306,8 +305,8 @@ function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: 
   // Render the SpacePage component with the defined arguments
   return (
     <>
-      {editMode && portalRef.current &&
-        createPortal(currentFidgetSettings, portalRef.current)}
+      {/* The EditorPanel already handles rendering the current fidget settings */}
+      {/* Removing duplicate portal to avoid redundant settings section */}
       <SpacePage key={tabName} {...args} />
     </>
   );
