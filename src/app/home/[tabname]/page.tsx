@@ -35,9 +35,10 @@ const getTabConfig = (tabName: string) => {
 const Home = () => {
   const router = useRouter();
   const params = useParams();
-  const { getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
+  const { getIsAccountReady, getIsInitializing, setCurrentTabName } = useAppStore((state) => ({
     getIsAccountReady: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
+    setCurrentTabName: state.currentSpace.setCurrentTabName,
   }));
   const isLoggedIn = getIsAccountReady();
   const isInitializing = getIsInitializing();
@@ -52,9 +53,13 @@ const Home = () => {
       : "Nouns";
 
     setTabName(newTabName);
-  }, []);
+    // Also update the global store to keep it in sync
+    setCurrentTabName(newTabName);
+  }, [params?.tabname, setCurrentTabName]); // Added params.tabname to dependencies
 
   function switchTabTo(newTabName: string) {
+    // Update the store immediately for better responsiveness
+    setCurrentTabName(newTabName);
     router.push(`/home/${newTabName}`);
   }
 

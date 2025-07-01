@@ -656,6 +656,9 @@ export default function PublicSpace({
       shouldSave,
     });
     
+    // Update the store immediately for better responsiveness
+    setCurrentTabName(tabName);
+    
     // Check if we already have the tab in cache
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
     

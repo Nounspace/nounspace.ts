@@ -108,7 +108,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     if (!isNil(tabName)) {
       loadTabConfig();
     }
-  }, []);
+  }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
   // Function to load the configuration for the current tab
   async function loadTabConfig() {
@@ -143,6 +143,9 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     if (shouldSave) {
       await commitConfigHandler();
     }
+
+    // Update the store immediately for better responsiveness
+    setCurrentTabName(newTabName);
 
     if (newTabName === "Feed") {
       router.push(`/homebase`);
