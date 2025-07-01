@@ -201,15 +201,15 @@ function TabBar({
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-50 bg-white relative">
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-[3] bg-white relative">
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-x-auto no-scrollbar w-fit z-30 bg-white">
+          <div className="flex flex-row justify-start h-16 overflow-x-auto no-scrollbar w-fit z-[2] bg-white">
             <TokenDataHeader />
           </div>
         )}
         <div
           className={mergeClasses(
-            "flex flex-auto justify-start h-16 z-70 bg-white md:pr-0 flex-nowrap overflow-x-auto no-scrollbar",
+            "flex flex-auto justify-start h-16 z-[2] bg-white md:pr-0 flex-nowrap overflow-x-auto no-scrollbar",
             showButtons && "pr-8",
           )}
         >

@@ -1,6 +1,7 @@
 import React from "react";
 import { Slider } from "@mui/material";
 import { WithMargin } from "@/fidgets/helpers";
+import { Z_INDEX } from "@/common/constants/zIndex";
 
 export type CropControlsProps = {
   offsetX?: number;
@@ -31,6 +32,7 @@ const CropControls: React.FC<CropControlsProps> = ({
             max={50}
             step={1}
             valueLabelDisplay="auto"
+            sx={{ zIndex: Z_INDEX.BASE }}
           />
         </div>
       </WithMargin>
@@ -48,6 +50,7 @@ const CropControls: React.FC<CropControlsProps> = ({
             max={50}
             step={1}
             valueLabelDisplay="auto"
+            sx={{ zIndex: Z_INDEX.BASE }}
           />
         </div>
       </WithMargin>

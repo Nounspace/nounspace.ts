@@ -36,6 +36,7 @@ import {
 import { analytics } from "@/common/providers/AnalyticsProvider";
 import { SPACE_CONTRACT_ADDR } from "@/constants/spaceToken";
 import { THEMES } from "@/constants/themes";
+import { Z_INDEX } from "@/common/constants/zIndex";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import { Slider } from "@mui/material";
 import { usePrivy } from "@privy-io/react-auth";
@@ -428,6 +429,7 @@ export function ThemeSettingsEditor({
                               `${v}px`,
                             )
                           }
+                          sx={{ zIndex: Z_INDEX.BASE }}
                         />
                       </div>
                       <div className="mt-2">
@@ -443,6 +445,7 @@ export function ThemeSettingsEditor({
                           onChange={(_, v) =>
                             themePropSetter<string>("gridSpacing")(String(v))
                           }
+                          sx={{ zIndex: Z_INDEX.BASE }}
                         />
                       </div>
                     </div>

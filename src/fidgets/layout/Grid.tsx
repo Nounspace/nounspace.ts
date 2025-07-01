@@ -593,7 +593,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      <div className="flex flex-col z-10">
+      <div className="flex flex-col z-[2]">
         {inEditMode && (
           <div className="flex gap-2 absolute top-0 right-0 m-3">
             <button

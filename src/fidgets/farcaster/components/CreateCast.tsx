@@ -6,6 +6,7 @@ import {
   makeCastAdd,
 } from "@farcaster/core";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
+import { Z_INDEX } from "@/common/constants/zIndex";
 
 import {
   ModManifest,
@@ -643,12 +644,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
             onDragLeave={handleDragLeave}
           >
             {isDragging && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
+              <div className="absolute inset-0 z-[2] flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
                 <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
               </div>
             )}
             {isUploadingImage && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
+              <div className="absolute inset-0 z-[3] flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
                 <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
               </div>
@@ -789,7 +790,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               pointerEvents: isPickingEmoji ? "auto" : "none",
               marginTop: 50,
               transition: "opacity 1s ease",
-              zIndex: 10,
+              zIndex: Z_INDEX.OVERLAY,
               position: "absolute",
             }}
           >

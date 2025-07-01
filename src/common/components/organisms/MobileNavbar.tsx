@@ -303,7 +303,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       value={selected}
       onValueChange={onSelect}
       className={mergeClasses(
-        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-50",
+        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-[3]",
         className
       )}
       style={{
@@ -317,7 +317,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       >
         {/* Left gradient overlay for scroll indication */}
         <div 
-          className="absolute left-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
+          className="absolute left-0 top-0 bottom-0 w-8 h-full z-[2] pointer-events-none"
           style={{
               background: `linear-gradient(to right, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.leftGradientOpacity,
@@ -351,7 +351,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         
         {/* Right gradient overlay for scroll indication */}
         <div 
-          className="absolute right-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
+          className="absolute right-0 top-0 bottom-0 w-8 h-full z-[2] pointer-events-none"
           style={{
               background: `linear-gradient(to left, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.rightGradientOpacity,

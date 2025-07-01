@@ -151,7 +151,7 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
           className="w-full h-full"
           onValueChange={setSelectedTab}
         >
-          <div className="relative z-40 h-full">
+          <div className="relative z-[3] h-full">
             {/* Special case for consolidated media tab */}
             {isMobile && mediaFidgetIds.length > 1 && (
               <TabsContent

@@ -16,7 +16,7 @@ const DrawerOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={mergeClasses(
-      "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "fixed inset-0 z-[4] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
     )}
     {...props}
@@ -35,7 +35,7 @@ const DrawerContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={mergeClasses(
-        "fixed left-0 top-0 z-50 h-full w-[270px] border-r bg-background p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-left-full data-[state=closed]:slide-out-to-left-full",
+        "fixed left-0 top-0 z-[4] h-full w-[270px] border-r bg-background p-6 shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-left-full data-[state=closed]:slide-out-to-left-full",
         className,
       )}
       {...props}

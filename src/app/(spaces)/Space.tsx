@@ -1,5 +1,6 @@
 "use client";
 import React, { ReactNode, useEffect, useMemo, Suspense } from "react";
+import { Z_INDEX } from "@/common/constants/zIndex";
 import {
   FidgetConfig,
   FidgetInstanceData,
@@ -263,13 +264,13 @@ export default function Space({
   return (
     <div className="user-theme-background size-full relative overflow-hidden">
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-      <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
+      <div className="w-full h-full transition-all duration-100 ease-out relative z-[2]">
         <div className="flex flex-col h-full">
-          <div style={{ position: "fixed", zIndex: 9999 }}>
+          <div style={{ position: "fixed", zIndex: Z_INDEX.TOP }}>
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (
-            <div className="z-50 bg-white md:h-40">{profile}</div>
+            <div className="z-[3] bg-white md:h-40">{profile}</div>
           ) : null}
 
           <div className="relative">

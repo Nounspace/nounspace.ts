@@ -20,7 +20,12 @@ module.exports = {
     },
     extend: {
       zIndex: {
-        infinity: "10000000",
+        '1': '1',   
+        '2': '2',   
+        '3': '3',   
+        '4': '4',   
+        '5': '5',   
+        infinity: "10000000", 
       },
       fontFamily: {
         sans: ['Inter', ...defaultTheme.fontFamily.sans],

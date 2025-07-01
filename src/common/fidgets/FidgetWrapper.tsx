@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
+import { Z_INDEX } from "@/common/constants/zIndex";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
 import React, { useRef, useEffect, useState } from "react";
@@ -176,7 +177,7 @@ export function FidgetWrapper({
         style={{
           top: iconPosition.top,
           left: iconPosition.left,
-          zIndex: 999999,
+          zIndex: Z_INDEX.TOP,
         }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
@@ -262,18 +263,17 @@ export function FidgetWrapper({
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
           borderRadius: themeProps?.fidgetBorderRadius,
-          overflow: "visible"
         }}
       >
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50"
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-[1] flex bg-slate-400 bg-opacity-50"
             style={{ borderRadius: themeProps?.fidgetBorderRadius }}
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
-          <CardContent className="size-full" style={{ overflow: "visible" }}>
+          <CardContent className="size-full">
             <Fidget
               {...{
                 settings: settingsWithDefaults,

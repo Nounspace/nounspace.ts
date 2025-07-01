@@ -72,7 +72,7 @@ const sidebarLayout = (page: React.ReactNode) => {
 
         {/* Main Content with Sidebar */}
         <div className="flex w-full h-full flex-grow">
-          <div className="transition-all duration-100 ease-out z-10 hidden md:block flex-shrink-0">
+          <div className="transition-all duration-100 ease-out z-[3] hidden md:block flex-shrink-0">
             <ClientSidebarWrapper />
           </div>
           {page}
