@@ -287,6 +287,7 @@ function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: 
         removeFidget={() => {}}
         minimizeFidget={() => {}}
         allowDelete={false}
+        allowMoveAndStash={false}
       />
     ) : undefined,
   }), [
