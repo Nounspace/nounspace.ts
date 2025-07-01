@@ -132,14 +132,26 @@ interface CastEmbedsProps {
   onSelectCast: (hash: string, username: string) => void;
 }
 
+// Helper function to extract URLs from cast text
+const extractUrlsFromText = (text: string): string[] => {
+  const urlRegex = /(https?:\/\/[^\s]+)/gi;
+  return text.match(urlRegex) || [];
+};
+
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
-  if (!("embeds" in cast) || !cast.embeds.length) {
+  // Get URLs from embeds and also extract any URLs from the cast text
+  const embedUrls = ("embeds" in cast && cast.embeds) ? cast.embeds : [];
+  const textUrls = extractUrlsFromText(cast.text || '');
+  
+  // If no embeds from API and no URLs in text, return null
+  if (!embedUrls.length && !textUrls.length) {
     return null;
   }
 
   return (
     <ErrorBoundary>
-      {map(cast.embeds, (embed, i) => {
+      {/* Render embeds from API */}
+      {map(embedUrls, (embed, i) => {
         const embedData: CastEmbed = isEmbedUrl(embed)
           ? {
             url: embed.url,
@@ -152,7 +164,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 
         return (
           <div
-            key={i}
+            key={`embed-${i}`}
             className={classNames(
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
               embedData.castId ? "max-w-[100%]" : "max-w-max",
@@ -166,6 +178,35 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
                 onSelectCast(hashString, cast.author.username);
               }
             }}
+          >
+            {renderEmbedForUrl(embedData, false)}
+          </div>
+        );
+      })}
+      
+      {/* Render URLs found in text that aren't already in embeds */}
+      {textUrls.map((url, i) => {
+        // Skip if this URL is already in the embeds
+        const isAlreadyEmbedded = embedUrls.some(embed => 
+          isEmbedUrl(embed) && embed.url === url
+        );
+        
+        if (isAlreadyEmbedded) {
+          return null;
+        }
+
+        const embedData: CastEmbed = {
+          url: url,
+          key: url,
+        };
+
+        return (
+          <div
+            key={`text-url-${i}`}
+            className={classNames(
+              "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
+              "max-w-max",
+            )}
           >
             {renderEmbedForUrl(embedData, false)}
           </div>

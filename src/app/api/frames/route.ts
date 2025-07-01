@@ -58,6 +58,7 @@ interface FrameData {
   buttons: { label: string; action: string }[];
   inputText: boolean;
   postUrl: string | null;
+  isFrame: boolean; // Whether this URL actually contains frame metadata
 }
 
 // Removed FrameObject interface since we're using frames.js types directly
@@ -71,6 +72,9 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   });
   if (!response.ok) throw new Error(`Failed to fetch URL: ${response.statusText}`);
   const html = await response.text();
+
+  // Check for fc:frame metadata to determine if this is actually a frame
+  const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
 
   const imageMatch =
     html.match(/<meta\s+property="fc:frame:image"(?:\s+content="([^"]+)"|\s+name="([^"]+)")/i) ||
@@ -124,6 +128,7 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     buttons: buttons.length > 0 ? buttons.map((b) => ({ label: b.label, action: b.action })) : [{ label: "Open", action: "post" }],
     inputText: !!inputTextMatch,
     postUrl,
+    isFrame: hasFrameMetadata,
   };
 }
 
@@ -172,6 +177,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         })) : [],
         inputText: !!frame.inputText,
         postUrl: frame.postUrl || url,
+        isFrame: true, // frames.js successfully parsed frame metadata
       };
     } else {
       // Fall back to manual parsing if getFrame fails
@@ -242,6 +248,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         })) : [],
         inputText: !!frame.inputText,
         postUrl: frame.postUrl || frameUrl,
+        isFrame: true, // frames.js successfully parsed frame metadata
       };
     } else {
       // Fall back to manual parsing if getFrame fails
