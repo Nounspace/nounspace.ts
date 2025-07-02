@@ -205,35 +205,11 @@ export function ThemeSettingsEditor({
   } = theme.properties;
 
   function saveAndClose() {
-    // Create a checkpoint when saving theme changes
-    if (getCurrentSpaceContext) {
-      createCheckpointFromContext(
-        getCurrentSpaceContext,
-        () => ({ theme }),
-        `Theme saved: ${theme.name || 'Custom theme'}`,
-        'theme-editor'
-      );
-    }
-    
     saveTheme(theme);
     saveExitEditMode();
   }
 
-  function cancelAndClose() {
-    cancelExitEditMode();
-  }
-
   const handleApplyTheme = (selectedTheme: ThemeSettings) => {
-    // Create checkpoint before applying new theme
-    if (getCurrentSpaceContext) {
-      createCheckpointFromContext(
-        getCurrentSpaceContext,
-        () => ({ theme }),
-        `Before applying theme: ${selectedTheme.name}`,
-        'theme-editor'
-      );
-    }
-    
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
@@ -255,12 +231,14 @@ export function ThemeSettingsEditor({
 
     // Apply other theme properties if they exist in the config
     if (config.theme?.properties) {
-      const themeProps = config.theme.properties;
-      Object.keys(themeProps).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(theme.properties, key)) {
-          themePropSetter(key)(themeProps[key]);
-        }
-      });
+      const updatedTheme: ThemeSettings = {
+        ...theme,
+        properties: {
+          ...theme.properties,
+          ...config.theme.properties,
+        },
+      };
+      handleApplyTheme(updatedTheme);
     }
 
     // If there's a complete space config and we have the ability to apply it, do so
@@ -438,7 +416,7 @@ export function ThemeSettingsEditor({
                     <BackArrowIcon />
                   </Button>
                   <Button
-                    onClick={cancelAndClose}
+                    onClick={cancelExitEditMode}
                     variant="destructive"
                     width="auto"
                     withIcon
