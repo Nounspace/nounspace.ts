@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       url,
     };
 
-    console.log(`📊 OpenGraph data extracted:`, ogData);
+    // console.log(`📊 OpenGraph data extracted:`, ogData);
 
     return NextResponse.json(ogData);
   } catch (error) {

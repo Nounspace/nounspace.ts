@@ -89,7 +89,7 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   if (jsonFrameMatch) {
     try {
       jsonFrameData = JSON.parse(jsonFrameMatch[1]);
-      console.log('parseFrameFallback - JSON frame data found:', jsonFrameData);
+      // console.log('parseFrameFallback - JSON frame data found:', jsonFrameData);
     } catch (e) {
       console.error('parseFrameFallback - Failed to parse JSON frame data:', e);
     }
@@ -122,15 +122,15 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     /<meta\s+content="([^"]+)"\s+property="fc:frame:post_url"/i
   );
 
-  console.log('parseFrameFallback - Parsed metadata:', {
-    url,
-    hasImageMatch: !!imageMatch,
-    imageMatchValue: imageMatch ? imageMatch[1] : null,
-    hasTitleMatch: !!titleMatch,
-    buttonsCount: buttonsMatch.length,
-    hasInputText: !!inputTextMatch,
-    hasPostUrl: !!postUrlMatch,
-  });
+  // console.log('parseFrameFallback - Parsed metadata:', {
+  //   url,
+  //   hasImageMatch: !!imageMatch,
+  //   imageMatchValue: imageMatch ? imageMatch[1] : null,
+  //   hasTitleMatch: !!titleMatch,
+  //   buttonsCount: buttonsMatch.length,
+  //   hasInputText: !!inputTextMatch,
+  //   hasPostUrl: !!postUrlMatch,
+  // });
 
   let imageUrl: string | null = null;
   let title: string | null = null;
@@ -201,14 +201,14 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     isFrame: hasFrameMetadata,
   };
 
-  console.log('parseFrameFallback - Final result:', {
-    url,
-    finalImageUrl: result.image,
-    isFrame: result.isFrame,
-    buttonsCount: result.buttons.length,
-    hasJsonFrame: !!jsonFrameData,
-    extractedFromJson: !!jsonFrameData && !!jsonFrameData.imageUrl,
-  });
+  // console.log('parseFrameFallback - Final result:', {
+  //   url,
+  //   finalImageUrl: result.image,
+  //   isFrame: result.isFrame,
+  //   buttonsCount: result.buttons.length,
+  //   hasJsonFrame: !!jsonFrameData,
+  //   extractedFromJson: !!jsonFrameData && !!jsonFrameData.imageUrl,
+  // });
 
   return result;
 }
@@ -232,7 +232,7 @@ export async function GET(request: NextRequest): Promise<Response> {
   }
 
   try {
-    console.log('Frames API - GET request:', { url, specification, fid });
+    // console.log('Frames API - GET request:', { url, specification, fid });
     
     let html: string;
     {
@@ -248,12 +248,12 @@ export async function GET(request: NextRequest): Promise<Response> {
       specification: specification,
     });
 
-    console.log('Frames API - getFrame result:', {
-      url,
-      status: frameResult.status,
-      hasFrame: frameResult.status === "success" && !!frameResult.frame,
-      frameImage: frameResult.status === "success" && frameResult.frame ? frameResult.frame.image : null,
-    });
+    // console.log('Frames API - getFrame result:', {
+    //   url,
+    //   status: frameResult.status,
+    //   hasFrame: frameResult.status === "success" && !!frameResult.frame,
+    //   frameImage: frameResult.status === "success" && frameResult.frame ? frameResult.frame.image : null,
+    // });
 
     let frameData: FrameData;
     if (frameResult.status === "success" && frameResult.frame) {
@@ -270,7 +270,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         isFrame: true, // frames.js successfully parsed frame metadata
       };
     } else {
-      console.log('Frames API - getFrame failed, falling back to manual parsing');
+      // console.log('Frames API - getFrame failed, falling back to manual parsing');
       // Fall back to manual parsing if getFrame fails
       frameData = await parseFrameFallback(url);
     }
@@ -279,13 +279,13 @@ export async function GET(request: NextRequest): Promise<Response> {
       frameData.buttons = [{ label: "Open", action: "post" }];
     }
 
-    console.log('Frames API - Final frame data:', {
-      url,
-      image: frameData.image,
-      isFrame: frameData.isFrame,
-      hasButtons: frameData.buttons?.length > 0,
-      buttonCount: frameData.buttons?.length,
-    });
+    // console.log('Frames API - Final frame data:', {
+    //   url,
+    //   image: frameData.image,
+    //   isFrame: frameData.isFrame,
+    //   hasButtons: frameData.buttons?.length > 0,
+    //   buttonCount: frameData.buttons?.length,
+    // });
 
     if (fid) {
       const fidNumber = parseInt(fid as string);

@@ -28,38 +28,33 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
       }
 
       try {
-        // Quick synchronous check for obvious non-frames first
-        const quickCheck = isLikelyFrameUrl(url);
+        // Check for obvious non-frame URLs first to avoid unnecessary async calls
+        const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i;
+        const mediaExtensions = /\.(mp4|mp3|avi|mov|wmv|wav|ogg)$/i;
+        const docExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i;
+        const codeExtensions = /\.(css|js|json|xml|txt)$/i;
 
-        // Only skip async check for obvious non-frame URLs (like images, documents, etc.)
-        // For anything that could potentially be a frame, we should check properly
-        if (!quickCheck) {
-          // Check if it's an obvious non-frame URL (images, docs, static assets)
-          const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i;
-          const mediaExtensions = /\.(mp4|mp3|avi|mov|wmv|wav|ogg)$/i;
-          const docExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i;
-          const codeExtensions = /\.(css|js|json|xml|txt)$/i;
-          
-          const isObviousNonFrame =
-            imageExtensions.test(url) ||
-            mediaExtensions.test(url) ||
-            docExtensions.test(url) ||
-            codeExtensions.test(url) ||
-            /\/(assets|static|public|images|videos|downloads)\//.test(url) ||
-            /github\.com.*\.(md|txt|json|ya?ml)$/.test(url) ||
-            /twitter\.com\/i\/web\/status/.test(url) ||
-            /x\.com\/i\/web\/status/.test(url);
+        const isObviousNonFrame =
+          imageExtensions.test(url) ||
+          mediaExtensions.test(url) ||
+          docExtensions.test(url) ||
+          codeExtensions.test(url) ||
+          /\/(assets|static|public|images|videos|downloads)\//.test(url) ||
+          /github\.com.*\.(md|txt|json|ya?ml)$/.test(url) ||
+          /twitter\.com\/i\/web\/status/.test(url) ||
+          /x\.com\/i\/web\/status/.test(url);
 
-          if (isObviousNonFrame) {
-            // Only skip frame detection for truly obvious non-frames
-            if (!isCancelled) {
-              setIsFrameV2(false);
-              setIsFrameV1(false);
-              setIsLoading(false);
-            }
-            return;
+        if (isObviousNonFrame) {
+          if (!isCancelled) {
+            setIsFrameV2(false);
+            setIsFrameV1(false);
+            setIsLoading(false);
           }
+          return;
         }
+
+        // Quick check for likely frame URLs
+        const quickCheck = isLikelyFrameUrl(url);
 
         // For everything else, do the proper async frame detection
         const isV2 = await isFrameV2Url(url);
