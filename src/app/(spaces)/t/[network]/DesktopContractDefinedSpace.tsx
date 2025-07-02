@@ -17,6 +17,7 @@ export default function DesktopContractDefinedSpace({
   contractAddress,
   ownerId,
   ownerIdType,
+  initialConfig,
 }: ContractDefinedSpaceProps) {
   const { tokenData } = useToken();
   const { wallets } = useWallets();
@@ -31,6 +32,7 @@ export default function DesktopContractDefinedSpace({
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
+      initialConfig ??
       createInitialContractSpaceConfigForAddress(
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
@@ -39,7 +41,7 @@ export default function DesktopContractDefinedSpace({
         !!tokenData?.clankerData,
         tokenData?.network,
       ),
-    [contractAddress, tokenData, tokenData?.network],
+    [initialConfig, contractAddress, tokenData, tokenData?.network],
   );
 
   const getSpacePageUrl = (tabName: string) => 

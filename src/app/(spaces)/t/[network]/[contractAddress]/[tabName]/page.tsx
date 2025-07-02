@@ -9,6 +9,8 @@ import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import ContractPrimarySpaceContent from "../../ContractPrimarySpaceContent";
+import { getSpaceTabConfig } from "../utils";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
 async function loadTokenData(
   contractAddress: Address,
@@ -41,6 +43,16 @@ export default async function WrappedContractPrimarySpace({ params }) {
   const network = params?.network as EtherScanChainName;
   const tokenData = await loadTokenData(contractAddress as Address, network);
 
+  let initialConfig: Omit<SpaceConfig, "isEditable"> | undefined = undefined;
+  const spaceId = contractData.props.spaceId;
+  const tabName = contractData.props.tabName ?? "Profile";
+  if (spaceId) {
+    const config = await getSpaceTabConfig(spaceId, tabName);
+    if (config) {
+      initialConfig = config;
+    }
+  }
+
   const props = {
     ...contractData.props,
     contractAddress,
@@ -54,7 +66,7 @@ export default async function WrappedContractPrimarySpace({ params }) {
       defaultTokenData={tokenData}
       network={network}
     >
-      <ContractPrimarySpaceContent {...props} />
+      <ContractPrimarySpaceContent {...props} initialConfig={initialConfig} />
     </TokenProvider>
   );
 }
