@@ -6,7 +6,7 @@ import {
   TabsContent
 } from "@/common/components/atoms/tabs";
 import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
-import FontsTabContent from "./components/FontsTabContent";
+import SpaceTabContent from "./components/SpaceTabContent";
 import StyleTabContent from "./components/StyleTabContent";
 import CodeTabContent from "./components/CodeTabContent";
 import MobileTabContent from "./components/MobileTabContent";
@@ -331,14 +331,24 @@ export function ThemeSettingsEditor({
                 <ThemeSettingsTabs activeTab={tabValue} onTabChange={setTabValue} />
                 {/* Fonts */}
                 <TabsContent value={ThemeEditorTab.SPACE} className={tabContentClasses}>
-                  <FontsTabContent 
+                  <SpaceTabContent 
                     headingsFontColor={headingsFontColor}
                     headingsFont={headingsFont}
                     fontColor={fontColor}
                     font={font}
-                    backgroundHTML={backgroundHTML}
                     onPropertyChange={themePropSetter}
                   />
+                  
+                  <div className="grid gap-2 mt-4">
+                    <div className="flex flex-row gap-1">
+                      <h4 className="text-sm">Music</h4>
+                      <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
+                    </div>
+                    <VideoSelector
+                      initialVideoURL={theme.properties.musicURL}
+                      onVideoSelect={themePropSetter("musicURL")}
+                    />
+                  </div>
                 </TabsContent>
                 {/* Style */}
                 <TabsContent value={ThemeEditorTab.FIDGETS} className={tabContentClasses}>
@@ -371,17 +381,6 @@ export function ThemeSettingsEditor({
                 </TabsContent>
               </Tabs>
             </div>
-
-            <div className="grid gap-2 mt-4">
-              <div className="flex flex-row gap-1">
-                <h4 className="text-sm">Music</h4>
-                <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
-              </div>
-              <VideoSelector
-                initialVideoURL={theme.properties.musicURL}
-                onVideoSelect={themePropSetter("musicURL")}
-              />
-            </div>
           </div>
         </div>
 
@@ -389,7 +388,7 @@ export function ThemeSettingsEditor({
           {tabValue === ThemeEditorTab.SPACE && (
             <div
               className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
-              onClick={() => setTabValue(ThemeEditorTab.CODE)}
+              onClick={() => setShowVibeEditor(true)}
             >
               <p>
                 <span className="font-bold">New!</span> Vibe editor is here!

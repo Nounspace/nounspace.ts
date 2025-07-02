@@ -765,7 +765,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     >
       <div className="flex-1 w-[420px] h-full max-h-screen flex-col flex overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-2 pb-3 border-b">
+        <div className="flex items-center justify-between px-2 pt-3 pb-3 border-b">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <LucideSparkle className="w-5 h-5 text-white" />
@@ -790,8 +790,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 px-1 py-2">
-          <div className="space-y-4 pr-1">
+        <ScrollArea className="flex-1 px-1 py-2 mt-1">
+          <div className="space-y-4 pr-1 pt-4">
             {messages.map((message) => (
               <div
                 key={message.id}
