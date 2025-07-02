@@ -265,7 +265,7 @@ export default function Space({
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full h-full transition-all duration-100 ease-out relative z-[2]">
         <div className="flex flex-col h-full">
-          <div>
+          <div style={{ position: "fixed"}}  className="z-5" >
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (

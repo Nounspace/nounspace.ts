@@ -3,7 +3,7 @@ import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { FaX } from "react-icons/fa6";
 import { toast } from "sonner";
@@ -170,12 +170,13 @@ export function FidgetWrapper({
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6"
-            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6"
+            ? "fixed opacity-80 transition-opacity ease-in flex flex-row h-6 z-5"
+            : "fixed opacity-0 pointer-events-none transition-opacity ease-in flex flex-row h-6 z-5"
         }
         style={{
           top: iconPosition.top,
           left: iconPosition.left,
+        
         }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
