@@ -11,7 +11,7 @@ import {
   SpaceConfig,
   SpaceConfigSaveDetails,
 } from "@/app/(spaces)/Space";
-import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import INITIAL_HOMEBASE_CONFIG, { HOMEBASE_FEED_FIDGET_ID } from "@/constants/intialHomebase";
 import {
   HomeBaseTabStore,
   createHomeBaseTabStoreFunc,
@@ -83,12 +83,22 @@ export const createHomeBaseStoreFunc = (
       ) {
         return cloneDeep(currentHomebase);
       }
+      if (!spaceConfig.feedInstanceDatum) {
+        spaceConfig.feedInstanceDatum = {
+          ...INITIAL_HOMEBASE_CONFIG.feedInstanceDatum!,
+          id: HOMEBASE_FEED_FIDGET_ID,
+        };
+      }
       set((draft) => {
         draft.homebase.homebaseConfig = cloneDeep(spaceConfig);
         draft.homebase.remoteHomebaseConfig = cloneDeep(spaceConfig);
       }, "loadHomebase-found");
       return spaceConfig;
     } catch (e) {
+      const existing = get().homebase.homebaseConfig;
+      if (existing) {
+        return existing;
+      }
       set((draft) => {
         draft.homebase.homebaseConfig = {
           ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
@@ -97,6 +107,7 @@ export const createHomeBaseStoreFunc = (
             id: `Homebase-Feed-Theme`,
             name: `Homebase-Feed-Theme`,
           },
+          feedInstanceDatum: INITIAL_HOMEBASE_CONFIG.feedInstanceDatum,
         };
         draft.homebase.remoteHomebaseConfig = {
           ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
@@ -105,6 +116,7 @@ export const createHomeBaseStoreFunc = (
             id: `Homebase-Feed-Theme`,
             name: `Homebase-Feed-Theme`,
           },
+          feedInstanceDatum: INITIAL_HOMEBASE_CONFIG.feedInstanceDatum,
         };
       }, "loadHomebase-default");
       return cloneDeep(INITIAL_HOMEBASE_CONFIG);

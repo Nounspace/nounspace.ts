@@ -4,20 +4,28 @@ import React, { useEffect, useMemo, lazy } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
+import { FidgetWrapper } from "@/common/fidgets/FidgetWrapper";
+import { dummyFunctions } from "@/fidgets/layout/tabFullScreen/utils";
 import { isNil, noop } from "lodash";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
+import INITIAL_HOMEBASE_CONFIG from "@/constants/intialHomebase";
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import {
+  FidgetEditorProvider,
+  useFidgetEditorContext,
+} from "@/common/providers/FidgetEditorProvider";
 
 // Lazy load the TabBar component to improve performance
 const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
-// Main component for the private space
-function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
+// Main component for the private space content
+function PrivateSpaceInner({ tabName, castHash }: { tabName: string; castHash?: string }) {
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -91,7 +99,26 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     };
   }, [homebaseConfig, isLoggedIn]);
 
-  const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
+  // Get the edit mode status and portal ref from the sidebar context
+  const { editMode, portalRef } = useSidebarContext();
+  const {
+    selectedFidgetID,
+    setSelectedFidgetID,
+    currentFidgetSettings,
+    setCurrentFidgetSettings,
+  } = useFidgetEditorContext() || {
+    selectedFidgetID: "",
+    setSelectedFidgetID: () => {},
+    currentFidgetSettings: <></>,
+    setCurrentFidgetSettings: () => {},
+  };
+
+  useEffect(() => {
+    if (!editMode) {
+      setSelectedFidgetID("");
+      setCurrentFidgetSettings(null);
+    }
+  }, [editMode]);
 
   // Effect to handle login modal when user is not logged in
   useEffect(() => {
@@ -213,6 +240,18 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   ), [tabName, tabOrdering.local, editMode]);
 
   // Define the arguments for the SpacePage component
+  const feedBundle = useMemo(() => {
+    const datum = sanitizedHomebaseConfig?.feedInstanceDatum ??
+      INITIAL_HOMEBASE_CONFIG.feedInstanceDatum!;
+    return { ...datum, properties: FeedModule.properties };
+  }, [sanitizedHomebaseConfig]);
+
+  const saveFeedConfig = async (newConfig) => {
+    await saveConfigHandler({
+      feedInstanceDatum: { ...feedBundle, config: newConfig },
+    });
+  };
+
   const args: SpacePageArgs = useMemo(() => ({
     config: (() => {
       const sourceConfig =
@@ -230,19 +269,26 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     resetConfig: resetConfigHandler,
     tabBar: tabBar,
     feed: tabName === "Feed" ? (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any,
+      <FidgetWrapper
+        fidget={FeedModule.fidget}
+        context={{ theme: sanitizedHomebaseConfig?.theme ?? DEFAULT_THEME }}
+        bundle={{
+          ...feedBundle,
+          config: {
+            ...feedBundle.config,
+            editable: editMode,
+            data: { ...feedBundle.config.data, initialHash: castHash, updateUrl: true },
+          },
         }}
-        saveData={async () => noop()}
-        data={{ initialHash: castHash, updateUrl: true }}
+        saveConfig={saveFeedConfig}
+        setCurrentFidgetSettings={setCurrentFidgetSettings}
+        setSelectedFidgetID={setSelectedFidgetID}
+        selectedFidgetID={selectedFidgetID}
+        removeFidget={() => {}}
+        minimizeFidget={() => {}}
+        allowDelete={false}
+        allowMove={false}
+        allowStash={false}
       />
     ) : undefined,
   }), [
@@ -253,13 +299,25 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     tabOrdering.local,
     editMode,
     castHash,
+    feedBundle,
+    selectedFidgetID,
   ]);
 
 
   // Render the SpacePage component with the defined arguments
   return (
-    <SpacePage key={tabName} {...args} />
+    <>
+      {/* The EditorPanel already handles rendering the current fidget settings */}
+      {/* Removing duplicate portal to avoid redundant settings section */}
+      <SpacePage key={tabName} {...args} />
+    </>
   );
 }
 
-export default PrivateSpace; 
+export default function PrivateSpace(props: { tabName: string; castHash?: string }) {
+  return (
+    <FidgetEditorProvider>
+      <PrivateSpaceInner {...props} />
+    </FidgetEditorProvider>
+  );
+}

@@ -30,6 +30,7 @@ export type FidgetSettingsEditorProps = {
   onSave: (settings: FidgetSettings, shouldUnselect?: boolean) => void;
   unselect: () => void;
   removeFidget: (fidgetId: string) => void;
+  showRemoveButton?: boolean;
 };
 
 type FidgetSettingsRowProps = {
@@ -152,6 +153,7 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
   onSave,
   unselect,
   removeFidget,
+  showRemoveButton,
 }) => {
   const [state, setState] = useState<FidgetSettings>(settings);
 
@@ -241,14 +243,16 @@ export const FidgetSettingsEditor: React.FC<FidgetSettingsEditorProps> = ({
 
       <div className="shrink-0 flex flex-col gap-3 pb-8">
         <div className="pt-2 gap-2 flex items-center justify-center">
-          <Button
-            type="button"
-            onClick={() => removeFidget(fidgetId)}
-            size="icon"
-            variant="secondary"
-          >
-            <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
-          </Button>
+          {showRemoveButton !== false && (
+            <Button
+              type="button"
+              onClick={() => removeFidget(fidgetId)}
+              size="icon"
+              variant="secondary"
+            >
+              <FaTrashCan className="h-8l shrink-0" aria-hidden="true" />
+            </Button>
+          )}
 
           <Button type="submit" variant="primary" width="auto">
             <div className="flex items-center">Done</div>

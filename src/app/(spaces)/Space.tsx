@@ -9,6 +9,7 @@ import {
   LayoutFidgetSavableConfig as LayoutFidgetSaveableConfig,
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
+import type { FeedFidgetSettings, FeedFidgetData } from "@/fidgets/farcaster/Feed";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { isNil, isUndefined } from "lodash";
 import InfoToast from "@/common/components/organisms/InfoBanner";
@@ -30,6 +31,7 @@ export type SpaceConfig = {
   fidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   };
+  feedInstanceDatum?: FidgetInstanceData<FeedFidgetSettings, FeedFidgetData>;
   layoutID: string;
   layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
   isEditable: boolean;
@@ -281,9 +283,12 @@ export default function Space({
               <div
                 className={
                   !isUndefined(profile)
-                    ? "w-6/12 h-[calc(100vh-224px)]"
-                    : "w-6/12 h-[calc(100vh-64px)]"
+                    ? "w-5/12 h-[calc(100vh-224px)]"
+                    : "w-5/12 h-[calc(100vh-64px)]"
                 }
+                style={{
+                  padding: `${parseInt(config.theme?.properties?.gridSpacing ?? "16")}px`,
+                }}
               >
                 {feed}
               </div>

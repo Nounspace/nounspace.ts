@@ -6,7 +6,7 @@ import useWindowSize from "@/common/lib/hooks/useWindowSize";
 export default function SpaceLoading({ hasProfile, hasFeed }) {
   const { height } = useWindowSize();
   const maxRows = hasProfile ? 8 : 12;
-  const cols = hasFeed ? 6 : 12;
+  const cols = hasFeed ? 7 : 12;
   const margin = [16, 16];
   const containerPadding = [16, 16];
   const magicBase = hasProfile ? 64 + 160 : 64;

@@ -7,7 +7,7 @@ export function cleanupLayout(
   hasProfile: boolean,
   hasFeed: boolean
 ): { cleanedLayout: PlacedGridItem[]; removedFidgetIds: string[] } {
-  const cols = hasFeed ? 6 : 12;
+  const cols = hasFeed ? 7 : 12;
   const maxRows = hasProfile ? 8 : 10;
   const cleanedLayout: typeof layout = [];
   const removedFidgetIds: string[] = [];

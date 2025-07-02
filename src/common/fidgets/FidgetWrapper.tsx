@@ -26,37 +26,48 @@ import {
 } from "../components/atoms/tooltip";
 import FidgetSettingsEditor from "../components/organisms/FidgetSettingsEditor";
 
-export type FidgetWrapperProps = {
-  fidget: React.FC<FidgetArgs>;
-  bundle: FidgetBundle;
+export type FidgetWrapperProps<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+> = {
+  fidget: React.FC<FidgetArgs<S, D>>;
+  bundle: FidgetBundle<S, D>;
   context?: FidgetRenderContext;
-  saveConfig: (conf: FidgetConfig) => Promise<void>;
+  saveConfig: (conf: FidgetConfig<S, D>) => Promise<void>;
   setCurrentFidgetSettings: (currentFidgetSettings: React.ReactNode) => void;
   setSelectedFidgetID: (selectedFidgetID: string) => void;
   selectedFidgetID: string;
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
+  allowDelete?: boolean;
+  allowMove?: boolean;
+  allowStash?: boolean;
 };
 
-export const getSettingsWithDefaults = (
-  settings: FidgetSettings | undefined,
-  config: FidgetProperties,
-): FidgetSettings => {
-  const safeSettings = settings ?? {};
+export const getSettingsWithDefaults = <
+  S extends FidgetSettings = FidgetSettings,
+>(
+  settings: S | undefined,
+  config: FidgetProperties<S>,
+): S => {
+  const safeSettings = settings ?? ({} as Partial<S>);
   return reduce(
     config.fields,
     (acc, f) => ({
       ...acc,
       [f.fieldName]:
         f.fieldName in safeSettings
-          ? safeSettings[f.fieldName]
-          : (f.default ?? undefined),
+          ? (safeSettings as Record<string, unknown>)[f.fieldName]
+          : f.default ?? undefined,
     }),
-    {},
-  );
+    {} as Partial<S>,
+  ) as S;
 };
 
-export function FidgetWrapper({
+export function FidgetWrapper<
+  S extends FidgetSettings = FidgetSettings,
+  D extends FidgetData = FidgetData,
+>({
   fidget,
   bundle,
   context,
@@ -66,7 +77,10 @@ export function FidgetWrapper({
   selectedFidgetID,
   removeFidget,
   minimizeFidget,
-}: FidgetWrapperProps) {
+  allowDelete = true,
+  allowMove = true,
+  allowStash = true,
+}: FidgetWrapperProps<S, D>) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
   }));
@@ -80,16 +94,17 @@ export function FidgetWrapper({
         fidgetId={bundle.id}
         properties={bundle.properties}
         settings={settingsWithDefaults}
-        onSave={onSave}
+        onSave={onSave as (settings: FidgetSettings, shouldUnselect?: boolean) => void}
         unselect={unselect}
         removeFidget={removeFidget}
+        showRemoveButton={allowDelete}
       />,
     );
   }
 
   const Fidget = fidget;
 
-  const saveData = (data: FidgetData) => {
+  const saveData = (data: D) => {
     return saveConfig({
       ...bundle.config,
       data,
@@ -101,18 +116,16 @@ export function FidgetWrapper({
     bundle.properties,
   );
 
-  const onSave = async (
-    newSettings: FidgetSettings,
+  const onSave = (
+    newSettings: S,
     shouldUnselect?: boolean,
-  ) => {
-    try {
-      await saveConfig({
-        ...bundle.config,
-        settings: newSettings,
-      });
-    } catch (e) {
+  ): void => {
+    saveConfig({
+      ...bundle.config,
+      settings: newSettings,
+    }).catch(() => {
       toast.error("Failed to save fidget settings", { duration: 1000 });
-    }
+    });
 
     if (shouldUnselect) {
       unselect();
@@ -179,52 +192,60 @@ export function FidgetWrapper({
           zIndex: 999999,
         }}
       >
-        <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1">
-                  <GrabHandleIcon />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Drag to Move</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </Card>
-        <button
-          onClick={() => {
-            minimizeFidget(bundle.id);
-          }}
-        >
-          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+        {allowMove && (
+          <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1">
-                    <StashIcon />
+                    <GrabHandleIcon />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Stash in Fidget Tray</TooltipContent>
+                <TooltipContent>Drag to Move</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </Card>
-        </button>
-        <button
-          onClick={() => {
-            removeFidget(bundle.id);
-          }}
-        >
-          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <FaX className="w-5/12" />
-                </TooltipTrigger>
-                <TooltipContent>Remove Fidget</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </Card>
-        </button>
+        )}
+        {allowStash && (
+          <button
+            onClick={() => {
+              minimizeFidget(bundle.id);
+            }}
+          >
+            <Card
+              className={`h-full rounded-lg ${allowMove ? "ml-1" : ""} w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]`}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <StashIcon />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Stash in Fidget Tray</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Card>
+          </button>
+        )}
+        {allowDelete && (
+          <button
+            onClick={() => {
+              removeFidget(bundle.id);
+            }}
+          >
+            <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-red-100 text-[#1C64F2]">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <FaX className="w-5/12" />
+                  </TooltipTrigger>
+                  <TooltipContent>Remove Fidget</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Card>
+          </button>
+        )}
       </div>,
       document.body
     );
@@ -236,9 +257,9 @@ export function FidgetWrapper({
       <Card
         ref={fidgetRef}
         className={
-          selectedFidgetID === bundle.id
+          (selectedFidgetID === bundle.id
             ? "size-full border-solid border-sky-600 border-4 rounded-2xl"
-            : "size-full"
+            : "size-full") + " relative"
         }
         style={{
           outline:

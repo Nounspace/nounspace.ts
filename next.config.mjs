@@ -1,6 +1,8 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
 import packageInfo from "./package.json" with { type: "json" };
 import { createRequire } from "node:module";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 
@@ -79,11 +81,13 @@ const nextConfig = {
     ];
   },
   webpack: (config) => {
-    // Prevent webpack from attempting to bundle Node "os" module
-    // which can cause erroneous imports of @walletconnect/types
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      os: false,
+    // Prevent bundling Node's "os" module which causes WalletConnect issues
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      os: fileURLToPath(new URL("./src/common/stubs/os.ts", import.meta.url)),
+      "@walletconnect/types": fileURLToPath(
+        new URL("./src/common/stubs/walletconnect-types.ts", import.meta.url),
+      ),
     };
     return config;
   },

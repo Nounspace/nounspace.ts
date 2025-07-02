@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
   useRef,
+  useContext,
 } from "react";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import RGL, { WidthProvider } from "react-grid-layout";
@@ -25,6 +26,9 @@ import {
   FidgetWrapper,
   getSettingsWithDefaults,
 } from "@/common/fidgets/FidgetWrapper";
+import {
+  useFidgetEditorContext,
+} from "@/common/providers/FidgetEditorProvider";
 import { map, reject } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
@@ -76,7 +80,7 @@ const makeGridDetails = (
   compactType: null,
   // This turns off rearrangement so items will not be pushed arround.
   preventCollision: true,
-  cols: hasFeed ? 6 : 12,
+  cols: hasFeed ? 7 : 12,
   maxRows: hasProfile ? 8 : 10,
   rowHeight: 70,
   layout: [],
@@ -155,10 +159,19 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     w: number;
     h: number;
   }>();
-  const [selectedFidgetID, setSelectedFidgetID] = useState("");
+  const editorCtx = useFidgetEditorContext();
+  const [selectedFidgetIDState, setSelectedFidgetIDState] = useState("");
+  const [currentFidgetSettingsState, setCurrentFidgetSettingsState] =
+    useState<React.ReactNode>(null);
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
-  const [currentFidgetSettings, setCurrentFidgetSettings] =
-    useState<React.ReactNode>(<></>);
+
+  const selectedFidgetID = editorCtx?.selectedFidgetID ?? selectedFidgetIDState;
+  const setSelectedFidgetID =
+    editorCtx?.setSelectedFidgetID ?? setSelectedFidgetIDState;
+  const currentFidgetSettings =
+    editorCtx?.currentFidgetSettings ?? currentFidgetSettingsState;
+  const setCurrentFidgetSettings =
+    editorCtx?.setCurrentFidgetSettings ?? setCurrentFidgetSettingsState;
   const [isPickingFidget, setIsPickingFidget] = useState(false);
 
   const gridDetails = useMemo(
