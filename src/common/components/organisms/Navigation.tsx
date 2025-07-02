@@ -18,22 +18,22 @@ import { Button } from "../atoms/button";
 import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
 import { Badge } from "@/common/components/atoms/badge";
-import SearchModal from "@/common/components/organisms/SearchModal";
 import useNotificationBadgeText from "@/common/lib/hooks/useNotificationBadgeText";
 import { UserTheme } from "@/common/lib/theme";
 import { useUserTheme } from "@/common/lib/theme/UserThemeProvider";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
-import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { NOUNISH_LOWFI_URL } from "@/constants/nounishLowfi";
 import { usePathname } from "next/navigation";
 import { RiQuillPenLine } from "react-icons/ri";
-import ExploreIcon from "../atoms/icons/ExploreIcon";
 import HomeIcon from "../atoms/icons/HomeIcon";
-import LoginIcon from "../atoms/icons/LoginIcon";
-import LogoutIcon from "../atoms/icons/LogoutIcon";
 import NotificationsIcon from "../atoms/icons/NotificationsIcon";
 import RocketIcon from "../atoms/icons/RocketIcon";
 import SearchIcon from "../atoms/icons/SearchIcon";
+import ExploreIcon from "../atoms/icons/ExploreIcon";
+import LogoutIcon from "../atoms/icons/LogoutIcon";
+import LoginIcon from "../atoms/icons/LoginIcon";
+import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import SearchModal from "./SearchModal";
 
 type NavItemProps = {
   label: string;
@@ -195,7 +195,7 @@ const Navigation: React.FC<NavProps> = ({
     <nav
       id="logo-sidebar"
       className={mergeClasses(
-        "border-r-2 bg-white flex flex-col md:h-screen md:sticky md:top-0",
+        "border-r-2 bg-white",
         mobile
           ? "w-[270px]"
           : "w-full transition-transform -translate-x-full sm:translate-x-0"
@@ -213,8 +213,8 @@ const Navigation: React.FC<NavProps> = ({
       <SearchModal ref={searchRef} />
       <div
         className={mergeClasses(
-          "flex flex-col h-full pt-12 pb-12 box-border",
-          mobile ? "block" : "hidden md:block"
+          "pt-12 pb-12 h-full",
+          mobile ? "block" : "md:block hidden"
         )}
       >
         <div
@@ -230,7 +230,8 @@ const Navigation: React.FC<NavProps> = ({
           {!mobile && (
             <button
               onClick={toggleSidebar}
-              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 z-10"
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 sidebar-expand-button"
+              style={{zIndex: 9999}}
               aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
             >
               {shrunk ? (

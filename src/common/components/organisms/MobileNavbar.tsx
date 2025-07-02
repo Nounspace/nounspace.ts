@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { UserTheme } from "@/common/lib/theme";
@@ -50,7 +50,16 @@ const TabItem = React.memo(({
     <TabsTrigger 
       key={tab.id} 
       value={tab.id}
-      onClick={() => onSelect(tab.id)}
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+     // If you click on the same tab, force it to reload
+        if (isSelected) {
+          setTimeout(() => onSelect(tab.id), 0);
+        } else {
+          onSelect(tab.id);
+        }
+      }}
       className={mergeClasses(
         "flex flex-col items-center justify-center",
         "min-w-[72px] h-full py-2 px-0",
@@ -303,7 +312,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       value={selected}
       onValueChange={onSelect}
       className={mergeClasses(
-        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-50",
+        "fixed bottom-0 left-0 right-0 w-full h-[72px] bg-white border-t border-gray-200 z-level-3",
         className
       )}
       style={{

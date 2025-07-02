@@ -1,7 +1,77 @@
 import { FidgetInstanceData } from '@/common/fidgets';
 import { PlacedGridItem } from '@/fidgets/layout/Grid';
 
-export function cleanupLayout(
+export function comprehensiveCleanup(
+  layout: PlacedGridItem[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
+  hasProfile: boolean,
+  hasFeed: boolean
+): { 
+  cleanedLayout: PlacedGridItem[]; 
+  cleanedFidgetInstanceDatums: { [key: string]: FidgetInstanceData };
+  hasChanges: boolean;
+} {
+  let hasChanges = false;
+  
+  // Key migration map for settings
+  const keyMap: Record<string, string> = {
+    "fidget Shadow": "fidgetShadow",
+    "font Color": "fontColor",
+  };
+
+  // Step 1: Remove orphaned layout items (layout items without corresponding data)
+  const validLayout = layout.filter(item => fidgetInstanceDatums[item.i]);
+  if (validLayout.length !== layout.length) {
+    hasChanges = true;
+  }
+
+  // Step 2: Remove unused fidgets and migrate settings
+  const layoutFidgetIds = new Set(validLayout.map(item => item.i));
+  const cleanedFidgetInstanceDatums = { ...fidgetInstanceDatums };
+  
+  Object.keys(cleanedFidgetInstanceDatums).forEach(id => {
+    if (!layoutFidgetIds.has(id)) {
+      // Remove unused fidgets
+      delete cleanedFidgetInstanceDatums[id];
+      hasChanges = true;
+    } else {
+      // Migrate settings keys
+      const settings = cleanedFidgetInstanceDatums[id].config?.settings as Record<string, unknown>;
+      if (settings) {
+        Object.entries(keyMap).forEach(([oldKey, newKey]) => {
+          if (oldKey in settings) {
+            settings[newKey] = settings[oldKey];
+            delete settings[oldKey];
+            hasChanges = true;
+          }
+        });
+      }
+    }
+  });
+
+  // Step 3: Handle overlapping fidgets
+  const { cleanedLayout, removedFidgetIds } = resolveOverlaps(
+    validLayout,
+    cleanedFidgetInstanceDatums,
+    hasProfile,
+    hasFeed
+  );
+
+  // Remove data for fidgets that couldn't be repositioned
+  if (removedFidgetIds.length > 0) {
+    removedFidgetIds.forEach(id => delete cleanedFidgetInstanceDatums[id]);
+    hasChanges = true;
+  }
+
+  // Check for layout position changes
+  if (cleanedLayout.some((item, i) => validLayout[i] && (item.x !== validLayout[i].x || item.y !== validLayout[i].y))) {
+    hasChanges = true;
+  }
+
+  return { cleanedLayout, cleanedFidgetInstanceDatums, hasChanges };
+}
+
+export function resolveOverlaps(
   layout: PlacedGridItem[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   hasProfile: boolean,

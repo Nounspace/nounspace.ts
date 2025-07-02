@@ -10,7 +10,9 @@ import { CompleteFidgets } from "@/fidgets";
  * Checks if a fidget is a media-type fidget (text, gallery, video)
  */
 export const isMediaFidget = (fidgetType: string): boolean => {
-  return ['text', 'gallery', 'Video'].includes(fidgetType);
+  // treat different casing and additional fidgets as media types
+  const type = fidgetType.toLowerCase();
+  return ['text', 'gallery', 'video', 'image'].includes(type);
 };
 
 /**
@@ -24,61 +26,62 @@ export const isPinnedCast = (
   return fidgetData?.fidgetType === 'cast';
 };
 
-/**
- * Processes fidget IDs for display in mobile tabs, potentially consolidating media fidgets
- */
+
 export const processTabFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   isMobile: boolean
 ): string[] => {
   if (!isMobile) {
-    // On desktop, use all fidgets as is
-    return fidgetIds.filter(id => {
-      const fidgetData = fidgetInstanceDatums[id];
-      return !!fidgetData;
-    });
+    return fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
   }
   
-  // For mobile, process and potentially consolidate media fidgets
-  const mediaFidgetIds: string[] = [];
-  const pinnedCastIds: string[] = [];
-  const nonMediaFidgetIds: string[] = [];
-  
-  // First separate media, pinned casts, and non-media fidgets
-  fidgetIds.forEach(id => {
+  // For mobile, filter valid fidgets but maintain order
+  const validFidgets = fidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
-    if (!fidgetData) return;
-    
-    // Skip fidgets that should be hidden on mobile
-    if (fidgetData.config?.settings?.showOnMobile === false) return;
+    if (!fidgetData) return false;
+    if (fidgetData.config?.settings?.showOnMobile === false) return false;
+    return true;
+  });
+  
+  // Find positions of media fidgets and pinned casts in the original order
+  const mediaFidgetPositions: { id: string; position: number }[] = [];
+  const pinnedCastPositions: { id: string; position: number }[] = [];
+  const result: string[] = [];
+  
+  validFidgets.forEach((id, index) => {
+    const fidgetData = fidgetInstanceDatums[id];
     
     if (isPinnedCast(id, fidgetInstanceDatums)) {
-      pinnedCastIds.push(id);
+      pinnedCastPositions.push({ id, position: index });
     } else if (isMediaFidget(fidgetData.fidgetType)) {
-      mediaFidgetIds.push(id);
+      mediaFidgetPositions.push({ id, position: index });
     } else {
-      nonMediaFidgetIds.push(id);
+      // Non-media, non-pinned fidgets keep their original position
+      result[index] = id;
     }
   });
   
-  const consolidatedIds: string[] = [];
-  
-  // If we have multiple pinned casts, return them under a special id
-  if (pinnedCastIds.length > 1) {
-    consolidatedIds.push('consolidated-pinned');
-  } else {
-    consolidatedIds.push(...pinnedCastIds);
+  // Handle pinned casts - consolidate if multiple, preserve position of first one
+  if (pinnedCastPositions.length > 1) {
+    const firstPinnedPosition = pinnedCastPositions[0].position;
+    result[firstPinnedPosition] = 'consolidated-pinned';
+  } else if (pinnedCastPositions.length === 1) {
+    const pinnedPosition = pinnedCastPositions[0].position;
+    result[pinnedPosition] = pinnedCastPositions[0].id;
   }
   
-  // If we have multiple media fidgets, add them under a special id
-  if (mediaFidgetIds.length > 1) {
-    consolidatedIds.push('consolidated-media');
-  } else {
-    consolidatedIds.push(...mediaFidgetIds);
+  // Handle media fidgets - consolidate if multiple, preserve position of first one
+  if (mediaFidgetPositions.length > 1) {
+    const firstMediaPosition = mediaFidgetPositions[0].position;
+    result[firstMediaPosition] = 'consolidated-media';
+  } else if (mediaFidgetPositions.length === 1) {
+    const mediaPosition = mediaFidgetPositions[0].position;
+    result[mediaPosition] = mediaFidgetPositions[0].id;
   }
   
-  return [...consolidatedIds, ...nonMediaFidgetIds];
+  // Filter out undefined values and return
+  return result.filter(id => id !== undefined);
 };
 
 /**
@@ -145,23 +148,21 @@ export const createTabItemsFromFidgetIds = (
     } else if (id === 'consolidated-pinned') {
       label = "Pinned";
     } else {
-      // Get fidget data and set label and type
       const fidgetData = fidgetInstanceDatums?.[id];
       if (fidgetData) {
         // Safely get fidgetType with null check
         fidgetType = fidgetData.fidgetType || "";
-        
-        // If user has provided custom display name in settings, use it
-        const customMobileDisplayName = fidgetData.config?.settings?.customMobileDisplayName;
-        if (customMobileDisplayName && typeof customMobileDisplayName === 'string' && customMobileDisplayName.trim() !== '') {
-          label = customMobileDisplayName.trim();
-        } else if (fidgetData.fidgetType && CompleteFidgets?.[fidgetData.fidgetType]) {
-          // Otherwise use module properties with null checks
-          const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
-          if (fidgetModule?.properties) {
-            label = fidgetModule.properties.mobileFidgetName || 
-                    fidgetModule.properties.fidgetName || 
-                    "";
+        // All media fidgets share the generic 'Media' label
+        if (isMediaFidget(fidgetType)) {
+          label = "Media";
+        } else {
+          // If user provided custom display name, use it
+          const customMobileDisplayName = fidgetData.config?.settings?.customMobileDisplayName;
+          if (customMobileDisplayName && typeof customMobileDisplayName === 'string' && customMobileDisplayName.trim() !== '') {
+            label = customMobileDisplayName.trim();
+          } else if (CompleteFidgets?.[fidgetType]?.properties) {
+            const props = CompleteFidgets[fidgetType].properties;
+            label = props.mobileFidgetName || props.fidgetName || "";
           }
         }
       }

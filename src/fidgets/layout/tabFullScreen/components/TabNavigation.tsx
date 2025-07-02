@@ -1,10 +1,18 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
-import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { MdGridView } from "react-icons/md";
+import * as FaIcons from "react-icons/fa6";
+import * as BsIcons from "react-icons/bs";
+import * as GiIcons from "react-icons/gi";
+import type { IconType } from "react-icons";
 import { CompleteFidgets } from "@/fidgets";
 import { getFidgetDisplayName } from "../utils";
-import { usePathname } from "next/navigation";
+
+const ICON_PACK: Record<string, IconType> = {
+  ...FaIcons,
+  ...BsIcons,
+  ...GiIcons,
+};
 
 interface TabNavigationProps {
   processedFidgetIds: string[];
@@ -37,39 +45,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
   if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
-  
-  // Function to check if a fidget is a feed type
-  const isFeedFidget = (fidgetId: string): boolean => {
-    const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return false;
-    
-    return fidgetDatum.fidgetType === 'feed';
-  };
-  
-  const pathname = usePathname();
-  const isHomebasePath = pathname?.startsWith('/homebase');
-  const isHomePath = pathname?.startsWith('/home');
 
   // Reorder tabs to prioritize feed fidgets
   const orderedFidgetIds = useMemo(() => {
-    if (!processedFidgetIds || processedFidgetIds.length <= 1) return processedFidgetIds;
-    if (isHomebasePath || isHomePath) return processedFidgetIds;
-    
-    // Create a copy of the array to avoid mutating the original
-    const reorderedIds = [...processedFidgetIds];
-    
-    // Sort the array to move feed fidgets to the beginning
-    reorderedIds.sort((a, b) => {
-      const aIsFeed = isFeedFidget(a);
-      const bIsFeed = isFeedFidget(b);
-      
-      if (aIsFeed && !bIsFeed) return -1; // a is feed, b is not, so a comes first
-      if (!aIsFeed && bIsFeed) return 1;  // b is feed, a is not, so b comes first
-      return 0; // Keep original relative order if both are feeds or both are not feeds
-    });
-    
-    return reorderedIds;
-  }, [processedFidgetIds, fidgetInstanceDatums, isHomebasePath, isHomePath]);
+    return processedFidgetIds;
+  }, [processedFidgetIds]);
 
   // Enhanced scroll handler to calculate gradient opacities based on scroll position
   const handleScroll = () => {
@@ -120,18 +100,19 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get name for a tab
   const getFidgetName = (fidgetId: string) => {
-    // Handle special consolidated views
-    if (fidgetId === 'consolidated-media' || fidgetId === 'consolidated-pinned') {
-      return getFidgetDisplayName(null, isMobile, fidgetId);
+    // Handle special consolidated tabs first
+    if (fidgetId === 'consolidated-media') {
+      return getFidgetDisplayName(null, isMobile, 'consolidated-media');
+    }
+    if (fidgetId === 'consolidated-pinned') {
+      return getFidgetDisplayName(null, isMobile, 'consolidated-pinned');
     }
     
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
-    
     // Get valid fidget IDs and find index for custom tab name
     const validFidgetIds = Object.keys(fidgetInstanceDatums);
     const fidgetIdIndex = validFidgetIds.indexOf(fidgetId);
-    
     // Use the centralized utility function to get the display name
     return getFidgetDisplayName(
       fidgetDatum,
@@ -145,28 +126,21 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
 
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
-    // Special case for consolidated media
-    if (fidgetId === 'consolidated-media') {
-      return selectedTab === fidgetId ? 
-        <BsImageFill className="text-xl" /> : 
-        <BsImage className="text-xl" />;
-    }
-
-    // Special case for consolidated pinned casts
-    if (fidgetId === 'consolidated-pinned') {
-      return selectedTab === fidgetId ? 
-        <BsFillPinFill size={22} /> : 
-        <BsPin size={22} />;
-    }
-    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
-    if (!fidgetDatum) return <MdGridView className="text-xl" />;  // Default icon
-    
+    if (!fidgetDatum) return <MdGridView className="text-xl" />;
     const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
-    if (!fidgetModule) return <MdGridView className="text-xl" />;  // Default icon
-
-    // On mobile, use custom mobile icons if available
+    if (!fidgetModule) return <MdGridView className="text-xl" />;
     if (isMobile) {
+      const customIcon = fidgetDatum.config.settings.mobileIconName as string | undefined;
+      if (customIcon) {
+        if (customIcon.startsWith('http')) {
+          return <img src={customIcon} alt="icon" className="w-5 h-5" />;
+        }
+        const Icon = ICON_PACK[customIcon] as IconType | undefined;
+        if (Icon) {
+          return <Icon className="text-xl" />;
+        }
+      }
       const isSelected = selectedTab === fidgetId;
       if (isSelected && fidgetModule.properties.mobileIconSelected) {
         return fidgetModule.properties.mobileIconSelected;
@@ -174,7 +148,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
         return fidgetModule.properties.mobileIcon;
       }
     }
-    
     // Fallback to emoji icon
     return (
       <span 
@@ -188,10 +161,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   };
 
   return (
-    <div 
-      className="relative w-full h-full"
-      style={{ touchAction: 'manipulation' }}
-    >
+    <div className="relative w-full h-full min-h-[72px]">
       <TabsList 
         ref={tabsListRef}
         className={`
@@ -203,7 +173,6 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
           ${orderedFidgetIds.length <= 4 ? 'justify-evenly' : 'justify-start'}
           rounded-none
         `}
-        style={{ touchAction: 'manipulation' }}
       >
         {orderedFidgetIds.map((fidgetId) => {
           const fidgetName = getFidgetName(fidgetId);

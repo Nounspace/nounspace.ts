@@ -75,6 +75,15 @@ export default function FrameRenderer({
 
         const data = await response.json();
 
+        // Log the frame data for debugging
+        console.log("FrameRenderer - Frame data received:", {
+          frameUrl,
+          data,
+          hasImage: !!data.image,
+          imageUrl: data.image,
+          isFrame: data.isFrame,
+        });
+
         setFrameData({
           image: data.image || null,
           title: data.title || null,
@@ -85,7 +94,13 @@ export default function FrameRenderer({
           loading: false,
         });
       } catch (error) {
-        console.error("Error fetching frame:", error);
+        console.error("FrameRenderer - Error fetching frame:", {
+          frameUrl,
+          error,
+          errorMessage:
+            error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         setFrameData((prev) => ({
           ...prev,
           error:
@@ -324,7 +339,21 @@ export default function FrameRenderer({
               style={{ objectFit: "cover" }}
               sizes="100vw"
               priority
-              onError={() => setImgError(true)}
+              onError={(e) => {
+                console.error("FrameRenderer - Image failed to load:", {
+                  frameUrl,
+                  imageUrl: frameData.image,
+                  error: e,
+                  target: e.target,
+                });
+                setImgError(true);
+              }}
+              onLoad={() => {
+                console.log("FrameRenderer - Image loaded successfully:", {
+                  frameUrl,
+                  imageUrl: frameData.image,
+                });
+              }}
             />
           </div>
         ) : null}

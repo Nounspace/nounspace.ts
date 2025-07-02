@@ -763,6 +763,7 @@ export default function PublicSpace({
           : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
+      isEditable={editabilityCheck.isEditable}
     />
   );
 
@@ -791,14 +792,14 @@ export default function PublicSpace({
     />
   ), [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]);
   
-  // Mostra o skeleton apenas durante o carregamento inicial do espaço, não durante troca de abas
+  // Shows the skeleton only during initial space loading, not during tab switching
   const shouldShowSkeleton =
     loading &&
-    // Mostrar skeleton apenas quando ainda não carregamos dados iniciais
+    // Show skeleton only when we haven't loaded initial data yet
     !initialDataLoadRef.current &&
-    // Não mostrar skeleton para navegação entre abas
+    // Don't show skeleton for navigation between tabs
     providedSpaceId !== null && providedSpaceId !== "" &&
-    // Evita mostrar skeleton para abas que já foram carregadas
+    // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
       loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
 

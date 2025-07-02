@@ -343,8 +343,11 @@ export const createSpaceStoreFunc = (
       draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
     }, "saveLocalSpaceTab");
   },
-  deleteSpaceTab: debounce(
-    async (spaceId, tabName, network?: EtherScanChainName) => {
+  deleteSpaceTab: async (
+    spaceId,
+    tabName,
+    network?: EtherScanChainName,
+  ) => {
       // This deletes locally and remotely at the same time
       // We can separate these out, but I think deleting feels better as a single decisive action
       const unsignedDeleteTabRequest: UnsignedDeleteSpaceTabRequest = {
@@ -388,8 +391,6 @@ export const createSpaceStoreFunc = (
         console.error(e);
       }
     },
-    1000,
-  ),
   createSpaceTab: async (
     spaceId: string,
     tabName: string,
