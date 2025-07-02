@@ -13,31 +13,30 @@ import {
   Send,
   Loader2,
   Settings,
-  Check,
   AlertCircle,
   Wifi,
   WifiOff,
   RotateCcw,
   Clock,
 } from "lucide-react";
-import { CgProfile } from "react-icons/cg";
-import { first } from "lodash";
 import { toast } from "sonner";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster";
 import { useAppStore } from "@/common/data/stores/app";
 import { SpaceCheckpoint } from "@/common/data/stores/app/checkpoints/checkpointStore";
+import { ChatMessage } from "@/common/data/stores/app/chat/chatStore";
 import { SpaceConfig, SpaceConfigSaveDetails } from "@/app/(spaces)/Space";
+import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import Image from "next/image";
 import {
   WebSocketService,
   ConnectionStatus,
   type IncomingMessage,
 } from "@/common/lib/services/websocket";
+import html2canvas from "html2canvas";
 
 // Configuration constants
 const AI_CHAT_CONFIG = {
-  DEFAULT_WS_URL: process.env.NEXT_PUBLIC_AI_WS_URL || "ws://localhost:3040",
+  DEFAULT_WS_URL: process.env.NEXT_PUBLIC_AI_WS_URL || "wss://space-builder-server.onrender.com",
   WELCOME_MESSAGE: `Hello! I'm here to help you customize your space. I can assist you with:
 
 • Adding and configuring fidgets
@@ -51,25 +50,139 @@ What would you like to customize today?`,
   RECONNECT_BACKOFF: 1000,
 } as const;
 
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-  type?: "text" | "config";
-  spaceConfig?: SpaceConfig; // JSON space configuration from AI
-  configApplied?: boolean;
-  aiType?: "planner" | "builder"; // Track which AI responded
-  builderResponse?: any; // Store the actual builder response data
-  checkpointId?: string; // Reference to checkpoint if this message created one
+// Message type constants
+const MESSAGE_TYPES = {
+  PONG: "pong",
+  REPLY: "REPLY",
+  PLANNER_LOGS: "PLANNER_LOGS",
+  BUILDER_LOGS: "BUILDER_LOGS",
+  COMM_LOGS: "COMM_LOGS",
+} as const;
+
+type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
+
+// Connection Status Indicator Component
+const ConnectionStatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ status }) => {
+  const statusConfig = {
+    connected: {
+      icon: Wifi,
+      color: "text-green-500",
+      textColor: "text-green-600",
+      text: "Connected",
+      animated: false
+    },
+    connecting: {
+      icon: Loader2,
+      color: "text-yellow-500",
+      textColor: "text-yellow-600",
+      text: "Connecting...",
+      animated: true
+    },
+    disconnected: {
+      icon: WifiOff,
+      color: "text-gray-400",
+      textColor: "text-gray-500",
+      text: "Offline",
+      animated: false
+    },
+    error: {
+      icon: AlertCircle,
+      color: "text-red-500",
+      textColor: "text-red-600",
+      text: "Error",
+      animated: false
+    }
+  };
+
+  const config = statusConfig[status];
+  const IconComponent = config.icon;
+
+  return (
+    <div className="flex items-center gap-1">
+      <IconComponent 
+        className={`w-3 h-3 ${config.color} ${config.animated ? 'animate-spin' : ''}`} 
+      />
+      <span className={`text-xs ${config.textColor}`}>
+        {config.text}
+      </span>
+    </div>
+  );
+};
+
+// Improved type definitions
+interface BuilderResponse {
+  type: string;
+  name: string;
+  message: string;
 }
+
+interface SpaceContextConfig {
+  fidgetInstanceDatums?: Record<string, any>;
+  layoutConfig?: any;
+  theme?: { id?: string };
+  layoutID?: string;
+}
+
+// Use ChatMessage from store instead of local interface
+type Message = ChatMessage;
 
 interface AiChatSidebarProps {
   onClose: () => void;
   onApplySpaceConfig?: (config: SpaceConfigSaveDetails) => Promise<void>;
-  wsUrl?: string; // WebSocket URL for AI communication
-  getCurrentSpaceContext?: () => any; // Function to get fresh context
+  wsUrl?: string;
+  getCurrentSpaceContext?: () => SpaceContextConfig | null;
 }
+
+// Helper function to manually apply theme to CSS variables
+const applyThemeToCSS = (theme: any) => {
+  if (!theme?.properties) return;
+  
+  const { properties } = theme;
+  
+  // Apply theme properties directly to CSS variables
+  if (properties.background) {
+    document.documentElement.style.setProperty("--user-theme-background", properties.background);
+  }
+  if (properties.fontColor) {
+    document.documentElement.style.setProperty("--user-theme-font-color", properties.fontColor);
+  }
+  if (properties.headingsFontColor) {
+    document.documentElement.style.setProperty("--user-theme-headings-font-color", properties.headingsFontColor);
+  }
+  if (properties.fidgetBackground) {
+    document.documentElement.style.setProperty("--user-theme-fidget-background", properties.fidgetBackground);
+  }
+  if (properties.fidgetBorderWidth) {
+    document.documentElement.style.setProperty("--user-theme-fidget-border-width", properties.fidgetBorderWidth);
+  }
+  if (properties.fidgetBorderColor) {
+    document.documentElement.style.setProperty("--user-theme-fidget-border-color", properties.fidgetBorderColor);
+  }
+  if (properties.fidgetShadow) {
+    document.documentElement.style.setProperty("--user-theme-fidget-shadow", properties.fidgetShadow);
+  }
+  if (properties.fidgetBorderRadius) {
+    document.documentElement.style.setProperty("--user-theme-fidget-border-radius", properties.fidgetBorderRadius);
+  }
+  if (properties.gridSpacing) {
+    document.documentElement.style.setProperty("--user-theme-grid-spacing", properties.gridSpacing);
+  }
+  
+  // Apply fonts with proper lookup
+  if (properties.font) {
+    // Need to import the font lookup at the top of the file
+    const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[properties.font];
+    if (fontConfig) {
+      document.documentElement.style.setProperty("--user-theme-font", fontConfig.config.style.fontFamily);
+    }
+  }
+  if (properties.headingsFont) {
+    const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[properties.headingsFont];
+    if (fontConfig) {
+      document.documentElement.style.setProperty("--user-theme-headings-font", fontConfig.config.style.fontFamily);
+    }
+  }
+};
 
 export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   onClose,
@@ -79,24 +192,9 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 }) => {
   const currentFid = useCurrentFid();
 
-  // Load user data for profile picture
-  const { data } = useLoadFarcasterUser(currentFid || 0);
-  const user = useMemo(() => first(data?.users), [data]);
-  const username = useMemo(() => user?.username, [user]);
+  // Removed user profile picture loading since avatars are no longer displayed
 
-  const CurrentUserImage = useCallback(
-    () =>
-      user && user.pfp_url ? (
-        <img
-          className="w-8 h-8 rounded-full object-cover"
-          src={user.pfp_url}
-          alt={username || "User"}
-        />
-      ) : (
-        <CgProfile className="w-5 h-5 text-white" />
-      ),
-    [user, username]
-  );
+
 
   // Get current space configuration from app store
   const {
@@ -114,21 +212,25 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     homebaseTabs: state.homebase.tabs,
   }));
 
-  // Use checkpoint store from app store
+  // Use checkpoint and chat stores from app store
   const {
     checkpoints,
     isRestoring,
     createCheckpointFromContext,
     restoreCheckpoint,
-    deleteCheckpoint,
-    getRecentCheckpoints,
+    messages,
+    addMessage,
+    updateMessage,
+    initializeWithWelcome,
   } = useAppStore((state) => ({
     checkpoints: state.checkpoints.checkpoints,
     isRestoring: state.checkpoints.isRestoring,
     createCheckpointFromContext: state.checkpoints.createCheckpointFromContext,
     restoreCheckpoint: state.checkpoints.restoreCheckpoint,
-    deleteCheckpoint: state.checkpoints.deleteCheckpoint,
-    getRecentCheckpoints: state.checkpoints.getRecentCheckpoints,
+    messages: state.chat.messages,
+    addMessage: state.chat.addMessage,
+    updateMessage: state.chat.updateMessage,
+    initializeWithWelcome: state.chat.initializeWithWelcome,
   }));
 
   // Function to get fresh space context when needed
@@ -178,15 +280,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     getCurrentSpaceConfig
   ]);
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: AI_CHAT_CONFIG.WELCOME_MESSAGE,
-      timestamp: new Date(),
-      type: "text",
-    },
-  ]);
+  // Messages are now managed by the chat store
+  // Initialize with welcome message if needed
+  useEffect(() => {
+    initializeWithWelcome();
+  }, [initializeWithWelcome]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<
@@ -194,6 +292,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   >(null);
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>("disconnected");
+  const [hasCreatedFirstUserCheckpoint, setHasCreatedFirstUserCheckpoint] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -203,40 +302,162 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Capture screenshot of just the grid area
+  const captureSpaceScreenshot = async (): Promise<string | null> => {
+    try {
+      // Target specifically the grid/fidget area, excluding sidebars
+      const gridElement = 
+        document.querySelector('[data-testid="fidget-grid"]') ||
+        document.querySelector('.fidget-grid') ||
+        document.querySelector('[class*="grid"]') ||
+        document.querySelector('[data-grid-area]') ||
+        // Look for React Grid Layout containers
+        document.querySelector('.react-grid-layout') ||
+        // Look for common grid container patterns
+        document.querySelector('[class*="layout"]') ||
+        // Try to find the main content area excluding navigation
+        document.querySelector('main > div:first-child') ||
+        document.querySelector('[role="main"] > div:first-child');
+
+      if (!gridElement) {
+        console.warn("Could not find grid element to screenshot");
+        return null;
+      }
+
+      // Wait a moment for any ongoing rendering to complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      const canvas = await html2canvas(gridElement as HTMLElement, {
+        backgroundColor: '#ffffff',
+        scale: 0.5, // Reduce size for better performance
+        useCORS: true,
+        allowTaint: true,
+        width: Math.min(gridElement.scrollWidth, 1200),
+        height: Math.min(gridElement.scrollHeight, 800),
+        ignoreElements: (element) => {
+          // Ignore any sidebars, navigation, and the chat itself
+          return (
+            element.closest('[aria-label="AI Chat Sidebar"]') !== null ||
+            element.closest('[aria-label="Sidebar"]') !== null ||
+            element.closest('nav') !== null ||
+            element.closest('.sidebar') !== null ||
+            element.closest('[class*="sidebar"]') !== null ||
+            element.closest('[class*="navigation"]') !== null
+          );
+        }
+      });
+
+      return canvas.toDataURL('image/jpeg', 0.8);
+    } catch (error) {
+      console.error("Failed to capture screenshot:", error);
+      return null;
+    }
+  };
+
   // Create a comprehensive checkpoint from current configuration
   const createSpaceCheckpoint = useCallback((
     description?: string, 
     source: SpaceCheckpoint['source'] = 'ai-chat'
   ): SpaceCheckpoint => {
     return createCheckpointFromContext(
-      getCurrentSpaceConfig,
       getFreshSpaceContext,
       description,
       source
     );
-  }, [createCheckpointFromContext, getCurrentSpaceConfig, getFreshSpaceContext]);
+  }, [createCheckpointFromContext, getFreshSpaceContext]);
 
   // Restore to a specific checkpoint using the store
-  const handleRestoreCheckpoint = async (checkpoint: SpaceCheckpoint) => {
+  const handleRestoreCheckpoint = async (checkpointId: string) => {
     if (!onApplySpaceConfig) return;
     
-    const success = await restoreCheckpoint(checkpoint.id, onApplySpaceConfig);
+    const success = await restoreCheckpoint(checkpointId, onApplySpaceConfig);
     
     if (success) {
-      toast.success(`Restored to "${checkpoint.name}"`);
+      const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
+      toast.success(`Restored to "${checkpoint?.name || 'checkpoint'}"`);
+      
+      // Log detailed restoration information
+      try {
+        const currentTabConfig = getFreshSpaceContext();
+        console.log("🔄 Successfully restored checkpoint:", {
+          restored: {
+            checkpointId,
+            checkpointName: checkpoint?.name,
+            checkpointConfig: checkpoint?.spaceConfig,
+          },
+          currentState: {
+            spaceConfig: currentTabConfig,
+          }
+        });
+      } catch (error) {
+        console.error("❌ Failed to log restoration details:", error);
+      }
     } else {
       toast.error("Failed to restore checkpoint. Please try again.");
     }
   };
 
-  // Delete a checkpoint using the store
-  const handleDeleteCheckpoint = (checkpointId: string) => {
-    deleteCheckpoint(checkpointId);
-    toast.info("Checkpoint deleted");
-  };
+  // Automatically apply config and create checkpoint
+  const autoApplyConfig = async (spaceConfig: SpaceConfig, messageId: string) => {
+    if (!onApplySpaceConfig) return;
 
-  // Get recent checkpoints for display
-  const recentCheckpoints = getRecentCheckpoints(3);
+    try {
+      // Extract layoutConfig from the AI's layoutDetails structure
+      const layoutConfig = spaceConfig.layoutDetails?.layoutConfig;
+
+      // Convert SpaceConfig to the format expected by saveLocalConfig
+      const saveDetails = {
+        theme: spaceConfig.theme,
+        layoutConfig: layoutConfig,
+        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
+        fidgetTrayContents: spaceConfig.fidgetTrayContents,
+      };
+
+      // Apply the AI configuration first
+      await onApplySpaceConfig(saveDetails);
+
+      // Manually apply theme to CSS variables for immediate visual feedback
+      if (spaceConfig.theme) {
+        applyThemeToCSS(spaceConfig.theme);
+        console.log("🎨 Theme manually applied to CSS variables:", spaceConfig.theme.properties);
+      }
+
+      // Create checkpoint directly from the AI's spaceConfig (what was just applied)
+      // Transform AI config format to checkpoint format
+      const checkpointConfig = {
+        fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
+        layoutConfig: spaceConfig.layoutDetails?.layoutConfig,
+        theme: spaceConfig.theme,
+      };
+      
+      const checkpoint = createCheckpointFromContext(
+        () => checkpointConfig,
+        'After AI Edits',
+        'ai-chat'
+      );
+      
+      console.log("💾 Auto-created checkpoint after applying config:", {
+        checkpointId: checkpoint.id,
+        checkpointName: checkpoint.name,
+        savedConfig: checkpoint.spaceConfig,
+      });
+
+      // Capture screenshot of the space after applying changes
+      const screenshot = await captureSpaceScreenshot();
+
+      // Update the AI message to include checkpoint data instead of creating separate message
+      updateMessage(messageId, {
+        checkpointId: checkpoint.id,
+        screenshot: screenshot || undefined,
+      });
+
+      console.log("✅ Space configuration auto-applied successfully");
+      toast.success("Configuration applied and checkpoint created!");
+    } catch (error) {
+      console.error("❌ Failed to auto-apply space config:", error);
+      toast.error("Failed to apply configuration. Please try again.");
+    }
+  };
 
   // Initialize WebSocket service
   const initializeWebSocketService = useCallback(() => {
@@ -270,163 +491,173 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     wsServiceRef.current.connect();
   }, [wsUrl, currentFid]);
 
+  // Helper function to attempt parsing space config from message
+  const tryParseSpaceConfig = useCallback((messageContent: string): SpaceConfig | undefined => {
+    try {
+      if (messageContent.includes("fidgetInstanceDatums")) {
+        const spaceConfig = JSON.parse(messageContent);
+        console.log("✅ AI generated space config:", spaceConfig);
+        return spaceConfig;
+      }
+    } catch (error) {
+      console.error("❌ Failed to parse message as JSON:", error);
+    }
+    return undefined;
+  }, []);
+
+  // Helper function to create message ID with timestamp
+  const createMessageId = useCallback((prefix: string): string => {
+    return `${prefix}-${Date.now()}`;
+  }, []);
+
+  // Helper function to add message and update loading state
+  const addMessageAndUpdateState = useCallback((
+    message: Message, 
+    shouldStopLoading: boolean = false,
+    newLoadingType?: "thinking" | "building" | null
+  ) => {
+    addMessage(message);
+    if (shouldStopLoading) {
+      setIsLoading(false);
+      setLoadingType(null);
+    } else if (newLoadingType !== undefined) {
+      setLoadingType(newLoadingType);
+      setIsLoading(true);
+    }
+  }, [addMessage]);
+
+  // Handle pong messages
+  const handlePongMessage = useCallback(() => {
+    const pongMessage: Message = {
+      id: createMessageId("pong"),
+      role: "assistant",
+      content: "🏓 Pong! WebSocket connection is working perfectly!",
+      timestamp: new Date(),
+      type: "text",
+    };
+    addMessageAndUpdateState(pongMessage);
+    toast.success("Pong received! WebSocket is working!");
+  }, [createMessageId, addMessageAndUpdateState]);
+
+  // Handle reply messages (with potential config)
+  const handleReplyMessage = useCallback((wsMessage: IncomingMessage) => {
+    const messageContent = wsMessage.message || "AI response received";
+    const spaceConfig = tryParseSpaceConfig(messageContent);
+
+    console.log("📥 Raw REPLY message:", {
+      type: wsMessage.type,
+      name: wsMessage.name,
+      messageLength: messageContent.length,
+      messagePreview: messageContent.substring(0, 200) + "...",
+      containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
+      rawMessage: messageContent, // Full raw message content
+    });
+
+    if (spaceConfig) {
+      const aiMessage: Message = {
+        id: createMessageId("ai"),
+        role: "assistant",
+        content: "🎨 I've applied the new space configuration for you!",
+        timestamp: new Date(),
+        type: "config",
+        spaceConfig,
+        aiType: "builder",
+        builderResponse: wsMessage as BuilderResponse,
+        configApplied: true,
+      };
+      addMessageAndUpdateState(aiMessage, true);
+      autoApplyConfig(spaceConfig, aiMessage.id);
+    } else {
+      const aiMessage: Message = {
+        id: createMessageId("ai"),
+        role: "assistant",
+        content: messageContent,
+        timestamp: new Date(),
+        type: "text",
+        aiType: "builder",
+      };
+      addMessageAndUpdateState(aiMessage, true);
+    }
+  }, [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]);
+
+  // Handle builder logs (with potential config)
+  const handleBuilderLogsMessage = useCallback((wsMessage: IncomingMessage) => {
+    const messageContent = wsMessage.message || "Builder is working...";
+    const spaceConfig = tryParseSpaceConfig(messageContent);
+
+    const logMessage: Message = {
+      id: createMessageId("builder-log"),
+      role: "assistant",
+      content: spaceConfig
+        ? "🎨 I've created a new space configuration and applied it automatically!"
+        : messageContent,
+      timestamp: new Date(),
+      type: spaceConfig ? "config" : "text",
+      spaceConfig,
+      aiType: "builder",
+      builderResponse: spaceConfig ? (wsMessage as BuilderResponse) : undefined,
+      configApplied: spaceConfig ? true : undefined,
+    };
+
+    if (spaceConfig) {
+      addMessageAndUpdateState(logMessage, true);
+      toast.success("🎨 New space configuration created!");
+      autoApplyConfig(spaceConfig, logMessage.id);
+    } else {
+      addMessageAndUpdateState(logMessage, false, "building");
+    }
+  }, [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]);
+
+  // Handle other log messages
+  const handleLogMessage = useCallback((
+    wsMessage: IncomingMessage, 
+    messageType: "planner" | "comm",
+    defaultContent: string,
+    loadingType?: "thinking" | null
+  ) => {
+    const logMessage: Message = {
+      id: createMessageId(`${messageType}-log`),
+      role: "assistant",
+      content: wsMessage.message || defaultContent,
+      timestamp: new Date(),
+      type: "text",
+      aiType: messageType === "planner" ? "planner" : "planner",
+    };
+    addMessageAndUpdateState(logMessage, false, loadingType);
+  }, [createMessageId, addMessageAndUpdateState]);
+
   const handleWebSocketMessage = useCallback((wsMessage: IncomingMessage) => {
-    // Handle messages according to backend protocol: {type, name, message}
-    switch (wsMessage.type) {
-      case "pong": {
-        const pongMessage: Message = {
-          id: `pong-${Date.now()}`,
-          role: "assistant",
-          content: "🏓 Pong! WebSocket connection is working perfectly!",
-          timestamp: new Date(),
-          type: "text",
-        };
-        setMessages((prev) => [...prev, pongMessage]);
-        toast.success("Pong received! WebSocket is working!");
+    switch (wsMessage.type as MessageType) {
+      case MESSAGE_TYPES.PONG:
+        handlePongMessage();
         break;
-      }
 
-      case "REPLY": {
-        // Try to parse the message as JSON configuration
-        let spaceConfig = null;
-        const messageContent = wsMessage.message || "AI response received";
-
-        console.log("📥 Raw REPLY message:", {
-          type: wsMessage.type,
-          name: wsMessage.name,
-          messageLength: messageContent.length,
-          messagePreview: messageContent.substring(0, 200) + "...",
-          containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
-        });
-
-        try {
-          // Check if the message contains JSON configuration
-          if (messageContent.includes("fidgetInstanceDatums")) {
-            spaceConfig = JSON.parse(messageContent);
-            console.log("✅ AI generated space config:", spaceConfig);
-          }
-        } catch (error) {
-          console.error("❌ Failed to parse REPLY message as JSON:", error);
-          // Silently handle non-JSON messages
-        }
-
-        if (spaceConfig) {
-          const aiMessage: Message = {
-            id: `ai-${Date.now()}`,
-            role: "assistant",
-            content:
-              "🎨 I've created a new space configuration for you! You can apply it below.",
-            timestamp: new Date(),
-            type: "config",
-            spaceConfig: spaceConfig,
-            aiType: "builder",
-            builderResponse: wsMessage,
-          };
-          setMessages((prev) => [...prev, aiMessage]);
-          setIsLoading(false);
-          setLoadingType(null);
-
-          toast.success("🎨 New space configuration created!");
-        } else {
-          // Regular text response
-          const aiMessage: Message = {
-            id: `ai-${Date.now()}`,
-            role: "assistant",
-            content: messageContent,
-            timestamp: new Date(),
-            type: "text",
-            aiType: "builder",
-          };
-          setMessages((prev) => [...prev, aiMessage]);
-          setIsLoading(false);
-          setLoadingType(null);
-        }
+      case MESSAGE_TYPES.REPLY:
+        handleReplyMessage(wsMessage);
         break;
-      }
 
-      case "PLANNER_LOGS": {
-        const logMessage: Message = {
-          id: `planner-log-${Date.now()}`,
-          role: "assistant",
-          content: wsMessage.message || "Planner is processing...",
-          timestamp: new Date(),
-          type: "text",
-          aiType: "planner",
-        };
-        setMessages((prev) => [...prev, logMessage]);
-        setLoadingType("thinking");
-        setIsLoading(true);
+      case MESSAGE_TYPES.PLANNER_LOGS:
+        handleLogMessage(wsMessage, "planner", "Planner is processing...", "thinking");
         break;
-      }
 
-      case "BUILDER_LOGS": {
-        // Try to parse the message as JSON configuration
-        let spaceConfig: SpaceConfig | undefined = undefined;
-        const messageContent = wsMessage.message || "Builder is working...";
-
-        try {
-          // Check if the message contains JSON configuration
-          if (messageContent.includes("fidgetInstanceDatums")) {
-            spaceConfig = JSON.parse(messageContent);
-            console.log("✅ AI generated space config:", spaceConfig);
-          }
-        } catch (error) {
-          console.error(
-            "❌ Failed to parse BUILDER_LOGS message as JSON:",
-            error
-          );
-          // Silently handle non-JSON messages
-        }
-
-        const logMessage: Message = {
-          id: `builder-log-${Date.now()}`,
-          role: "assistant",
-          content: spaceConfig
-            ? "🎨 I've created a new space configuration for you! You can apply it below."
-            : messageContent,
-          timestamp: new Date(),
-          type: spaceConfig ? "config" : "text",
-          spaceConfig: spaceConfig,
-          aiType: "builder",
-          builderResponse: spaceConfig ? wsMessage : undefined,
-        };
-
-        setMessages((prev) => [...prev, logMessage]);
-
-        // Handle config or loading state
-        if (spaceConfig) {
-          setIsLoading(false);
-          setLoadingType(null);
-          toast.success("🎨 New space configuration created!");
-        } else {
-          setLoadingType("building");
-          setIsLoading(true);
-        }
+      case MESSAGE_TYPES.BUILDER_LOGS:
+        handleBuilderLogsMessage(wsMessage);
         break;
-      }
 
-      case "COMM_LOGS": {
-        const logMessage: Message = {
-          id: `comm-log-${Date.now()}`,
-          role: "assistant",
-          content: wsMessage.message || "Communication update...",
-          timestamp: new Date(),
-          type: "text",
-          aiType: "planner",
-        };
-        setMessages((prev) => [...prev, logMessage]);
+      case MESSAGE_TYPES.COMM_LOGS:
+        handleLogMessage(wsMessage, "comm", "Communication update...");
         break;
-      }
 
       default:
-        console.log(
-          "❓ Unknown WebSocket message type:",
-          wsMessage.type,
-          wsMessage
-        );
+        console.log("❓ Unknown WebSocket message type:", wsMessage.type, wsMessage);
         break;
     }
-  }, []);
+  }, [
+    handlePongMessage,
+    handleReplyMessage, 
+    handleLogMessage,
+    handleBuilderLogsMessage
+  ]);
 
   // Connect on mount, disconnect on unmount
   useEffect(() => {
@@ -451,7 +682,34 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       type: "text",
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    addMessage(userMessage);
+
+    // Create checkpoint on first user message and add it under the user message
+    if (!hasCreatedFirstUserCheckpoint) {
+      const firstCheckpoint = createSpaceCheckpoint('Before AI Edits');
+      console.log("💾 Created first-message checkpoint:", {
+        checkpointId: firstCheckpoint.id,
+        checkpointName: firstCheckpoint.name,
+        savedConfig: firstCheckpoint.spaceConfig,
+      });
+      setHasCreatedFirstUserCheckpoint(true);
+
+      // Capture screenshot of the space before AI changes
+      const screenshot = await captureSpaceScreenshot();
+
+      // Add checkpoint button to chat as a user message
+      const firstCheckpointMessage: Message = {
+        id: `first-checkpoint-${Date.now()}`,
+        role: "user",
+        content: "",
+        timestamp: new Date(),
+        type: "checkpoint",
+        checkpointId: firstCheckpoint.id,
+        screenshot: screenshot || undefined,
+      };
+
+      addMessage(firstCheckpointMessage);
+    }
     setInputValue("");
     setIsLoading(true);
 
@@ -493,54 +751,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   };
 
-  const handleApplyConfig = async (message: Message) => {
-    if (!message.spaceConfig || !onApplySpaceConfig) return;
-
-    try {
-      // Create checkpoint before applying new configuration
-      const checkpoint = createSpaceCheckpoint(`Before applying AI changes`);
-      
-      console.log("💾 Created checkpoint before applying config:", checkpoint.id);
-      console.log("🎨 AI Config structure:", Object.keys(message.spaceConfig));
-
-      // Extract layoutConfig from the AI's layoutDetails structure
-      const layoutConfig = message.spaceConfig.layoutDetails?.layoutConfig;
-      
-      console.log("🎯 Extracted layout config:", layoutConfig);
-      console.log("🎯 Layout items count:", layoutConfig?.layout?.length || 0);
-
-      // Convert SpaceConfig to the format expected by saveLocalConfig
-      // Note: saveLocalConfig expects layoutConfig directly, not wrapped in layoutDetails
-      const saveDetails = {
-        theme: message.spaceConfig.theme,
-        layoutConfig: layoutConfig, // Direct layoutConfig, not layoutDetails
-        fidgetInstanceDatums: message.spaceConfig.fidgetInstanceDatums,
-        fidgetTrayContents: message.spaceConfig.fidgetTrayContents,
-      };
-
-      await onApplySpaceConfig(saveDetails);
-
-      // Mark config as applied and link to checkpoint
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === message.id ? { 
-            ...msg, 
-            configApplied: true,
-            checkpointId: checkpoint.id 
-          } : msg
-        )
-      );
-
-      console.log("✅ Space configuration applied successfully");
-      toast.success("Space configuration applied successfully!");
-    } catch (error) {
-      console.error("❌ Failed to apply space config:", error);
-      console.error("❌ Error details:", error);
-      console.error("❌ AI Config that failed:", message.spaceConfig);
-      toast.error("Failed to apply configuration. Please try again.");
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -550,12 +760,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   return (
     <aside
-      className="h-screen flex-row flex bg-white transition-transform border-r"
+      className="h-screen flex-row flex bg-white transition-transform"
       aria-label="AI Chat Sidebar"
     >
-      <div className="flex-1 w-[420px] h-full max-h-screen pt-4 flex-col flex overflow-hidden">
+      <div className="flex-1 w-[420px] h-full max-h-screen flex-col flex overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 pb-4 border-b">
+        <div className="flex items-center justify-between px-2 pt-3 pb-3 border-b">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <LucideSparkle className="w-5 h-5 text-white" />
@@ -563,42 +773,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             <div>
               <h2 className="font-semibold text-lg">Vibe Customization</h2>
               <div className="flex items-center gap-2">
-                {/* Checkpoints Indicator */}
-                {checkpoints.length > 0 && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
-                    <Clock className="w-3 h-3" />
-                    <span className="text-xs font-medium">{checkpoints.length} checkpoint{checkpoints.length !== 1 ? 's' : ''}</span>
-                  </div>
-                )}
-                {/* Connection Status Indicator */}
-                <div className="flex items-center gap-1">
-                  {connectionStatus === "connected" && (
-                    <>
-                      <Wifi className="w-3 h-3 text-green-500" />
-                      <span className="text-xs text-green-600">Connected</span>
-                    </>
-                  )}
-                  {connectionStatus === "connecting" && (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin text-yellow-500" />
-                      <span className="text-xs text-yellow-600">
-                        Connecting...
-                      </span>
-                    </>
-                  )}
-                  {connectionStatus === "disconnected" && (
-                    <>
-                      <WifiOff className="w-3 h-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">Offline</span>
-                    </>
-                  )}
-                  {connectionStatus === "error" && (
-                    <>
-                      <AlertCircle className="w-3 h-3 text-red-500" />
-                      <span className="text-xs text-red-600">Error</span>
-                    </>
-                  )}
-                </div>
+                <ConnectionStatusIndicator status={connectionStatus} />
               </div>
             </div>
           </div>
@@ -614,184 +789,136 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           </div>
         </div>
 
-        {/* Checkpoints Section */}
-        {recentCheckpoints.length > 0 && (
-          <div className="px-4 py-2 border-b bg-gray-50">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-700">Space Checkpoints</h3>
-              <span className="text-xs text-gray-500">{checkpoints.length} saved</span>
-            </div>
-            <div className="space-y-1 max-h-24 overflow-y-auto">
-              {recentCheckpoints.map((checkpoint) => (
-                <div key={checkpoint.id} className="flex items-center justify-between p-2 bg-white rounded border">
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-gray-700 truncate">
-                      {checkpoint.name}
-                    </div>
-                    <div className="text-xs text-gray-500 flex items-center gap-1">
-                      <span className={`px-1 py-0.5 rounded text-xs ${{
-                        'theme-editor': 'bg-orange-100 text-orange-700',
-                        'ai-chat': 'bg-purple-100 text-purple-700',
-                        'manual': 'bg-blue-100 text-blue-700'
-                      }[checkpoint.source]}`}>
-                        {checkpoint.source}
-                      </span>
-                      {new Date(checkpoint.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRestoreCheckpoint(checkpoint)}
-                      disabled={isRestoring}
-                      className="h-6 px-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                    >
-                      <RotateCcw className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteCheckpoint(checkpoint.id)}
-                      className="h-6 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      ✕
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {checkpoints.length > 3 && (
-              <div className="text-xs text-gray-500 mt-1 text-center">
-                Showing last 3 checkpoints
-              </div>
-            )}
-          </div>
-        )}
-
         {/* Messages */}
-        <ScrollArea className="flex-1 px-3 py-2">
-          <div className="space-y-4 pr-2">
+        <ScrollArea className="flex-1 px-1 py-2 mt-1">
+          <div className="space-y-4 pr-1 pt-4">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-2 ${
+                className={`flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.role === "assistant" && (
-                  <div className="w-8 h-8 relative flex items-center justify-center flex-shrink-0 mt-1">
-                    <Image
-                      src="/images/tom_alerts.png"
-                      alt="AI Avatar"
-                      width={32}
-                      height={32}
-                      className="rounded-full object-cover"
-                    />
-                  </div>
-                )}
-
                 <div
-                  className={`flex-1 min-w-0 rounded-lg px-3 py-2 break-words overflow-wrap-anywhere ${
+                  className={`min-w-0 rounded-lg px-2 py-2 break-words overflow-wrap-anywhere ${
                     message.role === "user"
-                      ? "bg-blue-500 text-white ml-auto max-w-[85%]"
-                      : message.aiType === "builder"
-                        ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900"
-                        : "bg-gray-100 text-gray-900"
+                      ? message.type === "checkpoint"
+                        ? "bg-green-500 text-white max-w-[95%]"
+                        : "bg-blue-500 text-white max-w-[95%]"
+                      : message.type === "checkpoint"
+                        ? "bg-green-50 border border-green-200 text-gray-900 max-w-[95%]"
+                        : message.aiType === "builder"
+                          ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900 max-w-[95%]"
+                          : "bg-gray-100 text-gray-900 max-w-[95%]"
                   }`}
                 >
+                  {/* Checkpoint button */}
+                  {message.type === "checkpoint" && message.checkpointId && (
+                    <div className="space-y-2">
+                      {/* Screenshot */}
+                      {message.screenshot && (
+                        <div className="relative">
+                          <img
+                            src={message.screenshot}
+                            alt="Space screenshot"
+                            className="w-full h-20 object-cover rounded border"
+                          />
+                          <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
+                        </div>
+                      )}
+                      
+                      {/* Checkpoint controls */}
+                      <div className="flex items-center justify-between">
+                        <span className={`text-sm font-medium ${message.role === "user" ? "text-green-100" : "text-green-800"}`}>
+                          {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
+                          disabled={isRestoring}
+                          className={`h-7 w-7 p-0 ${
+                            message.role === "user" 
+                              ? "text-green-200 hover:text-white hover:bg-green-600" 
+                              : "text-green-600 hover:text-green-700 hover:bg-green-100"
+                          }`}
+                        >
+                          <RotateCcw className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Builder AI indicator */}
-                  {message.aiType === "builder" && (
+                  {message.aiType === "builder" && message.type !== "checkpoint" && (
                     <div className="flex items-center gap-2 mb-2 text-xs text-purple-600 font-medium">
-                      <Settings className="w-3 h-3" />
+                      <Image
+                        src="/images/tom_alerts.png"
+                        alt="Tom AI"
+                        width={12}
+                        height={12}
+                        className="rounded-full object-cover"
+                      />
                       Space Builder AI
                     </div>
                   )}
 
-                  <div className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere word-break hyphens-auto">
-                    {message.content}
-                  </div>
+                  {message.content && (
+                    <div className="text-sm whitespace-pre-wrap break-words overflow-wrap-anywhere word-break hyphens-auto">
+                      {message.content}
+                    </div>
+                  )}
 
-                  {/* Configuration Apply Button */}
-                  {message.type === "config" && message.spaceConfig && (
+                  {/* Configuration details for applied configs - show checkpoint instead of text */}
+                  {message.type === "config" && message.spaceConfig && message.configApplied && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      {/* Show builder response data for debugging */}
-                      {message.aiType === "builder" &&
-                        message.builderResponse && (
-                          <div className="mb-3 p-2 bg-gray-50 rounded text-xs">
-                            <div className="font-medium mb-1">
-                              Builder Response Data:
-                            </div>
-                            <div className="text-gray-600">
-                              <div>
-                                <strong>Message Type:</strong>{" "}
-                                {message.builderResponse.type}
-                              </div>
-                              <div>
-                                <strong>Source:</strong>{" "}
-                                {message.builderResponse.name}
-                              </div>
-                              {message.spaceConfig && (
-                                <div className="mt-2">
-                                  <div className="mb-1">
-                                    <strong>Config Generated:</strong> ✅ Space configuration ready
-                                  </div>
-                                  <details className="mt-2">
-                                    <summary className="cursor-pointer font-medium text-blue-600 hover:text-blue-800">
-                                      View Full Configuration →
-                                    </summary>
-                                    <div className="mt-2 p-2 bg-white border rounded max-h-40 overflow-y-auto">
-                                      <pre className="text-xs whitespace-pre-wrap break-all">
-                                        {JSON.stringify(message.spaceConfig, null, 2)}
-                                      </pre>
-                                    </div>
-                                  </details>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                      {/* Apply button or applied state */}
-                      {!message.configApplied ? (
-                        <Button
-                          onClick={() => handleApplyConfig(message)}
-                          size="sm"
-                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                        >
-                          <Settings className="w-4 h-4 mr-2" />
-                          Apply Configuration
-                        </Button>
-                      ) : (
+                      {message.checkpointId ? (
                         <div className="space-y-2">
-                          <Button
-                            disabled
-                            size="sm"
-                            className="w-full bg-green-500 hover:bg-green-500"
-                          >
-                            <Check className="w-4 h-4 mr-2" />
-                            Configuration Applied
-                          </Button>
-                          
-                          {/* Show linked checkpoint if exists */}
-                          {message.checkpointId && (
-                            <div className="text-xs text-gray-600 bg-blue-50 p-2 rounded">
-                              💾 Checkpoint created before applying this configuration
+                          {/* Screenshot */}
+                          {message.screenshot && (
+                            <div className="relative">
+                              <img
+                                src={message.screenshot}
+                                alt="Space screenshot"
+                                className="w-full h-20 object-cover rounded border"
+                              />
+                              <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
                             </div>
                           )}
+                          
+                          {/* Checkpoint controls */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-800">
+                              {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
+                              disabled={isRestoring}
+                              className="h-7 w-7 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                            </Button>
+                          </div>
                         </div>
-                      )}
+                      ) : (
+                        <div className="text-xs text-gray-600 bg-green-50 p-2 rounded">
+                          ✅ Configuration automatically applied
+                        </div>
+                      ) }
                     </div>
                   )}
 
                   <div
                     className={`text-xs mt-1 opacity-70 ${
                       message.role === "user"
-                        ? "text-blue-100"
-                        : "text-gray-500"
+                        ? message.type === "checkpoint"
+                          ? "text-green-100"
+                          : "text-blue-100"
+                        : message.type === "checkpoint"
+                          ? "text-green-600"
+                          : "text-gray-500"
                     }`}
                   >
                     {new Date(message.timestamp).toLocaleTimeString([], {
@@ -800,31 +927,12 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                     })}
                   </div>
                 </div>
-
-                {message.role === "user" && (
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
-                      user && user.pfp_url ? "" : "bg-blue-500"
-                    }`}
-                  >
-                    <CurrentUserImage />
-                  </div>
-                )}
               </div>
             ))}
 
             {isLoading && (
-              <div className="flex gap-2 justify-start">
-                <div className="w-8 h-8 relative flex items-center justify-center flex-shrink-0 mt-1">
-                  <Image
-                    src="/images/tom_alerts.png"
-                    alt="AI Avatar"
-                    width={32}
-                    height={32}
-                    className="rounded-full object-cover shadow-md"
-                  />
-                </div>
-                <div className="bg-gray-100 rounded-lg px-3 py-2">
+              <div className="flex justify-start">
+                <div className="bg-gray-100 rounded-lg px-2 py-2">
                   <div className="flex items-center gap-2">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="text-sm text-gray-600">
@@ -842,8 +950,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         </ScrollArea>
 
         {/* Input */}
-        <div className="p-4 border-t">
-          <div className="flex gap-2">
+        <div className="p-2 border-t relative">
+          <div className="flex gap-1">
             <Textarea
               ref={textareaRef}
               value={inputValue}
@@ -890,6 +998,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       </div>
     </aside>
   );
-  };
+};
 
 export default AiChatSidebar;
