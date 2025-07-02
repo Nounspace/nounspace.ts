@@ -9,7 +9,7 @@ import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
 import LoggedInStateProvider from "./LoggedInStateProvider";
 import AnalyticsProvider from "./AnalyticsProvider";
-import VersionCheckProivder from "./VersionCheckProvider";
+import VersionCheckProvider from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
@@ -17,7 +17,7 @@ import { SharedDataProvider } from "./SharedDataProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <VersionCheckProivder>
+    <VersionCheckProvider>
       <Privy>
         <Query>
           <Wagmi>
@@ -43,6 +43,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           </Wagmi>
         </Query>
       </Privy>
-    </VersionCheckProivder>
+    </VersionCheckProvider>
   );
 }
