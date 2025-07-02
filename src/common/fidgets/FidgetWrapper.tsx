@@ -40,6 +40,8 @@ export type FidgetWrapperProps<
   removeFidget: (fidgetId: string) => void;
   minimizeFidget: (fidgetId: string) => void;
   allowDelete?: boolean;
+  allowMove?: boolean;
+  allowStash?: boolean;
 };
 
 export const getSettingsWithDefaults = <
@@ -76,6 +78,8 @@ export function FidgetWrapper<
   removeFidget,
   minimizeFidget,
   allowDelete = true,
+  allowMove = true,
+  allowStash = true,
 }: FidgetWrapperProps<S, D>) {
   const { homebaseConfig } = useAppStore((state) => ({
     homebaseConfig: state.homebase.homebaseConfig,
@@ -188,36 +192,42 @@ export function FidgetWrapper<
           zIndex: 999999,
         }}
       >
-        <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-1">
-                  <GrabHandleIcon />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>Drag to Move</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </Card>
-        <button
-          onClick={() => {
-            minimizeFidget(bundle.id);
-          }}
-        >
-          <Card className="h-full rounded-lg ml-1 w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
+        {allowMove && (
+          <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="flex items-center gap-1">
-                    <StashIcon />
+                    <GrabHandleIcon />
                   </div>
                 </TooltipTrigger>
-                <TooltipContent>Stash in Fidget Tray</TooltipContent>
+                <TooltipContent>Drag to Move</TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </Card>
-        </button>
+        )}
+        {allowStash && (
+          <button
+            onClick={() => {
+              minimizeFidget(bundle.id);
+            }}
+          >
+            <Card
+              className={`h-full rounded-lg ${allowMove ? "ml-1" : ""} w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]`}
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1">
+                      <StashIcon />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>Stash in Fidget Tray</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </Card>
+          </button>
+        )}
         {allowDelete && (
           <button
             onClick={() => {
