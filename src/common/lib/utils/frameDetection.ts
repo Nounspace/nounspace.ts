@@ -159,17 +159,113 @@ export async function isFrameV2Url(url: string): Promise<boolean> {
 
 // Synchronous heuristic check for likely frame URLs (for performance)
 export function isLikelyFrameUrl(url: string): boolean {
-  const framePatterns = [
-    /frames?\.js\.org/,
-    /frame\./,
-    /\.frame$/,
-    /\/frame$/,
-    /\/frames\//,
-    // Add more patterns based on common frame domains
-  ];
-  
-  // If it matches frame patterns, it's likely a frame
-  return framePatterns.some(pattern => pattern.test(url));
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    const pathname = urlObj.pathname.toLowerCase();
+    
+    // Known frame platforms and domains
+    const frameDomains = [
+      'frames.js.org',
+      'frame.wtf',
+      'frameground.xyz',
+      'gallery.so',
+      'paragraph.xyz',
+      'pgrph.xyz',
+      'nouns.build',
+      'degen.tips',
+      'mint.fun',
+      'zora.co',
+      'foundation.app',
+      'opensea.io',
+      'rainbow.me',
+      'pool.party',
+      'farquest.net',
+      'airstack.xyz',
+      'onceupon.gg',
+      'pods.media',
+      'unlonely.app',
+      'wowow.xyz',
+      'interface.social',
+      'far.quest',
+      'events.xyz',
+      'luma.com',
+      'farcaster.group',
+      'supercast.xyz',
+      'farscore.xyz',
+      'hey.xyz',
+      'seedclub.com',
+      'crowdfund.seedclub.com'
+    ];
+    
+    // Check if domain is known to host frames
+    if (frameDomains.some(domain => hostname.includes(domain))) {
+      return true;
+    }
+    
+    // Pattern-based detection for frame-like URLs
+    const framePatterns = [
+      /\/frame$/i,
+      /\/frames\//i,
+      /frame\./i,
+      /\.frame/i,
+      /\/api\/frame/i,
+      /\/fc\//i,
+      /farcaster/i,
+      /\/mint/i,
+      /\/app/i,
+      /\/game/i,
+      /\/vote/i,
+      /\/poll/i,
+      /\/quiz/i,
+      /\/tip/i,
+      /\/swap/i,
+      /\/bridge/i,
+      /\/stake/i,
+      /\/claim/i,
+      /\/airdrop/i,
+      /\/crowdfund/i,
+      /\/fund/i,
+      /\/donate/i,
+      /\/support/i,
+      /\/campaign/i
+    ];
+    
+    // URL structure suggests it could be a frame
+    const hasFramePattern = framePatterns.some(pattern => 
+      pattern.test(pathname) || pattern.test(hostname)
+    );
+    
+    // Exclude obvious non-frame URLs
+    const nonFramePatterns = [
+      /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i,
+      /\.(mp4|mp3|avi|mov|wmv|wav|ogg)$/i,
+      /\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i,
+      /\.(css|js|json|xml|txt)$/i,
+      /\/assets\//i,
+      /\/static\//i,
+      /\/public\//i,
+      /\/images\//i,
+      /\/videos\//i,
+      /\/downloads\//i,
+      /github\.com.*\.(md|txt|json|ya?ml)$/i,
+      /twitter\.com\/i\/web\/status/i,
+      /x\.com\/i\/web\/status/i
+    ];
+    
+    const isNonFrame = nonFramePatterns.some(pattern => 
+      pattern.test(pathname) || pattern.test(url)
+    );
+    
+    if (isNonFrame) {
+      return false;
+    }
+    
+    return hasFramePattern;
+  } catch (error) {
+    // If URL parsing fails, assume it's not a frame
+    return false;
+  }
 }
 
 // Utility functions for cache and batch management

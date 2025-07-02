@@ -6,6 +6,7 @@ import {
   isFrameV2Url,
   isLikelyFrameUrl,
 } from "@/common/lib/utils/frameDetection";
+import Loading from "@/common/components/molecules/Loading";
 
 interface SmartFrameEmbedProps {
   url: string;
@@ -27,11 +28,38 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
       }
 
       try {
-        // Check for Frame V2 metadata
+        // Quick synchronous check for obvious non-frames first
+        const quickCheck = isLikelyFrameUrl(url);
+
+        // Only skip async check for obvious non-frame URLs (like images, documents, etc.)
+        // For anything that could potentially be a frame, we should check properly
+        if (!quickCheck) {
+          // Check if it's an obvious non-frame URL (images, docs, static assets)
+          const isObviousNonFrame =
+            /\.(jpg|jpeg|png|gif|webp|svg|ico|mp4|mp3|avi|mov|wmv|wav|ogg|pdf|doc|docx|xls|xlsx|ppt|pptx|css|js|json|xml|txt)$/i.test(
+              url
+            ) ||
+            /\/(assets|static|public|images|videos|downloads)\//.test(url) ||
+            /github\.com.*\.(md|txt|json|ya?ml)$/.test(url) ||
+            /twitter\.com\/i\/web\/status/.test(url) ||
+            /x\.com\/i\/web\/status/.test(url);
+
+          if (isObviousNonFrame) {
+            // Only skip frame detection for truly obvious non-frames
+            if (!isCancelled) {
+              setIsFrameV2(false);
+              setIsFrameV1(false);
+              setIsLoading(false);
+            }
+            return;
+          }
+        }
+
+        // For everything else, do the proper async frame detection
         const isV2 = await isFrameV2Url(url);
 
-        // Check for Frame V1 using the existing heuristic
-        const isV1 = !isV2 && isLikelyFrameUrl(url);
+        // Check for Frame V1 using the existing heuristic (only if not V2)
+        const isV1 = !isV2 && quickCheck;
 
         // Only update state if this effect hasn't been cancelled
         if (!isCancelled) {
@@ -58,10 +86,17 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
     };
   }, [url]);
 
-  // Show loading state
+  // Show loading state with a more neutral placeholder
   if (isLoading) {
-    return <FrameV2Embed url={url} />;
+    return (
+      <div className="border border-gray-200 rounded-lg overflow-hidden w-full max-w-2xl">
+        <div className="animate-pulse">
+          <Loading />
+        </div>
+      </div>
+    );
   }
+  debugger;
 
   // If it's a Frame V2, render with FrameV2Embed
   if (isFrameV2) {
