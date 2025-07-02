@@ -18,7 +18,6 @@ import SpaceLoading from "./SpaceLoading";
 import MobileView from "./MobileView";
 import DesktopView from "./DesktopView";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { PlacedGridItem } from "@/fidgets/layout/Grid";
 import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
 
 export type SpaceFidgetConfig = {
@@ -266,7 +265,7 @@ export default function Space({
       <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
       <div className="w-full h-full transition-all duration-100 ease-out relative z-[2]">
         <div className="flex flex-col h-full">
-          <div style={{ position: "fixed", zIndex: Z_INDEX.TOP }}>
+          <div>
             <InfoToast />
           </div>
           {!isUndefined(profile) ? (

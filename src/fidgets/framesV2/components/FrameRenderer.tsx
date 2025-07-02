@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import FrameActionModal from "./FrameActionModal";
-import { Z_INDEX } from "@/common/constants/zIndex";
 
 interface FrameRendererProps {
   frameUrl: string;
@@ -180,6 +179,7 @@ export default function FrameRenderer({
         }}
       >
         <div
+         className="z-1"
           style={{
             position: "absolute",
             top: 0,
@@ -189,7 +189,7 @@ export default function FrameRenderer({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            zIndex: Z_INDEX.OVERLAY,
+           
           }}
           role="status"
           aria-live="polite"

@@ -1,6 +1,5 @@
 import React from "react";
 import { Slider } from "@mui/material";
-import { Z_INDEX } from "@/common/constants/zIndex";
 
 export type ImageScaleSliderProps = {
   min: number;
@@ -25,7 +24,6 @@ const ImageScaleSlider: React.FC<ImageScaleSliderProps> = ({
         min={min}
         max={max}
         onChange={(_, value) => onChange(value as number)}
-        sx={{ zIndex: Z_INDEX.BASE }}
       />
     </div>
   );

@@ -1,6 +1,5 @@
 import React from "react";
 import { Slider } from "@mui/material";
-import { Z_INDEX } from "@/common/constants/zIndex";
 
 export type WidthSliderProps = {
   min: number;
@@ -27,7 +26,6 @@ const WidthSlider: React.FC<WidthSliderProps> = ({
         onChange={(_, value) => onChange(value as number)}
         valueLabelDisplay="auto"
         valueLabelFormat={(value) => `${Math.round(value * 100)}%`}
-        sx={{ zIndex: Z_INDEX.BASE }}
       />
     </div>
   );

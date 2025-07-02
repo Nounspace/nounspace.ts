@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useState } from "react";
 import Slider from "@mui/material/Slider";
 import { Button } from "@/common/components/atoms/button";
-import { Z_INDEX } from "@/common/constants/zIndex";
 
 // --- Add explicit types ---
 type Proposal = {
@@ -201,7 +200,7 @@ export const WeightedVotingUI: React.FC<
                 step={1}
                 valueLabelDisplay="auto"
                 size="small"
-                sx={{ zIndex: Z_INDEX.BASE }}
+               
               />
             </React.Fragment>
           );
@@ -267,7 +266,7 @@ export const RankedChoiceVotingUI: React.FC<
               max={10}
               step={1}
               valueLabelDisplay="auto"
-              sx={{ zIndex: Z_INDEX.BASE }}
+             
             />
           </div>
         );

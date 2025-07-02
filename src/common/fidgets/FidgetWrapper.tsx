@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/common/components/atoms/card";
 import CSSInput from "@/common/components/molecules/CSSInput";
 import ScopedStyles from "@/common/components/molecules/ScopedStyles";
-import { Z_INDEX } from "@/common/constants/zIndex";
 import { useAppStore } from "@/common/data/stores/app";
 import { reduce } from "lodash";
 import React, { useRef, useEffect, useState } from "react";
@@ -177,7 +176,6 @@ export function FidgetWrapper({
         style={{
           top: iconPosition.top,
           left: iconPosition.left,
-          zIndex: Z_INDEX.TOP,
         }}
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">

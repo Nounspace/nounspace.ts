@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import {
   CastAddBody,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { Z_INDEX } from "@/common/constants/zIndex";
 
+import { Button } from "@/common/components/atoms/button";
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -22,7 +22,6 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
 
@@ -785,13 +784,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
           
           <div
             ref={parentRef}
+            className="z-1"
             style={{
               opacity: isPickingEmoji ? 1 : 0,
               pointerEvents: isPickingEmoji ? "auto" : "none",
               marginTop: 50,
               transition: "opacity 1s ease",
-              zIndex: Z_INDEX.OVERLAY,
-              position: "absolute",
+               position: "absolute",
             }}
           >
             <EmojiPicker
