@@ -379,8 +379,6 @@ export default function PublicSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
-
-
   // Guard: If spaceId is null for a contract/token space, attempt registration if possible, else show error
   if (isTokenPage && (!providedSpaceId || providedSpaceId === "")) {
     // If we have enough info to attempt registration, show a spinner, else show an error
@@ -397,7 +395,9 @@ export default function PublicSpace({
     } else {
       return (
         <div className="w-full h-full flex items-center justify-center">
-          <div className="text-lg text-red-500">Unable to load or register contract space. Missing contract address or network.</div>
+          <div className="text-lg text-red-500">
+            Unable to load or register contract space. Missing contract address or network.
+          </div>
         </div>
       );
     }
@@ -435,7 +435,7 @@ export default function PublicSpace({
   // Update the space registration effect to use the new editability check
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    
+
     // For contract spaces that don't exist yet, allow any authenticated user to register them
     // For other cases, only allow registration if the user has edit permissions
     const canRegister = isTokenPage || editabilityCheck.isEditable;
@@ -453,13 +453,7 @@ export default function PublicSpace({
     });
 
     // Only proceed with registration if conditions are met
-    if (
-      canRegister &&
-      isNil(currentSpaceId) &&
-      !isNil(currentUserFid) &&
-      !loading &&
-      !editabilityCheck.isLoading
-    ) {
+    if (canRegister && isNil(currentSpaceId) && !isNil(currentUserFid) && !loading && !editabilityCheck.isLoading) {
       console.log("Space registration conditions met:", {
         canRegister,
         isEditable: editabilityCheck.isEditable,

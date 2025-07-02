@@ -14,17 +14,15 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({
-  params,
-}): Promise<Metadata> {
+export async function generateMetadata({ params }): Promise<Metadata> {
   const { network, contractAddress, tabName: tabNameParam } = await params;
-  
+
   console.log("Generating metadata for contract space");
   console.log("Params:", { network, contractAddress, tabNameParam });
   if (!network || !contractAddress) {
     return defaultMetadata; // Return default metadata if no network/contractAddress
   }
-  
+
   // Try to fetch token data using fetchMasterToken
   let symbol = "";
   let price = "";
@@ -32,24 +30,22 @@ export async function generateMetadata({
   let imageUrl = "";
   let marketCap = "";
   let priceChange = "";
-  
+
   try {
     // Replace Promise.all with Promise.allSettled for more resilient error handling
     const [tokenResult, clankerResult] = await Promise.allSettled([
       fetchTokenData(contractAddress, null, network as string),
       fetchClankerByAddress(contractAddress as Address),
     ]);
-    
-    const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
-    const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
+
+    const tokenData = tokenResult.status === "fulfilled" ? tokenResult.value : null;
+    const clankerData = clankerResult.status === "fulfilled" ? clankerResult.value : null;
 
     console.log("Token data fetched:", tokenData);
 
     symbol = clankerData?.symbol || tokenData?.symbol || "";
     name = clankerData?.name || tokenData?.name || "";
-    imageUrl =
-      clankerData?.img_url ||
-      (tokenData?.image_url !== "missing.png" ? tokenData?.image_url || "" : "");
+    imageUrl = clankerData?.img_url || (tokenData?.image_url !== "missing.png" ? tokenData?.image_url || "" : "");
     marketCap = tokenData?.market_cap_usd || "";
     priceChange = tokenData?.priceChange || "";
 
@@ -68,15 +64,15 @@ export async function generateMetadata({
   } catch (error) {
     console.error("Error fetching token data for frame metadata:", error);
   }
-  
+
   // Process tabName parameter if it exists
   const tabName = tabNameParam ? decodeURIComponent(tabNameParam) : undefined;
-  
+
   // Create Frame metadata for Farcaster with the correct path
-  const frameUrl = tabName 
+  const frameUrl = tabName
     ? `${WEBSITE_URL}/t/${network}/${contractAddress}/${encodeURIComponent(tabName)}`
     : `${WEBSITE_URL}/t/${network}/${contractAddress}`;
-    
+
   // Create token frame with the symbol if available
   const queryParams = new URLSearchParams({
     name,
@@ -101,10 +97,10 @@ export async function generateMetadata({
         name: symbol ? `${symbol} on Nounspace` : "Token Space on Nounspace",
         splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
         splashBackgroundColor: "#FFFFFF",
-      }
-    }
+      },
+    },
   };
-  
+
   // Create metadata object with token data if available
   const tokenMetadata = getTokenMetadataStructure({
     name,
@@ -127,14 +123,10 @@ export async function generateMetadata({
       "fc:frame": JSON.stringify(tokenFrame),
     },
   };
-  
+
   return metadataWithFrame;
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

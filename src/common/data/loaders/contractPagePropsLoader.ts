@@ -126,7 +126,18 @@ export async function loadContractData(
     .order("timestamp", { ascending: true })
     .limit(1);
 
-  let spaceId = data?.[0]?.spaceId || null;
+  if (error) {
+    console.error("Database query error for contract space:", error);
+  }
+
+  console.log("Database query result for contract space:", {
+    contractAddress,
+    network,
+    queryData: data,
+    error: error?.message,
+  });
+
+  const spaceId = data?.[0]?.spaceId || null;
 
   // If no spaceId found, log details but don't attempt registration here
   // The UI/store will handle registration using the proper signed request flow
