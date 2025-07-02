@@ -1,20 +1,28 @@
-import React from 'react';
-import dynamic from 'next/dynamic';
+import React, { useMemo } from 'react';
 import { LayoutFidgetProps, LayoutFidgetConfig } from '@/common/fidgets';
+import { LayoutFidgets } from '@/fidgets';
 
-type DesktopViewProps = LayoutFidgetProps<LayoutFidgetConfig<any>>;
-
-// Import the grid layout dynamically to avoid circular dependencies
-const GridLayout = dynamic(() => import('@/fidgets/layout/Grid'), {
-  ssr: true,
-});
+type DesktopViewProps = LayoutFidgetProps<LayoutFidgetConfig<any>> & {
+  layoutFidgetKey?: string;
+};
 
 /**
  * DesktopView component that handles desktop layout for Space
- * Acts as a wrapper for the Grid layout component
+ * Dynamically selects the appropriate layout fidget based on configuration
  */
-const DesktopView: React.FC<DesktopViewProps> = (props) => {
-  return <GridLayout {...props} />;
+const DesktopView: React.FC<DesktopViewProps> = ({ 
+  layoutFidgetKey, 
+  ...layoutProps 
+}) => {
+  // Select the appropriate layout fidget component
+  const LayoutFidget = useMemo(() => {
+    const fidgetKey = layoutFidgetKey && LayoutFidgets[layoutFidgetKey] 
+      ? layoutFidgetKey 
+      : "grid";
+    return LayoutFidgets[fidgetKey];
+  }, [layoutFidgetKey]);
+
+  return <LayoutFidget {...layoutProps} />;
 };
 
 export default DesktopView;

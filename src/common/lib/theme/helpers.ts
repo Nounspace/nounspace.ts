@@ -26,9 +26,9 @@ export const SHADOW_STYLES = [
 ];
 
 export const tabListClasses =
-  "w-full p-0 justify-start bg-transparent rounded-none";
+  "p-0 justify-start bg-transparent rounded-none";
 export const tabTriggerClasses =
-  "data-[state=active]:text-blue-600 text-md data-[state=active]:shadow-none data-[state=active]:border-b data-[state=active]:rounded-none data-[state=active]:border-blue-600 data-[state=active]:border-solid px-3 py-2";
+  "data-[state=active]:text-blue-600 text-md data-[state=active]:shadow-none data-[state=active]:border-b data-[state=active]:rounded-none data-[state=active]:border-blue-600 data-[state=active]:border-solid px-3 py-2 inline-block";
 export const tabContentClasses =
   "py-4 flex flex-col gap-4 hidden data-[state=active]:flex";
 

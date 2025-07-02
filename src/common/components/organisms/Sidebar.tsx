@@ -52,18 +52,36 @@ export const useSidebarContext = (): SidebarContextValue => {
 };
 
 export const Sidebar: React.FC<SidebarProps> = () => {
-  const { editMode, sidebarEditable, portalRef } = useSidebarContext();
+  const { editMode, setEditMode, sidebarEditable, portalRef } =
+    useSidebarContext();
+
+  function enterEditMode() {
+    setEditMode(true);
+  }
+
+  // Revertendo para o estilo original com controle de visibilidade
+  const navStyles = {
+    zIndex: 999,
+    position: "relative" as const,
+  };
+
+  // Retornando às classes originais para preservar funcionalidade completa
+  // Isso mantém o comportamento de expansão/contração da barra lateral
+  const navWrapperClass = editMode 
+    ? "hidden" 
+    : "md:flex mx-auto h-full hidden relative";
 
   return (
     <>
       <div ref={portalRef} className={editMode ? "w-full" : ""}></div>
-      <div className={editMode ? "hidden" : "md:flex h-full hidden"}>
-        <Navigation isEditable={sidebarEditable} />
+      <div className={navWrapperClass} style={navStyles}>
+        <Navigation
+          isEditable={sidebarEditable}
+          enterEditMode={enterEditMode}
+        />
       </div>
     </>
   );
 };
 
-export default Object.assign(Sidebar, {
-  ContextProvider: SidebarContextProvider
-});
+export default Sidebar;

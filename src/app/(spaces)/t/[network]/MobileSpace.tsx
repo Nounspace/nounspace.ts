@@ -171,7 +171,7 @@ export const MobileContractDefinedSpace = ({
       <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
         <TokenDataHeader />
       </div>
-      <div className="flex-1">
+      <div className="flex-1 overflow-y-scroll">
         <div
           className={cn(
             "w-full h-full overflow-hidden",
@@ -289,10 +289,7 @@ export const MobileContractDefinedSpace = ({
           </>
         </div>
       </div>
-      <div 
-        className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200"
-        style={{ touchAction: 'manipulation' }}
-      >
+      <div className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200">
         <IconButton
           size={20}
           icon={BsBarChartFill}

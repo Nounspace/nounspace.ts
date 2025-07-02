@@ -2,43 +2,49 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
-import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
-// import Head from "next/head";
+import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
 import type { Metadata } from 'next' // Migrating next/head
 
 export const metadata: Metadata = {
-  title: 'Nounspace',
+  title: "Nounspace",
   description:
-    'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
+    "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
   openGraph: {
-    title: 'Nounspace',
+    siteName: "Nounspace",
+    title: "Nounspace",
+    type: "website",
     description:
-      'The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace',
+      "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
+    images: {
+      url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
+      type: "image/png",
+      width: 1200,
+      height: 737,
+    },
     url: WEBSITE_URL,
-    siteName: 'Nounspace',
-    type: 'website',
-    images: [
-      {
-        url: `${WEBSITE_URL}/images/nounspace_og_low.png`,
-        type: 'image/png',
-        width: 1200,
-        height: 737,
-      },
-    ],
   },
   icons: {
     icon: [
-      { url: '/images/favicon.ico' },
-      { url: '/images/favicon-32x32.png', sizes: '32x32' },
-      { url: '/images/favicon-16x16.png', sizes: '16x16' },
+      {
+        url: "/images/favicon.ico",
+      },
+      {
+        url: "/images/favicon-32x32.png",
+        sizes: "32x32",
+      },
+      {
+        url: "/images/favicon-16x16.png",
+        sizes: "16x16",
+      },
     ],
-    apple: '/images/apple-touch-icon.png',
+    apple: "/images/apple-touch-icon.png",
   },
   other: {
-    'fc:frame': JSON.stringify(defaultFrame),
+    "fc:frame": JSON.stringify(defaultFrame),
   },
 };
 
