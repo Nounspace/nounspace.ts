@@ -187,11 +187,11 @@ export default function Space({
 
   const mainContent = (
     <div className="flex flex-col h-full">
-      <div style={{ position: "fixed", zIndex: 9999 }}>
+      <div className="z-5" style={{ position: "fixed" }}>
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className="z-50 bg-white md:h-40">{profile}</div>
+        <div className="z-5 bg-white md:h-40">{profile}</div>
       ) : null}
 
       <div className="relative">
@@ -264,7 +264,7 @@ export default function Space({
       ) : (
         <div className="user-theme-background size-full relative overflow-hidden">
           <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-          <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
+          <div className="w-full h-full transition-all duration-100 ease-out relative z-1">
             {mainContent}
           </div>
         </div>

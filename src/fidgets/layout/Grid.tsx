@@ -591,15 +591,15 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      <div className="flex flex-col z-10">
+      <div className="flex flex-col z-1">
         {inEditMode && (
           <div className="flex gap-2 absolute top-0 right-0 m-3">
             <button
               onClick={openFidgetPicker}
               className={
                 hasProfile
-                  ? "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                  : "z-infinity flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  ? "z-5 flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  : "z-5 flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
               }
             >
               <div className="ml-2">
