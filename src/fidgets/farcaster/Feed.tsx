@@ -429,10 +429,10 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({ settin
   }, [settings, initialData?.initialHash, clear, push]);
 
   const onSelectCast = useCallback(
-    (hash: string) => {
+    (hash: string, username: string) => {
       push(hash);
       if (initialData?.updateUrl) {
-        router.push(`/homebase/cast/${hash}`);
+        router.push(`/homebase/c/${username}/${hash}`);
       }
     },
     [push, router, initialData?.updateUrl],

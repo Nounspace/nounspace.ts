@@ -52,36 +52,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   // Always use tabFullScreen for mobile preview
   const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
 
-  // Prepare layout fidget props
-  const layoutFidgetProps = useMemo(() => {
-    return {
-      theme,
-      fidgetInstanceDatums,
-      fidgetTrayContents,
-      inEditMode: false, // Never in edit mode for mobile preview
-      saveExitEditMode,
-      cancelExitEditMode,
-      portalRef,
-      saveConfig,
-      hasProfile: !isNil(profile),
-      hasFeed: !isNil(feed),
-      feed,
-      tabNames,
-      fid,
-    };
-  }, [
-    theme,
-    fidgetInstanceDatums,
-    fidgetTrayContents,
-    saveExitEditMode,
-    cancelExitEditMode,
-    portalRef,
-    saveConfig,
-    profile,
-    feed,
-    tabNames,
-    fid,
-  ]);
+
 
   // Transform layout config for mobile (simple array of fidget IDs)
   const mobileLayoutConfig = useMemo(() => {
@@ -144,7 +115,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
               />
               
               {/* Content Container - with proper constraints */}
-              <div className="flex-1 flex flex-col h-full w-full relative z-10 overflow-hidden">
+              <div className={`flex-1 flex flex-col h-full w-full relative z-10 overflow-hidden ${isUndefined(theme?.properties.background) &&  "bg-white"}`}>
                 {/* Header Content */}
                 <div className="flex-shrink-0 w-full bg-white">
 
@@ -182,10 +153,22 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
                         {feed}
                       </>
                     )
-                    : LayoutFidget ? (
+                                         : LayoutFidget ? (
                         <LayoutFidget
                             layoutConfig={mobileLayoutConfig}
-                            {...layoutFidgetProps}
+                            theme={theme}
+                            fidgetInstanceDatums={fidgetInstanceDatums}
+                            fidgetTrayContents={fidgetTrayContents}
+                            saveExitEditMode={saveExitEditMode}
+                            cancelExitEditMode={cancelExitEditMode}
+                            portalRef={portalRef}
+                            saveConfig={saveConfig}
+                            hasProfile={!isNil(profile)}
+                            hasFeed={!isNil(feed)}
+                            feed={feed}
+                            tabNames={tabNames}
+                            fid={fid}
+                            inEditMode={false}
                         />
                         ) : (
                         <SpaceLoading

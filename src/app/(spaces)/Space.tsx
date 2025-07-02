@@ -147,15 +147,13 @@ export default function Space({
     });
   }
 
-  // Memoize the DesktopView render props that don't change during fidget movement
-  const desktopViewProps = useMemo(() => {
+  // Memoize base layout props shared across all layout components
+  const baseLayoutProps = useMemo(() => {
     return {
-      layoutFidgetKey: config?.layoutDetails?.layoutFidget,
-      layoutConfig: config?.layoutDetails?.layoutConfig,
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      inEditMode: !viewportMobile && editMode,
+      layoutConfig: config?.layoutDetails?.layoutConfig,
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -167,19 +165,25 @@ export default function Space({
       fid: config.fid,
     };
   }, [
-    config?.layoutDetails?.layoutFidget,
-    config?.layoutDetails?.layoutConfig,
     config.theme,
     config.fidgetInstanceDatums,
     config.fidgetTrayContents,
+    config?.layoutDetails?.layoutConfig,
     config.tabNames,
     config.fid,
-    viewportMobile,
-    editMode,
     portalRef,
     profile,
     feed,
   ]);
+
+  // Memoize DesktopView specific props
+  const desktopViewProps = useMemo(() => {
+    return {
+      ...baseLayoutProps,
+      layoutFidgetKey: config?.layoutDetails?.layoutFidget,
+      inEditMode: !viewportMobile && editMode,
+    };
+  }, [baseLayoutProps, config?.layoutDetails?.layoutFidget, viewportMobile, editMode]);
 
   const mainContent = (
     <div className="flex flex-col h-full">
@@ -229,14 +233,11 @@ export default function Space({
           >
             {isMobile ? (
               <MobileView
-                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                {...baseLayoutProps}
                 layoutFidgetIds={extractFidgetIdsFromLayout(
                   config?.layoutDetails?.layoutConfig?.layout,
                   config.fidgetInstanceDatums
                 )}
-                theme={config.theme}
-                saveConfig={saveLocalConfig}
-                tabNames={config.tabNames}
               />
               ) : (
                 <DesktopView {...desktopViewProps} />
@@ -251,24 +252,14 @@ export default function Space({
     <>
       {showMobileContainer ? (
         <MobilePreview
-          theme={config.theme}
+          {...baseLayoutProps}
           editMode={editMode}
-          portalRef={portalRef}
           profile={profile}
           tabBar={tabBar}
-          feed={feed}
           saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
-          saveExitEditMode={saveExitEditMode}
-          cancelExitEditMode={cancelExitEditMode}
-          fidgetInstanceDatums={config.fidgetInstanceDatums}
           saveFidgetInstanceDatums={(datums) =>
             saveLocalConfig({ fidgetInstanceDatums: datums })
           }
-          layoutConfig={config?.layoutDetails?.layoutConfig}
-          fidgetTrayContents={config.fidgetTrayContents}
-          saveConfig={saveLocalConfig}
-          tabNames={config.tabNames}
-          fid={config.fid}
         />
       ) : (
         <div className="user-theme-background size-full relative overflow-hidden">

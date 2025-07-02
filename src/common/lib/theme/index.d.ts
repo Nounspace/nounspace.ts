@@ -17,8 +17,8 @@ export interface UserTheme extends ThemeSettings {
     fidgetBorderWidth: string;
     fidgetBorderColor: Color;
     fidgetShadow: string;
-    fidgetBorderRadius?: string;
-    gridSpacing?: string;
+    fidgetBorderRadius: string;
+    gridSpacing: string;
   };
 }
 

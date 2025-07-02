@@ -24,13 +24,15 @@ import {
 import { analytics } from "@/common/providers/AnalyticsProvider";
 import { THEMES } from "@/constants/themes";
 import { SparklesIcon } from "@heroicons/react/24/solid";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
 import { CompleteFidgets } from "@/fidgets";
 import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
+import { useAppStore } from "@/common/data/stores/app";
+import AiChatSidebar from "@/common/components/organisms/AgentChat";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -42,6 +44,8 @@ export type ThemeSettingsEditorArgs = {
   saveFidgetInstanceDatums: (newFidgetInstanceDatums: {
     [key: string]: FidgetInstanceData;
   }) => Promise<void>;
+  getCurrentSpaceContext?: () => any;
+  onApplySpaceConfig?: (config: any) => Promise<void>;
 };
 
 export function ThemeSettingsEditor({
@@ -52,11 +56,32 @@ export function ThemeSettingsEditor({
   onExportConfig,
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
+  getCurrentSpaceContext,
+  onApplySpaceConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const { mobilePreview, setMobilePreview } = useMobilePreview();
   const [tabValue, setTabValue] = useState(mobilePreview ? "mobile" : "fonts");
+  const [showVibeEditor, setShowVibeEditor] = useState(false);
+
+  // Use checkpoint store for theme change tracking
+  const { createCheckpointFromContext } = useAppStore((state) => ({
+    createCheckpointFromContext: state.checkpoints.createCheckpointFromContext,
+  }));
+
+  // Get fresh space context for AI chat
+  const getFreshSpaceContextForChat = useCallback(() => {
+    if (getCurrentSpaceContext) {
+      const context = getCurrentSpaceContext();
+      // Ensure the context includes the current theme being edited
+      return {
+        ...context,
+        theme: theme,
+      };
+    }
+    return { theme: theme };
+  }, [getCurrentSpaceContext, theme]);
 
   useEffect(() => {
     setMobilePreview(tabValue === "mobile");
@@ -192,6 +217,64 @@ export function ThemeSettingsEditor({
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
   };
+
+  const handleVibeEditorApplyConfig = async (config: any) => {
+    // Create checkpoint before AI applies changes
+    if (getCurrentSpaceContext) {
+      createCheckpointFromContext(
+        getCurrentSpaceContext,
+        () => ({ theme }),
+        'Before AI vibe editor changes',
+        'theme-editor'
+      );
+    }
+
+    // Apply the AI-generated configuration to the theme and potentially the full space
+    if (config && config.backgroundHTML) {
+      themePropSetter("backgroundHTML")(config.backgroundHTML);
+    }
+
+    // Apply other theme properties if they exist in the config
+    if (config.theme?.properties) {
+      const themeProps = config.theme.properties;
+      Object.keys(themeProps).forEach(key => {
+        if (Object.prototype.hasOwnProperty.call(theme.properties, key)) {
+          themePropSetter(key)(themeProps[key]);
+        }
+      });
+    }
+
+    // If there's a complete space config and we have the ability to apply it, do so
+    if (config.fidgetInstanceDatums && onApplySpaceConfig) {
+      await onApplySpaceConfig(config);
+    }
+  };
+
+  // If showing vibe editor, render the AI chat interface
+  if (showVibeEditor) {
+    return (
+      <div className="flex flex-col h-full">
+        {/* Header with back button */}
+        <div className="flex pb-4 m-2 border-b">
+          <button onClick={() => setShowVibeEditor(false)} className="my-auto">
+            <BackArrowIcon />
+          </button>
+          <h1 className="text-lg pl-4 font-semibold">
+            Vibe Editor
+          </h1>
+        </div>
+
+        {/* AI Chat Sidebar with fresh context provider */}
+        <div className="flex-1 overflow-hidden">
+          <AiChatSidebar
+            onClose={() => setShowVibeEditor(false)}
+            onApplySpaceConfig={handleVibeEditorApplyConfig}
+            getCurrentSpaceContext={getFreshSpaceContextForChat}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

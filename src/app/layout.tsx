@@ -7,8 +7,9 @@ import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
+import type { Metadata } from 'next' // Migrating next/head
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Nounspace",
   description:
     "The customizable web3 social app, built on Farcaster. Create, customize, and explore on Nounspace",
@@ -58,9 +59,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Head>
-        <meta name="fc:frame" content={JSON.stringify(defaultFrame)} />
-      </Head>
       <body>
         <SpeedInsights />
         <Providers>{sidebarLayout(children)}</Providers>

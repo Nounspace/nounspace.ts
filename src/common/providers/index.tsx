@@ -14,6 +14,7 @@ import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
 import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
 import MobilePreviewProvider from "./MobilePreviewProvider";
+import { SharedDataProvider } from "./SharedDataProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -30,7 +31,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                         <MobilePreviewProvider>
                           <AnalyticsProvider>
                             <MiniAppSdkProvider>
-                              <ToastProvider>{children}</ToastProvider>
+                              <SharedDataProvider>
+                                <ToastProvider>{children}</ToastProvider>
+                              </SharedDataProvider>
                             </MiniAppSdkProvider>
                           </AnalyticsProvider>
                         </MobilePreviewProvider>

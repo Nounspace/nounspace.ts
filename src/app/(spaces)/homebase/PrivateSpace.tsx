@@ -71,25 +71,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   const router = useRouter(); // Hook for navigation
   const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
-  const currentFid = useCurrentFid(); // Get the current FID
-
-  // Remove onboarding fidgets when the user is logged out
-  const sanitizedHomebaseConfig = useMemo(() => {
-    if (!homebaseConfig) return undefined;
-    if (isLoggedIn) return homebaseConfig;
-    return {
-      ...homebaseConfig,
-      layoutDetails: {
-        ...homebaseConfig.layoutDetails,
-        layoutConfig: {
-          ...homebaseConfig.layoutDetails.layoutConfig,
-          layout: [],
-        },
-      },
-      fidgetInstanceDatums: {},
-      fidgetTrayContents: [],
-    };
-  }, [homebaseConfig, isLoggedIn]);
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
@@ -140,31 +121,14 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Function to switch to a different tab
   async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    console.log(`Switching tab from ${tabName} to ${newTabName}`);
-    
-    // First commit current config if needed
     if (shouldSave) {
       await commitConfigHandler();
     }
 
-    // Update the current tab name in the store for immediate UI update
-    setCurrentTabName(newTabName);
-    
-    try {
-      // Load the new tab's configuration before navigation to ensure it's available
-      if (newTabName === "Feed") {
-        await loadFeedConfig();
-      } else {
-        await loadTab(newTabName);
-      }
-      
-      // Force navigation using router.replace instead of push to avoid history problems
-      const targetUrl = newTabName === "Feed" ? `/homebase` : `/homebase/${newTabName}`;
-      console.log(`Navigating to: ${targetUrl}`);
-      
-      router.replace(targetUrl, { scroll: false });
-    } catch (error) {
-      console.error("Error switching tabs:", error);
+    if (newTabName === "Feed") {
+      router.push(`/homebase`);
+    } else {
+      router.push(`/homebase/${newTabName}`);
     }
   }
 
@@ -235,7 +199,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     config: (() => {
       const sourceConfig =
         tabName === "Feed"
-          ? sanitizedHomebaseConfig
+          ? homebaseConfig
           : tabConfigs[tabName]?.config;
       const { timestamp, ...restConfig } = {
         ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
@@ -266,7 +230,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   }), [
     tabName,
     tabName === "Feed"
-      ? sanitizedHomebaseConfig
+      ? homebaseConfig
       : tabConfigs[tabName]?.config,
     tabOrdering.local,
     editMode,

@@ -50,7 +50,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={mergeClasses("text-sm text-muted-foreground overflow-auto", className)}
+    className={mergeClasses("text-sm text-muted-foreground", className)}
     {...props}
   />
 ));
@@ -60,7 +60,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={mergeClasses("box-border", className)} {...props} />
+  <div ref={ref} className={mergeClasses("", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
