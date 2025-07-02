@@ -109,16 +109,15 @@ export default function PublicSpace({
   });
 
   useEffect(() => {
-    const spaceId = getCurrentSpaceId();
-    const tabName = getCurrentTabName() ?? "Profile";
-    if (!spaceId || !initialConfig) return;
-    if (!localSpaces[spaceId]?.tabs?.[tabName]) {
-      void saveLocalSpaceTab(spaceId, tabName, {
+    if (!providedSpaceId || !initialConfig) return;
+    const tabName = providedTabName ?? "Profile";
+    if (!localSpaces[providedSpaceId]?.tabs?.[tabName]) {
+      void saveLocalSpaceTab(providedSpaceId, tabName, {
         ...initialConfig,
         isPrivate: false,
       });
     }
-  }, [initialConfig, getCurrentSpaceId, getCurrentTabName, localSpaces, saveLocalSpaceTab]);
+  }, [providedSpaceId, providedTabName, initialConfig, localSpaces, saveLocalSpaceTab]);
 
   const router = useRouter();
 
