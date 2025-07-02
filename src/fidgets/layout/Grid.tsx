@@ -217,8 +217,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         const currentDatums = fidgetInstanceDatumsRef.current;
         const existing = currentDatums[id];
         
-        // Safer approach: don't rely on splitting the id string
-        // Use existing fidgetType, provided fidgetType, or fallback to "unknown"
         const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
         
         const updatedDatum: FidgetInstanceData = {
@@ -660,6 +658,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}
+                    borderRadius={gridDetails.borderRadius}
                     removeFidget={removeFidget}
                     minimizeFidget={moveFidgetFromGridToTray}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}

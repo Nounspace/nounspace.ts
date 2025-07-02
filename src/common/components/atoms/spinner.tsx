@@ -15,6 +15,7 @@ export default function Spinner({
   color,
   ballColors,
 }: SpinnerProps) {
+  
   return (
     <FidgetSpinner
       backgroundColor={color || "#ffffff"} // Default color to white instead of green

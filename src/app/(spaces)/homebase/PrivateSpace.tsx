@@ -71,25 +71,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   const router = useRouter(); // Hook for navigation
   const isLoggedIn = getIsAccountReady(); // Check if the user is logged in
-  const currentFid = useCurrentFid(); // Get the current FID
-
-  // Remove onboarding fidgets when the user is logged out
-  const sanitizedHomebaseConfig = useMemo(() => {
-    if (!homebaseConfig) return undefined;
-    if (isLoggedIn) return homebaseConfig;
-    return {
-      ...homebaseConfig,
-      layoutDetails: {
-        ...homebaseConfig.layoutDetails,
-        layoutConfig: {
-          ...homebaseConfig.layoutDetails.layoutConfig,
-          layout: [],
-        },
-      },
-      fidgetInstanceDatums: {},
-      fidgetTrayContents: [],
-    };
-  }, [homebaseConfig, isLoggedIn]);
 
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
@@ -209,6 +190,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
       renameTab={renameTab}
       commitTabOrder={commitTabOrder}
       commitTab={commitTab}
+      isEditable={true}
     />
   ), [tabName, tabOrdering.local, editMode]);
 
@@ -217,7 +199,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     config: (() => {
       const sourceConfig =
         tabName === "Feed"
-          ? sanitizedHomebaseConfig
+          ? homebaseConfig
           : tabConfigs[tabName]?.config;
       const { timestamp, ...restConfig } = {
         ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
@@ -248,7 +230,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   }), [
     tabName,
     tabName === "Feed"
-      ? sanitizedHomebaseConfig
+      ? homebaseConfig
       : tabConfigs[tabName]?.config,
     tabOrdering.local,
     editMode,

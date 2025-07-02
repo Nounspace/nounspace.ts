@@ -2,14 +2,16 @@
 
 import React from "react";
 import MobileHeader from "./MobileHeader";
-import Sidebar from "./Sidebar";
+import { SidebarContextProvider } from "./Sidebar";
 
-export const ClientMobileHeaderWrapper: React.FC = () => {
-  return (
-    <Sidebar.ContextProvider>
-      <MobileHeader />
-    </Sidebar.ContextProvider>
-  );
-};
+export const ClientMobileHeaderWrapper: React.FC = React.memo(
+  function ClientMobileHeaderWrapper() {
+    return (
+      <SidebarContextProvider>
+        <MobileHeader />
+      </SidebarContextProvider>
+    );
+  }
+);
 
 export default ClientMobileHeaderWrapper;
