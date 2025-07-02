@@ -37,7 +37,7 @@ type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig> & {
  * This component provides a tabbed interface for displaying multiple fidgets,
  * with the ability to switch between them.
  */
-const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
+const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   fidgetInstanceDatums,
   layoutConfig,
   theme,
@@ -254,10 +254,10 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
             })}
           </div>
           
-          {/* Tabs fixed to bottom of screen */}
+          {/* Tabs positioned at bottom - fixed for real mobile, absolute for mobile preview */}
           {processedFidgetIds.length > 1 && (
             <div
-              className={`${isMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-level-3 bg-white`}
+              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-level-3 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation
@@ -275,4 +275,4 @@ const TabFullScreen: LayoutFidget<TabFullScreenProps> = ({
   );
 };
 
-export default TabFullScreen;
+export default MobileStack;

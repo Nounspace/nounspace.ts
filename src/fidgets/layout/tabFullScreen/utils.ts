@@ -94,12 +94,15 @@ export const createFidgetBundle = (
 
 /**
  * Processes fidget IDs for display, potentially consolidating media fidgets on mobile
+ * Now handles any layout format by extracting fidget IDs first
  */
 export const processTabFidgetIds = (
-  fidgetIds: string[],
+  layout: any,
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   isMobile: boolean
 ): string[] => {
+  const fidgetIds = extractFidgetIdsFromLayout(layout, fidgetInstanceDatums);
+  
   if (!isMobile) {
     // On desktop, use all fidgets as is
     return fidgetIds.filter(id => {
@@ -160,13 +163,43 @@ export const processTabFidgetIds = (
 };
 
 /**
+ * Extracts fidget IDs from any layout format
+ * Handles both simple string arrays and complex grid layout objects
+ */
+export const extractFidgetIdsFromLayout = (
+  layout: any, 
+  fidgetInstanceDatums?: { [key: string]: FidgetInstanceData }
+): string[] => {
+  // If layout is already an array of strings, use it directly
+  if (Array.isArray(layout) && layout.every(item => typeof item === 'string')) {
+    return layout;
+  }
+  
+  // If layout is an array of objects (grid layout), extract the 'i' property
+  if (Array.isArray(layout) && layout.every(item => typeof item === 'object' && item?.i)) {
+    return layout.map(item => item.i);
+  }
+  
+  // If layout is empty/null and we have fidgetInstanceDatums, use all available fidgets
+  if ((!layout || (Array.isArray(layout) && layout.length === 0)) && fidgetInstanceDatums) {
+    return Object.keys(fidgetInstanceDatums);
+  }
+  
+  // If layout is something else, return empty array
+  return [];
+};
+
+/**
  * Get the fidget IDs that should be displayed in their original form
+ * Now handles any layout format by extracting fidget IDs first
  */
 export const getValidFidgetIds = (
-  fidgetIds: string[],
+  layout: any,
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
   isMobile: boolean
 ): string[] => {
+  const fidgetIds = extractFidgetIdsFromLayout(layout, fidgetInstanceDatums);
+  
   return fidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
     
