@@ -137,14 +137,10 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div 
               className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
-              style={{ 
-                backgroundColor: theme?.properties.background || 'white',
-                marginTop: '-10px' // Slight adjustment to center in visible screen area
-              }}
             >
               <CustomHTMLBackground
                 html={theme?.properties.backgroundHTML}
-                className="absolute inset-0 pointer-events-none w-full h-full rounded-[28px]"
+                className="absolute inset-0 pointer-events-none w-full h-full rounded-[28px] px-2"
               />
               
               {/* Content Container - with proper constraints */}
