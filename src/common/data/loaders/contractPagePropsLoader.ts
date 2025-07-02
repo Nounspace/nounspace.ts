@@ -120,25 +120,28 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
     .eq("contractAddress", contractAddress);
-  
+
   if (isString(network)) {
     query = query.eq("network", network);
   }
-  
-  const { data, error } = await query
+
+  const { data } = await query
     .order("timestamp", { ascending: true })
-    .limit(1)
-  
-  // console.log("Debug - Database Query Error:", error);
-  // console.log("Debug - Raw Query Results:", data);
-  // console.log("Debug - First Space ID:", data?.[0]?.spaceId);
-  // console.log("Debug - Query Details:", {
-  //   contractAddress,
-  //   network,
-  //   error: error?.message,
-  // });
-  
-  const spaceId = data?.[0]?.spaceId || null;
+    .limit(1);
+
+  let spaceId = data?.[0]?.spaceId || null;
+
+  // Fallback to legacy registrations without a network value
+  if (!spaceId && isString(network)) {
+    const { data: legacyData } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("contractAddress", contractAddress)
+      .is("network", null)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    spaceId = legacyData?.[0]?.spaceId || null;
+  }
 
   return {
     props: {
