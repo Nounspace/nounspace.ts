@@ -187,7 +187,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
         </CardHeader>
       )}
       {settings?.text && (
-        <CardContent className="p-4 pt-2">
+        <CardContent className="p-4 pt-2 overflow-y-auto">
           <CardDescription
             className="text-base font-normal text-black dark:text-white"
             style={{
