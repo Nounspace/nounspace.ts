@@ -58,6 +58,8 @@ type SpaceArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
+  /** When true, render the feed on mobile layouts. */
+  showFeedOnMobile?: boolean;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
   setSidebarEditable: (v: boolean) => void;
@@ -72,6 +74,7 @@ export default function Space({
   tabBar,
   profile,
   feed,
+  showFeedOnMobile,
   setEditMode,
   editMode,
   setSidebarEditable,
@@ -199,14 +202,15 @@ export default function Space({
       </div>
 
       <div className={isMobile ? "size-full" : "flex h-full"}>
-
-        {/* Make space for feed if it exists */}
-        {!isUndefined(feed) && !isMobile ? (
+        {/* Feed section */}
+        {!isUndefined(feed) && (!isMobile || showFeedOnMobile) ? (
           <div
             className={
-              !isUndefined(profile)
-                ? "w-6/12 h-[calc(100vh-224px)]"
-                : "w-6/12 h-[calc(100vh-64px)]"
+              isMobile && showFeedOnMobile
+                ? "size-full"
+                : !isUndefined(profile)
+                  ? "w-6/12 h-[calc(100vh-224px)]"
+                  : "w-6/12 h-[calc(100vh-64px)]"
             }
           >
             {feed}
@@ -214,36 +218,38 @@ export default function Space({
         ) : null}
 
         {/* Main layout */}
-        <div
-          className={
-            isMobile
-              ? "size-full"
-              : !isUndefined(profile)
-                ? "grow h-[calc(100vh-224px)]"
-                : "grow h-[calc(100vh-64px)]"
-          }
-        >
-          <Suspense
-            fallback={
-              <SpaceLoading
-                hasProfile={!isNil(profile)}
-                hasFeed={!isNil(feed)}
-              />
+        {!(isMobile && showFeedOnMobile) && (
+          <div
+            className={
+              isMobile
+                ? "size-full"
+                : !isUndefined(profile)
+                  ? "grow h-[calc(100vh-224px)]"
+                  : "grow h-[calc(100vh-64px)]"
             }
           >
-            {isMobile ? (
-              <MobileView
-                {...baseLayoutProps}
-                layoutFidgetIds={extractFidgetIdsFromLayout(
-                  config?.layoutDetails?.layoutConfig?.layout,
-                  config.fidgetInstanceDatums
-                )}
-              />
+            <Suspense
+              fallback={
+                <SpaceLoading
+                  hasProfile={!isNil(profile)}
+                  hasFeed={!isNil(feed)}
+                />
+              }
+            >
+              {isMobile ? (
+                <MobileView
+                  {...baseLayoutProps}
+                  layoutFidgetIds={extractFidgetIdsFromLayout(
+                    config?.layoutDetails?.layoutConfig?.layout,
+                    config.fidgetInstanceDatums
+                  )}
+                />
               ) : (
                 <DesktopView {...desktopViewProps} />
               )}
-          </Suspense>
-        </div>
+            </Suspense>
+          </div>
+        )}
       </div>
     </div>
   );

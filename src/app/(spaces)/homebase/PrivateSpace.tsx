@@ -75,12 +75,13 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   const { editMode } = useSidebarContext(); // Get the edit mode status from the sidebar context
 
   // Effect to handle login modal when user is not logged in
+  // If a specific cast is being viewed, allow it without forcing a login
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !castHash) {
       // Open the login modal if user is not logged in
       setModalOpen(true);
     }
-  }, [isLoggedIn, setModalOpen]);
+  }, [isLoggedIn, setModalOpen, castHash]);
 
   // Effect to set the current space and tab name, and load the tab configuration
   useEffect(() => {
@@ -230,6 +231,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
         data={{ initialHash: castHash, updateUrl: true }}
       />
     ) : undefined,
+    showFeedOnMobile: Boolean(castHash),
   }), [
     tabName,
     tabName === "Feed"

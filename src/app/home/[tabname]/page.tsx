@@ -87,6 +87,7 @@ const Home = () => {
         commitConfig: async () => {},
         resetConfig: async () => {},
         tabBar: tabBar,
+        showFeedOnMobile: false,
       }
     : !isLoggedIn
       ? {
@@ -95,6 +96,7 @@ const Home = () => {
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
+          showFeedOnMobile: false,
         }
       : {
           config: getTabConfig(tabName) as SpaceConfig,
@@ -102,6 +104,7 @@ const Home = () => {
           commitConfig: async () => {},
           resetConfig: async () => {},
           tabBar: tabBar,
+          showFeedOnMobile: false,
         };
 
   return <SpacePage key={tabName} {...args} />;
