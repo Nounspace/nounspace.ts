@@ -8,10 +8,11 @@ import {
   tabTriggerClasses,
 } from "@/common/lib/theme/helpers";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
+import { ThemeEditorTab } from "@/common/lib/theme/types";
 
 interface ThemeSettingsTabsProps {
-  activeTab: string;
-  onTabChange: (value: string) => void;
+  activeTab: ThemeEditorTab;
+  onTabChange: (value: ThemeEditorTab) => void;
 }
 
 export const ThemeSettingsTabs: React.FC<ThemeSettingsTabsProps> = ({ 
@@ -26,47 +27,47 @@ export const ThemeSettingsTabs: React.FC<ThemeSettingsTabsProps> = ({
       )}>
         
         <TabsTrigger 
-          value="fonts" 
+          value={ThemeEditorTab.SPACE} 
           className={mergeClasses(
             tabTriggerClasses,
             "flex-shrink-0 px-3 py-2 relative text-gray-500",
-            activeTab === "fonts" ? "text-blue-600" : ""
+            activeTab === ThemeEditorTab.SPACE ? "text-blue-600" : ""
           )}
-          onClick={() => onTabChange("fonts")}
-          data-state={activeTab === "fonts" ? "active" : "inactive"}
+          onClick={() => onTabChange(ThemeEditorTab.SPACE)}
+          data-state={activeTab === ThemeEditorTab.SPACE ? "active" : "inactive"}
         >
           Space
-          {activeTab === "fonts" && (
+          {activeTab === ThemeEditorTab.SPACE && (
             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t" />
           )}
         </TabsTrigger>
         <TabsTrigger 
-          value="style" 
+          value={ThemeEditorTab.FIDGETS} 
           className={mergeClasses(
             tabTriggerClasses,
             "flex-shrink-0 px-3 py-2 relative text-gray-500",
-            activeTab === "style" ? "text-blue-600" : ""
+            activeTab === ThemeEditorTab.FIDGETS ? "text-blue-600" : ""
           )}
-          onClick={() => onTabChange("style")}
-          data-state={activeTab === "style" ? "active" : "inactive"}
+          onClick={() => onTabChange(ThemeEditorTab.FIDGETS)}
+          data-state={activeTab === ThemeEditorTab.FIDGETS ? "active" : "inactive"}
         >
           Fidgets
-          {activeTab === "style" && (
+          {activeTab === ThemeEditorTab.FIDGETS && (
             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t" />
           )}
         </TabsTrigger>
         <TabsTrigger 
-          value="mobile" 
+          value={ThemeEditorTab.MOBILE} 
           className={mergeClasses(
             tabTriggerClasses,
             "flex-shrink-0 px-3 py-2 relative text-gray-500",
-            activeTab === "mobile" ? "text-blue-600" : ""
+            activeTab === ThemeEditorTab.MOBILE ? "text-blue-600" : ""
           )}
-          onClick={() => onTabChange("mobile")}
-          data-state={activeTab === "mobile" ? "active" : "inactive"}
+          onClick={() => onTabChange(ThemeEditorTab.MOBILE)}
+          data-state={activeTab === ThemeEditorTab.MOBILE ? "active" : "inactive"}
         >
           Mobile
-          {activeTab === "mobile" && (
+          {activeTab === ThemeEditorTab.MOBILE && (
             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-t" />
           )}
         </TabsTrigger>

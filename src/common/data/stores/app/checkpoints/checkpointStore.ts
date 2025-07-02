@@ -8,7 +8,6 @@ export interface SpaceCheckpoint {
   name: string;
   timestamp: Date;
   spaceConfig: any; // Complete space configuration including theme
-  themeConfig: any; // Specific theme configuration
   description?: string;
   source: 'theme-editor' | 'ai-chat' | 'manual'; // Where the checkpoint was created
 }
@@ -23,12 +22,10 @@ interface CheckpointStoreActions {
   createCheckpoint: (
     description?: string,
     source?: SpaceCheckpoint['source'],
-    spaceConfig?: any,
-    themeConfig?: any
+    spaceConfig?: any
   ) => SpaceCheckpoint;
   createCheckpointFromContext: (
     getCurrentSpaceConfig: () => any,
-    getCurrentTabConfig: () => any,
     description?: string,
     source?: SpaceCheckpoint['source']
   ) => SpaceCheckpoint;
@@ -60,8 +57,7 @@ export const createCheckpointStoreFunc = (
   createCheckpoint: (
     description,
     source = 'manual',
-    spaceConfig,
-    themeConfig
+    spaceConfig
   ) => {
     const timestamp = new Date();
     const checkpoints = get().checkpoints.checkpoints;
@@ -71,7 +67,6 @@ export const createCheckpointStoreFunc = (
       name: description || `${source} checkpoint ${checkpoints.length + 1}`,
       timestamp,
       spaceConfig: spaceConfig ? cloneDeep(spaceConfig) : {},
-      themeConfig: themeConfig ? cloneDeep(themeConfig) : {},
       description: description || `Saved from ${source}`,
       source,
     };
@@ -81,7 +76,6 @@ export const createCheckpointStoreFunc = (
       name: checkpoint.name,
       source: checkpoint.source,
       hasSpaceConfig: !!checkpoint.spaceConfig,
-      hasThemeConfig: !!checkpoint.themeConfig,
     });
 
     set((draft) => {
@@ -100,20 +94,16 @@ export const createCheckpointStoreFunc = (
 
   createCheckpointFromContext: (
     getCurrentSpaceConfig,
-    getCurrentTabConfig,
     description,
     source = 'manual'
   ) => {
     try {
       const spaceConfig = getCurrentSpaceConfig();
-      const tabConfig = getCurrentTabConfig();
-      const themeConfig = tabConfig?.theme;
 
       return get().checkpoints.createCheckpoint(
         description,
         source,
-        spaceConfig,
-        themeConfig
+        spaceConfig
       );
     } catch (error) {
       console.error("❌ Failed to create checkpoint from context:", error);
@@ -121,7 +111,6 @@ export const createCheckpointStoreFunc = (
       return get().checkpoints.createCheckpoint(
         description || "Error creating checkpoint",
         source,
-        {},
         {}
       );
     }

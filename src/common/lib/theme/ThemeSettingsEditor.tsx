@@ -6,7 +6,7 @@ import {
   TabsContent
 } from "@/common/components/atoms/tabs";
 import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
-import FontsTabContent from "./components/FontsTabContent";
+import SpaceTabContent from "./components/SpaceTabContent";
 import StyleTabContent from "./components/StyleTabContent";
 import CodeTabContent from "./components/CodeTabContent";
 import MobileTabContent from "./components/MobileTabContent";
@@ -17,6 +17,7 @@ import { FidgetInstanceData } from "@/common/fidgets";
 import { ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
+import { ThemeEditorTab } from "@/common/lib/theme/types";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import {
   tabContentClasses,
@@ -62,7 +63,7 @@ export function ThemeSettingsEditor({
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
   const [activeTheme, setActiveTheme] = useState(theme.id);
   const { mobilePreview, setMobilePreview } = useMobilePreview();
-  const [tabValue, setTabValue] = useState(mobilePreview ? "mobile" : "fonts");
+  const [tabValue, setTabValue] = useState(mobilePreview ? ThemeEditorTab.MOBILE : ThemeEditorTab.SPACE);
   const [showVibeEditor, setShowVibeEditor] = useState(false);
 
   // Use checkpoint store for theme change tracking
@@ -84,7 +85,7 @@ export function ThemeSettingsEditor({
   }, [getCurrentSpaceContext, theme]);
 
   useEffect(() => {
-    setMobilePreview(tabValue === "mobile");
+    setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
   }, [tabValue, setMobilePreview]);
 
   const miniApps = useMemo<MiniApp[]>(() => {
@@ -209,10 +210,6 @@ export function ThemeSettingsEditor({
     saveExitEditMode();
   }
 
-  function cancelAndClose() {
-    cancelExitEditMode();
-  }
-
   const handleApplyTheme = (selectedTheme: ThemeSettings) => {
     saveTheme(selectedTheme);
     setActiveTheme(selectedTheme.id);
@@ -223,7 +220,6 @@ export function ThemeSettingsEditor({
     if (getCurrentSpaceContext) {
       createCheckpointFromContext(
         getCurrentSpaceContext,
-        () => ({ theme }),
         'Before AI vibe editor changes',
         'theme-editor'
       );
@@ -236,12 +232,14 @@ export function ThemeSettingsEditor({
 
     // Apply other theme properties if they exist in the config
     if (config.theme?.properties) {
-      const themeProps = config.theme.properties;
-      Object.keys(themeProps).forEach(key => {
-        if (Object.prototype.hasOwnProperty.call(theme.properties, key)) {
-          themePropSetter(key)(themeProps[key]);
-        }
-      });
+      const updatedTheme: ThemeSettings = {
+        ...theme,
+        properties: {
+          ...theme.properties,
+          ...config.theme.properties,
+        },
+      };
+      handleApplyTheme(updatedTheme);
     }
 
     // If there's a complete space config and we have the ability to apply it, do so
@@ -255,7 +253,7 @@ export function ThemeSettingsEditor({
     return (
       <div className="flex flex-col h-full">
         {/* Header with back button */}
-        <div className="flex pb-4 m-2 border-b">
+        <div className="flex pb-3 px-2 border-b">
           <button onClick={() => setShowVibeEditor(false)} className="my-auto">
             <BackArrowIcon />
           </button>
@@ -328,22 +326,32 @@ export function ThemeSettingsEditor({
 
             {/* Templates Dropdown */}
             <div className="min-w-0">
-              <Tabs value={tabValue} onValueChange={setTabValue}>
+              <Tabs value={tabValue} onValueChange={(value) => setTabValue(value as ThemeEditorTab)}>
                 {/* controlled Tabs */}
                 <ThemeSettingsTabs activeTab={tabValue} onTabChange={setTabValue} />
                 {/* Fonts */}
-                <TabsContent value="fonts" className={tabContentClasses}>
-                  <FontsTabContent 
+                <TabsContent value={ThemeEditorTab.SPACE} className={tabContentClasses}>
+                  <SpaceTabContent 
                     headingsFontColor={headingsFontColor}
                     headingsFont={headingsFont}
                     fontColor={fontColor}
                     font={font}
-                    backgroundHTML={backgroundHTML}
                     onPropertyChange={themePropSetter}
                   />
+                  
+                  <div className="grid gap-2 mt-4">
+                    <div className="flex flex-row gap-1">
+                      <h4 className="text-sm">Music</h4>
+                      <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
+                    </div>
+                    <VideoSelector
+                      initialVideoURL={theme.properties.musicURL}
+                      onVideoSelect={themePropSetter("musicURL")}
+                    />
+                  </div>
                 </TabsContent>
                 {/* Style */}
-                <TabsContent value="style" className={tabContentClasses}>
+                <TabsContent value={ThemeEditorTab.FIDGETS} className={tabContentClasses}>
                   <StyleTabContent 
                     background={background}
                     fidgetBackground={fidgetBackground}
@@ -356,7 +364,7 @@ export function ThemeSettingsEditor({
                   />
                 </TabsContent>
                 {/* Code */}
-                <TabsContent value="code" className={tabContentClasses}>
+                <TabsContent value={ThemeEditorTab.CODE} className={tabContentClasses}>
                   <CodeTabContent 
                     backgroundHTML={backgroundHTML}
                     onPropertyChange={themePropSetter}
@@ -364,7 +372,7 @@ export function ThemeSettingsEditor({
                   />
                 </TabsContent>
                 {/* Mobile */}
-                <TabsContent value="mobile" className={tabContentClasses}>
+                <TabsContent value={ThemeEditorTab.MOBILE} className={tabContentClasses}>
                   <MobileTabContent 
                     miniApps={miniApps}
                     onUpdateMiniApp={handleUpdateMiniApp}
@@ -373,29 +381,17 @@ export function ThemeSettingsEditor({
                 </TabsContent>
               </Tabs>
             </div>
-
-            <div className="grid gap-2 mt-4">
-              <div className="flex flex-row gap-1">
-                <h4 className="text-sm">Music</h4>
-                <ThemeSettingsTooltip text="Search or paste Youtube link for any song, video, or playlist." />
-              </div>
-              <VideoSelector
-                initialVideoURL={theme.properties.musicURL}
-                onVideoSelect={themePropSetter("musicURL")}
-              />
-            </div>
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          {tabValue === "fonts" && (
+          {tabValue === ThemeEditorTab.SPACE && (
             <div
               className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
-              onClick={() => setTabValue("code")}
+              onClick={() => setShowVibeEditor(true)}
             >
               <p>
-                <span className="font-bold">New!</span> Create a custom
-                background with a prompt.
+                <span className="font-bold">New!</span> Vibe editor is here!
               </p>
               {/* <HiOutlineSparkles size={32} /> */}
               <SparklesIcon className="size-8" />
@@ -419,7 +415,7 @@ export function ThemeSettingsEditor({
                     <BackArrowIcon />
                   </Button>
                   <Button
-                    onClick={cancelAndClose}
+                    onClick={cancelExitEditMode}
                     variant="destructive"
                     width="auto"
                     withIcon
