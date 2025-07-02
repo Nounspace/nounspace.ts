@@ -18,7 +18,7 @@ import { createPortal } from "react-dom";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { cleanupLayout } from '@/common/lib/utils/gridCleanup';
+import { comprehensiveCleanup } from '@/common/lib/utils/gridCleanup';
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { LayoutFidgets } from "@/fidgets";
 import Image from "next/image";
@@ -90,70 +90,18 @@ export default function Space({
   const cleanupHasRun = React.useRef(false);
 
   useEffect(() => {
-    if (cleanupHasRun.current) {
+    if (cleanupHasRun.current || !config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
       return;
     }
 
-    if (
-      !config?.layoutDetails?.layoutConfig?.layout ||
-      !config?.fidgetInstanceDatums
-    ) {
-      return;
-    }
-
-    const layoutFidgetIds = new Set(
-      config.layoutDetails.layoutConfig.layout.map((item) => item.i)
-    );
-
-    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
-      (id) => !layoutFidgetIds.has(id)
-    );
-    if (unusedFidgetIds.length > 0) {
-      const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-      unusedFidgetIds.forEach((id) => {
-        delete cleanedFidgetInstanceDatums[id];
-      });
-      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
-        saveConfig({
-          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-          timestamp: new Date().toISOString(),
-        }).then(() => {
-          commitConfig();
-        });
-      }
-    }
-    // Check for and handle overlapping fidgets
-    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+    const { cleanedLayout, cleanedFidgetInstanceDatums, hasChanges } = comprehensiveCleanup(
       config.layoutDetails.layoutConfig.layout,
       config.fidgetInstanceDatums,
       !isNil(profile),
       !isNil(feed)
     );
-    const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
-    removedFidgetIds.forEach(id => {
-      delete cleanedFidgetInstanceDatums[id];
-    });
-    let settingsChanged = false;
-    // Check and rename 'fidget Shadow' to 'fidgetShadow' in each fidget's config settings
-    Object.keys(cleanedFidgetInstanceDatums).forEach((id) => {
-      const datum = cleanedFidgetInstanceDatums[id];
-      const settings = datum.config?.settings as Record<string, unknown>;
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
-      }
-      if (settings && "fidget Shadow" in settings) {
-        settings.fidgetShadow = settings["fidget Shadow"];
-        delete settings["fidget Shadow"];
-        settingsChanged = true;
-      }
-    });
-    // Make Queued Changes
-    if (removedFidgetIds.length > 0 ||
-      cleanedLayout.some((item, i) => item.x !== config.layoutDetails.layoutConfig.layout[i].x ||
-        item.y !== config.layoutDetails.layoutConfig.layout[i].y) ||
-      settingsChanged) {
+
+    if (hasChanges) {
       saveConfig({
         layoutDetails: {
           layoutConfig: {
@@ -163,12 +111,9 @@ export default function Space({
         },
         fidgetInstanceDatums: cleanedFidgetInstanceDatums,
         timestamp: new Date().toISOString(),
-      }).then(() => {
-        commitConfig();
-      });
+      }).then(commitConfig);
     }
 
-    // Mark cleanup as complete
     cleanupHasRun.current = true;
   }, []);
 
