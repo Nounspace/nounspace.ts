@@ -593,7 +593,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
       <div className="flex flex-col z-10">
         {inEditMode && (
-          <div className="flex gap-2 absolute top-0 right-0 m-3">
+          <div
+            className="flex gap-2 absolute right-0 m-3"
+            style={{ top: hasProfile ? "160px" : 0 }}
+          >
             <button
               onClick={openFidgetPicker}
               className={
