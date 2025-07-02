@@ -22,15 +22,18 @@ import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { useAppStore } from "@/common/data/stores/app";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
   tabName: providedTabName,
+  initialConfig,
 }: {
   contractAddress: string;
   tabName: string;
+  initialConfig?: Omit<SpaceConfig, "isEditable">;
 }) => {
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
@@ -46,6 +49,7 @@ export const MobileContractDefinedSpace = ({
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
+      initialConfig ??
       createInitialContractSpaceConfigForAddress(
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
@@ -56,7 +60,7 @@ export const MobileContractDefinedSpace = ({
         !!tokenData?.clankerData,
         tokenData?.network,
       ),
-    [contractAddress, tokenData, tokenData?.network],
+    [initialConfig, contractAddress, tokenData, tokenData?.network],
   );
 
   const { getCurrentSpaceConfig } = useAppStore((state) => ({

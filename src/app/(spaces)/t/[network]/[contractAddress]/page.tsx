@@ -5,6 +5,8 @@ import { MasterToken, TokenProvider } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
+import { getSpaceTabConfig } from "./utils";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
 export interface ContractSpacePageProps {
   spaceId: string | null;
@@ -16,6 +18,7 @@ export interface ContractSpacePageProps {
   ownerId: string | null;
   tokenData?: MasterToken;
   network: EtherScanChainName;
+  initialConfig?: Omit<SpaceConfig, "isEditable">;
 }
 
 export default async function ContractPrimarySpace({ params }) {
@@ -30,6 +33,13 @@ export default async function ContractPrimarySpace({ params }) {
     },
   } = await loadContractData(params || {});
   const network = params?.network as EtherScanChainName;
+  let initialConfig: Omit<SpaceConfig, "isEditable"> | undefined = undefined;
+  if (spaceId) {
+    const config = await getSpaceTabConfig(spaceId, tabName ?? "Profile");
+    if (config) {
+      initialConfig = config;
+    }
+  }
 
   return (
     <TokenProvider
@@ -44,6 +54,7 @@ export default async function ContractPrimarySpace({ params }) {
         contractAddress={contractAddress}
         owningIdentities={owningIdentities}
         network={network}
+        initialConfig={initialConfig}
       />
     </TokenProvider>
   );

@@ -5,6 +5,7 @@ import { OwnerType } from "@/common/data/api/etherscan"
 import dynamic from "next/dynamic"
 import { useEffect, useState } from "react"
 import { MobileContractDefinedSpace } from "./MobileSpace"
+import { SpaceConfig } from "@/app/(spaces)/Space"
 
 export interface ContractDefinedSpaceProps {
   spaceId: string | null
@@ -13,6 +14,7 @@ export interface ContractDefinedSpaceProps {
   pinnedCastId?: string
   ownerId: string | number | null
   ownerIdType: OwnerType
+  initialConfig?: Omit<SpaceConfig, "isEditable">
 }
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {

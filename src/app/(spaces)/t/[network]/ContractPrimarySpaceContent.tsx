@@ -7,6 +7,7 @@ import { useAppStore } from "@/common/data/stores/app";
 import { isArray, isNil } from "lodash";
 import { useEffect } from "react";
 import { ContractSpacePageProps } from "./[contractAddress]/page";
+import { SpaceConfig } from "@/app/(spaces)/Space";
 
 const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId,
@@ -17,6 +18,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   owningIdentities,
   network,
   tokenData,
+  initialConfig,
 }) => {
   console.log("ContractPrimarySpaceContent received props:", {
     spaceId,
@@ -91,6 +93,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
         spaceId={spaceId}
         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
         contractAddress={contractAddress}
+        initialConfig={initialConfig}
       />
     </>
   );
