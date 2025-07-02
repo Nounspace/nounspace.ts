@@ -108,6 +108,18 @@ export default function PublicSpace({
     pageType, // Log the page type
   });
 
+  useEffect(() => {
+    const spaceId = getCurrentSpaceId();
+    const tabName = getCurrentTabName() ?? "Profile";
+    if (!spaceId || !initialConfig) return;
+    if (!localSpaces[spaceId]?.tabs?.[tabName]) {
+      void saveLocalSpaceTab(spaceId, tabName, {
+        ...initialConfig,
+        isPrivate: false,
+      });
+    }
+  }, [initialConfig, getCurrentSpaceId, getCurrentTabName, localSpaces, saveLocalSpaceTab]);
+
   const router = useRouter();
 
   const initialLoading =
