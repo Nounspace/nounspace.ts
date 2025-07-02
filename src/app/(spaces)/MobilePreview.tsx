@@ -1,9 +1,9 @@
 "use client";
 import React, { ReactNode, Suspense, useMemo } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
+import PhoneFrame from "@/common/components/atoms/PhoneFrame";
 import { UserTheme, ThemeSettings } from "@/common/lib/theme";
 import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
 import { LayoutFidgets } from "@/fidgets";
@@ -52,8 +52,6 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   // Always use tabFullScreen for mobile preview
   const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
 
-
-
   // Transform layout config for mobile (simple array of fidget IDs)
   const mobileLayoutConfig = useMemo(() => {
     const fidgetIds = Object.keys(fidgetInstanceDatums || {});
@@ -91,26 +89,18 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
       {/* Mobile Preview Container - Full height background */}
       <div 
         className="w-full h-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
-        style={{ backgroundImage: "url('https://i.ibb.co/pjYr9zFr/Chat-GPT-Image-May-29-2025-01-35-55-PM.png')" }}
+        style={{ backgroundImage: "url('/images/space-background.png')" }}
       >
         {/* Phone Frame Container - scaled to fit better */}
         <div className="relative flex items-center justify-center scale-90">
           {/* Phone Frame Overlay */}
-          <Image
-            src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-            alt="Phone mockup"
-            width={344}
-            height={744}
-            className="pointer-events-none select-none relative z-20"
-          />
+          <PhoneFrame />
           
           {/* Phone Content Area - positioned to match actual screen area within frame */}
           <div className="absolute inset-0 flex items-center justify-center z-10">
             <div 
               className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
             >
-              {/* White background div underneath main content */}
-              <div className="absolute inset-0 w-[320px] h-full bg-white rounded-[28px] z-0 mx-2" />
 
               <CustomHTMLBackground
                 html={theme?.properties.backgroundHTML}
