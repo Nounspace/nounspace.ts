@@ -9,6 +9,19 @@ import {
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
 import createSupabaseServerClient from "../database/supabase/clients/server";
+
+async function spaceHasConfig(spaceId: string): Promise<boolean> {
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .storage
+      .from("spaces")
+      .list(spaceId, { limit: 1 });
+    return !error && Array.isArray(data) && data.length > 0;
+  } catch (e) {
+    console.error("Error checking space existence", e);
+    return false;
+  }
+}
 import { string } from "prop-types";
 import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
@@ -126,21 +139,33 @@ export async function loadContractData(
   }
 
   const { data } = await query
-    .order("timestamp", { ascending: true })
-    .limit(1);
+    .order("timestamp", { ascending: true });
 
-  let spaceId = data?.[0]?.spaceId || null;
+  let spaceId: string | null = null;
+  if (data) {
+    for (const row of data) {
+      if (await spaceHasConfig(row.spaceId)) {
+        spaceId = row.spaceId;
+        break;
+      }
+    }
+  }
 
-  // Fallback to legacy registrations without a network value
   if (!spaceId && isString(network)) {
     const { data: legacyData } = await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId")
       .eq("contractAddress", contractAddress)
       .is("network", null)
-      .order("timestamp", { ascending: true })
-      .limit(1);
-    spaceId = legacyData?.[0]?.spaceId || null;
+      .order("timestamp", { ascending: true });
+    if (legacyData) {
+      for (const row of legacyData) {
+        if (await spaceHasConfig(row.spaceId)) {
+          spaceId = row.spaceId;
+          break;
+        }
+      }
+    }
   }
 
   return {
