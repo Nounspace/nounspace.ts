@@ -36,9 +36,10 @@ async function loadTokenData(
 }
 
 export default async function WrappedContractPrimarySpace({ params }) {
-  const contractAddress = params?.contractAddress as string;
-  const contractData = await loadContractData(params || {});
-  const network = params?.network as EtherScanChainName;
+  const resolvedParams = await params;
+  const contractAddress = resolvedParams?.contractAddress as string;
+  const contractData = await loadContractData(resolvedParams || {});
+  const network = resolvedParams?.network as EtherScanChainName;
   const tokenData = await loadTokenData(contractAddress as Address, network);
 
   const props = {

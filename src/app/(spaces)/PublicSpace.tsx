@@ -1,6 +1,5 @@
 "use client";
 
-
 import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
@@ -55,7 +54,6 @@ export default function PublicSpace({
   tokenData,
   pageType, // New prop
 }: PublicSpaceProps) {
-
   const {
     clearLocalSpaces,
     getCurrentSpaceId,
@@ -120,13 +118,16 @@ export default function PublicSpace({
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
 
-  
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    if (providedSpaceId && currentSpaceId && currentSpaceId !== providedSpaceId) {
+    if (
+      providedSpaceId &&
+      currentSpaceId &&
+      currentSpaceId !== providedSpaceId
+    ) {
       console.log(
-        `Switching space from ${currentSpaceId} to ${providedSpaceId} - clearing cache`,
+        `Switching space from ${currentSpaceId} to ${providedSpaceId} - clearing cache`
       );
       clearLocalSpaces();
       loadedTabsRef.current = {};
@@ -174,7 +175,7 @@ export default function PublicSpace({
     (userFid: number) => {
       return editabilityCheck.isEditable;
     },
-    [editabilityCheck],
+    [editabilityCheck]
   );
 
   // Determine the page type if not explicitly provided
@@ -197,7 +198,7 @@ export default function PublicSpace({
     if (prevSpaceId.current !== providedSpaceId) {
       initialDataLoadRef.current = false;
     }
-    
+
     let nextSpaceId = providedSpaceId;
     let nextTabName = decodeURIComponent(providedTabName);
 
@@ -207,7 +208,7 @@ export default function PublicSpace({
       const existingSpace = Object.values(localSpacesSnapshot).find(
         (space) =>
           space.contractAddress === contractAddress &&
-          space.network === tokenData.network,
+          space.network === tokenData.network
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
@@ -215,7 +216,7 @@ export default function PublicSpace({
       }
     } else if (resolvedPageType === "person" && spaceOwnerFid) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
-        (space) => space.fid === spaceOwnerFid,
+        (space) => space.fid === spaceOwnerFid
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
@@ -229,6 +230,27 @@ export default function PublicSpace({
     prevSpaceId.current = nextSpaceId;
     setCurrentTabName(nextTabName);
     prevTabName.current = nextTabName;
+
+    // Create space locally if it doesn't exist yet
+    if (typeof nextSpaceId === "string" && !localSpacesSnapshot[nextSpaceId]) {
+      console.log(
+        "Creating local space with initial config for spaceId:",
+        nextSpaceId
+      );
+      (async () => {
+        try {
+          await createSpaceTab(
+            nextSpaceId as string,
+            nextTabName || "Profile",
+            { ...initialConfig },
+            tokenData?.network
+          );
+        } catch (error) {
+          console.error("Failed to create initial space tab:", error);
+        }
+      })();
+    }
+
     // localSpaces is not in the dependencies!
   }, [
     resolvedPageType,
@@ -246,22 +268,26 @@ export default function PublicSpace({
     async (spaceId: string) => {
       const currentTabName = getCurrentTabName() ?? "Profile";
       const tabOrder = localSpaces[spaceId]?.order || [];
-      
+
       // Initialize the set of loaded tabs for this space if it doesn't exist
       if (!loadedTabsRef.current[spaceId]) {
         loadedTabsRef.current[spaceId] = new Set();
       }
-      
+
       // Mark the current tab as loaded
       loadedTabsRef.current[spaceId].add(currentTabName);
-      
+
       // Load only tabs that haven't been loaded yet
       const tabsToLoad = tabOrder.filter(
-        (tabName) => tabName !== currentTabName && !loadedTabsRef.current[spaceId].has(tabName)
+        (tabName) =>
+          tabName !== currentTabName &&
+          !loadedTabsRef.current[spaceId].has(tabName)
       );
-      
-      console.log(`Loading ${tabsToLoad.length} remaining tabs for space ${spaceId}`);
-      
+
+      console.log(
+        `Loading ${tabsToLoad.length} remaining tabs for space ${spaceId}`
+      );
+
       // Load the remaining tabs in parallel and mark them as loaded
       if (tabsToLoad.length > 0) {
         await Promise.all(
@@ -270,26 +296,28 @@ export default function PublicSpace({
             loadedTabsRef.current[spaceId].add(tabName);
           })
         );
-        console.log(`Tabs loaded and cached: ${Array.from(loadedTabsRef.current[spaceId]).join(', ')}`);
+        console.log(
+          `Tabs loaded and cached: ${Array.from(loadedTabsRef.current[spaceId]).join(", ")}`
+        );
       }
     },
-    [localSpaces, getCurrentTabName, loadSpaceTab, currentUserFid],
+    [localSpaces, getCurrentTabName, loadSpaceTab, currentUserFid]
   );
 
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(
-    providedSpaceId !== null && !!localSpaces[providedSpaceId],
+    providedSpaceId !== null && !!localSpaces[providedSpaceId]
   );
   const isLoadingRef = useRef(false);
   // Keeps track of which tabs have already been loaded for each space
   const loadedTabsRef = useRef<Record<string, Set<string>>>({});
-  
+
   // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
-    
-// Avoid repeated simultaneous loading or when reloading is not necessary
+
+    // Avoid repeated simultaneous loading or when reloading is not necessary
     if (isLoadingRef.current) {
       return;
     }
@@ -303,7 +331,7 @@ export default function PublicSpace({
 
     if (!isNil(currentSpaceId)) {
       let loadPromise;
-      
+
       if (!initialDataLoadRef.current) {
         // First load - load everything from the database
         isLoadingRef.current = true;
@@ -316,27 +344,68 @@ export default function PublicSpace({
           .then(() => {
             console.log("Loaded editable spaces");
             // Load the current tab from the database
-            return loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined);
+            return loadSpaceTab(
+              currentSpaceId,
+              currentTabName,
+              currentUserFid || undefined
+            ).catch(async (error) => {
+              console.log(
+                "Space not found in database, creating local space with initial config:",
+                error
+              );
+              // If space doesn't exist, create it locally with initial configuration
+              if (!localSpaces[currentSpaceId]) {
+                await createSpaceTab(
+                  currentSpaceId,
+                  currentTabName,
+                  { ...initialConfig },
+                  tokenData?.network
+                );
+              }
+            });
           });
       } else {
         // Navigation between tabs - check if we already have the tab in local cache
         const tabExists = localSpaces[currentSpaceId]?.tabs?.[currentTabName];
         // Also check if the tab is marked as loaded in our registry
-        const isTabCached = loadedTabsRef.current[currentSpaceId]?.has(currentTabName);
+        const isTabCached =
+          loadedTabsRef.current[currentSpaceId]?.has(currentTabName);
 
         if (!tabExists && !isTabCached) {
           // If the tab is not in local cache, load it from the database
           isLoadingRef.current = true;
           setLoading(true);
-          console.log(`Tab ${currentTabName} not in cache, loading from database`);
-          loadPromise = loadSpaceTab(currentSpaceId, currentTabName, currentUserFid || undefined);
+          console.log(
+            `Tab ${currentTabName} not in cache, loading from database`
+          );
+          loadPromise = loadSpaceTab(
+            currentSpaceId,
+            currentTabName,
+            currentUserFid || undefined
+          ).catch(async (error) => {
+            console.log(
+              "Tab not found in database, creating local tab with initial config:",
+              error
+            );
+            // If tab doesn't exist, create it locally with initial configuration
+            if (!localSpaces[currentSpaceId]?.tabs?.[currentTabName]) {
+              await createSpaceTab(
+                currentSpaceId,
+                currentTabName,
+                { ...initialConfig },
+                tokenData?.network
+              );
+            }
+          });
         } else {
           // Use the cached version and skip skeleton
           setLoading(false);
           isLoadingRef.current = false;
-          console.log(`Using tab ${currentTabName} from local cache, avoiding skeleton`);
+          console.log(
+            `Using tab ${currentTabName} from local cache, avoiding skeleton`
+          );
           loadPromise = Promise.resolve();
-          
+
           // Ensure that the tab is registered as loaded
           if (!loadedTabsRef.current[currentSpaceId]) {
             loadedTabsRef.current[currentSpaceId] = new Set();
@@ -344,23 +413,25 @@ export default function PublicSpace({
           loadedTabsRef.current[currentSpaceId].add(currentTabName);
         }
       }
-      
+
       loadPromise
         .then(() => {
           console.log("Loaded space tab from database or using cache");
           setLoading(false);
           isLoadingRef.current = false;
           initialDataLoadRef.current = true;
-          
+
           // Mark the current tab as loaded in our registry
           if (currentSpaceId) {
             if (!loadedTabsRef.current[currentSpaceId]) {
               loadedTabsRef.current[currentSpaceId] = new Set();
             }
             loadedTabsRef.current[currentSpaceId].add(currentTabName);
-            console.log(`Tab ${currentTabName} marked as loaded for space ${currentSpaceId}`);
+            console.log(
+              `Tab ${currentTabName} marked as loaded for space ${currentSpaceId}`
+            );
           }
-          
+
           // Load remaining tabs in the background if necessary
           if (currentSpaceId && !initialDataLoadRef.current) {
             void loadRemainingTabs(currentSpaceId);
@@ -372,13 +443,20 @@ export default function PublicSpace({
           isLoadingRef.current = false;
         });
     }
-  }, [getCurrentSpaceId, getCurrentTabName, loadSpaceTabOrder, loadEditableSpaces, loadSpaceTab, loadRemainingTabs]);
+  }, [
+    getCurrentSpaceId,
+    getCurrentTabName,
+    loadSpaceTabOrder,
+    loadEditableSpaces,
+    loadSpaceTab,
+    loadRemainingTabs,
+  ]);
 
   // Checks if the user is signed into Farcaster
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
       setIsSignedIntoFarcaster(
-        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1,
+        indexOf(authNames, FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME) > -1
       );
     });
   }, [authManagerLastUpdatedAt]);
@@ -400,7 +478,9 @@ export default function PublicSpace({
 
   const currentConfig = getCurrentSpaceConfig();
   if (!currentConfig) {
-    console.error("Current space config is undefined");
+    console.log(
+      "Current space config is undefined, using initial config as fallback"
+    );
   }
 
   const config = {
@@ -417,7 +497,9 @@ export default function PublicSpace({
     }
     return config;
   }, [
-    Object.keys(config?.fidgetInstanceDatums || {}).sort().join(','),
+    Object.keys(config?.fidgetInstanceDatums || {})
+      .sort()
+      .join(","),
     config?.layoutID,
     config?.layoutDetails,
     config?.isEditable,
@@ -465,7 +547,7 @@ export default function PublicSpace({
             const existingSpace = Object.values(localSpaces).find(
               (space) =>
                 space.contractAddress === contractAddress &&
-                space.network === tokenData.network,
+                space.network === tokenData.network
             );
 
             if (existingSpace) {
@@ -480,7 +562,7 @@ export default function PublicSpace({
             }
           } else if (!isTokenPage) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) => space.fid === currentUserFid,
+              (space) => space.fid === currentUserFid
             );
 
             if (existingSpace) {
@@ -505,7 +587,7 @@ export default function PublicSpace({
               "Profile",
               currentUserFid,
               initialConfig,
-              tokenData.network,
+              tokenData.network
             );
             console.log("Contract space registration result:", {
               success: !!newSpaceId,
@@ -519,7 +601,7 @@ export default function PublicSpace({
             newSpaceId = await registerSpaceFid(
               currentUserFid,
               "Profile",
-              getSpacePageUrl("Profile"),
+              getSpacePageUrl("Profile")
             );
             // console.log("User space registration result:", {
             //   success: !!newSpaceId,
@@ -594,12 +676,12 @@ export default function PublicSpace({
         ...spaceConfig,
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums
           ? mapValues(spaceConfig.fidgetInstanceDatums, (datum) => ({
-            ...datum,
-            config: {
-              settings: datum.config.settings,
-              editable: datum.config.editable,
-            },
-          }))
+              ...datum,
+              config: {
+                settings: datum.config.settings,
+                editable: datum.config.editable,
+              },
+            }))
           : undefined,
         isPrivate: false,
       };
@@ -640,7 +722,7 @@ export default function PublicSpace({
       saveLocalSpaceTab(
         currentSpaceId,
         currentTabName,
-        remoteSpaces[currentSpaceId].tabs[currentTabName],
+        remoteSpaces[currentSpaceId].tabs[currentTabName]
       );
     }
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
@@ -655,10 +737,11 @@ export default function PublicSpace({
       to: tabName,
       shouldSave,
     });
-    
+
     // Check if we already have the tab in cache
-    const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
-    
+    const tabExists =
+      currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
+
     if (currentSpaceId && !tabExists) {
       // Show skeleton when loading a tab from the database
       setLoading(true);
@@ -671,8 +754,9 @@ export default function PublicSpace({
       }
 
       // Load the tab showing the skeleton for better UX
-      loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined)
-        .catch(error => console.error(`Error loading tab ${tabName}:`, error));
+      loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined).catch(
+        (error) => console.error(`Error loading tab ${tabName}:`, error)
+      );
     } else if (currentSpaceId && tabExists) {
       // Tab already in cache - no need to show skeleton
       if (!loadedTabsRef.current[currentSpaceId]) {
@@ -717,21 +801,21 @@ export default function PublicSpace({
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? deleteSpaceTab(
-            currentSpaceId,
-            tabName,
-            tokenData?.network as EtherScanChainName,
-          )
+              currentSpaceId,
+              tabName,
+              tokenData?.network as EtherScanChainName
+            )
           : undefined;
       }}
       createTab={async (tabName) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? createSpaceTab(
-            currentSpaceId,
-            tabName,
-            INITIAL_SPACE_CONFIG_EMPTY,
-            tokenData?.network as EtherScanChainName,
-          )
+              currentSpaceId,
+              tabName,
+              INITIAL_SPACE_CONFIG_EMPTY,
+              tokenData?.network as EtherScanChainName
+            )
           : undefined;
       }}
       renameTab={async (oldName, newName) => {
@@ -742,7 +826,7 @@ export default function PublicSpace({
             currentSpaceId,
             oldName,
             resolvedConfig,
-            newName,
+            newName
           );
         }
         return undefined;
@@ -757,9 +841,9 @@ export default function PublicSpace({
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
           ? commitSpaceTabOrder(
-            currentSpaceId,
-            tokenData?.network as EtherScanChainName,
-          )
+              currentSpaceId,
+              tokenData?.network as EtherScanChainName
+            )
           : undefined;
       }}
       getSpacePageUrl={getSpacePageUrl}
@@ -780,27 +864,35 @@ export default function PublicSpace({
     console.warn("Profile component is undefined");
   }
 
-  const MemoizedSpacePage = useMemo(() => (
-    <SpacePage
-      config={memoizedConfig}
-      saveConfig={saveConfig}
-      commitConfig={commitConfig}
-      resetConfig={resetConfig}
-      tabBar={tabBar}
-      profile={profile ?? undefined}
-    />
-  ), [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]);
-  
+  const MemoizedSpacePage = useMemo(
+    () => (
+      <SpacePage
+        config={memoizedConfig}
+        saveConfig={saveConfig}
+        commitConfig={commitConfig}
+        resetConfig={resetConfig}
+        tabBar={tabBar}
+        profile={profile ?? undefined}
+      />
+    ),
+    [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]
+  );
+
   // Mostra o skeleton apenas durante o carregamento inicial do espaço, não durante troca de abas
   const shouldShowSkeleton =
     loading &&
     // Mostrar skeleton apenas quando ainda não carregamos dados iniciais
     !initialDataLoadRef.current &&
     // Não mostrar skeleton para navegação entre abas
-    providedSpaceId !== null && providedSpaceId !== "" &&
+    providedSpaceId !== null &&
+    providedSpaceId !== "" &&
     // Evita mostrar skeleton para abas que já foram carregadas
-    !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
-      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
+    !(
+      loadedTabsRef.current[getCurrentSpaceId() ?? ""] &&
+      loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(
+        getCurrentTabName() ?? "Profile"
+      )
+    );
 
   if (shouldShowSkeleton) {
     return (
@@ -826,6 +918,6 @@ export default function PublicSpace({
       </div>
     );
   }
-  
+
   return MemoizedSpacePage;
 }

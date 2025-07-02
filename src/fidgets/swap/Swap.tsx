@@ -132,7 +132,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   },
 }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
-  const [url, setUrl] = React.useState("");
+  const [url, setUrl] = React.useState<string | null>(null);
 
   const buildMatchaUrl = () => {
     const params = new URLSearchParams();
@@ -189,18 +189,20 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
 
   return (
     <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
-      <iframe
-        src={url}
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-          overflow: "hidden",
-        }}
-        className="size-full"
-      />
+      {url && (
+        <iframe
+          src={url}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            transform: `scale(${scaleValue})`,
+            transformOrigin: "0 0",
+            width: `${100 / scaleValue}%`,
+            height: `${100 / scaleValue}%`,
+            overflow: "hidden",
+          }}
+          className="size-full"
+        />
+      )}
     </div>
   );
 };

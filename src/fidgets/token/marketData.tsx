@@ -38,9 +38,7 @@ const frameConfig: FidgetProperties = {
       default: { id: "8453", name: "base" },
       inputSelector: (props) => (
         <WithMargin>
-          <ChainSelector
-            {...props}
-          />
+          <ChainSelector {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -52,9 +50,7 @@ const frameConfig: FidgetProperties = {
       default: "0x0DF1B77aAFEc59E926315e5234db3Fdea419d4E4",
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput
-            {...props}
-          />
+          <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -72,9 +68,7 @@ const frameConfig: FidgetProperties = {
       displayName: "Data Source",
       inputSelector: (props) => (
         <WithMargin>
-          <MarketDataSelector
-            {...props}
-          />
+          <MarketDataSelector {...props} />
         </WithMargin>
       ),
       required: true,
@@ -106,18 +100,18 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
     dataSource = "dexscreener",
   },
 }) => {
-  const [url, setUrl] = React.useState("");
+  const [url, setUrl] = React.useState<string | null>(null);
 
   const buildUrl = () => {
     if (dataSource === "geckoterminal") {
       return getGeckoIframe(
         token as Address,
-        chain?.name as EtherScanChainName,
+        chain?.name as EtherScanChainName
       );
     }
     return getDexScreenerUrl(
       token as Address,
-      chain?.name as EtherScanChainName,
+      chain?.name as EtherScanChainName
     );
   };
 
@@ -128,19 +122,24 @@ const MarketData: React.FC<FidgetArgs<MarketDataProps>> = ({
   const scaleValue = size;
 
   return (
-    <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
-      <iframe
-        src={url}
-        title="Market Data"
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-        }}
-        className="size-full"
-      />
+    <div
+      style={{ overflow: "hidden", width: "100%" }}
+      className="h-[calc(100dvh-220px)] md:h-full"
+    >
+      {url && (
+        <iframe
+          src={url}
+          title="Market Data"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            transform: `scale(${scaleValue})`,
+            transformOrigin: "0 0",
+            width: `${100 / scaleValue}%`,
+            height: `${100 / scaleValue}%`,
+          }}
+          className="size-full"
+        />
+      )}
     </div>
   );
 };
