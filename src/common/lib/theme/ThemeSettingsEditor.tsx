@@ -34,6 +34,7 @@ import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 import { useAppStore } from "@/common/data/stores/app";
 import AiChatSidebar from "@/common/components/organisms/AgentChat";
+import NogsGateButton from "@/common/components/organisms/NogsGateButton";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -386,7 +387,7 @@ export function ThemeSettingsEditor({
 
         <div className="flex flex-col gap-2">
           {tabValue === ThemeEditorTab.SPACE && (
-            <div
+            <NogsGateButton
               className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
               onClick={() => setShowVibeEditor(true)}
             >
@@ -395,7 +396,7 @@ export function ThemeSettingsEditor({
               </p>
               {/* <HiOutlineSparkles size={32} /> */}
               <SparklesIcon className="size-8" />
-            </div>
+            </NogsGateButton>
           )}
 
           {/* Actions */}
