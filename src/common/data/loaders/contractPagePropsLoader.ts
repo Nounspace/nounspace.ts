@@ -10,6 +10,7 @@ import {
 } from "../database/supabase/serverHelpers";
 import createSupabaseServerClient from "../database/supabase/clients/server";
 import { string } from "prop-types";
+import type { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
@@ -83,15 +84,11 @@ export async function loadContractData(
   }
 
   if (isNil(ownerId)) {
-    return {
-      props: {
-        ...defaultContractPageProps,
-        tabName,
-        contractAddress,
-        pinnedCastId,
-        owningIdentities,
-      },
-    };
+    console.warn("No owner found for contract - will still attempt space lookup", {
+      contractAddress,
+      network,
+    });
+    // Continue with space lookup even without ownerId
   }
 
   // Check if the contract has a castHash function
@@ -108,9 +105,9 @@ export async function loadContractData(
     }
   }
 
-  if (ownerIdType === "address") {
+  if (ownerIdType === "address" && ownerId) {
     owningIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
-  } else {
+  } else if (ownerId) {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
   // console.log("Debug - Contract Address before query:", contractAddress);
@@ -120,25 +117,37 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
     .eq("contractAddress", contractAddress);
-  
+
   if (isString(network)) {
     query = query.eq("network", network);
   }
-  
+
   const { data, error } = await query
     .order("timestamp", { ascending: true })
-    .limit(1)
-  
-  // console.log("Debug - Database Query Error:", error);
-  // console.log("Debug - Raw Query Results:", data);
-  // console.log("Debug - First Space ID:", data?.[0]?.spaceId);
-  // console.log("Debug - Query Details:", {
-  //   contractAddress,
-  //   network,
-  //   error: error?.message,
-  // });
-  
-  const spaceId = data?.[0]?.spaceId || null;
+    .limit(1);
+
+  let spaceId = data?.[0]?.spaceId || null;
+
+  // If no spaceId found, log details but don't attempt registration here
+  // The UI/store will handle registration using the proper signed request flow
+  if (!spaceId) {
+    console.warn("No contract space found in DB. Registration will be handled by the UI/store.", {
+      contractAddress,
+      network,
+      ownerId,
+      ownerIdType,
+    });
+  }
+
+  // Don't return an error if spaceId is null - let the UI handle registration
+  if (!spaceId) {
+    console.log("[contractPagePropsLoader] No spaceId found, will be registered by UI/store:", {
+      contractAddress,
+      network,
+      ownerId,
+      ownerIdType,
+    });
+  }
 
   return {
     props: {
@@ -149,6 +158,7 @@ export async function loadContractData(
       contractAddress,
       pinnedCastId,
       owningIdentities,
+      network, // Include network in the response
     },
   };
 }

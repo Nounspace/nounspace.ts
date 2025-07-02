@@ -81,17 +81,25 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   const metaTags = html.match(/<meta[^>]*>/gi) || [];
   const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
 
+  // Log a sample of the HTML to see what we're working with
+  console.log('[parseFrameFallback] metaTags:', metaTags.slice(0, 5));
+  console.log('[parseFrameFallback] frameMetaTags:', frameMetaTags);
+
   // Check for JSON-based frame format (name="fc:frame" with JSON content)
   const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||
                          html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
   
   let jsonFrameData: any = null;
   if (jsonFrameMatch) {
-    try {
-      jsonFrameData = JSON.parse(jsonFrameMatch[1]);
-      // console.log('parseFrameFallback - JSON frame data found:', jsonFrameData);
-    } catch (e) {
-      console.error('parseFrameFallback - Failed to parse JSON frame data:', e);
+    const jsonCandidate = jsonFrameMatch[1]?.trim();
+    console.log('[parseFrameFallback] jsonCandidate:', jsonCandidate);
+    if (jsonCandidate && (jsonCandidate.startsWith('{') || jsonCandidate.startsWith('['))) {
+      try {
+        jsonFrameData = JSON.parse(jsonCandidate);
+        console.log('[parseFrameFallback] Parsed jsonFrameData:', jsonFrameData);
+      } catch (e) {
+        console.error('parseFrameFallback - Failed to parse JSON frame data:', e);
+      }
     }
   }
 
@@ -201,14 +209,15 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     isFrame: hasFrameMetadata,
   };
 
-  // console.log('parseFrameFallback - Final result:', {
-  //   url,
-  //   finalImageUrl: result.image,
-  //   isFrame: result.isFrame,
-  //   buttonsCount: result.buttons.length,
-  //   hasJsonFrame: !!jsonFrameData,
-  //   extractedFromJson: !!jsonFrameData && !!jsonFrameData.imageUrl,
-  // });
+  // Log the result before returning
+  console.log('[parseFrameFallback] Final result:', {
+    image: imageUrl,
+    title,
+    buttons,
+    inputText: !!inputTextMatch,
+    postUrl,
+    isFrame: hasFrameMetadata,
+  });
 
   return result;
 }

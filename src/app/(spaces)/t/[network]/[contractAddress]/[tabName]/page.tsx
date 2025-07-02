@@ -1,5 +1,4 @@
-export const dynamic = "force-static";
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 import React from "react";
 import { loadContractData } from "@/common/data/loaders/contractPagePropsLoader";
@@ -10,10 +9,7 @@ import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import ContractPrimarySpaceContent from "../../ContractPrimarySpaceContent";
 
-async function loadTokenData(
-  contractAddress: Address,
-  network: EtherScanChainName
-): Promise<MasterToken> {
+async function loadTokenData(contractAddress: Address, network: EtherScanChainName): Promise<MasterToken> {
   if (network === "base") {
     const [tokenResponse, clankerResponse] = await Promise.all([
       fetchTokenData(contractAddress, null, network),
@@ -36,9 +32,10 @@ async function loadTokenData(
 }
 
 export default async function WrappedContractPrimarySpace({ params }) {
-  const contractAddress = params?.contractAddress as string;
-  const contractData = await loadContractData(params || {});
-  const network = params?.network as EtherScanChainName;
+  const awaitedParams = await params;
+  const contractAddress = awaitedParams?.contractAddress as string;
+  const contractData = await loadContractData(awaitedParams || {});
+  const network = awaitedParams?.network as EtherScanChainName;
   const tokenData = await loadTokenData(contractAddress as Address, network);
 
   const props = {
@@ -49,11 +46,7 @@ export default async function WrappedContractPrimarySpace({ params }) {
   };
 
   return (
-    <TokenProvider
-      contractAddress={contractAddress as Address}
-      defaultTokenData={tokenData}
-      network={network}
-    >
+    <TokenProvider contractAddress={contractAddress as Address} defaultTokenData={tokenData} network={network}>
       <ContractPrimarySpaceContent {...props} />
     </TokenProvider>
   );

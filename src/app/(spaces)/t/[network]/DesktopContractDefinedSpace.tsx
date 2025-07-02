@@ -7,7 +7,7 @@ import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { Address } from 'viem';
+import { Address } from "viem";
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -29,28 +29,29 @@ export default function DesktopContractDefinedSpace({
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
 
-  const INITIAL_SPACE_CONFIG = useMemo(
-    () =>
-      createInitialContractSpaceConfigForAddress(
-        contractAddress,
-        tokenData?.clankerData?.cast_hash || "",
-        String(tokenData?.clankerData?.requestor_fid || ""),
-        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
-        !!tokenData?.clankerData,
-        tokenData?.network,
-      ),
-    [contractAddress, tokenData, tokenData?.network],
-  );
+  const INITIAL_SPACE_CONFIG = useMemo(() => {
+    const config = createInitialContractSpaceConfigForAddress(
+      contractAddress,
+      tokenData?.clankerData?.cast_hash || "",
+      String(tokenData?.clankerData?.requestor_fid || ""),
+      tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
+      !!tokenData?.clankerData,
+      tokenData?.network
+    );
+    console.log("[DesktopContractDefinedSpace] INITIAL_SPACE_CONFIG", config);
+    return config;
+  }, [contractAddress, tokenData, tokenData?.network]);
 
-  const getSpacePageUrl = (tabName: string) => 
-    `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
+  const getSpacePageUrl = (tabName: string) => {
+    const url = `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
+    console.log("[DesktopContractDefinedSpace] getSpacePageUrl", url);
+    return url;
+  };
 
   // Check if user is signed into Farcaster
   useEffect(() => {
     authManagerGetInitializedAuthenticators().then((authNames) => {
-      setIsSignedIntoFarcaster(
-        authNames.includes(FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME)
-      );
+      setIsSignedIntoFarcaster(authNames.includes(FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME));
     });
   }, [authManagerLastUpdatedAt]);
 
@@ -70,9 +71,18 @@ export default function DesktopContractDefinedSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   // Convert ownerId to the appropriate type based on ownerIdType
-  const spaceOwnerFid = ownerIdType === 'fid' ? Number(ownerId) : undefined;
-  const spaceOwnerAddress = ownerIdType === 'address' ? ownerId as Address : undefined;
+  const spaceOwnerFid = ownerIdType === "fid" ? Number(ownerId) : undefined;
+  const spaceOwnerAddress = ownerIdType === "address" ? (ownerId as Address) : undefined;
 
+  console.log("[DesktopContractDefinedSpace] render", {
+    spaceId,
+    tabName,
+    contractAddress,
+    ownerId,
+    ownerIdType,
+    INITIAL_SPACE_CONFIG,
+    tokenData,
+  });
   return (
     <PublicSpace
       spaceId={spaceId}

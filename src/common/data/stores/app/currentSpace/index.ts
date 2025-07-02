@@ -2,6 +2,7 @@ import { SetterFunction, StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import { isNil, isUndefined, mapValues, pickBy } from "lodash";
+import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
 interface CurrentSpaceStoreState {
   currentSpaceId: string | null;
@@ -55,8 +56,8 @@ export const createCurrentSpaceStoreFunc = (
   },
   getCurrentSpaceConfig: () => {
     const currentSpaceId = get().currentSpace.currentSpaceId;
-    if (currentSpaceId === HOMEBASE_ID) return undefined;
-    if (isNil(currentSpaceId)) return undefined;
+    if (currentSpaceId === HOMEBASE_ID) return { tabs: { Profile: { ...INITIAL_SPACE_CONFIG_EMPTY } } };
+    if (isNil(currentSpaceId)) return { tabs: { Profile: { ...INITIAL_SPACE_CONFIG_EMPTY } } };
     const currentSpaceUpdatableConfig = get().space.localSpaces[currentSpaceId];
     if (currentSpaceUpdatableConfig) {
       const tabsWithDatumsImproved = pickBy(
@@ -85,6 +86,7 @@ export const createCurrentSpaceStoreFunc = (
         tabs: tabsWithDatumsImproved,
       };
     }
-    return undefined;
+    // Fallback: return a default config if not found
+    return { tabs: { Profile: { ...INITIAL_SPACE_CONFIG_EMPTY } } };
   },
 });

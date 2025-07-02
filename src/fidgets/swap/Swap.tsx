@@ -2,12 +2,7 @@ import React from "react";
 import ChainSelector from "@/common/components/molecules/ChainSelector";
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
-import {
-  FidgetArgs,
-  FidgetModule,
-  FidgetProperties,
-  type FidgetSettingsStyle,
-} from "@/common/fidgets";
+import { FidgetArgs, FidgetModule, FidgetProperties, type FidgetSettingsStyle } from "@/common/fidgets";
 import { BsArrowRepeat } from "react-icons/bs";
 import { mobileStyleSettings, WithMargin } from "../helpers";
 import ShadowSelector from "@/common/components/molecules/ShadowSelector";
@@ -38,9 +33,7 @@ const matchaProperties: FidgetProperties = {
       required: true,
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput
-            {...props}
-          />
+          <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -52,10 +45,7 @@ const matchaProperties: FidgetProperties = {
       required: true,
       inputSelector: (props) => (
         <WithMargin>
-          <TextInput
-            {...props}
-
-          />
+          <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -67,10 +57,7 @@ const matchaProperties: FidgetProperties = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ChainSelector
-            {...props}
-
-          />
+          <ChainSelector {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -78,15 +65,13 @@ const matchaProperties: FidgetProperties = {
     {
       fieldName: "fidgetShadow",
       displayName: "Fidget Shadow",
-      displayNameHint: "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
+      displayNameHint:
+        "Shadow for the Fidget. Set to Theme Shadow to inherit the Fidget Shadow Settings from the Theme. Set to None to remove the shadow.",
       default: "var(--user-theme-fidget-shadow)",
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ShadowSelector
-            {...props}
-            hideGlobalSettings={false}
-          />
+          <ShadowSelector {...props} hideGlobalSettings={false} />
         </WithMargin>
       ),
       group: "style",
@@ -98,10 +83,7 @@ const matchaProperties: FidgetProperties = {
       required: false,
       inputSelector: (props) => (
         <WithMargin>
-          <ChainSelector
-            {...props}
-
-          />
+          <ChainSelector {...props} />
         </WithMargin>
       ),
       group: "settings",
@@ -132,7 +114,7 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
   },
 }) => {
   const matchaBaseUrl = "https://matcha.xyz/trade";
-  const [url, setUrl] = React.useState("");
+  const [url, setUrl] = React.useState<string | null>(null);
 
   const buildMatchaUrl = () => {
     const params = new URLSearchParams();
@@ -144,20 +126,13 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
     if (toChain && toChain.id) {
       params.append("buyChain", toChain.id);
     }
-    if (optionalFeeRecipient)
-      params.append("feeRecipient", optionalFeeRecipient);
+    if (optionalFeeRecipient) params.append("feeRecipient", optionalFeeRecipient);
     return `${matchaBaseUrl}?${params.toString()}`;
   };
 
   React.useEffect(() => {
     setUrl(buildMatchaUrl());
-  }, [
-    defaultSellToken,
-    defaultBuyToken,
-    fromChain,
-    toChain,
-    optionalFeeRecipient,
-  ]);
+  }, [defaultSellToken, defaultBuyToken, fromChain, toChain, optionalFeeRecipient]);
 
   const scaleValue = size;
 
@@ -189,18 +164,20 @@ const Swap: React.FC<FidgetArgs<MatchaFidgetSettings>> = ({
 
   return (
     <div style={{ overflow: "hidden", width: "100%" }} className="h-[calc(100dvh-220px)] md:h-full">
-      <iframe
-        src={url}
-        sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-        style={{
-          transform: `scale(${scaleValue})`,
-          transformOrigin: "0 0",
-          width: `${100 / scaleValue}%`,
-          height: `${100 / scaleValue}%`,
-          overflow: "hidden",
-        }}
-        className="size-full"
-      />
+      {url && (
+        <iframe
+          src={url}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            transform: `scale(${scaleValue})`,
+            transformOrigin: "0 0",
+            width: `${100 / scaleValue}%`,
+            height: `${100 / scaleValue}%`,
+            overflow: "hidden",
+          }}
+          className="size-full"
+        />
+      )}
     </div>
   );
 };

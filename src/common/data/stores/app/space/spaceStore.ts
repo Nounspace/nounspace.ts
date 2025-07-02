@@ -638,6 +638,13 @@ export const createSpaceStoreFunc = (
         isPrivate: fileData.isEncrypted,
       };
 
+      console.log('[loadSpaceTab] Loaded remote tab config', {
+        spaceId,
+        tabName,
+        remoteUpdatableSpaceConfig,
+        fileData,
+      });
+
       set((draft) => {
         // Initialize local and remote spaces if they don't exist
         if (isUndefined(draft.space.localSpaces[spaceId])) {
@@ -696,7 +703,7 @@ export const createSpaceStoreFunc = (
         draft.space.localSpaces[spaceId].updatedAt = newTimestamp;
       }, "loadSpaceTab");
     } catch (e) {
-      console.error(`Error loading space tab ${spaceId}/${tabName}:`, e);
+      console.error(`[loadSpaceTab] Error loading space tab ${spaceId}/${tabName}:`, e);
     }
   },
   loadSpaceTabOrder: async (spaceId: string) => {
