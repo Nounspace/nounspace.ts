@@ -184,8 +184,8 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
-            : "size-full overflow-hidden"
+            ? "size-full border-solid border-sky-600 border-4"
+            : "size-full"
         }
         style={{
           background: settingsWithDefaults.useDefaultColors 
@@ -201,7 +201,6 @@ export function FidgetWrapper({
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
           borderRadius: borderRadius ?? homebaseConfig?.theme?.properties.fidgetBorderRadius ?? "12px",
-          overflow: "hidden"
         }}
       >
         {bundle.config.editable && (
