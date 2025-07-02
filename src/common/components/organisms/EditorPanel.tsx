@@ -1,19 +1,19 @@
-import React, { Dispatch, SetStateAction } from "react";
-import { ThemeSettings } from "@/common/lib/theme";
-import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
-import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import FidgetTray from "./FidgetTray";
-import { toast } from "sonner";
 import {
   FidgetArgs,
   FidgetBundle,
   FidgetInstanceData,
   FidgetModule,
 } from "@/common/fidgets";
-import FidgetPicker from "./FidgetPicker";
-import { v4 as uuidv4 } from "uuid";
-import { fromPairs, map } from "lodash";
+import { ThemeSettings } from "@/common/lib/theme";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
+import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { CompleteFidgets } from "@/fidgets";
+import { fromPairs, map } from "lodash";
+import React, { Dispatch, SetStateAction } from "react";
+import { toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
+import FidgetPicker from "./FidgetPicker";
+import FidgetTray from "./FidgetTray";
 
 export interface EditorPanelProps {
   setCurrentlyDragging: React.Dispatch<React.SetStateAction<boolean>>;
@@ -142,15 +142,17 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
                   setIsPickingFidget={setIsPickingFidget}
                 />
               ) : (
-                <ThemeSettingsEditor
-                  theme={theme}
-                  saveTheme={saveTheme}
-                  saveExitEditMode={saveExitEditMode}
-                  cancelExitEditMode={cancelExitEditMode}
-                  onExportConfig={onExportConfig}
-                  getCurrentSpaceContext={getCurrentSpaceContext}
-                  onApplySpaceConfig={onApplySpaceConfig}
-                />
+              <ThemeSettingsEditor
+                theme={theme}
+                saveTheme={saveTheme} 
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={fidgetInstanceDatums}
+                onExportConfig={onExportConfig}
+                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+                getCurrentSpaceContext={getCurrentSpaceContext}
+                onApplySpaceConfig={onApplySpaceConfig}
+              />
               )}
             </>
           )}

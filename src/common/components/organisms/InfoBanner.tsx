@@ -28,10 +28,10 @@ function InfoToastContent() {
   const { data } = useLoadFarcasterUser(fid);
   const user = useMemo(() => first(data?.users), [data]);
   const username = useMemo(() => user?.username, [user]);
-  const { getIsAccountReady } = useAppStore((state) => ({
-    getIsAccountReady: state.getIsAccountReady,
+  const { getIsLoggedIn } = useAppStore((state) => ({
+    getIsLoggedIn: state.getIsAccountReady,
   }));
-  const isLoggedIn = getIsAccountReady();
+  const isLoggedIn = getIsLoggedIn();
 
   const checkPageType = (pathname, spaceFarcasterName, username) => {
     if (pathname === "/homebase") {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export default function useWindowSize() {
   const hasWindow = typeof window !== "undefined";
@@ -12,20 +12,46 @@ export default function useWindowSize() {
     };
   }
 
-  const [windowDimensions, setWindowDimensions] = useState(
-    getWindowDimensions(),
+  // Initialize with null values to avoid hydration mismatch
+  const [windowDimensions, setWindowDimensions] = useState<{
+    width: number | null;
+    height: number | null;
+  }>({
+    width: null,
+    height: null,
+  });
+
+  // Set initial dimensions after component mounts (client-side only)
+  const [isClient, setIsClient] = useState(false);
+
+  const debounce = <T extends (...args: any[]) => any>(func: T, wait: number): ((...args: Parameters<T>) => void) => {
+    let timeout: NodeJS.Timeout | null = null;
+
+    return (...args: any[]) => {
+      if (timeout) clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), wait);
+    };
+  };
+
+  const handleResize = useCallback(
+    debounce(() => {
+      setWindowDimensions(getWindowDimensions());
+    }, 200),
+    [],
   );
 
-  function handleResize() {
+  useEffect(() => {
+    // Set client flag and initial dimensions on mount
+    setIsClient(true);
     setWindowDimensions(getWindowDimensions());
-  }
+  }, []);
 
   useEffect(() => {
-    if (hasWindow) {
+    if (hasWindow && isClient) {
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
-  }, [hasWindow]);
+  }, [hasWindow, handleResize, isClient]);
 
   return windowDimensions;
 }
