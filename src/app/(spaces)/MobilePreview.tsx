@@ -109,6 +109,9 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
             <div 
               className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
             >
+              {/* White background div underneath main content */}
+              <div className="absolute inset-0 w-[320px] h-full bg-white rounded-[28px] z-0 mx-2" />
+
               <CustomHTMLBackground
                 html={theme?.properties.backgroundHTML}
                 className="absolute inset-0 pointer-events-none w-full h-full rounded-[28px] px-2"
