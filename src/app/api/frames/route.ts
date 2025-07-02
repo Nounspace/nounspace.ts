@@ -65,7 +65,6 @@ interface FrameData {
 
 // Helper: Regex-based fallback parser for frame metadata
 async function parseFrameFallback(url: string): Promise<FrameData> {
-  console.log('parseFrameFallback - Starting manual parsing for:', url);
   
   const response = await fetch(url, {
     headers: {
@@ -77,12 +76,10 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
 
   // Check for fc:frame metadata to determine if this is actually a frame
   const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
-  console.log('parseFrameFallback - Has frame metadata:', hasFrameMetadata);
 
   // Log a sample of the HTML to see what we're working with
   const metaTags = html.match(/<meta[^>]*>/gi) || [];
   const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
-  console.log('parseFrameFallback - Frame meta tags found:', frameMetaTags);
 
   // Check for JSON-based frame format (name="fc:frame" with JSON content)
   const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||

@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log(`🔍 Fetching OpenGraph data for: ${url}`);
 
     const response = await fetch(url, {
       headers: {

@@ -35,10 +35,16 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
         // For anything that could potentially be a frame, we should check properly
         if (!quickCheck) {
           // Check if it's an obvious non-frame URL (images, docs, static assets)
+          const imageExtensions = /\.(jpg|jpeg|png|gif|webp|svg|ico)$/i;
+          const mediaExtensions = /\.(mp4|mp3|avi|mov|wmv|wav|ogg)$/i;
+          const docExtensions = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i;
+          const codeExtensions = /\.(css|js|json|xml|txt)$/i;
+          
           const isObviousNonFrame =
-            /\.(jpg|jpeg|png|gif|webp|svg|ico|mp4|mp3|avi|mov|wmv|wav|ogg|pdf|doc|docx|xls|xlsx|ppt|pptx|css|js|json|xml|txt)$/i.test(
-              url
-            ) ||
+            imageExtensions.test(url) ||
+            mediaExtensions.test(url) ||
+            docExtensions.test(url) ||
+            codeExtensions.test(url) ||
             /\/(assets|static|public|images|videos|downloads)\//.test(url) ||
             /github\.com.*\.(md|txt|json|ya?ml)$/.test(url) ||
             /twitter\.com\/i\/web\/status/.test(url) ||
@@ -96,7 +102,6 @@ const SmartFrameEmbed: React.FC<SmartFrameEmbedProps> = ({ url }) => {
       </div>
     );
   }
-  debugger;
 
   // If it's a Frame V2, render with FrameV2Embed
   if (isFrameV2) {
