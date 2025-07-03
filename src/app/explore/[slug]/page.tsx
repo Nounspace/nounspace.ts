@@ -57,7 +57,11 @@ const getPostOrSlug = async (
 
 export default async function Post({ params }) {
   const resolvedParams = await params;
-  const post = await getPostOrSlug(resolvedParams!.slug as string);
+  if (!resolvedParams?.slug) {
+    // Handle missing slug case
+    return <div>Invalid route</div>;
+  }
+  const post = await getPostOrSlug(resolvedParams.slug as string);
   if (isExplorePost(post)) {
     return (
       <Suspense fallback={<div>Loading...</div>}>

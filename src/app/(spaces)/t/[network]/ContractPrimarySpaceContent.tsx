@@ -31,7 +31,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
 
   useEffect(() => {
     const fetchSpaceIdForContract = async () => {
-      if (!spaceId && contractAddress && network) {
+      if (!initialSpaceId && contractAddress && network) {
         try {
           const response = await axios.get(
             "/api/space/registry/from-contract",
@@ -58,7 +58,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     };
 
     fetchSpaceIdForContract();
-  }, [spaceId, contractAddress, network, setCurrentSpaceId]);
+  }, [initialSpaceId, contractAddress, network, setCurrentSpaceId]);
 
   useEffect(() => {
     if (spaceId) {
