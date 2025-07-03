@@ -266,7 +266,7 @@ const MobileView: React.FC<MobileViewProps> = ({
           theme={theme}
           fidgetInstanceDatums={fidgetInstanceDatums}
           tabNames={tabNames}
-          className="z-50"
+          className="z-5"
         />
       )}
     </div>

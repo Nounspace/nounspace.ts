@@ -97,7 +97,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
           <PhoneFrame />
           
           {/* Phone Content Area - positioned to match actual screen area within frame */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="absolute inset-0 flex items-center justify-center z-1">
             <div 
               className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
             >
@@ -108,7 +108,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
               />
               
               {/* Content Container - with proper constraints */}
-              <div className={`flex-1 flex flex-col h-full w-full relative z-10 overflow-hidden ${isUndefined(theme?.properties.background) &&  "bg-white"}`}>
+              <div className={`flex-1 flex flex-col h-full w-full relative z-1 overflow-hidden ${isUndefined(theme?.properties.background) &&  "bg-white"}`}>
                 {/* Header Content */}
                 <div className="flex-shrink-0 w-full bg-white">
 

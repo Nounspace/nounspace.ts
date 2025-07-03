@@ -381,7 +381,7 @@ export const createInitialContractSpaceConfigForAddress = (
 
             /* 3. Optional Content Layer (above the aurora) */
             .content {
-              z-index: 1;
+              /* z-index: 1; */
               text-align: center;
               position: relative;
             }
@@ -408,7 +408,7 @@ export const createInitialContractSpaceConfigForAddress = (
               height: 100%;
               background: radial-gradient(circle, rgba(255, 255, 255, 0) 35%, rgba(255, 255, 255, 0.3) 100%);
               pointer-events: none;
-              z-index: 0;
+              /* z-index: 0;*/
             }
           </style>
         </head>
