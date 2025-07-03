@@ -202,7 +202,7 @@ function TabBar({
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full z-20 bg-white"> 
+          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full md:w-fit z-20 bg-white">
             <TokenDataHeader />
           </div>
         )}
@@ -236,7 +236,7 @@ function TabBar({
                 as="ol"
                 axis="x"
                 onReorder={updateTabOrder}
-                className="flex flex-row gap-5 md:gap-4 items-start m-4 tabs"
+                className="flex flex-row gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
                 style={{
                   maxWidth: isMobile ? 'calc(100% - 60px)' : '100%',
