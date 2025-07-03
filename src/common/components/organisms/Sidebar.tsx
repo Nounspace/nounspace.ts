@@ -59,9 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     setEditMode(true);
   }
 
-  // Revertendo para o estilo original com controle de visibilidade
   const navStyles = {
-    zIndex: 999,
     position: "relative" as const,
   };
 
@@ -69,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   // Isso mantém o comportamento de expansão/contração da barra lateral
   const navWrapperClass = editMode 
     ? "hidden" 
-    : "md:flex mx-auto h-full hidden relative";
+    : "md:flex mx-auto h-full hidden relative z-5";
 
   return (
     <>

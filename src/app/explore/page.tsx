@@ -100,7 +100,7 @@ const ExploreHeader = ({ title, image }) => {
         fill
         className="col-span-1 row-span-1 object-cover object-bottom"
       />
-      <div className="col-span-1 row-span-1 z-10 text-center font-bold text-white grid place-content-center text-4xl">
+      <div className="col-span-1 row-span-1 z-1 text-center font-bold text-white grid place-content-center text-4xl"> 
         {title}
       </div>
     </div>

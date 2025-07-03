@@ -42,7 +42,7 @@ export default function VersionCheckProivder({
   return (
     <>
       {versionsMisaligned && (
-        <div className="flex justify-center items-center align-center z-level-5 absolute w-full">
+        <div className="flex justify-center items-center align-center z-5 absolute w-full">
           <Button onClick={() => window.location.reload()}>
             A new version is available! Click to refresh
           </Button>
