@@ -171,8 +171,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
   const urlColor = settings.urlColor || "var(--user-theme-link-color)";
 
   return (
-    <div
-    >
+    <div className="flex flex-col h-full">
       {settings?.title && (
         <CardHeader className="p-4 pb-2">
           <CardTitle
@@ -187,7 +186,7 @@ export const Text: React.FC<FidgetArgs<TextFidgetSettings>> = ({
         </CardHeader>
       )}
       {settings?.text && (
-        <CardContent className="p-4 pt-2 overflow-y-auto">
+        <CardContent className="p-4 pt-2 overflow-y-auto flex-grow">
           <CardDescription
             className="text-base font-normal text-black dark:text-white"
             style={{
