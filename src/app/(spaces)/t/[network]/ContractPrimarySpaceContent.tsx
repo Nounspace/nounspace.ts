@@ -1,15 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import ContractDefinedSpace from "@/app/(spaces)/t/[network]/ContractDefinedSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { useAppStore } from "@/common/data/stores/app";
 import { isArray, isNil } from "lodash";
 import { useEffect } from "react";
 import { ContractSpacePageProps } from "./[contractAddress]/page";
+import axios from "axios";
 
 const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
-  spaceId,
+  spaceId: initialSpaceId,
   tabName,
   ownerId,
   ownerIdType,
@@ -18,73 +19,50 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   network,
   tokenData,
 }) => {
-  console.log("ContractPrimarySpaceContent received props:", {
-    spaceId,
-    tabName,
-    ownerId,
-    ownerIdType,
-    contractAddress,
-    owningIdentities,
-    network,
-  });
+  const [spaceId, setSpaceId] = useState(initialSpaceId);
 
-  const {
-    loadEditableSpaces,
-    addContractEditableSpaces,
-    registerSpaceContract,
-  } = useAppStore((state) => ({
-    loadEditableSpaces: state.space.loadEditableSpaces,
-    addContractEditableSpaces: state.space.addContractEditableSpaces,
-    registerSpaceContract: state.space.registerSpaceContract,
-  }));
+  const { addContractEditableSpaces, setCurrentSpaceId } = useAppStore(
+    (state) => ({
+      addContractEditableSpaces: state.space.addContractEditableSpaces,
+      setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
+    })
+  );
+
+  useEffect(() => {
+    const fetchSpaceIdForContract = async () => {
+      if (!spaceId && contractAddress && network) {
+        try {
+          const response = await axios.get("/api/space/registry/from-contract", {
+            params: { contractAddress, network },
+          });
+          if (
+            response.data.result === "success" &&
+            response.data.value.spaceId
+          ) {
+            const fetchedSpaceId = response.data.value.spaceId;
+            console.log("Successfully fetched spaceId:", fetchedSpaceId);
+            setSpaceId(fetchedSpaceId);
+            setCurrentSpaceId(fetchedSpaceId);
+          }
+        } catch (error) {
+          console.log("No existing space found for this contract, proceeding...");
+        }
+      }
+    };
+
+    fetchSpaceIdForContract();
+  }, [spaceId, contractAddress, network, setCurrentSpaceId]);
 
   useEffect(() => {
     if (spaceId) {
-      console.log("addContractEditableSpaces called with:", {
-        spaceId,
-        owningIdentities,
-      });
       addContractEditableSpaces(spaceId, owningIdentities);
     }
   }, [spaceId, owningIdentities, addContractEditableSpaces]);
 
-  useEffect(() => {
-    console.log("loadEditableSpaces called");
-    loadEditableSpaces();
-
-    console.log("ContractPrimarySpaceContent rendered with props:", {
-      spaceId,
-      tabName,
-      ownerId,
-      ownerIdType,
-      contractAddress,
-      owningIdentities,
-      network,
-    });
-  }, [loadEditableSpaces]);
-
-  // Log the conditions that determine rendering
-  const hasOwnerAndContract = !isNil(ownerId) && !isNil(contractAddress);
-  const shouldShowProfile =
-    isNil(spaceId) &&
-    (tabName?.toLocaleLowerCase() === "profile" || tabName === null);
-  const hasSpaceId = !isNil(spaceId);
-
-  console.log("Rendering conditions:", {
-    hasOwnerAndContract,
-    shouldShowProfile,
-    hasSpaceId,
-    currentSpaceId: spaceId,
-  });
-
-  // Only show 404 if we don't have a valid contract address
   if (isNil(contractAddress)) {
-    console.log("Returning SpaceNotFound due to missing contractAddress");
     return <SpaceNotFound />;
   }
 
-  // If we have a contract address, show the space even if it doesn't exist yet
-  console.log("Rendering ContractDefinedSpace with spaceId:", spaceId);
   return (
     <>
       <ContractDefinedSpace
