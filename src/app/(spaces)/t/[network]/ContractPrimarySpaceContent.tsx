@@ -34,7 +34,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
       if (!initialSpaceId && contractAddress && network) {
         try {
           const response = await axios.get(
-            "/api/space/registry/from-contract",
+            "/api/space/registry",
             {
               params: { contractAddress, network },
             }
