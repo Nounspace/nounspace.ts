@@ -247,16 +247,61 @@ async function registerNewSpace(
   });
 }
 
-// Returns a list of the spaces that the requesting identity
-// owns and can modify, including updates and renaming
-// Does not check for spaces that are for contracts, as that ownership changes easily
-async function listModifiableSpaces(
+// Handles both contract lookup and listing modifiable spaces
+async function handleGetRequest(
   req: NextApiRequest,
-  res: NextApiResponse<ModifiableSpacesResponse>,
+  res: NextApiResponse,
 ) {
-  const identity = req.query.identityPublicKey;
+  const { contractAddress: contractAddressQuery, network: networkQuery, identityPublicKey } = req.query;
 
-  if (isUndefined(identity) || isArray(identity)) {
+  // Handle contract lookup case
+  if (contractAddressQuery && networkQuery) {
+    const contractAddress = Array.isArray(contractAddressQuery)
+      ? contractAddressQuery[0]
+      : contractAddressQuery;
+    const network = Array.isArray(networkQuery) ? networkQuery[0] : networkQuery;
+
+    if (!contractAddress || !network) {
+      return res
+        .status(400)
+        .json({ result: "error", error: { message: "Missing contractAddress or network params" } });
+    }
+
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("contractAddress", contractAddress)
+      .eq("network", network);
+
+    if (error) {
+      return res
+        .status(500)
+        .json({ result: "error", error: { message: error.message } });
+    }
+
+    const space = first(data);
+
+    if (space) {
+      return res.status(200).json({ result: "success", value: space });
+    } else {
+      return res.status(404).json({ result: "error", error: { message: "Space not found" } });
+    }
+  }
+
+  // Handle modifiable spaces list case - requires identityPublicKey
+  if (!identityPublicKey) {
+    return res.status(400).json({
+      result: "error",
+      error: {
+        message: "Either (contractAddress and network) or identityPublicKey must be provided",
+      },
+    });
+  }
+
+  const identity = identityPublicKey;
+
+  if (isArray(identity)) {
     console.error("Invalid identityPublicKey query parameter:", identity);
     res.status(400).json({
       result: "error",
@@ -293,6 +338,6 @@ async function listModifiableSpaces(
 }
 
 export default requestHandler({
-  get: listModifiableSpaces,
+  get: handleGetRequest,
   post: registerNewSpace,
 });
