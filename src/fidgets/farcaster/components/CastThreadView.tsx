@@ -82,7 +82,7 @@ export const CastThreadView = ({
 
 const StickyHeader = ({ onBack }: { onBack?: () => void }) => {
   return onBack ? (
-    <CardHeader className="bg-background/75 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-1">
+    <CardHeader className="bg-background/75 backdrop-blur-lg px-0 h-14 sticky flex-row items-center gap-2 top-0 z-10">
       <Button
         variant="ghost"
         onClick={() => onBack && onBack()}

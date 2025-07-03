@@ -206,7 +206,7 @@ export function FidgetWrapper({
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-1 flex bg-slate-400 bg-opacity-50 rounded-md" /* z-1: overlay de edição (padronização) */
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md" /* z-10: overlay de edição (padronização) */
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
