@@ -63,7 +63,7 @@ async function updateSpace(
   const network = req.network ? (req.network as string) : undefined;
 
   const fileData = { ...req };
-  if (fileData.network) delete fileData.network;
+  if (fileData.network) fileData.network = undefined;
 
   if (!isSignedFile(fileData)) {
     res.status(400).json({
