@@ -148,7 +148,7 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
             window.scrollTo(0, 0);
           }}
         >
-          <div className="relative z-2 h-full">
+          <div className="relative z-20 h-full">
             {/* Special case for consolidated media tab */}
             {isMobile && mediaFidgetIds.length > 1 && (
               <TabsContent
@@ -257,7 +257,7 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
           {/* Tabs positioned at bottom - fixed for real mobile, absolute for mobile preview */}
           {processedFidgetIds.length > 1 && (
             <div
-              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-3 bg-white`}
+              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-30 bg-white`}
               style={{ height: `${TAB_HEIGHT}px` }}
             >
               <TabNavigation
