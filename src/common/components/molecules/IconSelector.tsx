@@ -95,7 +95,7 @@ export function IconSelector({ onSelectIcon, triggerRef, onClose }: IconSelector
   return createPortal(
     <div
       ref={dropdownRef}
-      className="fixed bg-white border border-gray-200 rounded-md shadow-lg z-5 overflow-auto"
+      className="fixed bg-white border border-gray-200 rounded-md shadow-lg z-50 overflow-auto"
       style={{ top: `${position.top}px`, left: `${position.left}px`, width: `${position.width}px`, maxHeight: `${position.maxHeight}px` }}
     >
       <div className="p-3 border-b border-gray-200">

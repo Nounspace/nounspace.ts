@@ -168,7 +168,7 @@ export const MobileContractDefinedSpace = ({
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-3 bg-white">
+      <div className="flex flex-shrink-1 flex-row justify-center h-16 w-full z-30 bg-white">
         <TokenDataHeader />
       </div>
       <div className="flex-1 overflow-y-scroll">
