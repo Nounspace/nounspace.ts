@@ -601,8 +601,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               onClick={openFidgetPicker}
               className={
                 hasProfile
-                  ? "z-50 flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-                  : "z-50 flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  ? "flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+                  : "flex rounded-xl p-2 px-4 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
               }
             >
               <div className="ml-2">
