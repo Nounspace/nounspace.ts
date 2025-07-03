@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
 import {
   CastAddBody,
@@ -160,31 +160,52 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const debouncedPasteUpload = useMemo(
+    () =>
+      debounce(async (file: File) => {
+        setIsUploadingImage(true);
+        try {
+          const url = await uploadImageToImgBB(file);
+          addEmbed({ url, status: "loaded" });
+        } catch (err) {
+          alert("Error uploading image: " + (err as Error).message);
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }, 300, { leading: true, trailing: false }),
+    [addEmbed],
+  );
+
   // Real image upload function for imgBB
   async function uploadImageToImgBB(file: File): Promise<string> {
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
     if (!apiKey) throw new Error("imgBB API key not found");
-    // Convert file to base64
-    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        resolve(base64);
-      };
-      reader.onerror = error => reject(error);
-    });
+
+    const toBase64 = (f: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(f);
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(",")[1];
+          resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+      });
+
     const imageBase64 = await toBase64(file);
     const formData = new FormData();
     formData.append("key", apiKey);
     formData.append("image", imageBase64);
+
     const res = await fetch("https://api.imgbb.com/1/upload", {
       method: "POST",
       body: formData,
     });
+
     const data = await res.json();
     if (!data.success) throw new Error("Failed to upload to imgBB");
-    return data.data.url;
+
+    return data.data.display_url || data.data.url;
   }
 
   // Drop handler
@@ -224,7 +245,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     // Effect to add/remove the paste event handler on EditorContent
     const el = editorContentRef.current;
     if (!el) return;
-    const handler = async (e: ClipboardEvent) => {
+    const handler = (e: ClipboardEvent) => {
       if (!e.clipboardData || !e.clipboardData.items) return;
       for (let i = 0; i < e.clipboardData.items.length; i++) {
         const item = e.clipboardData.items[i];
@@ -232,15 +253,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         console.log('Clipboard item', i, 'type:', item.type, file);
         if (file && file.type.startsWith("image/")) {
           e.preventDefault();
-          setIsUploadingImage(true);
-          try {
-            const url = await uploadImageToImgBB(file);
-            addEmbed({ url, status: "loaded" });
-          } catch (err) {
-            alert("Error uploading image: " + (err as Error).message);
-          } finally {
-            setIsUploadingImage(false);
-          }
+          debouncedPasteUpload(file);
         }
       }
     };
@@ -658,7 +671,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               editor={editor}
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
-              onPaste={async (e) => {
+              onPaste={(e) => {
                 console.log('onPaste fired', e);
                 if (!e.clipboardData || !e.clipboardData.items) return;
                 for (let i = 0; i < e.clipboardData.items.length; i++) {
@@ -667,15 +680,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   console.log('Clipboard item', i, 'type:', item.type, file);
                   if (file && file.type.startsWith("image/")) {
                     e.preventDefault();
-                    setIsUploadingImage(true);
-                    try {
-                      const url = await uploadImageToImgBB(file);
-                      addEmbed({ url, status: "loaded" });
-                    } catch (err) {
-                      alert("Error uploading image: " + (err as Error).message);
-                    } finally {
-                      setIsUploadingImage(false);
-                    }
+                    debouncedPasteUpload(file);
                   }
                 }
               }}
