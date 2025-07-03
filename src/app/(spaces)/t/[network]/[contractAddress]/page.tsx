@@ -19,6 +19,7 @@ export interface ContractSpacePageProps {
 }
 
 export default async function ContractPrimarySpace({ params }) {
+  const resolvedParams = await params;
   const {
     props: {
       spaceId,
@@ -28,8 +29,8 @@ export default async function ContractPrimarySpace({ params }) {
       contractAddress,
       owningIdentities,
     },
-  } = await loadContractData(params || {});
-  const network = params?.network as EtherScanChainName;
+  } = await loadContractData(resolvedParams || {});
+  const network = resolvedParams?.network as EtherScanChainName;
 
   return (
     <TokenProvider
