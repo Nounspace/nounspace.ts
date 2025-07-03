@@ -160,21 +160,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  const debouncedPasteUpload = useMemo(
-    () =>
-      debounce(async (file: File) => {
-        setIsUploadingImage(true);
-        try {
-          const url = await uploadImageToImgBB(file);
-          addEmbed({ url, status: "loaded" });
-        } catch (err) {
-          alert("Error uploading image: " + (err as Error).message);
-        } finally {
-          setIsUploadingImage(false);
-        }
-      }, 300, { leading: true, trailing: false }),
-    [addEmbed],
-  );
 
   // Real image upload function for imgBB
   async function uploadImageToImgBB(file: File): Promise<string> {
@@ -387,6 +372,26 @@ const CreateCast: React.FC<CreateCastProps> = ({
       },
     },
   });
+
+  const debouncedPasteUpload = useMemo(
+    () =>
+      debounce(
+        async (file: File) => {
+          setIsUploadingImage(true);
+          try {
+            const url = await uploadImageToImgBB(file);
+            addEmbed({ url, status: "loaded" });
+          } catch (err) {
+            alert("Error uploading image: " + (err as Error).message);
+          } finally {
+            setIsUploadingImage(false);
+          }
+        },
+        300,
+        { leading: true, trailing: false },
+      ),
+    [addEmbed],
+  );
 
   useEffect(() => {
     if (!text && draft?.text && isEmpty(draft.mentionsToFids)) {
