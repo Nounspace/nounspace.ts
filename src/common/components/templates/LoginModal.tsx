@@ -7,7 +7,6 @@ import LoadingScreen from "../organisms/LoadingScreen";
 import Spinner from "../atoms/spinner";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import Modal from "@/common/components/molecules/Modal";
-import { useRouter } from "next/navigation";
 const LoginModal = ({
   open,
   setOpen,
@@ -17,7 +16,6 @@ const LoginModal = ({
   setOpen: (v: boolean) => void;
   showClose: boolean;
 }) => {
-  const router = useRouter();
   const { currentStep, setCurrentStep } = useAppStore((state) => ({
     // Setup State Tracking
     currentStep: state.setup.currentStep,
@@ -43,12 +41,7 @@ const LoginModal = ({
   const { CurrentInitializerComponent } = useAuthenticatorManager();
 
   useEffect(() => {
-    if (
-      currentStep === SetupStep.NOT_SIGNED_IN &&
-      !authenticated &&
-      ready &&
-      open
-    ) {
+    if (currentStep === SetupStep.NOT_SIGNED_IN && !authenticated && ready && open) {
       login();
     }
   }, [currentStep, open, ready, authenticated]);
@@ -70,8 +63,7 @@ const LoginModal = ({
           </div>
           {errored && (
             <div className="bg-red text-white">
-              An error occurred signing you in. Please try again or contact
-              support if the problem persists
+              An error occurred signing you in. Please try again or contact support if the problem persists
             </div>
           )}
         </>
@@ -79,21 +71,13 @@ const LoginModal = ({
     }
 
     if (currentStep === SetupStep.REQUIRED_AUTHENTICATORS_INSTALLED)
-      return CurrentInitializerComponent ? (
-        <CurrentInitializerComponent />
-      ) : (
-        "One second..."
-      );
+      return CurrentInitializerComponent ? <CurrentInitializerComponent /> : "One second...";
 
     return <LoadingScreen text={currentStep} />;
   }
 
   return (
-    <Modal
-      setOpen={setOpen}
-      open={open && authenticated && currentStep !== SetupStep.DONE}
-      showClose={showClose}
-    >
+    <Modal setOpen={setOpen} open={open && authenticated && currentStep !== SetupStep.DONE} showClose={showClose}>
       {getModalContent()}
     </Modal>
   );

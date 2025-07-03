@@ -22,7 +22,7 @@ function isInternalUrl(url: string): boolean {
     // Block private IP ranges
     const ip = hostname.split('.');
     if (ip.length === 4 && ip.every(octet => /^\d+$/.test(octet))) {
-      const [a, b, c, d] = ip.map(Number);
+      const [a, b] = ip.map(Number);
       
       // 10.0.0.0/8 (10.0.0.0 - 10.255.255.255)
       if (a === 10) return true;
@@ -76,10 +76,6 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
 
   // Check for fc:frame metadata to determine if this is actually a frame
   const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
-
-  // Log a sample of the HTML to see what we're working with
-  const metaTags = html.match(/<meta[^>]*>/gi) || [];
-  const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
 
   // Check for JSON-based frame format (name="fc:frame" with JSON content)
   const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||
@@ -313,7 +309,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
-    const { frameUrl, buttonIndex } = body;
+    const { frameUrl } = body;
     const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
 
     if (!frameUrl) {

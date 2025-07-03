@@ -60,11 +60,8 @@ const galleryConfig: FidgetProperties = {
       fieldName: "imageUploader",
       displayName: "Upload Image",
       inputSelector: ({ updateSettings }) => {
-        const [localImageUrl, setLocalImageUrl] = React.useState<string | null>(null);
-
         const handleImageUploaded = (Upload: string) => {
           console.log("Image uploaded, URL:", Upload);
-          setLocalImageUrl(Upload);
           updateSettings?.({
             uploadedImage: Upload,
             imageUrl: Upload
