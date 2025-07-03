@@ -1,24 +1,8 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Textarea } from "@/common/components/atoms/textarea";
 import { ScrollArea } from "@/common/components/atoms/scroll-area";
-import {
-  LucideSparkle,
-  Send,
-  Loader2,
-  Settings,
-  AlertCircle,
-  Wifi,
-  WifiOff,
-  RotateCcw,
-  Clock,
-} from "lucide-react";
+import { LucideSparkle, Send, Loader2, AlertCircle, Wifi, WifiOff, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 import { useAppStore } from "@/common/data/stores/app";
@@ -27,11 +11,7 @@ import { ChatMessage } from "@/common/data/stores/app/chat/chatStore";
 import { SpaceConfig, SpaceConfigSaveDetails } from "@/app/(spaces)/Space";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import Image from "next/image";
-import {
-  WebSocketService,
-  ConnectionStatus,
-  type IncomingMessage,
-} from "@/common/lib/services/websocket";
+import { WebSocketService, ConnectionStatus, type IncomingMessage } from "@/common/lib/services/websocket";
 import html2canvas from "html2canvas";
 
 // Configuration constants
@@ -59,7 +39,7 @@ const MESSAGE_TYPES = {
   COMM_LOGS: "COMM_LOGS",
 } as const;
 
-type MessageType = typeof MESSAGE_TYPES[keyof typeof MESSAGE_TYPES];
+type MessageType = (typeof MESSAGE_TYPES)[keyof typeof MESSAGE_TYPES];
 
 // Connection Status Indicator Component
 const ConnectionStatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ status }) => {
@@ -69,29 +49,29 @@ const ConnectionStatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ sta
       color: "text-green-500",
       textColor: "text-green-600",
       text: "Connected",
-      animated: false
+      animated: false,
     },
     connecting: {
       icon: Loader2,
       color: "text-yellow-500",
       textColor: "text-yellow-600",
       text: "Connecting...",
-      animated: true
+      animated: true,
     },
     disconnected: {
       icon: WifiOff,
       color: "text-gray-400",
       textColor: "text-gray-500",
       text: "Offline",
-      animated: false
+      animated: false,
     },
     error: {
       icon: AlertCircle,
       color: "text-red-500",
       textColor: "text-red-600",
       text: "Error",
-      animated: false
-    }
+      animated: false,
+    },
   };
 
   const config = statusConfig[status];
@@ -99,12 +79,8 @@ const ConnectionStatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ sta
 
   return (
     <div className="flex items-center gap-1">
-      <IconComponent 
-        className={`w-3 h-3 ${config.color} ${config.animated ? 'animate-spin' : ''}`} 
-      />
-      <span className={`text-xs ${config.textColor}`}>
-        {config.text}
-      </span>
+      <IconComponent className={`w-3 h-3 ${config.color} ${config.animated ? "animate-spin" : ""}`} />
+      <span className={`text-xs ${config.textColor}`}>{config.text}</span>
     </div>
   );
 };
@@ -136,9 +112,9 @@ interface AiChatSidebarProps {
 // Helper function to manually apply theme to CSS variables
 const applyThemeToCSS = (theme: any) => {
   if (!theme?.properties) return;
-  
+
   const { properties } = theme;
-  
+
   // Apply theme properties directly to CSS variables
   if (properties.background) {
     document.documentElement.style.setProperty("--user-theme-background", properties.background);
@@ -167,7 +143,7 @@ const applyThemeToCSS = (theme: any) => {
   if (properties.gridSpacing) {
     document.documentElement.style.setProperty("--user-theme-grid-spacing", properties.gridSpacing);
   }
-  
+
   // Apply fonts with proper lookup
   if (properties.font) {
     // Need to import the font lookup at the top of the file
@@ -193,8 +169,6 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const currentFid = useCurrentFid();
 
   // Removed user profile picture loading since avatars are no longer displayed
-
-
 
   // Get current space configuration from app store
   const {
@@ -249,35 +223,28 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     if (currentSpaceId === "homebase") {
       // For homebase, get tab-specific config or main feed config
-      if (
-        currentTabName &&
-        currentTabName !== "Feed" &&
-        homebaseTabs[currentTabName]?.config
-      ) {
+      if (currentTabName && currentTabName !== "Feed" && homebaseTabs[currentTabName]?.config) {
         currentTabConfig = homebaseTabs[currentTabName].config;
         currentSpaceConfig = { tabs: { [currentTabName]: currentTabConfig } };
       } else {
         // Main homebase feed config
         currentTabConfig = homebaseConfig;
-        currentSpaceConfig = homebaseConfig
-          ? { tabs: { Feed: homebaseConfig } }
-          : null;
+        currentSpaceConfig = homebaseConfig ? { tabs: { Feed: homebaseConfig } } : null;
       }
     } else {
       // Regular space configuration
       currentSpaceConfig = getCurrentSpaceConfig();
-      currentTabConfig =
-        currentSpaceConfig?.tabs[getCurrentTabName() || "Profile"] || null;
+      currentTabConfig = currentSpaceConfig?.tabs[getCurrentTabName() || "Profile"] || null;
     }
 
     return currentTabConfig;
   }, [
-    getCurrentSpaceContext, 
-    getCurrentSpaceId, 
-    getCurrentTabName, 
-    homebaseConfig, 
-    homebaseTabs, 
-    getCurrentSpaceConfig
+    getCurrentSpaceContext,
+    getCurrentSpaceId,
+    getCurrentTabName,
+    homebaseConfig,
+    homebaseTabs,
+    getCurrentSpaceConfig,
   ]);
 
   // Messages are now managed by the chat store
@@ -287,11 +254,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   }, [initializeWithWelcome]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingType, setLoadingType] = useState<
-    "thinking" | "building" | null
-  >(null);
-  const [connectionStatus, setConnectionStatus] =
-    useState<ConnectionStatus>("disconnected");
+  const [loadingType, setLoadingType] = useState<"thinking" | "building" | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("disconnected");
   const [hasCreatedFirstUserCheckpoint, setHasCreatedFirstUserCheckpoint] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -306,17 +270,17 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const captureSpaceScreenshot = async (): Promise<string | null> => {
     try {
       // Target specifically the grid/fidget area, excluding sidebars
-      const gridElement = 
+      const gridElement =
         document.querySelector('[data-testid="fidget-grid"]') ||
-        document.querySelector('.fidget-grid') ||
+        document.querySelector(".fidget-grid") ||
         document.querySelector('[class*="grid"]') ||
-        document.querySelector('[data-grid-area]') ||
+        document.querySelector("[data-grid-area]") ||
         // Look for React Grid Layout containers
-        document.querySelector('.react-grid-layout') ||
+        document.querySelector(".react-grid-layout") ||
         // Look for common grid container patterns
         document.querySelector('[class*="layout"]') ||
         // Try to find the main content area excluding navigation
-        document.querySelector('main > div:first-child') ||
+        document.querySelector("main > div:first-child") ||
         document.querySelector('[role="main"] > div:first-child');
 
       if (!gridElement) {
@@ -325,10 +289,10 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       }
 
       // Wait a moment for any ongoing rendering to complete
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       const canvas = await html2canvas(gridElement as HTMLElement, {
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         scale: 0.5, // Reduce size for better performance
         useCORS: true,
         allowTaint: true,
@@ -339,15 +303,15 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           return (
             element.closest('[aria-label="AI Chat Sidebar"]') !== null ||
             element.closest('[aria-label="Sidebar"]') !== null ||
-            element.closest('nav') !== null ||
-            element.closest('.sidebar') !== null ||
+            element.closest("nav") !== null ||
+            element.closest(".sidebar") !== null ||
             element.closest('[class*="sidebar"]') !== null ||
             element.closest('[class*="navigation"]') !== null
           );
-        }
+        },
       });
 
-      return canvas.toDataURL('image/jpeg', 0.8);
+      return canvas.toDataURL("image/jpeg", 0.8);
     } catch (error) {
       console.error("Failed to capture screenshot:", error);
       return null;
@@ -355,27 +319,23 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   };
 
   // Create a comprehensive checkpoint from current configuration
-  const createSpaceCheckpoint = useCallback((
-    description?: string, 
-    source: SpaceCheckpoint['source'] = 'ai-chat'
-  ): SpaceCheckpoint => {
-    return createCheckpointFromContext(
-      getFreshSpaceContext,
-      description,
-      source
-    );
-  }, [createCheckpointFromContext, getFreshSpaceContext]);
+  const createSpaceCheckpoint = useCallback(
+    (description?: string, source: SpaceCheckpoint["source"] = "ai-chat"): SpaceCheckpoint => {
+      return createCheckpointFromContext(getFreshSpaceContext, description, source);
+    },
+    [createCheckpointFromContext, getFreshSpaceContext]
+  );
 
   // Restore to a specific checkpoint using the store
   const handleRestoreCheckpoint = async (checkpointId: string) => {
     if (!onApplySpaceConfig) return;
-    
+
     const success = await restoreCheckpoint(checkpointId, onApplySpaceConfig);
-    
+
     if (success) {
-      const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
-      toast.success(`Restored to "${checkpoint?.name || 'checkpoint'}"`);
-      
+      const checkpoint = checkpoints.find((cp) => cp.id === checkpointId);
+      toast.success(`Restored to "${checkpoint?.name || "checkpoint"}"`);
+
       // Log detailed restoration information
       try {
         const currentTabConfig = getFreshSpaceContext();
@@ -387,7 +347,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           },
           currentState: {
             spaceConfig: currentTabConfig,
-          }
+          },
         });
       } catch (error) {
         console.error("❌ Failed to log restoration details:", error);
@@ -429,13 +389,9 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         layoutConfig: spaceConfig.layoutDetails?.layoutConfig,
         theme: spaceConfig.theme,
       };
-      
-      const checkpoint = createCheckpointFromContext(
-        () => checkpointConfig,
-        'After AI Edits',
-        'ai-chat'
-      );
-      
+
+      const checkpoint = createCheckpointFromContext(() => checkpointConfig, "After AI Edits", "ai-chat");
+
       console.log("💾 Auto-created checkpoint after applying config:", {
         checkpointId: checkpoint.id,
         checkpointName: checkpoint.name,
@@ -511,20 +467,19 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   }, []);
 
   // Helper function to add message and update loading state
-  const addMessageAndUpdateState = useCallback((
-    message: Message, 
-    shouldStopLoading: boolean = false,
-    newLoadingType?: "thinking" | "building" | null
-  ) => {
-    addMessage(message);
-    if (shouldStopLoading) {
-      setIsLoading(false);
-      setLoadingType(null);
-    } else if (newLoadingType !== undefined) {
-      setLoadingType(newLoadingType);
-      setIsLoading(true);
-    }
-  }, [addMessage]);
+  const addMessageAndUpdateState = useCallback(
+    (message: Message, shouldStopLoading: boolean = false, newLoadingType?: "thinking" | "building" | null) => {
+      addMessage(message);
+      if (shouldStopLoading) {
+        setIsLoading(false);
+        setLoadingType(null);
+      } else if (newLoadingType !== undefined) {
+        setLoadingType(newLoadingType);
+        setIsLoading(true);
+      }
+    },
+    [addMessage]
+  );
 
   // Handle pong messages
   const handlePongMessage = useCallback(() => {
@@ -540,124 +495,131 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   }, [createMessageId, addMessageAndUpdateState]);
 
   // Handle reply messages (with potential config)
-  const handleReplyMessage = useCallback((wsMessage: IncomingMessage) => {
-    const messageContent = wsMessage.message || "AI response received";
-    const spaceConfig = tryParseSpaceConfig(messageContent);
+  const handleReplyMessage = useCallback(
+    (wsMessage: IncomingMessage) => {
+      const messageContent = wsMessage.message || "AI response received";
+      const spaceConfig = tryParseSpaceConfig(messageContent);
 
-    console.log("📥 Raw REPLY message:", {
-      type: wsMessage.type,
-      name: wsMessage.name,
-      messageLength: messageContent.length,
-      messagePreview: messageContent.substring(0, 200) + "...",
-      containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
-      rawMessage: messageContent, // Full raw message content
-    });
+      console.log("📥 Raw REPLY message:", {
+        type: wsMessage.type,
+        name: wsMessage.name,
+        messageLength: messageContent.length,
+        messagePreview: messageContent.substring(0, 200) + "...",
+        containsFidgetData: messageContent.includes("fidgetInstanceDatums"),
+        rawMessage: messageContent, // Full raw message content
+      });
 
-    if (spaceConfig) {
-      const aiMessage: Message = {
-        id: createMessageId("ai"),
-        role: "assistant",
-        content: "🎨 I've applied the new space configuration for you!",
-        timestamp: new Date(),
-        type: "config",
-        spaceConfig,
-        aiType: "builder",
-        builderResponse: wsMessage as BuilderResponse,
-        configApplied: true,
-      };
-      addMessageAndUpdateState(aiMessage, true);
-      autoApplyConfig(spaceConfig, aiMessage.id);
-    } else {
-      const aiMessage: Message = {
-        id: createMessageId("ai"),
-        role: "assistant",
-        content: messageContent,
-        timestamp: new Date(),
-        type: "text",
-        aiType: "builder",
-      };
-      addMessageAndUpdateState(aiMessage, true);
-    }
-  }, [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]);
+      if (spaceConfig) {
+        const aiMessage: Message = {
+          id: createMessageId("ai"),
+          role: "assistant",
+          content: "🎨 I've applied the new space configuration for you!",
+          timestamp: new Date(),
+          type: "config",
+          spaceConfig,
+          aiType: "builder",
+          builderResponse: wsMessage as BuilderResponse,
+          configApplied: true,
+        };
+        addMessageAndUpdateState(aiMessage, true);
+        autoApplyConfig(spaceConfig, aiMessage.id);
+      } else {
+        const aiMessage: Message = {
+          id: createMessageId("ai"),
+          role: "assistant",
+          content: messageContent,
+          timestamp: new Date(),
+          type: "text",
+          aiType: "builder",
+        };
+        addMessageAndUpdateState(aiMessage, true);
+      }
+    },
+    [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]
+  );
 
   // Handle builder logs (with potential config)
-  const handleBuilderLogsMessage = useCallback((wsMessage: IncomingMessage) => {
-    const messageContent = wsMessage.message || "Builder is working...";
-    const spaceConfig = tryParseSpaceConfig(messageContent);
+  const handleBuilderLogsMessage = useCallback(
+    (wsMessage: IncomingMessage) => {
+      const messageContent = wsMessage.message || "Builder is working...";
+      const spaceConfig = tryParseSpaceConfig(messageContent);
 
-    const logMessage: Message = {
-      id: createMessageId("builder-log"),
-      role: "assistant",
-      content: spaceConfig
-        ? "🎨 I've created a new space configuration and applied it automatically!"
-        : messageContent,
-      timestamp: new Date(),
-      type: spaceConfig ? "config" : "text",
-      spaceConfig,
-      aiType: "builder",
-      builderResponse: spaceConfig ? (wsMessage as BuilderResponse) : undefined,
-      configApplied: spaceConfig ? true : undefined,
-    };
+      const logMessage: Message = {
+        id: createMessageId("builder-log"),
+        role: "assistant",
+        content: spaceConfig
+          ? "🎨 I've created a new space configuration and applied it automatically!"
+          : messageContent,
+        timestamp: new Date(),
+        type: spaceConfig ? "config" : "text",
+        spaceConfig,
+        aiType: "builder",
+        builderResponse: spaceConfig ? (wsMessage as BuilderResponse) : undefined,
+        configApplied: spaceConfig ? true : undefined,
+      };
 
-    if (spaceConfig) {
-      addMessageAndUpdateState(logMessage, true);
-      toast.success("🎨 New space configuration created!");
-      autoApplyConfig(spaceConfig, logMessage.id);
-    } else {
-      addMessageAndUpdateState(logMessage, false, "building");
-    }
-  }, [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]);
+      if (spaceConfig) {
+        addMessageAndUpdateState(logMessage, true);
+        toast.success("🎨 New space configuration created!");
+        autoApplyConfig(spaceConfig, logMessage.id);
+      } else {
+        addMessageAndUpdateState(logMessage, false, "building");
+      }
+    },
+    [tryParseSpaceConfig, createMessageId, addMessageAndUpdateState, autoApplyConfig]
+  );
 
   // Handle other log messages
-  const handleLogMessage = useCallback((
-    wsMessage: IncomingMessage, 
-    messageType: "planner" | "comm",
-    defaultContent: string,
-    loadingType?: "thinking" | null
-  ) => {
-    const logMessage: Message = {
-      id: createMessageId(`${messageType}-log`),
-      role: "assistant",
-      content: wsMessage.message || defaultContent,
-      timestamp: new Date(),
-      type: "text",
-      aiType: messageType === "planner" ? "planner" : "planner",
-    };
-    addMessageAndUpdateState(logMessage, false, loadingType);
-  }, [createMessageId, addMessageAndUpdateState]);
+  const handleLogMessage = useCallback(
+    (
+      wsMessage: IncomingMessage,
+      messageType: "planner" | "comm",
+      defaultContent: string,
+      loadingType?: "thinking" | null
+    ) => {
+      const logMessage: Message = {
+        id: createMessageId(`${messageType}-log`),
+        role: "assistant",
+        content: wsMessage.message || defaultContent,
+        timestamp: new Date(),
+        type: "text",
+        aiType: messageType === "planner" ? "planner" : "planner",
+      };
+      addMessageAndUpdateState(logMessage, false, loadingType);
+    },
+    [createMessageId, addMessageAndUpdateState]
+  );
 
-  const handleWebSocketMessage = useCallback((wsMessage: IncomingMessage) => {
-    switch (wsMessage.type as MessageType) {
-      case MESSAGE_TYPES.PONG:
-        handlePongMessage();
-        break;
+  const handleWebSocketMessage = useCallback(
+    (wsMessage: IncomingMessage) => {
+      switch (wsMessage.type as MessageType) {
+        case MESSAGE_TYPES.PONG:
+          handlePongMessage();
+          break;
 
-      case MESSAGE_TYPES.REPLY:
-        handleReplyMessage(wsMessage);
-        break;
+        case MESSAGE_TYPES.REPLY:
+          handleReplyMessage(wsMessage);
+          break;
 
-      case MESSAGE_TYPES.PLANNER_LOGS:
-        handleLogMessage(wsMessage, "planner", "Planner is processing...", "thinking");
-        break;
+        case MESSAGE_TYPES.PLANNER_LOGS:
+          handleLogMessage(wsMessage, "planner", "Planner is processing...", "thinking");
+          break;
 
-      case MESSAGE_TYPES.BUILDER_LOGS:
-        handleBuilderLogsMessage(wsMessage);
-        break;
+        case MESSAGE_TYPES.BUILDER_LOGS:
+          handleBuilderLogsMessage(wsMessage);
+          break;
 
-      case MESSAGE_TYPES.COMM_LOGS:
-        handleLogMessage(wsMessage, "comm", "Communication update...");
-        break;
+        case MESSAGE_TYPES.COMM_LOGS:
+          handleLogMessage(wsMessage, "comm", "Communication update...");
+          break;
 
-      default:
-        console.log("❓ Unknown WebSocket message type:", wsMessage.type, wsMessage);
-        break;
-    }
-  }, [
-    handlePongMessage,
-    handleReplyMessage, 
-    handleLogMessage,
-    handleBuilderLogsMessage
-  ]);
+        default:
+          console.log("❓ Unknown WebSocket message type:", wsMessage.type, wsMessage);
+          break;
+      }
+    },
+    [handlePongMessage, handleReplyMessage, handleLogMessage, handleBuilderLogsMessage]
+  );
 
   // Connect on mount, disconnect on unmount
   useEffect(() => {
@@ -686,7 +648,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     // Create checkpoint on first user message and add it under the user message
     if (!hasCreatedFirstUserCheckpoint) {
-      const firstCheckpoint = createSpaceCheckpoint('Before AI Edits');
+      const firstCheckpoint = createSpaceCheckpoint("Before AI Edits");
       console.log("💾 Created first-message checkpoint:", {
         checkpointId: firstCheckpoint.id,
         checkpointName: firstCheckpoint.name,
@@ -717,24 +679,20 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       // Send message via WebSocket with FRESH context
       if (wsServiceRef.current?.isConnected()) {
         console.log("📤 Sending user message with fresh space config context");
-        
+
         // Get the current context right before sending
         const freshContext = getFreshSpaceContext();
         console.log("🔧 Fresh context for AI:", {
           hasContext: !!freshContext,
-          fidgetCount: freshContext?.fidgetInstanceDatums
-            ? Object.keys(freshContext.fidgetInstanceDatums).length
-            : 0,
+          fidgetCount: freshContext?.fidgetInstanceDatums ? Object.keys(freshContext.fidgetInstanceDatums).length : 0,
           layoutID: freshContext?.layoutID,
           theme: freshContext?.theme?.id,
         });
 
         // Update the WebSocket service with fresh context
         wsServiceRef.current.updateSpaceContext(freshContext);
-        
-        const success = wsServiceRef.current.sendUserMessage(
-          userMessage.content
-        );
+
+        const success = wsServiceRef.current.sendUserMessage(userMessage.content);
         if (!success) {
           throw new Error("Failed to send WebSocket message");
         }
@@ -743,9 +701,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       }
     } catch (error) {
       console.error("❌ Failed to send message:", error);
-      toast.error(
-        "Failed to send message. Please check your connection and try again."
-      );
+      toast.error("Failed to send message. Please check your connection and try again.");
       setIsLoading(false);
       setLoadingType(null);
     }
@@ -759,10 +715,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   };
 
   return (
-    <aside
-      className="h-screen flex-row flex bg-white transition-transform"
-      aria-label="AI Chat Sidebar"
-    >
+    <aside className="h-screen flex-row flex bg-white transition-transform" aria-label="AI Chat Sidebar">
       <div className="flex-1 w-[420px] h-full max-h-screen flex-col flex overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-2 pt-3 pb-3 border-b">
@@ -778,12 +731,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="text-gray-500 hover:text-gray-700"
-            >
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-500 hover:text-gray-700">
               ✕
             </Button>
           </div>
@@ -793,12 +741,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
         <ScrollArea className="flex-1 px-1 py-2 mt-1">
           <div className="space-y-4 pr-1 pt-4">
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+              <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
                   className={`min-w-0 rounded-lg px-2 py-2 break-words overflow-wrap-anywhere ${
                     message.role === "user"
@@ -826,11 +769,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                           <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
                         </div>
                       )}
-                      
+
                       {/* Checkpoint controls */}
                       <div className="flex items-center justify-between">
-                        <span className={`text-sm font-medium ${message.role === "user" ? "text-green-100" : "text-green-800"}`}>
-                          {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                        <span
+                          className={`text-sm font-medium ${message.role === "user" ? "text-green-100" : "text-green-800"}`}
+                        >
+                          {checkpoints.find((cp) => cp.id === message.checkpointId)?.name || "Checkpoint"}
                         </span>
                         <Button
                           variant="ghost"
@@ -838,8 +783,8 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                           onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
                           disabled={isRestoring}
                           className={`h-7 w-7 p-0 ${
-                            message.role === "user" 
-                              ? "text-green-200 hover:text-white hover:bg-green-600" 
+                            message.role === "user"
+                              ? "text-green-200 hover:text-white hover:bg-green-600"
                               : "text-green-600 hover:text-green-700 hover:bg-green-100"
                           }`}
                         >
@@ -885,11 +830,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                               <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
                             </div>
                           )}
-                          
+
                           {/* Checkpoint controls */}
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-800">
-                              {checkpoints.find(cp => cp.id === message.checkpointId)?.name || 'Checkpoint'}
+                              {checkpoints.find((cp) => cp.id === message.checkpointId)?.name || "Checkpoint"}
                             </span>
                             <Button
                               variant="ghost"
@@ -906,7 +851,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                         <div className="text-xs text-gray-600 bg-green-50 p-2 rounded">
                           ✅ Configuration automatically applied
                         </div>
-                      ) }
+                      )}
                     </div>
                   )}
 
@@ -967,28 +912,16 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
               size="icon"
               className="self-end bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
-              {isLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
             </Button>
           </div>
 
-          <div className="mt-2 text-xs text-gray-500">
-            Press Enter to send, Shift+Enter for new line
-          </div>
+          <div className="mt-2 text-xs text-gray-500">Press Enter to send, Shift+Enter for new line</div>
 
           {/* Reconnect button when disconnected */}
-          {(connectionStatus === "disconnected" ||
-            connectionStatus === "error") && (
+          {(connectionStatus === "disconnected" || connectionStatus === "error") && (
             <div className="mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={initializeWebSocketService}
-                className="text-xs h-7 w-full"
-              >
+              <Button variant="outline" size="sm" onClick={initializeWebSocketService} className="text-xs h-7 w-full">
                 <Wifi className="w-3 h-3 mr-1" />
                 Reconnect to AI
               </Button>

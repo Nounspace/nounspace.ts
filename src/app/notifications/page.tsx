@@ -1,39 +1,24 @@
-"use client"
+"use client";
 
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation } from "react-icons/fa6";
-import {
-  Notification,
-  NotificationTypeEnum,
-  User,
-} from "@neynar/nodejs-sdk/build/api"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/common/components/atoms/tabs"
-import { Alert, AlertDescription } from "@/common/components/atoms/alert"
-import {
-  CastAvatar,
-  CastBody,
-  CastRow,
-  PriorityLink,
-} from "@/fidgets/farcaster/components/CastRow"
-import Loading from "@/common/components/molecules/Loading"
-import { useInView } from "react-intersection-observer"
-import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey"
+import { Notification, NotificationTypeEnum, User } from "@neynar/nodejs-sdk/build/api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
+import { Alert, AlertDescription } from "@/common/components/atoms/alert";
+import { CastAvatar, CastBody, CastRow, PriorityLink } from "@/fidgets/farcaster/components/CastRow";
+import Loading from "@/common/components/molecules/Loading";
+import { useInView } from "react-intersection-observer";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 import {
   useNotificationsLastSeenCursor,
   useMutateNotificationsLastSeenCursor,
-} from "@/common/lib/hooks/useNotificationsLastSeenCursor"
-import moment from "moment"
-import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
-import { FaHeart } from "react-icons/fa"
-import { useRouter } from "next/navigation"
+} from "@/common/lib/hooks/useNotificationsLastSeenCursor";
+import moment from "moment";
+import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
+import { FaHeart } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 const TAB_OPTIONS = {
   ALL: "all",
@@ -42,7 +27,7 @@ const TAB_OPTIONS = {
   RECASTS: NotificationTypeEnum.Recasts,
   REPLIES: NotificationTypeEnum.Reply,
   LIKES: NotificationTypeEnum.Likes,
-}
+};
 
 export type NotificationRowProps = React.FC<{
   notification: Notification;
@@ -56,32 +41,32 @@ const ErrorPanel = ({ message }: { message: string }) => {
       <FaCircleExclamation className="h-4 w-4" />
       <AlertDescription>{message}</AlertDescription>
     </Alert>
-  )
-}
+  );
+};
 
 const FormattedUsersText = ({ users }: { users: User[] }) => {
   if (users.length === 0) {
-    return "Nobody"
+    return "Nobody";
   }
 
   const firstUserLink = (
     <PriorityLink href={`/s/${users[0].username}`} className="hover:underline">
       <b>{users[0].display_name}</b>
     </PriorityLink>
-  )
+  );
 
   if (users.length === 1) {
-    return firstUserLink
+    return firstUserLink;
   } else if (users.length === 2) {
-    return <>{firstUserLink} and 1 other</>
+    return <>{firstUserLink} and 1 other</>;
   } else {
     return (
       <>
         {firstUserLink} and {users.length - 1} others
       </>
-    )
+    );
   }
-}
+};
 
 const NotificationHeader = ({
   notification,
@@ -90,35 +75,24 @@ const NotificationHeader = ({
   maxAvatarsToDisplay = 8,
   leftIcon = null,
 }: {
-  notification: Notification
-  relatedUsers: User[]
-  descriptionSuffix: string
-  maxAvatarsToDisplay?: number
-  leftIcon?: React.ReactNode
+  notification: Notification;
+  relatedUsers: User[];
+  descriptionSuffix: string;
+  maxAvatarsToDisplay?: number;
+  leftIcon?: React.ReactNode;
 }) => {
-  const numAvatarsNotShown = Math.max(
-    0,
-    relatedUsers.length - maxAvatarsToDisplay
-  )
+  const numAvatarsNotShown = Math.max(0, relatedUsers.length - maxAvatarsToDisplay);
 
   return (
     <div className="flex flex-col gap-1 flex-wrap items-start w-full">
       {relatedUsers.length > 0 && (
         <div className="flex gap-x-1 items-center mb-1 sm:pl-10 md:pl-12 md:overflow-x-auto pb-1">
           {leftIcon && (
-            <span className="flex items-center justify-center text-red-500 mr-1 flex-shrink-0">
-              {leftIcon}
-            </span>
+            <span className="flex items-center justify-center text-red-500 mr-1 flex-shrink-0">{leftIcon}</span>
           )}
-          {relatedUsers
-            .slice(0, maxAvatarsToDisplay)
-            .map((user: User, i: number) => (
-              <CastAvatar
-                user={user}
-                key={i}
-                className="outline outline-2 outline-white flex-shrink-0"
-              />
-            ))}
+          {relatedUsers.slice(0, maxAvatarsToDisplay).map((user: User, i: number) => (
+            <CastAvatar user={user} key={i} className="outline outline-2 outline-white flex-shrink-0" />
+          ))}
           {numAvatarsNotShown < 0 && (
             <div className="outline outline-2 outline-white rounded-full size-10 tracking-tighter text-gray-500 flex items-center justify-center bg-gray-200 text-xs font-bold flex-shrink-0">
               +{numAvatarsNotShown}
@@ -133,13 +107,10 @@ const NotificationHeader = ({
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-const MentionNotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-}) => {
+const MentionNotificationRow: NotificationRowProps = ({ notification, onSelect }) => {
   const mentionedByUser = notification.cast?.author ? [notification.cast.author] : [];
 
   return (
@@ -170,31 +141,18 @@ const MentionNotificationRow: NotificationRowProps = ({
   );
 };
 
-const FollowNotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-}) => {
-  const newFollowers: User[] =
-    notification.follows?.map((follow) => follow.user) ?? []
+const FollowNotificationRow: NotificationRowProps = ({ notification, onSelect }) => {
+  const newFollowers: User[] = notification.follows?.map((follow) => follow.user) ?? [];
 
   return (
-    <NotificationHeader
-      notification={notification}
-      relatedUsers={newFollowers}
-      descriptionSuffix="followed you"
-    />
-  )
-}
+    <NotificationHeader notification={notification} relatedUsers={newFollowers} descriptionSuffix="followed you" />
+  );
+};
 
-const RecastNotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-}) => {
+const RecastNotificationRow: NotificationRowProps = ({ notification, onSelect }) => {
   const recastedByUsers = useMemo(() => {
-    return (notification?.reactions || [])
-      .filter((r) => r.object === "recasts")
-      .map((r) => r.user)
-  }, [notification?.reactions])
+    return (notification?.reactions || []).filter((r) => r.object === "recasts").map((r) => r.user);
+  }, [notification?.reactions]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -224,17 +182,14 @@ const RecastNotificationRow: NotificationRowProps = ({
   );
 };
 
-const ReplyNotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-}) => {
+const ReplyNotificationRow: NotificationRowProps = ({ notification, onSelect }) => {
   const repliedByUser = notification.cast?.author ? [notification.cast.author] : [];
-  const fid = useCurrentFid()
-  const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0
-  const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1)
-  const replyingToUsername = replyingTo?.users?.length
-    ? replyingTo.users[0].username
-    : undefined
+  // const fid = useCurrentFid();
+  // const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0
+  // const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1);
+  // const replyingToUsername = replyingTo?.users?.length
+  //   ? replyingTo.users[0].username
+  //   : undefined
 
   return (
     <div className="flex flex-col gap-2">
@@ -264,15 +219,10 @@ const ReplyNotificationRow: NotificationRowProps = ({
   );
 };
 
-const LikeNotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-}) => {
-  const fid = useCurrentFid()
+const LikeNotificationRow: NotificationRowProps = ({ notification, onSelect }) => {
+  const fid = useCurrentFid();
   const likedByUsers = useMemo(() => {
-    return (notification?.reactions || [])
-      .filter((r) => r.object === "likes")
-      .map((r) => r.user);
+    return (notification?.reactions || []).filter((r) => r.object === "likes").map((r) => r.user);
   }, [notification?.reactions]);
 
   const handleClick = useCallback(
@@ -286,7 +236,7 @@ const LikeNotificationRow: NotificationRowProps = ({
 
       onSelect(notification.cast!.hash, notification.cast!.author.username);
     },
-    [notification.cast, onSelect],
+    [notification.cast, onSelect]
   );
 
   return (
@@ -319,8 +269,8 @@ const LikeNotificationRow: NotificationRowProps = ({
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
 const NOTIFICATION_ROW_TYPE = {
   [NotificationTypeEnum.Mention]: MentionNotificationRow,
@@ -328,21 +278,15 @@ const NOTIFICATION_ROW_TYPE = {
   [NotificationTypeEnum.Recasts]: RecastNotificationRow,
   [NotificationTypeEnum.Reply]: ReplyNotificationRow,
   [NotificationTypeEnum.Likes]: LikeNotificationRow,
-}
+};
 
-const NotificationRow: NotificationRowProps = ({
-  notification,
-  onSelect,
-  isUnseen = false,
-}) => {
-  const NotificationType = NOTIFICATION_ROW_TYPE[notification.type] || null
+const NotificationRow: NotificationRowProps = ({ notification, onSelect, isUnseen = false }) => {
+  const NotificationType = NOTIFICATION_ROW_TYPE[notification.type] || null;
 
   return NotificationType ? (
     <div
       className={
-        isUnseen
-          ? "bg-blue-50 transition-colors duration-1000"
-          : "bg-transparent transition-colors duration-1000"
+        isUnseen ? "bg-blue-50 transition-colors duration-1000" : "bg-transparent transition-colors duration-1000"
       }
     >
       <div className="px-4 py-4 md:px-4 sm:px-5 xs:px-6 border-b hover:bg-foreground/5 cursor-pointer transition duration-300 ease-out">
@@ -353,116 +297,101 @@ const NotificationRow: NotificationRowProps = ({
         </div>
       </div>
     </div>
-  ) : null
-}
+  ) : null;
+};
 
 const isNotificationUnseen = (
   notification: Notification,
   lastSeenNotificationDate?: moment.Moment | null
 ): boolean | undefined => {
-  if (lastSeenNotificationDate === undefined) return undefined
-  if (lastSeenNotificationDate === null) return true
+  if (lastSeenNotificationDate === undefined) return undefined;
+  if (lastSeenNotificationDate === null) return true;
 
-  return moment
-    .utc(notification.most_recent_timestamp)
-    .isAfter(lastSeenNotificationDate)
-}
+  return moment.utc(notification.most_recent_timestamp).isAfter(lastSeenNotificationDate);
+};
 
 export default function NotificationsPage() {
   return (
     <Suspense fallback={<div>Loading notifications...</div>}>
       <NotificationsPageContent />
     </Suspense>
-  )
+  );
 }
 
 function NotificationsPageContent() {
-  const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL)
-  const fid = useCurrentFid()
-  const identityPublicKey = useCurrentSpaceIdentityPublicKey()
-  const { data, error, fetchNextPage, hasNextPage, isFetching } =
-    useNotifications(fid)
+  const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL);
+  const fid = useCurrentFid();
+  const identityPublicKey = useCurrentSpaceIdentityPublicKey();
+  const { data, error, fetchNextPage, hasNextPage, isFetching } = useNotifications(fid);
   const [ref] = useInView({
     skip: !hasNextPage || isFetching,
     onChange: (_inView) => {
       if (_inView) {
-        fetchNextPage()
+        fetchNextPage();
       }
     },
-  })
+  });
 
-  const { data: lastSeenNotificationTimestamp } =
-    useNotificationsLastSeenCursor(fid, identityPublicKey)
+  const { data: lastSeenNotificationTimestamp } = useNotificationsLastSeenCursor(fid, identityPublicKey);
 
-  const { mutate: updateLastSeenCursor } = useMutateNotificationsLastSeenCursor(
-    fid,
-    identityPublicKey
-  )
+  const { mutate: updateLastSeenCursor } = useMutateNotificationsLastSeenCursor(fid, identityPublicKey);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const onTabChange = useCallback((value: string) => {
-    setTab(value)
-  }, [])
+    setTab(value);
+  }, []);
 
   const onSelectNotification = useCallback(
     (hash: string, username: string) => {
       router.push(`/homebase/c/${username}/${hash}`);
     },
-    [router],
+    [router]
   );
 
   const filterByType = useCallback(
     (_notifications: Notification[]): Notification[] => {
       return tab === TAB_OPTIONS.ALL
         ? _notifications
-        : _notifications.filter((notification) => notification.type === tab)
+        : _notifications.filter((notification) => notification.type === tab);
     },
     [tab]
-  )
+  );
 
-  const lastSeenNotificationDate = useMemo<
-    moment.Moment | null | undefined
-  >(() => {
+  const lastSeenNotificationDate = useMemo<moment.Moment | null | undefined>(() => {
     return typeof lastSeenNotificationTimestamp === "string"
       ? moment.parseZone(lastSeenNotificationTimestamp)
-      : lastSeenNotificationTimestamp
-  }, [lastSeenNotificationTimestamp])
+      : lastSeenNotificationTimestamp;
+  }, [lastSeenNotificationTimestamp]);
 
   const mostRecentNotificationTimestamp: string | null = useMemo(() => {
     if (data?.pages?.length && data.pages[0]?.notifications?.length > 0) {
-      return data.pages[0].notifications[0].most_recent_timestamp
+      return data.pages[0].notifications[0].most_recent_timestamp;
     }
-    return null
-  }, [data])
+    return null;
+  }, [data]);
 
   const shouldUpdateNotificationsCursor: boolean = useMemo(() => {
-    if (tab !== TAB_OPTIONS.ALL) return false
-    if (!mostRecentNotificationTimestamp) return false
-    if (!lastSeenNotificationDate) return true
+    if (tab !== TAB_OPTIONS.ALL) return false;
+    if (!mostRecentNotificationTimestamp) return false;
+    if (!lastSeenNotificationDate) return true;
 
-    return moment
-      .utc(mostRecentNotificationTimestamp)
-      .isAfter(lastSeenNotificationDate)
-  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate])
+    return moment.utc(mostRecentNotificationTimestamp).isAfter(lastSeenNotificationDate);
+  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate]);
 
   const updateNotificationsCursor = useCallback(() => {
     if (shouldUpdateNotificationsCursor && mostRecentNotificationTimestamp) {
       updateLastSeenCursor({
         lastSeenTimestamp: mostRecentNotificationTimestamp,
-      })
+      });
     }
-  }, [
-    updateLastSeenCursor,
-    mostRecentNotificationTimestamp,
-    shouldUpdateNotificationsCursor,
-  ])
+  }, [updateLastSeenCursor, mostRecentNotificationTimestamp, shouldUpdateNotificationsCursor]);
 
   useEffect(() => {
     if (shouldUpdateNotificationsCursor) {
-      updateNotificationsCursor()
+      updateNotificationsCursor();
     }
-  }, [updateNotificationsCursor, shouldUpdateNotificationsCursor])
+  }, [updateNotificationsCursor, shouldUpdateNotificationsCursor]);
 
   // On page load, the lastSeenCursor is updated, which immediately clears the badge count in the nav.
   // To make it apparent which notifications are new, this delays the visual clearing of the unseen
@@ -471,11 +400,11 @@ function NotificationsPageContent() {
     lastSeenNotificationDate,
     20000,
     function shouldDelay(prev, curr) {
-      const wasJustCreated = moment.isMoment(curr) && prev === null
-      const wasJustUpdated = moment.isMoment(curr) && moment.isMoment(prev)
-      return wasJustCreated || wasJustUpdated
+      const wasJustCreated = moment.isMoment(curr) && prev === null;
+      const wasJustUpdated = moment.isMoment(curr) && moment.isMoment(prev);
+      return wasJustCreated || wasJustUpdated;
     }
-  )
+  );
 
   return (
     <div className="w-full min-h-screen">
@@ -498,22 +427,17 @@ function NotificationsPageContent() {
             <Suspense fallback={<div className="p-4">Loading...</div>}>
               {data?.pages?.map((page, pageIndex) => (
                 <React.Fragment key={pageIndex}>
-                  {filterByType(page?.notifications ?? []).map(
-                    (notification, pageItemIndex) => {
-                      const isUnseen = isNotificationUnseen(
-                        notification,
-                        delayedLastSeenNotificationDate
-                      )
-                      return (
-                        <NotificationRow
-                          notification={notification}
-                          onSelect={onSelectNotification}
-                          isUnseen={isUnseen}
-                          key={`${pageIndex}-${pageItemIndex}`}
-                        />
-                      )
-                    }
-                  )}
+                  {filterByType(page?.notifications ?? []).map((notification, pageItemIndex) => {
+                    const isUnseen = isNotificationUnseen(notification, delayedLastSeenNotificationDate);
+                    return (
+                      <NotificationRow
+                        notification={notification}
+                        onSelect={onSelectNotification}
+                        isUnseen={isUnseen}
+                        key={`${pageIndex}-${pageItemIndex}`}
+                      />
+                    );
+                  })}
                 </React.Fragment>
               ))}
             </Suspense>
@@ -524,24 +448,19 @@ function NotificationsPageContent() {
             </div>
           )}
           {!error && (
-            <div
-              ref={ref}
-              className="h-[200px] flex items-center justify-center"
-            >
+            <div ref={ref} className="h-[200px] flex items-center justify-center">
               {isFetching && (
                 <div className="h-full w-full bg-foreground/5 flex flex-col justify-center items-center">
                   <Loading />
                 </div>
               )}
               {!isFetching && !hasNextPage && (
-                <p className="text-primary/40 font-medium">
-                  There are no more notifications to display
-                </p>
+                <p className="text-primary/40 font-medium">There are no more notifications to display</p>
               )}
             </div>
           )}
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

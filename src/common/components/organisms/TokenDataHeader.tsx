@@ -7,22 +7,18 @@ import { useToken } from "@/common/providers/TokenProvider";
 const TokenDataHeader: React.FC = () => {
   const { tokenData } = useToken();
   const contractAddress = tokenData?.clankerData?.contract_address || "";
-  const name =
-    tokenData?.clankerData?.name || tokenData?.geckoData?.name || "Loading...";
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  const name = tokenData?.clankerData?.name || tokenData?.geckoData?.name || "Loading...";
+  const symbol = tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
   const image =
     tokenData?.clankerData?.img_url ||
-    (tokenData?.geckoData?.image_url !== "missing.png"
-      ? tokenData?.geckoData?.image_url
-      : null);
+    (tokenData?.geckoData?.image_url !== "missing.png" ? tokenData?.geckoData?.image_url : null);
   const priceChange = tokenData?.geckoData?.priceChange || null;
   const tokenPrice = tokenData?.geckoData?.price_usd || null;
   const marketCap = tokenData?.geckoData?.market_cap_usd || null;
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -41,10 +37,7 @@ const TokenDataHeader: React.FC = () => {
   };
 
   const handleOpenNetscan = () => {
-    window.open(
-      `https://${tokenData?.network}scan.org/address/${contractAddress}`,
-      "_blank",
-    );
+    window.open(`https://${tokenData?.network}scan.org/address/${contractAddress}`, "_blank");
   };
 
   const handleCopyUrl = () => {
@@ -116,11 +109,7 @@ const TokenDataHeader: React.FC = () => {
                 backgroundColor: "rgba(0, 0, 0, 0.5)",
               }}
             >
-              <img
-                src="/images/noggles.png"
-                alt="NOGGLES"
-                style={{ width: "20px", height: "20px" }}
-              />
+              <img src="/images/noggles.png" alt="NOGGLES" style={{ width: "20px", height: "20px" }} />
             </div>
           )}
         </Avatar>
@@ -140,14 +129,10 @@ const TokenDataHeader: React.FC = () => {
       <div className="flex items-center space-x-4">
         {/* Price Details */}
         <div className="text-right">
-          <div className="text-black font-bold">
-            {tokenPrice !== null ? `$${tokenPrice}` : " "}
-          </div>
+          <div className="text-black font-bold">{tokenPrice !== null ? `$${tokenPrice}` : " "}</div>
           <div
             className={`text-sm font-medium ${
-              priceChange && parseFloat(priceChange) > 0
-                ? "text-green-500"
-                : "text-red-500"
+              priceChange && parseFloat(priceChange) > 0 ? "text-green-500" : "text-red-500"
             }`}
           >
             {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
@@ -167,10 +152,7 @@ const TokenDataHeader: React.FC = () => {
             style={{ width: "20px", height: "20px", cursor: "pointer" }}
             onClick={handleOpenNetscan}
           />
-          <IoMdShare
-            className="text-gray-500 cursor-pointer"
-            onClick={handleCopyUrl}
-          />
+          <IoMdShare className="text-gray-500 cursor-pointer" onClick={handleCopyUrl} />
         </div>
         <div className="w-0.5 h-12 bg-gray-200 m-2.5 hidden md:block" />
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import type {
   CastEmbedLocationContext,
   ChannelLocationContext,
@@ -8,7 +8,6 @@ import type {
   LauncherLocationContext,
   NotificationLocationContext
 } from "@farcaster/frame-core/dist/context";
-import type { sdk } from "@farcaster/frame-sdk";
 import { MiniAppSdkContext } from "../../providers/MiniAppSdkProvider";
 
 /**

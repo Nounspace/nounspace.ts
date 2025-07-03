@@ -53,14 +53,14 @@ export default function FrameActionModal({
 
   // TODO: FIX BUTTON LABELS
 
-  const getOriginalButtonLabel = (): string => {
-    if (!currentFrameData?.buttons || !buttonIndex || buttonIndex < 1) {
-      return "Open";
-    }
+  // const getOriginalButtonLabel = (): string => {
+  //   if (!currentFrameData?.buttons || !buttonIndex || buttonIndex < 1) {
+  //     return "Open";
+  //   }
 
-    const btn = currentFrameData.buttons[buttonIndex - 1];
-    return btn?.label || "Open";
-  };
+  //   const btn = currentFrameData.buttons[buttonIndex - 1];
+  //   return btn?.label || "Open";
+  // };
 
   useEffect(() => {
     if (!isOpen || !frameUrl) return;
@@ -104,9 +104,7 @@ export default function FrameActionModal({
         });
 
         if (!response.ok) {
-          throw new Error(
-            `Failed to process frame action: ${response.statusText}`
-          );
+          throw new Error(`Failed to process frame action: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -125,10 +123,7 @@ export default function FrameActionModal({
           title: currentFrameData?.title || null,
           postUrl: null,
           buttons: currentFrameData?.buttons || [],
-          error:
-            error instanceof Error
-              ? error.message
-              : "Failed to process frame action",
+          error: error instanceof Error ? error.message : "Failed to process frame action",
         });
       } finally {
         setLoading(false);
@@ -157,10 +152,7 @@ export default function FrameActionModal({
         // hide scrollbar
       >
         {loading ? (
-          <div
-            className="flex items-center justify-center w-full"
-            style={{ minHeight: "90vh", height: "90vh" }}
-          >
+          <div className="flex items-center justify-center w-full" style={{ minHeight: "90vh", height: "90vh" }}>
             <FidgetSpinner
               visible={true}
               height="80"
@@ -186,10 +178,7 @@ export default function FrameActionModal({
         ) : (
           <>
             {frameData.image && (
-              <div
-                className="relative w-full"
-                style={{ aspectRatio: "1.91/1" }}
-              >
+              <div className="relative w-full" style={{ aspectRatio: "1.91/1" }}>
                 <Image
                   src={frameData.image}
                   alt={frameData.title || "Frame image"}
@@ -202,9 +191,7 @@ export default function FrameActionModal({
             )}
             <div className="p-6">
               <p className="text-gray-700 mb-4">
-                {frameData.title
-                  ? `Action completed: ${frameData.title}`
-                  : "Action completed successfully"}
+                {frameData.title ? `Action completed: ${frameData.title}` : "Action completed successfully"}
               </p>
             </div>
           </>

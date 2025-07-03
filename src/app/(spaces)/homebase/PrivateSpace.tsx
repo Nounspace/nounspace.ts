@@ -5,16 +5,14 @@ import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { isNil, noop } from "lodash";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 // Lazy load the TabBar component to improve performance
-const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
+const TabBar = lazy(() => import("@/common/components/organisms/TabBar"));
 
 // Main component for the private space
 function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
@@ -22,7 +20,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   const {
     tabConfigs,
     homebaseConfig,
-    currentSpaceId,
     tabOrdering,
     loadTab,
     saveTab,
@@ -113,11 +110,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   // Preload all tabs except the current one
   async function loadRemainingTabs() {
     const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
-    await Promise.all(
-      otherTabs.map((name) =>
-        name === "Feed" ? loadFeedConfig() : loadTab(name),
-      ),
-    );
+    await Promise.all(otherTabs.map((name) => (name === "Feed" ? loadFeedConfig() : loadTab(name))));
   }
 
   // Function to switch to a different tab
@@ -180,73 +173,66 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   };
 
   // Memoize the TabBar component to prevent unnecessary re-renders
-  const tabBar = useMemo(() => (
-    <TabBar
-      getSpacePageUrl={getSpacePageUrl}
-      inHomebase={true}
-      currentTab={tabName}
-      tabList={tabOrdering.local}
-      switchTabTo={switchTabTo}
-      updateTabOrder={updateTabOrder}
-      inEditMode={editMode}
-      deleteTab={deleteTab}
-      createTab={createTab}
-      renameTab={renameTab}
-      commitTabOrder={commitTabOrder}
-      commitTab={commitTab}
-      isEditable={true}
-    />
-  ), [tabName, tabOrdering.local, editMode]);
+  const tabBar = useMemo(
+    () => (
+      <TabBar
+        getSpacePageUrl={getSpacePageUrl}
+        inHomebase={true}
+        currentTab={tabName}
+        tabList={tabOrdering.local}
+        switchTabTo={switchTabTo}
+        updateTabOrder={updateTabOrder}
+        inEditMode={editMode}
+        deleteTab={deleteTab}
+        createTab={createTab}
+        renameTab={renameTab}
+        commitTabOrder={commitTabOrder}
+        commitTab={commitTab}
+        isEditable={true}
+      />
+    ),
+    [tabName, tabOrdering.local, editMode]
+  );
 
   // Define the arguments for the SpacePage component
-  const args: SpacePageArgs = useMemo(() => ({
-    config: (() => {
-      const sourceConfig =
-        tabName === "Feed"
-          ? homebaseConfig
-          : tabConfigs[tabName]?.config;
-      const { timestamp, ...restConfig } = {
-        ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
-        isEditable: true,
-      };
-      return restConfig;
-    })(),
-    saveConfig: saveConfigHandler,
-    commitConfig: commitConfigHandler,
-    resetConfig: resetConfigHandler,
-    tabBar: tabBar,
-    feed: tabName === "Feed" ? (
-      <FeedModule.fidget
-        settings={{
-          feedType: FeedType.Following,
-          users: "",
-          filterType: FilterType.Users,
-          selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
-          Xhandle: "",
-          style: "",
-          fontFamily: "var(--user-theme-font)",
-          fontColor: "var(--user-theme-font-color)" as any,
-        }}
-        saveData={async () => noop()}
-        data={{ initialHash: castHash, updateUrl: true }}
-      />
-    ) : undefined,
-    showFeedOnMobile: Boolean(castHash),
-  }), [
-    tabName,
-    tabName === "Feed"
-      ? homebaseConfig
-      : tabConfigs[tabName]?.config,
-    tabOrdering.local,
-    editMode,
-    castHash,
-  ]);
-
+  const args: SpacePageArgs = useMemo(
+    () => ({
+      config: (() => {
+        const sourceConfig = tabName === "Feed" ? homebaseConfig : tabConfigs[tabName]?.config;
+        const { ...restConfig } = {
+          ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
+          isEditable: true,
+        };
+        return restConfig;
+      })(),
+      saveConfig: saveConfigHandler,
+      commitConfig: commitConfigHandler,
+      resetConfig: resetConfigHandler,
+      tabBar: tabBar,
+      feed:
+        tabName === "Feed" ? (
+          <FeedModule.fidget
+            settings={{
+              feedType: FeedType.Following,
+              users: "",
+              filterType: FilterType.Users,
+              selectPlatform: { name: "Farcaster", icon: "/images/farcaster.jpeg" },
+              Xhandle: "",
+              style: "",
+              fontFamily: "var(--user-theme-font)",
+              fontColor: "var(--user-theme-font-color)" as any,
+            }}
+            saveData={async () => noop()}
+            data={{ initialHash: castHash, updateUrl: true }}
+          />
+        ) : undefined,
+      showFeedOnMobile: Boolean(castHash),
+    }),
+    [tabName, tabName === "Feed" ? homebaseConfig : tabConfigs[tabName]?.config, tabOrdering.local, editMode, castHash]
+  );
 
   // Render the SpacePage component with the defined arguments
-  return (
-    <SpacePage key={tabName} {...args} />
-  );
+  return <SpacePage key={tabName} {...args} />;
 }
 
-export default PrivateSpace; 
+export default PrivateSpace;

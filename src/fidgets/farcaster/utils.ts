@@ -12,7 +12,6 @@ import {
   makeUserDataAdd,
   signedKeyRequestValidatorABI,
   FarcasterNetwork,
-  makeCastAdd,
 } from "@farcaster/hub-web";
 import {
   LinkBody,

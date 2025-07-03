@@ -1,6 +1,5 @@
-import React from "react";
 import { MasterToken } from "@/common/providers/TokenProvider";
-import { Metadata } from 'next/types';
+import { Metadata } from "next/types";
 
 export type UserMetadata = {
   username?: string;
@@ -11,15 +10,12 @@ export type UserMetadata = {
 
 export const generateContractMetadataHtml = (
   contractAddress?: string | null,
-  tokenData?: MasterToken | null,
+  tokenData?: MasterToken | null
 ): Metadata => {
   const spaceUrl = `https://nounspace.com/t/${tokenData?.network}/${contractAddress}`;
-  const priceInfo = tokenData?.geckoData?.price_usd
-    ? ` - $${Number(tokenData.geckoData?.price_usd)} USD`
-    : "";
+  const priceInfo = tokenData?.geckoData?.price_usd ? ` - $${Number(tokenData.geckoData?.price_usd)} USD` : "";
 
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  const symbol = tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
 
   const title = `${symbol}${priceInfo}`;
 

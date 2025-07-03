@@ -1,4 +1,4 @@
-import { first, isArray, isNil, isString, isUndefined } from "lodash";
+import { isArray, isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,
@@ -125,7 +125,7 @@ export async function loadContractData(
     query = query.eq("network", network);
   }
   
-  const { data, error } = await query
+  const { data } = await query
     .order("timestamp", { ascending: true })
     .limit(1)
   

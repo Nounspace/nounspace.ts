@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useState, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
 import * as Toast from "@radix-ui/react-toast";
 import { useAppStore } from "@/common/data/stores/app";
@@ -38,15 +38,13 @@ function InfoToastContent() {
       return {
         type: "homebase",
         storedStateKey: "homebaseToastDisplayed",
-        message:
-          "Your homebase is a space that only you can see. Click the paintbrush to customize it 🚀",
+        message: "Your homebase is a space that only you can see. Click the paintbrush to customize it 🚀",
       };
     } else if (pathname.startsWith("/s/") && spaceFarcasterName === username) {
       return {
         type: "profile",
         storedStateKey: "profileToastDisplayed",
-        message:
-          "This is your profile. Click the paintbrush to customize your space.",
+        message: "This is your profile. Click the paintbrush to customize your space.",
       };
     }
     return null;
@@ -86,11 +84,7 @@ function InfoToastContent() {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center">
-            <img
-              src="/images/tom_alerts.png"
-              alt="rocket"
-              className="w-8 h-8 object-contain"
-            />
+            <img src="/images/tom_alerts.png" alt="rocket" className="w-8 h-8 object-contain" />
             <p className="text-blue-600 ml-2">{message}</p>
           </div>
           <Toast.Action altText="Close" asChild>

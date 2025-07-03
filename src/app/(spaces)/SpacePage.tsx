@@ -1,4 +1,4 @@
-import React, { ReactNode, Suspense } from "react";
+import React, { ReactNode } from "react";
 import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
@@ -24,8 +24,7 @@ export default function SpacePage({
   feed,
   showFeedOnMobile,
 }: SpacePageArgs) {
-  const { editMode, setEditMode, setSidebarEditable, portalRef } =
-    useSidebarContext();
+  const { editMode, setEditMode, setSidebarEditable, portalRef } = useSidebarContext();
 
   return (
     <>
