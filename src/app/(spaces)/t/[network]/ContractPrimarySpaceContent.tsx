@@ -71,7 +71,11 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   }
 
   if (isLoading) {
-    return <Spinner />;
+    return (
+      <div className="flex items-center justify-center w-full h-full min-h-screen">
+        <Spinner />
+      </div>
+    );
   }
 
   return (
