@@ -304,7 +304,7 @@ export const AlchemyVideoNftSelector: React.FC<
                           muted
                           controls={false}
                           src={image}
-                          className="w-full h-full object-cover pointer-events-none absolute z-10"
+                          className="w-full h-full object-cover pointer-events-none absolute z-1"
                         ></video>
                       </div>
                     );

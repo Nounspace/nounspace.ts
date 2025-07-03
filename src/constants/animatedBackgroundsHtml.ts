@@ -177,7 +177,7 @@ export const gradientAndWave = `
             opacity: 0.8;
             bottom: 0;
             left: 0;
-            z-index: -1;
+            /* z-index: -1;*/
         }
         .wave:nth-of-type(2) {
             bottom: -1.25em;

@@ -78,7 +78,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
           return (
             <div key={fidgetData.id} className="w-full">
               <div
-                className={`z-20 droppable-element px-2 py-2 flex justify-center items-center border rounded-md hover:bg-sky-100 group cursor-pointer ${
+                className={`z-2 droppable-element px-2 py-2 flex justify-center items-center border rounded-md hover:bg-sky-100 group cursor-pointer ${
                   selectedFidgetID === fidgetData.id
                     ? "outline outline-4 outline-offset-1 outline-sky-600"
                     : ""
