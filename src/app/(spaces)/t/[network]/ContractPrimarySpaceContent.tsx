@@ -8,6 +8,7 @@ import { isArray, isNil } from "lodash";
 import { useEffect } from "react";
 import { ContractSpacePageProps } from "./[contractAddress]/page";
 import axios from "axios";
+import Spinner from "@/common/components/atoms/spinner";
 
 const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   spaceId: initialSpaceId,
@@ -20,6 +21,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   tokenData,
 }) => {
   const [spaceId, setSpaceId] = useState(initialSpaceId);
+  const [isLoading, setIsLoading] = useState(true);
 
   const { addContractEditableSpaces, setCurrentSpaceId } = useAppStore(
     (state) => ({
@@ -32,21 +34,27 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     const fetchSpaceIdForContract = async () => {
       if (!spaceId && contractAddress && network) {
         try {
-          const response = await axios.get("/api/space/registry/from-contract", {
-            params: { contractAddress, network },
-          });
+          const response = await axios.get(
+            "/api/space/registry/from-contract",
+            {
+              params: { contractAddress, network },
+            }
+          );
           if (
             response.data.result === "success" &&
             response.data.value.spaceId
           ) {
             const fetchedSpaceId = response.data.value.spaceId;
-            console.log("Successfully fetched spaceId:", fetchedSpaceId);
             setSpaceId(fetchedSpaceId);
             setCurrentSpaceId(fetchedSpaceId);
           }
         } catch (error) {
-          console.log("No existing space found for this contract, proceeding...");
+          // It's okay if it fails, means no space is registered yet.
+        } finally {
+          setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
 
@@ -61,6 +69,10 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
 
   if (isNil(contractAddress)) {
     return <SpaceNotFound />;
+  }
+
+  if (isLoading) {
+    return <Spinner />;
   }
 
   return (
