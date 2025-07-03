@@ -184,8 +184,8 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4"
-            : "size-full"
+            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
+            : "size-full overflow-hidden"
         }
         style={{
           background: settingsWithDefaults.useDefaultColors 
