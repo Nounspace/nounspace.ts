@@ -187,69 +187,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return data.data.url;
   }
 
-  // Drop handler
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
-    const file = e.dataTransfer.files[0];
-    if (!file.type.startsWith("image/")) return;
-    setIsUploadingImage(true);
-    try {
-      const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
-    } catch (err) {
-      alert("Error uploading image: " + (err as Error).message);
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
-
-  // Drag over handler
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (!isDragging) setIsDragging(true);
-  };
-
-  // Drag leave handler
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  // Reference to the EditorContent element to handle paste (Ctrl+V) events
-  const editorContentRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Effect to add/remove the paste event handler on EditorContent
-    const el = editorContentRef.current;
-    if (!el) return;
-    const handler = async (e: ClipboardEvent) => {
-      if (!e.clipboardData || !e.clipboardData.items) return;
-      for (let i = 0; i < e.clipboardData.items.length; i++) {
-        const item = e.clipboardData.items[i];
-        const file = item.getAsFile();
-        console.log('Clipboard item', i, 'type:', item.type, file);
-        if (file && file.type.startsWith("image/")) {
-          e.preventDefault();
-          setIsUploadingImage(true);
-          try {
-            const url = await uploadImageToImgBB(file);
-            addEmbed({ url, status: "loaded" });
-          } catch (err) {
-            alert("Error uploading image: " + (err as Error).message);
-          } finally {
-            setIsUploadingImage(false);
-          }
-        }
-      }
-    };
-    el.addEventListener("paste", handler as any);
-    return () => {
-      el.removeEventListener("paste", handler as any);
-    };
-  }, [editorContentRef.current]);
-
   const { isBannerClosed, closeBanner } = useBannerStore();
   const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
 
@@ -374,6 +311,69 @@ const CreateCast: React.FC<CreateCastProps> = ({
       },
     },
   });
+
+  // Drop handler
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    const file = e.dataTransfer.files[0];
+    if (!file.type.startsWith("image/")) return;
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadImageToImgBB(file);
+      addEmbed({ url, status: "loaded" });
+    } catch (err) {
+      alert("Error uploading image: " + (err as Error).message);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // Drag over handler
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (!isDragging) setIsDragging(true);
+  };
+
+  // Drag leave handler
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  // Reference to the EditorContent element to handle paste (Ctrl+V) events
+  const editorContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Effect to add/remove the paste event handler on EditorContent
+    const el = editorContentRef.current;
+    if (!el) return;
+    const handler = async (e: ClipboardEvent) => {
+      if (!e.clipboardData || !e.clipboardData.items) return;
+      for (let i = 0; i < e.clipboardData.items.length; i++) {
+        const item = e.clipboardData.items[i];
+        const file = item.getAsFile();
+        console.log('Clipboard item', i, 'type:', item.type, file);
+        if (file && file.type.startsWith("image/")) {
+          e.preventDefault();
+          setIsUploadingImage(true);
+          try {
+            const url = await uploadImageToImgBB(file);
+            addEmbed({ url, status: "loaded" });
+          } catch (err) {
+            alert("Error uploading image: " + (err as Error).message);
+          } finally {
+            setIsUploadingImage(false);
+          }
+        }
+      }
+    };
+    el.addEventListener("paste", handler as any);
+    return () => {
+      el.removeEventListener("paste", handler as any);
+    };
+  }, [editorContentRef.current]);
 
   useEffect(() => {
     if (!text && draft?.text && isEmpty(draft.mentionsToFids)) {
