@@ -154,7 +154,7 @@ const Navigation: React.FC<NavProps> = ({
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon />
-          {!shrunk && <span className="ms-3 relative z-10">{label}</span>}
+          {!shrunk && <span className="ms-3 relative z-1">{label}</span>}
         </Link>
       </li>
     );
@@ -180,7 +180,7 @@ const Navigation: React.FC<NavProps> = ({
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon aria-hidden="true" />
-          {!shrunk && <span className="ms-3 relative z-10">{label}</span>}
+          {!shrunk && <span className="ms-3 relative z-1">{label}</span>}
         </button>
       </li>
     );
@@ -230,8 +230,7 @@ const Navigation: React.FC<NavProps> = ({
           {!mobile && (
             <button
               onClick={toggleSidebar}
-              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 sidebar-expand-button"
-              style={{zIndex: 9999}}
+              className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 sidebar-expand-button z-5"
               aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
             >
               {shrunk ? (
