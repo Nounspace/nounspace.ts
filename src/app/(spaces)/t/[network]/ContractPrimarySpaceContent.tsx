@@ -39,12 +39,14 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   }));
 
   useEffect(() => {
-    console.log("addContractEditableSpaces called with:", {
-      spaceId,
-      owningIdentities,
-    });
-    addContractEditableSpaces(spaceId, owningIdentities);
-  }, [spaceId]);
+    if (spaceId) {
+      console.log("addContractEditableSpaces called with:", {
+        spaceId,
+        owningIdentities,
+      });
+      addContractEditableSpaces(spaceId, owningIdentities);
+    }
+  }, [spaceId, owningIdentities, addContractEditableSpaces]);
 
   useEffect(() => {
     console.log("loadEditableSpaces called");
@@ -59,7 +61,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
       owningIdentities,
       network,
     });
-  }, []);
+  }, [loadEditableSpaces]);
 
   // Log the conditions that determine rendering
   const hasOwnerAndContract = !isNil(ownerId) && !isNil(contractAddress);
