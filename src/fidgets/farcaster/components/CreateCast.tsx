@@ -160,6 +160,40 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const uploadPastedImage = useCallback(
+    async (file: File) => {
+      setIsUploadingImage(true);
+      try {
+        const url = await uploadImageToImgBB(file);
+        addEmbed({ url, status: "loaded" });
+      } catch (err) {
+        alert("Error uploading image: " + (err as Error).message);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    },
+    [addEmbed],
+  );
+
+  const debouncedUploadPastedImage = useRef(
+    debounce(uploadPastedImage, 200, { leading: true, trailing: false })
+  ).current;
+
+  const handlePasteEvent = useCallback(
+    (e: ClipboardEvent) => {
+      if (!e.clipboardData || !e.clipboardData.items) return;
+      for (let i = 0; i < e.clipboardData.items.length; i++) {
+        const item = e.clipboardData.items[i];
+        const file = item.getAsFile();
+        if (file && file.type.startsWith("image/")) {
+          e.preventDefault();
+          debouncedUploadPastedImage(file);
+        }
+      }
+    },
+    [debouncedUploadPastedImage],
+  );
+
   // Real image upload function for imgBB
   async function uploadImageToImgBB(file: File): Promise<string> {
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
@@ -184,7 +218,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     });
     const data = await res.json();
     if (!data.success) throw new Error("Failed to upload to imgBB");
-    return data.data.url;
+    return data.data.display_url || data.data.image?.url || data.data.url;
   }
 
   // Drop handler
@@ -221,34 +255,14 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const editorContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Effect to add/remove the paste event handler on EditorContent
     const el = editorContentRef.current;
     if (!el) return;
-    const handler = async (e: ClipboardEvent) => {
-      if (!e.clipboardData || !e.clipboardData.items) return;
-      for (let i = 0; i < e.clipboardData.items.length; i++) {
-        const item = e.clipboardData.items[i];
-        const file = item.getAsFile();
-        console.log('Clipboard item', i, 'type:', item.type, file);
-        if (file && file.type.startsWith("image/")) {
-          e.preventDefault();
-          setIsUploadingImage(true);
-          try {
-            const url = await uploadImageToImgBB(file);
-            addEmbed({ url, status: "loaded" });
-          } catch (err) {
-            alert("Error uploading image: " + (err as Error).message);
-          } finally {
-            setIsUploadingImage(false);
-          }
-        }
-      }
-    };
+    const handler = (e: ClipboardEvent) => handlePasteEvent(e);
     el.addEventListener("paste", handler as any);
     return () => {
       el.removeEventListener("paste", handler as any);
     };
-  }, [editorContentRef.current]);
+  }, [handlePasteEvent]);
 
   const { isBannerClosed, closeBanner } = useBannerStore();
   const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
@@ -658,27 +672,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               editor={editor}
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
-              onPaste={async (e) => {
-                console.log('onPaste fired', e);
-                if (!e.clipboardData || !e.clipboardData.items) return;
-                for (let i = 0; i < e.clipboardData.items.length; i++) {
-                  const item = e.clipboardData.items[i];
-                  const file = item.getAsFile();
-                  console.log('Clipboard item', i, 'type:', item.type, file);
-                  if (file && file.type.startsWith("image/")) {
-                    e.preventDefault();
-                    setIsUploadingImage(true);
-                    try {
-                      const url = await uploadImageToImgBB(file);
-                      addEmbed({ url, status: "loaded" });
-                    } catch (err) {
-                      alert("Error uploading image: " + (err as Error).message);
-                    } finally {
-                      setIsUploadingImage(false);
-                    }
-                  }
-                }
-              }}
+              onPaste={handlePasteEvent}
             />
           </div>
         )}
