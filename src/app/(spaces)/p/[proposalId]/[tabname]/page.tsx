@@ -8,7 +8,8 @@ import ProposalDefinedSpace from "../ProposalDefinedSpace";
 import { loadProposalData } from "../utils";
 
 export default async function WrapperProposalPrimarySpace({ params }) {
-  const proposalId = params?.proposalId as string;
+  const resolvedParams = await params;
+  const proposalId = resolvedParams?.proposalId as string;
   const proposalData = await loadProposalData(proposalId || "0");
 
   const props = {
