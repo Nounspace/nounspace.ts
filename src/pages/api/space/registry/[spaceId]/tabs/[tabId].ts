@@ -61,9 +61,11 @@ async function updateSpace(
   const spaceId = incReq.query.spaceId as string;
   const tabName = incReq.query.tabId as string;
   const network = req.network ? (req.network as string) : undefined;
-  if (network) delete req.network;
 
-  if (!isSignedFile(req)) {
+  const fileData = { ...req };
+  if (fileData.network) delete fileData.network;
+
+  if (!isSignedFile(fileData)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -73,7 +75,7 @@ async function updateSpace(
     });
     return;
   }
-  if (!validateSignable(req)) {
+  if (!validateSignable(fileData)) {
     res.status(400).json({
       result: "error",
       error: {
@@ -111,7 +113,7 @@ async function updateSpace(
     .from("spaces")
     .update(
       `${spaceId}/tabs/${req.fileName}`,
-      new Blob([stringify(req)], { type: "application/json" }),
+      new Blob([stringify(fileData)], { type: "application/json" }),
     );
   if (error) {
     res.status(500).json({
