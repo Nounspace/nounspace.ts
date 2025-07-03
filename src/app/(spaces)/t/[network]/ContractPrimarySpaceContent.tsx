@@ -18,7 +18,6 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   contractAddress,
   owningIdentities,
   network,
-  tokenData,
 }) => {
   const [spaceId, setSpaceId] = useState(initialSpaceId);
   const [isLoading, setIsLoading] = useState(true);
