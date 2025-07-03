@@ -206,7 +206,7 @@ function TabBar({
             <TokenDataHeader />
           </div>
         )}
-        <div className="relative flex flex-auto h-16 z-10 bg-white"> 
+        <div className="relative flex flex-auto h-16 bg-white"> 
           {isMobile && (
             <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-40 bg-white flex gap-2">
               {!inEditMode && isEditable && !inHomebase && (
@@ -277,7 +277,7 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode && !mobilePreview && !isMobile ? (
-          <div className="mr-36 flex flex-row z-50">
+          <div className="mr-36 flex flex-row">
             <NogsGateButton
               onClick={() => handleCreateTab(generateNewTabName())}
               className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"

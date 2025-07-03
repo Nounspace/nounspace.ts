@@ -224,23 +224,27 @@
 }
 
 .react-grid-item > .react-resizable-handle.react-resizable-handle-sw {
+  z-index: 40;
   bottom: 0;
   left: 0;
   cursor: sw-resize;
   transform: rotate(90deg);
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-se {
+  z-index: 40;
   bottom: 0;
   right: 0;
   cursor: se-resize;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-nw {
+  z-index: 40;
   top: 0;
   left: 0;
   cursor: nw-resize;
   transform: rotate(180deg);
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-ne {
+  z-index: 40;
   top: 0;
   right: 0;
   cursor: ne-resize;
@@ -253,6 +257,7 @@
   cursor: ew-resize;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-w {
+  z-index: 40;
   left: 0;
   top: 10px;
   height: 100%;
@@ -260,6 +265,7 @@
   opacity: 0;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-e {
+  z-index: 40;
   right: 0;
   top: 10px;
   height: 100%;
@@ -268,11 +274,13 @@
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-n,
 .react-grid-item > .react-resizable-handle.react-resizable-handle-s {
+  z-index: 40;
   left: 50%;
   margin-left: -10px;
   cursor: ns-resize;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-n {
+  z-index: 40;
   top: 0;
   left: 10px;
   height: 5%;
@@ -280,6 +288,7 @@
   opacity: 0;
 }
 .react-grid-item > .react-resizable-handle.react-resizable-handle-s {
+  z-index: 40;
   bottom: 0;
   left: 10px;
   height: 5%;
