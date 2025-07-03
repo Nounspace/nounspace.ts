@@ -30,7 +30,7 @@ const Modal = ({
   <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Portal>
       {overlay && open && (
-        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-40" />
+        <Dialog.Overlay className="bg-muted/95 data-[state=open]:animate-overlayShow fixed inset-0 z-4" />
       )}
       <Dialog.Content
         className={mergeClasses(
