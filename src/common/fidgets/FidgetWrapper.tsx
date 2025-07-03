@@ -201,7 +201,6 @@ export function FidgetWrapper({
             ? homebaseConfig?.theme?.properties.fidgetShadow
             : settingsWithDefaults.fidgetShadow,
           borderRadius: borderRadius ?? homebaseConfig?.theme?.properties.fidgetBorderRadius ?? "12px",
-          overflow: "hidden"
         }}
       >
         {bundle.config.editable && (
@@ -211,7 +210,7 @@ export function FidgetWrapper({
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
-          <CardContent className="size-full p-0" style={{ overflow: "hidden" }}>
+          <CardContent className="size-full p-0">
             <Fidget
               {...{
                 settings: settingsWithDefaults,
