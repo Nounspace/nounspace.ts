@@ -1076,6 +1076,26 @@ export const createSpaceStoreFunc = (
             ...draft.space.editableSpaces,
             ...editableSpaces,
           };
+          
+          // Also populate localSpaces with metadata for contract spaces
+          if (data.value) {
+            data.value.spaces.forEach((spaceInfo) => {
+              // Only create entry if it doesn't exist or if it's missing contract metadata
+              if (!draft.space.localSpaces[spaceInfo.spaceId] || 
+                  (!draft.space.localSpaces[spaceInfo.spaceId].contractAddress && spaceInfo.contractAddress)) {
+                draft.space.localSpaces[spaceInfo.spaceId] = {
+                  id: spaceInfo.spaceId,
+                  updatedAt: moment().toISOString(),
+                  tabs: draft.space.localSpaces[spaceInfo.spaceId]?.tabs || {},
+                  order: draft.space.localSpaces[spaceInfo.spaceId]?.order || [],
+                  changedNames: draft.space.localSpaces[spaceInfo.spaceId]?.changedNames || {},
+                  contractAddress: spaceInfo.contractAddress,
+                  network: spaceInfo.network,
+                  fid: spaceInfo.fid,
+                };
+              }
+            });
+          }
         }, "loadEditableSpaces");
         return editableSpaces;
       }

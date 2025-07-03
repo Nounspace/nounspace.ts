@@ -137,16 +137,25 @@ export async function identitiesCanModifySpace(
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
-    .select("contractAddress")
+    .select("contractAddress, network")
     .eq("spaceId", spaceId);
   if (spaceRegistrationData === null || spaceRegistrationData.length === 0)
     return [];
-  const contractAddress = first(spaceRegistrationData)!.contractAddress;
+  const registration = first(spaceRegistrationData)!;
+  const contractAddress = registration.contractAddress;
   if (!isNull(contractAddress)) {
-    return await loadIdentitiesOwningContractSpace(
-      contractAddress,
-      String(network),
-    );
+    const effectiveNetwork = network || registration.network;
+    if (effectiveNetwork) {
+      return await loadIdentitiesOwningContractSpace(
+        contractAddress,
+        effectiveNetwork,
+      );
+    } else {
+      console.error(
+        `Network is missing for contract space modification check: spaceId=${spaceId}`,
+      );
+      return [];
+    }
   } else {
     return await loadOwnedItentitiesForSpaceByFid(spaceId);
   }
