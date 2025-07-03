@@ -643,12 +643,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
             onDragLeave={handleDragLeave}
           >
             {isDragging && (
-              <div className="absolute inset-0 z-2 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
                 <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
               </div>
             )}
             {isUploadingImage && (
-              <div className="absolute inset-0 z-3 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
                 <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
               </div>
@@ -784,7 +784,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           
           <div
             ref={parentRef}
-            className="z-5"
+            className="z-50"
             style={{
               opacity: isPickingEmoji ? 1 : 0,
               pointerEvents: isPickingEmoji ? "auto" : "none",

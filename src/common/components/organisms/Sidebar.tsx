@@ -67,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   // Isso mantém o comportamento de expansão/contração da barra lateral
   const navWrapperClass = editMode 
     ? "hidden" 
-    : "md:flex mx-auto h-full hidden relative z-5";
+    : "md:flex mx-auto h-full hidden relative z-50";
 
   return (
     <>

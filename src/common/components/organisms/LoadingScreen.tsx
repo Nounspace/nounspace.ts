@@ -8,7 +8,7 @@ const LoadingScreen: React.FC<{ text?: string }> = ({
 }) => {
   return (
     <div className="relative h-full flex-col p-10 text-foreground flex">
-      <div className="relative z-1 mt-16 lg:mt-24 lg:mb-24">
+      <div className="relative z-10 mt-16 lg:mt-24 lg:mb-24">
         <Loading text={text} />
       </div>
     </div>

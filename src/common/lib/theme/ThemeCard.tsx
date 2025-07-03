@@ -16,7 +16,7 @@ export const ThemeCard = ({
   active?: boolean;
 }) => {
   const activeRingBeforeElementClasses =
-    "before:content-[''] before:absolute before:inset-0 before:rounded-lg before:ring-2 before:ring-blue-500 before:z-1";
+    "before:content-[''] before:absolute before:inset-0 before:rounded-lg before:ring-2 before:ring-blue-500 before:z-10";
   const font =
     FONT_FAMILY_OPTIONS_BY_NAME[themeProps.font]?.config?.style.fontFamily;
   const headingsFont =
@@ -32,7 +32,7 @@ export const ThemeCard = ({
       onClick={onClick}
     >
       {active && (
-        <div className="absolute -right-1 -top-1 w-4 h-4 bg-blue-500 rounded-full grid place-content-center z-1">
+        <div className="absolute -right-1 -top-1 w-4 h-4 bg-blue-500 rounded-full grid place-content-center z-10">
           <FaCheck className="fill-white w-2 h-2" />
         </div>
       )}
@@ -44,7 +44,7 @@ export const ThemeCard = ({
           />
         </div>
       )}
-      <div className="[grid-area:cell] flex gap-2 px-4 py-2 items-center z-1">
+      <div className="[grid-area:cell] flex gap-2 px-4 py-2 items-center z-10">
         <div className="text-lg font-bold">
           <span
             style={{

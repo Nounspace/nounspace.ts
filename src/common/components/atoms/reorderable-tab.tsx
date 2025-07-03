@@ -96,7 +96,7 @@ export const Tab = ({
 
           {/* Selection Underline */}
           <span
-            className={`absolute left-50 bottom-0 inset-x-0 origin-center h-0.5 bg-blue-600 transition-scale duration-300 z-2 ${isSelected ? "scale-50" : "scale-0"} group-hover:scale-25`}
+            className={`absolute left-50 bottom-0 inset-x-0 origin-center h-0.5 bg-blue-600 transition-scale duration-300 z-20 ${isSelected ? "scale-50" : "scale-0"} group-hover:scale-25`}
           />
         </div>
       </Link>
