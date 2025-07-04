@@ -42,11 +42,28 @@ const nextConfig = {
     remotePatterns: [
       {
         hostname: "*",
-        protocol: "http",
+        protocol: "https",
+        pathname: "*.png",
       },
       {
         hostname: "*",
         protocol: "https",
+        pathname: "*.jpg",
+      },
+      {
+        hostname: "*",
+        protocol: "https",
+        pathname: "*.jpeg",
+      },
+      {
+        hostname: "*",
+        protocol: "https",
+        pathname: "*.gif",
+      },
+      {
+        hostname: "*",
+        protocol: "https",
+        pathname: "*.webp",
       },
     ],
   },
