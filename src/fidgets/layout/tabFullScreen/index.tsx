@@ -95,12 +95,14 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   useEffect(() => {
     // If there are no fidget IDs, do nothing
     if (orderedFidgetIds.length === 0) return;
-    
+
     // If current selection is invalid, select the first one
     if (!orderedFidgetIds.includes(selectedTab)) {
       setSelectedTab(orderedFidgetIds[0]);
     }
-  }, [orderedFidgetIds, selectedTab]);
+    // We only care about changes to the ordered list of IDs.
+    // selectedTab is intentionally omitted to avoid an extra render.
+  }, [orderedFidgetIds]);
   
   // Configuration saving function
   const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {

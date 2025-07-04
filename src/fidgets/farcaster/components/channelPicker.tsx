@@ -26,6 +26,12 @@ type Props = {
 
 export function ChannelPicker(props: Props) {
   const { getChannels, onSelect, value } = props;
+  // Store the latest getChannels callback in a ref so the effect
+  // doesn't re-run when the function identity changes
+  const getChannelsRef = React.useRef(props.getChannels);
+  React.useEffect(() => {
+    getChannelsRef.current = props.getChannels;
+  }, [props.getChannels]);
   const [open, setOpen] = React.useState(false);
   const [channelResults, setChannelResults] = React.useState<Channel[]>(
     props.initialChannels ?? [],
@@ -34,7 +40,7 @@ export function ChannelPicker(props: Props) {
 
   React.useEffect(() => {
     async function fetchChannels() {
-      const channels = await getChannels(query);
+      const channels = await getChannelsRef.current(query);
       setChannelResults(channels);
     }
 
@@ -43,7 +49,7 @@ export function ChannelPicker(props: Props) {
     } else {
       setChannelResults(props.initialChannels ?? []);
     }
-  }, [getChannels, query, props.initialChannels]);
+  }, [query, props.initialChannels]);
 
   const handleSelect = React.useCallback(
     (channel: Channel) => {
