@@ -99,11 +99,7 @@ export const NounishGovernance: React.FC<
   FidgetArgs<NounishGovernanceSettings>
 > = ({ settings }) => {
   const [proposalId, setProposalId] = useState<string | null>(null);
-  const [selectedDao, setSelectedDao] = useState(settings.selectedDao);
-
-  useEffect(() => {
-    setSelectedDao(settings.selectedDao);
-  }, [settings.selectedDao]);
+  const selectedDao = settings.selectedDao;
 
   const isBuilderSubgraph = useMemo(
     () => selectedDao?.graphUrl.includes("nouns-builder-base-mainnet") || false,
