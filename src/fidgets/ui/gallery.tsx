@@ -308,6 +308,8 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     }
   }, [
     mediaSourceName,
+    settings.imageUrl,
+    settings.nftSelector?.imageUrl,
     settings.nftAddress,
     settings.nftTokenId,
     settings.network,
