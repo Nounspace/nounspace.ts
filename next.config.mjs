@@ -65,6 +65,11 @@ const nextConfig = {
         protocol: "https",
         pathname: "*.webp",
       },
+      {
+        hostname: "nouns.com",
+        protocol: "https",
+        pathname: "*",
+      },
     ],
   },
   async redirects() {
