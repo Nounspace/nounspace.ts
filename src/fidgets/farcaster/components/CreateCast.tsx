@@ -159,6 +159,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Real image upload function for imgBB
   async function uploadImageToImgBB(file: File): Promise<string> {
@@ -215,6 +216,28 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
+  };
+
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadImageToImgBB(file);
+      addEmbed({ url, status: "loaded" });
+    } catch (err) {
+      alert("Error uploading image: " + (err as Error).message);
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleFileButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Reference to the EditorContent element to handle paste (Ctrl+V) events
@@ -633,6 +656,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
       tabIndex={-1}
     >
       <form onSubmit={handleSubmit} className="w-full">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         {isPublishing ? (
           <div className="w-full h-full min-h-[150px]">{draft.text}</div>
         ) : (
@@ -718,7 +748,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   type="button"
                   variant="outline"
                   disabled={isPublishing}
-                  onClick={() => setCurrentMod(creationMods[0])}
+                  onClick={handleFileButtonClick}
                 >
                   <PhotoIcon className="mr-1 w-5 h-5" />
                   Add
@@ -735,7 +765,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   type="button"
                   variant="outline"
                   disabled={isPublishing}
-                  onClick={() => setCurrentMod(creationMods[0])}
+                  onClick={handleFileButtonClick}
                 >
                   <PhotoIcon className="mr-1 w-5 h-5" />
                   Add
