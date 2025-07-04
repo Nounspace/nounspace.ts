@@ -340,7 +340,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             <iframe
               src={transformedUrl}
               title="IFrame Fidget"
-              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
               style={{
                 width: "100%",
                 height: "100%",
@@ -366,7 +366,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               <iframe
                 src={transformedUrl}
                 title="IFrame Fidget"
-                sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                sandbox="allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
                 style={{
                   width: "100%",
                   height: "100%",
