@@ -60,7 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   const navStyles = {
-    position: "relative" as const,
+    position: "sticky" as const,
+    top: 0,
   };
 
   // Retornando às classes originais para preservar funcionalidade completa
