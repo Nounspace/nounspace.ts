@@ -192,7 +192,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url });
+      addEmbed({ url, status: "loaded" });
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -221,7 +221,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url });
+      addEmbed({ url, status: "loaded" });
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -252,7 +252,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           setIsUploadingImage(true);
           try {
             const url = await uploadImageToImgBB(file);
-            addEmbed({ url });
+            addEmbed({ url, status: "loaded" });
           } catch (err) {
             alert("Error uploading image: " + (err as Error).message);
           } finally {
@@ -694,7 +694,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     setIsUploadingImage(true);
                     try {
                       const url = await uploadImageToImgBB(file);
-                      addEmbed({ url });
+                      addEmbed({ url, status: "loaded" });
                     } catch (err) {
                       alert("Error uploading image: " + (err as Error).message);
                     } finally {
