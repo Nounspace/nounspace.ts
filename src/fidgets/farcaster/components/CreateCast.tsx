@@ -165,27 +165,21 @@ const CreateCast: React.FC<CreateCastProps> = ({
   async function uploadImageToImgBB(file: File): Promise<string> {
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
     if (!apiKey) throw new Error("imgBB API key not found");
-    // Convert file to base64
-    const toBase64 = (file: File) => new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = (reader.result as string).split(",")[1];
-        resolve(base64);
-      };
-      reader.onerror = error => reject(error);
-    });
-    const imageBase64 = await toBase64(file);
+
     const formData = new FormData();
-    formData.append("key", apiKey);
-    formData.append("image", imageBase64);
-    const res = await fetch("https://api.imgbb.com/1/upload", {
-      method: "POST",
-      body: formData,
-    });
+    formData.append("image", file);
+
+    const res = await fetch(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     const data = await res.json();
-    if (!data.success) throw new Error("Failed to upload to imgBB");
-    return data.data.url;
+    if (!data.success)
+      throw new Error(data.error?.message || "Failed to upload to ImgBB");
+    return data.data.display_url || data.data.url;
   }
 
   // Drop handler
@@ -198,7 +192,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
+      addEmbed({ url });
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -227,7 +221,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
+      addEmbed({ url });
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -258,7 +252,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
           setIsUploadingImage(true);
           try {
             const url = await uploadImageToImgBB(file);
-            addEmbed({ url, status: "loaded" });
+            addEmbed({ url });
           } catch (err) {
             alert("Error uploading image: " + (err as Error).message);
           } finally {
@@ -700,7 +694,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                     setIsUploadingImage(true);
                     try {
                       const url = await uploadImageToImgBB(file);
-                      addEmbed({ url, status: "loaded" });
+                      addEmbed({ url });
                     } catch (err) {
                       alert("Error uploading image: " + (err as Error).message);
                     } finally {
