@@ -478,7 +478,7 @@ function NotificationsPageContent() {
   )
 
   return (
-    <div className="w-full grow overflow-y-auto h-[calc(100vh-64px)]">
+    <div className="w-full min-h-screen">
       <Tabs value={tab} onValueChange={onTabChange} className="min-h-full">
         <div className="py-4 px-4 border-b">
           <h1 className="text-xl font-bold mb-2 md:mb-6">Notifications</h1>
