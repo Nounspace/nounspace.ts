@@ -159,6 +159,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   // Real image upload function for imgBB
@@ -166,29 +167,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
     if (!apiKey) throw new Error("imgBB API key not found");
 
-    const toBase64 = (f: File) =>
-      new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(f);
-        reader.onload = () => {
-          const base64 = (reader.result as string).split(",")[1];
-          resolve(base64);
-        };
-        reader.onerror = (error) => reject(error);
-      });
-
-    const imageBase64 = await toBase64(file);
     const formData = new FormData();
-    formData.append("key", apiKey);
-    formData.append("image", imageBase64);
+    formData.append("image", file);
 
-    const res = await fetch("https://api.imgbb.com/1/upload", {
-      method: "POST",
-      body: formData,
-    });
-
+    const res = await fetch(
+      `https://api.imgbb.com/1/upload?key=${apiKey}`,
+      {
+        method: "POST",
+        body: formData,
+      },
+    );
     const data = await res.json();
-    if (!data.success) throw new Error("Failed to upload to imgBB");
+    if (!data.success)
+      throw new Error(data.error?.message || "Failed to upload to ImgBB");
 
     return data.data.display_url || data.data.url;
   }
@@ -221,6 +212,28 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
+  };
+
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) return;
+    setIsUploadingImage(true);
+    try {
+      const url = await uploadImageToImgBB(file);
+      addEmbed({ url, status: "loaded" });
+    } catch (err) {
+      alert("Error uploading image: " + (err as Error).message);
+    } finally {
+      setIsUploadingImage(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleFileButtonClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Reference to the EditorContent element to handle paste (Ctrl+V) events
@@ -651,6 +664,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
       tabIndex={-1}
     >
       <form onSubmit={handleSubmit} className="w-full">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+        />
         {isPublishing ? (
           <div className="w-full h-full min-h-[150px]">{draft.text}</div>
         ) : (
@@ -728,7 +748,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   type="button"
                   variant="outline"
                   disabled={isPublishing}
-                  onClick={() => setCurrentMod(creationMods[0])}
+                  onClick={handleFileButtonClick}
                 >
                   <PhotoIcon className="mr-1 w-5 h-5" />
                   Add
@@ -745,7 +765,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   type="button"
                   variant="outline"
                   disabled={isPublishing}
-                  onClick={() => setCurrentMod(creationMods[0])}
+                  onClick={handleFileButtonClick}
                 >
                   <PhotoIcon className="mr-1 w-5 h-5" />
                   Add
