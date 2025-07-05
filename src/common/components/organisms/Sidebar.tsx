@@ -60,14 +60,15 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   }
 
   const navStyles = {
-    position: "relative" as const,
+    position: "sticky" as const,
+    top: 0,
   };
 
   // Retornando às classes originais para preservar funcionalidade completa
   // Isso mantém o comportamento de expansão/contração da barra lateral
-  const navWrapperClass = editMode 
-    ? "hidden" 
-    : "md:flex mx-auto h-full hidden relative z-50";
+  const navWrapperClass = editMode
+    ? "hidden"
+    : "md:flex mx-auto h-screen hidden relative z-50";
 
   return (
     <>

@@ -255,6 +255,8 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
     }
   }, [settings.selectMediaSource?.name]);
 
+  const mediaSourceName = settings.selectMediaSource?.name;
+
   useEffect(() => {
     if (settings.selectMediaSource?.name === MediaSourceTypes.EXTERNAL) {
       const fetchNFTData = async () => {
@@ -305,7 +307,9 @@ const Gallery: React.FC<FidgetArgs<GalleryFidgetSettings>> = ({ settings }) => {
       setError("Please select a media source.");
     }
   }, [
-    settings.selectMediaSource,
+    mediaSourceName,
+    settings.imageUrl,
+    settings.nftSelector?.imageUrl,
     settings.nftAddress,
     settings.nftTokenId,
     settings.network,

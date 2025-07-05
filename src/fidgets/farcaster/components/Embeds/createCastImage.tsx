@@ -21,6 +21,7 @@ const CreateCastImage = ({ url }: { url: string }) => {
 
     const onError = useCallback(() => {
         console.debug("error loading image", url);
+        setIsLoading(false);
     }, []);
 
     return (
