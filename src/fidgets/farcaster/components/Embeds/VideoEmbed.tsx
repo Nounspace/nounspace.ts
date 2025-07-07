@@ -37,7 +37,7 @@ const VideoEmbed = ({ url }: { url: string }) => {
     <ReactHlsPlayer
       src={url}
       muted={muted}
-      autoPlay={true}
+      autoPlay={false}
       controls={true}
       width="100%"
       height="auto"
