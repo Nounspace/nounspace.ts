@@ -16,12 +16,14 @@ import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { comprehensiveCleanup } from '@/common/lib/utils/gridCleanup';
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import DesktopView from "./DesktopView";
-import MobilePreview from "./MobilePreview";
-import MobileView from "./MobileView";
-import { extractFidgetIdsFromLayout } from "@/fidgets/layout/tabFullScreen/utils";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
+import { LayoutFidgets } from "@/fidgets";
+import { usePathname } from "next/navigation";
+import { createPortal } from "react-dom";
+import MobileViewSimplified from "./MobileViewSimplified";
+import Image from "next/image";
 
 
 export type SpaceFidgetConfig = {
@@ -58,8 +60,6 @@ type SpaceArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
-  /** When true, render the feed on mobile layouts. */
-  showFeedOnMobile?: boolean;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
   setSidebarEditable: (v: boolean) => void;
@@ -74,7 +74,6 @@ export default function Space({
   tabBar,
   profile,
   feed,
-  showFeedOnMobile,
   setEditMode,
   editMode,
   setSidebarEditable,
@@ -82,6 +81,8 @@ export default function Space({
 }: SpaceArgs) {
   const viewportMobile = useIsMobile();
   const { mobilePreview, setMobilePreview } = useMobilePreview();
+  const pathname = usePathname();
+  const isHomebasePath = pathname?.startsWith('/homebase');
 
   const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
   const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
@@ -93,30 +94,41 @@ export default function Space({
   const cleanupHasRun = React.useRef(false);
 
   useEffect(() => {
-    if (cleanupHasRun.current || !config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
+    if (cleanupHasRun.current) {
       return;
     }
 
-    const { cleanedLayout, cleanedFidgetInstanceDatums, hasChanges } = comprehensiveCleanup(
-      config.layoutDetails.layoutConfig.layout,
-      config.fidgetInstanceDatums,
-      !isNil(profile),
-      !isNil(feed)
-    );
-
-    if (hasChanges) {
-      saveConfig({
-        layoutDetails: {
-          layoutConfig: {
-            ...config.layoutDetails.layoutConfig,
-            layout: cleanedLayout,
-          },
-        },
-        fidgetInstanceDatums: cleanedFidgetInstanceDatums,
-        timestamp: new Date().toISOString(),
-      }).then(commitConfig);
+    if (
+      !config?.layoutDetails?.layoutConfig?.layout ||
+      !config?.fidgetInstanceDatums
+    ) {
+      return;
     }
 
+    const layoutFidgetIds = new Set(
+      config.layoutDetails.layoutConfig.layout.map((item) => item.i)
+    );
+
+    const unusedFidgetIds = Object.keys(config.fidgetInstanceDatums).filter(
+      (id) => !layoutFidgetIds.has(id)
+    );
+    if (unusedFidgetIds.length > 0) {
+      const cleanedFidgetInstanceDatums = { ...config.fidgetInstanceDatums };
+      unusedFidgetIds.forEach((id) => {
+        delete cleanedFidgetInstanceDatums[id];
+      });
+      if (Object.keys(cleanedFidgetInstanceDatums).length > 0) {
+        saveConfig({
+          fidgetInstanceDatums: cleanedFidgetInstanceDatums,
+          timestamp: new Date().toISOString(),
+        }).then(() => {
+          commitConfig();
+        });
+      }
+    }
+   
+
+    // Mark cleanup as complete
     cleanupHasRun.current = true;
   }, []);
 
@@ -138,6 +150,9 @@ export default function Space({
     fidgetInstanceDatums,
     fidgetTrayContents,
   }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) {
+    if (fidgetInstanceDatums) {
+      console.log('🔄 Space.tsx saveLocalConfig - fidgetInstanceDatums:', Object.values(fidgetInstanceDatums).map(d => ({ id: d.id, mobileOrder: d.config?.settings?.mobileOrder })));
+    }
     return saveConfig({
       layoutDetails: layoutConfig
         ? {
@@ -150,131 +165,270 @@ export default function Space({
     });
   }
 
-  // Memoize base layout props shared across all layout components
-  const baseLayoutProps = useMemo(() => {
-    return {
-      theme: config.theme,
-      fidgetInstanceDatums: config.fidgetInstanceDatums,
-      fidgetTrayContents: config.fidgetTrayContents,
-      layoutConfig: config?.layoutDetails?.layoutConfig,
-      saveExitEditMode: saveExitEditMode,
-      cancelExitEditMode: cancelExitEditMode,
-      portalRef: portalRef,
-      saveConfig: saveLocalConfig,
-      hasProfile: !isNil(profile),
-      hasFeed: !isNil(feed),
-      feed: feed,
-      tabNames: config.tabNames,
-      fid: config.fid,
-    };
+  // Memoize the layout component and config based on mobile state
+  const layoutComponent = useMemo(() => {
+    if (isMobile) {
+      const fidgetIds = Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+        const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+        const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+        return aOrder - bOrder;
+      });
+      console.log('🔄 Space.tsx layoutComponent - sorted fidgetIds:', fidgetIds.map(id => ({
+        id,
+        mobileOrder: config.fidgetInstanceDatums[id]?.config?.settings?.mobileOrder
+      })));
+      return {
+        Component: MobileViewSimplified,
+        config: {
+          layout: fidgetIds,
+          layoutFidget: "tabFullScreen",
+        }
+      };
+    } else {
+      const layoutFidgetKey =
+        config?.layoutDetails?.layoutFidget &&
+          LayoutFidgets[config.layoutDetails.layoutFidget]
+          ? config.layoutDetails.layoutFidget
+          : "grid";
+      return {
+        Component: DesktopView,
+        config: config?.layoutDetails?.layoutConfig ?? {
+          layout: [],
+          layoutFidget: "grid",
+        },
+        layoutFidgetKey
+      };
+    }
   }, [
-    config.theme,
-    config.fidgetInstanceDatums,
-    config.fidgetTrayContents,
+    isMobile,
+    config?.layoutDetails?.layoutFidget,
     config?.layoutDetails?.layoutConfig,
-    config.tabNames,
-    config.fid,
-    portalRef,
-    profile,
-    feed,
+    config?.fidgetInstanceDatums,
   ]);
 
-  // Memoize DesktopView specific props
-  const desktopViewProps = useMemo(() => {
-    return {
-      ...baseLayoutProps,
-      layoutFidgetKey: config?.layoutDetails?.layoutFidget,
-      inEditMode: !viewportMobile && editMode,
-    };
-  }, [baseLayoutProps, config?.layoutDetails?.layoutFidget, viewportMobile, editMode]);
+  const { Component: _LayoutComponent } = layoutComponent;
+
+  if (!_LayoutComponent) {
+    console.error("LayoutComponent is undefined");
+  }
 
   const mainContent = (
-    <div className="flex flex-col h-full">
-      <div className="z-50" style={{ position: "fixed" }}>
+    <div className="flex flex-col h-full overflow-y-auto md:overflow-y-visible touch-auto">
+      <div style={{ position: "absolute", top: 0, left: 0, width: '100%' }}  className="z-level-4">
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className="z-50 bg-white md:h-40">{profile}</div>
+        <div className={`z-level-5 bg-white ${isMobile ? "flex-shrink-0" : "md:h-40 flex-shrink-0"}`} style={{ zIndex: 20, position: 'relative' }}>{profile}</div>
       ) : null}
 
-      <div className="relative">
-        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
-      </div>
-
-      <div className={isMobile ? "size-full" : "flex h-full"}>
-        {/* Feed section */}
-        {!isUndefined(feed) && (!isMobile || showFeedOnMobile) ? (
-          <div
-            className={
-              isMobile && showFeedOnMobile
-                ? "size-full"
-                : !isUndefined(profile)
-                  ? "w-6/12 h-[calc(100vh-224px)]"
-                  : "w-6/12 h-[calc(100vh-64px)]"
-            }
-          >
-            {feed}
-          </div>
-        ) : null}
-
-        {/* Main layout */}
-        {!(isMobile && showFeedOnMobile) && (
-          <div
-            className={
-              isMobile
-                ? "size-full"
-                : !isUndefined(profile)
-                  ? "grow h-[calc(100vh-224px)]"
-                  : "grow h-[calc(100vh-64px)]"
-            }
-          >
-            <Suspense
-              fallback={
-                <SpaceLoading
-                  hasProfile={!isNil(profile)}
-                  hasFeed={!isNil(feed)}
-                />
-              }
-            >
-              {isMobile ? (
-                <MobileView
-                  {...baseLayoutProps}
-                  layoutFidgetIds={extractFidgetIdsFromLayout(
-                    config?.layoutDetails?.layoutConfig?.layout,
-                    config.fidgetInstanceDatums
-                  )}
-                />
-              ) : (
-                <DesktopView {...desktopViewProps} />
-              )}
-            </Suspense>
+      <div className="relative flex-shrink-0 bg-white">
+        {!isMobile && (
+          <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
+        )}
+        {isMobile && (
+          <div className="w-full border-b flex-shrink-0" style={{ backgroundColor: 'white' }}>
+            <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
           </div>
         )}
+      </div>
+
+      <div className={isMobile ? "w-full h-full flex-grow relative" : "flex h-full flex-grow touch-auto"}>
+        {!isUndefined(feed) && !isMobile ? (
+          <div className="w-6/12 h-[calc(100vh-64px)] flex-shrink-0 overflow-y-auto touch-auto">{feed}</div>
+        ) : null}
+
+        <div className={isMobile ? "w-full h-full flex-grow relative" : "grow touch-auto"}>
+
+          <Suspense
+            fallback={
+              <SpaceLoading
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+              />
+            }
+          >
+            {isMobile ? (
+              <MobileViewSimplified
+                theme={config.theme}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                fidgetTrayContents={config.fidgetTrayContents}
+                saveConfig={saveLocalConfig}
+                inEditMode={!viewportMobile && editMode}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                portalRef={portalRef}
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+                feed={feed}
+                tabNames={config.tabNames}
+                fid={config.fid}
+                layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+                  const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+                  const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+                  return aOrder - bOrder;
+                })}
+                isHomebasePath={isHomebasePath}
+              />
+            ) : (
+              <DesktopView
+                layoutConfig={layoutComponent.config}
+                layoutFidgetKey={layoutComponent.layoutFidgetKey}
+                theme={config.theme}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                fidgetTrayContents={config.fidgetTrayContents}
+                saveConfig={saveLocalConfig}
+                inEditMode={!viewportMobile && editMode}
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                portalRef={portalRef}
+                hasProfile={!isNil(profile)}
+                hasFeed={!isNil(feed)}
+                tabNames={config.tabNames}
+                fid={config.fid}
+              />
+            )}
+          </Suspense>
+        </div>
       </div>
     </div>
   );
 
   return (
     <>
-      {showMobileContainer ? (
-        <MobilePreview
-          {...baseLayoutProps}
-          editMode={editMode}
-          profile={profile}
-          tabBar={tabBar}
-          saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
-          saveFidgetInstanceDatums={(datums) =>
-            saveLocalConfig({ fidgetInstanceDatums: datums })
-          }
-        />
-      ) : (
-        <div className="user-theme-background size-full relative overflow-hidden">
-          <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-          <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
-            {mainContent}
-          </div>
+      {showMobileContainer && editMode && portalRef.current
+        ? createPortal(
+          <aside
+            id="logo-sidebar"
+            className="h-screen flex-row flex bg-white"
+            aria-label="Sidebar"
+          >
+            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+              <ThemeSettingsEditor
+                theme={config.theme}
+                saveTheme={(newTheme) =>
+                  saveLocalConfig({ theme: newTheme })
+                }
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                saveFidgetInstanceDatums={(datums) =>
+                  saveLocalConfig({ fidgetInstanceDatums: datums })
+                }
+              />
+            </div>
+          </aside>,
+          portalRef.current,
+        )
+        : null}
+      <div
+        className={`w-full h-full relative ${showMobileContainer
+          ? "flex flex-col items-center justify-center"
+          : "user-theme-background flex flex-col"
+          }`}
+        style={{
+          backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background,
+          ...(showMobileContainer && {
+           backgroundImage: "url('/images/space-background.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            minHeight: '100vh'
+          })
+        }}
+      >
+        <div className="w-full h-full transition-all duration-100 ease-out">
+          {showMobileContainer ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="relative w-[344px] h-[744px]">
+                <div className="absolute top-[10px] left-[16px] z-0">
+                  <div
+                    className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: config.theme?.properties.background || 'white',
+                      transform: 'scale(1.0)',
+                      transformOrigin: 'top left'
+                    }}
+                  >
+                    <CustomHTMLBackground
+                      html={config.theme?.properties.backgroundHTML}
+                      className="absolute inset-0 pointer-events-none w-full h-full"
+                    />
+                          <div className="flex-1 w-full overflow-auto" >
+                   
+                      <div className="relative w-full h-full flex flex-col">
+                        <div className="w-full bg-white">
+                          {!isUndefined(profile) ? (
+                            <div className="w-full max-h-fit">
+                              <div className="rounded-md shadow-sm overflow-hidden">
+                                {profile}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="border-b relative">
+                            <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                              {tabBar}
+                            </div>
+                          </div>
+
+                          {!isUndefined(feed) && !isMobile ? (
+                            <div className="w-full overflow-auto bg-white">
+                              {feed}
+                            </div>
+                          ) : null}
+                        </div>
+
+                        <Suspense fallback={
+                          <SpaceLoading
+                            hasProfile={!isNil(profile)}
+                            hasFeed={!isNil(feed)}
+                          />
+                        }>
+                          <MobileViewSimplified
+                            theme={config.theme}
+                            fidgetInstanceDatums={config.fidgetInstanceDatums}
+                            fidgetTrayContents={config.fidgetTrayContents}
+                            saveConfig={saveLocalConfig}
+                            inEditMode={false}
+                            saveExitEditMode={saveExitEditMode}
+                            cancelExitEditMode={cancelExitEditMode}
+                            portalRef={portalRef}
+                            hasProfile={!isNil(profile)}
+                            hasFeed={!isNil(feed)}
+                            feed={feed}
+                            tabNames={config.tabNames}
+                            fid={config.fid}
+                            layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+                              const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+                              const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+                              return aOrder - bOrder;
+                            })}
+                            isHomebasePath={isHomebasePath}
+                          />
+                        </Suspense>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Image
+                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+                  alt="Phone mockup"
+                  width={344}
+                  height={744}
+                  className="pointer-events-none select-none absolute inset-0 z-10"
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
+            </>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }

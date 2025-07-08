@@ -20,6 +20,7 @@ interface TabNavigationProps {
   fidgetInstanceDatums: { [key: string]: any };
   isMobile: boolean;
   tabNames?: string[];
+  isHomebasePath?: boolean;
 }
 
 /**
@@ -31,6 +32,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   fidgetInstanceDatums,
   isMobile,
   tabNames,
+  isHomebasePath = false,
 }) => {
   // Ref for the tab list container
   const tabsListRef = useRef<HTMLDivElement>(null);
@@ -44,7 +46,7 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   });
 
   // Safe check for processedFidgetIds to prevent "Cannot read properties of undefined (reading 'length')" error
-  if (!processedFidgetIds || processedFidgetIds.length <= 1) return null;
+  if (!processedFidgetIds || (processedFidgetIds.length <= 1 && !isHomebasePath)) return null;
 
   // Reorder tabs to prioritize feed fidgets
   const orderedFidgetIds = useMemo(() => {
@@ -110,6 +112,11 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
     
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
+    
+    if (fidgetId === 'feed') {
+      return fidgetDatum.config?.settings?.customMobileDisplayName || 'Feed';
+    }
+    
     // Get valid fidget IDs and find index for custom tab name
     const validFidgetIds = Object.keys(fidgetInstanceDatums);
     const fidgetIdIndex = validFidgetIds.indexOf(fidgetId);
@@ -127,6 +134,23 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   // Function to get icon component for a fidget
   const getFidgetIcon = (fidgetId: string) => {
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
+    
+    if (fidgetId === 'feed' && fidgetDatum) {
+      const customIcon = fidgetDatum.config?.settings?.mobileIconName;
+      if (customIcon) {
+        const IconComponent = ICON_PACK[customIcon] || FaIcons.FaRss;
+        return (
+          <IconComponent 
+            className={`w-5 h-5 ${selectedTab === fidgetId ? 'text-black' : 'text-gray-500'}`}
+          />
+        );
+      }
+      return (
+        <FaIcons.FaRss 
+          className={`w-5 h-5 ${selectedTab === fidgetId ? 'text-black' : 'text-gray-500'}`}
+        />
+      );
+    }
     if (!fidgetDatum) return <MdGridView className="text-xl" />;
     const fidgetModule = CompleteFidgets[fidgetDatum.fidgetType];
     if (!fidgetModule) return <MdGridView className="text-xl" />;
