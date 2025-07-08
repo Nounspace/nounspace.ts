@@ -37,7 +37,6 @@ export default function SpacePage({
         tabBar={tabBar}
         profile={profile}
         feed={feed}
-        showFeedOnMobile={showFeedOnMobile}
         setEditMode={setEditMode}
         editMode={editMode}
         setSidebarEditable={setSidebarEditable}
