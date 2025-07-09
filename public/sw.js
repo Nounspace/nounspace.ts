@@ -8,7 +8,12 @@ self.addEventListener('push', function (event) {
       vibrate: [100, 50, 100],
       data: {
         dateOfArrival: Date.now(),
-        primaryKey: '2',
+        primaryKey:
+          typeof data.id === 'string'
+            ? data.id
+            : self.crypto && 'randomUUID' in self.crypto
+              ? self.crypto.randomUUID()
+              : Date.now().toString(),
       },
     }
     event.waitUntil(self.registration.showNotification(data.title, options))

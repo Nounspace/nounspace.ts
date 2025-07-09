@@ -20,45 +20,64 @@ function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false)
   const [subscription, setSubscription] = useState<PushSubscription | null>(null)
   const [message, setMessage] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       registerServiceWorker()
     }
+
+    const id = localStorage.getItem('pushUserId') || crypto.randomUUID()
+    localStorage.setItem('pushUserId', id)
+    setUserId(id)
   }, [])
 
   async function registerServiceWorker() {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
-      scope: '/',
-      updateViaCache: 'none',
-    })
-    const sub = await registration.pushManager.getSubscription()
-    setSubscription(sub)
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', {
+        scope: '/',
+        updateViaCache: 'none',
+      })
+      const sub = await registration.pushManager.getSubscription()
+      setSubscription(sub)
+    } catch (error) {
+      console.error('Service worker registration failed:', error)
+    }
   }
 
   async function subscribeToPush() {
-    const registration = await navigator.serviceWorker.ready
-    const sub = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-      ),
-    })
-    setSubscription(sub)
-    const serializedSub = JSON.parse(JSON.stringify(sub))
-    await subscribeUser(serializedSub)
+    try {
+      const registration = await navigator.serviceWorker.ready
+      const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!publicKey) {
+        throw new Error('VAPID public key is missing')
+      }
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
+      })
+      setSubscription(sub)
+      const serializedSub = JSON.parse(JSON.stringify(sub))
+      if (userId) {
+        await subscribeUser(userId, serializedSub)
+      }
+    } catch (error) {
+      console.error('Failed to subscribe to push:', error)
+    }
   }
 
   async function unsubscribeFromPush() {
     await subscription?.unsubscribe()
     setSubscription(null)
-    await unsubscribeUser()
+    if (userId) {
+      await unsubscribeUser(userId)
+    }
   }
 
   async function sendTestNotification() {
-    if (subscription) {
-      await sendNotification(message)
+    if (subscription && userId) {
+      await sendNotification(userId, message)
       setMessage('')
     }
   }
