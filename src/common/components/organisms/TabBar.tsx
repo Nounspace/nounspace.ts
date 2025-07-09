@@ -4,7 +4,6 @@ import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
-import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
@@ -268,7 +267,7 @@ function TabBar({
                 </Button>
               )}
               {!inHomebase && isEditable && (
-                <NogsGateButton
+                <Button
                   onClick={() => handleCreateTab(generateNewTabName())}
                   className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
                 >
@@ -276,7 +275,7 @@ function TabBar({
                     <FaPlus />
                   </div>
                   <span className="ml-1">Tab</span>
-                </NogsGateButton>
+                </Button>
               )}
             </div>
           )}
@@ -285,16 +284,16 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
         {inEditMode && !mobilePreview && !isMobile ? (
-          <div className="mr-36 flex flex-row">
-            <NogsGateButton
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4 z-40">
+            <Button
               onClick={() => handleCreateTab(generateNewTabName())}
-              className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
+              className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
             >
               <div className="ml-2">
                 <FaPlus />
               </div>
               <span className="ml-4 mr-2">Tab</span>
-            </NogsGateButton>
+            </Button>
           </div>
         ) : null}
         {!inEditMode && !mobilePreview && !isMobile && isEditable && (

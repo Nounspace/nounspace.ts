@@ -110,7 +110,7 @@ const Gridlines: React.FC<GridlinesProps> = ({
 }) => {
   return (
     <div
-      className="relative grid-overlap w-full h-full opacity-50"
+      className="absolute inset-0 grid-overlap w-full h-full opacity-50 pointer-events-none"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",
@@ -120,6 +120,7 @@ const Gridlines: React.FC<GridlinesProps> = ({
         rowGap: `${margin[1]}px`,
         padding: `${containerPadding[0]}px`,
         background: "rgba(200, 227, 248, 0.011)",
+        zIndex: 10, // Behind everything else
       }}
     >
       {[...Array(cols * maxRows)].map((_, i) => (
@@ -171,7 +172,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [isPickingFidget, setIsPickingFidget] = useState(false);
   const [targetPosition, setTargetPosition] = useState<{ x: number; y: number } | null>(null);
 
-  const gridDetails = useMemo(
+  const memoizedGridDetails = useMemo(
     () =>
       makeGridDetails(
         hasProfile,
@@ -311,11 +312,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     return height
       ? (height -
           magicBase -
-          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
-          gridDetails.containerPadding[0] * 2) /
-          gridDetails.maxRows
-      : gridDetails.rowHeight;
-  }, [height, hasProfile, gridDetails.margin, gridDetails.containerPadding]);
+          memoizedGridDetails.margin[0] * (memoizedGridDetails.maxRows - 1) -
+          memoizedGridDetails.containerPadding[0] * 2) /
+          memoizedGridDetails.maxRows
+              : memoizedGridDetails.rowHeight;
+  }, [
+    height, 
+    hasProfile, 
+    memoizedGridDetails.margin, 
+    memoizedGridDetails.containerPadding, 
+    memoizedGridDetails.maxRows
+  ]);
 
   async function handleDrop(
     _layout: PlacedGridItem[],
@@ -452,7 +459,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       h: number,
     ): boolean => {
       // Check boundaries
-      if (x + w > gridDetails.cols || y + h > gridDetails.maxRows) {
+      if (x + w > memoizedGridDetails.cols || y + h > memoizedGridDetails.maxRows) {
         return false;
       }
       
@@ -538,8 +545,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     };
 
     // Search for available space
-    for (let x = 0; x <= gridDetails.cols - minW; x++) {
-      for (let y = 0; y <= gridDetails.maxRows - minH; y++) {
+    for (let x = 0; x <= memoizedGridDetails.cols - minW; x++) {
+      for (let y = 0; y <= memoizedGridDetails.maxRows - minH; y++) {
         if (isSpaceAvailable(x, y, minW, minH)) {
           const newItem: PlacedGridItem = {
             i: id,
@@ -677,142 +684,159 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     toast.success("Space configuration exported successfully!");
   }, [fidgetInstanceDatums, fidgetTrayContents, layoutConfig, theme, fid]);
 
-  // Create a hover overlay component
-  const HoverOverlay: React.FC = () => {
-    const [hoveredCell, setHoveredCell] = useState<{ x: number; y: number } | null>(null);
-    const [showTooltip, setShowTooltip] = useState<{ x: number; y: number } | null>(null);
-    const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Simplified state - no hover state needed with CSS-only approach
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const [isMouseOverGrid, setIsMouseOverGrid] = useState(false);
 
-    // Check if a grid position is occupied by an existing fidget
-    const isPositionOccupied = (x: number, y: number): boolean => {
-      return layoutConfig.layout.some(item => 
-        x >= item.x && x < item.x + item.w && 
-        y >= item.y && y < item.y + item.h
-      );
-    };
+  // Simplified position checking
+  const isPositionOccupied = useCallback((x: number, y: number): boolean => {
+    return layoutConfig.layout.some(item => 
+      x >= item.x && x < item.x + item.w && 
+      y >= item.y && y < item.y + item.h
+    );
+  }, [layoutConfig.layout]);
 
-    // Find the first empty grid square (top-left to bottom-right)
-    const findFirstEmptySquare = (): { x: number; y: number } | null => {
-      for (let y = 0; y < gridDetails.maxRows; y++) {
-        for (let x = 0; x < gridDetails.cols; x++) {
-          if (!isPositionOccupied(x, y)) {
-            return { x, y };
-          }
+  // Find the first empty grid square (top-left to bottom-right) for hint
+  const findFirstEmptySquare = useCallback((): { x: number; y: number } | null => {
+    for (let y = 0; y < memoizedGridDetails.maxRows; y++) {
+      for (let x = 0; x < memoizedGridDetails.cols; x++) {
+        if (!isPositionOccupied(x, y)) {
+          return { x, y };
         }
       }
+    }
+    return null;
+  }, [memoizedGridDetails.maxRows, memoizedGridDetails.cols, isPositionOccupied]);
+
+  const firstEmptySquare = useMemo(() => findFirstEmptySquare(), [findFirstEmptySquare]);
+
+  // Simplified grid cell click handler using CSS Grid auto-placement
+  const handleGridCellClick = useCallback((e: React.MouseEvent) => {
+    if (!inEditMode) return;
+    
+    // Find the clicked cell using event delegation
+    const target = e.target as HTMLElement;
+    const cellElement = target.closest('[data-grid-x]') as HTMLElement;
+    
+    if (!cellElement) return;
+    
+    // Get grid position from data attributes (much simpler!)
+    const gridX = parseInt(cellElement.dataset.gridX || '0');
+    const gridY = parseInt(cellElement.dataset.gridY || '0');
+    
+    // Check if position is valid and not occupied
+    if (gridX >= 0 && gridX < memoizedGridDetails.cols && 
+        gridY >= 0 && gridY < memoizedGridDetails.maxRows && 
+        !isPositionOccupied(gridX, gridY)) {
+      openFidgetPickerAtPosition(gridX, gridY);
+    }
+  }, [inEditMode, memoizedGridDetails.cols, memoizedGridDetails.maxRows, isPositionOccupied]);
+
+  // CSS Grid auto-placement overlay component
+  const GridOverlay = ({ inEditMode }: { inEditMode: boolean }) => {
+    // Don't show overlay during interactions that should block it
+    if (!inEditMode || currentlyDragging || isPickingFidget) {
       return null;
-    };
-
-    const firstEmptySquare = findFirstEmptySquare();
-
-    const handleMouseEnter = (x: number, y: number) => {
-      setHoveredCell({ x, y });
-      
-      // Set timeout for tooltip
-      hoverTimeoutRef.current = setTimeout(() => {
-        setShowTooltip({ x, y });
-      }, 800); // Show tooltip after 800ms
-    };
-
-    const handleMouseLeave = () => {
-      setHoveredCell(null);
-      setShowTooltip(null);
-      
-      // Clear timeout
-      if (hoverTimeoutRef.current) {
-        clearTimeout(hoverTimeoutRef.current);
-        hoverTimeoutRef.current = null;
-      }
-    };
-
-    if (!inEditMode) return null;
+    }
 
     return (
       <div
-        className="absolute inset-0 grid-overlap pointer-events-none"
+        ref={gridContainerRef}
+        className="absolute inset-0 pointer-events-none"
         style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${gridDetails.cols}, 1fr)`,
-          gridTemplateRows: `repeat(${gridDetails.maxRows}, ${rowHeight}px)`,
-          gridGap: `${gridDetails.margin[0]}px`,
-          rowGap: `${gridDetails.margin[1]}px`,
-          padding: `${gridDetails.containerPadding[0]}px`,
-          height: rowHeight * gridDetails.maxRows + "px",
-          zIndex: 10,
+          gridTemplateColumns: `repeat(${memoizedGridDetails.cols}, 1fr)`,
+          gridTemplateRows: `repeat(${memoizedGridDetails.maxRows}, ${rowHeight}px)`,
+          gridGap: `${memoizedGridDetails.margin[0]}px`,
+          rowGap: `${memoizedGridDetails.margin[1]}px`,
+          padding: `${memoizedGridDetails.containerPadding[0]}px`,
+          height: rowHeight * memoizedGridDetails.maxRows + "px",
+          zIndex: 10, // Lower z-index to stay below fidget control buttons
         }}
+        onMouseEnter={() => setIsMouseOverGrid(true)}
+        onMouseLeave={() => setIsMouseOverGrid(false)}
       >
-        {[...Array(gridDetails.cols * gridDetails.maxRows)].map((_, i) => {
-          const x = i % gridDetails.cols;
-          const y = Math.floor(i / gridDetails.cols);
+        {[...Array(memoizedGridDetails.cols * memoizedGridDetails.maxRows)].map((_, i) => {
+          const x = i % memoizedGridDetails.cols;
+          const y = Math.floor(i / memoizedGridDetails.cols);
           const isOccupied = isPositionOccupied(x, y);
-          const isHovered = hoveredCell?.x === x && hoveredCell?.y === y;
-          const hasTooltip = showTooltip?.x === x && showTooltip?.y === y;
-          const isHintSquare = !hoveredCell && firstEmptySquare?.x === x && firstEmptySquare?.y === y;
+          const isHintSquare = !isMouseOverGrid && firstEmptySquare?.x === x && firstEmptySquare?.y === y;
 
           if (isOccupied) {
-            return <div key={i} />; // Empty placeholder for occupied cells
+            return <div key={i} className="pointer-events-none" />;
           }
 
-          const showButton = isHovered || isHintSquare;
-
           return (
-            <button
+            <div
               key={i}
-              className="relative pointer-events-auto transition-all duration-200 ease-in-out cursor-pointer group"
+              data-grid-x={x}
+              data-grid-y={y}
+              className={`
+                relative 
+                pointer-events-auto 
+                cursor-pointer
+                transition-all 
+                duration-300 
+                ease-out 
+                group
+                ${isHintSquare 
+                  ? 'opacity-30' 
+                  : 'opacity-0'
+                }
+                hover:opacity-80
+              `}
               style={{
-                borderRadius: gridDetails.borderRadius,
-                backgroundColor: isHovered ? 'rgba(59, 130, 246, 0.05)' : 
-                                 isHintSquare ? 'rgba(59, 130, 246, 0.02)' : 'transparent',
-                border: isHovered ? '2px solid rgba(59, 130, 246, 0.2)' : 
-                        isHintSquare ? '2px solid rgba(59, 130, 246, 0.1)' : '2px solid transparent',
-                opacity: showButton ? (isHovered ? 0.5 : 0.3) : 0,
-                transform: showButton ? 'scale(1)' : 'scale(0.98)',
+                // Extend hover area to center of margins
+                margin: `-${memoizedGridDetails.margin[0] / 2}px -${memoizedGridDetails.margin[1] / 2}px`,
+                // Compensate for the negative margin with padding to maintain visual size
+                padding: `${memoizedGridDetails.margin[0] / 2}px ${memoizedGridDetails.margin[1] / 2}px`,
               }}
-              onMouseEnter={() => handleMouseEnter(x, y)}
-              onMouseLeave={handleMouseLeave}
-              onClick={() => openFidgetPickerAtPosition(x, y)}
+              onClick={handleGridCellClick}
             >
+              {/* Visual feedback area - matches original cell size */}
               <div 
-                className="absolute inset-0 flex items-center justify-center transition-opacity duration-200"
+                className={`
+                  absolute
+                  inset-0
+                  transition-all 
+                  duration-300 
+                  ease-out 
+                  group-hover:bg-blue-50 
+                  group-hover:border-blue-200
+                  ${isHintSquare 
+                    ? 'bg-blue-25 border-blue-100' 
+                    : ''
+                  }
+                `}
                 style={{
-                  opacity: showButton ? 1 : 0,
+                  borderRadius: memoizedGridDetails.borderRadius,
+                  border: '2px solid transparent',
+                  // Position within the padded area to match original cell size
+                  margin: `${memoizedGridDetails.margin[0] / 2}px ${memoizedGridDetails.margin[1] / 2}px`,
+                  ...(isHintSquare && {
+                    backgroundColor: 'rgba(59, 130, 246, 0.02)',
+                    borderColor: 'rgba(59, 130, 246, 0.1)',
+                  }),
                 }}
               >
-                <div className="text-blue-600">
-                  <AddFidgetIcon />
+                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-400 ease-out ${
+                  isHintSquare 
+                    ? 'opacity-30 group-hover:opacity-100' 
+                    : 'opacity-0 group-hover:opacity-100'
+                }`}>
+                  <div className="text-blue-600 hover:text-blue-700 transition-colors duration-250 ease-out">
+                    <AddFidgetIcon />
+                  </div>
                 </div>
               </div>
-              
-              {/* Tooltip */}
-              {hasTooltip && (
-                <div
-                  className="absolute z-20 px-2 py-1 text-xs font-medium text-white bg-gray-900 rounded shadow-lg pointer-events-none"
-                  style={{
-                    bottom: '100%',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    marginBottom: '8px',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  Add Fidget
-                  <div
-                    className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0"
-                    style={{
-                      borderLeft: '4px solid transparent',
-                      borderRight: '4px solid transparent',
-                      borderTop: '4px solid #1f2937',
-                    }}
-                  />
-                </div>
-              )}
-            </button>
+            </div>
           );
         })}
       </div>
     );
   };
 
+  // Remove all the complex hover system code and replace with simple overlay
   return (
     <>
       {editorPanelPortal(element)}
@@ -821,31 +845,33 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         <div className="flex-1 grid-container grow relative">
           {inEditMode && (
             <Gridlines 
-              {...gridDetails} 
+              {...memoizedGridDetails} 
               rowHeight={rowHeight} 
             />
           )}
 
-          <ReactGridLayout
-            {...gridDetails}
-            isDraggable={inEditMode}
-            isResizable={inEditMode}
-            resizeHandles={resizeDirections}
-            layout={layoutConfig.layout}
-            items={layoutConfig.layout.length}
-            rowHeight={rowHeight}
-            isDroppable={true}
-            droppingItem={externalDraggedItem}
-            onDrop={handleDrop}
-            onLayoutChange={saveLayoutConditional}
-            className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
-            style={{
-              height: rowHeight * gridDetails.maxRows + "px",
-              // Add transition for opacity
-              transition: "opacity 0.2s ease-in",
-              opacity: itemsVisible ? 1 : 0,
-            }}
-          >
+          <div className="relative">
+            <ReactGridLayout
+              {...memoizedGridDetails}
+              isDraggable={inEditMode}
+              isResizable={inEditMode}
+              resizeHandles={resizeDirections}
+              layout={layoutConfig.layout}
+              items={layoutConfig.layout.length}
+              rowHeight={rowHeight}
+              isDroppable={true}
+              droppingItem={externalDraggedItem}
+              onDrop={handleDrop}
+              onLayoutChange={saveLayoutConditional}
+              className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
+              style={{
+                height: rowHeight * memoizedGridDetails.maxRows + "px",
+                transition: "opacity 0.2s ease-in",
+                opacity: itemsVisible ? 1 : 0,
+                position: "relative",
+                zIndex: 20,
+              }}
+            >
             {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
               const fidgetDatum = fidgetInstanceDatums[gridItem.i];
               const fidgetModule = fidgetDatum
@@ -858,7 +884,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   key={gridItem.i}
                   className="grid-item"
                   style={{
-                    borderRadius: gridDetails.borderRadius,
+                    borderRadius: memoizedGridDetails.borderRadius,
                     outline:
                       selectedFidgetID === gridItem.i
                         ? "4px solid rgb(2 132 199)" /* sky-600 */
@@ -872,7 +898,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   <FidgetWrapper
                     fidget={fidgetModule.fidget}
                     context={{ theme }}
-                    borderRadius={gridDetails.borderRadius}
+                    borderRadius={memoizedGridDetails.borderRadius}
                     removeFidget={removeFidget}
                     minimizeFidget={moveFidgetFromGridToTray}
                     saveConfig={saveFidgetConfig(fidgetDatum.id)}
@@ -890,7 +916,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             })}
           </ReactGridLayout>
           
-          <HoverOverlay />
+          <GridOverlay inEditMode={inEditMode} />
+          </div>
         </div>
       </div>
     </>
