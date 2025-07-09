@@ -9,7 +9,7 @@ if (!NEXT_PUBLIC_VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
 }
 
 webpush.setVapidDetails(
-  'mailto:privacy@nounspace.com',
+  'mailto:willy@nounspace.com',
   NEXT_PUBLIC_VAPID_PUBLIC_KEY,
   VAPID_PRIVATE_KEY
 )
