@@ -206,31 +206,8 @@ function TabBar({
             <TokenDataHeader />
           </div>
         )}
-        <div className="relative flex flex-auto h-16 bg-white"> 
-          {isMobile && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-40 bg-white flex gap-2">
-              {!inEditMode && isEditable && !inHomebase && (
-                <Button
-                  onClick={() => setEditMode(true)}
-                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-                >
-                  <FaPaintbrush />
-                </Button>
-              )}
-              {!inHomebase && (
-                <NogsGateButton
-                  onClick={() => handleCreateTab(generateNewTabName())}
-                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-                >
-                  <div>
-                    <FaPlus />
-                  </div>
-                  <span className="ml-1">Tab</span>
-                </NogsGateButton>
-              )}
-            </div>
-          )}
-          <div className={`flex-1 overflow-x-auto scrollbar-hide ${isMobile ? 'pr-16' : 'pr-4'}`}>
+        <div className="flex flex-auto h-16 bg-white"> 
+          <div className="flex-1 overflow-x-auto scrollbar-hide pr-4">
             {tabList && (
               <Reorder.Group
                 as="ol"
@@ -239,7 +216,6 @@ function TabBar({
                 className="flex flex-row gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
                 style={{
-                  maxWidth: isMobile ? 'calc(100% - 60px)' : '100%',
                   overflowX: 'auto',
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -272,6 +248,29 @@ function TabBar({
               </Reorder.Group>
             )}
           </div>
+          {isMobile && (
+            <div className="flex items-center gap-2 px-2">
+              {!inEditMode && isEditable && !inHomebase && (
+                <Button
+                  onClick={() => setEditMode(true)}
+                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <FaPaintbrush />
+                </Button>
+              )}
+              {!inHomebase && isEditable && (
+                <NogsGateButton
+                  onClick={() => handleCreateTab(generateNewTabName())}
+                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <div>
+                    <FaPlus />
+                  </div>
+                  <span className="ml-1">Tab</span>
+                </NogsGateButton>
+              )}
+            </div>
+          )}
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />

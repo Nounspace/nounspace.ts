@@ -77,6 +77,7 @@ const Home = () => {
       renameTab={async () => Promise.resolve({ tabName })}
       commitTab={async () => Promise.resolve()}
       commitTabOrder={async () => Promise.resolve()}
+      isEditable={false}
     />
   );
 
