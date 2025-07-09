@@ -198,6 +198,8 @@ function TabBar({
 
   const isLoggedIn = getIsLoggedIn();
 
+
+
   return (
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
@@ -207,7 +209,14 @@ function TabBar({
           </div>
         )}
         <div className="flex flex-auto h-16 bg-white"> 
-          <div className="flex-1 overflow-x-auto scrollbar-hide pr-4">
+                    <div 
+            className="overflow-x-auto scrollbar-hide pr-4" 
+            style={{ 
+              width: isMobile && ((!inEditMode && isEditable && !inHomebase) || (!inHomebase && isEditable)) 
+                ? 'calc(100% - 160px)' 
+                : '100%' 
+            }}
+          >
             {tabList && (
               <Reorder.Group
                 as="ol"
@@ -248,8 +257,8 @@ function TabBar({
               </Reorder.Group>
             )}
           </div>
-          {isMobile && (
-            <div className="flex items-center gap-2 px-2">
+          {isMobile && ((!inEditMode && isEditable && !inHomebase) || (!inHomebase && isEditable)) && (
+            <div className="flex items-center gap-2 px-2 flex-shrink-0">
               {!inEditMode && isEditable && !inHomebase && (
                 <Button
                   onClick={() => setEditMode(true)}
