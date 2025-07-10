@@ -759,7 +759,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           rowGap: `${memoizedGridDetails.margin[1]}px`,
           padding: `${memoizedGridDetails.containerPadding[0]}px`,
           height: rowHeight * memoizedGridDetails.maxRows + "px",
-          zIndex: 10, // Lower z-index to stay below fidget control buttons
+          zIndex: 25, // Higher z-index to stay above ReactGridLayout but below fidget control buttons
         }}
         onMouseEnter={() => setIsMouseOverGrid(true)}
         onMouseLeave={() => {
