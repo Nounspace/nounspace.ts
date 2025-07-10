@@ -110,7 +110,7 @@ const Gridlines: React.FC<GridlinesProps> = ({
 }) => {
   return (
     <div
-      className="absolute inset-0 grid-overlap w-full h-full opacity-50 pointer-events-none"
+      className="absolute inset-0 grid-overlap w-full h-full opacity-50 pointer-events-none z-0"
       style={{
         transition: "background-color 1000ms linear",
         display: "grid",
@@ -120,7 +120,6 @@ const Gridlines: React.FC<GridlinesProps> = ({
         rowGap: `${margin[1]}px`,
         padding: `${containerPadding[0]}px`,
         background: "rgba(200, 227, 248, 0.011)",
-        zIndex: 10, // Background grid guides
       }}
     >
       {[...Array(cols * maxRows)].map((_, i) => (
@@ -690,7 +689,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [isMouseOverControlButtons, setIsMouseOverControlButtons] = useState(false);
 
   // DOM-based control button detection
-  const checkControlButtonArea = (e: React.MouseEvent) => {
+  const checkControlButtonArea = useCallback((e: MouseEvent) => {
     const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
     const controlElement = elementUnderMouse?.closest('[data-fidget-controls]');
     const isOverControls = !!controlElement;
@@ -704,7 +703,15 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       console.log('Control button detection changed:', isOverControls, 'element:', elementUnderMouse, 'controlElement:', controlElement);
     }
     setIsMouseOverControlButtons(isOverControls);
-  };
+  }, [isMouseOverControlButtons]);
+
+  // Add document-level mouse detection
+  useEffect(() => {
+    if (inEditMode) {
+      document.addEventListener('mousemove', checkControlButtonArea);
+      return () => document.removeEventListener('mousemove', checkControlButtonArea);
+    }
+  }, [inEditMode, checkControlButtonArea]);
 
   // Simplified position checking
   const isPositionOccupied = useCallback((x: number, y: number): boolean => {
@@ -760,7 +767,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     return (
       <div
         ref={gridContainerRef}
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none z-20"
         style={{
           display: "grid",
           gridTemplateColumns: `repeat(${memoizedGridDetails.cols}, 1fr)`,
@@ -769,7 +776,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           rowGap: `${memoizedGridDetails.margin[1]}px`,
           padding: `${memoizedGridDetails.containerPadding[0]}px`,
           height: rowHeight * memoizedGridDetails.maxRows + "px",
-          zIndex: 30
         }}
         onMouseEnter={() => setIsMouseOverGrid(true)}
         onMouseLeave={() => setIsMouseOverGrid(false)}
@@ -819,10 +825,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   transition-all 
                   duration-300 
                   ease-out 
-                  group-hover:bg-blue-50 
                   group-hover:border-blue-200
                   ${isHintSquare 
-                    ? 'bg-blue-25 border-blue-100' 
+                    ? 'border-blue-100' 
                     : ''
                   }
                 `}
@@ -832,7 +837,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   // Position within the padded area to match original cell size
                   margin: `${memoizedGridDetails.margin[0] / 2}px ${memoizedGridDetails.margin[1] / 2}px`,
                   ...(isHintSquare && {
-                    backgroundColor: 'rgba(59, 130, 246, 0.02)',
                     borderColor: 'rgba(59, 130, 246, 0.1)',
                   }),
                 }}
@@ -858,7 +862,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     <>
       {editorPanelPortal(element)}
 
-      <div className="flex flex-col z-10">
+      <div className="flex flex-col z-0">
         <div className="flex-1 grid-container grow relative">
           {inEditMode && (
             <Gridlines 
@@ -867,7 +871,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             />
           )}
 
-          <div className="relative" onMouseMove={checkControlButtonArea}>
+          <div className="relative">
             <ReactGridLayout
               {...memoizedGridDetails}
               isDraggable={inEditMode}
@@ -880,13 +884,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               droppingItem={externalDraggedItem}
               onDrop={handleDrop}
               onLayoutChange={saveLayoutConditional}
-              className={`grid-overlap ${itemsVisible ? "items-visible" : ""}`}
+              className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
               style={{
                 height: rowHeight * memoizedGridDetails.maxRows + "px",
                 transition: "opacity 0.2s ease-in",
                 opacity: itemsVisible ? 1 : 0,
                 position: "relative",
-                zIndex: 20, // Grid items layer
               }}
             >
             {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {

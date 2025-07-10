@@ -130,8 +130,8 @@ export function FidgetWrapper({
       <div
         className={
           selectedFidgetID === bundle.id
-            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6 z-40"
-            : "absolute -mt-7 opacity-0 transition-opacity ease-in flex flex-row h-6 z-40"
+            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6 z-50"
+            : "absolute -mt-7 opacity-0 transition-opacity ease-in flex flex-row h-6 z-50"
         }
         data-fidget-controls
       >
@@ -185,8 +185,8 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 overflow-hidden z-40"
-            : "size-full overflow-hidden z-40"
+            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
+            : "size-full overflow-hidden"
         }
         style={{
           background: settingsWithDefaults.useDefaultColors 
@@ -207,7 +207,7 @@ export function FidgetWrapper({
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-30 flex bg-slate-400 bg-opacity-50 rounded-md" 
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-30 flex bg-slate-400 bg-opacity-50 rounded-md"
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
