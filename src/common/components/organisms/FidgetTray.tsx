@@ -3,7 +3,7 @@ import { map } from "lodash";
 import { FidgetBundle, FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
 import { Button } from "@/common/components/atoms/button";
-import { FaPlus } from "react-icons/fa6";
+import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import {
   Tooltip,
   TooltipContent,
@@ -112,7 +112,9 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
         })}
         <div className="flex justify-center items-center w-full">
           <Button onClick={openFidgetPicker} withIcon variant="primary">
-            <FaPlus />
+            <div className="text-white [&_svg_path]:stroke-white">
+              <AddFidgetIcon />
+            </div>
           </Button>
         </div>
       </div>
