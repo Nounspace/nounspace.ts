@@ -65,6 +65,7 @@ const galleryConfig: FidgetProperties = {
         const handleImageUploaded = (Upload: string) => {
           console.log("Image uploaded, URL:", Upload);
           setLocalImageUrl(Upload);
+          console.log(localImageUrl);
           updateSettings?.({
             uploadedImage: Upload,
             imageUrl: Upload

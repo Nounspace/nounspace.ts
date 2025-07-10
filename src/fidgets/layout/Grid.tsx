@@ -216,9 +216,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
         const currentDatums = fidgetInstanceDatumsRef.current;
         const existing = currentDatums[id];
-        
+
         const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
-        
+
         const updatedDatum: FidgetInstanceData = {
           id: existing?.id ?? id,
           fidgetType: determinedFidgetType,
@@ -294,10 +294,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const magicBase = hasProfile ? 64 + 160 : 64;
     return height
       ? (height -
-          magicBase -
-          gridDetails.margin[0] * (gridDetails.maxRows - 1) -
-          gridDetails.containerPadding[0] * 2) /
-          gridDetails.maxRows
+        magicBase -
+        gridDetails.margin[0] * (gridDetails.maxRows - 1) -
+        gridDetails.containerPadding[0] * 2) /
+      gridDetails.maxRows
       : gridDetails.rowHeight;
   }, [height, hasProfile, gridDetails.margin, gridDetails.containerPadding]);
 
@@ -360,13 +360,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     saveLayout(newLayout);
   }
 
-  function removeFidgetFromInstanceDatums(fidgetId: string) {
-    // New set of instances - use computed property name to remove the correct fidget
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
-      fidgetInstanceDatums;
+  // function removeFidgetFromInstanceDatums(fidgetId: string) {
+  //   // New set of instances - use computed property name to remove the correct fidget
+  //   const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
+  //     fidgetInstanceDatums;
 
-    saveFidgetInstanceDatums(newFidgetInstanceDatums);
-  }
+  //   saveFidgetInstanceDatums(newFidgetInstanceDatums);
+  // }
 
   function removeFidget(fidgetId: string) {
     unselectFidget();
@@ -379,7 +379,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
       fidgetInstanceDatums;
 
-    console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
+    console.log("newFidgetInstanceDatums", newFidgetInstanceDatums, removed);
     // Only save if we have fidgets left or if we're removing the last one
     if (
       Object.keys(newFidgetInstanceDatums).length > 0 ||

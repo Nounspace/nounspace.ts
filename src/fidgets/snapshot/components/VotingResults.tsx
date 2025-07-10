@@ -32,14 +32,14 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
     // Calculate quorum status
     const quorumMet = quorumInfo?.hasQuorum
       ? (() => {
-          if (quorumInfo.quorumThreshold) {
-            return totalScores >= quorumInfo.quorumThreshold;
-          }
-          if (quorumInfo.minScore) {
-            return maxScore >= quorumInfo.minScore;
-          }
-          return true;
-        })()
+        if (quorumInfo.quorumThreshold) {
+          return totalScores >= quorumInfo.quorumThreshold;
+        }
+        if (quorumInfo.minScore) {
+          return maxScore >= quorumInfo.minScore;
+        }
+        return true;
+      })()
       : true;
 
     return (
@@ -97,7 +97,7 @@ const VotingResults: React.FC<VotingResultsProps> = memo(
               totalScores > 0
                 ? ((score / totalScores) * 100).toFixed(1)
                 : "0.0";
-            const isWinning = index === winningIndex && score > 0;
+            // const isWinning = index === winningIndex && score > 0;
 
             return (
               <div key={index} className="mb-2">

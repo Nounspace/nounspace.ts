@@ -109,7 +109,7 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
-   ...defaultStyleFields,
+    ...defaultStyleFields,
   ],
   size: {
     minHeight: 2,
@@ -134,10 +134,10 @@ const embedCache = new Map<string, {
 const CACHE_DURATION = 60 * 60 * 1000;
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
-  settings: { 
-    url, 
-    size = 1, 
-    cropOffsetX = 0, 
+  settings: {
+    url,
+    size = 1,
+    cropOffsetX = 0,
     cropOffsetY = 0,
     isScrollable = false
   },
@@ -168,7 +168,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
-  const scaleValue = size;
 
   useEffect(() => {
     async function checkEmbedInfo() {
@@ -177,7 +176,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       // Check cache first
       const cached = embedCache.get(sanitizedUrl);
       const now = Date.now();
-      
+
       if (cached && now < cached.expiresAt) {
         // Use cached data
         setEmbedInfo(cached.data);
@@ -204,14 +203,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         }
 
         const data = await response.json();
-        
+
         // Cache the result
         embedCache.set(sanitizedUrl, {
           data,
           timestamp: now,
           expiresAt: now + CACHE_DURATION
         });
-        
+
         setEmbedInfo(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error occurred");
@@ -252,7 +251,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
           borderRadius: "4px",
           animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
         }} />
-        
+
         {/* Content skeleton squares */}
         <div style={{
           display: "grid",
@@ -273,7 +272,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             />
           ))}
         </div>
-        
+
         {/* Bottom content skeleton */}
         <div style={{
           display: "flex",
@@ -296,7 +295,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite"
           }} />
         </div>
-        
+
         <style>{`
           @keyframes pulse {
             0%, 100% {
@@ -322,8 +321,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   if (embedInfo.directEmbed && transformedUrl) {
     return (
       <div
-        style={{ 
-          overflow: "hidden", 
+        style={{
+          overflow: "hidden",
           width: "100%",
           height: isMobile ? "100vh" : "100%",
           position: "relative"
@@ -359,9 +358,9 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             <div style={{
               position: "absolute",
               inset: 0,
-              width: `${100/size}%`,
-              height: `${100/size}vh`,
-              transform: `translate(${cropOffsetX}%, ${cropOffsetY*1.8}%)`
+              width: `${100 / size}%`,
+              height: `${100 / size}vh`,
+              transform: `translate(${cropOffsetX}%, ${cropOffsetY * 1.8}%)`
             }}>
               <iframe
                 src={transformedUrl}

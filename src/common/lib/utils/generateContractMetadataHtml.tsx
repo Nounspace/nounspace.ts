@@ -1,4 +1,3 @@
-import React from "react";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import { Metadata } from 'next/types';
 
