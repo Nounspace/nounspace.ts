@@ -128,6 +128,7 @@ export function FidgetWrapper({
   return (
     <>
       <div
+        data-fidget-controls
         className={
           selectedFidgetID === bundle.id
             ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6"
