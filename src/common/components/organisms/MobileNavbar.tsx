@@ -6,6 +6,15 @@ import { MdGridView } from "react-icons/md";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { CompleteFidgets } from "@/fidgets";
 
+// Type definition for the beforeinstallprompt event
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{
+    outcome: 'accepted' | 'dismissed';
+    platform: string;
+  }>;
+}
+
 export interface TabItem {
   id: string;
   label: string;
@@ -22,24 +31,25 @@ interface MobileNavbarProps {
   className?: string;
   fidgetInstanceDatums?: { [key: string]: any }; // Optional fidget data for advanced styling
   tabNames?: string[]; // Custom tab names from SpaceConfig.tabNames
+  showInstallButton?: boolean; // Optional prop to show/hide install button
 }
 
 /**
  * Memoized tab item component for better performance
  */
-const TabItem = React.memo(({ 
-  tab, 
-  index, 
-  isSelected, 
+const TabItem = React.memo(({
+  tab,
+  index,
+  isSelected,
   activeColor,
   inactiveColor,
   onSelect,
   getTabIcon,
   getTabLabel
-}: { 
-  tab: TabItem; 
+}: {
+  tab: TabItem;
   index: number;
-  isSelected: boolean; 
+  isSelected: boolean;
   activeColor: string;
   inactiveColor: string;
   onSelect: (id: string) => void;
@@ -47,13 +57,13 @@ const TabItem = React.memo(({
   getTabLabel: (tab: TabItem, index: number) => string;
 }) => {
   return (
-    <TabsTrigger 
-      key={tab.id} 
+    <TabsTrigger
+      key={tab.id}
       value={tab.id}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-     // If you click on the same tab, force it to reload
+        // If you click on the same tab, force it to reload
         if (isSelected) {
           setTimeout(() => onSelect(tab.id), 0);
         } else {
@@ -71,8 +81,8 @@ const TabItem = React.memo(({
         "active:outline-none active:ring-0",
         "select-none touch-manipulation",
         "-webkit-tap-highlight-color: transparent",
-        isSelected 
-          ? "data-[state=active]:text-primary opacity-100" 
+        isSelected
+          ? "data-[state=active]:text-primary opacity-100"
           : "data-[state=inactive]:opacity-70 hover:opacity-90"
       )}
       style={{
@@ -89,7 +99,7 @@ const TabItem = React.memo(({
       <div className="text-xl mb-1">
         {getTabIcon(tab)}
       </div>
-      
+
       {/* Label with truncation for long text */}
       <span className="truncate max-w-[80px] line-clamp-1">
         {getTabLabel(tab, index)}
@@ -120,10 +130,11 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   className,
   fidgetInstanceDatums = {},
   tabNames,
+  showInstallButton = true, // Default to true to show install button
 }) => {
   // Ref for the tab list container to manage scroll
   const tabsListRef = useRef<HTMLDivElement>(null);
-  
+
   // State to track scroll position and gradient overlay opacity
   const [scrollState, setScrollState] = useState({
     isAtStart: true,
@@ -141,39 +152,39 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   const getTabLabel = useCallback((tab: TabItem, index: number): string => {
     // If tab already has a label, use it
     if (tab.label) return tab.label;
-    
+
     // Special consolidated views
     if (tab.id === 'consolidated-media') return "Media";
     if (tab.id === 'consolidated-pinned') return "Pinned";
-    
+
     // Use custom tab name from SpaceConfig if available
     if (tabNames && tabNames[index]) return tabNames[index];
-    
+
     // If we have fidget instance data, try to get a name from there
     if (fidgetInstanceDatums && fidgetInstanceDatums[tab.id]) {
       const fidgetData = fidgetInstanceDatums[tab.id];
-      
+
       // Check for custom mobile display name in settings
       if (fidgetData.config?.settings?.customMobileDisplayName) {
         return fidgetData.config.settings.customMobileDisplayName;
       }
-      
+
       // Use fidget module properties
       if (fidgetData.fidgetType) {
         const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
         if (fidgetModule) {
           // Prefer mobile name if available
-          return fidgetModule.properties.mobileFidgetName || 
-                 fidgetModule.properties.fidgetName || 
-                 "Tab";
+          return fidgetModule.properties.mobileFidgetName ||
+            fidgetModule.properties.fidgetName ||
+            "Tab";
         }
       }
     }
-    
+
     // Default fallback
     return `Tab ${index + 1}`;
   }, [tabNames, fidgetInstanceDatums]);
-  
+
   /**
    * Gets appropriate icon for a tab based on its type and selection state
    */
@@ -181,20 +192,20 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
     // If tab already has icons defined, use them
     if (selected === tab.id && tab.activeIcon) return tab.activeIcon;
     if (tab.icon) return tab.icon;
-    
+
     // Special consolidated views
     if (tab.id === 'consolidated-media') {
-      return selected === tab.id ? 
-        <BsImageFill className="text-xl" /> : 
+      return selected === tab.id ?
+        <BsImageFill className="text-xl" /> :
         <BsImage className="text-xl" />;
     }
-    
+
     if (tab.id === 'consolidated-pinned') {
-      return selected === tab.id ? 
-        <BsFillPinFill size={22} /> : 
+      return selected === tab.id ?
+        <BsFillPinFill size={22} /> :
         <BsPin size={22} />;
     }
-    
+
     // If we have fidget instance data, try to get icon from fidget module
     if (fidgetInstanceDatums && fidgetInstanceDatums[tab.id]) {
       const fidgetData = fidgetInstanceDatums[tab.id];
@@ -208,13 +219,13 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           } else if (fidgetModule.properties.mobileIcon) {
             return fidgetModule.properties.mobileIcon;
           }
-          
+
           // Fallback to emoji icon if available
           if (fidgetModule.properties.icon) {
             return (
-              <span 
+              <span
                 className={`text-lg`}
-                role="img" 
+                role="img"
                 aria-label={fidgetModule.properties.fidgetName}
               >
                 {String.fromCodePoint(fidgetModule.properties.icon)}
@@ -224,7 +235,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         }
       }
     }
-    
+
     // Default fallback icon
     return <MdGridView className="text-xl" />;
   }, [selected, fidgetInstanceDatums]);
@@ -232,25 +243,25 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   // Handle scroll events to update gradient overlays
   const handleScroll = useCallback(() => {
     if (!tabsListRef.current) return;
-    
+
     const { scrollLeft, scrollWidth, clientWidth } = tabsListRef.current;
-    
+
     // Calculate maximum possible scroll distance
     const maxScroll = scrollWidth - clientWidth;
-    
+
     // Define transition zone (pixels) for gradient fade effect
     const transitionThreshold = 50;
-    
+
     // Calculate gradient opacities based on scroll position
     const leftGradientOpacity = Math.min(scrollLeft / transitionThreshold, 1);
     const rightGradientOpacity = Math.min((maxScroll - scrollLeft) / transitionThreshold, 1);
-    
+
     // Determine if we're at the start or end of scroll area
     const isAtStart = scrollLeft <= 10;
     const isAtEnd = maxScroll - scrollLeft <= 10;
-    
-    setScrollState({ 
-      isAtStart, 
+
+    setScrollState({
+      isAtStart,
       isAtEnd,
       leftGradientOpacity,
       rightGradientOpacity
@@ -265,7 +276,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       // Initialize scroll state
       handleScroll();
     }
-    
+
     return () => {
       if (tabsList) {
         tabsList.removeEventListener('scroll', handleScroll);
@@ -276,14 +287,14 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   // Add keyboard navigation for tabs
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!tabs || tabs.length === 0) return;
-    
+
     const currentIndex = tabs.findIndex(tab => tab.id === selected);
     if (currentIndex === -1) return;
-    
+
     // Handle left/right arrow keys for tab navigation
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault(); // Prevent scrolling
-      
+
       let nextIndex;
       if (e.key === 'ArrowLeft') {
         // Move to previous tab or wrap to the end
@@ -292,9 +303,9 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         // Move to next tab or wrap to the beginning
         nextIndex = currentIndex < tabs.length - 1 ? currentIndex + 1 : 0;
       }
-      
+
       onSelect(tabs[nextIndex].id);
-      
+
       // Ensure the selected tab is visible by scrolling if needed
       const selectedElement = tabsListRef.current?.querySelector(`[value="${tabs[nextIndex].id}"]`);
       if (selectedElement) {
@@ -303,9 +314,191 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
     }
   }, [tabs, selected, onSelect]);
 
+  // Install Button Component for PWA functionality
+  const InstallButton = React.memo(({ theme, isFloating = false }: { theme: UserTheme; isFloating?: boolean }) => {
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+    const [isInstallable, setIsInstallable] = useState(false);
+    const [isStandalone, setIsStandalone] = useState(false);
+    const [isIOS, setIsIOS] = useState(false);
+
+    useEffect(() => {
+      // Detect iOS devices
+      const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(iOS);
+
+      // Check if app is already installed (standalone mode)
+      const standalone = window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      setIsStandalone(standalone);
+
+      // Only add event listeners if beforeinstallprompt is supported
+      if ('onbeforeinstallprompt' in window) {
+        // Listen for the beforeinstallprompt event
+        const handleBeforeInstallPrompt = (e: Event) => {
+          // Prevent the mini-infobar from appearing on mobile
+          e.preventDefault();
+          // Store the event so it can be triggered later
+          setDeferredPrompt(e as BeforeInstallPromptEvent);
+          setIsInstallable(true);
+        };
+
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // Listen for app installed event
+        const handleAppInstalled = () => {
+          setDeferredPrompt(null);
+          setIsInstallable(false);
+          setIsStandalone(true);
+        };
+
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        // Development/testing fallback - show button after 3 seconds if no prompt fired
+        const devFallbackTimer = setTimeout(() => {
+          if (!deferredPrompt && !iOS && !standalone) {
+            console.log('⏰ Dev fallback: Showing install button for testing (no prompt received yet)');
+            setIsInstallable(true);
+          }
+        }, 3000);
+
+        return () => {
+          clearTimeout(devFallbackTimer);
+          window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+          window.removeEventListener('appinstalled', handleAppInstalled);
+        };
+      } else if (iOS && !standalone) {
+        // For iOS, show install button even without beforeinstallprompt
+        setIsInstallable(true);
+      }
+    }, []);
+
+    const handleInstallClick = async () => {
+      if (isIOS) {
+        // For iOS, show instructions since we can't trigger install programmatically
+        alert(
+          'To install this app on your iOS device:\n\n' +
+          '1. Tap the Share button in Safari\n' +
+          '2. Select "Add to Home Screen"\n' +
+          '3. Tap "Add" to confirm'
+        );
+        return;
+      }
+
+      if (!deferredPrompt) {
+        // If no deferred prompt available, show fallback message
+        console.log('⚠️ No install prompt available yet');
+        alert(
+          'Install prompt not ready yet.\n\n' +
+          'This can happen when:\n' +
+          '• The app doesn\'t meet PWA criteria\n' +
+          '• Chrome hasn\'t shown the prompt yet\n' +
+          '• You\'re in an unsupported browser\n\n' +
+          'Try refreshing the page or waiting a few seconds.'
+        );
+        return;
+      }
+
+      try {
+        // Show the install prompt
+        await deferredPrompt.prompt();
+
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+
+        console.log(`User response to the install prompt: ${outcome}`);
+
+        // Reset the deferred prompt variable
+        setDeferredPrompt(null);
+        setIsInstallable(false);
+      } catch (error) {
+        console.error('Error showing install prompt:', error);
+        alert('Failed to show install prompt. Please try again.');
+      }
+    };
+
+    // Don't show the button if app is already installed
+    if (isStandalone) {
+      console.log('🚫 Install button hidden: App already installed (standalone mode)');
+      return null;
+    }
+
+    // Don't show if not installable (except on iOS)
+    if (!isInstallable && !isIOS) {
+      console.log('🚫 Install button hidden: Not installable and not iOS', {
+        isInstallable,
+        isIOS,
+        deferredPrompt: !!deferredPrompt
+      });
+      return null;
+    }
+
+    console.log('✅ Install button showing:', {
+      isFloating,
+      isInstallable,
+      isIOS,
+      isStandalone,
+      hasDeferredPrompt: !!deferredPrompt
+    });
+
+    return (
+      <button
+        onClick={handleInstallClick}
+        disabled={false} // Always enabled for better UX - handle cases in click handler
+        data-testid="pwa-install-button"
+        data-floating={isFloating}
+        data-installable={isInstallable}
+        data-ios={isIOS}
+        data-standalone={isStandalone}
+        data-has-prompt={!!deferredPrompt}
+        className={mergeClasses(
+          "flex flex-col items-center justify-center",
+          isFloating
+            ? "w-16 h-16 rounded-full shadow-lg border border-gray-200"
+            : "min-w-[94px] h-full py-2 px-1",
+          "font-medium text-xs",
+          "transition-all duration-200",
+          "focus:outline-none focus-visible:outline-none",
+          "active:outline-none active:ring-0",
+          "select-none touch-manipulation",
+          "-webkit-tap-highlight-color: transparent",
+          deferredPrompt ? "opacity-90 hover:opacity-100" : "opacity-60 hover:opacity-80",
+          "disabled:opacity-40 disabled:cursor-not-allowed"
+        )}
+        style={{
+          color: theme?.properties?.headingsFontColor || "#000000",
+          backgroundColor: isFloating ? (theme?.properties?.background || "white") : "transparent",
+          WebkitTapHighlightColor: "transparent",
+        } as React.CSSProperties}
+        aria-label={isIOS ? "Install App Instructions" : "Install App"}
+        title={deferredPrompt ? "Install App" : "Install prompt not ready yet"}
+      >
+        {/* Install icon */}
+        <div className={isFloating ? "text-lg" : "text-xl mb-1"}>
+          <span role="img" aria-label="install">📱</span>
+        </div>
+
+        {/* Label - only show when not floating */}
+
+        <span className="truncate max-w-[80px] line-clamp-1">
+          Install
+        </span>
+
+      </button>
+    );
+  });
+
+  InstallButton.displayName = 'InstallButton';
+
   // Get theme colors for active tab indicators
   const activeColor = theme?.properties?.headingsFontColor || "#000000";
   const inactiveColor = "rgba(107, 114, 128, 0.7)"; // text-gray-500 with some opacity
+
+  // Debug logging for showInstallButton prop
+  console.log('🔧 MobileNavbar Debug:', {
+    showInstallButton,
+    tabsCount: tabs.length,
+    selectedTab: selected
+  });
 
   return (
     <Tabs
@@ -316,25 +509,25 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         className
       )}
       style={{
-          backgroundColor: theme?.properties?.background || "white",
-          borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)",
+        backgroundColor: theme?.properties?.background || "white",
+        borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)",
       }}
     >
-      <div 
+      <div
         className="relative w-full h-full"
         onKeyDown={handleKeyDown} // Add keyboard navigation to the container
       >
         {/* Left gradient overlay for scroll indication */}
-        <div 
+        <div
           className="absolute left-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
           style={{
-              background: `linear-gradient(to right, ${theme?.properties?.background || "white"}, transparent)`,
+            background: `linear-gradient(to right, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.leftGradientOpacity,
             transition: 'opacity 0.3s ease'
           }}
         />
-        
-        <TabsList 
+
+        <TabsList
           ref={tabsListRef}
           className={mergeClasses(
             "flex items-center justify-start w-full h-full overflow-x-auto no-scrollbar rounded-none",
@@ -357,16 +550,23 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
             />
           ))}
         </TabsList>
-        
+
         {/* Right gradient overlay for scroll indication */}
-        <div 
+        <div
           className="absolute right-0 top-0 bottom-0 w-8 h-full z-10 pointer-events-none"
           style={{
-              background: `linear-gradient(to left, ${theme?.properties?.background || "white"}, transparent)`,
+            background: `linear-gradient(to left, ${theme?.properties?.background || "white"}, transparent)`,
             opacity: scrollState.rightGradientOpacity,
             transition: 'opacity 0.3s ease'
           }}
         />
+
+        {/* Floating install button when there are many tabs - positioned to avoid gradient conflict */}
+        {showInstallButton && (
+          <div className="absolute right-1 top-1/2 transform -translate-y-1/2 z-20">
+            <InstallButton theme={theme} isFloating={true} />
+          </div>
+        )}
       </div>
     </Tabs>
   );
