@@ -5,6 +5,10 @@ import { UserTheme } from "@/common/lib/theme";
 import { MdGridView } from "react-icons/md";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { CompleteFidgets } from "@/fidgets";
+import { InstallInstructionsModal } from "@/common/components/organisms/InstallInstructionsModal";
+
+// Debug flag for PWA logging - only enabled in development
+const DEBUG_PWA = process.env.NODE_ENV === 'development';
 
 // Type definition for the beforeinstallprompt event
 interface BeforeInstallPromptEvent extends Event {
@@ -320,6 +324,7 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
     const [isInstallable, setIsInstallable] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
       // Detect iOS devices
@@ -340,6 +345,10 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           // Store the event so it can be triggered later
           setDeferredPrompt(e as BeforeInstallPromptEvent);
           setIsInstallable(true);
+          if (DEBUG_PWA) {
+            console.log('📱 beforeinstallprompt event fired!', e);
+            console.log('✅ Install prompt captured and stored');
+          }
         };
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -349,6 +358,9 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           setDeferredPrompt(null);
           setIsInstallable(false);
           setIsStandalone(true);
+          if (DEBUG_PWA) {
+            console.log('🎉 App installed successfully!');
+          }
         };
 
         window.addEventListener('appinstalled', handleAppInstalled);
@@ -356,8 +368,10 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         // Development/testing fallback - show button after 3 seconds if no prompt fired
         const devFallbackTimer = setTimeout(() => {
           if (!deferredPrompt && !iOS && !standalone) {
-            console.log('⏰ Dev fallback: Showing install button for testing (no prompt received yet)');
             setIsInstallable(true);
+            if (DEBUG_PWA) {
+              console.log('⏰ Dev fallback: Showing install button for testing (no prompt received yet)');
+            }
           }
         }, 3000);
 
@@ -369,32 +383,25 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       } else if (iOS && !standalone) {
         // For iOS, show install button even without beforeinstallprompt
         setIsInstallable(true);
+        if (DEBUG_PWA) {
+          console.log('📱 iOS detected, showing manual install option');
+        }
       }
     }, []);
 
     const handleInstallClick = async () => {
       if (isIOS) {
-        // For iOS, show instructions since we can't trigger install programmatically
-        alert(
-          'To install this app on your iOS device:\n\n' +
-          '1. Tap the Share button in Safari\n' +
-          '2. Select "Add to Home Screen"\n' +
-          '3. Tap "Add" to confirm'
-        );
+        // For iOS, show modal with instructions
+        setShowModal(true);
         return;
       }
 
       if (!deferredPrompt) {
-        // If no deferred prompt available, show fallback message
-        console.log('⚠️ No install prompt available yet');
-        alert(
-          'Install prompt not ready yet.\n\n' +
-          'This can happen when:\n' +
-          '• The app doesn\'t meet PWA criteria\n' +
-          '• Chrome hasn\'t shown the prompt yet\n' +
-          '• You\'re in an unsupported browser\n\n' +
-          'Try refreshing the page or waiting a few seconds.'
-        );
+        // If no deferred prompt available, show fallback modal
+        setShowModal(true);
+        if (DEBUG_PWA) {
+          console.log('⚠️ No install prompt available yet');
+        }
         return;
       }
 
@@ -405,85 +412,106 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         // Wait for the user to respond to the prompt
         const { outcome } = await deferredPrompt.userChoice;
 
-        console.log(`User response to the install prompt: ${outcome}`);
+        if (DEBUG_PWA) {
+          console.log(`User response to the install prompt: ${outcome}`);
+        }
 
         // Reset the deferred prompt variable
         setDeferredPrompt(null);
         setIsInstallable(false);
       } catch (error) {
-        console.error('Error showing install prompt:', error);
-        alert('Failed to show install prompt. Please try again.');
+        if (DEBUG_PWA) {
+          console.error('Error showing install prompt:', error);
+        }
+        // Show modal with error information
+        setShowModal(true);
       }
     };
 
     // Don't show the button if app is already installed
     if (isStandalone) {
-      console.log('🚫 Install button hidden: App already installed (standalone mode)');
+      if (DEBUG_PWA) {
+        console.log('🚫 Install button hidden: App already installed (standalone mode)');
+      }
       return null;
     }
 
     // Don't show if not installable (except on iOS)
     if (!isInstallable && !isIOS) {
-      console.log('🚫 Install button hidden: Not installable and not iOS', {
-        isInstallable,
-        isIOS,
-        deferredPrompt: !!deferredPrompt
-      });
+      if (DEBUG_PWA) {
+        console.log('🚫 Install button hidden: Not installable and not iOS', {
+          isInstallable,
+          isIOS,
+          deferredPrompt: !!deferredPrompt
+        });
+      }
       return null;
     }
 
-    console.log('✅ Install button showing:', {
-      isFloating,
-      isInstallable,
-      isIOS,
-      isStandalone,
-      hasDeferredPrompt: !!deferredPrompt
-    });
+    if (DEBUG_PWA) {
+      console.log('✅ Install button showing:', {
+        isFloating,
+        isInstallable,
+        isIOS,
+        isStandalone,
+        hasDeferredPrompt: !!deferredPrompt
+      });
+    }
 
     return (
-      <button
-        onClick={handleInstallClick}
-        disabled={false} // Always enabled for better UX - handle cases in click handler
-        data-testid="pwa-install-button"
-        data-floating={isFloating}
-        data-installable={isInstallable}
-        data-ios={isIOS}
-        data-standalone={isStandalone}
-        data-has-prompt={!!deferredPrompt}
-        className={mergeClasses(
-          "flex flex-col items-center justify-center",
-          isFloating
-            ? "w-16 h-16 rounded-full shadow-lg border border-gray-200"
-            : "min-w-[94px] h-full py-2 px-1",
-          "font-medium text-xs",
-          "transition-all duration-200",
-          "focus:outline-none focus-visible:outline-none",
-          "active:outline-none active:ring-0",
-          "select-none touch-manipulation",
-          "-webkit-tap-highlight-color: transparent",
-          deferredPrompt ? "opacity-90 hover:opacity-100" : "opacity-60 hover:opacity-80",
-          "disabled:opacity-40 disabled:cursor-not-allowed"
-        )}
-        style={{
-          color: theme?.properties?.headingsFontColor || "#000000",
-          backgroundColor: isFloating ? (theme?.properties?.background || "white") : "transparent",
-          WebkitTapHighlightColor: "transparent",
-        } as React.CSSProperties}
-        aria-label={isIOS ? "Install App Instructions" : "Install App"}
-        title={deferredPrompt ? "Install App" : "Install prompt not ready yet"}
-      >
-        {/* Install icon */}
-        <div className={isFloating ? "text-lg" : "text-xl mb-1"}>
-          <span role="img" aria-label="install">📱</span>
-        </div>
+      <>
+        <button
+          onClick={handleInstallClick}
+          disabled={false} // Always enabled for better UX - handle cases in click handler
+          data-testid="pwa-install-button"
+          data-floating={isFloating}
+          data-installable={isInstallable}
+          data-ios={isIOS}
+          data-standalone={isStandalone}
+          data-has-prompt={!!deferredPrompt}
+          className={mergeClasses(
+            "flex flex-col items-center justify-center",
+            isFloating
+              ? "w-16 h-16 rounded-full shadow-lg border border-gray-200"
+              : "min-w-[94px] h-full py-2 px-1",
+            "font-medium text-xs",
+            "transition-all duration-200",
+            "focus:outline-none focus-visible:outline-none",
+            "active:outline-none active:ring-0",
+            "select-none touch-manipulation",
+            "-webkit-tap-highlight-color: transparent",
+            deferredPrompt ? "opacity-90 hover:opacity-100" : "opacity-60 hover:opacity-80",
+            "disabled:opacity-40 disabled:cursor-not-allowed"
+          )}
+          style={{
+            color: theme?.properties?.headingsFontColor || "#000000",
+            backgroundColor: isFloating ? (theme?.properties?.background || "white") : "transparent",
+            WebkitTapHighlightColor: "transparent",
+          } as React.CSSProperties}
+          aria-label={isIOS ? "Install App Instructions" : "Install App"}
+          title={deferredPrompt ? "Install App" : "Install prompt not ready yet"}
+        >
+          {/* Install icon */}
+          <div className={isFloating ? "text-lg" : "text-xl mb-1"}>
+            <span role="img" aria-label="install">📱</span>
+          </div>
 
-        {/* Label - only show when not floating */}
+          {/* Label - only show when not floating */}
 
-        <span className="truncate max-w-[80px] line-clamp-1">
-          Install
-        </span>
+          <span className="truncate max-w-[80px] line-clamp-1">
+            Install
+          </span>
 
-      </button>
+        </button>
+
+        {/* Install Instructions Modal */}
+        <InstallInstructionsModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          theme={theme}
+          isIOS={isIOS}
+        />
+      </>
     );
   });
 
@@ -494,11 +522,13 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
   const inactiveColor = "rgba(107, 114, 128, 0.7)"; // text-gray-500 with some opacity
 
   // Debug logging for showInstallButton prop
-  console.log('🔧 MobileNavbar Debug:', {
-    showInstallButton,
-    tabsCount: tabs.length,
-    selectedTab: selected
-  });
+  if (DEBUG_PWA) {
+    console.log('🔧 MobileNavbar Debug:', {
+      showInstallButton,
+      tabsCount: tabs.length,
+      selectedTab: selected
+    });
+  }
 
   return (
     <Tabs
