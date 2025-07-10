@@ -110,12 +110,18 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
       return getFidgetDisplayName(null, isMobile, 'consolidated-pinned');
     }
     
+    // Handle special case for the homebase immutable feed
+    if (fidgetId === 'feed') {
+      const fidgetDatum = fidgetInstanceDatums[fidgetId];
+      if (fidgetDatum) {
+        return fidgetDatum.config?.settings?.customMobileDisplayName || 'Feed';
+      } else {
+        return 'Feed';
+      }
+    }
+    
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     if (!fidgetDatum) return "Unknown";
-    
-    if (fidgetId === 'feed') {
-      return fidgetDatum.config?.settings?.customMobileDisplayName || 'Feed';
-    }
     
     // Get valid fidget IDs and find index for custom tab name
     const validFidgetIds = Object.keys(fidgetInstanceDatums);
@@ -135,15 +141,17 @@ const TabNavigation: React.FC<TabNavigationProps> = ({
   const getFidgetIcon = (fidgetId: string) => {
     const fidgetDatum = fidgetInstanceDatums[fidgetId];
     
-    if (fidgetId === 'feed' && fidgetDatum) {
-      const customIcon = fidgetDatum.config?.settings?.mobileIconName;
-      if (customIcon) {
-        const IconComponent = ICON_PACK[customIcon] || FaIcons.FaRss;
-        return (
-          <IconComponent 
-            className={`w-5 h-5 ${selectedTab === fidgetId ? 'text-black' : 'text-gray-500'}`}
-          />
-        );
+    if (fidgetId === 'feed') {
+      if (fidgetDatum) {
+        const customIcon = fidgetDatum.config?.settings?.mobileIconName;
+        if (customIcon) {
+          const IconComponent = ICON_PACK[customIcon] || FaIcons.FaRss;
+          return (
+            <IconComponent 
+              className={`w-5 h-5 ${selectedTab === fidgetId ? 'text-black' : 'text-gray-500'}`}
+            />
+          );
+        }
       }
       return (
         <FaIcons.FaRss 
