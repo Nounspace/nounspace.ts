@@ -694,15 +694,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const controlElement = elementUnderMouse?.closest('[data-fidget-controls]');
     const isOverControls = !!controlElement;
     
-    // Debug logging
-    if (elementUnderMouse?.tagName === 'DIV' || elementUnderMouse?.tagName === 'BUTTON') {
-      console.log('Element under mouse:', elementUnderMouse, 'has data-fidget-controls:', elementUnderMouse?.hasAttribute('data-fidget-controls'));
-    }
-    
     if (isOverControls !== isMouseOverControlButtons) {
-      console.log('Control button detection changed:', isOverControls, 'element:', elementUnderMouse, 'controlElement:', controlElement);
+      setIsMouseOverControlButtons(isOverControls);
     }
-    setIsMouseOverControlButtons(isOverControls);
   }, [isMouseOverControlButtons]);
 
   // Add document-level mouse detection
