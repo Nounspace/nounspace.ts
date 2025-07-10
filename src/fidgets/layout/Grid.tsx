@@ -687,6 +687,24 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // Simplified state - no hover state needed with CSS-only approach
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const [isMouseOverGrid, setIsMouseOverGrid] = useState(false);
+  const [isMouseOverControlButtons, setIsMouseOverControlButtons] = useState(false);
+
+  // DOM-based control button detection
+  const checkControlButtonArea = (e: React.MouseEvent) => {
+    const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+    const controlElement = elementUnderMouse?.closest('[data-fidget-controls]');
+    const isOverControls = !!controlElement;
+    
+    // Debug logging
+    if (elementUnderMouse?.tagName === 'DIV' || elementUnderMouse?.tagName === 'BUTTON') {
+      console.log('Element under mouse:', elementUnderMouse, 'has data-fidget-controls:', elementUnderMouse?.hasAttribute('data-fidget-controls'));
+    }
+    
+    if (isOverControls !== isMouseOverControlButtons) {
+      console.log('Control button detection changed:', isOverControls, 'element:', elementUnderMouse, 'controlElement:', controlElement);
+    }
+    setIsMouseOverControlButtons(isOverControls);
+  };
 
   // Simplified position checking
   const isPositionOccupied = useCallback((x: number, y: number): boolean => {
@@ -734,8 +752,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // CSS Grid auto-placement overlay component
   const GridOverlay = ({ inEditMode }: { inEditMode: boolean }) => {
-    // Don't show overlay during interactions that should block it
-    if (!inEditMode || currentlyDragging || isPickingFidget) {
+    // Don't show overlay during interactions that should block it, or when over control buttons
+    if (!inEditMode || currentlyDragging || isMouseOverControlButtons) {
       return null;
     }
 
@@ -751,7 +769,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           rowGap: `${memoizedGridDetails.margin[1]}px`,
           padding: `${memoizedGridDetails.containerPadding[0]}px`,
           height: rowHeight * memoizedGridDetails.maxRows + "px",
-          zIndex: 40, // Hover overlay - highest layer for interactivity
+          zIndex: 30
         }}
         onMouseEnter={() => setIsMouseOverGrid(true)}
         onMouseLeave={() => setIsMouseOverGrid(false)}
@@ -836,7 +854,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   };
 
-  // Remove all the complex hover system code and replace with simple overlay
   return (
     <>
       {editorPanelPortal(element)}
@@ -850,7 +867,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             />
           )}
 
-          <div className="relative">
+          <div className="relative" onMouseMove={checkControlButtonArea}>
             <ReactGridLayout
               {...memoizedGridDetails}
               isDraggable={inEditMode}
