@@ -687,6 +687,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // Simplified state - no hover state needed with CSS-only approach
   const gridContainerRef = useRef<HTMLDivElement>(null);
   const [isMouseOverGrid, setIsMouseOverGrid] = useState(false);
+  const [isMouseOverControlButtons, setIsMouseOverControlButtons] = useState(false);
+
+  // DOM-based control button detection
+  const checkControlButtonArea = useCallback((e: React.MouseEvent) => {
+    const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+    const isOverControls = !!elementUnderMouse?.closest('[data-fidget-controls]');
+    setIsMouseOverControlButtons(isOverControls);
+  }, []);
 
   // Simplified position checking
   const isPositionOccupied = useCallback((x: number, y: number): boolean => {
@@ -754,7 +762,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           zIndex: 10, // Lower z-index to stay below fidget control buttons
         }}
         onMouseEnter={() => setIsMouseOverGrid(true)}
-        onMouseLeave={() => setIsMouseOverGrid(false)}
+        onMouseLeave={() => {
+          setIsMouseOverGrid(false);
+          setIsMouseOverControlButtons(false);
+        }}
+        onMouseMove={checkControlButtonArea}
       >
         {[...Array(memoizedGridDetails.cols * memoizedGridDetails.maxRows)].map((_, i) => {
           const x = i % memoizedGridDetails.cols;
@@ -783,7 +795,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   ? 'opacity-30' 
                   : 'opacity-0'
                 }
-                hover:opacity-80
+                ${!isMouseOverControlButtons ? 'hover:opacity-80' : ''}
               `}
               style={{
                 // Extend hover area to center of margins
@@ -801,8 +813,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   transition-all 
                   duration-300 
                   ease-out 
-                  group-hover:bg-blue-50 
-                  group-hover:border-blue-200
+                  ${!isMouseOverControlButtons ? 'group-hover:bg-blue-50 group-hover:border-blue-200' : ''}
                   ${isHintSquare 
                     ? 'bg-blue-25 border-blue-100' 
                     : ''
@@ -821,10 +832,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               >
                 <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-400 ease-out ${
                   isHintSquare 
-                    ? 'opacity-30 group-hover:opacity-100' 
-                    : 'opacity-0 group-hover:opacity-100'
+                    ? `opacity-30 ${!isMouseOverControlButtons ? 'group-hover:opacity-100' : ''}` 
+                    : `opacity-0 ${!isMouseOverControlButtons ? 'group-hover:opacity-100' : ''}`
                 }`}>
-                  <div className="text-blue-600 hover:text-blue-700 transition-colors duration-250 ease-out">
+                  <div className={`text-blue-600 transition-colors duration-250 ease-out ${!isMouseOverControlButtons ? 'hover:text-blue-700' : ''}`}>
                     <AddFidgetIcon />
                   </div>
                 </div>
