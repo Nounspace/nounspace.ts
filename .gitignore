@@ -103,3 +103,6 @@ dist/
 
 # Visual Studio settings
 .vscode
+.env
+.env.development
+.env.development.local
