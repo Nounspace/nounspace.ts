@@ -2,8 +2,8 @@
  * Layout utilities for processing and managing fidget layouts across different views
  */
 
-import { FidgetInstanceData } from "@/common/fidgets";
 import { TabItem } from "@/common/components/organisms/MobileNavbar";
+import { FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
 
 /**
@@ -36,8 +36,19 @@ export const processTabFidgetIds = (
     return fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
   }
   
+  // First, sort fidgets by mobile order if specified
+  const sortedFidgetIds = [...fidgetIds].sort((a, b) => {
+    const fidgetA = fidgetInstanceDatums[a];
+    const fidgetB = fidgetInstanceDatums[b];
+    
+    const orderA = (fidgetA?.config?.settings?.mobileOrder as number) || 999;
+    const orderB = (fidgetB?.config?.settings?.mobileOrder as number) || 999;
+    
+    return orderA - orderB;
+  });
+  
   // For mobile, filter valid fidgets but maintain order
-  const validFidgets = fidgetIds.filter(id => {
+  const validFidgets = sortedFidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return false;
     if (fidgetData.config?.settings?.showOnMobile === false) return false;

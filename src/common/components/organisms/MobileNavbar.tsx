@@ -146,6 +146,17 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
     if (tab.id === 'consolidated-media') return "Media";
     if (tab.id === 'consolidated-pinned') return "Pinned";
     
+    // Handle special case for the homebase immutable feed
+    if (tab.id === 'feed') {
+      if (fidgetInstanceDatums && fidgetInstanceDatums[tab.id]) {
+        const fidgetData = fidgetInstanceDatums[tab.id];
+        return fidgetData.config?.settings?.customMobileDisplayName || 'Feed';
+      } else {
+        // For homebase immutable feed that doesn't exist in fidgetInstanceDatums
+        return 'Feed';
+      }
+    }
+    
     // Use custom tab name from SpaceConfig if available
     if (tabNames && tabNames[index]) return tabNames[index];
     
@@ -193,6 +204,24 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       return selected === tab.id ? 
         <BsFillPinFill size={22} /> : 
         <BsPin size={22} />;
+    }
+    
+    // Handle special case for the homebase immutable feed
+    if (tab.id === 'feed') {
+      if (fidgetInstanceDatums && fidgetInstanceDatums[tab.id]) {
+        const fidgetData = fidgetInstanceDatums[tab.id];
+        if (fidgetData.fidgetType) {
+          const fidgetModule = CompleteFidgets[fidgetData.fidgetType];
+          if (fidgetModule) {
+            const isSelected = selected === tab.id;
+            if (isSelected && fidgetModule.properties.mobileIconSelected) {
+              return fidgetModule.properties.mobileIconSelected;
+            } else if (fidgetModule.properties.mobileIcon) {
+              return fidgetModule.properties.mobileIcon;
+            }
+          }
+        }
+      }
     }
     
     // If we have fidget instance data, try to get icon from fidget module

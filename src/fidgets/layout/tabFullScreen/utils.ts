@@ -182,7 +182,12 @@ export const extractFidgetIdsFromLayout = (
   
   // If layout is empty/null and we have fidgetInstanceDatums, use all available fidgets
   if ((!layout || (Array.isArray(layout) && layout.length === 0)) && fidgetInstanceDatums) {
-    return Object.keys(fidgetInstanceDatums);
+    const sortedFidgets = Object.keys(fidgetInstanceDatums).sort((a, b) => {
+      const aOrder = fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+      const bOrder = fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+      return aOrder - bOrder;
+    });
+    return sortedFidgets;
   }
   
   // If layout is something else, return empty array
