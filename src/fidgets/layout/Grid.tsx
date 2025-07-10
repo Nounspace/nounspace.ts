@@ -187,6 +187,49 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     ],
   );
 
+  // Consolidated collision detection utility
+  const isSpaceAvailable = useCallback((
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    options: {
+      checkBoundaries?: boolean;
+      excludeItemId?: string;
+    } = {}
+  ): boolean => {
+    const { checkBoundaries = false, excludeItemId } = options;
+    
+    // Check boundaries if requested
+    if (checkBoundaries) {
+      if (x + w > memoizedGridDetails.cols || y + h > memoizedGridDetails.maxRows) {
+        return false;
+      }
+      if (x < 0 || y < 0) {
+        return false;
+      }
+    }
+    
+    // Check for collisions with existing items
+    for (const item of layoutConfig.layout) {
+      // Skip the item we're excluding (useful for resizing/moving)
+      if (excludeItemId && item.i === excludeItemId) {
+        continue;
+      }
+      
+      if (
+        x < item.x + item.w &&
+        x + w > item.x &&
+        y < item.y + item.h &&
+        y + h > item.y
+      ) {
+        return false;
+      }
+    }
+    
+    return true;
+  }, [layoutConfig.layout, memoizedGridDetails.cols, memoizedGridDetails.maxRows]);
+
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
     return await saveConfig({
       fidgetTrayContents: newTrayData,
@@ -401,7 +444,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
       fidgetInstanceDatums;
 
-    console.log("newFidgetInstanceDatums", newFidgetInstanceDatums);
     // Only save if we have fidgets left or if we're removing the last one
     if (
       Object.keys(newFidgetInstanceDatums).length > 0 ||
@@ -441,46 +483,22 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   /**
-   * Adds a given fidget to the grid at a specific position.
-   * If the position is occupied, returns false. Otherwise, returns true.
+   * Adds a given fidget to the grid.
+   * If x, y coordinates are provided, tries to place at that specific position.
+   * If no coordinates provided, tries targetPosition first, then finds the first available space.
+   * Returns true if successful, false if no space available.
    */
-  const addFidgetToGridAtPosition = (fidget: FidgetBundle, x: number, y: number): boolean => {
+  const addFidgetToGrid = (fidget: FidgetBundle, x?: number, y?: number): boolean => {
     const { fidgetType, id } = fidget;
     const fidgetProps = CompleteFidgets[fidgetType].properties;
     const minW = fidgetProps.size.minWidth;
     const minH = fidgetProps.size.minHeight;
 
-    // Check if the position is available
-    const isSpaceAvailable = (
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-    ): boolean => {
-      // Check boundaries
-      if (x + w > memoizedGridDetails.cols || y + h > memoizedGridDetails.maxRows) {
-        return false;
-      }
-      
-      // Check for collisions with existing items
-      for (const item of layoutConfig.layout) {
-        if (
-          x < item.x + item.w &&
-          x + w > item.x &&
-          y < item.y + item.h &&
-          y + h > item.y
-        ) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    if (isSpaceAvailable(x, y, minW, minH)) {
+    const createAndSaveFidget = (posX: number, posY: number): boolean => {
       const newItem: PlacedGridItem = {
         i: id,
-        x,
-        y,
+        x: posX,
+        y: posY,
         w: minW,
         h: minH,
         minW,
@@ -501,76 +519,30 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         fidgetType: fidget.fidgetType,
       });
       return true;
+    };
+
+    // If specific coordinates provided, try that position
+    if (x !== undefined && y !== undefined) {
+      if (isSpaceAvailable(x, y, minW, minH, { checkBoundaries: true })) {
+        return createAndSaveFidget(x, y);
+      }
+      return false;
     }
 
-    return false;
-  };
-
-  /**
-   * Adds a given fidget to the grid by finding the first available space based on its minimum size.
-   * If no space is available, returns false. Otherwise, returns true.
-   */
-  const addFidgetToGrid = (fidget: FidgetBundle): boolean => {
     // If we have a target position, try to add there first
     if (targetPosition) {
-      const success = addFidgetToGridAtPosition(fidget, targetPosition.x, targetPosition.y);
+      const success = isSpaceAvailable(targetPosition.x, targetPosition.y, minW, minH, { checkBoundaries: true });
       setTargetPosition(null); // Clear target position after use
-      if (success) return true;
+      if (success) {
+        return createAndSaveFidget(targetPosition.x, targetPosition.y);
+      }
     }
 
     // Fall back to finding the first available space
-    const { fidgetType, id } = fidget;
-    const fidgetProps = CompleteFidgets[fidgetType].properties;
-    const minW = fidgetProps.size.minWidth;
-    const minH = fidgetProps.size.minHeight;
-
-    const isSpaceAvailable = (
-      x: number,
-      y: number,
-      w: number,
-      h: number,
-    ): boolean => {
-      for (const item of layoutConfig.layout) {
-        if (
-          x < item.x + item.w &&
-          x + w > item.x &&
-          y < item.y + item.h &&
-          y + h > item.y
-        ) {
-          return false;
-        }
-      }
-      return true;
-    };
-
-    // Search for available space
-    for (let x = 0; x <= memoizedGridDetails.cols - minW; x++) {
-      for (let y = 0; y <= memoizedGridDetails.maxRows - minH; y++) {
-        if (isSpaceAvailable(x, y, minW, minH)) {
-          const newItem: PlacedGridItem = {
-            i: id,
-            x,
-            y,
-            w: minW,
-            h: minH,
-            minW,
-            minH,
-            maxW: fidgetProps.size.maxWidth,
-            maxH: fidgetProps.size.maxHeight,
-            resizeHandles: resizeDirections,
-            isBounded: false,
-          };
-
-          // Save both layout and fidgetInstanceDatums in a single operation
-          debouncedSaveConfig({
-            layoutConfig: { layout: [...layoutConfig.layout, newItem] },
-            fidgetInstanceDatums: { ...fidgetInstanceDatums, [id]: fidget },
-          });
-
-          analytics.track(AnalyticsEvent.ADD_FIDGET, {
-            fidgetType: fidget.fidgetType,
-          });
-          return true;
+    for (let searchX = 0; searchX <= memoizedGridDetails.cols - minW; searchX++) {
+      for (let searchY = 0; searchY <= memoizedGridDetails.maxRows - minH; searchY++) {
+        if (isSpaceAvailable(searchX, searchY, minW, minH)) {
+          return createAndSaveFidget(searchX, searchY);
         }
       }
     }
@@ -624,11 +596,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Log initial config state
   useEffect(() => {
-    // console.log('Grid received config:', {
-    //   fidgetIds: Object.keys(fidgetInstanceDatums),
-    //   layoutIds: layoutConfig.layout.map(item => item.i),
-    //   trayIds: fidgetTrayContents.map(fidget => fidget.id)
-    // });
   }, []);
 
   // Export function to generate SpaceConfig JSON
@@ -707,25 +674,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     }
   }, [inEditMode, checkControlButtonArea]);
 
-  // Simplified position checking
-  const isPositionOccupied = useCallback((x: number, y: number): boolean => {
-    return layoutConfig.layout.some(item => 
-      x >= item.x && x < item.x + item.w && 
-      y >= item.y && y < item.y + item.h
-    );
-  }, [layoutConfig.layout]);
-
   // Find the first empty grid square (top-left to bottom-right) for hint
   const findFirstEmptySquare = useCallback((): { x: number; y: number } | null => {
     for (let y = 0; y < memoizedGridDetails.maxRows; y++) {
       for (let x = 0; x < memoizedGridDetails.cols; x++) {
-        if (!isPositionOccupied(x, y)) {
+        if (isSpaceAvailable(x, y, 1, 1)) {
           return { x, y };
         }
       }
     }
     return null;
-  }, [memoizedGridDetails.maxRows, memoizedGridDetails.cols, isPositionOccupied]);
+  }, [memoizedGridDetails.maxRows, memoizedGridDetails.cols, isSpaceAvailable]);
 
   const firstEmptySquare = useMemo(() => findFirstEmptySquare(), [findFirstEmptySquare]);
 
@@ -746,10 +705,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // Check if position is valid and not occupied
     if (gridX >= 0 && gridX < memoizedGridDetails.cols && 
         gridY >= 0 && gridY < memoizedGridDetails.maxRows && 
-        !isPositionOccupied(gridX, gridY)) {
+        isSpaceAvailable(gridX, gridY, 1, 1)) {
       openFidgetPickerAtPosition(gridX, gridY);
     }
-  }, [inEditMode, memoizedGridDetails.cols, memoizedGridDetails.maxRows, isPositionOccupied]);
+  }, [inEditMode, memoizedGridDetails.cols, memoizedGridDetails.maxRows, isSpaceAvailable]);
 
   // CSS Grid auto-placement overlay component
   const GridOverlay = ({ inEditMode }: { inEditMode: boolean }) => {
@@ -777,7 +736,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         {[...Array(memoizedGridDetails.cols * memoizedGridDetails.maxRows)].map((_, i) => {
           const x = i % memoizedGridDetails.cols;
           const y = Math.floor(i / memoizedGridDetails.cols);
-          const isOccupied = isPositionOccupied(x, y);
+          const isOccupied = !isSpaceAvailable(x, y, 1, 1);
           const isHintSquare = !isMouseOverGrid && firstEmptySquare?.x === x && firstEmptySquare?.y === y;
 
           if (isOccupied) {
