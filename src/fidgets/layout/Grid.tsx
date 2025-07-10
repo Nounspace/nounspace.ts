@@ -426,14 +426,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     saveLayout(newLayout);
   }
 
-  // function removeFidgetFromInstanceDatums(fidgetId: string) {
-  //   // New set of instances - use computed property name to remove the correct fidget
-  //   const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
-  //     fidgetInstanceDatums;
-
-  //   saveFidgetInstanceDatums(newFidgetInstanceDatums);
-  // }
-
   function removeFidget(fidgetId: string) {
     unselectFidget();
 

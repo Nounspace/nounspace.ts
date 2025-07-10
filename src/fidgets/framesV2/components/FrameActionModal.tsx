@@ -154,7 +154,6 @@ export default function FrameActionModal({
       <div
         className="flex-1 overflow-auto"
         style={{ minHeight: "90vh ", padding: "-20px" }}
-      // hide scrollbar
       >
         {loading ? (
           <div
