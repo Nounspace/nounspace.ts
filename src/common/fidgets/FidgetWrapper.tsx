@@ -128,12 +128,12 @@ export function FidgetWrapper({
   return (
     <>
       <div
-        data-fidget-controls
         className={
           selectedFidgetID === bundle.id
-            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6"
-            : "absolute -mt-7 opacity-0 transition-opacity ease-in flex flex-row h-6"
+            ? "absolute -mt-7 opacity-80 transition-opacity ease-in flex flex-row h-6 z-40"
+            : "absolute -mt-7 opacity-0 transition-opacity ease-in flex flex-row h-6 z-40"
         }
+        data-fidget-controls
       >
         <Card className="h-full grabbable rounded-lg w-6 flex items-center justify-center bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2]">
           <TooltipProvider>
@@ -185,8 +185,8 @@ export function FidgetWrapper({
       <Card
         className={
           selectedFidgetID === bundle.id
-            ? "size-full border-solid border-sky-600 border-4 overflow-hidden"
-            : "size-full overflow-hidden"
+            ? "size-full border-solid border-sky-600 border-4 overflow-hidden z-40"
+            : "size-full overflow-hidden z-40"
         }
         style={{
           background: settingsWithDefaults.useDefaultColors 
@@ -207,7 +207,7 @@ export function FidgetWrapper({
         {bundle.config.editable && (
           <button
             onMouseDown={onClickEdit}
-            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-10 flex bg-slate-400 bg-opacity-50 rounded-md" /* z-10: overlay de edição (padronização) */
+            className="items-center justify-center opacity-0 hover:opacity-50 duration-500 absolute inset-0 z-30 flex bg-slate-400 bg-opacity-50 rounded-md" 
           ></button>
         )}
         <ScopedStyles cssStyles={userStyles} className="size-full">
