@@ -61,69 +61,29 @@ const TokenDataHeader: React.FC = () => {
   return (
     <div className="flex items-center px-3 md:px-4 py-2 w-fit border-b border-b-gray-200 md:border-none space-x-2 md:space-x-4">
       <div className="flex items-center space-x-2 md:space-x-4">
-        <Avatar
-          style={{
-            width: "40px",
-            height: "40px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "100%",
-            overflow: "hidden",
-            backgroundColor: image ? "transparent" : "#ccc",
-          }}
-        >
-          {image ? (
-            <AvatarImage
-              src={image}
-              style={{
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "100%",
-                overflow: "hidden",
-                backgroundColor: image ? "transparent" : "#ccc",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <AvatarFallback
-              className="text-black font-bold"
-              style={{
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: "100%",
-                overflow: "hidden",
-                backgroundColor: image ? "transparent" : "#ccc",
-              }}
-            >
-              {typeof name === "string" ? name.charAt(0) : "?"}
-            </AvatarFallback>
-          )}
+        <div className="relative">
+          <Avatar className="w-10 h-10 flex items-center justify-center rounded-full overflow-hidden bg-gray-300">
+            {image ? (
+              <AvatarImage
+                src={image}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <AvatarFallback className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-300 text-black font-bold">
+                {typeof name === "string" ? name.charAt(0) : "?"}
+              </AvatarFallback>
+            )}
+          </Avatar>
           {name === "nounspace" && (
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-              }}
-            >
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 rounded-full">
               <img
                 src="/images/noggles.png"
                 alt="NOGGLES"
-                style={{ width: "20px", height: "20px" }}
+                className="w-5 h-5"
               />
             </div>
           )}
-        </Avatar>
+        </div>
         {/* Token Info */}
         <div>
           <div className="flex items-center space-x-2">
@@ -158,21 +118,21 @@ const TokenDataHeader: React.FC = () => {
           <img
             src="https://logosarchive.com/wp-content/uploads/2022/02/Metamask-icon.svg"
             alt="metamask"
-            style={{ width: "20px", height: "20px", cursor: "pointer" }}
+            className="w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleAddToMetamask}
           />
           <img
             src="https://cdn.worldvectorlogo.com/logos/etherscan-1.svg"
             alt="basescan"
-            style={{ width: "20px", height: "20px", cursor: "pointer" }}
+            className="w-5 h-5 cursor-pointer hover:opacity-80 transition-opacity"
             onClick={handleOpenNetscan}
           />
           <IoMdShare
-            className="text-gray-500 cursor-pointer"
+            className="w-5 h-5 text-gray-500 cursor-pointer hover:text-gray-700 transition-colors"
             onClick={handleCopyUrl}
           />
         </div>
-        <div className="w-0.5 h-12 bg-gray-200 m-2.5 hidden md:block" />
+        <div className="w-0.5 h-12 bg-gray-200 mx-2.5 hidden md:block" />
       </div>
     </div>
   );
