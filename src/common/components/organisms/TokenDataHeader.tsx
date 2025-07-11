@@ -22,7 +22,7 @@ const TokenDataHeader: React.FC = () => {
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -104,11 +104,10 @@ const TokenDataHeader: React.FC = () => {
             {tokenPrice !== null ? `$${tokenPrice}` : " "}
           </div>
           <div
-            className={`text-sm font-medium ${
-              priceChange && parseFloat(priceChange) > 0
+            className={`text-sm font-medium ${priceChange && parseFloat(priceChange) > 0
                 ? "text-green-500"
                 : "text-red-500"
-            }`}
+              }`}
           >
             {priceChange ? `${parseFloat(priceChange).toFixed(2)}%` : " "}
           </div>

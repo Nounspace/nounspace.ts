@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { useState, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { FaTimes } from "react-icons/fa";
 import * as Toast from "@radix-ui/react-toast";
 import { useAppStore } from "@/common/data/stores/app";

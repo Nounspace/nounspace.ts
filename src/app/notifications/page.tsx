@@ -31,7 +31,6 @@ import {
 } from "@/common/lib/hooks/useNotificationsLastSeenCursor"
 import moment from "moment"
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
 import { FaHeart } from "react-icons/fa"
 import { useRouter } from "next/navigation"
 
@@ -229,12 +228,6 @@ const ReplyNotificationRow: NotificationRowProps = ({
   onSelect,
 }) => {
   const repliedByUser = notification.cast?.author ? [notification.cast.author] : [];
-  const fid = useCurrentFid()
-  const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0
-  const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1)
-  const replyingToUsername = replyingTo?.users?.length
-    ? replyingTo.users[0].username
-    : undefined
 
   return (
     <div className="flex flex-col gap-2">

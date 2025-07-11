@@ -5,12 +5,10 @@ import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
 import { isNil, noop } from "lodash";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { useRouter } from "next/navigation";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import { HOMEBASE_ID } from "@/common/data/stores/app/currentSpace";
-import { LoginModal } from "@privy-io/react-auth";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 
 // Lazy load the TabBar component to improve performance
@@ -22,7 +20,6 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   const {
     tabConfigs,
     homebaseConfig,
-    currentSpaceId,
     tabOrdering,
     loadTab,
     saveTab,
@@ -205,7 +202,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
         tabName === "Feed"
           ? homebaseConfig
           : tabConfigs[tabName]?.config;
-      const { timestamp, ...restConfig } = {
+      const { ...restConfig } = {
         ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
         isEditable: true,
       };

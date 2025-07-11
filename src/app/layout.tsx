@@ -3,7 +3,6 @@ import React from "react";
 import "@/styles/globals.css";
 import Providers from "@/common/providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Head from "next/head";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";

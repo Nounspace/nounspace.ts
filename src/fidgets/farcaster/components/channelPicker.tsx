@@ -25,7 +25,7 @@ type Props = {
 };
 
 export function ChannelPicker(props: Props) {
-  const { getChannels, onSelect, value } = props;
+  const { onSelect, value } = props;
   // Store the latest getChannels callback in a ref so the effect
   // doesn't re-run when the function identity changes
   const getChannelsRef = React.useRef(props.getChannels);
