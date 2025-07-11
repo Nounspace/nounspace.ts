@@ -1,5 +1,6 @@
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Cross2Icon } from "@radix-ui/react-icons";
 
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
@@ -28,8 +29,9 @@ const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     showCloseButton?: boolean;
+    title?: string;
   }
->(({ className, children, showCloseButton = true, ...props }, ref) => (
+>(({ className, children, showCloseButton = true, title = "Drawer", ...props }, ref) => (
   <DrawerPortal>
     <DrawerOverlay />
     <DialogPrimitive.Content
@@ -40,6 +42,9 @@ const DrawerContent = React.forwardRef<
       )}
       {...props}
     >
+      <VisuallyHidden.Root>
+        <DialogPrimitive.Title>{title}</DialogPrimitive.Title>
+      </VisuallyHidden.Root>
       {children}
       {showCloseButton && (
         <DrawerClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
@@ -52,6 +57,21 @@ const DrawerContent = React.forwardRef<
 ));
 DrawerContent.displayName = "DrawerContent";
 
+const DrawerTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={mergeClasses(
+      "text-lg font-semibold leading-none tracking-tight",
+      className,
+    )}
+    {...props}
+  />
+));
+DrawerTitle.displayName = DialogPrimitive.Title.displayName;
+
 export {
   Drawer,
   DrawerTrigger,
@@ -59,4 +79,5 @@ export {
   DrawerOverlay,
   DrawerClose,
   DrawerContent,
+  DrawerTitle,
 };
