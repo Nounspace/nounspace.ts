@@ -30,22 +30,34 @@ export const isPinnedCast = (
 export const processTabFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
+  mobileLayoutOrder?: string[]
 ): string[] => {
   if (!isMobile) {
     return fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
   }
   
-  // First, sort fidgets by mobile order if specified
-  const sortedFidgetIds = [...fidgetIds].sort((a, b) => {
-    const fidgetA = fidgetInstanceDatums[a];
-    const fidgetB = fidgetInstanceDatums[b];
+  // Use mobile layout order if provided, otherwise fall back to original logic
+  let sortedFidgetIds: string[];
+  
+  if (mobileLayoutOrder && mobileLayoutOrder.length > 0) {
+    sortedFidgetIds = mobileLayoutOrder.filter(id => fidgetIds.includes(id) && !!fidgetInstanceDatums[id]);
     
-    const orderA = (fidgetA?.config?.settings?.mobileOrder as number) || 999;
-    const orderB = (fidgetB?.config?.settings?.mobileOrder as number) || 999;
-    
-    return orderA - orderB;
-  });
+    const remainingFidgets = fidgetIds.filter(id => 
+      !mobileLayoutOrder.includes(id) && !!fidgetInstanceDatums[id]
+    );
+    sortedFidgetIds = [...sortedFidgetIds, ...remainingFidgets];
+  } else {
+    sortedFidgetIds = [...fidgetIds].sort((a, b) => {
+      const fidgetA = fidgetInstanceDatums[a];
+      const fidgetB = fidgetInstanceDatums[b];
+      
+      const orderA = (fidgetA?.config?.settings?.mobileOrder as number) || 999;
+      const orderB = (fidgetB?.config?.settings?.mobileOrder as number) || 999;
+      
+      return orderA - orderB;
+    });
+  }
   
   // For mobile, filter valid fidgets but maintain order
   const validFidgets = sortedFidgetIds.filter(id => {

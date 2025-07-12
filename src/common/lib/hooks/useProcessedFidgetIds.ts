@@ -15,12 +15,14 @@ import {
  * @param layoutFidgetIds - The raw fidget IDs from the layout configuration
  * @param fidgetInstanceDatums - The fidget instance data
  * @param isMobile - Whether the current view is mobile
+ * @param mobileLayoutOrder - Optional mobile-specific order from layoutDetails
  * @returns An object with processed fidget IDs for different purposes
  */
 export function useProcessedFidgetIds(
   layoutFidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
+  mobileLayoutOrder?: string[]
 ) {
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
@@ -34,8 +36,8 @@ export function useProcessedFidgetIds(
   
   // Process fidget IDs for tabs (potentially consolidating on mobile)
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile),
-  [layoutFidgetIds, fidgetInstanceDatums, isMobile]);
+    processTabFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile, mobileLayoutOrder),
+  [layoutFidgetIds, fidgetInstanceDatums, isMobile, mobileLayoutOrder]);
   
   // Get media fidget IDs (for consolidated media view)
   const mediaFidgetIds = useMemo(() => 

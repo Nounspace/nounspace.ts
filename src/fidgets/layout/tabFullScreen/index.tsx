@@ -15,9 +15,9 @@ import {
   createFidgetBundle, 
   getMediaFidgetIds, 
   getPinnedCastIds, 
-  getValidFidgetIds, 
-  processTabFidgetIds 
+  getValidFidgetIds
 } from "./utils";
+import { processTabFidgetIds } from "@/common/utils/layoutUtils";
 import TabNavigation from "./components/TabNavigation";
 import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
 import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
@@ -52,8 +52,8 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile, layoutConfig.layouts?.mobile?.layout),
+  [layoutConfig.layout, fidgetInstanceDatums, isMobile, layoutConfig.layouts?.mobile?.layout]);
   
   const mediaFidgetIds = useMemo(() => 
     getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),

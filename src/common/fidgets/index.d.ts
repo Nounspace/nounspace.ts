@@ -21,7 +21,6 @@ export type FidgetSettingsStyle = {
   showOnMobile?: boolean;
   customMobileDisplayName?: string;
   mobileIconName?: string;
-  mobileOrder?: number;
   background?: Color;
   fontFamily?: FontFamily;
   fontColor?: Color;
@@ -109,6 +108,11 @@ export type FidgetBundle<
 
 export interface LayoutFidgetConfig<L> {
   layout: L;
+  layouts?: {
+    mobile?: {
+      layout: string[];
+    };
+  };
 }
 
 export interface LayoutFidgetDetails<C extends LayoutFidgetConfig> {
