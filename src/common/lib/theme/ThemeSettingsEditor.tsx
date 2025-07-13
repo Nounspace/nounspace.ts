@@ -94,6 +94,15 @@ export function ThemeSettingsEditor({
 
   useEffect(() => {
     if (isHomebasseFeedTab && !fidgetInstanceDatums['feed']) {
+
+       // Get the highest mobileOrder to place feed at the end initially
+      const maxOrder = Math.max(
+        0,
+        ...Object.values(fidgetInstanceDatums).map(d => 
+          (d.config?.settings?.mobileOrder as number) || 0
+        )
+      );
+
       const feedFidget = {
         id: 'feed',
         fidgetType: 'feed',
@@ -104,6 +113,7 @@ export function ThemeSettingsEditor({
             customMobileDisplayName: 'Feed',
             mobileIconName: 'FaBars',
             showOnMobile: true,
+             mobileOrder: maxOrder + 1,
           },
         },
       };
@@ -134,7 +144,7 @@ export function ThemeSettingsEditor({
             name: d.fidgetType,
             mobileDisplayName: mobileName,
             context: 'Immutable Feed',
-            order: i + 1,
+            order: (d.config.settings.mobileOrder as number) || 0,
             icon: (d.config.settings.mobileIconName as string) || 'FaBars',
             displayOnMobile: d.config.settings.showOnMobile !== false,
           } as MiniApp;
@@ -149,7 +159,7 @@ export function ThemeSettingsEditor({
           name: d.fidgetType,
           mobileDisplayName: mobileName,
           context: props?.fidgetName || d.fidgetType,
-          order: i + 1,
+         order: (d.config.settings.mobileOrder as number) || i + 1,
           icon: (d.config.settings.mobileIconName as string) || defaultIcon,
           displayOnMobile: d.config.settings.showOnMobile !== false,
         } as MiniApp;
@@ -170,7 +180,7 @@ export function ThemeSettingsEditor({
           settings: {
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
-            showOnMobile: app.displayOnMobile,
+           mobileOrder: app.order,
           },
         },
       };
@@ -188,7 +198,7 @@ export function ThemeSettingsEditor({
             ...datum.config.settings,
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
-            showOnMobile: app.displayOnMobile,
+           mobileOrder: app.order,
           },
         },
       },
@@ -199,20 +209,7 @@ export function ThemeSettingsEditor({
 
   const handleReorderMiniApps = (apps: MiniApp[]) => {
     // Save the new mobile order in the layout configuration
-    if (onApplySpaceConfig) {
-      const mobileOrder = apps.map(app => app.id);
-      onApplySpaceConfig({
-        layoutDetails: {
-          layoutConfig: {
-            layouts: {
-              mobile: {
-                layout: mobileOrder
-              }
-            }
-          }
-        }
-      });
-    }
+
     const newDatums: { [key: string]: FidgetInstanceData } = { ...fidgetInstanceDatums };
     
     apps.forEach((app, index) => {
@@ -229,6 +226,7 @@ export function ThemeSettingsEditor({
               customMobileDisplayName: 'Feed',
               mobileIconName: 'FaBarsStaggered',
               showOnMobile: true,
+               mobileOrder: index + 1, 
             }
           }
         };
@@ -240,6 +238,7 @@ export function ThemeSettingsEditor({
             ...datum.config,
             settings: {
               ...datum.config.settings,
+               mobileOrder: index + 1, 
             },
           },
         };

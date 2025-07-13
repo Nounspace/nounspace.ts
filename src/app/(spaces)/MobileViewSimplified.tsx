@@ -20,7 +20,7 @@ type MobileViewSimplifiedProps = {
   tabNames?: string[]
   fid?: number
   layoutFidgetIds: string[]
-  mobileLayoutOrder?: string[]
+ 
   isHomebasePath?: boolean
 }
 const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
@@ -38,20 +38,15 @@ const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
   tabNames,
   fid,
   layoutFidgetIds,
-  mobileLayoutOrder,
+
   isHomebasePath = false,
 }) => {
   const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
 
   const layoutConfig = useMemo(() => {
-    let layout: string[];
+   let layout = [...layoutFidgetIds];
     
-    // Use mobileLayoutOrder if provided, otherwise use layoutFidgetIds
-    if (mobileLayoutOrder && mobileLayoutOrder.length > 0) {
-      layout = [...mobileLayoutOrder];
-    } else {
-      layout = [...layoutFidgetIds];
-    }
+   
     
     if (isHomebasePath && hasFeed && !layout.includes("feed")) {
       layout = ["feed", ...layout];
@@ -61,7 +56,7 @@ const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
       layout,
       layoutFidget: "tabFullScreen",
     };
-  }, [layoutFidgetIds, mobileLayoutOrder, isHomebasePath, hasFeed]);
+  }, [layoutFidgetIds, isHomebasePath, hasFeed]);
 
   if (layoutConfig.layout.length === 0) {
     return (
