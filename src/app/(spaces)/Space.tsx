@@ -168,9 +168,15 @@ export default function Space({
   // Memoize the layout component and config based on mobile state
   const layoutComponent = useMemo(() => {
     if (isMobile) {
-      // Use mobile layout order from layoutDetails if available, otherwise use all fidget IDs
-      const mobileLayoutOrder = config.layoutDetails?.layoutConfig?.layouts?.mobile?.layout;
-      const fidgetIds = mobileLayoutOrder || Object.keys(config.fidgetInstanceDatums || {});
+     const fidgetIds = Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+  const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+  const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+  return aOrder - bOrder;
+});
+console.log('🔄 Space.tsx layoutComponent - sorted fidgetIds:', fidgetIds.map(id => ({
+  id,
+  mobileOrder: config.fidgetInstanceDatums[id]?.config?.settings?.mobileOrder
+})));
       
       return {
         Component: MobileViewSimplified,
@@ -257,8 +263,11 @@ export default function Space({
                 feed={feed}
                 tabNames={config.tabNames}
                 fid={config.fid}
-                layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {})}
-                mobileLayoutOrder={config.layoutDetails?.layoutConfig?.layouts?.mobile?.layout}
+               layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+                const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+                const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+                return aOrder - bOrder;
+              })}
                 isHomebasePath={isHomebasePath}
               />
             ) : (
@@ -392,8 +401,11 @@ export default function Space({
                             feed={feed}
                             tabNames={config.tabNames}
                             fid={config.fid}
-                            layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {})}
-                            mobileLayoutOrder={config.layoutDetails?.layoutConfig?.layouts?.mobile?.layout}
+                            layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
+                              const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+                              const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+                              return aOrder - bOrder;
+                            })}
                             isHomebasePath={isHomebasePath}
                           />
                         </Suspense>
