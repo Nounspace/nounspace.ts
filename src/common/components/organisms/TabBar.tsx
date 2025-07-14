@@ -4,7 +4,6 @@ import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
-import NogsGateButton from "./NogsGateButton";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
 import { TooltipProvider } from "../atoms/tooltip";
@@ -198,107 +197,77 @@ function TabBar({
 
   const isLoggedIn = getIsLoggedIn();
 
+
+
   return (
     <TooltipProvider>
       <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
         {isTokenPage && contractAddress && (
-          <div className="flex flex-row justify-start h-16 overflow-y-scroll w-full md:w-fit z-20 bg-white">
+          <div className="flex flex-row justify-start h-16 w-full md:w-fit z-20 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="relative flex flex-auto h-16 bg-white"> 
-          {isMobile && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-40 bg-white flex gap-2">
-              {!inEditMode && isEditable && !inHomebase && (
-                <Button
-                  onClick={() => setEditMode(true)}
-                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-                >
-                  <FaPaintbrush />
-                </Button>
-              )}
-              {!inHomebase && (
-                <NogsGateButton
-                  onClick={() => handleCreateTab(generateNewTabName())}
-                  className="items-center flex rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
-                >
-                  <div>
-                    <FaPlus />
-                  </div>
-                  <span className="ml-1">Tab</span>
-                </NogsGateButton>
-              )}
-            </div>
-          )}
-          <div className={`flex-1 overflow-x-auto scrollbar-hide ${isMobile ? 'pr-16' : 'pr-4'}`}>
-            {tabList && (
+        <div className="flex w-full h-16 bg-white items-center justify-between"> 
+          {/* Tabs Section - grows until it hits buttons */}
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               <Reorder.Group
                 as="ol"
                 axis="x"
                 onReorder={updateTabOrder}
-                className="flex flex-row gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
+                className="flex flex-nowrap gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
-                style={{
-                  maxWidth: isMobile ? 'calc(100% - 60px)' : '100%',
-                  overflowX: 'auto',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
-                }}
               >
                 <AnimatePresence initial={false}>
                   {map(
-                    inHomebase
-                      ? ["Feed", ...tabList]
-                      : tabList,
-                    (tabName: string) => {
-                      return (
-                        <Tab
-                          key={tabName}
-                          getSpacePageUrl={getSpacePageUrl}
-                          tabName={tabName}
-                          inEditMode={inEditMode}
-                          isSelected={currentTab === tabName}
-                          onClick={() => handleTabClick(tabName)}
-                          removeable={isEditableTab(tabName)}
-                          draggable={inEditMode}
-                          renameable={isEditableTab(tabName)}
-                          onRemove={() => handleDeleteTab(tabName)}
-                          renameTab={handleRenameTab}
-                        />
-                      );
-                    },
+                    inHomebase ? ["Feed", ...tabList] : tabList,
+                    (tabName: string) => (
+                      <Tab
+                        key={tabName}
+                        getSpacePageUrl={getSpacePageUrl}
+                        tabName={tabName}
+                        inEditMode={inEditMode}
+                        isSelected={currentTab === tabName}
+                        onClick={() => handleTabClick(tabName)}
+                        removeable={isEditableTab(tabName)}
+                        draggable={inEditMode}
+                        renameable={isEditableTab(tabName)}
+                        onRemove={() => handleDeleteTab(tabName)}
+                        renameTab={handleRenameTab}
+                      />
+                    )
                   )}
                 </AnimatePresence>
               </Reorder.Group>
-            )}
+            </div>
           </div>
+
+          {/* Action Buttons - pushed to right side */}
+          {(isEditable) && (
+            <div className="flex items-center gap-2 px-2 flex-shrink-0">
+              {!inEditMode && (
+                <Button
+                  onClick={() => setEditMode(true)}
+                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <FaPaintbrush />
+                  {!isMobile && <span className="ml-2">Customize</span>}
+                </Button>
+              )}
+              {(inEditMode) && (
+                <Button
+                  onClick={() => handleCreateTab(generateNewTabName())}
+                  className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
+                >
+                  <FaPlus />
+                  <span className="ml-1">Tab</span>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
         {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
-        )}
-        {inEditMode && !mobilePreview && !isMobile ? (
-          <div className="mr-36 flex flex-row">
-            <NogsGateButton
-              onClick={() => handleCreateTab(generateNewTabName())}
-              className="items-center flex rounded-xl p-2 m-3 px-auto bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
-              <div className="ml-2">
-                <FaPlus />
-              </div>
-              <span className="ml-4 mr-2">Tab</span>
-            </NogsGateButton>
-          </div>
-        ) : null}
-        {!inEditMode && !mobilePreview && !isMobile && isEditable && (
-          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 mr-4 z-40">
-            <Button
-              onClick={() => setEditMode(true)}
-              className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold"
-            >
-              <FaPaintbrush className="mr-2" />
-              Customize
-            </Button>
-          </div>
         )}
       </div>
     </TooltipProvider>
