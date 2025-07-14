@@ -1,4 +1,6 @@
 import { Metadata } from "next/types";
+
+export const dynamic = "force-dynamic";
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
@@ -32,7 +34,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     });
   } catch (error) {
     console.error("Error generating cast metadata:", error);
-    return {};
+    return getCastMetadataStructure({ hash: castHash });
   }
 }
 

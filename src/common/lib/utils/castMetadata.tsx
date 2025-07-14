@@ -25,7 +25,10 @@ export const getCastMetadataStructure = (
     ? `@${username}'s Cast`
     : "Farcaster Cast";
 
-  const castUrl = hash ? `https://nounspace.com/c/${hash}` : undefined;
+  const castUrl =
+    hash && username
+      ? `https://nounspace.com/homebase/c/${username}/${hash}`
+      : undefined;
 
   const params = new URLSearchParams({
     username: username || "",
