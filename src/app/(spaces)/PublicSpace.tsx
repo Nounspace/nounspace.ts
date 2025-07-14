@@ -136,10 +136,10 @@ export default function PublicSpace({
   // Determine the page type if not explicitly provided
   const resolvedPageType = useMemo(() => {
     if (pageType) return pageType;
-    if (isTokenPage) return 'token';
-    if (spaceOwnerFid) return 'person';
-    if (providedSpaceId?.startsWith('proposal:')) return 'proposal';
-    return 'person';
+    if (isTokenPage) return "token";
+    if (spaceOwnerFid) return "profile";
+    if (providedSpaceId?.startsWith("proposal:")) return "proposal";
+    return "profile";
   }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
 
   // Create an editability checker
@@ -200,7 +200,7 @@ export default function PublicSpace({
         nextSpaceId = existingSpace.id;
         nextTabName = decodeURIComponent(providedTabName);
       }
-    } else if (resolvedPageType === "person" && spaceOwnerFid) {
+    } else if (resolvedPageType === "profile" && spaceOwnerFid) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
         (space) => space.fid === spaceOwnerFid,
       );
