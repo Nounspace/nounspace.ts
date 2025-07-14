@@ -78,6 +78,7 @@ export default function PublicSpace({
     deleteSpaceTab,
     registerSpaceFid,
     registerSpaceContract,
+    registerProposalSpace,
   } = useAppStore((state) => ({
     clearLocalSpaces: state.clearLocalSpaces,
     getCurrentSpaceId: state.currentSpace.getCurrentSpaceId,
