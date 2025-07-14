@@ -52,8 +52,8 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile, layoutConfig.layouts?.mobile?.layout),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile, layoutConfig.layouts?.mobile?.layout]);
+    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
+  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
   const mediaFidgetIds = useMemo(() => 
     getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),
