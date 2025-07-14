@@ -20,11 +20,19 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
-  const { tokenData } = useToken();
+  let tokenData: ReturnType<typeof useToken>["tokenData"] | null = null;
+  try {
+    // Attempt to read token data if a TokenProvider is present
+    tokenData = useToken().tokenData;
+  } catch {
+    // Swallow the error when no TokenProvider is available
+    tokenData = null;
+  }
+
   const symbol =
-    tokenSymbol ||
-    tokenData?.clankerData?.symbol ||
-    tokenData?.geckoData?.symbol ||
+    tokenSymbol ??
+    tokenData?.clankerData?.symbol ??
+    tokenData?.geckoData?.symbol ??
     "";
 
   const handleClaimClick = () => {
