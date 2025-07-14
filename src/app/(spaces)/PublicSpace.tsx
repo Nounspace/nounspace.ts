@@ -438,7 +438,7 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName('Overview');
+              setCurrentTabName('Profile');
               return;
             }
           } else if (!isTokenPage) {
