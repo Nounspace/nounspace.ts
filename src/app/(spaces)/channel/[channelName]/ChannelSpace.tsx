@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { isArray, isNil } from "lodash";
-import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
+import { isArray } from "lodash";
 import createInitialChannelSpaceConfigForName from "@/constants/initialChannelSpace";
 import PublicSpace from "../../PublicSpace";
 
@@ -19,9 +18,6 @@ const ChannelSpace: React.FC<ChannelSpaceProps> = ({
   tabName,
   channelName,
 }) => {
-  if (isNil(spaceOwnerFid)) {
-    return <SpaceNotFound />;
-  }
 
   const INITIAL_CHANNEL_SPACE_CONFIG = createInitialChannelSpaceConfigForName(
     channelName,

@@ -15,7 +15,7 @@ export const getChannelMetadata = async (
 ): Promise<ChannelMetadata | null> => {
   try {
     const { data } = await axiosBackend.get("/api/farcaster/neynar/channel", {
-      params: { id: channelName },
+      params: { id: channelName.toLowerCase() },
     });
     const ch = data.channel;
     return {
@@ -35,7 +35,7 @@ export const getTabList = async (channelName: string): Promise<Tab[]> => {
     const { data: registrations, error } = await createSupabaseServerClient()
       .from("spaceRegistrations")
       .select("spaceId, spaceName")
-      .eq("spaceName", channelName)
+      .eq("spaceName", channelName.toLowerCase())
       .limit(1);
     if (error) {
       console.error("Error fetching space registration:", error);
