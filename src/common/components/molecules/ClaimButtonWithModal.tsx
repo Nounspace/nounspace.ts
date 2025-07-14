@@ -12,15 +12,20 @@ import { Address } from "viem";
 
 interface ClaimButtonWithModalProps {
   contractAddress?: Address;
+  tokenSymbol?: string;
 }
 
 const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   contractAddress,
+  tokenSymbol,
 }) => {
   const [isModalOpen, setModalOpenState] = React.useState(false);
   const { tokenData } = useToken();
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenSymbol ||
+    tokenData?.clankerData?.symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
 
   const handleClaimClick = () => {
     setModalOpenState(true);

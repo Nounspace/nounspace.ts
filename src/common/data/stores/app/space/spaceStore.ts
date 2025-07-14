@@ -92,6 +92,7 @@ interface CachedSpace {
   orderUpdatedAt?: string;
   contractAddress?: string | null;
   network?: string | null;
+  proposalId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -99,6 +100,7 @@ interface LocalSpace extends CachedSpace {
     [newName: string]: string;
   };
   fid?: number | null;
+  proposalId?: string | null;
 }
 
 interface SpaceState {
@@ -174,6 +176,7 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -986,7 +989,7 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (proposalId, initialConfig) => {
     try {
       // Check if a space already exists for this proposal
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
@@ -1011,7 +1014,7 @@ export const createSpaceStoreFunc = (
       // Register a new space for the proposal
       const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `Nouns-Prop-${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
       };
@@ -1035,6 +1038,7 @@ export const createSpaceStoreFunc = (
           tabs: {},
           order: [],
           changedNames: {},
+          proposalId,
         };
       });
 
@@ -1042,7 +1046,7 @@ export const createSpaceStoreFunc = (
       await get().space.createSpaceTab(
         newSpaceId,
         "Overview",
-        INITIAL_SPACE_CONFIG_EMPTY
+        initialConfig
       );
 
 
@@ -1094,6 +1098,7 @@ export const createSpaceStoreFunc = (
                   contractAddress: spaceInfo.contractAddress,
                   network: spaceInfo.network,
                   fid: spaceInfo.fid,
+                  proposalId: (spaceInfo as any).proposalId,
                 };
               }
             });
