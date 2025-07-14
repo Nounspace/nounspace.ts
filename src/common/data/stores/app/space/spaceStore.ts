@@ -1040,10 +1040,10 @@ export const createSpaceStoreFunc = (
         };
       });
 
-      // Create and commit the initial "Overview" tab
+      // Create and commit the initial Profile tab
       await get().space.createSpaceTab(
         newSpaceId,
-        "Overview",
+        "Profile",
         initialConfig
       );
 
