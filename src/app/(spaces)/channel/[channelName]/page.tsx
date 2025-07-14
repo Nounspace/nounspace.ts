@@ -7,16 +7,16 @@ import { unstable_noStore as noStore } from "next/cache";
 const loadChannelSpaceData = async (
   channelName: string,
   tabNameParam?: string,
-) => {
+): Promise<{ spaceOwnerFid: number | null; spaceId: string | null; tabName: string | null } | null> => {
   noStore();
-  const channelMetadata = await getChannelMetadata(channelName);
-  const spaceOwnerFid = channelMetadata?.leadFid || null;
+  const channelMetadata = await getChannelMetadata(channelName.toLowerCase());
   if (!channelMetadata) {
-    return { spaceOwnerFid: null, spaceId: null, tabName: null };
+    return null;
   }
-  const tabList: Tab[] = await getTabList(channelName);
+  const spaceOwnerFid = channelMetadata.leadFid ?? null;
+  const tabList: Tab[] = await getTabList(channelName.toLowerCase());
   if (!tabList || tabList.length === 0) {
-    return { spaceOwnerFid, spaceId: null, tabName: null };
+    return { spaceOwnerFid, spaceId: null, tabName: tabNameParam || null };
   }
   const defaultTab: Tab = tabList[0];
   const spaceId = defaultTab.spaceId;
@@ -30,10 +30,11 @@ const ChannelSpacePage = async ({ params }) => {
     return <SpaceNotFound />;
   }
   const decodedTabName = tabNameParam ? decodeURIComponent(tabNameParam) : undefined;
-  const { spaceOwnerFid, spaceId, tabName } = await loadChannelSpaceData(
-    channelName,
-    decodedTabName,
-  );
+  const data = await loadChannelSpaceData(channelName, decodedTabName);
+  if (!data) {
+    return <SpaceNotFound />;
+  }
+  const { spaceOwnerFid, spaceId, tabName } = data;
   return (
     <ChannelSpace
       channelName={channelName}
@@ -42,6 +43,6 @@ const ChannelSpacePage = async ({ params }) => {
       tabName={tabName}
     />
   );
-};
+}; 
 
 export default ChannelSpacePage;
