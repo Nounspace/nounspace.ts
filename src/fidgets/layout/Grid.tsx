@@ -16,6 +16,8 @@ import {
   LayoutFidgetProps,
   LayoutFidgetConfig,
   FidgetBundle,
+  FidgetArgs,
+  FidgetModule,
 } from "@/common/fidgets";
 import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
@@ -25,7 +27,7 @@ import {
   FidgetWrapper,
   getSettingsWithDefaults,
 } from "@/common/fidgets/FidgetWrapper";
-import { map, reject } from "lodash";
+import { map, reject, fromPairs } from "lodash";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
 import { debounce } from "lodash";
@@ -34,6 +36,7 @@ import { analytics } from "@/common/providers/AnalyticsProvider";
 import { SpaceConfig } from "../../app/(spaces)/Space";
 import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
 import { v4 as uuidv4 } from "uuid";
+import { FidgetPickerModal } from "@/common/components/organisms/FidgetPickerModal";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -169,7 +172,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [currentlyResizing, setCurrentlyResizing] = useState(false);
   const [currentFidgetSettings, setCurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
-  const [isPickingFidget, setIsPickingFidget] = useState(false);
+  const [isFidgetPickerModalOpen, setIsFidgetPickerModalOpen] = useState(false);
   const [targetPosition, setTargetPosition] = useState<{ x: number; y: number } | null>(null);
 
   const memoizedGridDetails = useMemo(
@@ -301,13 +304,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function openFidgetPicker() {
-    setIsPickingFidget(true);
+    setIsFidgetPickerModalOpen(true);
     unselectFidget();
   }
 
   function openFidgetPickerAtPosition(x: number, y: number) {
     setTargetPosition({ x, y });
-    setIsPickingFidget(true);
+    setIsFidgetPickerModalOpen(true);
     unselectFidget();
   }
 
@@ -345,6 +348,60 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         removeFidget={removeFidget}
       />,
     );
+  }
+
+  function generateFidgetInstance(
+    fidgetId: string,
+    fidget: FidgetModule<FidgetArgs>,
+  ): FidgetInstanceData {
+    function allFields(fidget: FidgetModule<FidgetArgs>) {
+      return fromPairs(
+        map(fidget.properties.fields, (field) => {
+          return [field.fieldName, field.default];
+        }),
+      );
+    }
+
+    const newFidgetInstanceData = {
+      config: {
+        editable: true,
+        data: {},
+        settings: allFields(fidget),
+      },
+      fidgetType: fidgetId,
+      id: fidgetId + ":" + uuidv4(),
+    };
+
+    return newFidgetInstanceData;
+  }
+
+  // Add fidget to grid if space is available, otherwise add to tray
+  function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
+    // Generate new fidget instance
+    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
+
+    // Add it to the instance data list
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
+
+    setIsFidgetPickerModalOpen(false);
+
+    const bundle = {
+      ...newFidgetInstanceData,
+      properties: CompleteFidgets[fidgetId].properties,
+    };
+
+    const addedToGrid = addFidgetToGrid(bundle);
+
+    if (!addedToGrid) {
+      toast("No space available on the grid. Fidget added to the tray.", {
+        duration: 2000,
+      });
+      const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+      saveTrayContents(newTrayContents);
+    }
+
+    selectFidget(bundle);
   }
 
   const { height } = useWindowSize();
@@ -561,8 +618,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           saveFidgetInstanceDatums={saveFidgetInstanceDatums}
           saveTrayContents={saveTrayContents}
           removeFidget={removeFidget}
-          isPickingFidget={isPickingFidget}
-          setIsPickingFidget={setIsPickingFidget}
           openFidgetPicker={openFidgetPicker}
           selectFidget={selectFidget}
           addFidgetToGrid={addFidgetToGrid}
@@ -888,6 +943,15 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           </div>
         </div>
       </div>
+      
+      <FidgetPickerModal
+        isOpen={isFidgetPickerModalOpen}
+        setIsOpen={setIsFidgetPickerModalOpen}
+        addFidget={addFidget}
+        setExternalDraggedItem={setExternalDraggedItem}
+        setCurrentlyDragging={setCurrentlyDragging}
+        generateFidgetInstance={generateFidgetInstance}
+      />
     </>
   );
 };
