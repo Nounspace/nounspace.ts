@@ -161,3 +161,23 @@ export const useFidFromUsername = (username?: string) => {
     staleTime: 1000 * 60 * 2,
   });
 };
+
+export const useFidFromAddress = (address?: string) => {
+  return useQuery({
+    queryKey: ["fid-from-address", address],
+    enabled: !!address && address.length > 0,
+    queryFn: async () => {
+      if (!address) return undefined;
+      const res = await axios.get(
+        "/api/search/users",
+        { params: { q: address, limit: 1 } },
+      );
+      const users = res.data?.value?.users;
+      if (Array.isArray(users) && users.length > 0) {
+        return Number(users[0].fid);
+      }
+      return undefined;
+    },
+    staleTime: 1000 * 60 * 2,
+  });
+};
