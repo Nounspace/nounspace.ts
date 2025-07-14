@@ -15,7 +15,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   if (!channelName) {
     return defaultMetadata;
   }
-  const channel = await getChannelMetadata(channelName);
+  const channel = await getChannelMetadata(channelName.toLowerCase());
   if (!channel) {
     return defaultMetadata;
   }
