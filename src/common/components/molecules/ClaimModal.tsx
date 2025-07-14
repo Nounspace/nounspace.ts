@@ -25,12 +25,19 @@ const ClaimModal: React.FC<ClaimModalProps> = ({
     handleModalClose();
   };
 
+  const title = tokenSymbol
+    ? `Claim ${tokenSymbol}'s Token Space`
+    : 'Claim this Space';
+  const description = tokenSymbol
+    ? `Login in with the Farcaster Account that deployed ${tokenSymbol} to customize this space.`
+    : 'Login with the Farcaster account that controls this space to customize it.';
+
   return (
     <Modal
       open={isModalOpen}
       setOpen={handleModalClose}
-      title={`Claim ${tokenSymbol}'s Token Space`}
-      description={`Login in with the Farcaster Account that deployed ${tokenSymbol} to customize this space.`}
+      title={title}
+      description={description}
     >
       <video
         autoPlay

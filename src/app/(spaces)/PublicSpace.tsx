@@ -39,6 +39,7 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  proposalId?: string;
 }
 
 export default function PublicSpace({
@@ -54,6 +55,7 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
   pageType, // New prop
+  proposalId,
 }: PublicSpaceProps) {
 
   const {
@@ -98,6 +100,7 @@ export default function PublicSpace({
     commitSpaceTabOrder: state.space.commitSpaceOrderToDatabase,
     registerSpaceFid: state.space.registerSpaceFid,
     registerSpaceContract: state.space.registerSpaceContract,
+    registerProposalSpace: state.space.registerProposalSpace,
   }));
 
   console.log("PublicSpace mounted:", {
@@ -140,6 +143,15 @@ export default function PublicSpace({
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
 
+  // Determine the page type if not explicitly provided
+  const resolvedPageType = useMemo(() => {
+    if (pageType) return pageType;
+    if (isTokenPage) return 'token';
+    if (spaceOwnerFid) return 'person';
+    if (providedSpaceId?.startsWith('proposal:')) return 'proposal';
+    return 'person';
+  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
+
   // Create an editability checker
   const editabilityCheck = useMemo(() => {
     const checker = createEditabilityChecker({
@@ -149,6 +161,7 @@ export default function PublicSpace({
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
       isTokenPage,
+      isProposalPage: resolvedPageType === 'proposal',
     });
 
     console.log("Editability check:", {
@@ -167,6 +180,7 @@ export default function PublicSpace({
     tokenData,
     wallets,
     isTokenPage,
+    resolvedPageType,
   ]);
 
   // Internal isEditable function
@@ -177,16 +191,6 @@ export default function PublicSpace({
     [editabilityCheck],
   );
 
-  // Determine the page type if not explicitly provided
-  const resolvedPageType = useMemo(() => {
-    if (pageType) return pageType;
-    if (isTokenPage) return "token";
-    if (spaceOwnerFid) return "person";
-    if (providedSpaceId?.startsWith("proposal:")) return "proposal";
-    return "person"; // Default to person page
-  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
-
-  console.log("Resolved page type:", resolvedPageType);
 
   // Control to avoid infinite space/tab update cycles
   const prevSpaceId = useRef<string | null>(null);
@@ -221,8 +225,14 @@ export default function PublicSpace({
         nextSpaceId = existingSpace.id;
         nextTabName = decodeURIComponent(providedTabName);
       }
-    } else if (resolvedPageType === "proposal") {
-      // logic for proposal
+    } else if (resolvedPageType === "proposal" && proposalId) {
+      const existingSpace = Object.values(localSpacesSnapshot).find(
+        (space) => space.proposalId === proposalId
+      );
+      if (existingSpace) {
+        nextSpaceId = existingSpace.id;
+        nextTabName = decodeURIComponent(providedTabName);
+      }
     }
 
     setCurrentSpaceId(nextSpaceId);
@@ -478,6 +488,16 @@ export default function PublicSpace({
               setCurrentTabName("Profile");
               return;
             }
+          } else if (resolvedPageType === 'proposal' && proposalId) {
+            const existingSpace = Object.values(localSpaces).find(
+              space => space.proposalId === proposalId
+            );
+
+            if (existingSpace) {
+              setCurrentSpaceId(existingSpace.id);
+              setCurrentTabName('Overview');
+              return;
+            }
           } else if (!isTokenPage) {
             const existingSpace = Object.values(localSpaces).find(
               (space) => space.fid === currentUserFid,
@@ -512,6 +532,8 @@ export default function PublicSpace({
               newSpaceId,
               contractAddress,
             });
+          } else if (resolvedPageType === 'proposal' && proposalId) {
+            newSpaceId = await registerProposalSpace(proposalId, initialConfig);
           } else if (!isTokenPage) {
             console.log("Attempting to register user space:", {
               currentUserFid,
@@ -571,9 +593,12 @@ export default function PublicSpace({
     isTokenPage,
     contractAddress,
     tokenData?.network,
+    resolvedPageType,
+    proposalId,
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
+    initialConfig,
   ]);
 
   const saveConfig = useCallback(
@@ -699,7 +724,7 @@ export default function PublicSpace({
   const tabBar = (
     <TabBar
       isTokenPage={isTokenPage}
-      pageType={pageType}
+      pageType={resolvedPageType}
       inHomebase={false}
       currentTab={getCurrentTabName() ?? "Profile"}
       tabList={
@@ -767,6 +792,7 @@ export default function PublicSpace({
       }}
       getSpacePageUrl={getSpacePageUrl}
       isEditable={editabilityCheck.isEditable}
+      spaceId={getCurrentSpaceId()}
     />
   );
 
