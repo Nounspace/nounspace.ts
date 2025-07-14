@@ -1,6 +1,8 @@
 import { Metadata } from "next/types";
+import { WEBSITE_URL } from "@/constants/app";
 
 export const dynamic = "force-dynamic";
+export const metadataBase = new URL(WEBSITE_URL);
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
@@ -8,8 +10,10 @@ import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 export async function generateMetadata({ params }): Promise<Metadata> {
   const segments: string[] = Array.isArray(params.slug) ? params.slug : [];
   let castHash: string | undefined;
+  let username: string | undefined;
 
   if (segments.length >= 3 && segments[0] === "c") {
+    username = decodeURIComponent(segments[1]);
     castHash = decodeURIComponent(segments[2]);
   } else if (segments.length >= 2) {
     castHash = decodeURIComponent(segments[1]);
@@ -34,7 +38,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     });
   } catch (error) {
     console.error("Error generating cast metadata:", error);
-    return getCastMetadataStructure({ hash: castHash });
+    return getCastMetadataStructure({ hash: castHash, username });
   }
 }
 
