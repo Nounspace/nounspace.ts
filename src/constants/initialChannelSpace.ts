@@ -1,5 +1,6 @@
 import { SpaceConfig } from "@/app/(spaces)/Space";
-import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
+import { FeedType } from "@neynar/nodejs-sdk/build/api";
+import { FilterType } from "@/fidgets/farcaster/Feed";
 import { cloneDeep } from "lodash";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
 
