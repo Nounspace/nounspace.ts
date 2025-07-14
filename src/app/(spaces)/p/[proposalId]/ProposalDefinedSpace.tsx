@@ -6,6 +6,7 @@ import { Address } from "viem";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { ProposalData } from "./utils";
+import { useFidFromAddress } from "@/common/data/queries/farcaster";
 
 export interface ProposalPageSpaceProps {
   spaceId?: string | null;
@@ -22,6 +23,7 @@ const ProposalDefinedSpace = ({
 }: ProposalPageSpaceProps) => {
   const { proposalData } = useProposalContext();
   const ownerId = proposalData?.proposer.id;
+  const { data: ownerFid } = useFidFromAddress(ownerId);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
@@ -43,6 +45,7 @@ const ProposalDefinedSpace = ({
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
+        spaceOwnerFid={ownerFid}
         spaceOwnerAddress={ownerId}
         pageType="proposal"
         proposalId={proposalId ?? undefined}
