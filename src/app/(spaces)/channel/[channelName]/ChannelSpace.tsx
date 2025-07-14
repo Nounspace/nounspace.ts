@@ -31,7 +31,7 @@ const ChannelSpace: React.FC<ChannelSpaceProps> = ({
       tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
       initialConfig={INITIAL_CHANNEL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
-      spaceOwnerFid={spaceOwnerFid}
+      spaceOwnerFid={spaceOwnerFid ?? undefined}
       pageType="profile"
     />
   );
