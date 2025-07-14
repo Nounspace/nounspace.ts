@@ -557,12 +557,14 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
           getIconForCastReactionType(CastReactionType.quote),
         )}
         {cast.channel && cast.channel.name && (
-          <div
+          <PriorityLink
             key={`cast-${cast.hash}-channel-name`}
-            className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md"
+            href={`/channel/${cast.channel.name}`}
           >
-            /{cast.channel.name}
-          </div>
+            <div className="mt-1.5 flex align-center text-sm opacity-40 py-1 px-1.5 rounded-md hover:text-blue-500">
+              /{cast.channel.name}
+            </div>
+          </PriorityLink>
         )}
         <div
           className="ml-auto mt-1.5 flex cursor-pointer text-sm opacity-50 hover:text-foreground/85 hover:bg-background/85 py-1 px-1.5 rounded-md"
