@@ -11,6 +11,7 @@ export type ChannelFidgetSettings = {
 
 const channelProperties: FidgetProperties = {
   fidgetName: "Channel",
+  icon: 0x1f4e2,
   fields: [
     {
       fieldName: "channel",
