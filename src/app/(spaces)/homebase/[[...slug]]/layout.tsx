@@ -1,8 +1,8 @@
-import { Metadata } from "next/types";
+import type { Metadata } from "next";
 import { WEBSITE_URL } from "@/constants/app";
 
 export const dynamic = "force-dynamic";
-export const metadataBase = new URL(WEBSITE_URL);
+export const metadata: Metadata = { metadataBase: new URL(WEBSITE_URL) };
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
