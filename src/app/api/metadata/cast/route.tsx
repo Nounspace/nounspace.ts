@@ -1,10 +1,8 @@
 import React from "react";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest } from "next/server";
 import { ImageResponse } from "next/og";
 
-export const config = {
-  runtime: "edge",
-};
+export const runtime = "edge";
 
 interface CastCardData {
   username: string;
@@ -13,20 +11,13 @@ interface CastCardData {
   text: string;
 }
 
-export default async function GET(
-  req: NextApiRequest,
-  res: NextApiResponse<ImageResponse | string>,
-) {
-  if (!req.url) {
-    return res.status(404).send("Url not found");
-  }
-
-  const params = new URLSearchParams(req.url.split("?")[1]);
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
   const data: CastCardData = {
-    username: params.get("username") || "",
-    displayName: params.get("displayName") || "",
-    pfpUrl: params.get("pfpUrl") || "",
-    text: params.get("text") || "",
+    username: searchParams.get("username") || "",
+    displayName: searchParams.get("displayName") || "",
+    pfpUrl: searchParams.get("pfpUrl") || "",
+    text: searchParams.get("text") || "",
   };
 
   return new ImageResponse(<CastCard data={data} />, {
