@@ -32,6 +32,7 @@ const ChannelSpace: React.FC<ChannelSpaceProps> = ({
       initialConfig={INITIAL_CHANNEL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
       spaceOwnerFid={spaceOwnerFid ?? undefined}
+      channelName={channelName}
       pageType="profile"
     />
   );

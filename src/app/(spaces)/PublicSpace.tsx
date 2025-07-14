@@ -12,6 +12,7 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import Profile from "@/fidgets/ui/profile";
+import ChannelInfo from "@/fidgets/ui/Channel";
 import { useWallets } from "@privy-io/react-auth";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,8 @@ interface PublicSpaceProps {
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  // Channel name for channel pages
+  channelName?: string;
 }
 
 export default function PublicSpace({
@@ -54,6 +57,7 @@ export default function PublicSpace({
   contractAddress,
   tokenData,
   pageType, // New prop
+  channelName,
 }: PublicSpaceProps) {
 
   const {
@@ -772,13 +776,25 @@ export default function PublicSpace({
 
   // @todo - Use correct page type for profile
   const profile =
-    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined : (
-      <Profile.fidget
-        settings={{ fid: spaceOwnerFid }}
-        saveData={async () => noop()}
-        data={{}}
-      />
-    );
+    pageType === "proposal" || isTokenPage
+      ? undefined
+      : channelName
+        ? (
+          <ChannelInfo.fidget
+            settings={{ channel: channelName }}
+            saveData={async () => noop()}
+            data={{}}
+          />
+        )
+        : spaceOwnerFid
+          ? (
+            <Profile.fidget
+              settings={{ fid: spaceOwnerFid }}
+              saveData={async () => noop()}
+              data={{}}
+            />
+          )
+          : undefined;
 
   if (!profile) {
     console.warn("Profile component is undefined");
