@@ -166,6 +166,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }>();
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
+  const [currentlyResizing, setCurrentlyResizing] = useState(false);
   const [currentFidgetSettings, setCurrentFidgetSettings] =
     useState<React.ReactNode>(<></>);
   const [isPickingFidget, setIsPickingFidget] = useState(false);
@@ -713,7 +714,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // CSS Grid auto-placement overlay component
   const GridOverlay = ({ inEditMode }: { inEditMode: boolean }) => {
     // Don't show overlay during interactions that should block it, or when over control buttons
-    if (!inEditMode || currentlyDragging || isMouseOverControlButtons) {
+    if (!inEditMode || currentlyDragging || currentlyResizing || isMouseOverControlButtons) {
       return null;
     }
 
@@ -837,6 +838,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               droppingItem={externalDraggedItem}
               onDrop={handleDrop}
               onLayoutChange={saveLayoutConditional}
+              onResizeStart={() => setCurrentlyResizing(true)}
+              onResizeStop={() => setCurrentlyResizing(false)}
               className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
               style={{
                 height: rowHeight * memoizedGridDetails.maxRows + "px",
