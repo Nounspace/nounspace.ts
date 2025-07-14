@@ -7,13 +7,10 @@ import { unstable_noStore as noStore } from "next/cache";
 const loadChannelSpaceData = async (
   channelName: string,
   tabNameParam?: string,
-): Promise<{ spaceOwnerFid: number | null; spaceId: string | null; tabName: string | null } | null> => {
+): Promise<{ spaceOwnerFid: number | null; spaceId: string | null; tabName: string | null }> => {
   noStore();
   const channelMetadata = await getChannelMetadata(channelName.toLowerCase());
-  if (!channelMetadata) {
-    return null;
-  }
-  const spaceOwnerFid = channelMetadata.leadFid ?? null;
+  const spaceOwnerFid = channelMetadata?.leadFid ?? null;
   const tabList: Tab[] = await getTabList(channelName.toLowerCase());
   if (!tabList || tabList.length === 0) {
     return { spaceOwnerFid, spaceId: null, tabName: tabNameParam || null };
@@ -30,11 +27,10 @@ const ChannelSpacePage = async ({ params }) => {
     return <SpaceNotFound />;
   }
   const decodedTabName = tabNameParam ? decodeURIComponent(tabNameParam) : undefined;
-  const data = await loadChannelSpaceData(channelName, decodedTabName);
-  if (!data) {
-    return <SpaceNotFound />;
-  }
-  const { spaceOwnerFid, spaceId, tabName } = data;
+  const { spaceOwnerFid, spaceId, tabName } = await loadChannelSpaceData(
+    channelName,
+    decodedTabName,
+  );
   return (
     <ChannelSpace
       channelName={channelName}
