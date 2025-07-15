@@ -67,19 +67,15 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
       return;
     }
 
-    const signerUuid = process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID;
-
     setFollowing((p) => !p);
     try {
       if (!following) {
         await axiosBackend.post("/api/farcaster/neynar/channel/follow", {
-          ...(signerUuid ? { signer_uuid: signerUuid } : {}),
           channel_id: channel,
         });
       } else {
         await axiosBackend.delete("/api/farcaster/neynar/channel/follow", {
           data: {
-            ...(signerUuid ? { signer_uuid: signerUuid } : {}),
             channel_id: channel,
           },
         });

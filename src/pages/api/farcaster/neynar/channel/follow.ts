@@ -4,9 +4,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function followChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  const uuid = signer_uuid || process.env.NEYNAR_SIGNER_UUID || process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID;
-  if (!uuid || !channel_id) {
-    return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
+  const uuid =
+    process.env.NEYNAR_SIGNER_UUID ||
+    process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID ||
+    signer_uuid;
+  if (!uuid) {
+    return res.status(400).json({ error: "Missing signer_uuid" });
+  }
+  if (!channel_id) {
+    return res.status(400).json({ error: "Missing channel_id" });
   }
   const options: AxiosRequestConfig = {
     method: "POST",
@@ -33,9 +39,15 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
 
 async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  const uuid = signer_uuid || process.env.NEYNAR_SIGNER_UUID || process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID;
-  if (!uuid || !channel_id) {
-    return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
+  const uuid =
+    process.env.NEYNAR_SIGNER_UUID ||
+    process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID ||
+    signer_uuid;
+  if (!uuid) {
+    return res.status(400).json({ error: "Missing signer_uuid" });
+  }
+  if (!channel_id) {
+    return res.status(400).json({ error: "Missing channel_id" });
   }
   const options: AxiosRequestConfig = {
     method: "DELETE",
