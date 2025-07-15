@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { WEBSITE_URL } from "@/constants/app";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
+import { unstable_noStore as noStore } from "next/cache";
 
 const defaultMetadata = {
   other: {
@@ -11,6 +14,7 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({ params }): Promise<Metadata> {
+  noStore();
   const segments: string[] = Array.isArray(params.slug) ? params.slug : [];
   let castHash: string | undefined;
   let username: string | undefined;
@@ -29,6 +33,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   try {
     const res = await fetch(
       `${WEBSITE_URL}/api/farcaster/neynar/cast?identifier=${castHash}&type=${CastParamType.Hash}`,
+      { cache: "no-store" },
     );
     if (!res.ok) {
       throw new Error(`Failed to load cast: ${res.status}`);

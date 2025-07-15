@@ -12,8 +12,10 @@ export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
   try {
+    noStore();
     const res = await fetch(
       `${WEBSITE_URL}/api/farcaster/neynar/user?username=${handle}`,
+      { cache: "no-store" },
     );
     if (!res.ok) {
       throw new Error(`Failed to load user: ${res.status}`);
