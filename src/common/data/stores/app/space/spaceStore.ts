@@ -100,7 +100,6 @@ interface LocalSpace extends CachedSpace {
     [newName: string]: string;
   };
   fid?: number | null;
-  proposalId?: string | null;
 }
 
 interface SpaceState {
@@ -1096,7 +1095,7 @@ export const createSpaceStoreFunc = (
                   contractAddress: spaceInfo.contractAddress,
                   network: spaceInfo.network,
                   fid: spaceInfo.fid,
-                  proposalId: (spaceInfo as any).proposalId,
+                  proposalId: spaceInfo.proposalId,
                 };
               }
             });

@@ -34,8 +34,16 @@ const ProposalPrimarySpaceContent: React.FC<ProposalPrimarySpaceContentProps> = 
             setSpaceId(fetched);
             setCurrentSpaceId(fetched);
           }
-        } catch {
-          // ignore - space might not exist yet
+        } catch (error) {
+          if (
+            axios.isAxiosError(error) &&
+            error.response?.status === 404 &&
+            error.response.data?.error?.message === "Space not found"
+          ) {
+            // ignore - space might not exist yet
+          } else {
+            console.error("Error fetching proposal space:", error);
+          }
         } finally {
           setIsLoading(false);
         }
