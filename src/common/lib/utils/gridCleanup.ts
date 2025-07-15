@@ -164,3 +164,4 @@ export function resolveOverlaps(
 
   return { cleanedLayout, removedFidgetIds };
 } 
+export const cleanupLayout = comprehensiveCleanup;

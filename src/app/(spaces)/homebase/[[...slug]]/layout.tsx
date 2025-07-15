@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { WEBSITE_URL } from "@/constants/app";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { metadataBase: new URL(WEBSITE_URL) };
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
@@ -20,7 +19,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   if (!castHash) {
-    return {};
+    return { metadataBase: new URL(WEBSITE_URL) };
   }
 
   try {
@@ -29,16 +28,22 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       type: CastParamType.Hash,
     });
 
-    return getCastMetadataStructure({
-      hash: cast.hash,
-      username: cast.author.username,
-      displayName: cast.author.display_name,
-      pfpUrl: cast.author.pfp_url,
-      text: cast.text,
-    });
+    return {
+      metadataBase: new URL(WEBSITE_URL),
+      ...getCastMetadataStructure({
+        hash: cast.hash,
+        username: cast.author.username,
+        displayName: cast.author.display_name,
+        pfpUrl: cast.author.pfp_url,
+        text: cast.text,
+      }),
+    };
   } catch (error) {
     console.error("Error generating cast metadata:", error);
-    return getCastMetadataStructure({ hash: castHash, username });
+    return {
+      metadataBase: new URL(WEBSITE_URL),
+      ...getCastMetadataStructure({ hash: castHash, username }),
+    };
   }
 }
 
