@@ -4,10 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function followChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  const uuid =
-    process.env.NEYNAR_SIGNER_UUID ||
-    process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID ||
-    signer_uuid;
+  const uuid = process.env.NEYNAR_SIGNER_UUID || signer_uuid;
   if (!uuid) {
     return res.status(400).json({ error: "Missing signer_uuid" });
   }
@@ -39,10 +36,7 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
 
 async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  const uuid =
-    process.env.NEYNAR_SIGNER_UUID ||
-    process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID ||
-    signer_uuid;
+  const uuid = process.env.NEYNAR_SIGNER_UUID || signer_uuid;
   if (!uuid) {
     return res.status(400).json({ error: "Missing signer_uuid" });
   }
