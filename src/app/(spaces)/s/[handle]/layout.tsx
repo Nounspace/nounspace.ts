@@ -86,8 +86,10 @@ export async function generateMetadata({
 
 export default function RootLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: { handle?: string; tabName?: string };
 }) {
   return children;
 }
