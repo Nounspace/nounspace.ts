@@ -13,11 +13,7 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug?: string[] };
-}): Promise<Metadata> {
+export async function generateMetadata({ params }): Promise<Metadata> {
   const { slug } = params;
   const segments: string[] = Array.isArray(slug) ? slug : [];
   let castHash: string | undefined;
