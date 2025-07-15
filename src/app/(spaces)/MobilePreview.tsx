@@ -4,7 +4,7 @@ import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
 import { ThemeSettings, UserTheme } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
-import Image from "next/image";
+import PhoneFrame from "@/common/components/atoms/PhoneFrame";
 import { usePathname } from "next/navigation";
 import React, { ReactNode, Suspense, useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -153,13 +153,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
                 </div>
               </div>
             </div>
-            <Image
-              src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-              alt="Phone mockup"
-              width={344}
-              height={744}
-              className="pointer-events-none select-none absolute inset-0 z-10"
-            />
+            <PhoneFrame className="pointer-events-none select-none absolute " />
           </div>
         </div>
       </div>
