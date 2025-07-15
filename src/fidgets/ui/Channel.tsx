@@ -6,7 +6,7 @@ import axiosBackend from "@/common/data/api/backend";
 import { useQuery } from "@tanstack/react-query";
 import { useFarcasterSigner } from "../farcaster";
 import { useAppStore } from "@/common/data/stores/app";
-import { NEYNAR_SIGNER_UUID } from "@/constants/app";
+import useWalletSignerUUID from "@/common/lib/hooks/useWalletSignerUUID";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -50,6 +50,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
   const { fid } = useFarcasterSigner("channel-fidget");
+  const signerUUID = useWalletSignerUUID();
   const { setModalOpen } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
   }));
@@ -63,7 +64,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   }, [data?.viewer_context]);
 
   const handleToggle = async () => {
-    if (!fid || fid <= 0) {
+    if (!fid || fid <= 0 || !signerUUID) {
       setModalOpen(true);
       return;
     }
@@ -72,7 +73,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     try {
       const payload = {
         channel_id: channel,
-        signer_uuid: NEYNAR_SIGNER_UUID,
+        signer_uuid: signerUUID,
       };
       if (!following) {
         await axiosBackend.post(

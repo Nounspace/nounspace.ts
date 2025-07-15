@@ -8,5 +8,3 @@ export const WEBSITE_URL =
 export const APP_FID = process.env.NEXT_PUBLIC_APP_FID
   ? Number(process.env.NEXT_PUBLIC_APP_FID)
   : undefined;
-
-export const NEYNAR_SIGNER_UUID = process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID || "";
