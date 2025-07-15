@@ -4,11 +4,14 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function followChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
+  if (!signer_uuid || !channel_id) {
+    return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
+  }
   const options: AxiosRequestConfig = {
     method: "POST",
     url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      api_key: process.env.NEYNAR_API_KEY!,
+      "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid, channel_id },
@@ -29,11 +32,14 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
 
 async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
+  if (!signer_uuid || !channel_id) {
+    return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
+  }
   const options: AxiosRequestConfig = {
     method: "DELETE",
     url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      api_key: process.env.NEYNAR_API_KEY!,
+      "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid, channel_id },
