@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
 import { useQuery } from "@tanstack/react-query";
+import { useFarcasterSigner } from "../farcaster";
+import { useAppStore } from "@/common/data/stores/app";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -28,13 +30,15 @@ const channelProperties: FidgetProperties = {
   },
 };
 
-const useChannelInfo = (channel: string) => {
+const useChannelInfo = (channel: string, viewerFid?: number) => {
   return useQuery({
-    queryKey: ["channel-info", channel],
+    queryKey: ["channel-info", channel, viewerFid],
     queryFn: async () => {
+      const params: Record<string, string | number> = { id: channel };
+      if (viewerFid && viewerFid > 0) params.viewer_fid = viewerFid;
       const { data } = await axiosBackend.get(
         "/api/farcaster/neynar/channel",
-        { params: { id: channel } },
+        { params },
       );
       return data.channel as any;
     },
@@ -44,10 +48,44 @@ const useChannelInfo = (channel: string) => {
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { data } = useChannelInfo(channel);
+  const { fid } = useFarcasterSigner("channel-fidget");
+  const { setModalOpen } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+  }));
+  const { data } = useChannelInfo(channel, fid);
   const [following, setFollowing] = useState(false);
 
-  const handleToggle = () => setFollowing((p) => !p);
+  useEffect(() => {
+    if (data?.viewer_context) {
+      setFollowing(data.viewer_context.following);
+    }
+  }, [data?.viewer_context]);
+
+  const handleToggle = async () => {
+    if (!fid || fid <= 0) {
+      setModalOpen(true);
+      return;
+    }
+
+    setFollowing((p) => !p);
+    try {
+      if (!following) {
+        await axiosBackend.post("/api/farcaster/neynar/channel/follow", {
+          signer_uuid: process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID,
+          channel_id: channel,
+        });
+      } else {
+        await axiosBackend.delete("/api/farcaster/neynar/channel/follow", {
+          data: {
+            signer_uuid: process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID,
+            channel_id: channel,
+          },
+        });
+      }
+    } catch (_e) {
+      setFollowing((p) => !p);
+    }
+  };
 
   const displayName = useMemo(
     () => data?.name || channel,
