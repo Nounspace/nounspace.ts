@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { WEBSITE_URL } from "@/constants/app";
-
-export const dynamic = "force-dynamic";
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
