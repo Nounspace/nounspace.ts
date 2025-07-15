@@ -1,6 +1,6 @@
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
-import { WEBSITE_URL } from "@/constants/app";
+import neynar from "@/common/data/api/neynar";
 
 export type Tab = {
   spaceId: string;
@@ -11,13 +11,7 @@ export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
   try {
-    const res = await fetch(
-      `${WEBSITE_URL}/api/farcaster/neynar/user?username=${handle}`,
-    );
-    if (!res.ok) {
-      throw new Error(`Failed to load user: ${res.status}`);
-    }
-    const user = await res.json();
+    const { user } = await neynar.lookupUserByUsername({ username: handle });
 
     return {
       fid: user.fid,

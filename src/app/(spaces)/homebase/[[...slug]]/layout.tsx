@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { WEBSITE_URL } from "@/constants/app";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
+import neynar from "@/common/data/api/neynar";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
@@ -28,13 +29,10 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   try {
-    const res = await fetch(
-      `${WEBSITE_URL}/api/farcaster/neynar/cast?identifier=${castHash}&type=${CastParamType.Hash}`,
-    );
-    if (!res.ok) {
-      throw new Error(`Failed to load cast: ${res.status}`);
-    }
-    const { cast } = await res.json();
+    const { cast } = await neynar.lookupCastByHashOrWarpcastUrl({
+      identifier: castHash,
+      type: CastParamType.Hash,
+    });
 
     const baseMetadata = getCastMetadataStructure({
       hash: cast.hash,
