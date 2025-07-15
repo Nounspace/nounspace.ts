@@ -1,3 +1,4 @@
+import React from "react";
 import type { Metadata } from "next";
 
 import { WEBSITE_URL } from "@/constants/app";
@@ -12,7 +13,11 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({ params }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug?: string[] };
+}): Promise<Metadata> {
   const segments: string[] = Array.isArray(params.slug) ? params.slug : [];
   let castHash: string | undefined;
   let username: string | undefined;
