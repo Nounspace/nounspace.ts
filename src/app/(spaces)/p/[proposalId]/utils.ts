@@ -21,6 +21,10 @@ export interface ProposalData {
   status?: string;
 }
 
+interface ProposalSpaceRow {
+  spaceId: string;
+}
+
 // Helper function to create timeout signal compatible with Edge runtime
 function createTimeoutSignal(ms: number): AbortSignal {
   const controller = new AbortController();
@@ -208,7 +212,7 @@ export async function loadProposalSpaceId(proposalId: string): Promise<string | 
       console.error("Error fetching proposal space id:", error);
       return null;
     }
-    return data && data.length > 0 ? (data[0] as any).spaceId : null;
+    return data && data.length > 0 ? (data as ProposalSpaceRow[])[0].spaceId : null;
   } catch (e) {
     console.error("Exception in loadProposalSpaceId:", e);
     return null;
