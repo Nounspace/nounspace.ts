@@ -4,7 +4,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function followChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  if (!signer_uuid || !channel_id) {
+  const uuid = signer_uuid || process.env.NEYNAR_SIGNER_UUID || process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID;
+  if (!uuid || !channel_id) {
     return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
   }
   const options: AxiosRequestConfig = {
@@ -14,7 +15,7 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
       "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
-    data: { signer_uuid, channel_id },
+    data: { signer_uuid: uuid, channel_id },
   };
   try {
     const { data } = await axios.request(options);
@@ -32,7 +33,8 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
 
 async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
   const { signer_uuid, channel_id } = req.body;
-  if (!signer_uuid || !channel_id) {
+  const uuid = signer_uuid || process.env.NEYNAR_SIGNER_UUID || process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID;
+  if (!uuid || !channel_id) {
     return res.status(400).json({ error: "Missing signer_uuid or channel_id" });
   }
   const options: AxiosRequestConfig = {
@@ -42,7 +44,7 @@ async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
       "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
-    data: { signer_uuid, channel_id },
+    data: { signer_uuid: uuid, channel_id },
   };
   try {
     const { data } = await axios.request(options);
