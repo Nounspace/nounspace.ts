@@ -2,12 +2,10 @@
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
 import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
 import { ThemeSettings, UserTheme } from "@/common/lib/theme";
-import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { isNil, isUndefined } from "lodash";
 import PhoneFrame from "@/common/components/atoms/PhoneFrame";
 import { usePathname } from "next/navigation";
 import React, { ReactNode, Suspense, useMemo } from "react";
-import { createPortal } from "react-dom";
 import MobileViewSimplified from "./MobileViewSimplified";
 import SpaceLoading from "./SpaceLoading";
 
@@ -63,29 +61,6 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
 
   return (
     <>
-      {/* Theme Editor Portal */}
-      {editMode && portalRef.current
-        ? createPortal(
-          <aside
-            id="logo-sidebar"
-            className="h-screen flex-row flex bg-white"
-            aria-label="Sidebar"
-          >
-            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
-              <ThemeSettingsEditor
-                theme={theme}
-                saveTheme={saveTheme}
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-              />
-            </div>
-          </aside>,
-          portalRef.current,
-        )
-        : null}
-
       <div 
         className="w-full h-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
         style={{ backgroundImage: "url('/images/space-background.png')" }}
