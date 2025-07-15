@@ -16,9 +16,9 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
   }
   const options: AxiosRequestConfig = {
     method: "POST",
-    url: "https://api.neynar.com/v2/farcaster/channel/follow",
+    url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      api_key: process.env.NEYNAR_API_KEY!,
+      "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid: uuid, channel_id },
@@ -51,9 +51,9 @@ async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
   }
   const options: AxiosRequestConfig = {
     method: "DELETE",
-    url: "https://api.neynar.com/v2/farcaster/channel/follow",
+    url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      api_key: process.env.NEYNAR_API_KEY!,
+      "x-api-key": process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid: uuid, channel_id },

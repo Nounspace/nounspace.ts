@@ -71,6 +71,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     try {
       const payload = {
         channel_id: channel,
+        signer_uuid: process.env.NEXT_PUBLIC_NEYNAR_SIGNER_UUID,
       };
       if (!following) {
         await axiosBackend.post(
