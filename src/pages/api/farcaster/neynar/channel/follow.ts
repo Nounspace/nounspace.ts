@@ -8,7 +8,7 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
     method: "POST",
     url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      "x-api-key": process.env.NEYNAR_API_KEY!,
+      api_key: process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid, channel_id },
@@ -33,7 +33,7 @@ async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
     method: "DELETE",
     url: "https://api.neynar.com/v2/farcaster/channel/follow/",
     headers: {
-      "x-api-key": process.env.NEYNAR_API_KEY!,
+      api_key: process.env.NEYNAR_API_KEY!,
       "Content-Type": "application/json",
     },
     data: { signer_uuid, channel_id },
