@@ -28,16 +28,18 @@ export const getUserMetadataStructure = (
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
 
-  const metadata = {
+  const metadata: Metadata = {
     title,
     openGraph: {
       title,
       url: spaceUrl,
+      images: [ogImageUrl],
     },
     twitter: {
       title,
-      domain: "https://nounspace.com/",
-      url: spaceUrl,
+      site: "https://nounspace.com/",
+      images: [ogImageUrl],
+      card: "summary_large_image",
     },
   };
 
@@ -52,17 +54,8 @@ export const getUserMetadataStructure = (
       },
     });
   }
-  if (pfpUrl) {
-    merge(metadata, {
-      twitter: {
-        card: pfpUrl,
-        image: ogImageUrl,
-      },
-      openGraph: {
-        image: ogImageUrl,
-      },
-    });
-  }
+
+
 
   return metadata;
 };
