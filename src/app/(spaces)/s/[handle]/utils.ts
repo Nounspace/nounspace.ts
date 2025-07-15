@@ -1,7 +1,6 @@
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import { WEBSITE_URL } from "@/constants/app";
-import { unstable_noStore as noStore } from 'next/cache';
 
 export type Tab = {
   spaceId: string;
@@ -12,10 +11,8 @@ export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
   try {
-    noStore();
     const res = await fetch(
       `${WEBSITE_URL}/api/farcaster/neynar/user?username=${handle}`,
-      { cache: "no-store" },
     );
     if (!res.ok) {
       throw new Error(`Failed to load user: ${res.status}`);
@@ -36,7 +33,6 @@ export const getUserMetadata = async (
 };
 
 export const getTabList = async (fid: number): Promise<Tab[]> => {
-  noStore();
 
   try {
     console.log("Getting tablist for fid:", fid);

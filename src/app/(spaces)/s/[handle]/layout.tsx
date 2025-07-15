@@ -5,8 +5,6 @@ import { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
-export const dynamic = "force-dynamic";
-
 // Default metadata (used as fallback)
 const defaultMetadata = {
   other: {
