@@ -92,9 +92,9 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
       >
         <div className="flex items-center justify-center h-full">
           <div className="relative w-[344px] h-[744px]">
-            <div className="absolute top-[10px] left-[16px] z-0">
+            <div className="absolute top-[32px] left-[12px] z-0">
               <div
-                className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+                className="w-[320px] h-[680px] relative overflow-hidden rounded-[28px] shadow-lg"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -153,7 +153,7 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
                 </div>
               </div>
             </div>
-            <PhoneFrame className="pointer-events-none select-none absolute " />
+            <PhoneFrame className="pointer-events-none select-none absolute z-10"/>
           </div>
         </div>
       </div>
