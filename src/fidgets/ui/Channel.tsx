@@ -6,6 +6,7 @@ import axiosBackend from "@/common/data/api/backend";
 import { useQuery } from "@tanstack/react-query";
 import { useFarcasterSigner } from "../farcaster";
 import { useAppStore } from "@/common/data/stores/app";
+import { NEYNAR_SIGNER_UUID } from "@/constants/app";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -71,6 +72,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     try {
       const payload = {
         channel_id: channel,
+        signer_uuid: NEYNAR_SIGNER_UUID,
       };
       if (!following) {
         await axiosBackend.post(
