@@ -97,10 +97,8 @@ export async function generateMetadata({
 
 export default function HomebaseSlugLayout({
   children,
-  params,
 }: {
   children: React.ReactNode;
-  params: { slug?: string[] };
 }) {
   return children;
 }
