@@ -25,7 +25,11 @@ export async function generateMetadata({
 
   const userMetadata = await getUserMetadata(handle);
   if (!userMetadata) {
-    return defaultMetadata; // Return default metadata if no user metadata
+    const baseMetadata = getUserMetadataStructure({ username: handle });
+    return {
+      ...baseMetadata,
+      other: { "fc:frame": JSON.stringify(defaultFrame) },
+    };
   }
 
   // Process tabName parameter if it exists
