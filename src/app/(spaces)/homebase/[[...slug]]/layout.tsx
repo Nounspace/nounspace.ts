@@ -5,6 +5,13 @@ export const dynamic = "force-dynamic";
 import neynar from "@/common/data/api/neynar";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
+import { defaultFrame } from "@/common/lib/frames/metadata";
+
+const defaultMetadata = {
+  other: {
+    "fc:frame": JSON.stringify(defaultFrame),
+  },
+};
 
 export async function generateMetadata({ params }): Promise<Metadata> {
   const segments: string[] = Array.isArray(params.slug) ? params.slug : [];
@@ -19,7 +26,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   if (!castHash) {
-    return {};
+    return defaultMetadata;
   }
 
   try {
@@ -28,18 +35,58 @@ export async function generateMetadata({ params }): Promise<Metadata> {
       type: CastParamType.Hash,
     });
 
+    const baseMetadata = getCastMetadataStructure({
+      hash: cast.hash,
+      username: cast.author.username,
+      displayName: cast.author.display_name,
+      pfpUrl: cast.author.pfp_url,
+      text: cast.text,
+    });
+
+    const castUrl = `${WEBSITE_URL}/homebase/c/${cast.author.username}/${cast.hash}`;
+    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? '';
+
+    const castFrame = {
+      version: "next",
+      imageUrl: ogImageUrl,
+      button: {
+        title: `View @${cast.author.username}'s Cast`,
+        action: {
+          type: "launch_frame",
+          url: castUrl,
+          name: `Cast by @${cast.author.username} on Nounspace`,
+          splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
+          splashBackgroundColor: "#FFFFFF",
+        },
+      },
+    };
+
     return {
-      ...getCastMetadataStructure({
-        hash: cast.hash,
-        username: cast.author.username,
-        displayName: cast.author.display_name,
-        pfpUrl: cast.author.pfp_url,
-        text: cast.text,
-      }),
+      ...baseMetadata,
+      other: { "fc:frame": JSON.stringify(castFrame) },
     };
   } catch (error) {
     console.error("Error generating cast metadata:", error);
-    return getCastMetadataStructure({ hash: castHash, username });
+    const baseMetadata = getCastMetadataStructure({ hash: castHash, username });
+    const castUrl = username && castHash
+      ? `${WEBSITE_URL}/homebase/c/${username}/${castHash}`
+      : undefined;
+    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? '';
+    const castFrame = {
+      version: "next",
+      imageUrl: ogImageUrl,
+      button: {
+        title: "View Cast",
+        action: {
+          type: "launch_frame",
+          url: castUrl,
+          name: "Farcaster Cast on Nounspace",
+          splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
+          splashBackgroundColor: "#FFFFFF",
+        },
+      },
+    };
+    return { ...baseMetadata, other: { "fc:frame": JSON.stringify(castFrame) } };
   }
 }
 
