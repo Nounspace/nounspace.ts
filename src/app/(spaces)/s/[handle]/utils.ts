@@ -1,6 +1,6 @@
-import neynar from "@/common/data/api/neynar";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
+import { WEBSITE_URL } from "@/constants/app";
 import { unstable_noStore as noStore } from 'next/cache';
 
 export type Tab = {
@@ -8,16 +8,24 @@ export type Tab = {
   spaceName: string;
 };
 
-export const getUserMetadata = async (handle: string): Promise<UserMetadata | null> => {
+export const getUserMetadata = async (
+  handle: string,
+): Promise<UserMetadata | null> => {
   try {
-    const { user } = await neynar.lookupUserByUsername({username: handle});
+    const res = await fetch(
+      `${WEBSITE_URL}/api/farcaster/neynar/user?username=${handle}`,
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to load user: ${res.status}`);
+    }
+    const user = await res.json();
 
     return {
       fid: user.fid,
       username: user.username,
       displayName: user.display_name,
       pfpUrl: user.pfp_url,
-      bio: user.profile.bio.text,
+      bio: user.profile?.bio?.text || "",
     };
   } catch (e) {
     console.error(e);
