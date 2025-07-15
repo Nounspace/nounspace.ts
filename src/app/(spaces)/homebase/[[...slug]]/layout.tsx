@@ -19,7 +19,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 
   if (!castHash) {
-    return { metadataBase: new URL(WEBSITE_URL) };
+    return {};
   }
 
   try {
@@ -29,7 +29,6 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     });
 
     return {
-      metadataBase: new URL(WEBSITE_URL),
       ...getCastMetadataStructure({
         hash: cast.hash,
         username: cast.author.username,
@@ -40,10 +39,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     };
   } catch (error) {
     console.error("Error generating cast metadata:", error);
-    return {
-      metadataBase: new URL(WEBSITE_URL),
-      ...getCastMetadataStructure({ hash: castHash, username }),
-    };
+    return getCastMetadataStructure({ hash: castHash, username });
   }
 }
 
