@@ -100,7 +100,6 @@ interface LocalSpace extends CachedSpace {
     [newName: string]: string;
   };
   fid?: number | null;
-  proposalId?: string | null;
 }
 
 interface SpaceState {
@@ -991,24 +990,34 @@ export const createSpaceStoreFunc = (
   },
   registerProposalSpace: async (proposalId, initialConfig) => {
     try {
-      // Check if a space already exists for this proposal
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-            proposalId,
-          },
-        },
-      );
+      let existingSpaceId: string | undefined;
 
-      if (existingSpaces.value) {
-        const existingSpace = existingSpaces.value.spaces.find(
-          (space) => space.proposalId === proposalId
+      // Check if a space already exists for this proposal
+      try {
+        const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+              proposalId,
+            },
+          },
         );
-        if (existingSpace) {
-          return existingSpace.spaceId;
+
+        if (existingSpaces.value) {
+          const existingSpace = existingSpaces.value.spaces.find(
+            (space) => space.proposalId === proposalId
+          );
+          if (existingSpace) {
+            existingSpaceId = existingSpace.spaceId;
+          }
         }
+      } catch (checkError) {
+        console.error("Error checking for existing proposal space:", checkError);
+      }
+
+      if (existingSpaceId) {
+        return existingSpaceId;
       }
 
       // Register a new space for the proposal
@@ -1098,7 +1107,7 @@ export const createSpaceStoreFunc = (
                   contractAddress: spaceInfo.contractAddress,
                   network: spaceInfo.network,
                   fid: spaceInfo.fid,
-                  proposalId: (spaceInfo as any).proposalId,
+                  proposalId: spaceInfo.proposalId,
                 };
               }
             });
