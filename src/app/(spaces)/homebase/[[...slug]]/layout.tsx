@@ -1,5 +1,5 @@
 import React from "react";
-import type { Metadata, LayoutProps } from "next";
+import type { Metadata } from "next";
 
 import { WEBSITE_URL } from "@/constants/app";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
@@ -15,8 +15,10 @@ const defaultMetadata = {
 
 export async function generateMetadata({
   params,
-}: LayoutProps<{ slug?: string[] }>): Promise<Metadata> {
-  const { slug } = await params;
+}: {
+  params: { slug?: string[] };
+}): Promise<Metadata> {
+  const { slug } = params;
   const segments: string[] = Array.isArray(slug) ? slug : [];
   let castHash: string | undefined;
   let username: string | undefined;

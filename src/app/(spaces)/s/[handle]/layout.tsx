@@ -1,7 +1,7 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import { getUserMetadata } from "./utils";
-import type { Metadata, LayoutProps } from "next";
+import type { Metadata } from "next";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
@@ -14,8 +14,10 @@ const defaultMetadata = {
 
 export async function generateMetadata({
   params,
-}: LayoutProps<{ handle?: string; tabName?: string }>): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = await params;
+}: {
+  params: { handle?: string; tabName?: string };
+}): Promise<Metadata> {
+  const { handle, tabName: tabNameParam } = params;
   
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle
