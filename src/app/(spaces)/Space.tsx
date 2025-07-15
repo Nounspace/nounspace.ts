@@ -16,14 +16,14 @@ import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import DesktopView from "./DesktopView";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { LayoutFidgets } from "@/fidgets";
 import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
+import DesktopView from "./DesktopView";
+import MobilePreview from "./MobilePreview";
 import MobileViewSimplified from "./MobileViewSimplified";
-import Image from "next/image";
 
 
 export type SpaceFidgetConfig = {
@@ -339,89 +339,24 @@ console.log('🔄 Space.tsx layoutComponent - sorted fidgetIds:', fidgetIds.map(
       >
         <div className="w-full h-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="relative w-[344px] h-[744px]">
-                <div className="absolute top-[10px] left-[16px] z-0">
-                  <div
-                    className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: config.theme?.properties.background || 'white',
-                      transform: 'scale(1.0)',
-                      transformOrigin: 'top left'
-                    }}
-                  >
-                    <CustomHTMLBackground
-                      html={config.theme?.properties.backgroundHTML}
-                      className="absolute inset-0 pointer-events-none w-full h-full"
-                    />
-                          <div className="flex-1 w-full overflow-auto" >
-                   
-                      <div className="relative w-full h-full flex flex-col">
-                        <div className="w-full bg-white">
-                          {!isUndefined(profile) ? (
-                            <div className="w-full max-h-fit">
-                              <div className="rounded-md shadow-sm overflow-hidden">
-                                {profile}
-                              </div>
-                            </div>
-                          ) : null}
-
-                          <div className="border-b relative">
-                            <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-                              {tabBar}
-                            </div>
-                          </div>
-
-                          {!isUndefined(feed) && !isMobile ? (
-                            <div className="w-full overflow-auto bg-white">
-                              {feed}
-                            </div>
-                          ) : null}
-                        </div>
-
-                        <Suspense fallback={
-                          <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                          />
-                        }>
-                          <MobileViewSimplified
-                            theme={config.theme}
-                            fidgetInstanceDatums={config.fidgetInstanceDatums}
-                            fidgetTrayContents={config.fidgetTrayContents}
-                            saveConfig={saveLocalConfig}
-                            inEditMode={false}
-                            saveExitEditMode={saveExitEditMode}
-                            cancelExitEditMode={cancelExitEditMode}
-                            portalRef={portalRef}
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                            feed={feed}
-                            tabNames={config.tabNames}
-                            fid={config.fid}
-                            layoutFidgetIds={Object.keys(config.fidgetInstanceDatums || {}).sort((a, b) => {
-                              const aOrder = config.fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
-                              const bOrder = config.fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
-                              return aOrder - bOrder;
-                            })}
-                            isHomebasePath={isHomebasePath}
-                          />
-                        </Suspense>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <Image
-                  src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
-                  alt="Phone mockup"
-                  width={344}
-                  height={744}
-                  className="pointer-events-none select-none absolute inset-0 z-10"
-                />
-              </div>
-            </div>
+            <MobilePreview
+              theme={config.theme}
+              editMode={editMode}
+              portalRef={portalRef}
+              profile={profile}
+              tabBar={tabBar}
+              feed={feed}
+              saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancelExitEditMode}
+              fidgetInstanceDatums={config.fidgetInstanceDatums}
+              saveFidgetInstanceDatums={(datums) => saveLocalConfig({ fidgetInstanceDatums: datums })}
+              layoutConfig={layoutComponent.config}
+              fidgetTrayContents={config.fidgetTrayContents}
+              saveConfig={saveLocalConfig}
+              tabNames={config.tabNames}
+              fid={config.fid}
+            />
           ) : (
             <>
               <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />

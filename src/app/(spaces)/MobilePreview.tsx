@@ -1,13 +1,14 @@
 "use client";
+import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
+import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
+import { ThemeSettings, UserTheme } from "@/common/lib/theme";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
+import { isNil, isUndefined } from "lodash";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import React, { ReactNode, Suspense, useMemo } from "react";
 import { createPortal } from "react-dom";
-import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
-import PhoneFrame from "@/common/components/atoms/PhoneFrame";
-import { UserTheme, ThemeSettings } from "@/common/lib/theme";
-import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
-import { LayoutFidgets } from "@/fidgets";
-import { isNil, isUndefined } from "lodash";
+import MobileViewSimplified from "./MobileViewSimplified";
 import SpaceLoading from "./SpaceLoading";
 
 interface MobilePreviewProps {
@@ -49,16 +50,15 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   tabNames,
   fid,
 }) => {
-  // Always use tabFullScreen for mobile preview
-  const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
+  const pathname = usePathname();
+  const isHomebasePath = pathname?.startsWith('/homebase');
 
-  // Transform layout config for mobile (simple array of fidget IDs)
-  const mobileLayoutConfig = useMemo(() => {
-    const fidgetIds = Object.keys(fidgetInstanceDatums || {});
-    return {
-      layout: fidgetIds,
-      layoutFidget: "tabFullScreen",
-    };
+  const layoutFidgetIds = useMemo(() => {
+    return Object.keys(fidgetInstanceDatums || {}).sort((a, b) => {
+      const aOrder = fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
+      const bOrder = fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
+      return aOrder - bOrder;
+    });
   }, [fidgetInstanceDatums]);
 
   return (
@@ -86,94 +86,80 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
         )
         : null}
 
-      {/* Mobile Preview Container - Full height background */}
       <div 
         className="w-full h-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
         style={{ backgroundImage: "url('/images/space-background.png')" }}
       >
-        {/* Phone Frame Container - scaled to fit better */}
-        <div className="relative flex items-center justify-center scale-90">
-          {/* Phone Frame Overlay */}
-          <PhoneFrame />
-          
-          {/* Phone Content Area - positioned to match actual screen area within frame */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div 
-              className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
-            >
+        <div className="flex items-center justify-center h-full">
+          <div className="relative w-[344px] h-[744px]">
+            <div className="absolute top-[10px] left-[16px] z-0">
+              <div
+                className="w-[312px] h-[675px] relative overflow-hidden rounded-[32px] shadow-lg"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: theme?.properties.background || 'white',
+                  transform: 'scale(1.0)',
+                  transformOrigin: 'top left'
+                }}
+              >
+                <CustomHTMLBackground
+                  html={theme?.properties.backgroundHTML}
+                  className="absolute inset-0 pointer-events-none w-full h-full"
+                />
+                <div className="flex-1 w-full overflow-auto">
+                  <div className="relative w-full h-full flex flex-col">
+                    <div className="w-full bg-white">
+                      {!isUndefined(profile) ? (
+                        <div className="w-full max-h-fit">
+                          <div className="rounded-md shadow-sm overflow-hidden">
+                            {profile}
+                          </div>
+                        </div>
+                      ) : null}
 
-              <CustomHTMLBackground
-                html={theme?.properties.backgroundHTML}
-                className="absolute inset-0 pointer-events-none w-full h-full rounded-[28px] px-2"
-              />
-              
-              {/* Content Container - with proper constraints */}
-              <div className={`flex-1 flex flex-col h-full w-full relative z-10 overflow-hidden ${isUndefined(theme?.properties.background) &&  "bg-white"}`}>
-                {/* Header Content */}
-                <div className="flex-shrink-0 w-full bg-white">
-
-                  {/* Tab Bar */}
-                  <div className="border-b relative">
-                    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-                      {tabBar}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Profile Section */}
-                {!isUndefined(profile) ? (
-                    <div className="w-full">
-                      <div className="overflow-hidden">
-                        {profile}
+                      <div className="border-b relative">
+                        <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                          {tabBar}
+                        </div>
                       </div>
                     </div>
-                  ) : null}
 
-                {/* Main Content - LayoutFidget with proper constraints */}
-                {/* Feed (if not mobile) */}
-                <div className="flex-1 overflow-hidden">
-                  <Suspense
-                    fallback={
+                    <Suspense fallback={
                       <SpaceLoading
                         hasProfile={!isNil(profile)}
                         hasFeed={!isNil(feed)}
                       />
-                    }
-                  >
-                    {!isUndefined(feed) ? 
-                    (
-                      <>
-                        {feed}
-                      </>
-                    )
-                                         : LayoutFidget ? (
-                        <LayoutFidget
-                            layoutConfig={mobileLayoutConfig}
-                            theme={theme}
-                            fidgetInstanceDatums={fidgetInstanceDatums}
-                            fidgetTrayContents={fidgetTrayContents}
-                            saveExitEditMode={saveExitEditMode}
-                            cancelExitEditMode={cancelExitEditMode}
-                            portalRef={portalRef}
-                            saveConfig={saveConfig}
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                            feed={feed}
-                            tabNames={tabNames}
-                            fid={fid}
-                            inEditMode={false}
-                        />
-                        ) : (
-                        <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                        />
-                        )
-                    }
-                  </Suspense>
+                    }>
+                      <MobileViewSimplified
+                        theme={theme}
+                        fidgetInstanceDatums={fidgetInstanceDatums}
+                        fidgetTrayContents={fidgetTrayContents}
+                        saveConfig={saveConfig}
+                        inEditMode={false}
+                        saveExitEditMode={saveExitEditMode}
+                        cancelExitEditMode={cancelExitEditMode}
+                        portalRef={portalRef}
+                        hasProfile={!isNil(profile)}
+                        hasFeed={!isNil(feed)}
+                        feed={feed}
+                        tabNames={tabNames}
+                        fid={fid}
+                        layoutFidgetIds={layoutFidgetIds}
+                        isHomebasePath={isHomebasePath}
+                      />
+                    </Suspense>
+                  </div>
                 </div>
               </div>
             </div>
+            <Image
+              src="https://i.ibb.co/nsLJDmpT/Smartphone-mock-3.png"
+              alt="Phone mockup"
+              width={344}
+              height={744}
+              className="pointer-events-none select-none absolute inset-0 z-10"
+            />
           </div>
         </div>
       </div>
