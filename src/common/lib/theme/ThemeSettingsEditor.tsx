@@ -181,6 +181,7 @@ export function ThemeSettingsEditor({
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
            mobileOrder: app.order,
+            showOnMobile: app.displayOnMobile,
           },
         },
       };
@@ -199,6 +200,7 @@ export function ThemeSettingsEditor({
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
            mobileOrder: app.order,
+            showOnMobile: app.displayOnMobile,
           },
         },
       },
