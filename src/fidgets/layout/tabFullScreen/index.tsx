@@ -155,7 +155,7 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
             window.scrollTo(0, 0);
           }}
         >
-          <div className="relative z-level-2 h-full">
+          <div className="relative z-2 h-full">
             {isMobile && mediaFidgetIds.length > 1 && (
               <TabsContent
                 key="consolidated-media"
