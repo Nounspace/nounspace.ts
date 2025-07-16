@@ -90,10 +90,10 @@ export function ThemeSettingsEditor({
   }, [tabValue, setMobilePreview]);
 
   const pathname = usePathname();
-  const isHomebasseFeedTab = pathname === '/homebase';
+  const isHomebaseFeedTab = pathname === '/homebase';
 
   useEffect(() => {
-    if (isHomebasseFeedTab && !fidgetInstanceDatums['feed']) {
+    if (isHomebaseFeedTab && !fidgetInstanceDatums['feed']) {
 
        // Get the highest mobileOrder to place feed at the end initially
       const maxOrder = Math.max(
@@ -125,7 +125,7 @@ export function ThemeSettingsEditor({
       
       saveFidgetInstanceDatums(newFidgetInstanceDatums);
     }
-  }, [isHomebasseFeedTab, fidgetInstanceDatums, saveFidgetInstanceDatums]);
+  }, [isHomebaseFeedTab, fidgetInstanceDatums, saveFidgetInstanceDatums]);
 
   const miniApps = useMemo<MiniApp[]>(() => {    
     return Object.values(fidgetInstanceDatums)
@@ -135,7 +135,7 @@ export function ThemeSettingsEditor({
         
         // Special handling for feed fidget - only show in Feed tab
         if (d.id === 'feed' && d.fidgetType === 'feed') {
-          if (!isHomebasseFeedTab) {
+          if (!isHomebaseFeedTab) {
             return null;
           }
           const mobileName = (d.config.settings.customMobileDisplayName as string) || 'Feed';
@@ -166,11 +166,11 @@ export function ThemeSettingsEditor({
       })
       .filter((app): app is MiniApp => app !== null)
       .sort((a, b) => a.order - b.order);
-  }, [fidgetInstanceDatums, pathname, isHomebasseFeedTab]);
+  }, [fidgetInstanceDatums, pathname, isHomebaseFeedTab]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
     let datum = fidgetInstanceDatums[app.id];
-    if (!datum && app.id === 'feed' && isHomebasseFeedTab) {
+    if (!datum && app.id === 'feed' && isHomebaseFeedTab) {
       datum = {
         id: 'feed',
         fidgetType: 'feed',
@@ -217,7 +217,7 @@ export function ThemeSettingsEditor({
     apps.forEach((app, index) => {
       let datum = fidgetInstanceDatums[app.id];
       
-      if (!datum && app.id === 'feed' && isHomebasseFeedTab) {
+      if (!datum && app.id === 'feed' && isHomebaseFeedTab) {
         datum = {
           id: 'feed',
           fidgetType: 'feed',
