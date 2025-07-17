@@ -125,6 +125,12 @@ const getFallbackUrl = (originalUrl: string): string | null => {
   return null;
 };
 
+// Check if URL is known to be problematic and should use fallback immediately
+const shouldUseFallbackImmediately = (url: string): boolean => {
+  // For nouns.com, try fallback immediately due to known issues
+  return url.includes("nouns.com");
+};
+
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { url, size = 1, cropOffsetX = 0, cropOffsetY = 0, isScrollable = false },
 }) => {
@@ -136,23 +142,54 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     url?: string;
     iframelyHtml?: string | null;
   } | null>(null);
-  const [currentUrl, setCurrentUrl] = useState<string>(url);
-  const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(false);
+
+  // Immediately use fallback URL if needed
+  const effectiveUrl = useMemo(() => {
+    if (shouldUseFallbackImmediately(url)) {
+      const fallbackUrl = getFallbackUrl(url);
+      if (fallbackUrl) {
+        console.log(`🔄 Immediate fallback: ${url} → ${fallbackUrl}`);
+        return fallbackUrl;
+      }
+    }
+    return url;
+  }, [url]);
+
+  const [currentUrl, setCurrentUrl] = useState<string>(effectiveUrl);
+  const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(effectiveUrl !== url);
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const [debouncedUrl, setDebouncedUrl] = useState(url);
 
   const debouncedSetUrl = useMemo(() => debounce((value: string) => setDebouncedUrl(value), 300), []);
 
   useEffect(() => {
-    debouncedSetUrl(url);
-    // Reset fallback state when URL changes
-    setCurrentUrl(url);
-    setHasTriedFallback(false);
+    debouncedSetUrl(effectiveUrl);
+
+    // Update current URL and fallback state based on effective URL
+    setCurrentUrl(effectiveUrl);
+    setHasTriedFallback(effectiveUrl !== url);
     setError(null);
+    setEmbedInfo(null);
+
+    // Clear any existing timeout
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      setLoadingTimeout(null);
+    }
+
     return () => {
       debouncedSetUrl.cancel();
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
     };
-  }, [url, debouncedSetUrl]);
+  }, [effectiveUrl, url, debouncedSetUrl, loadingTimeout]);
+
+  // Debug logging to verify fallback logic
+  console.log(
+    `🔧 IFrame Debug - Original: ${url}, Effective: ${effectiveUrl}, Current: ${currentUrl}, Fallback: ${hasTriedFallback}`
+  );
 
   const isValid = isValidHttpUrl(currentUrl);
   const sanitizedUrl = useSafeUrl(currentUrl, DISALLOW_URL_PATTERNS);
@@ -175,12 +212,18 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     async function checkEmbedInfo() {
       if (!isValid || !sanitizedUrl) return;
 
+      console.log(`🔍 Checking embed info for: ${sanitizedUrl}`);
+      console.log(`🎯 Original URL: ${url}`);
+      console.log(`📍 Current URL: ${currentUrl}`);
+      console.log(`🔄 Has tried fallback: ${hasTriedFallback}`);
+
       // Check cache first
       const cached = embedCache.get(sanitizedUrl);
       const now = Date.now();
 
       if (cached && now < cached.expiresAt) {
         // Use cached data
+        console.log(`💾 Using cached data for: ${sanitizedUrl}`);
         setEmbedInfo(cached.data);
         return;
       }
@@ -193,14 +236,40 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       setLoading(true);
       setError(null);
 
+      // Set a timeout for the request
+      const timeoutId = setTimeout(() => {
+        console.log(`⏰ Request timeout for ${currentUrl}, trying fallback`);
+        const fallbackUrl = getFallbackUrl(currentUrl);
+        if (fallbackUrl && !hasTriedFallback) {
+          setHasTriedFallback(true);
+          setCurrentUrl(fallbackUrl);
+          setLoading(false);
+        } else {
+          setError("Request timed out");
+          setLoading(false);
+        }
+      }, 8000); // 8 second timeout
+
+      setLoadingTimeout(timeoutId);
+
       try {
-        const response = await fetch(`/api/iframely?url=${encodeURIComponent(sanitizedUrl)}`);
+        console.log(`🌐 Fetching embed info for: ${sanitizedUrl}`);
+        const response = await fetch(`/api/iframely?url=${encodeURIComponent(sanitizedUrl)}`, {
+          signal: AbortSignal.timeout(7000), // 7 second fetch timeout
+        });
+
+        // Clear timeout if request completes
+        clearTimeout(timeoutId);
+        setLoadingTimeout(null);
+
         if (!response.ok) {
+          console.log(`❌ Response not OK for ${sanitizedUrl}:`, response.status, response.statusText);
           const errorData = await response.json();
           throw new Error(errorData.message || "Failed to get embed information");
         }
 
         const data = await response.json();
+        console.log(`✅ Successfully got embed info for: ${sanitizedUrl}`, data);
 
         // Cache the result
         embedCache.set(sanitizedUrl, {
@@ -211,10 +280,16 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
         setEmbedInfo(data);
       } catch (err) {
+        // Clear timeout
+        clearTimeout(timeoutId);
+        setLoadingTimeout(null);
+
+        console.log(`🚨 Error fetching embed info for ${sanitizedUrl}:`, err);
+
         // Try fallback URL if available and not already tried
         const fallbackUrl = getFallbackUrl(currentUrl);
         if (fallbackUrl && !hasTriedFallback) {
-          console.log(`Error loading ${currentUrl}, trying fallback: ${fallbackUrl}`);
+          console.log(`🔄 Error loading ${currentUrl}, trying fallback: ${fallbackUrl}`);
           setHasTriedFallback(true);
           setCurrentUrl(fallbackUrl);
           return; // This will trigger the effect again with the new URL
@@ -228,7 +303,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     }
 
     checkEmbedInfo();
-  }, [sanitizedUrl, isValid, currentUrl, hasTriedFallback]);
+  }, [sanitizedUrl, isValid, currentUrl, hasTriedFallback, url]);
 
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
@@ -352,16 +427,19 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               position: "absolute",
               top: "8px",
               right: "8px",
-              backgroundColor: "rgba(59, 130, 246, 0.9)",
+              backgroundColor: "rgba(34, 197, 94, 0.95)",
               color: "white",
-              padding: "4px 8px",
-              borderRadius: "4px",
-              fontSize: "12px",
+              padding: "8px 16px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "600",
               zIndex: 1000,
               pointerEvents: "none",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
           >
-            Using fallback URL
+            ✅ Using nouns.wtf fallback
           </div>
         )}
         {isMobile ? (
