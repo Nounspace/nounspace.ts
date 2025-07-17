@@ -2,6 +2,8 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import { getUserMetadata } from "./utils";
 import type { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
