@@ -7,7 +7,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import { useUrlFallback } from "@/common/lib/utils/urlFallback";
+import { getNounsFallbackUrl, useUrlFallback } from "@/common/lib/utils/urlFallback";
 import React, { useEffect, useMemo, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
