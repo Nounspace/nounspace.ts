@@ -39,17 +39,23 @@ export const getCastMetadataStructure = (
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/cast?${params.toString()}`;
 
+  const ogImage = {
+    url: ogImageUrl,
+    width: 1200,
+    height: 630,
+  };
+
   const metadata: Metadata = {
     title,
     openGraph: {
       title,
       url: castUrl,
-      images: [ogImageUrl],
+      images: [ogImage],
     },
     twitter: {
       title,
       site: "https://nounspace.com/",
-      images: [ogImageUrl],
+      images: [ogImage],
       card: "summary_large_image",
     },
   };
