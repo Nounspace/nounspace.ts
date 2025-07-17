@@ -8,16 +8,18 @@ async function getSigner(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: "Missing fid" });
   }
   try {
-    const { data } = await axios.get<{ signers: { signer_uuid: string }[] }>(
-      `https://api.neynar.com/v2/farcaster/user/${fid}/signers`,
-      {
-        headers: { "x-api-key": process.env.NEYNAR_API_KEY! },
-      },
-    );
-    const signer = data.signers?.[0];
+    const { data } = await axios.get<
+      { result?: { signers: { signer_uuid: string }[] } }
+    >("https://api.neynar.com/v2/farcaster/user/signers", {
+      headers: { api_key: process.env.NEYNAR_API_KEY! },
+      params: { fid },
+    });
+
+    const signer = data.result?.signers?.[0];
     if (!signer) {
       return res.status(404).json({ error: "Signer not found" });
     }
+
     res.status(200).json({ signer_uuid: signer.signer_uuid });
   } catch (e) {
     if (isAxiosError(e)) {
