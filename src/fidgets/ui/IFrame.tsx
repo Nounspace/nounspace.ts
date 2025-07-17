@@ -7,7 +7,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import { getNounsFallbackUrl, useUrlFallback } from "@/common/lib/utils/urlFallback";
+import { useUrlFallback } from "@/common/lib/utils/urlFallback";
 import React, { useEffect, useMemo, useState } from "react";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
@@ -162,9 +162,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }, [currentUrl, url, debouncedSetUrl, loadingTimeout]);
 
   // Debug logging to verify fallback logic
-  console.log(
-    `🔧 IFrame Debug - Original: ${url}, Current: ${currentUrl}, Fallback: ${hasTriedFallback}`
-  );
+  console.log(`🔧 IFrame Debug - Original: ${url}, Current: ${currentUrl}, Fallback: ${hasTriedFallback}`);
 
   const isValid = isValidHttpUrl(currentUrl);
   const sanitizedUrl = useSafeUrl(currentUrl, DISALLOW_URL_PATTERNS);
@@ -207,9 +205,9 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       setError(null);
 
       // Set a timeout for the request - shorter for nouns.com to detect issues faster
-      const isNounsComUrl = currentUrl.includes('nouns.com');
+      const isNounsComUrl = currentUrl.includes("nouns.com");
       const timeoutDuration = isNounsComUrl ? 5000 : 8000; // 5s for nouns.com, 8s for others
-      
+
       const timeoutId = setTimeout(() => {
         console.log(`⏰ Request timeout for ${currentUrl} after ${timeoutDuration}ms, trying fallback`);
         if (!urlFallback.tryFallback("Request timed out")) {
