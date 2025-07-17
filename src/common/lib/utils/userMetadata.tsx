@@ -27,18 +27,23 @@ export const getUserMetadataStructure = (
   const encodedBio = encodeURIComponent(bio || "");
 
   const ogImageUrl = `${WEBSITE_URL}/api/metadata/spaces?username=${username}&displayName=${encodedDisplayName}&pfpUrl=${encodedPfpUrl}&bio=${encodedBio}`;
+  const ogImage = {
+    url: ogImageUrl,
+    width: 1200,
+    height: 630,
+  };
 
   const metadata: Metadata = {
     title,
     openGraph: {
       title,
       url: spaceUrl,
-      images: [ogImageUrl],
+      images: [ogImage],
     },
     twitter: {
       title,
       site: "https://nounspace.com/",
-      images: [ogImageUrl],
+      images: [ogImage],
       card: "summary_large_image",
     },
   };
