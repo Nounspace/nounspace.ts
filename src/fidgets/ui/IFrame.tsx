@@ -133,6 +133,14 @@ const embedCache = new Map<string, {
 // Cache duration: 1 hour
 const CACHE_DURATION = 60 * 60 * 1000;
 
+// Utility function to get fallback URL for nouns.com domains
+const getFallbackUrl = (originalUrl: string): string | null => {
+  if (originalUrl.includes('nouns.com')) {
+    return originalUrl.replace(/nouns\.com/g, 'nouns.wtf');
+  }
+  return null;
+};
+
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: { 
     url, 
@@ -150,6 +158,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     url?: string;
     iframelyHtml?: string | null;
   } | null>(null);
+  const [currentUrl, setCurrentUrl] = useState<string>(url);
+  const [hasTriedFallback, setHasTriedFallback] = useState<boolean>(false);
 
   const [debouncedUrl, setDebouncedUrl] = useState(url);
 
@@ -160,15 +170,31 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   useEffect(() => {
     debouncedSetUrl(url);
+    // Reset fallback state when URL changes
+    setCurrentUrl(url);
+    setHasTriedFallback(false);
+    setError(null);
     return () => {
       debouncedSetUrl.cancel();
     };
   }, [url, debouncedSetUrl]);
 
-  const isValid = isValidHttpUrl(debouncedUrl);
-  const sanitizedUrl = useSafeUrl(debouncedUrl, DISALLOW_URL_PATTERNS);
+  const isValid = isValidHttpUrl(currentUrl);
+  const sanitizedUrl = useSafeUrl(currentUrl, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
   const scaleValue = size;
+
+  // Handle iframe loading errors
+  const handleIframeError = () => {
+    const fallbackUrl = getFallbackUrl(currentUrl);
+    if (fallbackUrl && !hasTriedFallback) {
+      console.log(`Iframe failed to load ${currentUrl}, trying fallback: ${fallbackUrl}`);
+      setHasTriedFallback(true);
+      setCurrentUrl(fallbackUrl);
+    } else {
+      setError("Failed to load the webpage");
+    }
+  };
 
   useEffect(() => {
     async function checkEmbedInfo() {
@@ -214,6 +240,15 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         
         setEmbedInfo(data);
       } catch (err) {
+        // Try fallback URL if available and not already tried
+        const fallbackUrl = getFallbackUrl(currentUrl);
+        if (fallbackUrl && !hasTriedFallback) {
+          console.log(`Error loading ${currentUrl}, trying fallback: ${fallbackUrl}`);
+          setHasTriedFallback(true);
+          setCurrentUrl(fallbackUrl);
+          return; // This will trigger the effect again with the new URL
+        }
+        
         setError(err instanceof Error ? err.message : "Unknown error occurred");
         console.error("Error fetching embed info:", err);
       } finally {
@@ -222,7 +257,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     }
 
     checkEmbedInfo();
-  }, [sanitizedUrl, isValid]);
+  }, [sanitizedUrl, isValid, currentUrl, hasTriedFallback]);
 
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
@@ -329,6 +364,23 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
           position: "relative"
         }}
       >
+        {/* Show fallback notification if using fallback URL */}
+        {hasTriedFallback && (
+          <div style={{
+            position: "absolute",
+            top: "8px",
+            right: "8px",
+            backgroundColor: "rgba(59, 130, 246, 0.9)",
+            color: "white",
+            padding: "4px 8px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            zIndex: 1000,
+            pointerEvents: "none"
+          }}>
+            Using fallback URL
+          </div>
+        )}
         {isMobile ? (
           <div style={{
             position: "absolute",
@@ -341,6 +393,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               src={transformedUrl}
               title="IFrame Fidget"
               sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              onError={handleIframeError}
               style={{
                 width: "100%",
                 height: "100%",
@@ -367,6 +420,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
                 src={transformedUrl}
                 title="IFrame Fidget"
                 sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                onError={handleIframeError}
                 style={{
                   width: "100%",
                   height: "100%",
