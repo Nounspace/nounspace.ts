@@ -1,9 +1,7 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import { getUserMetadata } from "./utils";
-import type { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
+import type { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
@@ -15,7 +13,7 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = await params;
+  const { handle, tabName: tabNameParam } = params;
   
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle

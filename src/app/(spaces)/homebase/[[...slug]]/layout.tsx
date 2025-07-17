@@ -1,7 +1,5 @@
 import React from "react";
-import type { Metadata } from "next";
-
-export const dynamic = "force-dynamic";
+import type { Metadata } from "next/types";
 
 import { WEBSITE_URL } from "@/constants/app";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
