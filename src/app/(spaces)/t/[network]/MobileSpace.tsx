@@ -147,7 +147,7 @@ export const MobileContractDefinedSpace = ({
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",

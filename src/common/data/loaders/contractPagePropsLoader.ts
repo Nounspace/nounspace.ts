@@ -1,4 +1,4 @@
-import { first, isArray, isNil, isString, isUndefined } from "lodash";
+import { isArray, isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,
@@ -24,7 +24,7 @@ const defaultContractPageProps = {
 };
 
 export async function loadContractData(
-  params:  Record<string, string | string[]>,
+  params: Record<string, string | string[]>,
 ) {
 
   noStore();
@@ -95,11 +95,11 @@ export async function loadContractData(
   }
 
   // Check if the contract has a castHash function
-  const hasCastHash = abi.some(item => 
-    item.type === 'function' && 
+  const hasCastHash = abi.some(item =>
+    item.type === 'function' &&
     item.name === 'castHash'
   );
-  
+
   if (hasCastHash) {
     try {
       pinnedCastId = (await contract.read.castHash()) as string;
@@ -120,15 +120,15 @@ export async function loadContractData(
     .from("spaceRegistrations")
     .select("spaceId, spaceName, contractAddress, network")
     .eq("contractAddress", contractAddress);
-  
+
   if (isString(network)) {
     query = query.eq("network", network);
   }
-  
-  const { data, error } = await query
+
+  const { data } = await query
     .order("timestamp", { ascending: true })
     .limit(1)
-  
+
   // console.log("Debug - Database Query Error:", error);
   // console.log("Debug - Raw Query Results:", data);
   // console.log("Debug - First Space ID:", data?.[0]?.spaceId);
@@ -137,7 +137,7 @@ export async function loadContractData(
   //   network,
   //   error: error?.message,
   // });
-  
+
   const spaceId = data?.[0]?.spaceId || null;
 
   return {
