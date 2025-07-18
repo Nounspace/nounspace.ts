@@ -1,6 +1,14 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import axios, { isAxiosError } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
+
+const MORE_INFO = "For more info: https://nounspace.com/signatures/";
+const IDENTITY_MESSAGE = "SPACE Identity:";
+
+function generateMessage(nonce: string): string {
+  return `${IDENTITY_MESSAGE}\n${nonce}\n${MORE_INFO}`;
+}
 
 async function getSigner(req: NextApiRequest, res: NextApiResponse) {
   const fid = req.query.fid;
@@ -8,11 +16,34 @@ async function getSigner(req: NextApiRequest, res: NextApiResponse) {
     return res.status(400).json({ error: "Missing fid" });
   }
   try {
-    const { data } = await axios.get<
-      { result?: { signers: { signer_uuid: string }[] } }
-    >("https://api.neynar.com/v2/farcaster/user/signers", {
+    const supabase = createSupabaseServerClient();
+    const { data: fidRow } = await supabase
+      .from("fidRegistrations")
+      .select("identityPublicKey")
+      .eq("fid", +fid)
+      .maybeSingle();
+
+    if (!fidRow) {
+      return res.status(404).json({ error: "Identity not found" });
+    }
+
+    const { data: wallet } = await supabase
+      .from("walletIdentities")
+      .select("nonce, signature")
+      .eq("identityPublicKey", fidRow.identityPublicKey)
+      .maybeSingle();
+
+    if (!wallet) {
+      return res.status(404).json({ error: "Wallet identity not found" });
+    }
+
+    const message = generateMessage(wallet.nonce);
+
+    const { data } = await axios.get<{
+      result?: { signers: { signer_uuid: string }[] };
+    }>("https://api.neynar.com/v2/farcaster/signer/list/", {
       headers: { "x-api-key": process.env.NEYNAR_API_KEY! },
-      params: { fid },
+      params: { message, signature: wallet.signature },
     });
 
     const signer = data.result?.signers?.[0];
