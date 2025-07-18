@@ -14,14 +14,6 @@ import { CURATED_SITES } from "@/common/data/curated/curatedSites";
 // Default categories configuration
 const DEFAULT_CATEGORIES: FidgetCategory[] = [
   {
-    id: 'getting-started',
-    name: 'Getting Started',
-    icon: '🚀',
-    description: 'Essential fidgets for new users',
-
-    order: 0
-  },
-  {
     id: 'social',
     name: 'Social',
     icon: '👥',
@@ -38,8 +30,8 @@ const DEFAULT_CATEGORIES: FidgetCategory[] = [
     order: 2
   },
   {
-    id: 'media',
-    name: 'Media',
+    id: 'content',
+    name: 'Content',
     icon: '🎨',
     description: 'Images, videos, and creative content',
 
@@ -62,53 +54,14 @@ const DEFAULT_CATEGORIES: FidgetCategory[] = [
     order: 5
   },
   {
-    id: 'other',
-    name: 'Other',
+    id: 'mini-apps',
+    name: 'Mini Apps',
     icon: '📦',
-    description: 'Miscellaneous fidgets',
+    description: 'Mini apps from Farcaster',
 
     order: 99
   }
 ];
-
-// Static fidget category mappings
-const STATIC_FIDGET_CATEGORIES: Record<string, string> = {
-  'feed': 'social',
-  'cast': 'social',
-  'frame': 'social',
-  'gallery': 'media',
-  'text': 'media',
-  'video': 'media',
-  'iframe': 'tools',
-  'governance': 'tools',
-  'links': 'tools',
-  'snapshot': 'tools',
-  'swap': 'defi',
-  'market': 'defi',
-  'portfolio': 'defi',
-  'chat': 'social',
-  'rss': 'tools',
-  'framesV2': 'tools',
-  'example': 'other'
-};
-
-
-
-// Map Farcaster category to our category
-const FARCASTER_CATEGORY_MAP: Record<string, string> = {
-  'social': 'social',
-  'defi': 'defi',
-  'games': 'games',
-  'art-creativity': 'media',
-  'utility': 'tools',
-  'entertainment': 'games',
-  'productivity': 'tools',
-  'finance': 'defi',
-  'media': 'media',
-  'tool': 'tools',
-  'art': 'media',
-  'nft': 'media'
-};
 
 export class FidgetOptionsService {
   private static instance: FidgetOptionsService;
@@ -129,6 +82,68 @@ export class FidgetOptionsService {
     
     Object.entries(CompleteFidgets).forEach(([key, fidgetModule]) => {
       if (fidgetModule) {
+        // Map to simplified core categories
+        let primaryCategory = 'tools'; // default
+        const specificTags: string[] = [];
+        
+        switch (key) {
+          // Social
+          case 'feed':
+          case 'cast':
+          case 'frame':
+          case 'chat':
+          case 'profile':
+            primaryCategory = 'social';
+            specificTags.push('farcaster');
+            break;
+            
+          // DeFi
+          case 'swap':
+          case 'market':
+          case 'portfolio':
+            primaryCategory = 'defi';
+            break;
+            
+          // Content
+          case 'gallery':
+          case 'text':
+          case 'video':
+            primaryCategory = 'content';
+            break;
+            
+          // Governance
+          case 'governance':
+          case 'snapshot':
+            primaryCategory = 'governance';
+            break;
+            
+          // Tools
+          case 'iframe':
+          case 'links':
+          case 'rss':
+          case 'FramesV2':
+            primaryCategory = 'tools';
+            break;
+            
+          // Games (if any game-related fidgets are added in the future)
+          // case 'game':
+          //   primaryCategory = 'games';
+          //   break;
+            
+          // Mini Apps (handled separately via Farcaster API)
+          // This is for external mini-apps, not static fidgets
+            
+          default:
+            primaryCategory = 'tools';
+            specificTags.push('utility');
+        }
+        
+        // Add the fidget type as a specific tag
+        specificTags.push(key);
+        
+        // Combine tags: primary category + specific tags
+        const allTags = [primaryCategory, ...specificTags];
+        
         staticFidgets.push({
           id: `static-${key}`,
           type: 'static',
@@ -136,8 +151,8 @@ export class FidgetOptionsService {
           name: fidgetModule.properties.fidgetName,
           description: `${fidgetModule.properties.fidgetName} fidget`,
           icon: String.fromCodePoint(fidgetModule.properties.icon),
-          tags: [key, 'builtin'],
-          category: STATIC_FIDGET_CATEGORIES[key] || 'other',
+          tags: allTags,
+          category: primaryCategory,
           popularity: ['feed', 'cast', 'gallery', 'text'].includes(key) ? 100 : 50
         });
       }
@@ -160,7 +175,7 @@ export class FidgetOptionsService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch('https://client.farcaster.xyz/v1/top-frameapps?limit=50', {
+      const response = await fetch('https://client.farcaster.xyz/v1/top-frameapps?limit=100', {
         signal: controller.signal,
         headers: {
           'Accept': 'application/json',
@@ -198,30 +213,129 @@ export class FidgetOptionsService {
         return [];
       }
       
-      return frameApps.map((app, index) => ({
-        id: `miniapp-${app.domain}-${index}`,
-        type: 'miniapp' as const,
-        name: app.name,
-        description: app.description || app.tagline || app.ogDescription || `${app.name} frame app`,
-        icon: app.iconUrl || app.splashImageUrl || '🔗',
-        tags: app.tags || [],
-        category: (app.primaryCategory ? FARCASTER_CATEGORY_MAP[app.primaryCategory] : null) || 'other',
-        frameUrl: app.homeUrl,
-        homeUrl: app.homeUrl,
-        domain: app.domain,
-        author: app.author,
-        buttonTitle: app.buttonTitle || 'Open',
-        imageUrl: app.imageUrl || app.ogImageUrl || app.heroImageUrl,
-        splashImageUrl: app.splashImageUrl,
-        splashBackgroundColor: app.splashBackgroundColor,
-        subtitle: app.subtitle,
-        screenshotUrls: app.screenshotUrls || [],
-        popularity: Math.max(50 - index, 0) + (
-          app.author?.followerCount 
-            ? Math.min(Math.floor(app.author.followerCount / 1000), 50) 
-            : 0
-        ) // Factor in follower count for popularity
-      }));
+      return frameApps.map((app, index) => {
+        // Map Farcaster categories to our new 8-category system
+        let primaryCategory = 'mini-apps'; // Default for mini-apps
+        const specificTags: string[] = [];
+        
+        // Map based on Farcaster category or app tags
+        const farcasterCategory = app.primaryCategory?.toLowerCase();
+        const appTags = (app.tags || []).map(tag => tag.toLowerCase());
+        
+        if (farcasterCategory) {
+          switch (farcasterCategory) {
+            case 'social':
+              primaryCategory = 'social';
+              specificTags.push('farcaster', 'social');
+              break;
+            case 'defi':
+            case 'finance':
+              primaryCategory = 'defi';
+              specificTags.push('defi', 'finance');
+              break;
+            case 'games':
+            case 'entertainment':
+              primaryCategory = 'games';
+              specificTags.push('games', 'entertainment');
+              break;
+            case 'art-creativity':
+            case 'art':
+            case 'media':
+              primaryCategory = 'content';
+              specificTags.push('content', 'art', 'media');
+              break;
+            case 'utility':
+            case 'tool':
+            case 'productivity':
+              primaryCategory = 'tools';
+              specificTags.push('tools', 'utility', 'productivity');
+              break;
+            case 'governance':
+              primaryCategory = 'governance';
+              specificTags.push('governance');
+              break;
+            default:
+              // Check app tags for additional context
+              if (appTags.some(tag => ['social', 'community'].includes(tag))) {
+                primaryCategory = 'social';
+                specificTags.push('social', 'community');
+              } else if (appTags.some(tag => ['defi', 'finance', 'trading', 'swap'].includes(tag))) {
+                primaryCategory = 'defi';
+                specificTags.push('defi', 'finance');
+              } else if (appTags.some(tag => ['games', 'gaming', 'play'].includes(tag))) {
+                primaryCategory = 'games';
+                specificTags.push('games', 'gaming');
+              } else if (appTags.some(tag => ['art', 'content', 'media', 'nft'].includes(tag))) {
+                primaryCategory = 'content';
+                specificTags.push('content', 'art');
+              } else if (appTags.some(tag => ['tools', 'utility', 'productivity'].includes(tag))) {
+                primaryCategory = 'tools';
+                specificTags.push('tools', 'utility');
+              } else if (appTags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
+                primaryCategory = 'governance';
+                specificTags.push('governance', 'voting');
+              } else {
+                // Default to Mini Apps category
+                specificTags.push('miniapp', 'frame');
+              }
+          }
+        } else {
+          // No category specified, check tags
+          if (appTags.some(tag => ['social', 'community'].includes(tag))) {
+            primaryCategory = 'social';
+            specificTags.push('social', 'community');
+          } else if (appTags.some(tag => ['defi', 'finance', 'trading', 'swap'].includes(tag))) {
+            primaryCategory = 'defi';
+            specificTags.push('defi', 'finance');
+          } else if (appTags.some(tag => ['games', 'gaming', 'play'].includes(tag))) {
+            primaryCategory = 'games';
+            specificTags.push('games', 'gaming');
+          } else if (appTags.some(tag => ['art', 'content', 'media', 'nft'].includes(tag))) {
+            primaryCategory = 'content';
+            specificTags.push('content', 'art');
+          } else if (appTags.some(tag => ['tools', 'utility', 'productivity'].includes(tag))) {
+            primaryCategory = 'tools';
+            specificTags.push('tools', 'utility');
+          } else if (appTags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
+            primaryCategory = 'governance';
+            specificTags.push('governance', 'voting');
+          } else {
+            // Default to Mini Apps category
+            specificTags.push('miniapp', 'frame');
+          }
+        }
+        
+        // Add the app name as a specific tag (normalized)
+        specificTags.push(app.name.toLowerCase().replace(/\s+/g, '-'));
+        
+        // Combine tags: primary category + specific tags + Mini Apps tag
+        const allTags = [primaryCategory, ...specificTags, 'mini-apps'];
+        
+        return {
+          id: `miniapp-${app.domain}-${index}`,
+          type: 'miniapp' as const,
+          name: app.name,
+          description: app.description || app.tagline || app.ogDescription || `${app.name} frame app`,
+          icon: app.iconUrl || app.splashImageUrl || '🔗',
+          tags: allTags,
+          category: primaryCategory,
+          frameUrl: app.homeUrl,
+          homeUrl: app.homeUrl,
+          domain: app.domain,
+          author: app.author,
+          buttonTitle: app.buttonTitle || 'Open',
+          imageUrl: app.imageUrl || app.ogImageUrl || app.heroImageUrl,
+          splashImageUrl: app.splashImageUrl,
+          splashBackgroundColor: app.splashBackgroundColor,
+          subtitle: app.subtitle,
+          screenshotUrls: app.screenshotUrls || [],
+          popularity: Math.max(50 - index, 0) + (
+            app.author?.followerCount 
+              ? Math.min(Math.floor(app.author.followerCount / 1000), 50) 
+              : 0
+          ) // Factor in follower count for popularity
+        };
+      });
     } catch (error) {
       console.error('Error fetching mini-apps from Farcaster API:', error);
       
