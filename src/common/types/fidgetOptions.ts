@@ -1,3 +1,5 @@
+import * as React from 'react';
+
 // Base interface for all fidget options
 export interface FidgetOption {
   id: string;

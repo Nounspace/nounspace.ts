@@ -350,19 +350,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     );
   }
 
+  // Helper function to extract all field defaults from a fidget
+  function allFields(fidget: FidgetModule<FidgetArgs>) {
+    return fromPairs(
+      map(fidget.properties.fields, (field) => {
+        return [field.fieldName, field.default];
+      }),
+    );
+  }
+
   function generateFidgetInstance(
     fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,
-    customSettings?: any,
+    customSettings?: Partial<FidgetSettings>,
   ): FidgetInstanceData {
-    function allFields(fidget: FidgetModule<FidgetArgs>) {
-      return fromPairs(
-        map(fidget.properties.fields, (field) => {
-          return [field.fieldName, field.default];
-        }),
-      );
-    }
-
     const baseSettings = allFields(fidget);
     const finalSettings = customSettings ? { ...baseSettings, ...customSettings } : baseSettings;
 
@@ -379,14 +380,20 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     return newFidgetInstanceData;
   }
 
-  // Add fidget to grid if space is available, otherwise add to tray
-  function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
-    // Generate new fidget instance
-    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
-
-    // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
+  // Common helper function to add a fidget with optional custom settings
+  function addFidgetCommon(
+    fidgetId: string, 
+    fidget: FidgetModule<FidgetArgs>, 
+    customSettings?: Partial<FidgetSettings>
+  ) {
+    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget, customSettings);
+    
+    // Create a new copy of fidgetInstanceDatums and add the new fidget instance
+    const newFidgetInstanceDatums = {
+      ...fidgetInstanceDatums,
+      [newFidgetInstanceData.id]: newFidgetInstanceData,
+    };
+    saveFidgetInstanceDatums(newFidgetInstanceDatums);
 
     setIsFidgetPickerModalOpen(false);
 
@@ -408,33 +415,18 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     selectFidget(bundle);
   }
 
+  // Add fidget to grid if space is available, otherwise add to tray
+  function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
+    addFidgetCommon(fidgetId, fidget);
+  }
+
   // Add fidget with custom settings to grid if space is available, otherwise add to tray
-  function addFidgetWithCustomSettings(fidgetId: string, fidget: FidgetModule<FidgetArgs>, customSettings: any) {
-    // Generate new fidget instance with custom settings
-    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget, customSettings);
-
-    // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
-
-    setIsFidgetPickerModalOpen(false);
-
-    const bundle = {
-      ...newFidgetInstanceData,
-      properties: CompleteFidgets[fidgetId].properties,
-    };
-
-    const addedToGrid = addFidgetToGrid(bundle);
-
-    if (!addedToGrid) {
-      toast("No space available on the grid. Fidget added to the tray.", {
-        duration: 2000,
-      });
-      const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
-      saveTrayContents(newTrayContents);
-    }
-
-    selectFidget(bundle);
+  function addFidgetWithCustomSettings(
+    fidgetId: string, 
+    fidget: FidgetModule<FidgetArgs>, 
+    customSettings: Partial<FidgetSettings>
+  ) {
+    addFidgetCommon(fidgetId, fidget, customSettings);
   }
 
   const { height } = useWindowSize();
