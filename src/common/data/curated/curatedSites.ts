@@ -1,42 +1,102 @@
 import { CuratedFidgetOption } from "@/common/types/fidgetOptions";
 
-// Curated iframe-friendly sites
-// These are sites that work well when embedded in iframes
+// Curated iframe-friendly sites and fidgets
+// These are sites that work well when embedded in iframes or have specific fidget implementations
 export const CURATED_SITES: Omit<CuratedFidgetOption, 'id'>[] = [
-  // Social
+  // Social Impact
   {
     type: 'curated',
-    name: 'Warpcast',
-    description: 'Browse Farcaster in an embedded view',
-    icon: '🟣',
-    tags: ['farcaster', 'social', 'feed'],
+    name: 'Giveth',
+    description: 'Donate to verified projects and get rewarded',
+    icon: '❤️',
+    tags: ['social-impact', 'donation', 'giveth'],
     category: 'social',
-    url: 'https://warpcast.com',
-    popularity: 100
+    url: 'https://giveth.io/project/giveth-matching-pool-0',
+    popularity: 85
   },
   {
     type: 'curated',
-    name: 'Paragraph',
-    description: 'Decentralized publishing platform',
-    icon: '📝',
-    tags: ['writing', 'publishing', 'content'],
+    name: 'Public Nouns',
+    description: 'Public Nouns community and governance',
+    icon: '🏛️',
+    tags: ['social-impact', 'nouns', 'governance', 'public-nouns'],
     category: 'social',
-    url: 'https://paragraph.xyz',
-
+    url: 'https://publicnouns.wtf/',
+    popularity: 80
+  },
+  {
+    type: 'curated',
+    name: 'Flows',
+    description: 'Social impact and community building',
+    icon: '🌊',
+    tags: ['social-impact', 'community', 'flows'],
+    category: 'social',
+    url: 'https://flows.wtf',
+    popularity: 75
+  },
+  {
+    type: 'curated',
+    name: 'Octant',
+    description: 'Community governance and impact measurement',
+    icon: '📊',
+    tags: ['social-impact', 'governance', 'octant'],
+    category: 'social',
+    url: 'https://octant.app/',
     popularity: 70
+  },
+
+  // Social
+  {
+    type: 'curated',
+    name: 'Instagram',
+    description: 'View Instagram reels and posts',
+    icon: '📷',
+    tags: ['social', 'instagram', 'media'],
+    category: 'social',
+    url: 'https://www.instagram.com/reel/CuPPNVYgawy/',
+    popularity: 90
+  },
+  {
+    type: 'curated',
+    name: 'TikTok',
+    description: 'Watch TikTok videos',
+    icon: '🎵',
+    tags: ['social', 'tiktok', 'video'],
+    category: 'social',
+    url: 'https://www.tiktok.com/@zerorightsmedia/video/7179128037638671618',
+    popularity: 85
+  },
+  {
+    type: 'curated',
+    name: 'SkateHive',
+    description: 'Skateboarding community on Farcaster',
+    icon: '🛹',
+    tags: ['social', 'skateboarding', 'skatehive'],
+    category: 'social',
+    url: 'https://skatehive.app',
+    popularity: 75
   },
 
   // DeFi
   {
     type: 'curated',
+    name: 'Aave',
+    description: 'Decentralized lending protocol',
+    icon: '👻',
+    tags: ['defi', 'lending', 'borrowing', 'aave'],
+    category: 'defi',
+    url: 'https://app.aave.com/',
+    popularity: 95
+  },
+  {
+    type: 'curated',
     name: 'Uniswap',
     description: 'Decentralized exchange',
     icon: '🦄',
-    tags: ['defi', 'swap', 'trading', 'dex'],
+    tags: ['defi', 'swap', 'trading', 'dex', 'uniswap'],
     category: 'defi',
-    url: 'https://app.uniswap.org',
-
-    popularity: 95,
+    url: 'https://app.uniswap.org/',
+    popularity: 100,
     iframeSettings: {
       allowScripts: true,
       allowPopups: true
@@ -44,197 +104,186 @@ export const CURATED_SITES: Omit<CuratedFidgetOption, 'id'>[] = [
   },
   {
     type: 'curated',
-    name: 'Aave',
-    description: 'Decentralized lending protocol',
-    icon: '👻',
-    tags: ['defi', 'lending', 'borrowing'],
+    name: 'Aerodrome',
+    description: 'DeFi protocol on Base',
+    icon: '✈️',
+    tags: ['defi', 'swap', 'aerodrome'],
     category: 'defi',
-    url: 'https://app.aave.com',
-
-    popularity: 85
-  },
-  {
-    type: 'curated',
-    name: 'Compound',
-    description: 'Algorithmic money markets',
-    icon: '🏦',
-    tags: ['defi', 'lending', 'yield'],
-    category: 'defi',
-    url: 'https://app.compound.finance',
-
-    popularity: 75
-  },
-  {
-    type: 'curated',
-    name: 'Curve',
-    description: 'Decentralized exchange for stablecoins',
-    icon: '🌊',
-    tags: ['defi', 'swap', 'stablecoin'],
-    category: 'defi',
-    url: 'https://curve.fi',
-
+    url: 'https://aerodrome.finance/dash?',
     popularity: 80
   },
-
-  // Media & NFTs
   {
     type: 'curated',
-    name: 'Zora',
-    description: 'Discover and collect NFTs',
-    icon: '⚡',
-    tags: ['nft', 'art', 'marketplace', 'creator'],
-    category: 'media',
-    url: 'https://zora.co',
-
-    popularity: 90
-  },
-  {
-    type: 'curated',
-    name: 'OpenSea',
-    description: 'NFT marketplace',
-    icon: '🌊',
-    tags: ['nft', 'marketplace', 'trading'],
-    category: 'media',
-    url: 'https://opensea.io',
-
+    name: 'Clanker',
+    description: 'DeFi analytics and tracking',
+    icon: '📊',
+    tags: ['defi', 'analytics', 'clanker'],
+    category: 'defi',
+    url: 'https://clanker.world',
     popularity: 85
   },
+
+  // Governance
   {
     type: 'curated',
-    name: 'Foundation',
-    description: 'Creative platform for artists',
-    icon: '🎨',
-    tags: ['nft', 'art', 'creator', 'auction'],
-    category: 'media',
-    url: 'https://foundation.app',
+    name: 'SnapShot',
+    description: 'Decentralized governance platform',
+    icon: '📸',
+    tags: ['governance', 'voting', 'dao', 'snapshot'],
+    category: 'governance',
+    url: 'https://snapshot.org',
+    popularity: 90
+  },
 
-    popularity: 75
+  // Content
+  {
+    type: 'curated',
+    name: 'Paragraph',
+    description: 'Decentralized publishing platform',
+    icon: '📝',
+    tags: ['content', 'writing', 'publishing', 'paragraph'],
+    category: 'content',
+    url: 'https://paragraph.xyz/@nounspace/',
+    popularity: 85
   },
   {
     type: 'curated',
     name: 'Mirror',
-    description: 'Decentralized publishing',
+    description: 'Web3 publishing platform',
     icon: '🪞',
-    tags: ['writing', 'publishing', 'web3'],
-    category: 'media',
-    url: 'https://mirror.xyz',
-
-    popularity: 70
+    tags: ['content', 'writing', 'publishing', 'mirror'],
+    category: 'content',
+    url: 'https://mirror.xyz/',
+    popularity: 80
   },
 
   // Tools
   {
     type: 'curated',
-    name: 'Figma',
-    description: 'Design and prototyping tool',
-    icon: '🎨',
-    tags: ['design', 'tool', 'creative', 'collaboration'],
+    name: 'Calendly',
+    description: 'Schedule meetings and appointments',
+    icon: '📅',
+    tags: ['tools', 'scheduling', 'calendly'],
     category: 'tools',
-    url: 'https://figma.com',
-
-    popularity: 80
+    url: 'https://calendly.com',
+    popularity: 85
+  },
+  {
+    type: 'curated',
+    name: 'Slideshare',
+    description: 'View presentations and slides',
+    icon: '📊',
+    tags: ['tools', 'presentations', 'slideshare'],
+    category: 'tools',
+    url: 'https://www.slideshare.net/slideshow/web3-development-report-q3-2022-alchemy-253552086/253552086',
+    popularity: 70
   },
   {
     type: 'curated',
     name: 'Notion',
     description: 'All-in-one workspace',
     icon: '📝',
-    tags: ['productivity', 'notes', 'workspace'],
+    tags: ['tools', 'productivity', 'notion'],
     category: 'tools',
-    url: 'https://notion.so',
-
-    popularity: 85
+    url: 'https://www.notion.so/7122caa21e3f4be3bb6d837689555f3a?pvs=21',
+    popularity: 90,
+    iframeSettings: {
+      allowScripts: true,
+      allowPopups: true
+    }
   },
   {
     type: 'curated',
-    name: 'Etherscan',
-    description: 'Ethereum blockchain explorer',
-    icon: '🔍',
-    tags: ['blockchain', 'explorer', 'ethereum'],
+    name: 'Talent Protocol',
+    description: 'Professional networking and talent discovery',
+    icon: '👥',
+    tags: ['tools', 'networking', 'talent'],
     category: 'tools',
-    url: 'https://etherscan.io',
-
+    url: 'https://app.talentprotocol.com/80c7d1cd-d37d-4523-82e4-e26f2548abc0',
     popularity: 75
-  },
-  {
-    type: 'curated',
-    name: 'DeFiPulse',
-    description: 'DeFi analytics and rankings',
-    icon: '📊',
-    tags: ['defi', 'analytics', 'data'],
-    category: 'tools',
-    url: 'https://defipulse.com',
-
-    popularity: 65
-  },
-  {
-    type: 'curated',
-    name: 'Dune Analytics',
-    description: 'Blockchain analytics platform',
-    icon: '🏜️',
-    tags: ['analytics', 'blockchain', 'data'],
-    category: 'tools',
-    url: 'https://dune.com',
-
-    popularity: 70
   },
 
   // Games
   {
     type: 'curated',
-    name: 'Axie Infinity',
-    description: 'Play-to-earn game',
-    icon: '🎮',
-    tags: ['game', 'p2e', 'nft'],
+    name: 'Blackhole',
+    description: 'Interactive game on Remix',
+    icon: '🕳️',
+    tags: ['games', 'interactive', 'blackhole'],
     category: 'games',
-    url: 'https://axieinfinity.com',
-
+    url: 'https://blackhole.remix.gg/',
+    popularity: 80
+  },
+  {
+    type: 'curated',
+    name: 'Betr',
+    description: 'Gaming and betting platform',
+    icon: '🎲',
+    tags: ['games', 'betting', 'betr'],
+    category: 'games',
+    url: 'https://betrmint.fun/',
     popularity: 75
   },
   {
     type: 'curated',
-    name: 'Decentraland',
-    description: 'Virtual world platform',
-    icon: '🏗️',
-    tags: ['metaverse', 'virtual', 'world'],
+    name: 'Ponder',
+    description: 'Interactive gaming platform',
+    icon: '🤔',
+    tags: ['games', 'interactive', 'ponder'],
     category: 'games',
-    url: 'https://decentraland.org',
-
+    url: 'https://www.weponder.io/',
+    popularity: 70
+  },
+  {
+    type: 'curated',
+    name: 'Cat Town',
+    description: 'Fishing game with cats',
+    icon: '🐱',
+    tags: ['games', 'fishing', 'cat-town'],
+    category: 'games',
+    url: 'https://cat.town/fishing',
+    popularity: 75
+  },
+  {
+    type: 'curated',
+    name: '$EGGS',
+    description: 'Egg-themed gaming platform',
+    icon: '🥚',
+    tags: ['games', 'eggs'],
+    category: 'games',
+    url: 'https://eggs.name',
+    popularity: 70
+  },
+  {
+    type: 'curated',
+    name: 'Bracket',
+    description: 'DeFi gaming with brackets',
+    icon: '🏀',
+    tags: ['games', 'defi', 'bracket'],
+    category: 'games',
+    url: 'https://f.bracket.game',
+    popularity: 75
+  },
+  {
+    type: 'curated',
+    name: 'Framedl',
+    description: 'Frame-based gaming platform',
+    icon: '🖼️',
+    tags: ['games', 'frames', 'framedl'],
+    category: 'games',
+    url: 'https://framedl.xyz/app/v2',
     popularity: 70
   },
 
-  // Getting Started
+  // Mini Apps
   {
     type: 'curated',
-    name: 'Coinbase',
-    description: 'Buy, sell, and manage crypto',
-    icon: '🔵',
-    tags: ['exchange', 'wallet', 'beginner'],
-    category: 'getting-started',
-    url: 'https://coinbase.com',
-
-    popularity: 90
-  },
-  {
-    type: 'curated',
-    name: 'MetaMask',
-    description: 'Ethereum wallet',
-    icon: '🦊',
-    tags: ['wallet', 'ethereum', 'web3'],
-    category: 'getting-started',
-    url: 'https://metamask.io',
-
-    popularity: 95
-  },
-  {
-    type: 'curated',
-    name: 'Ethereum.org',
-    description: 'Learn about Ethereum',
-    icon: '💎',
-    tags: ['ethereum', 'education', 'learning'],
-    category: 'getting-started',
-    url: 'https://ethereum.org',
-
+    name: 'Noice',
+    description: 'Interactive mini app',
+    icon: '🎯',
+    tags: ['mini-apps', 'noice'],
+    category: 'miniapp',
+    url: 'https://app.noice.so',
     popularity: 80
   }
 ];
@@ -242,14 +291,4 @@ export const CURATED_SITES: Omit<CuratedFidgetOption, 'id'>[] = [
 // Helper function to get sites by category
 export function getSitesByCategory(category: string): Omit<CuratedFidgetOption, 'id'>[] {
   return CURATED_SITES.filter(site => site.category === category);
-}
-
-// Helper function to search sites
-export function searchSites(query: string): Omit<CuratedFidgetOption, 'id'>[] {
-  const lowerQuery = query.toLowerCase();
-  return CURATED_SITES.filter(site => 
-    site.name.toLowerCase().includes(lowerQuery) ||
-    site.description.toLowerCase().includes(lowerQuery) ||
-    site.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
-  );
 } 

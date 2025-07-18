@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState, useEffect } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect, useMemo } from "react";
 import { CompleteFidgets } from "@/fidgets";
 import { Card, CardContent } from "../atoms/card";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
@@ -9,13 +9,74 @@ import {
   StaticFidgetOption, 
   CuratedFidgetOption, 
   MiniAppFidgetOption,
-  FidgetCategory,
   FidgetSearchFilters 
 } from "@/common/types/fidgetOptions";
 import { Input } from "../atoms/input";
 
 import { Search } from "lucide-react";
 
+// Tag configuration for consistent styling - Core 8 categories
+const TAG_CONFIG: Record<string, { color: string; icon: string; displayName?: string }> = {
+  // Core Categories
+  'social': { color: 'bg-pink-100 text-pink-800', icon: '👥', displayName: 'Social' },
+  'defi': { color: 'bg-green-100 text-green-800', icon: '💰', displayName: 'DeFi' },
+  'tools': { color: 'bg-gray-100 text-gray-800', icon: '🔧', displayName: 'Tools' },
+  'content': { color: 'bg-purple-100 text-purple-800', icon: '🎨', displayName: 'Content' },
+  'games': { color: 'bg-orange-100 text-orange-800', icon: '🎮', displayName: 'Games' },
+  'governance': { color: 'bg-blue-100 text-blue-800', icon: '🗳️', displayName: 'Governance' },
+  'mini-apps': { color: 'bg-violet-100 text-violet-800', icon: '📱', displayName: 'Mini Apps' },
+  'social-impact': { color: 'bg-red-100 text-red-800', icon: '❤️', displayName: 'Social Impact' },
+  
+  // Essential specific tags
+  'farcaster': { color: 'bg-purple-100 text-purple-800', icon: '🟣' },
+  'swap': { color: 'bg-blue-100 text-blue-800', icon: '🔄' },
+  'trading': { color: 'bg-yellow-100 text-yellow-800', icon: '📈' },
+  'nft': { color: 'bg-purple-100 text-purple-800', icon: '🖼️' },
+  'voting': { color: 'bg-blue-100 text-blue-800', icon: '🗳️' },
+  'dao': { color: 'bg-purple-100 text-purple-800', icon: '🏛️' },
+  'analytics': { color: 'bg-teal-100 text-teal-800', icon: '📊' },
+  'blockchain': { color: 'bg-indigo-100 text-indigo-800', icon: '⛓️' },
+  'lending': { color: 'bg-emerald-100 text-emerald-800', icon: '🏦' },
+  'yield': { color: 'bg-teal-100 text-teal-800', icon: '📊' },
+  'marketplace': { color: 'bg-green-100 text-green-800', icon: '🏪' },
+  'publishing': { color: 'bg-rose-100 text-rose-800', icon: '📝' },
+  'writing': { color: 'bg-amber-100 text-amber-800', icon: '✍️' },
+  'art': { color: 'bg-pink-100 text-pink-800', icon: '🎨' },
+  'price': { color: 'bg-yellow-100 text-yellow-800', icon: '💰' },
+  'tracking': { color: 'bg-emerald-100 text-emerald-800', icon: '📊' },
+  'explorer': { color: 'bg-indigo-100 text-indigo-800', icon: '🔍' },
+  'dashboards': { color: 'bg-teal-100 text-teal-800', icon: '📊' },
+  'treasury': { color: 'bg-blue-100 text-blue-800', icon: '🏦' },
+  'aggregator': { color: 'bg-green-100 text-green-800', icon: '🔗' },
+  'stablecoin': { color: 'bg-indigo-100 text-indigo-800', icon: '🪙' },
+  'vaults': { color: 'bg-emerald-100 text-emerald-800', icon: '🏦' },
+  'borrowing': { color: 'bg-amber-100 text-amber-800', icon: '💳' },
+  'dex': { color: 'bg-green-100 text-green-800', icon: '🏪' },
+  'utility': { color: 'bg-gray-100 text-gray-600', icon: '🔧' },
+  'donation': { color: 'bg-red-100 text-red-800', icon: '❤️' },
+  'community': { color: 'bg-pink-100 text-pink-800', icon: '👥' },
+  'instagram': { color: 'bg-pink-100 text-pink-800', icon: '📷' },
+  'tiktok': { color: 'bg-black text-white', icon: '🎵' },
+  'skateboarding': { color: 'bg-orange-100 text-orange-800', icon: '🛹' },
+  'aerodrome': { color: 'bg-blue-100 text-blue-800', icon: '✈️' },
+  'clanker': { color: 'bg-purple-100 text-purple-800', icon: '📊' },
+  'scheduling': { color: 'bg-blue-100 text-blue-800', icon: '📅' },
+  'presentations': { color: 'bg-gray-100 text-gray-800', icon: '📊' },
+  'networking': { color: 'bg-blue-100 text-blue-800', icon: '👥' },
+  'interactive': { color: 'bg-purple-100 text-purple-800', icon: '🎮' },
+  'betting': { color: 'bg-red-100 text-red-800', icon: '🎲' },
+  'fishing': { color: 'bg-blue-100 text-blue-800', icon: '🎣' },
+  'eggs': { color: 'bg-yellow-100 text-yellow-800', icon: '🥚' },
+  'frames': { color: 'bg-purple-100 text-purple-800', icon: '🖼️' },
+  'noice': { color: 'bg-green-100 text-green-800', icon: '🎯' },
+  'miniapp': { color: 'bg-violet-100 text-violet-800', icon: '📱' },
+  'gaming': { color: 'bg-orange-100 text-orange-800', icon: '🎮' },
+  'entertainment': { color: 'bg-orange-100 text-orange-800', icon: '🎭' },
+  'media': { color: 'bg-purple-100 text-purple-800', icon: '📺' },
+  
+  // Default for any tag not explicitly defined
+  'default': { color: 'bg-gray-100 text-gray-600', icon: '🏷️' }
+};
 
 export interface FidgetPickerModalProps {
   isOpen: boolean;
@@ -42,13 +103,47 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
   setCurrentlyDragging,
   generateFidgetInstance,
 }) => {
-  const [categories, setCategories] = useState<FidgetCategory[]>([]);
   const [fidgetOptions, setFidgetOptions] = useState<FidgetOption[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // State for selected tags (single selection)
+  const [selectedTag, setSelectedTag] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
   
   const service = FidgetOptionsService.getInstance();
+
+  // Get only the main category tags for filtering
+  const mainCategoryTags = useMemo(() => {
+    const mainCategories = ['social', 'defi', 'tools', 'content', 'games', 'governance', 'mini-apps', 'social-impact'];
+    return mainCategories.filter(category => 
+      fidgetOptions.some(option => option.tags.includes(category))
+    );
+  }, [fidgetOptions]);
+
+  // Filter fidget options based on selected tag and search query
+  const filteredOptions = useMemo(() => {
+    let filtered = fidgetOptions;
+
+    // Filter by selected tag (single selection)
+    if (selectedTag) {
+      filtered = filtered.filter(option => option.tags.includes(selectedTag));
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const queryLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(option => {
+        // Prioritize tag matches
+        const tagMatch = option.tags.some(tag => tag.toLowerCase().includes(queryLower));
+        if (tagMatch) return true;
+
+        // Then check name and description
+        return option.name.toLowerCase().includes(queryLower) ||
+               option.description.toLowerCase().includes(queryLower);
+      });
+    }
+
+    return filtered;
+  }, [fidgetOptions, selectedTag, searchQuery]);
 
   // Load data when modal opens
   useEffect(() => {
@@ -57,39 +152,21 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
     }
   }, [isOpen]);
 
-  // Load data when search or category changes
-  useEffect(() => {
-    if (isOpen) {
-      loadFidgetOptions();
-    }
-  }, [searchQuery, selectedCategory]);
-
   const loadFidgetOptions = async () => {
     setLoading(true);
     try {
-      const filters: FidgetSearchFilters = {};
-      
-      if (searchQuery) {
-        filters.query = searchQuery;
-      }
-      
-      if (selectedCategory) {
-        filters.category = selectedCategory;
-      }
-
-      const response = await service.getFidgetOptions(filters);
+      // Load all fidget options without any filters
+      const response = await service.getFidgetOptions({});
       setFidgetOptions(response.options);
-      setCategories(response.categories);
-      
-      // Set initial category if not set
-      if (!selectedCategory && response.categories.length > 0) {
-        setSelectedCategory(response.categories[0].id);
-      }
     } catch (error) {
       console.error('Error loading fidget options:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTagSelect = (tag: string) => {
+    setSelectedTag(selectedTag === tag ? '' : tag);
   };
 
   const handleFidgetSelect = (option: FidgetOption) => {
@@ -219,14 +296,6 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
     );
   };
 
-
-
-  const getCategoryOptions = () => {
-    return fidgetOptions.filter(option => 
-      !selectedCategory || option.category === selectedCategory
-    );
-  };
-
   return (
     <div>
       <style dangerouslySetInnerHTML={{
@@ -246,60 +315,79 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
         overlay={true}
       >
         <div className="h-[75vh] max-h-[600px] w-full flex flex-col">
-        {/* Search Input */}
-        <div className="relative mb-4 flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Search fidgets..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-
-        {/* Categories Pills */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {category.icon} {category.name}
-              </button>
-            ))}
+          {/* Search Input */}
+          <div className="relative mb-4 flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Search fidgets by name, description, or tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto min-h-0">
-            {loading ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="text-gray-500">Loading fidgets...</div>
+          {/* Tag Filter */}
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* Tag filter buttons */}
+            <div className="flex flex-wrap gap-2 mb-4 flex-shrink-0">
+              {mainCategoryTags.map((tag) => {
+                const isSelected = selectedTag === tag;
+                const config = TAG_CONFIG[tag] || TAG_CONFIG.default;
+                
+                return (
+                  <button
+                    key={tag}
+                    onClick={() => handleTagSelect(tag)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
+                      isSelected
+                        ? `${config.color} ring-2 ring-offset-2 ring-blue-500 shadow-sm`
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    <span className="mr-1">{config.icon}</span>
+                    {config.displayName || tag}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Results count */}
+            {selectedTag && (
+              <div className="mb-3 text-sm text-gray-600">
+                Showing {filteredOptions.length} of {fidgetOptions.length} fidgets
+                <span> in {selectedTag}</span>
               </div>
-            ) : (
-              <>
-                {/* All options */}
-                <div className="grid grid-cols-1 gap-2 pb-4">
-                  {getCategoryOptions().map(renderFidgetOption)}
-                </div>
-
-                {/* No results */}
-                {fidgetOptions.length === 0 && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-gray-500">No fidgets found</div>
-                  </div>
-                )}
-              </>
             )}
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-gray-500">Loading fidgets...</div>
+                </div>
+              ) : (
+                <>
+                  {/* All options */}
+                  <div className="grid grid-cols-1 gap-2 pb-4">
+                    {filteredOptions.map(renderFidgetOption)}
+                  </div>
+
+                  {/* No results */}
+                  {filteredOptions.length === 0 && (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-gray-500">
+                        {searchQuery || selectedTag 
+                          ? "No fidgets found matching your criteria" 
+                          : "No fidgets available"}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </Modal>
+      </Modal>
     </div>
   );
 }; 
