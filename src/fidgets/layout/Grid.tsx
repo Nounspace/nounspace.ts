@@ -270,9 +270,9 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
         const currentDatums = fidgetInstanceDatumsRef.current;
         const existing = currentDatums[id];
-        
+
         const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
-        
+
         const updatedDatum: FidgetInstanceData = {
           id: existing?.id ?? id,
           fidgetType: determinedFidgetType,
@@ -424,14 +424,6 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     const newLayout = reject(layoutConfig.layout, (x) => x.i == fidgetId);
 
     saveLayout(newLayout);
-  }
-
-  function removeFidgetFromInstanceDatums(fidgetId: string) {
-    // New set of instances - use computed property name to remove the correct fidget
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
-      fidgetInstanceDatums;
-
-    saveFidgetInstanceDatums(newFidgetInstanceDatums);
   }
 
   function removeFidget(fidgetId: string) {

@@ -119,7 +119,13 @@ const embedCache = new Map<
 const CACHE_DURATION = 60 * 60 * 1000;
 
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
-  settings: { url, size = 1, cropOffsetX = 0, cropOffsetY = 0, isScrollable = false },
+  settings: {
+    url,
+    size = 1,
+    cropOffsetX = 0,
+    cropOffsetY = 0,
+    isScrollable = false
+  },
 }) => {
   const isMobile = useIsMobile();
   const [loading, setLoading] = useState<boolean>(false);
@@ -167,7 +173,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const isValid = isValidHttpUrl(currentUrl);
   const sanitizedUrl = useSafeUrl(currentUrl, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
-  const scaleValue = size;
 
   // Handle iframe loading errors
   const handleIframeError = () => {
@@ -236,7 +241,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         }
 
         const data = await response.json();
-        console.log(`✅ Successfully got embed info for: ${sanitizedUrl}`, data);
 
         // Cache the result
         embedCache.set(sanitizedUrl, {
