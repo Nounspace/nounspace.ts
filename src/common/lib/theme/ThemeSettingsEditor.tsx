@@ -34,7 +34,7 @@ import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 import { useAppStore } from "@/common/data/stores/app";
 import AiChatSidebar from "@/common/components/organisms/AgentChat";
-import { usePathname } from "next/navigation";
+import NogsGateButton from "@/common/components/organisms/NogsGateButton";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -89,105 +89,32 @@ export function ThemeSettingsEditor({
     setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
   }, [tabValue, setMobilePreview]);
 
-  const pathname = usePathname();
-  const isHomebaseFeedTab = pathname === '/homebase';
-
-  useEffect(() => {
-    if (isHomebaseFeedTab && !fidgetInstanceDatums['feed']) {
-
-       // Get the highest mobileOrder to place feed at the end initially
-      const maxOrder = Math.max(
-        0,
-        ...Object.values(fidgetInstanceDatums).map(d => 
-          (d.config?.settings?.mobileOrder as number) || 0
-        )
-      );
-
-      const feedFidget = {
-        id: 'feed',
-        fidgetType: 'feed',
-        config: {
-          editable: true,
-          data: {},
-          settings: {
-            customMobileDisplayName: 'Feed',
-            mobileIconName: 'FaBars',
-            showOnMobile: true,
-             mobileOrder: maxOrder + 1,
-          },
-        },
-      };
+  const miniApps = useMemo<MiniApp[]>(() => {
+    return Object.values(fidgetInstanceDatums).map((d, i) => {
+      const props = CompleteFidgets[d.fidgetType]?.properties;
+      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
       
-      const newFidgetInstanceDatums = {
-        ...fidgetInstanceDatums,
-        feed: feedFidget,
-      };
+      const mobileName = (d.config.settings.customMobileDisplayName as string) ||
+        props?.mobileFidgetName ||
+        props?.fidgetName ||
+        d.fidgetType;
       
-      saveFidgetInstanceDatums(newFidgetInstanceDatums);
-    }
-  }, [isHomebaseFeedTab, fidgetInstanceDatums, saveFidgetInstanceDatums]);
-
-  const miniApps = useMemo<MiniApp[]>(() => {    
-    return Object.values(fidgetInstanceDatums)
-      .map((d, i) => {
-        const props = CompleteFidgets[d.fidgetType]?.properties;
-        const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
-        
-        // Special handling for feed fidget - only show in Feed tab
-        if (d.id === 'feed' && d.fidgetType === 'feed') {
-          if (!isHomebaseFeedTab) {
-            return null;
-          }
-          const mobileName = (d.config.settings.customMobileDisplayName as string) || 'Feed';
-          return {
-            id: d.id,
-            name: d.fidgetType,
-            mobileDisplayName: mobileName,
-            context: 'Immutable Feed',
-            order: (d.config.settings.mobileOrder as number) || 0,
-            icon: (d.config.settings.mobileIconName as string) || 'FaBars',
-            displayOnMobile: d.config.settings.showOnMobile !== false,
-          } as MiniApp;
-        }
-        
-        const mobileName = (d.config.settings.customMobileDisplayName as string) ||
-          props?.mobileFidgetName ||
-          props?.fidgetName;
-        
-        return {
-          id: d.id,
-          name: d.fidgetType,
-          mobileDisplayName: mobileName,
-          context: props?.fidgetName || d.fidgetType,
-         order: (d.config.settings.mobileOrder as number) || i + 1,
-          icon: (d.config.settings.mobileIconName as string) || defaultIcon,
-          displayOnMobile: d.config.settings.showOnMobile !== false,
-        } as MiniApp;
-      })
-      .filter((app): app is MiniApp => app !== null)
-      .sort((a, b) => a.order - b.order);
-  }, [fidgetInstanceDatums, pathname, isHomebaseFeedTab]);
+      return {
+        id: d.id,
+        name: d.fidgetType,
+        mobileDisplayName: mobileName,
+        context: props?.fidgetName || d.fidgetType,
+        order: (d.config.settings.mobileOrder as number) || i + 1,
+        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
+        displayOnMobile: d.config.settings.showOnMobile !== false,
+      } as MiniApp;
+    })
+    .sort((a, b) => a.order - b.order);
+  }, [fidgetInstanceDatums]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
-    let datum = fidgetInstanceDatums[app.id];
-    if (!datum && app.id === 'feed' && isHomebaseFeedTab) {
-      datum = {
-        id: 'feed',
-        fidgetType: 'feed',
-        config: {
-          editable: true,
-          data: {},
-          settings: {
-            customMobileDisplayName: app.mobileDisplayName,
-            mobileIconName: app.icon,
-           mobileOrder: app.order,
-            showOnMobile: app.displayOnMobile,
-          },
-        },
-      };
-    } else if (!datum) {
-      return;
-    }
+    const datum = fidgetInstanceDatums[app.id];
+    if (!datum) return;
     
     const newDatums = {
       ...fidgetInstanceDatums,
@@ -199,7 +126,7 @@ export function ThemeSettingsEditor({
             ...datum.config.settings,
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
-           mobileOrder: app.order,
+            mobileOrder: app.order,
             showOnMobile: app.displayOnMobile,
           },
         },
@@ -210,30 +137,12 @@ export function ThemeSettingsEditor({
   };
 
   const handleReorderMiniApps = (apps: MiniApp[]) => {
-    // Save the new mobile order in the layout configuration
-
-    const newDatums: { [key: string]: FidgetInstanceData } = { ...fidgetInstanceDatums };
+    const newDatums: { [key: string]: FidgetInstanceData } = {};
     
     apps.forEach((app, index) => {
-      let datum = fidgetInstanceDatums[app.id];
+      const datum = fidgetInstanceDatums[app.id];
+      if (!datum) return;
       
-      if (!datum && app.id === 'feed' && isHomebaseFeedTab) {
-        datum = {
-          id: 'feed',
-          fidgetType: 'feed',
-          config: {
-            editable: false,
-            data: {},
-            settings: {
-              customMobileDisplayName: 'Feed',
-              mobileIconName: 'FaBarsStaggered',
-              showOnMobile: true,
-               mobileOrder: index + 1, 
-            }
-          }
-        };
-        newDatums[app.id] = datum;
-      } else if (datum) {
         newDatums[app.id] = {
           ...datum,
           config: {
@@ -244,7 +153,6 @@ export function ThemeSettingsEditor({
             },
           },
         };
-      }
     });
     
     saveFidgetInstanceDatums(newDatums);
@@ -487,7 +395,7 @@ export function ThemeSettingsEditor({
 
         <div className="flex flex-col gap-2">
           {tabValue === ThemeEditorTab.SPACE && (
-            <div
+            <NogsGateButton
               className="flex gap-1 items-center border-2 border-orange-600 text-orange-600 bg-orange-100 rounded-lg p-2 text-sm font-medium cursor-pointer"
               onClick={() => setShowVibeEditor(true)}
             >
@@ -496,7 +404,7 @@ export function ThemeSettingsEditor({
               </p>
               {/* <HiOutlineSparkles size={32} /> */}
               <SparklesIcon className="size-8" />
-            </div>
+            </NogsGateButton>
           )}
 
           {/* Actions */}
