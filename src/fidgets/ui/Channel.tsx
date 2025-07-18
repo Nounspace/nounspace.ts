@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
 import { useQuery } from "@tanstack/react-query";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
+import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
+import { useAppStore } from "@/common/data/stores/app";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -28,13 +31,13 @@ const channelProperties: FidgetProperties = {
   },
 };
 
-const useChannelInfo = (channel: string) => {
+const useChannelInfo = (channel: string, viewerFid?: number) => {
   return useQuery({
-    queryKey: ["channel-info", channel],
+    queryKey: ["channel-info", channel, viewerFid],
     queryFn: async () => {
       const { data } = await axiosBackend.get(
         "/api/farcaster/neynar/channel",
-        { params: { id: channel } },
+        { params: { id: channel, viewer_fid: viewerFid } },
       );
       return data.channel as any;
     },
@@ -44,10 +47,36 @@ const useChannelInfo = (channel: string) => {
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { data } = useChannelInfo(channel);
+  const { signer, fid } = useFarcasterSigner("channel-fidget");
+  const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsAccountReady: state.getIsAccountReady,
+  }));
+  const { data } = useChannelInfo(channel, fid > 0 ? fid : undefined);
   const [following, setFollowing] = useState(false);
 
-  const handleToggle = () => setFollowing((p) => !p);
+  useEffect(() => {
+    setFollowing(data?.viewer_context?.following ?? false);
+  }, [data]);
+
+  const handleToggle = async () => {
+    if (!getIsAccountReady()) {
+      setModalOpen(true);
+      return;
+    }
+
+    if (!signer) return;
+
+    const signerUuid = (signer as any).uuid;
+    setFollowing((p) => !p);
+    const success = following
+      ? await unfollowChannel(channel, signerUuid)
+      : await followChannel(channel, signerUuid);
+    if (!success) {
+      // revert state on failure
+      setFollowing((p) => !p);
+    }
+  };
 
   const displayName = useMemo(
     () => data?.name || channel,

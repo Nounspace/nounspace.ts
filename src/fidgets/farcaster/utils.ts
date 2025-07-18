@@ -146,6 +146,35 @@ export const unfollowUser = async (
   return false;
 };
 
+export const followChannel = async (
+  channelId: string,
+  signerUuid: string,
+) => {
+  try {
+    await axiosBackend.post("/api/farcaster/neynar/channel-follow", {
+      signer_uuid: signerUuid,
+      channel_id: channelId,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+export const unfollowChannel = async (
+  channelId: string,
+  signerUuid: string,
+) => {
+  try {
+    await axiosBackend.delete("/api/farcaster/neynar/channel-follow", {
+      data: { signer_uuid: signerUuid, channel_id: channelId },
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 export const submitCast = async (
   signedCastMessage: Message,
   fid: number,
