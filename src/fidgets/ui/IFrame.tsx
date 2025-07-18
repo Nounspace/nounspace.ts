@@ -194,8 +194,6 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
         "width",
         "height",
         "frameborder",
-        "allow",
-        "allowfullscreen",
         "loading",
         "referrerpolicy",
       ],
