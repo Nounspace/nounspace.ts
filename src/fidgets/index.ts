@@ -15,6 +15,7 @@ import snapShot from "./snapshot/SnapShot";
 import Swap from "./swap/Swap";
 import rss from "./ui/rss";
 import VideoFidget from "./ui/Video";
+import ChannelInfo from "./ui/Channel";
 import marketData from "./token/marketData";
 import Portfolio from "./token/Portfolio";
 import chat from "./ui/chat";
@@ -49,6 +50,7 @@ export const CompleteFidgets = {
   Market: marketData,
   Portfolio: Portfolio,
   Chat: chat,
+  Channel: ChannelInfo,
   FramesV2: FramesFidget,
 };
 
