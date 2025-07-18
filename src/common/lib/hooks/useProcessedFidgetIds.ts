@@ -20,7 +20,7 @@ import {
 export function useProcessedFidgetIds(
   layoutFidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
 ) {
   const pathname = usePathname();
   const isHomebasePath = pathname?.startsWith('/homebase');
@@ -34,7 +34,7 @@ export function useProcessedFidgetIds(
   
   // Process fidget IDs for tabs (potentially consolidating on mobile)
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile),
+  processTabFidgetIds(layoutFidgetIds, fidgetInstanceDatums, isMobile),
   [layoutFidgetIds, fidgetInstanceDatums, isMobile]);
   
   // Get media fidget IDs (for consolidated media view)
