@@ -1,7 +1,6 @@
 import neynar from "@/common/data/api/neynar";
 
 import {
-  DEBUG_PROMPTS,
   MAX_TRENDING_CASTS,
   MODEL_TEMPERATURE_CREATIVE,
   TODAY_TIME_DATE,
@@ -53,7 +52,7 @@ export async function POST(request: Request) {
         limit: MAX_TRENDING_CASTS,
       });
     } else {
-      userCasts = await neynar.fetchPopularCastsByUser({fid: userFid});
+      userCasts = await neynar.fetchPopularCastsByUser({ fid: userFid });
     }
 
     const exampleCastsText = userCasts.casts?.length
@@ -84,7 +83,7 @@ ${exampleCastsText}
   //const provider =
   //const providerMetadata =
   const trendingCasts = processTrendingCasts(await neynar.fetchTrendingFeed({
-    viewerFid, 
+    viewerFid,
     timeWindow,
     limit,
   }));

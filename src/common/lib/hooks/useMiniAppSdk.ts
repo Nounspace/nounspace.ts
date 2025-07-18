@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import type {
   CastEmbedLocationContext,
   ChannelLocationContext,
@@ -8,7 +8,6 @@ import type {
   LauncherLocationContext,
   NotificationLocationContext
 } from "@farcaster/frame-core/dist/context";
-import type { sdk } from "@farcaster/frame-sdk";
 import { MiniAppSdkContext } from "../../providers/MiniAppSdkProvider";
 
 /**
@@ -36,7 +35,7 @@ export function useMiniAppSdk() {
           console.error("Error fetching context:", err);
         }
       };
-      
+
       fetchContext();
     }
   }, [sdkInstance]);
@@ -165,21 +164,21 @@ export function useMiniAppSdk() {
     isInitializing,
     isReady,
     error,
-    
+
     // SDK instance
     sdk: sdkInstance,
-    
+
     // Context - properly typed based on context.d.ts
     context: frameContext,
-    
+
     // Typed context properties for easier access
     clientContext: frameContext?.client,
     userContext: frameContext?.user,
     locationContext: frameContext?.location,
-    
+
     // Access specific location context types if needed
-    castEmbedContext: frameContext?.location?.type === 'cast_embed' 
-      ? frameContext.location as CastEmbedLocationContext 
+    castEmbedContext: frameContext?.location?.type === 'cast_embed'
+      ? frameContext.location as CastEmbedLocationContext
       : undefined,
     notificationContext: frameContext?.location?.type === 'notification'
       ? frameContext.location as NotificationLocationContext
@@ -190,7 +189,7 @@ export function useMiniAppSdk() {
     channelContext: frameContext?.location?.type === 'channel'
       ? frameContext.location as ChannelLocationContext
       : undefined,
-    
+
     // Actions
     actions: {
       ready,
@@ -201,11 +200,11 @@ export function useMiniAppSdk() {
       openUrl,
       viewProfile,
     },
-    
+
     // Events (subscribe via the SDK directly)
     on: sdkInstance?.on?.bind(sdkInstance),
     off: sdkInstance?.off?.bind(sdkInstance),
-    
+
     // Wallet
     wallet: {
       ethProvider: getEthereumProvider(),

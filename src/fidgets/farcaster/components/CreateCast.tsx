@@ -14,7 +14,6 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -361,7 +360,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     getText,
     addEmbed,
     getEmbeds,
-    setEmbeds,
     setChannel,
     getChannel,
     handleSubmit,
@@ -740,7 +738,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   )}
                 </div>
               )}
-              
+
               {/* Add media button moved to left side on mobile */}
               {isMobile && (
                 <Button
@@ -755,7 +753,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 </Button>
               )}
             </div>
-            
+
             {/* Right side: Other action buttons */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
               {/* Only show Add button here for desktop */}
@@ -771,7 +769,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   Add
                 </Button>
               )}
-              
+
               <Button
                 className="h-10"
                 type="button"
@@ -811,7 +809,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </Button>
             </div>
           )}
-          
+
           <div
             ref={parentRef}
             className="z-50"
@@ -855,7 +853,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </div>
             </PopoverContent>
           </Popover>
-          
+
           {/* Desktop cast button */}
           {!isMobile && (
             <>
@@ -864,7 +862,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               <div className="flex flex-row pt-0 justify-end">
                 <Button
                   size="lg"
-              variant="primary"
+                  variant="primary"
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
                   disabled={isPublishing || isLoadingSigner}
