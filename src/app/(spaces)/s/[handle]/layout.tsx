@@ -1,7 +1,7 @@
 import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import { getUserMetadata } from "./utils";
-import { Metadata } from "next/types";
+import type { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 
@@ -12,10 +12,8 @@ const defaultMetadata = {
   },
 };
 
-export async function generateMetadata({
-  params,
-}): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = await params;
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const { handle, tabName: tabNameParam } = params;
   
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle
@@ -23,7 +21,11 @@ export async function generateMetadata({
 
   const userMetadata = await getUserMetadata(handle);
   if (!userMetadata) {
-    return defaultMetadata; // Return default metadata if no user metadata
+    const baseMetadata = getUserMetadataStructure({ username: handle });
+    return {
+      ...baseMetadata,
+      other: { "fc:frame": JSON.stringify(defaultFrame) },
+    };
   }
 
   // Process tabName parameter if it exists
@@ -78,10 +80,6 @@ export async function generateMetadata({
   return metadataWithFrame;
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
