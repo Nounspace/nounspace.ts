@@ -1,5 +1,6 @@
 import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
+import HTMLInput from "@/common/components/molecules/HTMLInput";
 import CropControls from "@/common/components/molecules/CropControls";
 import { FidgetArgs, FidgetModule, FidgetProperties, type FidgetSettingsStyle } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
@@ -9,10 +10,12 @@ import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
 import { getNounsFallbackUrl, useUrlFallback } from "@/common/lib/utils/urlFallback";
 import React, { useEffect, useMemo, useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
 export type IFrameFidgetSettings = {
   url: string;
+  embedScript?: string;
   size: number;
   cropOffsetX: number;
   cropOffsetY: number;
@@ -32,13 +35,25 @@ const frameConfig: FidgetProperties = {
       fieldName: "url",
       displayName: "URL",
       displayNameHint: "Paste the URL of the webpage you'd like to embed",
-      required: true,
+      required: false,
       inputSelector: (props) => (
         <WithMargin>
           <TextInput {...props} />
         </WithMargin>
       ),
       group: "settings",
+    },
+    {
+      fieldName: "embedScript",
+      displayName: "Embed Script",
+      displayNameHint: "Paste an iframe embed code instead of a URL",
+      required: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <HTMLInput {...props} />
+        </WithMargin>
+      ),
+      group: "code",
     },
     {
       fieldName: "size",
@@ -121,6 +136,7 @@ const CACHE_DURATION = 60 * 60 * 1000;
 const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   settings: {
     url,
+    embedScript,
     size = 1,
     cropOffsetX = 0,
     cropOffsetY = 0,
@@ -173,6 +189,22 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const isValid = isValidHttpUrl(currentUrl);
   const sanitizedUrl = useSafeUrl(currentUrl, DISALLOW_URL_PATTERNS);
   const transformedUrl = transformUrl(sanitizedUrl || "");
+  const scaleValue = size;
+  const sanitizedEmbedScript = useMemo(() => {
+    if (!embedScript) return null;
+    const clean = DOMPurify.sanitize(embedScript, {
+      ALLOWED_TAGS: ["iframe"],
+      ALLOWED_ATTR: [
+        "src",
+        "width",
+        "height",
+        "frameborder",
+        "loading",
+        "referrerpolicy",
+      ],
+    });
+    return clean.trim() ? clean : null;
+  }, [embedScript]);
 
   // Handle iframe loading errors
   const handleIframeError = () => {
@@ -182,6 +214,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   };
 
   useEffect(() => {
+    if (sanitizedEmbedScript) return;
     async function checkEmbedInfo() {
       if (!isValid || !sanitizedUrl) return;
 
@@ -271,10 +304,24 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     }
 
     checkEmbedInfo();
-  }, [sanitizedUrl, isValid, currentUrl, hasTriedFallback, url]);
+  }, [sanitizedUrl, isValid, sanitizedEmbedScript]);
+
+  if (sanitizedEmbedScript) {
+    return (
+      <div
+        style={{ overflow: "hidden", width: "100%", height: "100%" }}
+        dangerouslySetInnerHTML={{ __html: sanitizedEmbedScript }}
+      />
+    );
+  }
 
   if (!url) {
-    return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
+    return (
+      <ErrorWrapper
+        icon="➕"
+        message="Provide a URL or embed script to display here."
+      />
+    );
   }
 
   if (!isValid) {
