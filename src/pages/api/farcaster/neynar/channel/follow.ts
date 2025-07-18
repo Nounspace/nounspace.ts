@@ -3,10 +3,10 @@ import axios, { AxiosRequestConfig, isAxiosError } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
 async function followChannel(req: NextApiRequest, res: NextApiResponse) {
-  const { signer_uuid, channel_id } = req.body;
-  const uuid = signer_uuid;
+  const { signer, channel_id } = req.body;
+  const uuid = signer;
   if (!uuid) {
-    return res.status(400).json({ error: "Missing signer_uuid" });
+    return res.status(400).json({ error: "Missing signer" });
   }
   if (!channel_id) {
     return res.status(400).json({ error: "Missing channel_id" });
@@ -35,10 +35,10 @@ async function followChannel(req: NextApiRequest, res: NextApiResponse) {
 }
 
 async function unfollowChannel(req: NextApiRequest, res: NextApiResponse) {
-  const { signer_uuid, channel_id } = req.body;
-  const uuid = signer_uuid;
+  const { signer, channel_id } = req.body;
+  const uuid = signer;
   if (!uuid) {
-    return res.status(400).json({ error: "Missing signer_uuid" });
+    return res.status(400).json({ error: "Missing signer" });
   }
   if (!channel_id) {
     return res.status(400).json({ error: "Missing channel_id" });

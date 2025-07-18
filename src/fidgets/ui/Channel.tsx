@@ -50,7 +50,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
   const { fid } = useFarcasterSigner("channel-fidget");
-  const signerUUID = useWalletSignerUUID();
+  const signer = useWalletSignerUUID();
   const { setModalOpen } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
   }));
@@ -64,7 +64,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   }, [data?.viewer_context]);
 
   const handleToggle = async () => {
-    if (!signerUUID) {
+    if (!signer) {
       setModalOpen(true);
       return;
     }
@@ -73,7 +73,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     try {
       const payload = {
         channel_id: channel,
-        signer_uuid: signerUUID,
+        signer,
       };
       if (!following) {
         await axiosBackend.post(
