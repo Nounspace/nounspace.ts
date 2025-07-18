@@ -10,7 +10,7 @@ async function getSigner(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { data } = await axios.get<
       { result?: { signers: { signer_uuid: string }[] } }
-    >("https://api.neynar.com/v2/farcaster/user/signers", {
+    >("https://api.neynar.com/v2/farcaster/signer/", {
       headers: { api_key: process.env.NEYNAR_API_KEY! },
       params: { fid },
     });
