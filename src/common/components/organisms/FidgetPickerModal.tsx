@@ -297,15 +297,7 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
   };
 
   return (
-    <div>
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          [data-radix-dialog-content] {
-            max-width: 1200px !important;
-            width: 95vw !important;
-          }
-        `
-      }} />
+    <div className="[&_[data-radix-dialog-content]]:max-w-[1200px] [&_[data-radix-dialog-content]]:w-[95vw]">
       <Modal
         open={isOpen}
         setOpen={setIsOpen}
