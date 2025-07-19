@@ -148,11 +148,11 @@ export const unfollowUser = async (
 
 export const followChannel = async (
   channelId: string,
-  signer: Signer,
+  signer: string,
 ) => {
   try {
     await axiosBackend.post("/api/farcaster/neynar/channel-follow", {
-      signer_uuid: signer,
+      signer,
       channel_id: channelId,
     });
     return true;
@@ -163,11 +163,11 @@ export const followChannel = async (
 
 export const unfollowChannel = async (
   channelId: string,
-  signer: Signer,
+  signer: string,
 ) => {
   try {
     await axiosBackend.delete("/api/farcaster/neynar/channel-follow", {
-      data: { signer_uuid: signer, channel_id: channelId },
+      data: { signer, channel_id: channelId },
     });
     return true;
   } catch (e) {
