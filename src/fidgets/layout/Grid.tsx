@@ -353,6 +353,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   function generateFidgetInstance(
     fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,
+    customSettings?: any,
   ): FidgetInstanceData {
     function allFields(fidget: FidgetModule<FidgetArgs>) {
       return fromPairs(
@@ -362,11 +363,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       );
     }
 
+    const baseSettings = allFields(fidget);
+    const finalSettings = customSettings ? { ...baseSettings, ...customSettings } : baseSettings;
+
     const newFidgetInstanceData = {
       config: {
         editable: true,
         data: {},
-        settings: allFields(fidget),
+        settings: finalSettings,
       },
       fidgetType: fidgetId,
       id: fidgetId + ":" + uuidv4(),
@@ -379,6 +383,35 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
     // Generate new fidget instance
     const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
+
+    // Add it to the instance data list
+    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
+    saveFidgetInstanceDatums(fidgetInstanceDatums);
+
+    setIsFidgetPickerModalOpen(false);
+
+    const bundle = {
+      ...newFidgetInstanceData,
+      properties: CompleteFidgets[fidgetId].properties,
+    };
+
+    const addedToGrid = addFidgetToGrid(bundle);
+
+    if (!addedToGrid) {
+      toast("No space available on the grid. Fidget added to the tray.", {
+        duration: 2000,
+      });
+      const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
+      saveTrayContents(newTrayContents);
+    }
+
+    selectFidget(bundle);
+  }
+
+  // Add fidget with custom settings to grid if space is available, otherwise add to tray
+  function addFidgetWithCustomSettings(fidgetId: string, fidget: FidgetModule<FidgetArgs>, customSettings: any) {
+    // Generate new fidget instance with custom settings
+    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget, customSettings);
 
     // Add it to the instance data list
     fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
@@ -948,6 +981,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         isOpen={isFidgetPickerModalOpen}
         setIsOpen={setIsFidgetPickerModalOpen}
         addFidget={addFidget}
+        addFidgetWithCustomSettings={addFidgetWithCustomSettings}
         setExternalDraggedItem={setExternalDraggedItem}
         setCurrentlyDragging={setCurrentlyDragging}
         generateFidgetInstance={generateFidgetInstance}
