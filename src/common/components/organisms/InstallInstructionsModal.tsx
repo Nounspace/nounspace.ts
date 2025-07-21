@@ -115,7 +115,7 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                                     </span>
                                     <div className="flex-1">
                                         <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                            Select <strong>"Add to Home Screen"</strong>
+                                            Select <strong>&quot;Add to Home Screen&quot;</strong>
                                         </p>
                                     </div>
                                 </li>
@@ -125,7 +125,7 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                                     </span>
                                     <div className="flex-1">
                                         <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                            Tap <strong>"Add"</strong>
+                                            Tap <strong>&quot;Add&quot;</strong>
                                         </p>
                                     </div>
                                 </li>
@@ -143,13 +143,13 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                                 <li className="flex items-start space-x-1">
                                     <span className="text-red-500 text-[8px] mt-0.5">•</span>
                                     <span style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        App doesn't meet PWA criteria
+                                        App doesn&apos;t meet PWA criteria
                                     </span>
                                 </li>
                                 <li className="flex items-start space-x-1">
                                     <span className="text-red-500 text-[8px] mt-0.5">•</span>
                                     <span style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        Browser hasn't shown prompt yet
+                                        Browser hasn&apos;t shown prompt yet
                                     </span>
                                 </li>
                                 <li className="flex items-start space-x-1">
