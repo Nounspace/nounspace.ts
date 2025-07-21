@@ -469,6 +469,14 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       return null;
     }
 
+    // Additional check: if we're in an iframe or embedded context, likely a mini app
+    if (typeof window !== 'undefined' && window.self !== window.top) {
+      if (DEBUG_PWA) {
+        console.log('🚫 Install button hidden: Running in iframe/embedded context');
+      }
+      return null;
+    }
+
     // Don't show if not installable (except on iOS) and we've confirmed not in mini app
     if (!isInstallable && !isIOS && isInMiniApp === false) {
       if (DEBUG_PWA) {
