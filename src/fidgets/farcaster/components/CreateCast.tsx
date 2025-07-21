@@ -614,7 +614,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return "Cast";
   };
 
-  const handleEmojiClick = (emojiObject: any) => {
+  const handleEmojiClick = (
+    emojiObject: any,
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.stopPropagation();
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
@@ -789,7 +793,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 type="button"
                 variant="ghost"
                 disabled={isPublishing}
-                onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPickingEmoji(!isPickingEmoji);
+                }}
               >
                 <GoSmiley size={20} />
               </Button>
