@@ -6,6 +6,7 @@ import { MdGridView } from "react-icons/md";
 import { BsImage, BsImageFill, BsFillPinFill, BsPin } from "react-icons/bs";
 import { CompleteFidgets } from "@/fidgets";
 import { InstallInstructionsModal } from "@/common/components/organisms/InstallInstructionsModal";
+import { useMiniApp } from "@/common/utils/useMiniApp";
 
 // Debug flag for PWA logging - only enabled in development
 const DEBUG_PWA = process.env.NODE_ENV === 'development';
@@ -116,7 +117,12 @@ TabItem.displayName = 'TabItem';
 
 /**
  * A responsive mobile navigation bar that displays as a fixed bar at the bottom of the screen
- * with scrollable tabs. Features accessibility support and theme integration.
+ * with scrollable tabs. Features accessibility support, theme integration, and PWA install functionality.
+ * 
+ * The install button is automatically hidden when:
+ * - The app is already installed (standalone mode)
+ * - Running in a Farcaster Mini App context (detected via @farcaster/miniapp-sdk)
+ * - The app doesn't meet PWA criteria and it's not iOS
  * 
  * @param props.tabs - Array of tab items to render
  * @param props.selected - ID of the currently selected tab
@@ -125,6 +131,7 @@ TabItem.displayName = 'TabItem';
  * @param props.className - Optional additional CSS classes
  * @param props.fidgetInstanceDatums - Optional fidget data for advanced styling
  * @param props.tabNames - Optional custom tab names from SpaceConfig.tabNames
+ * @param props.showInstallButton - Optional prop to show/hide install button (default: true)
  */
 const MobileNavbar: React.FC<MobileNavbarProps> = ({
   tabs,
@@ -325,8 +332,18 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
     const [isStandalone, setIsStandalone] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    
+    // Use the custom hook for mini app detection
+    const { isInMiniApp, isLoading: isMiniAppLoading, error: miniAppError } = useMiniApp();
 
     useEffect(() => {
+      // Log mini app detection results
+      if (DEBUG_PWA && !isMiniAppLoading) {
+        console.log('🔍 Mini App detection complete:', {
+          isInMiniApp,
+          error: miniAppError?.message
+        });
+      }
       // Detect iOS devices
       const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
       setIsIOS(iOS);
@@ -436,8 +453,24 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
       return null;
     }
 
-    // Don't show if not installable (except on iOS)
-    if (!isInstallable && !isIOS) {
+    // Don't render while we're still checking mini app status
+    if (isMiniAppLoading) {
+      if (DEBUG_PWA) {
+        console.log('⏳ Install button hidden: Still checking Mini App status');
+      }
+      return null;
+    }
+
+    // Don't show the button if we're in a Mini App context
+    if (isInMiniApp === true) {
+      if (DEBUG_PWA) {
+        console.log('🚫 Install button hidden: Running in Mini App context');
+      }
+      return null;
+    }
+
+    // Don't show if not installable (except on iOS) and we've confirmed not in mini app
+    if (!isInstallable && !isIOS && isInMiniApp === false) {
       if (DEBUG_PWA) {
         console.log('🚫 Install button hidden: Not installable and not iOS', {
           isInstallable,
@@ -454,6 +487,8 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
         isInstallable,
         isIOS,
         isStandalone,
+        isInMiniApp,
+        isMiniAppLoading,
         hasDeferredPrompt: !!deferredPrompt
       });
     }
@@ -468,6 +503,8 @@ const MobileNavbar: React.FC<MobileNavbarProps> = ({
           data-installable={isInstallable}
           data-ios={isIOS}
           data-standalone={isStandalone}
+          data-in-miniapp={isInMiniApp}
+          data-miniapp-loading={isMiniAppLoading}
           data-has-prompt={!!deferredPrompt}
           className={mergeClasses(
             "flex flex-col items-center justify-center",
