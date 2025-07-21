@@ -48,7 +48,7 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
             {/* Modal Content */}
             <div
                 className={mergeClasses(
-                    "relative w-full max-w-xs mx-auto rounded-lg shadow-lg border",
+                    "relative w-full max-w-[280px] mx-auto rounded-lg shadow-lg border",
                     "transform transition-all duration-200",
                     "scale-100 opacity-100"
                 )}
@@ -58,10 +58,10 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                 }}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-3 border-b" style={{ borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)" }}>
+                <div className="flex items-center justify-between p-2 border-b" style={{ borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)" }}>
                     <h2
                         id="install-modal-title"
-                        className="text-base font-semibold"
+                        className="text-sm font-semibold"
                         style={{ color: theme?.properties?.headingsFontColor || "#000000" }}
                     >
                         📱 Install App
@@ -73,7 +73,7 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                         style={{ color: theme?.properties?.fontColor || "#374151" }}
                     >
                         <svg
-                            className="w-5 h-5"
+                            className="w-4 h-4"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -89,102 +89,94 @@ export const InstallInstructionsModal: React.FC<InstallInstructionsModalProps> =
                 </div>
 
                 {/* Content */}
-                <div className="p-3 space-y-3">
+                <div className="p-2 space-y-2">
                     {isIOS ? (
                         <>
                             <p
-                                className="text-xs"
+                                className="text-[10px] leading-tight"
                                 style={{ color: theme?.properties?.fontColor || "#374151" }}
                             >
-                                To install this app on your iOS device:
+                                To install this app:
                             </p>
-                            <ol className="space-y-2 text-xs">
-                                <li className="flex items-start space-x-2">
-                                    <span className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-xs">
+                            <ol className="space-y-1 text-[10px] leading-tight">
+                                <li className="flex items-start space-x-1">
+                                    <span className="flex-shrink-0 w-3 h-3 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-[8px] mt-0.5">
                                         1
                                     </span>
-                                    <div>
+                                    <div className="flex-1">
                                         <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                            Tap the <strong>Share button</strong> in Safari
+                                            Tap <strong>Share</strong> in Safari
                                         </p>
-                                        <div className="mt-1 flex items-center space-x-1 text-xs opacity-70">
-                                            <span>Look for:</span>
-                                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z" />
-                                            </svg>
-                                        </div>
                                     </div>
                                 </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-xs">
+                                <li className="flex items-start space-x-1">
+                                    <span className="flex-shrink-0 w-3 h-3 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-[8px] mt-0.5">
                                         2
                                     </span>
-                                    <div>
+                                    <div className="flex-1">
                                         <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                            Select <strong>&quot;Add to Home Screen&quot;</strong>
+                                            Select <strong>"Add to Home Screen"</strong>
                                         </p>
-                                        <div className="mt-1 flex items-center space-x-1 text-xs opacity-70">
-                                            <span>Look for:</span>
-                                            <span>➕</span>
-                                        </div>
                                     </div>
                                 </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="flex-shrink-0 w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-xs">
+                                <li className="flex items-start space-x-1">
+                                    <span className="flex-shrink-0 w-3 h-3 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-[8px] mt-0.5">
                                         3
                                     </span>
-                                    <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        Tap <strong>&quot;Add&quot;</strong> to confirm
-                                    </p>
+                                    <div className="flex-1">
+                                        <p style={{ color: theme?.properties?.fontColor || "#374151" }}>
+                                            Tap <strong>"Add"</strong>
+                                        </p>
+                                    </div>
                                 </li>
                             </ol>
                         </>
                     ) : (
                         <>
                             <p
-                                className="text-xs"
+                                className="text-[10px] leading-tight"
                                 style={{ color: theme?.properties?.fontColor || "#374151" }}
                             >
-                                Install prompt not ready yet. This can happen when:
+                                Install not ready yet. This can happen when:
                             </p>
-                            <ul className="space-y-1 text-xs">
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-red-500">•</span>
+                            <ul className="space-y-1 text-[10px] leading-tight">
+                                <li className="flex items-start space-x-1">
+                                    <span className="text-red-500 text-[8px] mt-0.5">•</span>
                                     <span style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        The app doesn&apos;t meet PWA criteria
+                                        App doesn't meet PWA criteria
                                     </span>
                                 </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-red-500">•</span>
+                                <li className="flex items-start space-x-1">
+                                    <span className="text-red-500 text-[8px] mt-0.5">•</span>
                                     <span style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        Chrome hasn&apos;t shown the prompt yet
+                                        Browser hasn't shown prompt yet
                                     </span>
                                 </li>
-                                <li className="flex items-start space-x-2">
-                                    <span className="text-red-500">•</span>
+                                <li className="flex items-start space-x-1">
+                                    <span className="text-red-500 text-[8px] mt-0.5">•</span>
                                     <span style={{ color: theme?.properties?.fontColor || "#374151" }}>
-                                        You&apos;re in an unsupported browser
+                                        Unsupported browser
                                     </span>
                                 </li>
                             </ul>
                             <p
-                                className="text-xs font-medium"
+                                className="text-[10px] font-medium leading-tight"
                                 style={{ color: theme?.properties?.fontColor || "#374151" }}
                             >
-                                Try refreshing the page or waiting a few seconds.
+                                Try refreshing or wait a few seconds.
                             </p>
                         </>
                     )}
                 </div>
 
                 {/* Footer */}
-                <div className="flex justify-end p-3 border-t" style={{ borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)" }}>
+                <div className="flex justify-end p-2 border-t" style={{ borderColor: theme?.properties?.fidgetBorderColor || "rgb(229 231 235)" }}>
                     <button
                         onClick={onClose}
                         className={mergeClasses(
-                            "px-3 py-1.5 rounded-md text-xs font-medium",
+                            "px-2 py-1 rounded text-[10px] font-medium",
                             "transition-opacity duration-200",
-                            "focus:outline-none focus:ring-1 focus:ring-offset-1 hover:opacity-80"
+                            "focus:outline-none hover:opacity-80"
                         )}
                         style={{
                             backgroundColor: theme?.properties?.headingsFontColor || "#3B82F6",
