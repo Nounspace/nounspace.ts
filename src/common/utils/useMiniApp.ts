@@ -29,39 +29,83 @@ export const useMiniApp = () => {
           return;
         }
 
+        // Quick heuristic checks first - these are more reliable for immediate detection
+        const userAgent = navigator.userAgent;
+        const isInIframe = window.self !== window.top;
+        const isReactNativeWebView = !!(window as any).ReactNativeWebView;
+        
+        // Check for Farcaster-specific indicators
+        const isFarcasterWebView = userAgent.includes('Farcaster') || userAgent.includes('farcaster');
+        const isWarpcast = userAgent.includes('Warpcast') || userAgent.includes('warpcast');
+        
+        // Check URL parameters that might indicate mini app context
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasFrameParam = urlParams.has('frame') || urlParams.has('miniapp');
+        
+        // Check for common mini app indicators
+        const commonMiniAppIndicators = 
+          isInIframe || 
+          isReactNativeWebView || 
+          isFarcasterWebView || 
+          isWarpcast || 
+          hasFrameParam ||
+          window.location.href.includes('frame') ||
+          window.location.href.includes('miniapp');
+
+        if (DEBUG_MINIAPP) {
+          console.log('🔍 Mini App heuristic checks:', {
+            userAgent,
+            isInIframe,
+            isReactNativeWebView,
+            isFarcasterWebView,
+            isWarpcast,
+            hasFrameParam,
+            url: window.location.href,
+            commonMiniAppIndicators
+          });
+        }
+
+        // If clear indicators suggest mini app, return true immediately
+        if (isFarcasterWebView || isWarpcast) {
+          setIsInMiniApp(true);
+          setIsLoading(false);
+          if (DEBUG_MINIAPP) {
+            console.log('✅ Mini App detected via user agent');
+          }
+          return;
+        }
+
+        // Try SDK detection as secondary check
         try {
-          // Dynamic import of the SDK
           const { sdk } = await import('@farcaster/miniapp-sdk');
           
-          if (!sdk) {
-            setIsInMiniApp(false);
+          if (sdk) {
+            const isMiniApp = await sdk.isInMiniApp();
+            setIsInMiniApp(isMiniApp);
             setIsLoading(false);
+
             if (DEBUG_MINIAPP) {
-              console.log('🔍 Mini App SDK not available, assuming not in mini app');
+              console.log('🔍 Mini App SDK detection result:', {
+                isMiniApp,
+                timestamp: new Date().toISOString()
+              });
             }
             return;
           }
-
-          // According to the SDK API, isInMiniApp() doesn't take timeout as parameter
-          // The timeout is handled internally by the SDK
-          const isMiniApp = await sdk.isInMiniApp();
-          setIsInMiniApp(isMiniApp);
-          setIsLoading(false);
-
-          if (DEBUG_MINIAPP) {
-            console.log('🔍 Mini App detection result:', {
-              isMiniApp,
-              timestamp: new Date().toISOString()
-            });
-          }
         } catch (sdkError) {
-          // SDK not available or failed to load
-          setIsInMiniApp(false);
-          setIsLoading(false);
           if (DEBUG_MINIAPP) {
-            console.log('🔍 Mini App SDK not available, assuming not in mini app:', sdkError);
+            console.log('⚠️ SDK detection failed, using heuristics:', sdkError);
           }
         }
+
+        // Fall back to heuristic detection if SDK fails
+        setIsInMiniApp(commonMiniAppIndicators);
+        setIsLoading(false);
+        
+        if (DEBUG_MINIAPP) {
+          console.log('🔍 Using heuristic detection result:', commonMiniAppIndicators);
+        }
+
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error during mini app detection');
         setError(error);
