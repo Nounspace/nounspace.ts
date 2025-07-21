@@ -3,28 +3,15 @@ import { useState, useEffect } from 'react';
 // Debug flag for mini app logging
 const DEBUG_MINIAPP = process.env.NODE_ENV === 'development';
 
-// Farcaster Mini App SDK import (with fallback for SSR)
-let sdk: any = null;
-if (typeof window !== 'undefined') {
-  try {
-    sdk = require('@farcaster/miniapp-sdk').sdk;
-  } catch (error) {
-    if (DEBUG_MINIAPP) {
-      console.warn('Farcaster Mini App SDK not available:', error);
-    }
-  }
-}
-
 /**
  * Custom hook to detect if the app is running in a Farcaster Mini App context
  * 
- * @param timeoutMs - Optional timeout in milliseconds for context verification (default: 100)
  * @returns Object containing:
  *   - isInMiniApp: boolean | null (true = in mini app, false = not in mini app, null = checking)
  *   - isLoading: boolean (true while checking, false when done)
  *   - error: Error | null (any error that occurred during detection)
  */
-export const useMiniApp = (timeoutMs: number = 100) => {
+export const useMiniApp = () => {
   const [isInMiniApp, setIsInMiniApp] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -35,26 +22,45 @@ export const useMiniApp = (timeoutMs: number = 100) => {
         setIsLoading(true);
         setError(null);
 
-        if (!sdk) {
-          // SDK not available, assume not in mini app
+        // Skip if running on server
+        if (typeof window === 'undefined') {
           setIsInMiniApp(false);
           setIsLoading(false);
-          if (DEBUG_MINIAPP) {
-            console.log('🔍 Mini App SDK not available, assuming not in mini app');
-          }
           return;
         }
 
-        const isMiniApp = await sdk.isInMiniApp(timeoutMs);
-        setIsInMiniApp(isMiniApp);
-        setIsLoading(false);
+        try {
+          // Dynamic import of the SDK
+          const { sdk } = await import('@farcaster/miniapp-sdk');
+          
+          if (!sdk) {
+            setIsInMiniApp(false);
+            setIsLoading(false);
+            if (DEBUG_MINIAPP) {
+              console.log('🔍 Mini App SDK not available, assuming not in mini app');
+            }
+            return;
+          }
 
-        if (DEBUG_MINIAPP) {
-          console.log('🔍 Mini App detection result:', {
-            isMiniApp,
-            timeoutMs,
-            timestamp: new Date().toISOString()
-          });
+          // According to the SDK API, isInMiniApp() doesn't take timeout as parameter
+          // The timeout is handled internally by the SDK
+          const isMiniApp = await sdk.isInMiniApp();
+          setIsInMiniApp(isMiniApp);
+          setIsLoading(false);
+
+          if (DEBUG_MINIAPP) {
+            console.log('🔍 Mini App detection result:', {
+              isMiniApp,
+              timestamp: new Date().toISOString()
+            });
+          }
+        } catch (sdkError) {
+          // SDK not available or failed to load
+          setIsInMiniApp(false);
+          setIsLoading(false);
+          if (DEBUG_MINIAPP) {
+            console.log('🔍 Mini App SDK not available, assuming not in mini app:', sdkError);
+          }
         }
       } catch (err) {
         const error = err instanceof Error ? err : new Error('Unknown error during mini app detection');
@@ -69,7 +75,7 @@ export const useMiniApp = (timeoutMs: number = 100) => {
     };
 
     checkMiniAppContext();
-  }, [timeoutMs]);
+  }, []); // No dependencies needed since we removed timeoutMs parameter
 
   return {
     isInMiniApp,
@@ -79,8 +85,9 @@ export const useMiniApp = (timeoutMs: number = 100) => {
 };
 
 /**
- * Synchronous check for mini app context (returns cached result or null if not checked yet)
+ * Synchronous check for mini app context using heuristics
  * Useful for immediate checks without async operations
+ * Note: This is less reliable than the full SDK check in useMiniApp hook
  */
 export const isMiniAppSync = (): boolean | null => {
   if (typeof window === 'undefined') {
@@ -91,19 +98,18 @@ export const isMiniAppSync = (): boolean | null => {
   // These are faster but less reliable than the full SDK check
   const isInIframe = window.self !== window.top;
   const isReactNativeWebView = !!(window as any).ReactNativeWebView;
-  const hasParentOrigin = window.location !== window.parent.location;
-
+  
+  // Check for Farcaster-specific indicators
+  const userAgent = navigator.userAgent;
+  const isFarcasterWebView = userAgent.includes('Farcaster') || userAgent.includes('farcaster');
+  
   // If clearly not in an embedded context, return false immediately
-  if (!isInIframe && !isReactNativeWebView && !hasParentOrigin) {
+  if (!isInIframe && !isReactNativeWebView && !isFarcasterWebView) {
     return false;
   }
 
-  // If in embedded context but SDK not available, return null (unknown)
-  if (!sdk) {
-    return null;
-  }
-
-  // For embedded contexts, we need the full SDK check
+  // If in embedded context, we should use the full SDK check
+  // Return null to indicate that async detection is needed
   return null;
 };
 
