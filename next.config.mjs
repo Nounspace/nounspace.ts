@@ -46,6 +46,11 @@ const nextConfig = {
         pathname: "*",
       },
       {
+        hostname: "nouns.wtf",
+        protocol: "https",
+        pathname: "*",
+      },
+      {
         hostname: "*",
         protocol: "https",
         pathname: "**/*.png",
