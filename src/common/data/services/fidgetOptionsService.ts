@@ -196,17 +196,12 @@ export class FidgetOptionsService {
       
       if (Array.isArray(responseData)) {
         frameApps = responseData;
-      } else if (
-        responseData && 
-        responseData.result && 
-        responseData.result.frames && 
-        Array.isArray(responseData.result.frames)
-      ) {
+      } else if (Array.isArray(responseData?.result?.frames)) {
         // Actual Farcaster API structure: { result: { frames: [...] } }
         frameApps = responseData.result.frames;
-      } else if (responseData && responseData.data && Array.isArray(responseData.data)) {
+      } else if (Array.isArray(responseData?.data)) {
         frameApps = responseData.data;
-      } else if (responseData && responseData.apps && Array.isArray(responseData.apps)) {
+      } else if (Array.isArray(responseData?.apps)) {
         frameApps = responseData.apps;
       } else {
         console.error('Unexpected API response structure:', responseData);
