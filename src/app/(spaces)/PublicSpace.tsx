@@ -498,12 +498,13 @@ export default function PublicSpace({
             console.log("Attempting to register contract space:", {
               contractAddress,
               currentUserFid,
+              spaceOwnerFid,
               network: tokenData.network,
             });
             newSpaceId = await registerSpaceContract(
               contractAddress,
               "Profile",
-              currentUserFid,
+              spaceOwnerFid ?? undefined,
               initialConfig,
               tokenData.network,
             );
