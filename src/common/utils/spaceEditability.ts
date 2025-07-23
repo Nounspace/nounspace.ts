@@ -43,9 +43,18 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
   //   isTokenPage,
   // });
 
-  // If we don't have a current user FID, we're definitely not editable
+  // Allow token space editing via wallet ownership even without a FID
+  if (
+    isTokenPage &&
+    isNil(currentUserFid) &&
+    spaceOwnerAddress &&
+    wallets.some((w) => w.address === spaceOwnerAddress)
+  ) {
+    return { isEditable: true, isLoading: false };
+  }
+
+  // If we still don't have a current user FID, it's not editable
   if (isNil(currentUserFid)) {
-    // console.log('Not editable: No current user FID');
     return { isEditable: false, isLoading: false };
   }
 

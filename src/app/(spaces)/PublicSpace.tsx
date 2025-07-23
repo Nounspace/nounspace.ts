@@ -518,7 +518,7 @@ export default function PublicSpace({
               currentUserFid,
             });
             newSpaceId = await registerSpaceFid(
-              currentUserFid,
+              currentUserFid!,
               "Profile",
               getSpacePageUrl("Profile"),
             );
