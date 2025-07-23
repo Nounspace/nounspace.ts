@@ -41,34 +41,12 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: "nouns.com",
         protocol: "https",
-        pathname: "*",
+        hostname: "**",
       },
       {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.png",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.jpg",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.jpeg",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.gif",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.webp",
+        protocol: "http",
+        hostname: "**",
       },
     ],
   },
