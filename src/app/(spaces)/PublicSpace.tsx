@@ -119,6 +119,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const isAccountReady = useAppStore(state => state.getIsAccountReady());
 
   
   // Clear cache only when switching to a different space
@@ -445,6 +446,7 @@ export default function PublicSpace({
       isNil(currentSpaceId) &&
       (isTokenPage || !isNil(currentUserFid)) &&
       !loading &&
+      isAccountReady &&
       !editabilityCheck.isLoading
     ) {
       console.log("Space registration conditions met:", {
@@ -569,6 +571,7 @@ export default function PublicSpace({
     editabilityCheck.isLoading,
     currentUserFid,
     loading,
+    isAccountReady,
     isTokenPage,
     contractAddress,
     tokenData?.network,
