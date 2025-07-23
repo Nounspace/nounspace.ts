@@ -504,7 +504,7 @@ export default function PublicSpace({
             newSpaceId = await registerSpaceContract(
               contractAddress,
               "Profile",
-              spaceOwnerFid ?? undefined,
+              spaceOwnerFid,
               initialConfig,
               tokenData.network,
             );

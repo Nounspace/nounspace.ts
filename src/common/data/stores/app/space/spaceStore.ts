@@ -168,7 +168,7 @@ interface SpaceActions {
   registerSpaceContract: (
     address: string,
     name: string,
-    fid: number,
+    fid?: number,
     initialConfig: Omit<SpaceConfig, "isEditable">,
     network: EtherScanChainName,
   ) => Promise<string | undefined>;
@@ -854,11 +854,11 @@ export const createSpaceStoreFunc = (
     }
   },
   registerSpaceContract: async (
-    address,
-    name,
-    tokenOwnerFid,
-    initialConfig,
-    network,
+    address: string,
+    name: string,
+    tokenOwnerFid?: number,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
+    network: EtherScanChainName,
   ) => {
     try {
       // First check local spaces for matching contract
