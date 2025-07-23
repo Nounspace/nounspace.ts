@@ -443,7 +443,7 @@ export default function PublicSpace({
     if (
       editabilityCheck.isEditable &&
       isNil(currentSpaceId) &&
-      !isNil(currentUserFid) &&
+      (isTokenPage || !isNil(currentUserFid)) &&
       !loading &&
       !editabilityCheck.isLoading
     ) {

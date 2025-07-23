@@ -168,7 +168,7 @@ interface SpaceActions {
   registerSpaceContract: (
     address: string,
     name: string,
-    fid?: number,
+    fid: number | undefined,
     initialConfig: Omit<SpaceConfig, "isEditable">,
     network: EtherScanChainName,
   ) => Promise<string | undefined>;
@@ -856,7 +856,7 @@ export const createSpaceStoreFunc = (
   registerSpaceContract: async (
     address: string,
     name: string,
-    tokenOwnerFid?: number,
+    tokenOwnerFid: number | undefined,
     initialConfig: Omit<SpaceConfig, "isEditable">,
     network: EtherScanChainName,
   ) => {
