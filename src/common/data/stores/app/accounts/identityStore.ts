@@ -192,7 +192,7 @@ export const identityStore = (
       "/api/space/identities",
       {
         params: {
-          address: wallet.address,
+          address: wallet.address.toLowerCase(),
         },
       },
     );
@@ -202,12 +202,12 @@ export const identityStore = (
         : [data.value]
       : [];
     set((draft) => {
-      draft.account.walletIdentities[wallet.address] = walletIdentities;
+      draft.account.walletIdentities[wallet.address.toLowerCase()] = walletIdentities;
     }, "loadIdentitiesForWallet");
     return walletIdentities;
   },
   getIdentitiesForWallet: (wallet: Wallet) => {
-    return get().account.walletIdentities[wallet.address] || [];
+    return get().account.walletIdentities[wallet.address.toLowerCase()] || [];
   },
   decryptIdentityKeys: async (
     signMessage: SignMessageFunctionSignature,
@@ -216,7 +216,7 @@ export const identityStore = (
   ) => {
     const supabase = createClient();
     const walletIdentityInfo = find(
-      get().account.walletIdentities[wallet.address],
+      get().account.walletIdentities[wallet.address.toLowerCase()],
       {
         identityPublicKey: identityPublicKey,
       },
@@ -232,7 +232,12 @@ export const identityStore = (
       data: { publicUrl },
     } = await supabase.storage
       .from("private")
-      .getPublicUrl(rootKeyPath(identityPublicKey, wallet.address));
+      .getPublicUrl(
+        rootKeyPath(
+          identityPublicKey,
+          walletIdentityInfo.walletAddress.toLowerCase(),
+        ),
+      );
     if (!publicUrl) {
       throw new IdentitytDecryptError(
         identityPublicKey,
@@ -296,7 +301,7 @@ export const identityStore = (
     const identityRequestUnsigned: UnsignedIdentityRequest = {
       type: "Create",
       identityPublicKey: bytesToHex(publicKey),
-      walletAddress: wallet.address,
+      walletAddress: wallet.address.toLowerCase(),
       nonce,
       timestamp: moment().toISOString(),
     };

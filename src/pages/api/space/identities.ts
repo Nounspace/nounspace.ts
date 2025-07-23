@@ -59,9 +59,10 @@ async function handlePost(
         throw Error("Invalid signature on keys file");
       }
       const supabase = createSupabaseServerClient();
+      const normalizedAddress = identityRequest.walletAddress.toLowerCase();
       const { error } = await supabase
         .from("walletIdentities")
-        .insert(identityRequest);
+        .insert({ ...identityRequest, walletAddress: normalizedAddress });
       if (error) {
         throw error;
       }
@@ -70,7 +71,7 @@ async function handlePost(
         .upload(
           rootKeyPath(
             identityRequest.identityPublicKey,
-            identityRequest.walletAddress,
+            normalizedAddress,
           ),
           new Blob([stringify(file)], { type: "application/json" }),
           {
@@ -103,11 +104,12 @@ async function handleGet(
   const query = req.query;
   if (query.address) {
     const address = Array.isArray(query.address) ? query.address[0] : query.address;
+    const normalized = address.toLowerCase();
     const supabase = createSupabaseServerClient();
     const { data, error } = await supabase
       .from("walletIdentities")
       .select()
-      .eq("walletAddress", address);
+      .ilike("walletAddress", normalized);
     if (error) {
       res.status(500).json({
         result: "error",
