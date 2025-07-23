@@ -16,12 +16,14 @@ import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
+import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { comprehensiveCleanup } from '@/common/lib/utils/gridCleanup';
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { extractFidgetIdsFromLayout } from "@/fidgets/layout/tabFullScreen/utils";
+import { createPortal } from "react-dom";
 import DesktopView from "./DesktopView";
 import MobilePreview from "./MobilePreview";
-import MobileView from "./MobileView";
-import { extractFidgetIdsFromLayout } from "@/fidgets/layout/tabFullScreen/utils";
+import MobileViewSimplified from "./MobileViewSimplified";
 
 
 export type SpaceFidgetConfig = {
@@ -58,7 +60,6 @@ type SpaceArgs = {
   tabBar: ReactNode;
   profile?: ReactNode;
   feed?: ReactNode;
-  /** When true, render the feed on mobile layouts. */
   showFeedOnMobile?: boolean;
   setEditMode: (v: boolean) => void;
   editMode: boolean;
@@ -166,6 +167,7 @@ export default function Space({
       feed: feed,
       tabNames: config.tabNames,
       fid: config.fid,
+      inEditMode: !viewportMobile && editMode,
     };
   }, [
     config.theme,
@@ -177,6 +179,8 @@ export default function Space({
     portalRef,
     profile,
     feed,
+    viewportMobile,
+    editMode,
   ]);
 
   // Memoize DesktopView specific props
@@ -237,7 +241,7 @@ export default function Space({
               }
             >
               {isMobile ? (
-                <MobileView
+                <MobileViewSimplified
                   {...baseLayoutProps}
                   layoutFidgetIds={extractFidgetIdsFromLayout(
                     config?.layoutDetails?.layoutConfig?.layout,
@@ -256,25 +260,77 @@ export default function Space({
 
   return (
     <>
-      {showMobileContainer ? (
-        <MobilePreview
-          {...baseLayoutProps}
-          editMode={editMode}
-          profile={profile}
-          tabBar={tabBar}
-          saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
-          saveFidgetInstanceDatums={(datums) =>
-            saveLocalConfig({ fidgetInstanceDatums: datums })
-          }
-        />
-      ) : (
-        <div className="user-theme-background size-full relative overflow-hidden">
-          <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
-          <div className="w-full h-full transition-all duration-100 ease-out relative z-10">
-            {mainContent}
-          </div>
+      {showMobileContainer && editMode && portalRef.current
+        ? createPortal(
+          <aside
+            id="logo-sidebar"
+            className="h-screen flex-row flex bg-white"
+            aria-label="Sidebar"
+          >
+            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
+              <ThemeSettingsEditor
+                theme={config.theme}
+                saveTheme={(newTheme) =>
+                  saveLocalConfig({ theme: newTheme })
+                }
+                saveExitEditMode={saveExitEditMode}
+                cancelExitEditMode={cancelExitEditMode}
+                fidgetInstanceDatums={config.fidgetInstanceDatums}
+                saveFidgetInstanceDatums={(datums) =>
+                  saveLocalConfig({ fidgetInstanceDatums: datums })
+                }
+              />
+            </div>
+          </aside>,
+          portalRef.current,
+        )
+        : null}
+      <div
+        className={`w-full h-full relative ${showMobileContainer
+          ? "flex flex-col items-center justify-center"
+          : "user-theme-background flex flex-col"
+          }`}
+        style={{
+          backgroundColor: showMobileContainer ? undefined : config.theme?.properties.background,
+          ...(showMobileContainer && {
+           backgroundImage: "url('/images/space-background.png')",
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            minHeight: '100vh'
+          })
+        }}
+      >
+        <div className="w-full h-full transition-all duration-100 ease-out">
+          {showMobileContainer ? (
+            <MobilePreview
+              theme={config.theme}
+              editMode={editMode}
+              portalRef={portalRef}
+              profile={profile}
+              tabBar={tabBar}
+              feed={feed}
+              saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancelExitEditMode}
+              fidgetInstanceDatums={config.fidgetInstanceDatums}
+              saveFidgetInstanceDatums={(datums) =>
+                saveLocalConfig({ fidgetInstanceDatums: datums })
+              }
+              layoutConfig={config?.layoutDetails?.layoutConfig}
+              fidgetTrayContents={config.fidgetTrayContents}
+              saveConfig={saveLocalConfig}
+              tabNames={config.tabNames}
+              fid={config.fid}
+            />
+          ) : (
+            <>
+              <CustomHTMLBackground html={config.theme?.properties.backgroundHTML} />
+              {mainContent}
+            </>
+          )}
         </div>
-      )}
+      </div>
     </>
   );
 }

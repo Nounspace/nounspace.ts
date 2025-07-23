@@ -93,9 +93,11 @@ export function ThemeSettingsEditor({
     return Object.values(fidgetInstanceDatums).map((d, i) => {
       const props = CompleteFidgets[d.fidgetType]?.properties;
       const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
+      
       const mobileName = (d.config.settings.customMobileDisplayName as string) ||
         props?.mobileFidgetName ||
-        props?.fidgetName;
+        props?.fidgetName ||
+        d.fidgetType;
       
       return {
         id: d.id,
@@ -105,13 +107,15 @@ export function ThemeSettingsEditor({
         order: (d.config.settings.mobileOrder as number) || i + 1,
         icon: (d.config.settings.mobileIconName as string) || defaultIcon,
         displayOnMobile: d.config.settings.showOnMobile !== false,
-      };
-    });
+      } as MiniApp;
+    })
+    .sort((a, b) => a.order - b.order);
   }, [fidgetInstanceDatums]);
 
   const handleUpdateMiniApp = (app: MiniApp) => {
     const datum = fidgetInstanceDatums[app.id];
     if (!datum) return;
+    
     const newDatums = {
       ...fidgetInstanceDatums,
       [app.id]: {
@@ -122,31 +126,35 @@ export function ThemeSettingsEditor({
             ...datum.config.settings,
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
-            showOnMobile: app.displayOnMobile,
             mobileOrder: app.order,
+            showOnMobile: app.displayOnMobile,
           },
         },
       },
     };
+    
     saveFidgetInstanceDatums(newDatums);
   };
 
   const handleReorderMiniApps = (apps: MiniApp[]) => {
     const newDatums: { [key: string]: FidgetInstanceData } = {};
+    
     apps.forEach((app, index) => {
       const datum = fidgetInstanceDatums[app.id];
       if (!datum) return;
-      newDatums[app.id] = {
-        ...datum,
-        config: {
-          ...datum.config,
-          settings: {
-            ...datum.config.settings,
-            mobileOrder: index + 1,
+      
+        newDatums[app.id] = {
+          ...datum,
+          config: {
+            ...datum.config,
+            settings: {
+              ...datum.config.settings,
+               mobileOrder: index + 1, 
+            },
           },
-        },
-      };
+        };
     });
+    
     saveFidgetInstanceDatums(newDatums);
   };
 
