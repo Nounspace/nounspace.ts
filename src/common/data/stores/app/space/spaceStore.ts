@@ -876,27 +876,28 @@ export const createSpaceStoreFunc = (
       }
 
       // Check if a space already exists for this contract
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-            contractAddress: address,
-            network: network,
+      let existingSpaces: ModifiableSpacesResponse | undefined;
+      try {
+        const { data } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+              contractAddress: address,
+              network: network,
+            },
           },
-        },
-      );
-      
-      if (existingSpaces.value) {
+        );
+        existingSpaces = data;
+      } catch (e) {
+        console.error("Error checking for existing contract space:", e);
+      }
+
+      if (existingSpaces?.value) {
         const existingSpace = existingSpaces.value.spaces.find(
-          space => space.contractAddress === address && space.network === network
+          (space) => space.contractAddress === address && space.network === network
         );
         if (existingSpace) {
-          // console.log('Found existing space:', {
-          //   spaceId,
-          //   network,
-          //   space: existingSpace,
-          // });
           // Cache the space info in local state
           set((draft) => {
             draft.space.editableSpaces[existingSpace.spaceId] = name;
@@ -907,7 +908,7 @@ export const createSpaceStoreFunc = (
               order: [],
               changedNames: {},
               contractAddress: address,
-              network: network
+              network: network,
             };
           });
           return existingSpace.spaceId;
