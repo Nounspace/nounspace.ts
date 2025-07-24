@@ -28,7 +28,7 @@ export const useMiniApp = () => {
           setIsLoading(false);
           return;
         }
-
+        
         // Quick heuristic checks first - these are more reliable for immediate detection
         const userAgent = navigator.userAgent;
         const isInIframe = window.self !== window.top;

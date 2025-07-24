@@ -40,6 +40,7 @@ const Modal = ({
           "z-40",
         )}
         onMouseDown={(e) => e.stopPropagation()} // Fixes issue causing grid items to remain draggable behind open modal
+        onClick={(e) => e.stopPropagation()}
       >
         {
           <Dialog.Title
