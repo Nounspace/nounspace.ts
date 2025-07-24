@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { isArray, isNil } from "lodash";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
@@ -25,9 +25,13 @@ export const ProfileSpace = ({
     return <SpaceNotFound />;
   }
 
-  const INITIAL_PERSONAL_SPACE_CONFIG = createIntialPersonSpaceConfigForFid(
-    spaceOwnerFid,
-    spaceOwnerUsername ?? undefined,
+  const INITIAL_PERSONAL_SPACE_CONFIG = useMemo(
+    () =>
+      createIntialPersonSpaceConfigForFid(
+        spaceOwnerFid,
+        spaceOwnerUsername ?? undefined,
+      ),
+    [spaceOwnerFid, spaceOwnerUsername],
   );
 
   const getSpacePageUrl = (tabName: string) => {
