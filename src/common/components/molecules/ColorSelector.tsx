@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/common/components/atoms/button";
 import {
   Popover,

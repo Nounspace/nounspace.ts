@@ -10,6 +10,7 @@ import {
   FidgetOptionsResponse 
 } from "@/common/types/fidgetOptions";
 import { CURATED_SITES } from "@/common/data/curated/curatedSites";
+import { MiniAppDiscoveryService } from "./miniAppDiscoveryService";
 
 // Default categories configuration
 const DEFAULT_CATEGORIES: FidgetCategory[] = [
@@ -68,12 +69,17 @@ export class FidgetOptionsService {
   private miniAppsCache: MiniAppFidgetOption[] | null = null;
   private cacheExpiry: number = 0;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private discoveryService: MiniAppDiscoveryService;
 
   static getInstance(): FidgetOptionsService {
     if (!FidgetOptionsService.instance) {
       FidgetOptionsService.instance = new FidgetOptionsService();
     }
     return FidgetOptionsService.instance;
+  }
+
+  private constructor() {
+    this.discoveryService = MiniAppDiscoveryService.getInstance();
   }
 
   // Get all static fidgets from CompleteFidgets
@@ -169,172 +175,17 @@ export class FidgetOptionsService {
     }));
   }
 
-  // Fetch mini-apps from Farcaster API
+  // Fetch mini-apps from discovery service (which now includes Farcaster API)
   private async fetchMiniApps(): Promise<MiniAppFidgetOption[]> {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      // Get all Mini Apps from the discovery service (which now includes Farcaster API)
+      const discoveredApps = await this.discoveryService.toFidgetOptions();
       
-      const response = await fetch('https://client.farcaster.xyz/v1/top-frameapps?limit=100', {
-        signal: controller.signal,
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
+      console.log(`📱 Fetched ${discoveredApps.length} Mini Apps from discovery service`);
       
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      console.log('Farcaster API Response:', responseData);
-      
-      // Handle different response structures
-      let frameApps: FarcasterFrameApp[] = [];
-      
-      if (Array.isArray(responseData)) {
-        frameApps = responseData;
-      } else if (Array.isArray(responseData?.result?.frames)) {
-        // Actual Farcaster API structure: { result: { frames: [...] } }
-        frameApps = responseData.result.frames;
-      } else if (Array.isArray(responseData?.data)) {
-        frameApps = responseData.data;
-      } else if (Array.isArray(responseData?.apps)) {
-        frameApps = responseData.apps;
-      } else {
-        console.error('Unexpected API response structure:', responseData);
-        return [];
-      }
-      
-      return frameApps.map((app, index) => {
-        // Map Farcaster categories to our new 8-category system
-        let primaryCategory = 'mini-apps'; // Default for mini-apps
-        const specificTags: string[] = [];
-        
-        // Map based on Farcaster category or app tags
-        const farcasterCategory = app.primaryCategory?.toLowerCase();
-        const appTags = (app.tags || []).map(tag => tag.toLowerCase());
-        
-        if (farcasterCategory) {
-          switch (farcasterCategory) {
-            case 'social':
-              primaryCategory = 'social';
-              specificTags.push('farcaster', 'social');
-              break;
-            case 'defi':
-            case 'finance':
-              primaryCategory = 'defi';
-              specificTags.push('defi', 'finance');
-              break;
-            case 'games':
-            case 'entertainment':
-              primaryCategory = 'games';
-              specificTags.push('games', 'entertainment');
-              break;
-            case 'art-creativity':
-            case 'art':
-            case 'media':
-              primaryCategory = 'content';
-              specificTags.push('content', 'art', 'media');
-              break;
-            case 'utility':
-            case 'tool':
-            case 'productivity':
-              primaryCategory = 'tools';
-              specificTags.push('tools', 'utility', 'productivity');
-              break;
-            case 'governance':
-              primaryCategory = 'governance';
-              specificTags.push('governance');
-              break;
-            default:
-              // Check app tags for additional context
-              if (appTags.some(tag => ['social', 'community'].includes(tag))) {
-                primaryCategory = 'social';
-                specificTags.push('social', 'community');
-              } else if (appTags.some(tag => ['defi', 'finance', 'trading', 'swap'].includes(tag))) {
-                primaryCategory = 'defi';
-                specificTags.push('defi', 'finance');
-              } else if (appTags.some(tag => ['games', 'gaming', 'play'].includes(tag))) {
-                primaryCategory = 'games';
-                specificTags.push('games', 'gaming');
-              } else if (appTags.some(tag => ['art', 'content', 'media', 'nft'].includes(tag))) {
-                primaryCategory = 'content';
-                specificTags.push('content', 'art');
-              } else if (appTags.some(tag => ['tools', 'utility', 'productivity'].includes(tag))) {
-                primaryCategory = 'tools';
-                specificTags.push('tools', 'utility');
-              } else if (appTags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
-                primaryCategory = 'governance';
-                specificTags.push('governance', 'voting');
-              } else {
-                // Default to Mini Apps category
-                specificTags.push('miniapp', 'frame');
-              }
-          }
-        } else {
-          // No category specified, check tags
-          if (appTags.some(tag => ['social', 'community'].includes(tag))) {
-            primaryCategory = 'social';
-            specificTags.push('social', 'community');
-          } else if (appTags.some(tag => ['defi', 'finance', 'trading', 'swap'].includes(tag))) {
-            primaryCategory = 'defi';
-            specificTags.push('defi', 'finance');
-          } else if (appTags.some(tag => ['games', 'gaming', 'play'].includes(tag))) {
-            primaryCategory = 'games';
-            specificTags.push('games', 'gaming');
-          } else if (appTags.some(tag => ['art', 'content', 'media', 'nft'].includes(tag))) {
-            primaryCategory = 'content';
-            specificTags.push('content', 'art');
-          } else if (appTags.some(tag => ['tools', 'utility', 'productivity'].includes(tag))) {
-            primaryCategory = 'tools';
-            specificTags.push('tools', 'utility');
-          } else if (appTags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
-            primaryCategory = 'governance';
-            specificTags.push('governance', 'voting');
-          } else {
-            // Default to Mini Apps category
-            specificTags.push('miniapp', 'frame');
-          }
-        }
-        
-        // Add the app name as a specific tag (normalized)
-        specificTags.push(app.name.toLowerCase().replace(/\s+/g, '-'));
-        
-        // Combine tags: primary category + specific tags + Mini Apps tag
-        const allTags = [primaryCategory, ...specificTags, 'mini-apps'];
-        
-        return {
-          id: `miniapp-${app.domain}-${index}`,
-          type: 'miniapp' as const,
-          name: app.name,
-          description: app.description || app.tagline || app.ogDescription || `${app.name} frame app`,
-          icon: app.iconUrl || app.splashImageUrl || '🔗',
-          tags: allTags,
-          category: primaryCategory,
-          frameUrl: app.homeUrl,
-          homeUrl: app.homeUrl,
-          domain: app.domain,
-          author: app.author,
-          buttonTitle: app.buttonTitle || 'Open',
-          imageUrl: app.imageUrl || app.ogImageUrl || app.heroImageUrl,
-          splashImageUrl: app.splashImageUrl,
-          splashBackgroundColor: app.splashBackgroundColor,
-          subtitle: app.subtitle,
-          screenshotUrls: app.screenshotUrls || [],
-          popularity: Math.max(50 - index, 0) + (
-            app.author?.followerCount 
-              ? Math.min(Math.floor(app.author.followerCount / 1000), 50) 
-              : 0
-          ) // Factor in follower count for popularity
-        };
-      });
+      return discoveredApps;
     } catch (error) {
-      console.error('Error fetching mini-apps from Farcaster API:', error);
-      
-      // Return empty array if API fails - the rest of the fidget picker will still work
+      console.error('Error fetching mini-apps from discovery service:', error);
       return [];
     }
   }
