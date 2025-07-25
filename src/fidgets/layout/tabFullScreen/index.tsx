@@ -11,17 +11,12 @@ import {
   LayoutFidgetProps 
 } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
-import { 
-  createFidgetBundle, 
-  getMediaFidgetIds, 
-  getPinnedCastIds, 
-  getValidFidgetIds
-} from "./utils";
-import { processTabFidgetIds } from "@/common/utils/layoutUtils";
+import {getMediaFidgetIds, getPinnedCastIds, getValidFidgetIds, processTabFidgetIds } from "@/common/utils/layoutUtils";
 import TabNavigation from "./components/TabNavigation";
 import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
 import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
 import FidgetContent from "./components/FidgetContent";
+import { createFidgetBundle } from "./utils";
 
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
   layout: string[];
@@ -51,9 +46,15 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
     getValidFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
   [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
+  //Get mobile layout order from Space config instead of individual fidget settings
+  const mobileLayout = useMemo(() => 
+    Array.isArray(layoutConfig.layout) ? layoutConfig.layout : undefined, 
+  [layoutConfig.layout]);
+
+  //Pass mobileLayout (from Space config) to processTabFidgetIds for centralized mobile ordering
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+    processTabFidgetIds(validFidgetIds, fidgetInstanceDatums, isMobile, mobileLayout),
+  [validFidgetIds, fidgetInstanceDatums, isMobile, mobileLayout]);
   
   const mediaFidgetIds = useMemo(() => 
     getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),

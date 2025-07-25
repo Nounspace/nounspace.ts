@@ -19,11 +19,13 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import { comprehensiveCleanup } from '@/common/lib/utils/gridCleanup';
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { getLayoutConfig, getLayoutFidgetForMode } from "@/common/utils/layoutFormatUtils";
 import { extractFidgetIdsFromLayout } from "@/fidgets/layout/tabFullScreen/utils";
 import { createPortal } from "react-dom";
 import DesktopView from "./DesktopView";
 import MobilePreview from "./MobilePreview";
 import MobileViewSimplified from "./MobileViewSimplified";
+import { SpaceLayoutConfig } from "@/common/types/nounspace";
 
 
 export type SpaceFidgetConfig = {
@@ -37,7 +39,7 @@ export type SpaceConfig = {
     [key: string]: FidgetInstanceData;
   };
   layoutID: string;
-  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
+  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;
@@ -94,24 +96,28 @@ export default function Space({
   const cleanupHasRun = React.useRef(false);
 
   useEffect(() => {
-    if (cleanupHasRun.current || !config?.layoutDetails?.layoutConfig?.layout || !config?.fidgetInstanceDatums) {
+    const layoutConfig = getLayoutConfig(config?.layoutDetails);
+    if (cleanupHasRun.current || !layoutConfig?.layout || !config?.fidgetInstanceDatums) {
       return;
     }
 
     const { cleanedLayout, cleanedFidgetInstanceDatums, hasChanges } = comprehensiveCleanup(
-      config.layoutDetails.layoutConfig.layout,
+      layoutConfig.layout,
       config.fidgetInstanceDatums,
       !isNil(profile),
       !isNil(feed)
     );
 
     if (hasChanges) {
+      const layoutConfig = getLayoutConfig(config.layoutDetails);
+      const updatedLayoutConfig = {
+        ...layoutConfig,
+        layout: cleanedLayout,
+      };
+      
       saveConfig({
         layoutDetails: {
-          layoutConfig: {
-            ...config.layoutDetails.layoutConfig,
-            layout: cleanedLayout,
-          },
+          layoutConfig: updatedLayoutConfig,
         },
         fidgetInstanceDatums: cleanedFidgetInstanceDatums,
         timestamp: new Date().toISOString(),
@@ -153,11 +159,12 @@ export default function Space({
 
   // Memoize base layout props shared across all layout components
   const baseLayoutProps = useMemo(() => {
+    const layoutConfig = getLayoutConfig(config?.layoutDetails);
     return {
       theme: config.theme,
       fidgetInstanceDatums: config.fidgetInstanceDatums,
       fidgetTrayContents: config.fidgetTrayContents,
-      layoutConfig: config?.layoutDetails?.layoutConfig,
+      layoutConfig: layoutConfig,
       saveExitEditMode: saveExitEditMode,
       cancelExitEditMode: cancelExitEditMode,
       portalRef: portalRef,
@@ -173,7 +180,7 @@ export default function Space({
     config.theme,
     config.fidgetInstanceDatums,
     config.fidgetTrayContents,
-    config?.layoutDetails?.layoutConfig,
+    config?.layoutDetails,
     config.tabNames,
     config.fid,
     portalRef,
@@ -185,12 +192,13 @@ export default function Space({
 
   // Memoize DesktopView specific props
   const desktopViewProps = useMemo(() => {
+    const layoutFidget = getLayoutFidgetForMode(config?.layoutDetails, 'desktop');
     return {
       ...baseLayoutProps,
-      layoutFidgetKey: config?.layoutDetails?.layoutFidget,
+      layoutFidgetKey: layoutFidget,
       inEditMode: !viewportMobile && editMode,
     };
-  }, [baseLayoutProps, config?.layoutDetails?.layoutFidget, viewportMobile, editMode]);
+  }, [baseLayoutProps, config?.layoutDetails, viewportMobile, editMode]);
 
   const mainContent = (
     <div className="flex flex-col h-full">
@@ -198,7 +206,7 @@ export default function Space({
         <InfoToast />
       </div>
       {!isUndefined(profile) ? (
-        <div className="z-50 bg-white md:h-40">{profile}</div>
+        <div className="z-10 bg-white md:h-40">{profile}</div>
       ) : null}
 
       <div className="relative">
@@ -244,7 +252,7 @@ export default function Space({
                 <MobileViewSimplified
                   {...baseLayoutProps}
                   layoutFidgetIds={extractFidgetIdsFromLayout(
-                    config?.layoutDetails?.layoutConfig?.layout,
+                    getLayoutConfig(config?.layoutDetails)?.layout,
                     config.fidgetInstanceDatums
                   )}
                 />
@@ -304,7 +312,7 @@ export default function Space({
         <div className="w-full h-full transition-all duration-100 ease-out">
           {showMobileContainer ? (
             <MobilePreview
-              theme={config.theme}
+              config={config}
               editMode={editMode}
               portalRef={portalRef}
               profile={profile}
@@ -313,12 +321,6 @@ export default function Space({
               saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
               saveExitEditMode={saveExitEditMode}
               cancelExitEditMode={cancelExitEditMode}
-              fidgetInstanceDatums={config.fidgetInstanceDatums}
-              saveFidgetInstanceDatums={(datums) =>
-                saveLocalConfig({ fidgetInstanceDatums: datums })
-              }
-              layoutConfig={config?.layoutDetails?.layoutConfig}
-              fidgetTrayContents={config.fidgetTrayContents}
               saveConfig={saveLocalConfig}
               tabNames={config.tabNames}
               fid={config.fid}

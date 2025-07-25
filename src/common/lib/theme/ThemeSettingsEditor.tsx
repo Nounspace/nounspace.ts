@@ -5,36 +5,36 @@ import {
   Tabs,
   TabsContent
 } from "@/common/components/atoms/tabs";
-import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
-import SpaceTabContent from "./components/SpaceTabContent";
-import StyleTabContent from "./components/StyleTabContent";
-import CodeTabContent from "./components/CodeTabContent";
-import MobileTabContent from "./components/MobileTabContent";
+import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import AiChatSidebar from "@/common/components/organisms/AgentChat";
+import NogsGateButton from "@/common/components/organisms/NogsGateButton";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { useAppStore } from "@/common/data/stores/app";
 import { FidgetInstanceData } from "@/common/fidgets";
 import { ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { ThemeEditorTab } from "@/common/lib/theme/types";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import {
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import { ThemeEditorTab } from "@/common/lib/theme/types";
 import { analytics } from "@/common/providers/AnalyticsProvider";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
 import { THEMES } from "@/constants/themes";
+import { CompleteFidgets } from "@/fidgets";
 import { SparklesIcon } from "@heroicons/react/24/solid";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
-import { CompleteFidgets } from "@/fidgets";
-import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
-import { useAppStore } from "@/common/data/stores/app";
-import AiChatSidebar from "@/common/components/organisms/AgentChat";
-import NogsGateButton from "@/common/components/organisms/NogsGateButton";
+import CodeTabContent from "./components/CodeTabContent";
+import MobileTabContent from "./components/MobileTabContent";
+import SpaceTabContent from "./components/SpaceTabContent";
+import StyleTabContent from "./components/StyleTabContent";
+import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -104,7 +104,7 @@ export function ThemeSettingsEditor({
         name: d.fidgetType,
         mobileDisplayName: mobileName,
         context: props?.fidgetName || d.fidgetType,
-        order: (d.config.settings.mobileOrder as number) || i + 1,
+        order: i + 1,
         icon: (d.config.settings.mobileIconName as string) || defaultIcon,
         displayOnMobile: d.config.settings.showOnMobile !== false,
       } as MiniApp;
@@ -115,7 +115,6 @@ export function ThemeSettingsEditor({
   const handleUpdateMiniApp = (app: MiniApp) => {
     const datum = fidgetInstanceDatums[app.id];
     if (!datum) return;
-    
     const newDatums = {
       ...fidgetInstanceDatums,
       [app.id]: {
@@ -126,7 +125,6 @@ export function ThemeSettingsEditor({
             ...datum.config.settings,
             customMobileDisplayName: app.mobileDisplayName,
             mobileIconName: app.icon,
-            mobileOrder: app.order,
             showOnMobile: app.displayOnMobile,
           },
         },
@@ -139,7 +137,7 @@ export function ThemeSettingsEditor({
   const handleReorderMiniApps = (apps: MiniApp[]) => {
     const newDatums: { [key: string]: FidgetInstanceData } = {};
     
-    apps.forEach((app, index) => {
+    apps.forEach((app) => {
       const datum = fidgetInstanceDatums[app.id];
       if (!datum) return;
       
@@ -149,7 +147,6 @@ export function ThemeSettingsEditor({
             ...datum.config,
             settings: {
               ...datum.config.settings,
-               mobileOrder: index + 1, 
             },
           },
         };

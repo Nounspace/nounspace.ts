@@ -1,7 +1,7 @@
 "use client";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
-import { ThemeSettings, UserTheme } from "@/common/lib/theme";
+import { ThemeSettings } from "@/common/lib/theme";
+import { getMobileFidgetOrder } from "@/common/utils/layoutFormatUtils";
 import { isNil, isUndefined } from "lodash";
 import PhoneFrame from "@/common/components/atoms/PhoneFrame";
 import { usePathname } from "next/navigation";
@@ -9,8 +9,10 @@ import React, { ReactNode, Suspense, useMemo } from "react";
 import MobileViewSimplified from "./MobileViewSimplified";
 import SpaceLoading from "./SpaceLoading";
 
+import { SpaceConfig } from "./Space";
+
 interface MobilePreviewProps {
-  theme: UserTheme;
+  config: SpaceConfig;
   editMode: boolean;
   portalRef: React.RefObject<HTMLDivElement>;
   profile?: ReactNode;
@@ -19,19 +21,13 @@ interface MobilePreviewProps {
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  saveFidgetInstanceDatums: (datums: { [key: string]: FidgetInstanceData }) => Promise<void>;
-  
-  // LayoutFidget props
-  layoutConfig: LayoutFidgetConfig<any>;
-  fidgetTrayContents: FidgetInstanceData[];
   saveConfig: (config: any) => Promise<void>;
   tabNames?: string[];
   fid?: number;
 }
 
 const MobilePreview: React.FC<MobilePreviewProps> = ({
-  theme,
+  config,
   editMode,
   portalRef,
   profile,
@@ -40,10 +36,6 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   saveTheme,
   saveExitEditMode,
   cancelExitEditMode,
-  fidgetInstanceDatums,
-  saveFidgetInstanceDatums,
-  layoutConfig,
-  fidgetTrayContents,
   saveConfig,
   tabNames,
   fid,
@@ -52,12 +44,9 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   const isHomebasePath = pathname?.startsWith('/homebase');
 
   const layoutFidgetIds = useMemo(() => {
-    return Object.keys(fidgetInstanceDatums || {}).sort((a, b) => {
-      const aOrder = fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
-      const bOrder = fidgetInstanceDatums[b]?.config?.settings?.mobileOrder || 0;
-      return aOrder - bOrder;
-    });
-  }, [fidgetInstanceDatums]);
+   // Use the utility function to get the correct order
+    return getMobileFidgetOrder(config.layoutDetails, config.fidgetInstanceDatums);
+  }, [config.layoutDetails, config.fidgetInstanceDatums]);
 
   return (
     <>
@@ -73,13 +62,13 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  backgroundColor: theme?.properties.background || 'white',
+                  backgroundColor: config.theme?.properties.background || 'white',
                   transform: 'scale(1.0)',
                   transformOrigin: 'top left'
                 }}
               >
                 <CustomHTMLBackground
-                  html={theme?.properties.backgroundHTML}
+                  html={config.theme?.properties.backgroundHTML}
                   className="absolute inset-0 pointer-events-none w-full h-full"
                 />
                 <div className="flex-1 w-full overflow-auto">
@@ -107,9 +96,9 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
                       />
                     }>
                       <MobileViewSimplified
-                        theme={theme}
-                        fidgetInstanceDatums={fidgetInstanceDatums}
-                        fidgetTrayContents={fidgetTrayContents}
+                        theme={config.theme}
+                        fidgetInstanceDatums={config.fidgetInstanceDatums}
+                        fidgetTrayContents={config.fidgetTrayContents}
                         saveConfig={saveConfig}
                         inEditMode={false}
                         saveExitEditMode={saveExitEditMode}
