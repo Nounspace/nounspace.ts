@@ -3,7 +3,6 @@ import React, {
   useRef,
   useEffect,
   useCallback,
-  useMemo,
 } from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Textarea } from "@/common/components/atoms/textarea";
@@ -12,17 +11,16 @@ import {
   LucideSparkle,
   Send,
   Loader2,
-  Settings,
   AlertCircle,
   Wifi,
   WifiOff,
   RotateCcw,
-  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 import { useAppStore } from "@/common/data/stores/app";
 import { SpaceCheckpoint } from "@/common/data/stores/app/checkpoints/checkpointStore";
+import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 import { ChatMessage } from "@/common/data/stores/app/chat/chatStore";
 import { SpaceConfig, SpaceConfigSaveDetails } from "@/app/(spaces)/Space";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
@@ -402,13 +400,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     if (!onApplySpaceConfig) return;
 
     try {
-      // Extract layoutConfig from the AI's layoutDetails structure
-      const layoutConfig = spaceConfig.layoutDetails?.layoutConfig;
+      // Extract layoutConfig using the utility function for both new and old formats
+      const layoutConfigData = getLayoutConfig(spaceConfig.layoutDetails);
 
       // Convert SpaceConfig to the format expected by saveLocalConfig
       const saveDetails = {
         theme: spaceConfig.theme,
-        layoutConfig: layoutConfig,
+        layoutConfig: layoutConfigData,
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
         fidgetTrayContents: spaceConfig.fidgetTrayContents,
       };
@@ -426,7 +424,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       // Transform AI config format to checkpoint format
       const checkpointConfig = {
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
-        layoutConfig: spaceConfig.layoutDetails?.layoutConfig,
+        layoutConfig: getLayoutConfig(spaceConfig.layoutDetails),
         theme: spaceConfig.theme,
       };
       
