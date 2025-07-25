@@ -17,6 +17,7 @@ export async function GET(): Promise<Response> {
         description: app.manifest.description,
         lastCrawled: app.lastCrawled,
         engagementScore: app.engagementScore,
+        discoverySource: app.discoverySource,
       })),
     });
   } catch (error) {
@@ -35,21 +36,18 @@ export async function POST(request: NextRequest): Promise<Response> {
     
     const discoveryService = MiniAppDiscoveryService.getInstance();
     
-    switch (action) {
-      case 'discover': {
-        await discoveryService.discover();
-        return NextResponse.json({ 
-          success: true, 
-          message: 'Discovery started' 
-        });
-      }
-      
-      default:
-        return NextResponse.json(
-          { success: false, error: 'Invalid action' },
-          { status: 400 }
-        );
+    if (action === 'discover') {
+      await discoveryService.discover();
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Discovery loaded from database' 
+      });
     }
+    
+    return NextResponse.json(
+      { success: false, error: 'Invalid action' },
+      { status: 400 }
+    );
   } catch (error) {
     console.error('Error in discovery API:', error);
     return NextResponse.json(

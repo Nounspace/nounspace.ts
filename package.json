@@ -13,7 +13,15 @@
     "check-types": "tsc",
     "prettier": "prettier src --write",
     "prepare": "husky",
-    "test": "vitest"
+    "test": "vitest",
+    "test:fast": "vitest tests/miniAppDiscovery.fast.test.ts tests/miniAppDiscovery.api.fast.test.ts",
+    "test:unit": "vitest tests/miniAppDiscovery.unit.test.ts",
+    "test:integration": "vitest tests/miniAppDiscovery.integration.test.ts",
+    "test:manual": "./scripts/test-discovery.sh",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "test:ci": "vitest tests/miniAppDiscovery.fast.test.ts tests/miniAppDiscovery.api.fast.test.ts --run --reporter=verbose",
+    "health-check": "./scripts/health-check.sh"
   },
   "lint-staged": {
     "src/**/*": "prettier --write --ignore-unknown"
