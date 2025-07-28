@@ -54,17 +54,17 @@ export async function tokenRequestorFromContractAddress(
     fetchEmpireByAddress(contractAddress as Address),
   ]);
 
-  if (clankerData && clankerData.requestor_fid) {
-    return {
-      ownerId: String(clankerData.requestor_fid),
-      ownerIdType: "fid" as OwnerType,
-    };
-  }
-
   if (empireData && empireData.owner) {
     return {
       ownerId: empireData.owner,
       ownerIdType: "address" as OwnerType,
+    };
+  }
+
+  if (clankerData && clankerData.requestor_fid) {
+    return {
+      ownerId: String(clankerData.requestor_fid),
+      ownerIdType: "fid" as OwnerType,
     };
   }
 
