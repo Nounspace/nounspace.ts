@@ -25,7 +25,6 @@ import { createPortal } from "react-dom";
 import DesktopView from "./DesktopView";
 import MobilePreview from "./MobilePreview";
 import MobileViewSimplified from "./MobileViewSimplified";
-import { SpaceLayoutConfig } from "@/common/types/nounspace";
 
 
 export type SpaceFidgetConfig = {
@@ -39,7 +38,7 @@ export type SpaceConfig = {
     [key: string]: FidgetInstanceData;
   };
   layoutID: string;
-  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>;
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
   isEditable: boolean;
   fidgetTrayContents: FidgetInstanceData[];
   theme: UserTheme;

@@ -113,6 +113,11 @@ export interface LayoutFidgetConfig<L> {
 export interface LayoutFidgetDetails<C extends LayoutFidgetConfig> {
   layoutFidget: string;
   layoutConfig: C;
+  
+  // Support for multiple layouts while maintaining backwards compatibility
+  layouts?: {
+    [key: string]: LayoutFidgetDetails<LayoutFidgetConfig<any>>;
+  };
 }
 
 export interface FidgetArgs<

@@ -3,62 +3,65 @@ import {
   LayoutFidgetConfig,
   LayoutFidgetDetails
 } from "@/common/fidgets";
-import { SpaceLayoutConfig } from "@/common/types/nounspace";
 
-export const isNewLayoutFormat = (
-  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>
+export const hasMultipleLayouts = (
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>
 ): boolean => {
-  return 'layouts' in layoutDetails;
+  return 'layouts' in layoutDetails && layoutDetails.layouts !== undefined;
 };
 
 /**
  * Gets the layout fidget type for a specific mode
- * @param layoutDetails Layout details
+ * @param layoutDetails Layout details (now using only LayoutFidgetDetails)
  * @param mode Desired mode
  * @returns Layout fidget type (grid, tabFullScreen, etc.)
  */
 export const getLayoutFidgetForMode = (
-  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>,
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>,
   mode: 'mobile' | 'desktop' = 'desktop'
 ): string => {
-  if (isNewLayoutFormat(layoutDetails)) {
-    const spaceLayout = layoutDetails as SpaceLayoutConfig;
-    return spaceLayout.layouts[mode]?.layoutFidget || 'grid';
-  } else {
-    const oldLayout = layoutDetails as LayoutFidgetDetails<LayoutFidgetConfig<any>>;
-    return oldLayout.layoutFidget || 'grid';
+  // Check if using multi-layout format
+  if (hasMultipleLayouts(layoutDetails) && layoutDetails.layouts![mode]) {
+    return layoutDetails.layouts![mode].layoutFidget;
   }
+  
+  return layoutDetails.layoutFidget || 'grid';
 };
 
 /**
- * Gets the fidgets order for mobile from the Space layout configuration
- * @param layoutDetails Layout details
+ * Gets the fidgets order for mobile from the layout configuration
+ * @param layoutDetails Layout details (now using only LayoutFidgetDetails)
  * @param fidgetInstanceDatums Fidgets data
  * @returns Array of IDs in correct order for mobile
  */
 export const getMobileFidgetOrder = (
-  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>,
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>,
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
 ): string[] => {
-  // Check if it's the new format and has mobile layout defined
-  if (isNewLayoutFormat(layoutDetails) && 
-      (layoutDetails as SpaceLayoutConfig).layouts?.mobile?.layout) {
-    return (layoutDetails as SpaceLayoutConfig).layouts?.mobile?.layout || [];
+  // Check if using multi-layout format and has mobile layout defined
+  if (hasMultipleLayouts(layoutDetails) && 
+      layoutDetails.layouts!.mobile?.layoutConfig?.layout) {
+    return layoutDetails.layouts!.mobile.layoutConfig.layout || [];
   }
   
   return Object.keys(fidgetInstanceDatums || {});
 };
 
 /**
- * Converts old layout format to new format with automatic mobile order migration
- * @param oldLayout Old layout format
+ * Migrates legacy LayoutFidgetDetails to support multiple layouts
+ * @param oldLayout Legacy layout format
  * @param fidgetInstanceDatums Fidgets data
- * @returns New layout format
+ * @returns Extended LayoutFidgetDetails with multiple layout support
  */
-export const convertToNewLayoutFormat = (
+export const migrateToMultipleLayouts = (
   oldLayout: LayoutFidgetDetails<LayoutFidgetConfig<any>>,
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
-): SpaceLayoutConfig => {
+): LayoutFidgetDetails<LayoutFidgetConfig<any>> => {
+  // If already has layouts object, return as is
+  if (hasMultipleLayouts(oldLayout)) {
+    return oldLayout;
+  }
+
   // Get mobile layout order using the centralized function
   const mobileLayout = Object.keys(fidgetInstanceDatums || {}).sort((a, b) => {
     const aOrder = fidgetInstanceDatums[a]?.config?.settings?.mobileOrder || 0;
@@ -67,55 +70,38 @@ export const convertToNewLayoutFormat = (
   });
   
   return {
+    ...oldLayout,
     layouts: {
       desktop: {
-        layout: oldLayout.layoutConfig?.layout || [],
-        layoutFidget: oldLayout.layoutFidget || 'grid'
+        layoutFidget: oldLayout.layoutFidget || 'grid',
+        layoutConfig: oldLayout.layoutConfig
       },
       mobile: {
-        layout: mobileLayout,
-        layoutFidget: 'tabFullScreen'
+        layoutFidget: 'tabFullScreen',
+        layoutConfig: {
+          layout: mobileLayout
+        }
       }
-    },
-    defaultLayout: 'desktop'
+    }
   };
 };
 
 /**
- * Gets layoutConfig compatible with both formats
- * @param layoutDetails Layout details (new or old format)
+ * Gets layoutConfig compatible with both legacy and multi-layout formats
+ * @param layoutDetails Layout details (now using only LayoutFidgetDetails)
  * @param mode Desired mode (mobile, desktop)
  * @returns Layout configuration equivalent to old format layoutConfig
  */
 export const getLayoutConfig = (
-  layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>,
+  layoutDetails: LayoutFidgetDetails<LayoutFidgetConfig<any>>,
   mode: 'mobile' | 'desktop' = 'desktop'
 ): any => {
-  if (isNewLayoutFormat(layoutDetails)) {
-    const layouts = (layoutDetails as SpaceLayoutConfig).layouts;
-    return {
-      layout: layouts[mode]?.layout || layouts.desktop?.layout || [],
-    };
-  } else {
-    return (layoutDetails as LayoutFidgetDetails<LayoutFidgetConfig<any>>).layoutConfig;
+  // Check if using multi-layout format
+  if (hasMultipleLayouts(layoutDetails) && layoutDetails.layouts![mode]) {
+    return layoutDetails.layouts![mode].layoutConfig;
   }
+  
+  // Fallback to original layoutConfig for backwards compatibility
+  return layoutDetails.layoutConfig;
 };
 
-/**
- * Converts new layout format to old format (compatibility)
- * @param newLayout New layout format (SpaceLayoutConfig)
- * @param mode Mode to extract layout from (default: desktop)
- * @returns Old layout format (LayoutFidgetDetails)
- */
-export const convertToOldLayoutFormat = (
-  newLayout: SpaceLayoutConfig,
-  mode: 'mobile' | 'desktop' = 'desktop'
-): LayoutFidgetDetails<LayoutFidgetConfig<any>> => {
-  const modeLayout = newLayout.layouts[mode];
-  return {
-    layoutFidget: modeLayout?.layoutFidget || 'grid',
-    layoutConfig: {
-      layout: modeLayout?.layout || []
-    }
-  };
-};
