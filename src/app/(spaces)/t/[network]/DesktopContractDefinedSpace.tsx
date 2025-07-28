@@ -2,7 +2,6 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
-import { useWallets } from "@privy-io/react-auth";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
@@ -19,7 +18,6 @@ export default function DesktopContractDefinedSpace({
   ownerIdType,
 }: ContractDefinedSpaceProps) {
   const { tokenData } = useToken();
-  const { wallets } = useWallets();
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
 
@@ -42,7 +40,7 @@ export default function DesktopContractDefinedSpace({
     [contractAddress, tokenData, tokenData?.network],
   );
 
-  const getSpacePageUrl = (tabName: string) => 
+  const getSpacePageUrl = (tabName: string) =>
     `/t/${tokenData?.network}/${contractAddress}/${tabName}`;
 
   // Check if user is signed into Farcaster
@@ -65,6 +63,7 @@ export default function DesktopContractDefinedSpace({
     }).then((authManagerResp) => {
       if (authManagerResp.result === "success") {
         setCurrentUserFid(authManagerResp.value as number);
+        console.log("Current user FID:", currentUserFid, "isSignedIntoFarcaster:", isSignedIntoFarcaster);
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
