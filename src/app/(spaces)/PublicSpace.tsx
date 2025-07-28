@@ -17,10 +17,6 @@ import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
-import { 
-  convertToOldLayoutFormat, 
-  isNewLayoutFormat 
-} from "@/common/utils/layoutFormatUtils";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
@@ -646,10 +642,6 @@ export default function PublicSpace({
       const remoteConfig = remoteSpaces[currentSpaceId].tabs[currentTabName];
       configToSave = {
         ...remoteConfig,
-        // Convert the layout to the old format if necessary
-        layoutDetails: remoteConfig.layoutDetails && isNewLayoutFormat(remoteConfig.layoutDetails)
-          ? convertToOldLayoutFormat(remoteConfig.layoutDetails as any)
-          : remoteConfig.layoutDetails,
       };
     }
     
