@@ -19,7 +19,7 @@ export const isNewLayoutFormat = (
  */
 export const getLayoutFidgetForMode = (
   layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>,
-  mode: 'mobile' | 'desktop' | 'presentation' = 'desktop'
+  mode: 'mobile' | 'desktop' = 'desktop'
 ): string => {
   if (isNewLayoutFormat(layoutDetails)) {
     const spaceLayout = layoutDetails as SpaceLayoutConfig;
@@ -84,12 +84,12 @@ export const convertToNewLayoutFormat = (
 /**
  * Gets layoutConfig compatible with both formats
  * @param layoutDetails Layout details (new or old format)
- * @param mode Desired mode (mobile, desktop, presentation)
+ * @param mode Desired mode (mobile, desktop)
  * @returns Layout configuration equivalent to old format layoutConfig
  */
 export const getLayoutConfig = (
   layoutDetails: SpaceLayoutConfig | LayoutFidgetDetails<LayoutFidgetConfig<any>>,
-  mode: 'mobile' | 'desktop' | 'presentation' = 'desktop'
+  mode: 'mobile' | 'desktop' = 'desktop'
 ): any => {
   if (isNewLayoutFormat(layoutDetails)) {
     const layouts = (layoutDetails as SpaceLayoutConfig).layouts;
@@ -109,7 +109,7 @@ export const getLayoutConfig = (
  */
 export const convertToOldLayoutFormat = (
   newLayout: SpaceLayoutConfig,
-  mode: 'mobile' | 'desktop' | 'presentation' = 'desktop'
+  mode: 'mobile' | 'desktop' = 'desktop'
 ): LayoutFidgetDetails<LayoutFidgetConfig<any>> => {
   const modeLayout = newLayout.layouts[mode];
   return {

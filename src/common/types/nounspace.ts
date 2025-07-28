@@ -24,16 +24,6 @@ export interface SpaceLayoutConfig {
       }[];
       layoutFidget: string; // "grid"
     };
-    presentation?: {
-      layout: {
-        i: string;
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-      }[];
-      layoutFidget: string; // "grid"
-    };
   };
-  defaultLayout: "mobile" | "desktop" | "presentation";
+  defaultLayout: "mobile" | "desktop";
 }
