@@ -12,7 +12,7 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
-    img-src 'self' blob: data: https: http:;
+    img-src 'self' blob: data: https:;
     font-src 'self' https:;
     object-src 'none';
     base-uri 'self';
