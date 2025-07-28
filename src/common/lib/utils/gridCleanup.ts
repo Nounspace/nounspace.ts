@@ -163,4 +163,7 @@ export function resolveOverlaps(
   }
 
   return { cleanedLayout, removedFidgetIds };
-} 
+}
+
+// Backwards compatible export for older tests
+export const cleanupLayout = resolveOverlaps;

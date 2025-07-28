@@ -130,12 +130,6 @@ const frameProperties: FidgetProperties = {
   icon: 0x23f9, // ⏹
 };
 
-const DISALLOW_URL_PATTERNS = [
-  /javascript:/i,
-  /^data:/i,
-  /<script/i,
-  /%3Cscript/i,
-];
 
 const ErrorWrapper: React.FC<{
   message: React.ReactNode;
@@ -155,7 +149,7 @@ const Frame: React.FC<FidgetArgs<FrameFidgetSettings>> = ({
   settings: { url },
 }) => {
   const isValid = isValidUrl(url);
-  const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
+  const sanitizedUrl = useSafeUrl(url);
 
   if (!url) {
     return <ErrorWrapper icon="➕" message="Provide a URL to display here." />;
