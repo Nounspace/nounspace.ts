@@ -12,7 +12,7 @@ import {
 } from "@/common/fidgets";
 import { UserTheme } from "@/common/lib/theme";
 import { isNil, isUndefined } from "lodash";
-import React, { ReactNode, Suspense, useEffect, useMemo } from "react";
+import React, { ReactNode, Suspense, useCallback, useEffect, useMemo } from "react";
 import SpaceLoading from "./SpaceLoading";
 // Import the LayoutFidgets directly
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
@@ -21,6 +21,7 @@ import { comprehensiveCleanup } from '@/common/lib/utils/gridCleanup';
 import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { getLayoutConfig, getLayoutFidgetForMode } from "@/common/utils/layoutFormatUtils";
 import { extractFidgetIdsFromLayout } from "@/fidgets/layout/tabFullScreen/utils";
+import { usePathname } from "next/navigation";
 import { createPortal } from "react-dom";
 import DesktopView from "./DesktopView";
 import MobilePreview from "./MobilePreview";
@@ -68,6 +69,46 @@ type SpaceArgs = {
   portalRef: React.RefObject<HTMLDivElement>;
 };
 
+// Helper functions for cleaner component logic
+const usePathHelper = () => {
+  const pathname = usePathname();
+  return pathname === '/homebase';
+};
+
+const useViewportManager = () => {
+  const viewportMobile = useIsMobile();
+  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  
+  return {
+    isMobile: viewportMobile || mobilePreview,
+    showMobileContainer: mobilePreview && !viewportMobile,
+    viewportMobile,
+    setMobilePreview
+  };
+};
+
+const useConfigManager = (saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>) => {
+  const saveLocalConfig = useCallback(async ({
+    theme,
+    layoutConfig,
+    fidgetInstanceDatums,
+    fidgetTrayContents,
+  }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) => {
+    return saveConfig({
+      layoutDetails: layoutConfig
+        ? {
+          layoutConfig,
+        }
+        : undefined,
+      theme,
+      fidgetInstanceDatums,
+      fidgetTrayContents,
+    });
+  }, [saveConfig]);
+
+  return { saveLocalConfig };
+};
+
 export default function Space({
   config,
   saveConfig,
@@ -82,16 +123,40 @@ export default function Space({
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
-  const viewportMobile = useIsMobile();
-  const { mobilePreview, setMobilePreview } = useMobilePreview();
+  // Setup our custom hooks
+  const isHomebasePath = usePathHelper();
+  const { isMobile, showMobileContainer, viewportMobile, setMobilePreview } = useViewportManager();
+  const { saveLocalConfig } = useConfigManager(saveConfig);
+  
+  // Calculate layout stuff once instead of re-computing
+  const layoutConfig = getLayoutConfig(config?.layoutDetails);
+  const layoutFidgetIds = layoutConfig?.layout && config.fidgetInstanceDatums 
+    ? extractFidgetIdsFromLayout(layoutConfig.layout, config.fidgetInstanceDatums)
+    : [];
+  
+  // Figure out what should be visible
+  const shouldShowFeed = !!feed && (!isMobile || (showFeedOnMobile && !isHomebasePath));
+  const shouldShowMainLayout = !(isMobile && showFeedOnMobile && !isHomebasePath);
 
-  const isMobile = useMemo(() => viewportMobile || mobilePreview, [viewportMobile, mobilePreview]);
-  const showMobileContainer = useMemo(() => mobilePreview && !viewportMobile, [mobilePreview, viewportMobile]);
+  // Edit mode handlers
+  const modeHandlers = useMemo(() => ({
+    saveExitEditMode: () => {
+      commitConfig();
+      setEditMode(false);
+      setMobilePreview(false);
+    },
+    cancelExitEditMode: () => {
+      resetConfig();
+      setEditMode(false);
+      setMobilePreview(false);
+    }
+  }), [commitConfig, resetConfig, setEditMode, setMobilePreview]);
 
   useEffect(() => {
     setSidebarEditable(config.isEditable);
-  }, [config.isEditable]);
+  }, [config.isEditable, setSidebarEditable]);
 
+  // Cleanup logic to remove orphaned fidgets
   const cleanupHasRun = React.useRef(false);
 
   useEffect(() => {
@@ -124,80 +189,40 @@ export default function Space({
     }
 
     cleanupHasRun.current = true;
-  }, []);
+  }, [config.layoutDetails, config.fidgetInstanceDatums, profile, feed, saveConfig, commitConfig]);
 
-  function saveExitEditMode() {
-    commitConfig();
-    setEditMode(false);
-    setMobilePreview(false);
-  }
+  // Props for our layout components
+  const baseLayoutProps = {
+    theme: config.theme,
+    fidgetInstanceDatums: config.fidgetInstanceDatums,
+    fidgetTrayContents: config.fidgetTrayContents,
+    layoutConfig: layoutConfig,
+    saveExitEditMode: modeHandlers.saveExitEditMode,
+    cancelExitEditMode: modeHandlers.cancelExitEditMode,
+    portalRef: portalRef,
+    saveConfig: saveLocalConfig,
+    hasProfile: !isNil(profile),
+    hasFeed: !isNil(feed),
+    feed: feed,
+    tabNames: config.tabNames,
+    fid: config.fid,
+    inEditMode: !viewportMobile && editMode,
+    isHomebasePath: isHomebasePath,
+  };
 
-  function cancelExitEditMode() {
-    resetConfig();
-    setEditMode(false);
-    setMobilePreview(false);
-  }
+  const desktopViewProps = {
+    ...baseLayoutProps,
+    layoutFidgetKey: getLayoutFidgetForMode(config?.layoutDetails, 'desktop'),
+    inEditMode: !viewportMobile && editMode,
+  };
 
-  async function saveLocalConfig({
-    theme,
-    layoutConfig,
-    fidgetInstanceDatums,
-    fidgetTrayContents,
-  }: Partial<LayoutFidgetSaveableConfig<LayoutFidgetConfig<any>>>) {
-    return saveConfig({
-      layoutDetails: layoutConfig
-        ? {
-          layoutConfig,
-        }
-        : undefined,
-      theme,
-      fidgetInstanceDatums,
-      fidgetTrayContents,
-    });
-  }
-
-  // Memoize base layout props shared across all layout components
-  const baseLayoutProps = useMemo(() => {
-    const layoutConfig = getLayoutConfig(config?.layoutDetails);
-    return {
-      theme: config.theme,
-      fidgetInstanceDatums: config.fidgetInstanceDatums,
-      fidgetTrayContents: config.fidgetTrayContents,
-      layoutConfig: layoutConfig,
-      saveExitEditMode: saveExitEditMode,
-      cancelExitEditMode: cancelExitEditMode,
-      portalRef: portalRef,
-      saveConfig: saveLocalConfig,
-      hasProfile: !isNil(profile),
-      hasFeed: !isNil(feed),
-      feed: feed,
-      tabNames: config.tabNames,
-      fid: config.fid,
-      inEditMode: !viewportMobile && editMode,
-    };
-  }, [
-    config.theme,
-    config.fidgetInstanceDatums,
-    config.fidgetTrayContents,
-    config?.layoutDetails,
-    config.tabNames,
-    config.fid,
-    portalRef,
-    profile,
+  const mobileLayoutProps = {
+    ...baseLayoutProps,
+    layoutFidgetIds,
+    isHomebasePath,
+    hasFeed: !!feed,
     feed,
-    viewportMobile,
-    editMode,
-  ]);
-
-  // Memoize DesktopView specific props
-  const desktopViewProps = useMemo(() => {
-    const layoutFidget = getLayoutFidgetForMode(config?.layoutDetails, 'desktop');
-    return {
-      ...baseLayoutProps,
-      layoutFidgetKey: layoutFidget,
-      inEditMode: !viewportMobile && editMode,
-    };
-  }, [baseLayoutProps, config?.layoutDetails, viewportMobile, editMode]);
+  };
 
   const mainContent = (
     <div className="flex flex-col h-full">
@@ -214,7 +239,7 @@ export default function Space({
 
       <div className={isMobile ? "size-full" : "flex h-full"}>
         {/* Feed section */}
-        {!isUndefined(feed) && (!isMobile || showFeedOnMobile) ? (
+        {shouldShowFeed ? (
           <div
             className={
               isMobile && showFeedOnMobile
@@ -228,8 +253,8 @@ export default function Space({
           </div>
         ) : null}
 
-        {/* Main layout */}
-        {!(isMobile && showFeedOnMobile) && (
+        {/* Main layout with tabs */}
+        {shouldShowMainLayout && (
           <div
             className={
               isMobile
@@ -249,11 +274,7 @@ export default function Space({
             >
               {isMobile ? (
                 <MobileViewSimplified
-                  {...baseLayoutProps}
-                  layoutFidgetIds={extractFidgetIdsFromLayout(
-                    getLayoutConfig(config?.layoutDetails)?.layout,
-                    config.fidgetInstanceDatums
-                  )}
+                  {...mobileLayoutProps}
                 />
               ) : (
                 <DesktopView {...desktopViewProps} />
@@ -280,8 +301,8 @@ export default function Space({
                 saveTheme={(newTheme) =>
                   saveLocalConfig({ theme: newTheme })
                 }
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
+                saveExitEditMode={modeHandlers.saveExitEditMode}
+                cancelExitEditMode={modeHandlers.cancelExitEditMode}
                 fidgetInstanceDatums={config.fidgetInstanceDatums}
                 saveFidgetInstanceDatums={(datums) =>
                   saveLocalConfig({ fidgetInstanceDatums: datums })
@@ -318,8 +339,8 @@ export default function Space({
               tabBar={tabBar}
               feed={feed}
               saveTheme={(newTheme) => saveLocalConfig({ theme: newTheme })}
-              saveExitEditMode={saveExitEditMode}
-              cancelExitEditMode={cancelExitEditMode}
+              saveExitEditMode={modeHandlers.saveExitEditMode}
+              cancelExitEditMode={modeHandlers.cancelExitEditMode}
               saveConfig={saveLocalConfig}
               tabNames={config.tabNames}
               fid={config.fid}

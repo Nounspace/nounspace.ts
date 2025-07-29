@@ -1,5 +1,5 @@
 import {
-    FidgetInstanceData,
+  FidgetInstanceData,
 } from "@/common/fidgets"
 import { UserTheme } from "@/common/lib/theme"
 import { LayoutFidgets } from "@/fidgets"
@@ -20,9 +20,45 @@ type MobileViewSimplifiedProps = {
   tabNames?: string[]
   fid?: number
   layoutFidgetIds: string[]
- 
   isHomebasePath?: boolean
 }
+
+// Handle layout configuration for mobile tabs
+const useLayoutConfigManager = (layoutFidgetIds: string[], isHomebasePath: boolean, hasFeed: boolean) => {
+  // Start with the fidgets we have
+  let layout = [...layoutFidgetIds];
+  
+  // Add feed to homebase if it's not already there
+  if (isHomebasePath && hasFeed && !layout.includes("feed")) {
+    layout = ["feed", ...layout];
+  }
+  
+  return {
+    layout,
+    layoutFidget: "tabFullScreen",
+  };
+};
+
+// Build props for the layout component
+const useLayoutPropsBuilder = (props: MobileViewSimplifiedProps, layoutConfig: any) => {
+  return {
+    layoutConfig,
+    theme: props.theme,
+    fidgetInstanceDatums: props.fidgetInstanceDatums,
+    fidgetTrayContents: props.fidgetTrayContents,
+    saveConfig: props.saveConfig,
+    inEditMode: props.inEditMode,
+    saveExitEditMode: props.saveExitEditMode,
+    cancelExitEditMode: props.cancelExitEditMode,
+    portalRef: props.portalRef,
+    hasProfile: props.hasProfile,
+    hasFeed: props.hasFeed,
+    feed: props.feed,
+    tabNames: props.tabNames,
+    fid: props.fid,
+    isHomebasePath: props.isHomebasePath,
+  };
+};
 const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
   theme,
   fidgetInstanceDatums,
@@ -38,25 +74,32 @@ const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
   tabNames,
   fid,
   layoutFidgetIds,
-
   isHomebasePath = false,
 }) => {
+  // Get the tab layout component
   const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
-
-  const layoutConfig = useMemo(() => {
-   let layout = [...layoutFidgetIds];
-    
-   
-    
-    if (isHomebasePath && hasFeed && !layout.includes("feed")) {
-      layout = ["feed", ...layout];
-    }
-    
-    return {
-      layout,
-      layoutFidget: "tabFullScreen",
-    };
-  }, [layoutFidgetIds, isHomebasePath, hasFeed]);
+  
+  // Figure out what tabs to show
+  const layoutConfig = useLayoutConfigManager(layoutFidgetIds, isHomebasePath, hasFeed);
+  
+  // Bundle up props for the layout
+  const layoutProps = useLayoutPropsBuilder({
+    theme,
+    fidgetInstanceDatums,
+    fidgetTrayContents,
+    saveConfig,
+    inEditMode,
+    saveExitEditMode,
+    cancelExitEditMode,
+    portalRef,
+    hasProfile,
+    hasFeed,
+    feed,
+    tabNames,
+    fid,
+    layoutFidgetIds,
+    isHomebasePath,
+  }, layoutConfig);
 
   if (layoutConfig.layout.length === 0) {
     return (
@@ -71,23 +114,7 @@ const MobileViewSimplified: React.FC<MobileViewSimplifiedProps> = ({
 
   return (
     <div className="w-full h-full relative">
-      <LayoutFidget
-        layoutConfig={layoutConfig}
-        theme={theme}
-        fidgetInstanceDatums={fidgetInstanceDatums}
-        fidgetTrayContents={fidgetTrayContents}
-        saveConfig={saveConfig}
-        inEditMode={inEditMode}
-        saveExitEditMode={saveExitEditMode}
-        cancelExitEditMode={cancelExitEditMode}
-        portalRef={portalRef}
-        hasProfile={hasProfile}
-        hasFeed={hasFeed}
-        feed={feed}
-        tabNames={tabNames}
-        fid={fid}
-        isHomebasePath={isHomebasePath}
-      />
+      <LayoutFidget {...layoutProps} />
     </div>
   );
 };
