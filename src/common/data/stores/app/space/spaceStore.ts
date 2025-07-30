@@ -875,14 +875,14 @@ export const createSpaceStoreFunc = (
         return existingSpace.id;
       }
 
-      // Check if a space already exists for this contract
+      // Check if a space already exists for this contract that the current
+      // identity can modify. We query all modifiable spaces for the identity
+      // and then search for one matching the contract address and network.
       const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
         "/api/space/registry",
         {
           params: {
             identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-            contractAddress: address,
-            network: network,
           },
         },
       );

@@ -38,6 +38,7 @@
     "@farcaster/core": "^0.14.11",
     "@farcaster/frame-sdk": "^0.0.53",
     "@farcaster/hub-web": "^0.8.12",
+    "@farcaster/miniapp-sdk": "^0.1.7",
     "@frames.js/render": "^0.5.6",
     "@googleapis/youtube": "^18.0.0",
     "@gumlet/react-hls-player": "^1.0.1",
@@ -138,7 +139,7 @@
   },
   "devDependencies": {
     "@lens-protocol/client": "^2.3.0",
-    "@next/bundle-analyzer": "^14.2.4",
+    "@next/bundle-analyzer": "^15.4.2",
     "@next/eslint-plugin-next": "^14.2.3",
     "@solana/web3.js": "^1.98.0",
     "@stylistic/eslint-plugin": "^3.1.0",
