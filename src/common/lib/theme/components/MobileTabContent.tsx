@@ -13,17 +13,17 @@ export const MobileTabContent: React.FC<MobileTabContentProps> = ({
   onUpdateMiniApp,
   onReorderMiniApps,
 }) => {
-  const filteredMiniApps = miniApps.filter(
-    (app) => app.mobileDisplayName && app.mobileDisplayName.trim() !== ""
-  );
+  const filteredMiniApps = miniApps;
 
   return (
-    <div className="flex flex-col gap-4">
-      <MobileSettings
-        miniApps={filteredMiniApps}
-        onUpdateMiniApp={onUpdateMiniApp}
-        onReorderMiniApps={onReorderMiniApps}
-      />
+    <div className="flex flex-col gap-8">
+      <div>
+        <MobileSettings
+          miniApps={filteredMiniApps}
+          onUpdateMiniApp={onUpdateMiniApp}
+          onReorderMiniApps={onReorderMiniApps}
+        />
+      </div>
     </div>
   );
 };

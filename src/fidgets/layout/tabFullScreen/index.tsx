@@ -11,32 +11,22 @@ import {
   LayoutFidgetProps 
 } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
-import { 
-  createFidgetBundle, 
-  getMediaFidgetIds, 
-  getPinnedCastIds, 
-  getValidFidgetIds, 
-  processTabFidgetIds 
-} from "./utils";
+import {getMediaFidgetIds, getPinnedCastIds, getValidFidgetIds, processTabFidgetIds } from "@/common/utils/layoutUtils";
 import TabNavigation from "./components/TabNavigation";
 import ConsolidatedMediaContent from "./components/ConsolidatedMediaContent";
 import ConsolidatedPinnedContent from "./components/ConsolidatedPinnedContent";
 import FidgetContent from "./components/FidgetContent";
+import { createFidgetBundle } from "./utils";
 
 export interface TabFullScreenConfig extends LayoutFidgetConfig<string[]> {
   layout: string[];
 }
 
 type TabFullScreenProps = LayoutFidgetProps<TabFullScreenConfig> & {
-  feed?: React.ReactNode; 
+  feed?: React.ReactNode;
+  isHomebasePath?: boolean;
 };
 
-/**
- * Main TabFullScreen Layout component
- * 
- * This component provides a tabbed interface for displaying multiple fidgets,
- * with the ability to switch between them.
- */
 const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   fidgetInstanceDatums,
   layoutConfig,
@@ -45,6 +35,7 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
   tabNames,
   hasFeed,
   feed,
+  isHomebasePath = false,
 }) => {
   const viewportMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
@@ -55,9 +46,15 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
     getValidFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
   [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
   
+  //Get mobile layout order from Space config instead of individual fidget settings
+  const mobileLayout = useMemo(() => 
+    Array.isArray(layoutConfig.layout) ? layoutConfig.layout : undefined, 
+  [layoutConfig.layout]);
+
+  //Pass mobileLayout (from Space config) to processTabFidgetIds for centralized mobile ordering
   const processedFidgetIds = useMemo(() => 
-    processTabFidgetIds(layoutConfig.layout, fidgetInstanceDatums, isMobile),
-  [layoutConfig.layout, fidgetInstanceDatums, isMobile]);
+    processTabFidgetIds(validFidgetIds, fidgetInstanceDatums, isMobile, mobileLayout),
+  [validFidgetIds, fidgetInstanceDatums, isMobile, mobileLayout]);
   
   const mediaFidgetIds = useMemo(() => 
     getMediaFidgetIds(validFidgetIds, fidgetInstanceDatums),
@@ -84,25 +81,34 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
     return bundles;
   }, [validFidgetIds, fidgetInstanceDatums]);
 
-  const orderedFidgetIds = useMemo(() => processedFidgetIds, [processedFidgetIds]);
+  const orderedFidgetIds = useMemo(() => {
+    let ids = [...processedFidgetIds];
+    
+    if (isHomebasePath && hasFeed && feed && !ids.includes("feed")) {
+      // Check if feed fidget exists and is enabled for mobile display
+      const feedFidget = fidgetInstanceDatums['feed'];
+      const showFeedOnMobile = feedFidget?.config?.settings?.showOnMobile !== false;
+      
+      if (showFeedOnMobile) {
+        ids = ["feed", ...ids];
+      }
+    }
+    
+    return ids;
+  }, [processedFidgetIds, isHomebasePath, hasFeed, feed, fidgetInstanceDatums]);
 
   // Initialize with the first fidget ID from orderedFidgetIds (feed will be first if it exists)
   const [selectedTab, setSelectedTab] = useState(
     orderedFidgetIds.length > 0 ? orderedFidgetIds[0] : ""
   );
   
-  // Update selected tab when orderedFidgetIds changes
   useEffect(() => {
-    // If there are no fidget IDs, do nothing
     if (orderedFidgetIds.length === 0) return;
-
-    // If current selection is invalid, select the first one
+    
     if (!orderedFidgetIds.includes(selectedTab)) {
       setSelectedTab(orderedFidgetIds[0]);
     }
-    // We only care about changes to the ordered list of IDs.
-    // selectedTab is intentionally omitted to avoid an extra render.
-  }, [orderedFidgetIds]);
+  }, [orderedFidgetIds, selectedTab]);
   
   // Configuration saving function
   const saveFidgetConfig = (id: string) => (newConfig: FidgetConfig): Promise<void> => {
@@ -117,8 +123,8 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
     });
   };
 
-  // If no valid fidgets, show empty state
-  if (processedFidgetIds.length === 0) {
+  // If no valid fidgets and no feed in homebase, show empty state
+  if (orderedFidgetIds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-500">
         <div className="text-center p-4">
@@ -133,12 +139,12 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
     <div className="flex flex-col h-full relative">
       {/* Main content area with fixed height to keep tab bar visible */}
       <div
-        className="w-full h-full overflow-hidden"
+        className="w-full overflow-hidden"
         style={{
           height:
-            processedFidgetIds.length > 1
-              ? `calc(100% - ${TAB_HEIGHT}px)`
-              : '100%',
+            orderedFidgetIds.length > 1 || isHomebasePath
+              ? `calc(100vh - ${TAB_HEIGHT}px)`
+              : '100vh',
         }}
       >
         <Tabs
@@ -150,8 +156,7 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
             window.scrollTo(0, 0);
           }}
         >
-          <div className="relative z-20 h-full">
-            {/* Special case for consolidated media tab */}
+          <div className="relative h-full">
             {isMobile && mediaFidgetIds.length > 1 && (
               <TabsContent
                 key="consolidated-media"
@@ -178,7 +183,6 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
               </TabsContent>
             )}
 
-            {/* Special case for consolidated pinned tab */}
             {isMobile && pinnedCastIds.length > 1 && (
               <TabsContent
                 key="consolidated-pinned"
@@ -256,19 +260,18 @@ const MobileStack: LayoutFidget<TabFullScreenProps> = ({
             })}
           </div>
           
-          {/* Tabs positioned at bottom - fixed for real mobile, absolute for mobile preview */}
-          {processedFidgetIds.length > 1 && (
+          {(orderedFidgetIds.length > 1 || isHomebasePath) && (
             <div
-              className={`${viewportMobile ? 'fixed' : 'absolute'} bottom-0 left-0 right-0 z-30 bg-white`}
+              className="fixed bottom-0 left-0 right-0 z-level-3 bg-white border-t"
               style={{ height: `${TAB_HEIGHT}px` }}
             >
-              <TabNavigation
-                processedFidgetIds={orderedFidgetIds}
-                selectedTab={selectedTab}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                isMobile={isMobile}
-                tabNames={tabNames}
-              />
+          <TabNavigation
+            processedFidgetIds={orderedFidgetIds}
+            selectedTab={selectedTab}
+            fidgetInstanceDatums={fidgetInstanceDatums}
+            isMobile={isMobile}
+            tabNames={tabNames}
+          />
             </div>
           )}
         </Tabs>

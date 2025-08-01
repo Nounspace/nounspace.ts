@@ -1,9 +1,19 @@
-import React, { useMemo } from 'react';
-import { LayoutFidgetProps, LayoutFidgetConfig } from '@/common/fidgets';
+import { LayoutFidgetConfig, LayoutFidgetProps } from '@/common/fidgets';
 import { LayoutFidgets } from '@/fidgets';
+import React from 'react';
 
 type DesktopViewProps = LayoutFidgetProps<LayoutFidgetConfig<any>> & {
   layoutFidgetKey?: string;
+};
+
+// Pick which layout component to use
+const useLayoutFidgetSelector = (layoutFidgetKey?: string) => {
+  // Use the specified layout, or fall back to grid
+  const fidgetKey = layoutFidgetKey && LayoutFidgets[layoutFidgetKey] 
+    ? layoutFidgetKey 
+    : "grid";
+  
+  return LayoutFidgets[fidgetKey];
 };
 
 /**
@@ -14,13 +24,8 @@ const DesktopView: React.FC<DesktopViewProps> = ({
   layoutFidgetKey, 
   ...layoutProps 
 }) => {
-  // Select the appropriate layout fidget component
-  const LayoutFidget = useMemo(() => {
-    const fidgetKey = layoutFidgetKey && LayoutFidgets[layoutFidgetKey] 
-      ? layoutFidgetKey 
-      : "grid";
-    return LayoutFidgets[fidgetKey];
-  }, [layoutFidgetKey]);
+  // Get the right layout component
+  const LayoutFidget = useLayoutFidgetSelector(layoutFidgetKey);
 
   return <LayoutFidget {...layoutProps} />;
 };

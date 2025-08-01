@@ -1,17 +1,18 @@
 "use client";
-import React, { ReactNode, Suspense, useMemo } from "react";
-import { createPortal } from "react-dom";
 import CustomHTMLBackground from "@/common/components/molecules/CustomHTMLBackground";
-import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
-import PhoneFrame from "@/common/components/atoms/PhoneFrame";
-import { UserTheme, ThemeSettings } from "@/common/lib/theme";
-import { FidgetInstanceData, LayoutFidgetConfig } from "@/common/fidgets";
-import { LayoutFidgets } from "@/fidgets";
+import { ThemeSettings } from "@/common/lib/theme";
+import { getMobileFidgetOrder } from "@/common/utils/layoutFormatUtils";
 import { isNil, isUndefined } from "lodash";
+import PhoneFrame from "@/common/components/atoms/PhoneFrame";
+import { usePathname } from "next/navigation";
+import React, { ReactNode, Suspense, useMemo } from "react";
+import MobileViewSimplified from "./MobileViewSimplified";
 import SpaceLoading from "./SpaceLoading";
 
+import { SpaceConfig } from "./Space";
+
 interface MobilePreviewProps {
-  theme: UserTheme;
+  config: SpaceConfig;
   editMode: boolean;
   portalRef: React.RefObject<HTMLDivElement>;
   profile?: ReactNode;
@@ -20,19 +21,13 @@ interface MobilePreviewProps {
   saveTheme: (newTheme: ThemeSettings) => void;
   saveExitEditMode: () => void;
   cancelExitEditMode: () => void;
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData };
-  saveFidgetInstanceDatums: (datums: { [key: string]: FidgetInstanceData }) => Promise<void>;
-  
-  // LayoutFidget props
-  layoutConfig: LayoutFidgetConfig<any>;
-  fidgetTrayContents: FidgetInstanceData[];
   saveConfig: (config: any) => Promise<void>;
   tabNames?: string[];
   fid?: number;
 }
 
 const MobilePreview: React.FC<MobilePreviewProps> = ({
-  theme,
+  config,
   editMode,
   portalRef,
   profile,
@@ -41,139 +36,88 @@ const MobilePreview: React.FC<MobilePreviewProps> = ({
   saveTheme,
   saveExitEditMode,
   cancelExitEditMode,
-  fidgetInstanceDatums,
-  saveFidgetInstanceDatums,
-  layoutConfig,
-  fidgetTrayContents,
   saveConfig,
   tabNames,
   fid,
 }) => {
-  // Always use tabFullScreen for mobile preview
-  const LayoutFidget = useMemo(() => LayoutFidgets["tabFullScreen"], []);
+  const pathname = usePathname();
+  const isHomebasePath = pathname?.startsWith('/homebase');
 
-  // Transform layout config for mobile (simple array of fidget IDs)
-  const mobileLayoutConfig = useMemo(() => {
-    const fidgetIds = Object.keys(fidgetInstanceDatums || {});
-    return {
-      layout: fidgetIds,
-      layoutFidget: "tabFullScreen",
-    };
-  }, [fidgetInstanceDatums]);
+  const layoutFidgetIds = useMemo(() => {
+   // Use the utility function to get the correct order
+    return getMobileFidgetOrder(config.layoutDetails, config.fidgetInstanceDatums);
+  }, [config.layoutDetails, config.fidgetInstanceDatums]);
 
   return (
     <>
-      {/* Theme Editor Portal */}
-      {editMode && portalRef.current
-        ? createPortal(
-          <aside
-            id="logo-sidebar"
-            className="h-screen flex-row flex bg-white"
-            aria-label="Sidebar"
-          >
-            <div className="flex-1 w-[270px] h-full max-h-screen pt-12 flex-col flex px-4 py-4 overflow-y-auto border-r">
-              <ThemeSettingsEditor
-                theme={theme}
-                saveTheme={saveTheme}
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-              />
-            </div>
-          </aside>,
-          portalRef.current,
-        )
-        : null}
-
-      {/* Mobile Preview Container - Full height background */}
       <div 
         className="w-full h-full min-h-screen bg-cover bg-center bg-no-repeat flex items-center justify-center"
         style={{ backgroundImage: "url('/images/space-background.png')" }}
       >
-        {/* Phone Frame Container - scaled to fit better */}
-        <div className="relative flex items-center justify-center scale-90">
-          {/* Phone Frame Overlay */}
-          <PhoneFrame />
-          
-          {/* Phone Content Area - positioned to match actual screen area within frame */}
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            <div 
-              className="w-[320px] h-[680px] overflow-hidden rounded-[28px] flex flex-col"
-            >
+        <div className="flex items-center justify-center h-full">
+          <div className="relative w-[344px] h-[744px]">
+            <div className="absolute top-[32px] left-[12px] z-0">
+              <div
+                className="w-[320px] h-[680px] relative overflow-hidden rounded-[28px] shadow-lg"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  backgroundColor: config.theme?.properties.background || 'white',
+                  transform: 'scale(1.0)',
+                  transformOrigin: 'top left'
+                }}
+              >
+                <CustomHTMLBackground
+                  html={config.theme?.properties.backgroundHTML}
+                  className="absolute inset-0 pointer-events-none w-full h-full"
+                />
+                <div className="flex-1 w-full overflow-auto">
+                  <div className="relative w-full h-full flex flex-col">
+                    <div className="w-full bg-white">
+                      {!isUndefined(profile) ? (
+                        <div className="w-full max-h-fit">
+                          <div className="rounded-md shadow-sm overflow-hidden">
+                            {profile}
+                          </div>
+                        </div>
+                      ) : null}
 
-              <CustomHTMLBackground
-                html={theme?.properties.backgroundHTML}
-                className="absolute inset-0 pointer-events-none w-full h-full rounded-[28px] px-2"
-              />
-              
-              {/* Content Container - with proper constraints */}
-              <div className={`flex-1 flex flex-col h-full w-full relative z-10 overflow-hidden ${isUndefined(theme?.properties.background) &&  "bg-white"}`}>
-                {/* Header Content */}
-                <div className="flex-shrink-0 w-full bg-white">
-
-                  {/* Tab Bar */}
-                  <div className="border-b relative">
-                    <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
-                      {tabBar}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Profile Section */}
-                {!isUndefined(profile) ? (
-                    <div className="w-full">
-                      <div className="overflow-hidden">
-                        {profile}
+                      <div className="border-b relative">
+                        <div className="w-full overflow-x-auto overflow-y-hidden scrollbar-hide">
+                          {tabBar}
+                        </div>
                       </div>
                     </div>
-                  ) : null}
 
-                {/* Main Content - LayoutFidget with proper constraints */}
-                {/* Feed (if not mobile) */}
-                <div className="flex-1 overflow-hidden">
-                  <Suspense
-                    fallback={
+                    <Suspense fallback={
                       <SpaceLoading
                         hasProfile={!isNil(profile)}
                         hasFeed={!isNil(feed)}
                       />
-                    }
-                  >
-                    {!isUndefined(feed) ? 
-                    (
-                      <>
-                        {feed}
-                      </>
-                    )
-                                         : LayoutFidget ? (
-                        <LayoutFidget
-                            layoutConfig={mobileLayoutConfig}
-                            theme={theme}
-                            fidgetInstanceDatums={fidgetInstanceDatums}
-                            fidgetTrayContents={fidgetTrayContents}
-                            saveExitEditMode={saveExitEditMode}
-                            cancelExitEditMode={cancelExitEditMode}
-                            portalRef={portalRef}
-                            saveConfig={saveConfig}
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                            feed={feed}
-                            tabNames={tabNames}
-                            fid={fid}
-                            inEditMode={false}
-                        />
-                        ) : (
-                        <SpaceLoading
-                            hasProfile={!isNil(profile)}
-                            hasFeed={!isNil(feed)}
-                        />
-                        )
-                    }
-                  </Suspense>
+                    }>
+                      <MobileViewSimplified
+                        theme={config.theme}
+                        fidgetInstanceDatums={config.fidgetInstanceDatums}
+                        fidgetTrayContents={config.fidgetTrayContents}
+                        saveConfig={saveConfig}
+                        inEditMode={false}
+                        saveExitEditMode={saveExitEditMode}
+                        cancelExitEditMode={cancelExitEditMode}
+                        portalRef={portalRef}
+                        hasProfile={!isNil(profile)}
+                        hasFeed={!isNil(feed)}
+                        feed={feed}
+                        tabNames={tabNames}
+                        fid={fid}
+                        layoutFidgetIds={layoutFidgetIds}
+                        isHomebasePath={isHomebasePath}
+                      />
+                    </Suspense>
+                  </div>
                 </div>
               </div>
             </div>
+            <PhoneFrame className="pointer-events-none select-none absolute z-10"/>
           </div>
         </div>
       </div>

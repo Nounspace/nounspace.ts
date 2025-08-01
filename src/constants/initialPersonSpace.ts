@@ -2,6 +2,7 @@ import { SpaceConfig } from "@/app/(spaces)/Space";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
 import { FeedType, FilterType } from "@neynar/nodejs-sdk/build/api";
 import { cloneDeep } from "lodash";
+import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 
 export const INITIAL_SPACE_CONFIG_EMPTY: Omit<SpaceConfig, "isEditable"> = {
   layoutID: "",
@@ -49,7 +50,8 @@ const createIntialPersonSpaceConfigForFid = (
       id: "Portfolio:cd627e89-d661-4255-8c4c-2242a950e93e",
     },
   };
-  config.layoutDetails.layoutConfig.layout.push({
+  const layoutItems = [
+    {
     w: 6,
     h: 8,
     x: 0,
@@ -61,8 +63,8 @@ const createIntialPersonSpaceConfigForFid = (
     maxH: 36,
     moved: false,
     static: false,
-  });
-  config.layoutDetails.layoutConfig.layout.push({
+  },
+{
     w: 6,
     h: 8,
     x: 7,
@@ -74,7 +76,12 @@ const createIntialPersonSpaceConfigForFid = (
     maxH: 36,
     moved: false,
     static: false,
-  });
+    }
+  ];
+
+  // Set the layout configuration
+  const layoutConfig = getLayoutConfig(config.layoutDetails);
+  layoutConfig.layout = layoutItems;
   return config;
 };
 

@@ -5,6 +5,7 @@ import { getNetworkWithId } from "@/common/lib/utils/networks";
 import { EtherScanChainName } from "./etherscanChainIds";
 import { getGeckoUrl } from "@/common/lib/utils/links";
 import { Address } from "viem";
+import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 
 export const createInitialContractSpaceConfigForAddress = (
   address: string,
@@ -155,8 +156,7 @@ export const createInitialContractSpaceConfigForAddress = (
     },
   };
 
-  config.layoutDetails.layoutConfig.layout =
-    isClankerToken &&
+  const newLayout = isClankerToken &&
     castHash &&
     casterFid &&
     castHash !== "clank.fun deployment"
@@ -318,6 +318,10 @@ export const createInitialContractSpaceConfigForAddress = (
             y: 5,
           },
         ];
+
+  // Set the layout configuration
+  const layoutConfig = getLayoutConfig(config.layoutDetails);
+  layoutConfig.layout = newLayout;
 
   config.theme = {
     id: "default",
