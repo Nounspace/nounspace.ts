@@ -631,18 +631,21 @@ export default function PublicSpace({
     });
 
     if (isNil(currentSpaceId)) return;
+    
+    let configToSave;
     if (isNil(remoteSpaces[currentSpaceId])) {
-      saveLocalSpaceTab(currentSpaceId, currentTabName, {
+      configToSave = {
         ...initialConfig,
         isPrivate: false,
-      });
+      };
     } else {
-      saveLocalSpaceTab(
-        currentSpaceId,
-        currentTabName,
-        remoteSpaces[currentSpaceId].tabs[currentTabName],
-      );
+      const remoteConfig = remoteSpaces[currentSpaceId].tabs[currentTabName];
+      configToSave = {
+        ...remoteConfig,
+      };
     }
+    
+    saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
 
   // Common tab management
