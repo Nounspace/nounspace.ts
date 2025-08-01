@@ -35,7 +35,10 @@ import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import EmojiPicker, { Theme } from "emoji-picker-react";
+import EmojiPicker, {
+  Theme,
+  EmojiClickData,
+} from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { Address, formatUnits, zeroAddress } from "viem";
@@ -614,7 +617,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return "Cast";
   };
 
-  const handleEmojiClick = (emojiObject: any) => {
+  const handleEmojiClick = (
+    emojiObject: EmojiClickData,
+    event: MouseEvent,
+  ) => {
+    event.stopPropagation();
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
@@ -789,7 +796,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 type="button"
                 variant="ghost"
                 disabled={isPublishing}
-                onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPickingEmoji(!isPickingEmoji);
+                }}
               >
                 <GoSmiley size={20} />
               </Button>
