@@ -12,12 +12,12 @@ const cspHeader = `
     default-src 'self';
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
-    img-src 'self' blob: data: https: https://i.ytimg.com;
+    img-src 'self' blob: data: https:;
     font-src 'self' https:;
-    object-src 'self';
+    object-src 'none';
     base-uri 'self';
     form-action 'self';
-    frame-ancestors 'self';
+    frame-ancestors 'self' https://farcaster.xyz https://*.farcaster.xyz https://wallet.coinbase.com https://*.coinbase.com https://base.org https://*.base.org;
     frame-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://*;
     child-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://www.youtube.com https://*;
     connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://auth.privy.nounspace.com https://privy.nounspace.com/api/v1/analytics_events wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems;
@@ -41,36 +41,13 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        hostname: "nouns.com",
         protocol: "https",
-        pathname: "*",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.png",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.jpg",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.jpeg",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.gif",
-      },
-      {
-        hostname: "*",
-        protocol: "https",
-        pathname: "**/*.webp",
+        hostname: "**",
       },
     ],
+    dangerouslyAllowSVG: false,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; object-src 'none';",
+    formats: ['image/webp', 'image/avif'],
   },
   async redirects() {
     return [
@@ -110,23 +87,31 @@ const nextConfig = {
     return config;
   },
 
-  // async headers() {
-  //   return [
-  //     {
-  //       source: '/(.*)',
-  //       headers: [
-  //         {
-  //           key: 'Content-Security-Policy',
-  //           value: cspHeader.replace(/\n/g, ''),
-  //         },
-  //         {
-  //           key: 'X-Frame-Options',
-  //           value: 'DENY',
-  //         },
-  //       ],
-  //     },
-  //   ];
-  // },
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: cspHeader.replace(/\n/g, ''),
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

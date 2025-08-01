@@ -1,18 +1,11 @@
 import {
-  FidgetArgs,
   FidgetBundle,
   FidgetInstanceData,
-  FidgetModule,
 } from "@/common/fidgets";
 import { ThemeSettings } from "@/common/lib/theme";
 import ThemeSettingsEditor from "@/common/lib/theme/ThemeSettingsEditor";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { CompleteFidgets } from "@/fidgets";
-import { fromPairs, map } from "lodash";
 import React, { Dispatch, SetStateAction } from "react";
-import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
-import FidgetPicker from "./FidgetPicker";
 import FidgetTray from "./FidgetTray";
 
 export interface EditorPanelProps {
@@ -34,8 +27,6 @@ export interface EditorPanelProps {
     [key: string]: FidgetInstanceData;
   }): Promise<void>;
   removeFidget(fidgetId: string): void;
-  isPickingFidget: boolean;
-  setIsPickingFidget: React.Dispatch<React.SetStateAction<boolean>>;
   openFidgetPicker(): void;
   selectFidget(fidgetBundle: FidgetBundle): void;
   addFidgetToGrid(fidget: FidgetInstanceData): boolean;
@@ -58,8 +49,6 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
   removeFidget,
-  isPickingFidget,
-  setIsPickingFidget,
   openFidgetPicker,
   selectFidget,
   addFidgetToGrid,
@@ -67,59 +56,9 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   getCurrentSpaceContext,
   onApplySpaceConfig,
 }) => {
-  function generateFidgetInstance(
-    fidgetId: string,
-    fidget: FidgetModule<FidgetArgs>,
-  ): FidgetInstanceData {
-    function allFields(fidget: FidgetModule<FidgetArgs>) {
-      return fromPairs(
-        map(fidget.properties.fields, (field) => {
-          return [field.fieldName, field.default];
-        }),
-      );
-    }
 
-    const newFidgetInstanceData = {
-      config: {
-        editable: true,
-        data: {},
-        settings: allFields(fidget),
-      },
-      fidgetType: fidgetId,
-      id: fidgetId + ":" + uuidv4(),
-    };
 
-    return newFidgetInstanceData;
-  }
 
-  // Add fidget to grid if space is available, otherwise add to tray
-  function addFidget(fidgetId: string, fidget: FidgetModule<FidgetArgs>) {
-    // Generate new fidget instance
-    const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget);
-
-    // Add it to the instance data list
-    fidgetInstanceDatums[newFidgetInstanceData.id] = newFidgetInstanceData;
-    saveFidgetInstanceDatums(fidgetInstanceDatums);
-
-    setIsPickingFidget(false);
-
-    const bundle = {
-      ...newFidgetInstanceData,
-      properties: CompleteFidgets[fidgetId].properties,
-    };
-
-    const addedToGrid = addFidgetToGrid(bundle);
-
-    if (!addedToGrid) {
-      toast("No space available on the grid. Fidget added to the tray.", {
-        duration: 2000,
-      });
-      const newTrayContents = [...fidgetTrayContents, newFidgetInstanceData];
-      saveTrayContents(newTrayContents);
-    }
-
-    selectFidget(bundle);
-  }
 
   return (
     <aside
@@ -132,29 +71,17 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
           {selectedFidgetID ? (
             <>{currentFidgetSettings}</>
           ) : (
-            <>
-              {isPickingFidget ? (
-                <FidgetPicker
-                  addFidget={addFidget}
-                  setCurrentlyDragging={setCurrentlyDragging}
-                  setExternalDraggedItem={setExternalDraggedItem}
-                  generateFidgetInstance={generateFidgetInstance}
-                  setIsPickingFidget={setIsPickingFidget}
-                />
-              ) : (
-              <ThemeSettingsEditor
-                theme={theme}
-                saveTheme={saveTheme} 
-                saveExitEditMode={saveExitEditMode}
-                cancelExitEditMode={cancelExitEditMode}
-                fidgetInstanceDatums={fidgetInstanceDatums}
-                onExportConfig={onExportConfig}
-                saveFidgetInstanceDatums={saveFidgetInstanceDatums}
-                getCurrentSpaceContext={getCurrentSpaceContext}
-                onApplySpaceConfig={onApplySpaceConfig}
-              />
-              )}
-            </>
+            <ThemeSettingsEditor
+              theme={theme}
+              saveTheme={saveTheme} 
+              saveExitEditMode={saveExitEditMode}
+              cancelExitEditMode={cancelExitEditMode}
+              fidgetInstanceDatums={fidgetInstanceDatums}
+              onExportConfig={onExportConfig}
+              saveFidgetInstanceDatums={saveFidgetInstanceDatums}
+              getCurrentSpaceContext={getCurrentSpaceContext}
+              onApplySpaceConfig={onApplySpaceConfig}
+            />
           )}
         </div>
       </div>

@@ -1,7 +1,6 @@
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
 import { cloneDeep } from "lodash";
-import moment from "moment";
 
 export interface SpaceCheckpoint {
   id: string;
@@ -61,7 +60,7 @@ export const createCheckpointStoreFunc = (
   ) => {
     const timestamp = new Date();
     const checkpoints = get().checkpoints.checkpoints;
-    
+
     const checkpoint: SpaceCheckpoint = {
       id: `checkpoint-${Date.now()}-${Math.random().toString(36).substring(2)}`,
       name: description || `${source} checkpoint ${checkpoints.length + 1}`,
@@ -81,7 +80,7 @@ export const createCheckpointStoreFunc = (
     set((draft) => {
       // Add new checkpoint
       draft.checkpoints.checkpoints.push(checkpoint);
-      
+
       // Trim to max checkpoints (keep most recent)
       const maxCheckpoints = draft.checkpoints.maxCheckpoints;
       if (draft.checkpoints.checkpoints.length > maxCheckpoints) {
@@ -137,7 +136,7 @@ export const createCheckpointStoreFunc = (
     try {
       // Apply the complete space configuration from checkpoint
       await onApplySpaceConfig(checkpoint.spaceConfig);
-      
+
       console.log("✅ Successfully restored checkpoint:", checkpointId);
       return true;
     } catch (error) {
@@ -156,7 +155,7 @@ export const createCheckpointStoreFunc = (
         cp => cp.id !== checkpointId
       );
     }, "deleteCheckpoint");
-    
+
     console.log("🗑️ Deleted checkpoint:", checkpointId);
   },
 
@@ -164,7 +163,7 @@ export const createCheckpointStoreFunc = (
     set((draft) => {
       draft.checkpoints.checkpoints = [];
     }, "clearCheckpoints");
-    
+
     console.log("🧹 Cleared all checkpoints");
   },
 

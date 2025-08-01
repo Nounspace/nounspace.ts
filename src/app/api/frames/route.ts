@@ -13,38 +13,38 @@ function isInternalUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname;
-    
+
     // Block localhost variations
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
       return true;
     }
-    
+
     // Block private IP ranges
     const ip = hostname.split('.');
     if (ip.length === 4 && ip.every(octet => /^\d+$/.test(octet))) {
-      const [a, b, c, d] = ip.map(Number);
-      
+      const [a, b, _c, _d] = ip.map(Number);
+
       // 10.0.0.0/8 (10.0.0.0 - 10.255.255.255)
       if (a === 10) return true;
-      
+
       // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
       if (a === 172 && b >= 16 && b <= 31) return true;
-      
+
       // 192.168.0.0/16 (192.168.0.0 - 192.168.255.255)
       if (a === 192 && b === 168) return true;
-      
+
       // 169.254.0.0/16 (Link-local addresses)
       if (a === 169 && b === 254) return true;
-      
+
       // 0.0.0.0/8 (Current network)
       if (a === 0) return true;
     }
-    
+
     // Block other localhost variations
     if (hostname.endsWith('.localhost') || hostname.includes('local')) {
       return true;
     }
-    
+
     return false;
   } catch {
     return true; // If URL parsing fails, consider it unsafe
@@ -65,7 +65,7 @@ interface FrameData {
 
 // Helper: Regex-based fallback parser for frame metadata
 async function parseFrameFallback(url: string): Promise<FrameData> {
-  
+
   const response = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (compatible; FrameViewer/1.0)",
@@ -77,14 +77,11 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
   // Check for fc:frame metadata to determine if this is actually a frame
   const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
 
-  // Log a sample of the HTML to see what we're working with
-  const metaTags = html.match(/<meta[^>]*>/gi) || [];
-  const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
 
   // Check for JSON-based frame format (name="fc:frame" with JSON content)
   const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||
-                         html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
-  
+    html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
+
   let jsonFrameData: any = null;
   if (jsonFrameMatch) {
     try {
@@ -187,11 +184,11 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
         buttons.push({ index, label, action: "post" });
       }
     });
-    
+
     buttons.sort((a, b) => a.index - b.index);
   }
   const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || url : url;
-  
+
   const result = {
     image: imageUrl,
     title,
@@ -233,7 +230,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   try {
     // console.log('Frames API - GET request:', { url, specification, fid });
-    
+
     let html: string;
     {
       const urlRes = await fetch(url, {
@@ -313,7 +310,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
-    const { frameUrl, buttonIndex } = body;
+    const { frameUrl } = body;
     const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
 
     if (!frameUrl) {

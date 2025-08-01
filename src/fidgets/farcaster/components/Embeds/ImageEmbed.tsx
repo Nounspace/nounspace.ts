@@ -8,15 +8,29 @@ const ImageEmbed = ({ url }: { url: string }) => {
     console.debug("error loading image", url);
   }, [url]);
 
-  return (
-    <ExpandOnClick>
+  const collapsedImage = (
+    <LazyImage
+      className="object-cover w-full h-full max-h-[500px] rounded-lg"
+      src={url}
+      onError={onError}
+      referrerPolicy="no-referrer"
+      alt="Embedded image"
+    />
+  );
+
+  const expandedImage = (
       <LazyImage
-        className="object-contain size-full max-h-[inherit]"
+        className="object-contain max-w-[95vw] max-h-[95vh] rounded-lg"
         src={url}
         onError={onError}
         referrerPolicy="no-referrer"
         alt="Embedded image"
       />
+  );
+
+  return (
+    <ExpandOnClick expandedChildren={expandedImage}>
+      {collapsedImage}
     </ExpandOnClick>
   );
 };

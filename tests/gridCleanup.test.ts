@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cleanupLayout } from '../src/common/lib/utils/gridCleanup';
+import { comprehensiveCleanup } from '../src/common/lib/utils/gridCleanup';
 import { PlacedGridItem } from '@/fidgets/layout/Grid';
 import { FidgetInstanceData, FidgetConfig, FidgetSettings, FidgetData } from '@/common/fidgets';
 
@@ -81,17 +81,22 @@ describe('Grid Cleanup', () => {
       }
     };
 
-    // Use the exported cleanupLayout function
-    const { cleanedLayout, removedFidgetIds } = cleanupLayout(
+    // Use the exported comprehensiveCleanup function
+    const { cleanedLayout, cleanedFidgetInstanceDatums, hasChanges } = comprehensiveCleanup(
       layout,
       fidgetInstanceDatums,
       false, // hasProfile
       false  // hasFeed
     );
 
+    // Compute removed fidgets by comparing original and cleaned data
+    const originalFidgetIds = Object.keys(fidgetInstanceDatums);
+    const cleanedFidgetIds = Object.keys(cleanedFidgetInstanceDatums);
+    const removedFidgetIds = originalFidgetIds.filter(id => !cleanedFidgetIds.includes(id));
+
     console.log('\nCleaned Layout:');
-    cleanedLayout.forEach(fidget => {
-      console.log(`${fidget.i}:`);
+    cleanedLayout.forEach((fidget, index) => {
+      console.log(`Fidget ${index + 1} (ID: ${fidget.i}):`);
       console.log(`  Position: (${fidget.x}, ${fidget.y})`);
       console.log(`  Size: ${fidget.w}x${fidget.h}`);
       console.log(`  Min Size: ${fidget.minW}x${fidget.minH}`);

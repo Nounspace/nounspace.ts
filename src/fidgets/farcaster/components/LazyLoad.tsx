@@ -1,15 +1,15 @@
 import { mergeClasses as classNames } from "@/common/lib/utils/mergeClasses";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-const LazyImageComponent = ({ 
-  src, 
-  alt, 
-  className = '', 
-  onLoad, 
+const LazyImageComponent = ({
+  src,
+  alt,
+  className = '',
+  onLoad,
   onError,
   referrerPolicy,
-  ...props 
+  ...props
 }: React.ImgHTMLAttributes<HTMLImageElement> & {
   src: string;
   alt?: string;
@@ -35,13 +35,13 @@ const LazyImageComponent = ({
     setLoaded(true);
     if (onLoad) onLoad(e);
   };
-  
+
   const placeholder = useMemo(() => {
-   // We convert to number explicitly to avoid type errors
+    // We convert to number explicitly to avoid type errors
     const heightNum = props.height ? Number(props.height) : 0;
     const widthNum = props.width ? Number(props.width) : 0;
-    
-    const ratio = (heightNum && widthNum) ? (heightNum / widthNum * 100) : 56.25; 
+
+    const ratio = (heightNum && widthNum) ? (heightNum / widthNum * 100) : 56.25;
     return (
       <div
         className={classNames(

@@ -12,7 +12,6 @@ import {
   makeUserDataAdd,
   signedKeyRequestValidatorABI,
   FarcasterNetwork,
-  makeCastAdd,
 } from "@farcaster/hub-web";
 import {
   LinkBody,
@@ -35,8 +34,8 @@ type FarcasterUrlEmbed = {
 };
 type FarcasterCastIdEmbed = {
   castId: {
-      fid: number;
-      hash: Uint8Array;
+    fid: number;
+    hash: Uint8Array;
   };
 };
 export type FarcasterEmbed = FarcasterCastIdEmbed | FarcasterUrlEmbed;
@@ -359,9 +358,9 @@ export const updateUsernameOffchain = async ({
     else
       throw new Error(
         "Failed to register current username: " +
-          e.response.data?.error +
-          " " +
-          e.response.data?.code,
+        e.response.data?.error +
+        " " +
+        e.response.data?.code,
       );
   }
 };
