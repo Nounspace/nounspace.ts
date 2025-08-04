@@ -195,6 +195,12 @@ function TabBar({
     switchTabTo(tabName, true);
   }, [switchTabTo]);
 
+  // Handle tab reordering with automatic commit
+  const handleTabReorder = React.useCallback((newOrder: string[]) => {
+    updateTabOrder(newOrder);
+    commitTabOrder();
+  }, [updateTabOrder, commitTabOrder]);
+
   const isLoggedIn = getIsLoggedIn();
 
 
@@ -214,7 +220,7 @@ function TabBar({
               <Reorder.Group
                 as="ol"
                 axis="x"
-                onReorder={updateTabOrder}
+                onReorder={handleTabReorder}
                 className="flex flex-nowrap gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
               >
