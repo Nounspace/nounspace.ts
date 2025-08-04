@@ -72,7 +72,7 @@
     "@rainbow-me/rainbowkit": "^2.2.5",
     "@react-stately/datepicker": "^3.9.4",
     "@segment/analytics-next": "^1.81.0",
-    "@sentry/react": "^7.68.0",
+    "@sentry/react": "^10.0.0",
     "@snapshot-labs/snapshot.js": "^0.14.3",
     "@standard-crypto/farcaster-js-hub-rest": "^1.3.0",
     "@supabase/ssr": "^0.3.0",
