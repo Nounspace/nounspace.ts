@@ -16,25 +16,16 @@ export async function fetchEmpireByAddress(
 ): Promise<EmpireToken | null> {
   try {
     const response = await fetch(`${EMPIRE_API_URL}/${address}`);
-    const json = await response.json();
-
-export async function fetchEmpireByAddress(
-  address: Address,
-): Promise<EmpireToken | null> {
-  try {
-    const response = await fetch(`${EMPIRE_API_URL}/${address}`);
 
     if (!response.ok) {
       throw new Error(response.statusText);
     }
 
-    const json = await response.json();
+    const { empires } = (await response.json()) as {
+      empires?: EmpireToken[];
+    };
 
-    // …rest of the implementation
-
-    return json.empires && json.empires.length > 0
-      ? (json.empires[0] as EmpireToken)
-      : null;
+    return empires?.[0] ?? null;
   } catch (_error) {
     return null;
   }
