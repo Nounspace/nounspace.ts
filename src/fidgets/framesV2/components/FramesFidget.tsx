@@ -12,6 +12,7 @@ import { defaultStyleFields, ErrorWrapper } from "@/fidgets/helpers";
 import SwitchButton from "@/common/components/molecules/SwitchButton";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 import FrameRenderer from "./FrameRenderer";
+import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 
 export type FramesFidgetSettings = {
   url: string;
@@ -97,6 +98,8 @@ const frameConfig: FidgetProperties = {
 const FramesFidget: React.FC<FidgetArgs<FramesFidgetSettings>> = ({
   settings: { url, collapsed = false, title, headingFont },
 }) => {
+  const { fid } = useFarcasterSigner("frames-fidget");
+  const isConnected = fid > 0;
   if (!url) {
     return (
       <ErrorWrapper icon="➕" message="Provide a Frame URL to display here." />
@@ -113,6 +116,8 @@ const FramesFidget: React.FC<FidgetArgs<FramesFidgetSettings>> = ({
       title={title}
       headingFont={headingFont}
       showTitle={true}
+      isConnected={isConnected}
+      fid={isConnected ? fid : undefined}
     />
   );
 };

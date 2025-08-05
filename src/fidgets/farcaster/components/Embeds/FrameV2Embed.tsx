@@ -1,5 +1,6 @@
 import React from "react";
 import FrameRenderer from "@/fidgets/framesV2/components/FrameRenderer";
+import { useFarcasterSigner } from "@/fidgets/farcaster/index";
 
 interface FrameV2EmbedProps {
   url: string;
@@ -7,6 +8,8 @@ interface FrameV2EmbedProps {
 }
 
 const FrameV2Embed: React.FC<FrameV2EmbedProps> = ({ url }) => {
+  const { fid } = useFarcasterSigner("frame-v2-embed");
+  const isConnected = fid > 0;
   return (
     <div
       style={{
@@ -37,6 +40,8 @@ const FrameV2Embed: React.FC<FrameV2EmbedProps> = ({ url }) => {
           frameUrl={url}
           collapsed={true} // Always use collapsed mode for inline cast embeds
           showTitle={false} // No title in cast embeds to save space for feed
+          isConnected={isConnected}
+          fid={isConnected ? fid : undefined}
         />
       </div>
     </div>
