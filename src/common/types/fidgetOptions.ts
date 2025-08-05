@@ -162,4 +162,5 @@ export interface FidgetOptionsResponse {
   categories: FidgetCategory[];
   total: number;
   hasMore: boolean;
+  searchQuery?: string; // Optional search query that was used
 } 

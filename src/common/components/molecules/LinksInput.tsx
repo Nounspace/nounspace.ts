@@ -1,3 +1,5 @@
+"use client";
+
 import React, { forwardRef, useCallback, useState } from "react";
 import { FaPlus, FaImage, FaLink } from "react-icons/fa";
 import {
