@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState, useEffect, useMemo } from "react";
+import React, { Dispatch, SetStateAction, useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { CompleteFidgets } from "@/fidgets";
 import { Card, CardContent } from "../atoms/card";
 import { FidgetArgs, FidgetInstanceData, FidgetModule } from "@/common/fidgets";
@@ -108,6 +108,12 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadingMiniApps, setLoadingMiniApps] = useState<boolean>(false);
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
+  const [isSearchMode, setIsSearchMode] = useState<boolean>(false);
+  
+  // Ref for debouncing search
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   const service = FidgetOptionsService.getInstance();
 
@@ -119,8 +125,51 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
     );
   }, [fidgetOptions]);
 
-  // Filter fidget options based on selected tag and search query
+  // Debounced search function
+  const debouncedSearch = useCallback(async (query: string) => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (query.trim()) {
+        setSearchLoading(true);
+        setIsSearchMode(true);
+        try {
+          const searchResponse = await service.searchFidgetOptions(query, { category: selectedTag });
+          setFidgetOptions(searchResponse.options);
+        } catch (error) {
+          console.error('Error searching fidgets:', error);
+        } finally {
+          setSearchLoading(false);
+        }
+      } else {
+        setIsSearchMode(false);
+        // Reload default options when search is cleared
+        loadFidgetOptions();
+      }
+    }, 300); // 300ms debounce
+  }, [selectedTag, service]);
+
+  // Handle search query changes
+  useEffect(() => {
+    debouncedSearch(searchQuery);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, debouncedSearch]);
+
+  // Filter fidget options based on selected tag (only for non-search mode)
   const filteredOptions = useMemo(() => {
+    if (isSearchMode) {
+      // In search mode, filtering is handled by the search API
+      return fidgetOptions;
+    }
+
     let filtered = fidgetOptions;
 
     // Filter by selected tag (single selection)
@@ -128,45 +177,56 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
       filtered = filtered.filter(option => option.tags.includes(selectedTag));
     }
 
-    // Filter by search query
-    if (searchQuery.trim()) {
-      const queryLower = searchQuery.toLowerCase();
-      filtered = filtered.filter(option => {
-        // Prioritize tag matches
-        const tagMatch = option.tags.some(tag => tag.toLowerCase().includes(queryLower));
-        if (tagMatch) return true;
-
-        // Then check name and description
-        return option.name.toLowerCase().includes(queryLower) ||
-               option.description.toLowerCase().includes(queryLower);
-      });
-    }
-
     return filtered;
-  }, [fidgetOptions, selectedTag, searchQuery]);
+  }, [fidgetOptions, selectedTag, isSearchMode]);
 
-  // Load data when modal opens
+  // Load data when modal opens and reset when closed
   useEffect(() => {
     if (isOpen) {
       loadFidgetOptions();
+    } else {
+      // Reset states when modal is closed
+      setLoading(false);
+      setLoadingMiniApps(false);
+      setSearchLoading(false);
+      setSearchQuery('');
+      setSelectedTag('');
+      setIsSearchMode(false);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
     }
   }, [isOpen]);
 
   const loadFidgetOptions = async () => {
     setLoading(true);
+    setLoadingMiniApps(true);
+    
     try {
-      // Load all fidget options without any filters
-      const response = await service.getFidgetOptions({});
-      setFidgetOptions(response.options);
+      // First, load local options immediately (static fidgets + curated sites)
+      const localResponse = service.getLocalFidgetOptions({});
+      setFidgetOptions(localResponse.options);
+      setLoading(false); // Stop main loading spinner since we have content to show
+      
+      // Then, load all options including mini apps in the background
+      const fullResponse = await service.getFidgetOptions({});
+      setFidgetOptions(fullResponse.options);
+      setLoadingMiniApps(false); // Stop mini apps loading indicator
     } catch (error) {
       console.error('Error loading fidget options:', error);
-    } finally {
       setLoading(false);
+      setLoadingMiniApps(false);
     }
   };
 
   const handleTagSelect = (tag: string) => {
-    setSelectedTag(selectedTag === tag ? '' : tag);
+    const newTag = selectedTag === tag ? '' : tag;
+    setSelectedTag(newTag);
+    
+    // If in search mode, re-run the search with the new tag filter
+    if (isSearchMode && searchQuery.trim()) {
+      debouncedSearch(searchQuery);
+    }
   };
 
   const handleFidgetSelect = (option: FidgetOption) => {
@@ -310,11 +370,16 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
           {/* Search Input */}
           <div className="relative mb-4 flex-shrink-0">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            {searchLoading && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></div>
+              </div>
+            )}
             <Input
               placeholder="Search fidgets by name, description, or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 pr-10"
             />
           </div>
 
@@ -343,14 +408,6 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
               })}
             </div>
 
-            {/* Results count */}
-            {selectedTag && (
-              <div className="mb-3 text-sm text-gray-600">
-                Showing {filteredOptions.length} of {fidgetOptions.length} fidgets
-                <span> in {selectedTag}</span>
-              </div>
-            )}
-
             {/* Content */}
             <div className="flex-1 overflow-y-auto min-h-0">
               {loading ? (
@@ -363,6 +420,16 @@ export const FidgetPickerModal: React.FC<FidgetPickerModalProps> = ({
                   <div className="grid grid-cols-1 gap-2 pb-4">
                     {filteredOptions.map(renderFidgetOption)}
                   </div>
+
+                  {/* Loading mini-apps indicator */}
+                  {loadingMiniApps && filteredOptions.length > 0 && (
+                    <div className="flex items-center justify-center py-4 border-t border-gray-200 mt-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full"></div>
+                        Loading mini-apps...
+                      </div>
+                    </div>
+                  )}
 
                   {/* No results */}
                   {filteredOptions.length === 0 && (

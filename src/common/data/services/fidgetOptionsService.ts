@@ -234,7 +234,35 @@ export class FidgetOptionsService {
     return filtered;
   }
 
-  // Main method to get all fidget options
+  // Get immediate/local options (static fidgets + curated sites)
+  getLocalFidgetOptions(filters: FidgetSearchFilters = {}): FidgetOptionsResponse {
+    const staticFidgets = this.getStaticFidgets();
+    const curatedSites = this.getCuratedSites();
+
+    const localOptions: FidgetOption[] = [
+      ...staticFidgets,
+      ...curatedSites
+    ];
+
+    // Sort by popularity (desc) then by name (asc)
+    localOptions.sort((a, b) => {
+      if (a.popularity !== b.popularity) {
+        return (b.popularity || 0) - (a.popularity || 0);
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    const filteredOptions = this.filterOptions(localOptions, filters);
+
+    return {
+      options: filteredOptions,
+      categories: DEFAULT_CATEGORIES,
+      total: filteredOptions.length,
+      hasMore: true // Mini apps are still loading
+    };
+  }
+
+  // Main method to get all fidget options (includes async mini apps)
   async getFidgetOptions(filters: FidgetSearchFilters = {}): Promise<FidgetOptionsResponse> {
     const [staticFidgets, curatedSites, miniApps] = await Promise.all([
       Promise.resolve(this.getStaticFidgets()),
@@ -281,6 +309,153 @@ export class FidgetOptionsService {
       total: filteredOptions.length,
       hasMore: false // For future pagination
     };
+  }
+
+  // Search across all fidget types (local + remote)
+  async searchFidgetOptions(query: string, filters: FidgetSearchFilters = {}): Promise<FidgetOptionsResponse> {
+    if (!query.trim()) {
+      // If no query, return regular options
+      return this.getFidgetOptions(filters);
+    }
+
+    try {
+      // Get local options (static + curated) and search through them
+      const staticFidgets = this.getStaticFidgets();
+      const curatedSites = this.getCuratedSites();
+      
+      const localOptions: FidgetOption[] = [
+        ...staticFidgets,
+        ...curatedSites
+      ];
+
+      // Search local options
+      const normalizedQuery = query.toLowerCase();
+      const matchingLocalOptions = localOptions.filter(option => {
+        const tagMatch = option.tags.some(tag => tag.toLowerCase().includes(normalizedQuery));
+        if (tagMatch) return true;
+
+        return option.name.toLowerCase().includes(normalizedQuery) ||
+               option.description.toLowerCase().includes(normalizedQuery);
+      });
+
+      // Search remote mini-apps using Neynar search API
+      const searchResults = await this.neynarService.searchMiniApps(query, 50);
+      const miniAppOptions = this.convertMiniAppsToFidgetOptions(searchResults);
+
+      // Combine results
+      const allOptions: FidgetOption[] = [
+        ...matchingLocalOptions,
+        ...miniAppOptions
+      ];
+
+      // Deduplicate by name (keep the first occurrence)
+      const seenNames = new Set<string>();
+      const deduplicatedOptions = allOptions.filter(option => {
+        if (seenNames.has(option.name)) {
+          return false;
+        }
+        seenNames.add(option.name);
+        return true;
+      });
+
+      // Sort by popularity (desc) then by name (asc)
+      deduplicatedOptions.sort((a, b) => {
+        if (a.popularity !== b.popularity) {
+          return (b.popularity || 0) - (a.popularity || 0);
+        }
+        return a.name.localeCompare(b.name);
+      });
+
+      const filteredOptions = this.filterOptions(deduplicatedOptions, filters);
+
+      return {
+        options: filteredOptions,
+        categories: DEFAULT_CATEGORIES,
+        total: filteredOptions.length,
+        hasMore: false,
+        searchQuery: query,
+      };
+    } catch (error) {
+      console.error('Error searching fidget options:', error);
+      
+      // Fallback to local search only
+      return this.getLocalFidgetOptions(filters);
+    }
+  }
+
+  // Helper method to convert mini apps to fidget options
+  private convertMiniAppsToFidgetOptions(miniApps: any[]): MiniAppFidgetOption[] {
+    return miniApps.map(app => {
+      const mappedCategory = this.mapToNounspaceCategory(app);
+      const enhancedTags = this.generateEnhancedTags(app, mappedCategory);
+      
+      return {
+        id: `neynar-search-${app.domain}`,
+        type: 'miniapp',
+        name: app.name,
+        description: app.description || `Mini app by ${app.author.displayName}`,
+        icon: app.iconUrl,
+        tags: enhancedTags,
+        category: mappedCategory,
+        frameUrl: app.homeUrl,
+        homeUrl: app.homeUrl,
+        domain: app.domain,
+        buttonTitle: app.metadata.buttonTitle || 'Open',
+        imageUrl: app.metadata.heroImage || app.iconUrl,
+        popularity: this.calculatePopularity(app),
+        metadata: app.metadata,
+        lastFetched: app.lastFetched,
+      };
+    });
+  }
+
+  // Helper methods from neynar service
+  private mapToNounspaceCategory(app: any): string {
+    const category = app.category?.toLowerCase();
+    const tags = app.tags?.map((tag: string) => tag.toLowerCase()) || [];
+    
+    // Category mapping logic
+    if (category === 'social' || tags.some(tag => ['social', 'farcaster', 'chat'].includes(tag))) {
+      return 'social';
+    }
+    if (category === 'defi' || tags.some(tag => ['defi', 'swap', 'trading', 'lending'].includes(tag))) {
+      return 'defi';
+    }
+    if (category === 'games' || tags.some(tag => ['game', 'gaming', 'play'].includes(tag))) {
+      return 'games';
+    }
+    if (category === 'tools' || tags.some(tag => ['tool', 'utility', 'analytics'].includes(tag))) {
+      return 'tools';
+    }
+    if (category === 'governance' || tags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
+      return 'governance';
+    }
+    if (tags.some(tag => ['nft', 'art', 'creative', 'content'].includes(tag))) {
+      return 'content';
+    }
+    
+    return 'mini-apps';
+  }
+
+  private generateEnhancedTags(app: any, category: string): string[] {
+    const tags = new Set<string>();
+    
+    // Add the mapped category
+    tags.add(category);
+    
+    // Add original tags
+    if (app.tags) {
+      app.tags.forEach((tag: string) => tags.add(tag.toLowerCase()));
+    }
+    
+    // Add mini-apps tag for all
+    tags.add('mini-apps');
+    
+    return Array.from(tags);
+  }
+
+  private calculatePopularity(app: any): number {
+    return app.engagement?.followerCount || 0;
   }
 
   // Get categories only

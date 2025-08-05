@@ -124,6 +124,13 @@ export class NeynarMiniAppService {
   }
 
   /**
+   * Check if running in browser environment
+   */
+  private isClientSide(): boolean {
+    return typeof window !== 'undefined';
+  }
+
+  /**
    * Fetch mini apps from Neynar catalog with optional filters
    */
   async fetchMiniApps(filters: MiniAppFilters = {}): Promise<ProcessedMiniApp[]> {
@@ -136,6 +143,12 @@ export class NeynarMiniAppService {
     }
 
     try {
+      // If running on client-side, use our internal API
+      if (this.isClientSide()) {
+        return this.fetchFromInternalAPI(filters);
+      }
+
+      // Server-side: make direct call to Neynar
       const url = new URL(this.baseUrl);
       
       // Add query parameters
@@ -179,6 +192,59 @@ export class NeynarMiniAppService {
   }
 
   /**
+   * Fetch mini apps from our internal API (client-side)
+   */
+  private async fetchFromInternalAPI(filters: MiniAppFilters = {}): Promise<ProcessedMiniApp[]> {
+    const cacheKey = JSON.stringify(filters);
+    const url = new URL('/api/miniapp-discovery', window.location.origin);
+    
+    // Add query parameters
+    if (filters.limit) url.searchParams.set('limit', filters.limit.toString());
+    if (filters.timeWindow) url.searchParams.set('timeWindow', filters.timeWindow);
+    if (filters.categories?.length) {
+      url.searchParams.set('category', filters.categories[0]); // API expects single category
+    }
+
+    const response = await fetch(url.toString());
+    
+    if (!response.ok) {
+      throw new Error(`Internal API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'API returned unsuccessful response');
+    }
+
+    // Convert the API response format to our internal format
+    const processedApps = data.apps.map((app: any) => ({
+      id: app.id,
+      domain: app.domain,
+      name: app.name,
+      iconUrl: app.iconUrl,
+      homeUrl: app.homeUrl,
+      description: app.description,
+      category: app.category,
+      tags: app.tags || [],
+      author: app.author,
+      engagement: {
+        followerCount: app.author.followerCount || 0,
+      },
+      lastFetched: new Date(app.lastFetched),
+      metadata: app.metadata || {},
+    }));
+
+    // Cache the results
+    this.cache.set(cacheKey, {
+      data: processedApps,
+      timestamp: Date.now(),
+    });
+
+    return processedApps;
+  }
+
+  /**
    * Get trending mini apps with time window
    */
   async getTrendingMiniApps(
@@ -209,11 +275,112 @@ export class NeynarMiniAppService {
   }
 
   /**
-   * Search mini apps (using Neynar's search endpoint when available)
+   * Search mini apps using Neynar's search endpoint
    */
-  async searchMiniApps(query: string): Promise<ProcessedMiniApp[]> {
-    // For now, filter cached results by name/description
-    // TODO: Use Neynar's search endpoint when available
+  async searchMiniApps(query: string, limit: number = 50): Promise<ProcessedMiniApp[]> {
+    if (!query.trim()) {
+      return [];
+    }
+
+    const cacheKey = `search:${query}:${limit}`;
+    
+    // Check cache first
+    const cached = this.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < this.cacheTimeout) {
+      return cached.data;
+    }
+
+    try {
+      // If running on client-side, use our internal API
+      if (this.isClientSide()) {
+        return this.searchFromInternalAPI(query, limit);
+      }
+
+      // Server-side: make direct call to Neynar search endpoint
+      const url = new URL('https://api.neynar.com/v2/farcaster/frame/search/');
+      url.searchParams.set('q', query);
+      url.searchParams.set('limit', limit.toString());
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          'x-api-key': this.apiKey,
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Neynar search API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data: NeynarCatalogResponse = await response.json();
+      const processedApps = this.processNeynarApps(data.frames);
+
+      // Cache the results
+      this.cache.set(cacheKey, {
+        data: processedApps,
+        timestamp: Date.now(),
+      });
+
+      return processedApps;
+    } catch (error) {
+      console.error('Error searching Neynar mini apps:', error);
+      
+      // Fallback to local search
+      return this.searchLocalCache(query);
+    }
+  }
+
+  /**
+   * Search mini apps from our internal API (client-side)
+   */
+  private async searchFromInternalAPI(query: string, limit: number = 50): Promise<ProcessedMiniApp[]> {
+    const url = new URL('/api/miniapp-discovery', window.location.origin);
+    
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'search',
+        query: query,
+        limit: limit,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Internal search API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.success) {
+      throw new Error(data.error || 'Search API returned unsuccessful response');
+    }
+
+    // Convert the API response format to our internal format
+    return data.results.map((app: any) => ({
+      id: app.id,
+      domain: app.domain,
+      name: app.name,
+      iconUrl: app.iconUrl,
+      homeUrl: app.homeUrl,
+      description: app.description,
+      category: app.category,
+      tags: app.tags || [],
+      author: app.author,
+      engagement: {
+        followerCount: app.author.followerCount || 0,
+      },
+      lastFetched: new Date(app.lastFetched),
+      metadata: app.metadata || {},
+    }));
+  }
+
+  /**
+   * Fallback local search in cached results
+   */
+  private async searchLocalCache(query: string): Promise<ProcessedMiniApp[]> {
     const allApps = await this.fetchMiniApps({ limit: 100 });
     
     const normalizedQuery = query.toLowerCase();
