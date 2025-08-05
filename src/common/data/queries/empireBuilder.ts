@@ -10,14 +10,7 @@ export interface EmpireToken {
 }
 
 const EMPIRE_API_URL = "https://empirebuilder.world/api/empires";
-
-export async function fetchEmpireByAddress(
-  address: Address,
-): Promise<EmpireToken | null> {
-  try {
-    const response = await fetch(`${EMPIRE_API_URL}/${address}`);
-    const json = await response.json();
-
+ 
 export async function fetchEmpireByAddress(
   address: Address,
 ): Promise<EmpireToken | null> {
