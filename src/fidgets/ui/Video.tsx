@@ -17,12 +17,6 @@ export type VideoFidgetSettings = {
   size: number;
 } & FidgetSettingsStyle;
 
-const DISALLOW_URL_PATTERNS = [
-  /javascript:/i,
-  /^data:/i,
-  /<script/i,
-  /%3Cscript/i,
-];
 
 const frameConfig: FidgetProperties = {
   fidgetName: "Video",
@@ -69,7 +63,7 @@ const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
   const isMobile = useIsMobile();
   
   const isValid = isValidUrl(url);
-  const sanitizedUrl = useSafeUrl(url, DISALLOW_URL_PATTERNS);
+  const sanitizedUrl = useSafeUrl(url);
   const transformedUrl = transformUrl(sanitizedUrl || "");
 
   if (!url) {

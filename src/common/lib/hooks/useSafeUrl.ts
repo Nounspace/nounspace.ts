@@ -2,44 +2,32 @@ import { useMemo } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import { isValidUrl } from "@/common/lib/utils/url";
 
-const UNSAFE_URL_PATTERNS = [
-  /javascript:/i,
-  /^data:/i,
-  /<script/i,
-  /%3Cscript/i,
-];
-
-// Ensure the URL does not contain JavaScript or data URIs
-const isSafeUrl = (
-  url: string,
-  disallowPatterns: RegExp[] = UNSAFE_URL_PATTERNS,
-): boolean => {
-  return !disallowPatterns.some((p) => p.test(url));
+/**
+ * Sanitize a URL using DOMPurify by passing it through an anchor tag.
+ * This ensures dangerous protocols like `javascript:` are stripped.
+ */
+const sanitizeUrl = (url: string): string | null => {
+  const sanitizedHtml = DOMPurify.sanitize(`<a href="${url}"></a>`, {
+    ALLOWED_TAGS: ["a"],
+    ALLOWED_ATTR: ["href"],
+    ALLOW_UNKNOWN_PROTOCOLS: false,
+  });
+  const match = sanitizedHtml.match(/href="([^"']*)"/i);
+  return match ? match[1] : null;
 };
 
 // Returns sanitized URL string, or null if invalid or unsafe
-export const useSafeUrl = (
-  url: string,
-  disallowPatterns: RegExp[] = UNSAFE_URL_PATTERNS,
-): string | null => {
+export const useSafeUrl = (url: string): string | null => {
   return useMemo(() => {
     if (!url) return null;
 
-    const sanitized = DOMPurify.sanitize(url, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: [],
-    });
-
-    if (!isValidUrl(sanitized)) {
+    const sanitized = sanitizeUrl(url);
+    if (!sanitized) {
       return null;
     }
 
-    if (!isSafeUrl(sanitized, disallowPatterns)) {
-      console.warn("Unsafe URL detected.");
-      return null;
-    }
-    return sanitized;
-  }, [url, disallowPatterns]);
+    return isValidUrl(sanitized) ? sanitized : null;
+  }, [url]);
 };
 
 export default useSafeUrl;
