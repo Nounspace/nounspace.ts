@@ -73,7 +73,7 @@ export function MobileSettings({
       >
         {items.map((miniApp) => (
           <DraggableMiniApp
-            key={miniApp.id}
+            key={`miniapp-${miniApp.id}`}
             miniApp={miniApp}
             onUpdateMiniApp={onUpdateMiniApp}
             orderNumber={visibleOrderMap[miniApp.id]}

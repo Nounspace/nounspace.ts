@@ -21,6 +21,7 @@ export interface MiniApp {
   order: number
   icon: string
   displayOnMobile: boolean
+  isImmutable?: boolean 
 }
 
 interface MiniAppSettingsProps {
@@ -74,21 +75,39 @@ export function MiniAppSettings({ miniApp, onUpdateMiniApp, dragControls, orderN
       <div className="px-1">
         <div className="flex items-center gap-2 mb-2">
           <div
-            className="cursor-move p-1 hover:bg-gray-100 rounded shrink-0"
-            title="Drag to reorder"
-            onPointerDown={(e) => dragControls?.start(e)}
+            className={`p-1 rounded shrink-0 ${
+              miniApp.isImmutable 
+                ? 'cursor-not-allowed text-gray-300' 
+                : 'cursor-move hover:bg-gray-100 text-gray-400'
+            }`}
+            title={miniApp.isImmutable ? "Cannot be reordered" : "Drag to reorder"}
+            onPointerDown={(e) => {
+              if (!miniApp.isImmutable && dragControls) {
+                dragControls.start(e);
+              }
+            }}
           >
-            <GripVerticalIcon className="h-4 w-4 text-gray-400" />
+            <GripVerticalIcon className="h-4 w-4" />
           </div>
           <span className="text-xs text-gray-400 w-4 text-center">
             {orderNumber ?? "-"}
           </span>
-          <div className="text-sm text-gray-500 truncate flex-1">
+          <div className={`text-sm truncate flex-1 ${
+            miniApp.isImmutable ? 'text-gray-400 italic' : 'text-gray-500'
+          }`}>
             {miniApp.context}
+            {miniApp.isImmutable && <span className="ml-1">(Fixed)</span>}
           </div>
           <button
             onClick={toggleVisibility}
-            className={`p-1.5 rounded-md transition-colors shrink-0 ${miniApp.displayOnMobile ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+            disabled={miniApp.isImmutable}
+            className={`p-1.5 rounded-md transition-colors shrink-0 ${
+              miniApp.isImmutable 
+                ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                : miniApp.displayOnMobile 
+                  ? 'bg-blue-100 text-blue-600 hover:bg-blue-200' 
+                  : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+            }`}
           >
             {miniApp.displayOnMobile ? (
               <EyeIcon className="h-4 w-4" />

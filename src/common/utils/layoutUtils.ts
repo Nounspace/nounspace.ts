@@ -1,23 +1,11 @@
-/**
- * Layout utilities for processing and managing fidget layouts across different views
- */
-
 import { FidgetInstanceData } from "@/common/fidgets";
-import { TabItem } from "@/common/components/organisms/MobileNavbar";
-import { CompleteFidgets } from "@/fidgets";
 
-/**
- * Checks if a fidget is a media-type fidget (text, gallery, video)
- */
+
 export const isMediaFidget = (fidgetType: string): boolean => {
-  // treat different casing and additional fidgets as media types
   const type = fidgetType.toLowerCase();
   return ['text', 'gallery', 'video', 'image'].includes(type);
 };
 
-/**
- * Checks if a fidget is a pinned cast
- */
 export const isPinnedCast = (
   fidgetId: string, 
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData }
@@ -30,14 +18,29 @@ export const isPinnedCast = (
 export const processTabFidgetIds = (
   fidgetIds: string[],
   fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  isMobile: boolean
+  isMobile: boolean,
+  mobileLayoutOrder?: string[]
 ): string[] => {
   if (!isMobile) {
     return fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
   }
   
+  // Use mobile layout order if provided, otherwise fall back to original logic
+  let sortedFidgetIds: string[];
+  
+  if (mobileLayoutOrder && mobileLayoutOrder.length > 0) {
+    sortedFidgetIds = mobileLayoutOrder.filter(id => !!fidgetInstanceDatums[id]);
+    
+    const remainingFidgets = fidgetIds.filter(id => 
+      !mobileLayoutOrder.includes(id) && !!fidgetInstanceDatums[id]
+    );
+    sortedFidgetIds = [...sortedFidgetIds, ...remainingFidgets];
+  } else {
+    sortedFidgetIds = fidgetIds.filter(id => !!fidgetInstanceDatums[id]);
+  }
+  
   // For mobile, filter valid fidgets but maintain order
-  const validFidgets = fidgetIds.filter(id => {
+  const validFidgets = sortedFidgetIds.filter(id => {
     const fidgetData = fidgetInstanceDatums[id];
     if (!fidgetData) return false;
     if (fidgetData.config?.settings?.showOnMobile === false) return false;
@@ -130,62 +133,7 @@ export const getPinnedCastIds = (
   return fidgetIds.filter(id => isPinnedCast(id, fidgetInstanceDatums));
 };
 
-/**
- * Converts processed fidget IDs to TabItems for MobileNavbar
- */
-export const createTabItemsFromFidgetIds = (
-  fidgetIds: string[],
-  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
-  tabNames?: string[]
-): TabItem[] => {
-  return fidgetIds.map((id, index) => {
-    let label = "";
-    let fidgetType = "";
-    
-    // Handle special consolidated tabs
-    if (id === 'consolidated-media') {
-      label = "Media";
-    } else if (id === 'consolidated-pinned') {
-      label = "Pinned";
-    } else {
-      const fidgetData = fidgetInstanceDatums?.[id];
-      if (fidgetData) {
-        // Safely get fidgetType with null check
-        fidgetType = fidgetData.fidgetType || "";
-        // All media fidgets share the generic 'Media' label
-        if (isMediaFidget(fidgetType)) {
-          label = "Media";
-        } else {
-          // If user provided custom display name, use it
-          const customMobileDisplayName = fidgetData.config?.settings?.customMobileDisplayName;
-          if (customMobileDisplayName && typeof customMobileDisplayName === 'string' && customMobileDisplayName.trim() !== '') {
-            label = customMobileDisplayName.trim();
-          } else if (CompleteFidgets?.[fidgetType]?.properties) {
-            const props = CompleteFidgets[fidgetType].properties;
-            label = props.mobileFidgetName || props.fidgetName || "";
-          }
-        }
-      }
-    }
-    
-    // Provide default non-empty label fallback if none is set
-    if (!label || label.trim() === '') {
-      // Try to use tabNames array if available
-      if (tabNames && tabNames[index] && typeof tabNames[index] === 'string' && tabNames[index].trim() !== '') {
-        label = tabNames[index].trim();
-      } else {
-        // Final fallback to ensure all tabs have valid labels
-        label = `Tab ${index + 1}`;
-      }
-    }
-    
-    return {
-      id,
-      label: label.trim(), // Ensure no leading/trailing whitespace
-      fidgetType
-    };
-  });
-};
+
 
 /**
  * Prioritizes feed fidgets by moving them to the beginning of the array
