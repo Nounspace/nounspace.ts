@@ -1,3 +1,5 @@
+"use client";
+
 import React, { forwardRef, useCallback, useState } from "react";
 import styled from "styled-components";
 import { TextareaProps } from "@/common/components/atoms/textarea";

@@ -13,7 +13,12 @@
     "check-types": "tsc",
     "prettier": "prettier src --write",
     "prepare": "husky",
-    "test": "vitest"
+    "test": "vitest",
+    "test:fast": "vitest tests/neynarMiniApp.fast.test.ts tests/miniAppDiscovery.api.fast.test.ts",
+    "test:unit": "vitest tests/neynarMiniApp.unit.test.ts",
+    "test:coverage": "vitest --coverage",
+    "test:watch": "vitest --watch",
+    "test:ci": "vitest tests/neynarMiniApp.fast.test.ts tests/miniAppDiscovery.api.fast.test.ts --run --reporter=verbose"
   },
   "lint-staged": {
     "src/**/*": "prettier --write --ignore-unknown"
