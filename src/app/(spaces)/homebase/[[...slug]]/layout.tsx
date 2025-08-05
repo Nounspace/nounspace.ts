@@ -14,7 +14,7 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const { slug } = params;
+  const { slug } = await params;
   const segments: string[] = Array.isArray(slug) ? slug : [];
   let castHash: string | undefined;
   let username: string | undefined;
@@ -45,7 +45,7 @@ export async function generateMetadata({ params }): Promise<Metadata> {
     });
 
     const castUrl = `${WEBSITE_URL}/homebase/c/${cast.author.username}/${cast.hash}`;
-    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? '';
+    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? "";
 
     const castFrame = {
       version: "next",
@@ -69,10 +69,8 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   } catch (error) {
     console.error("Error generating cast metadata:", error);
     const baseMetadata = getCastMetadataStructure({ hash: castHash, username });
-    const castUrl = username && castHash
-      ? `${WEBSITE_URL}/homebase/c/${username}/${castHash}`
-      : undefined;
-    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? '';
+    const castUrl = username && castHash ? `${WEBSITE_URL}/homebase/c/${username}/${castHash}` : undefined;
+    const ogImageUrl = baseMetadata.openGraph?.images?.[0]?.url ?? "";
     const castFrame = {
       version: "next",
       imageUrl: ogImageUrl,
@@ -91,10 +89,6 @@ export async function generateMetadata({ params }): Promise<Metadata> {
   }
 }
 
-export default function HomebaseSlugLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function HomebaseSlugLayout({ children }: { children: React.ReactNode }) {
   return children;
 }
