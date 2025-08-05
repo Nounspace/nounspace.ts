@@ -10,7 +10,7 @@ import {
   FidgetOptionsResponse 
 } from "@/common/types/fidgetOptions";
 import { CURATED_SITES } from "@/common/data/curated/curatedSites";
-import { MiniAppDiscoveryService } from "./miniAppDiscoveryService";
+import { NeynarMiniAppService } from "./neynarMiniAppService";
 
 // Default categories configuration
 const DEFAULT_CATEGORIES: FidgetCategory[] = [
@@ -69,7 +69,7 @@ export class FidgetOptionsService {
   private miniAppsCache: MiniAppFidgetOption[] | null = null;
   private cacheExpiry: number = 0;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-  private discoveryService: MiniAppDiscoveryService;
+  private neynarService: NeynarMiniAppService;
 
   static getInstance(): FidgetOptionsService {
     if (!FidgetOptionsService.instance) {
@@ -79,7 +79,7 @@ export class FidgetOptionsService {
   }
 
   private constructor() {
-    this.discoveryService = MiniAppDiscoveryService.getInstance();
+    this.neynarService = NeynarMiniAppService.getInstance();
   }
 
   // Get all static fidgets from CompleteFidgets
@@ -179,7 +179,7 @@ export class FidgetOptionsService {
   private async fetchMiniApps(): Promise<MiniAppFidgetOption[]> {
     try {
       // Get all Mini Apps from the discovery service (which now includes Farcaster API)
-      const discoveredApps = await this.discoveryService.toFidgetOptions();
+      const discoveredApps = await this.neynarService.toFidgetOptions();
       
       console.log(`📱 Fetched ${discoveredApps.length} Mini Apps from discovery service`);
       
