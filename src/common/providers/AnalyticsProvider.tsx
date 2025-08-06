@@ -53,11 +53,15 @@ const AnalyticsProviderContent: React.FC<{ children: ReactNode }> = ({
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (writeKey) {
-      segment.load({ writeKey }).catch((e) => {
+    if (!writeKey) {
+      console.warn("NEXT_PUBLIC_SEGMENT_WRITE_KEY is not defined; analytics disabled");
+      return;
+    }
+    segment
+      .load({ writeKey })
+      .catch((e) => {
         console.error(e);
       });
-    }
   }, [writeKey]);
 
   useEffect(() => {
