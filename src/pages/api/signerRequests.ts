@@ -9,7 +9,8 @@ import {
   SIGNED_KEY_REQUEST_VALIDATOR_EIP_712_DOMAIN,
 } from "@farcaster/core";
 import axios from "axios";
-import { isArray, isUndefined } from "lodash";
+import isArray from "lodash/isArray";
+import isUndefined from "lodash/isUndefined";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 /**

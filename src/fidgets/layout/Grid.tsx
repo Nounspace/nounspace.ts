@@ -5,6 +5,8 @@ import React, {
   useState,
   useCallback,
   useRef,
+  ComponentType,
+  ErrorInfo,
 } from "react";
 import dynamic from "next/dynamic";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
@@ -94,14 +96,77 @@ type GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
+// Type definition for the react-grid-layout component
+interface ReactGridLayoutProps {
+  children: React.ReactNode;
+  layout: PlacedGridItem[];
+  cols: number;
+  maxRows: number;
+  rowHeight: number;
+  margin: number[];
+  containerPadding: number[];
+  isDraggable: boolean;
+  isResizable: boolean;
+  isDroppable: boolean;
+  resizeHandles: string[];
+  items: number;
+  droppingItem?: any;
+  onDrop?: (layout: PlacedGridItem[], item: PlacedGridItem, e: DragEvent<HTMLDivElement>) => void;
+  onLayoutChange?: (layout: PlacedGridItem[]) => void;
+  onResizeStart?: () => void;
+  onResizeStop?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+  compactType?: null;
+  preventCollision?: boolean;
+  isBounded?: boolean;
+}
+
+// Loading component for the grid layout
+const GridLayoutLoader: React.FC<{ height: number }> = ({ height }) => (
+  <div 
+    className="flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+    style={{ height: `${height}px` }}
+  >
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+      <p className="text-sm text-gray-500">Loading grid layout...</p>
+    </div>
+  </div>
+);
+
+// Error component for failed grid layout loading
+const GridLayoutError: React.FC<{ height: number; onRetry: () => void }> = ({ height, onRetry }) => (
+  <div 
+    className="flex items-center justify-center bg-red-50 rounded-lg border-2 border-dashed border-red-200"
+    style={{ height: `${height}px` }}
+  >
+    <div className="text-center">
+      <p className="text-sm text-red-600 mb-2">Failed to load grid layout</p>
+      <button 
+        onClick={onRetry}
+        className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  </div>
+);
+
 const ReactGridLayout = dynamic(
   () => import('react-grid-layout').then(mod => {
     const RGL = mod.default;
     const WidthProvider = mod.WidthProvider;
     return WidthProvider(RGL);
+  }).catch(error => {
+    console.error('Failed to load react-grid-layout:', error);
+    throw error;
   }),
-  { ssr: false }
-) as any; // Type assertion to bypass strict typing for dynamic import
+  { 
+    ssr: false,
+    loading: () => <GridLayoutLoader height={600} />,
+  }
+) as ComponentType<ReactGridLayoutProps>;
 
 interface GridlinesProps {
   maxRows: number;
@@ -150,6 +215,33 @@ const Gridlines: React.FC<GridlinesProps> = ({
 
 type GridLayoutProps = LayoutFidgetProps<GridLayoutConfig>;
 
+// Error boundary for React Grid Layout
+class GridErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_: Error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Grid layout error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
+}
+
 const Grid: LayoutFidget<GridLayoutProps> = ({
   fidgetInstanceDatums,
   fidgetTrayContents,
@@ -183,6 +275,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     useState<React.ReactNode>(<></>);
   const [isFidgetPickerModalOpen, setIsFidgetPickerModalOpen] = useState(false);
   const [targetPosition, setTargetPosition] = useState<{ x: number; y: number } | null>(null);
+  const [gridLoadError, setGridLoadError] = useState(false);
+
+  // Reset grid load error when retrying
+  const handleGridRetry = useCallback(() => {
+    setGridLoadError(false);
+    // Force re-render of the dynamic component
+    window.location.reload();
+  }, []);
 
   const memoizedGridDetails = useMemo(
     () =>
@@ -907,45 +1007,62 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           )}
 
           <div className="relative">
-            <ReactGridLayout
-              {...memoizedGridDetails}
-              isDraggable={inEditMode}
-              isResizable={inEditMode}
-              resizeHandles={resizeDirections}
-              layout={layoutConfig.layout}
-              items={layoutConfig.layout.length}
-              rowHeight={rowHeight}
-              isDroppable={true}
-              droppingItem={externalDraggedItem}
-              onDrop={handleDrop}
-              onLayoutChange={saveLayoutConditional}
-              onResizeStart={() => setCurrentlyResizing(true)}
-              onResizeStop={() => setCurrentlyResizing(false)}
-              className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
-              style={{
-                height: rowHeight * memoizedGridDetails.maxRows + "px",
-                transition: "opacity 0.2s ease-in",
-                opacity: itemsVisible ? 1 : 0,
-                position: "relative",
-              }}
-            >
-            {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
-              const fidgetDatum = fidgetInstanceDatums[gridItem.i];
-              const fidgetModule = fidgetDatum
-                ? CompleteFidgets[fidgetDatum.fidgetType]
-                : null;
-              if (!fidgetModule) return null;
-
-              return (
-                <div
-                  key={gridItem.i}
-                  className="grid-item"
+            {gridLoadError ? (
+              <GridLayoutError 
+                height={rowHeight * memoizedGridDetails.maxRows} 
+                onRetry={handleGridRetry}
+              />
+            ) : (
+              <React.Suspense 
+                fallback={<GridLayoutLoader height={rowHeight * memoizedGridDetails.maxRows} />}
+              >
+                <GridErrorBoundary
+                  fallback={
+                    <GridLayoutError 
+                      height={rowHeight * memoizedGridDetails.maxRows} 
+                      onRetry={handleGridRetry}
+                    />
+                  }
+                >
+                  <ReactGridLayout
+                  {...memoizedGridDetails}
+                  isDraggable={inEditMode}
+                  isResizable={inEditMode}
+                  resizeHandles={resizeDirections}
+                  layout={layoutConfig.layout}
+                  items={layoutConfig.layout.length}
+                  rowHeight={rowHeight}
+                  isDroppable={true}
+                  droppingItem={externalDraggedItem}
+                  onDrop={handleDrop}
+                  onLayoutChange={saveLayoutConditional}
+                  onResizeStart={() => setCurrentlyResizing(true)}
+                  onResizeStop={() => setCurrentlyResizing(false)}
+                  className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
                   style={{
-                    borderRadius: memoizedGridDetails.borderRadius,
-                    outline:
-                      selectedFidgetID === gridItem.i
-                        ? "4px solid rgb(2 132 199)" /* sky-600 */
-                        : undefined,
+                    height: rowHeight * memoizedGridDetails.maxRows + "px",
+                    transition: "opacity 0.2s ease-in",
+                    opacity: itemsVisible ? 1 : 0,
+                    position: "relative",
+                  }}
+                >
+                {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
+                  const fidgetDatum = fidgetInstanceDatums[gridItem.i];
+                  const fidgetModule = fidgetDatum
+                    ? CompleteFidgets[fidgetDatum.fidgetType]
+                    : null;
+                  if (!fidgetModule) return null;
+
+                  return (
+                    <div
+                      key={gridItem.i}
+                      className="grid-item"
+                      style={{
+                        borderRadius: memoizedGridDetails.borderRadius,
+                        outline:
+                          selectedFidgetID === gridItem.i
+                            ? "4px solid rgb(2 132 199)" /* sky-600 */
+                            : undefined,
                     outlineOffset:
                       selectedFidgetID === gridItem.i
                         ? -parseInt(theme?.properties?.fidgetBorderWidth ?? "0")
@@ -971,7 +1088,10 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 </div>
               );
             })}
-          </ReactGridLayout>
+            </ReactGridLayout>
+            </GridErrorBoundary>
+            </React.Suspense>
+            )}
           
           <GridOverlay inEditMode={inEditMode} />
           </div>

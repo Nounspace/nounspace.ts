@@ -10,7 +10,8 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import stringify from "fast-json-stable-stringify";
 import { homebaseTabsPath } from "@/constants/supabase";
-import { isArray, isUndefined } from "lodash";
+import isArray from "lodash/isArray";
+import isUndefined from "lodash/isUndefined";
 
 export type UpdateHomebaseResponse = NounspaceResponse<boolean>;
 export type UpdateHomebaseRequest = SignedFile;

@@ -1,6 +1,6 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
-import { isNil } from "lodash";
+import isNil from "lodash/isNil";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function searchCasts(req: NextApiRequest, res: NextApiResponse) {

@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { FaPlus, FaPaintbrush } from "react-icons/fa6";
-import { map } from "lodash";
+import map from "lodash/map";
 import { Reorder, AnimatePresence } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { Address } from "viem";

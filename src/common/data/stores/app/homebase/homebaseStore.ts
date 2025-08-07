@@ -4,7 +4,11 @@ import axios from "axios";
 import { createClient } from "@/common/data/database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
-import { cloneDeep, debounce, isArray, isUndefined, mergeWith } from "lodash";
+import cloneDeep from "lodash/cloneDeep";
+import debounce from "lodash/debounce";
+import isArray from "lodash/isArray";
+import isUndefined from "lodash/isUndefined";
+import mergeWith from "lodash/mergeWith";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "@/common/data/api/backend";
 import {

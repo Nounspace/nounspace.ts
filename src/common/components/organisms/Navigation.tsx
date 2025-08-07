@@ -4,7 +4,7 @@ import { useAppStore, useLogout } from "@/common/data/stores/app";
 import { mergeClasses } from "@/common/lib/utils/mergeClasses";
 import { useFarcasterSigner } from "@/fidgets/farcaster";
 import CreateCast from "@/fidgets/farcaster/components/CreateCast";
-import { first } from "lodash";
+import first from "lodash/first";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useRef, useState } from "react";

@@ -1,4 +1,7 @@
-import { isArray, isNil, isString, isUndefined } from "lodash";
+import isArray from "lodash/isArray";
+import isNil from "lodash/isNil";
+import isString from "lodash/isString";
+import isUndefined from "lodash/isUndefined";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,

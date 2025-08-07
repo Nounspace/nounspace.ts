@@ -5,7 +5,9 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { SignedFile, validateSignable } from "@/common/lib/signedFiles";
 import { authenticatorsPath, preKeysPath } from "@/constants/supabase";
 import stringify from "fast-json-stable-stringify";
-import { indexOf, isUndefined, map } from "lodash";
+import indexOf from "lodash/indexOf";
+import isUndefined from "lodash/isUndefined";
+import map from "lodash/map";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 export type AuthenticatorResponse = NounspaceResponse;
