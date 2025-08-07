@@ -6,8 +6,8 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import dynamic from "next/dynamic";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
-import RGL, { WidthProvider } from "react-grid-layout";
 import {
   LayoutFidget,
   FidgetInstanceData,
@@ -27,10 +27,12 @@ import {
   FidgetWrapper,
   getSettingsWithDefaults,
 } from "@/common/fidgets/FidgetWrapper";
-import { map, reject, fromPairs } from "lodash";
+import map from "lodash/map";
+import reject from "lodash/reject";
+import fromPairs from "lodash/fromPairs";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
 import FidgetSettingsEditor from "@/common/components/organisms/FidgetSettingsEditor";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { analytics } from "@/common/providers/AnalyticsProvider";
 import { SpaceConfig } from "../../app/(spaces)/Space";
@@ -92,7 +94,14 @@ type GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
-const ReactGridLayout = WidthProvider(RGL);
+const ReactGridLayout = dynamic(
+  () => import('react-grid-layout').then(mod => {
+    const RGL = mod.default;
+    const WidthProvider = mod.WidthProvider;
+    return WidthProvider(RGL);
+  }),
+  { ssr: false }
+) as any; // Type assertion to bypass strict typing for dynamic import
 
 interface GridlinesProps {
   maxRows: number;
