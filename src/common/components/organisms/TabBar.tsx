@@ -10,7 +10,6 @@ import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
@@ -66,7 +65,6 @@ function TabBar({
   isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();
-  const { mobilePreview } = useMobilePreview();
   const { setEditMode } = useSidebarContext();
 
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
