@@ -13,7 +13,7 @@ const cspHeader = `
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
     img-src 'self' blob: data: https:;
-    font-src 'self' https: data: https://fonts.googleapis.com https://fonts.gstatic.com;
+    font-src 'self' https: data: blob: https://fonts.googleapis.com https://fonts.gstatic.com;
     object-src 'none';
     base-uri 'self';
     form-action 'self';
