@@ -29,8 +29,6 @@ export const getUserMetadata = async (
 export const getTabList = async (fid: number): Promise<Tab[]> => {
 
   try {
-    console.log("Getting tablist for fid:", fid);
-    
     // Add timestamp to bust cache
     const { data: registrations, error: regError } = await createSupabaseServerClient()
       .from("spaceRegistrations")
@@ -44,13 +42,11 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     }
     
     if (!registrations || registrations.length === 0) {
-      console.log("No space registration found for fid:", fid);
       return [];
     }
 
     // Get the first registration (there should only be one per fid)
     const registration = registrations[0];
-    console.log("Found space registration:", registration);
 
     try {
       // Get the tab order file directly from storage
@@ -74,7 +70,6 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
         updatedAt: tabOrderJson.timestamp || new Date().toISOString(),
       };
 
-      console.log("Successfully retrieved tab with order:", enhancedTab);
       return [enhancedTab];
     } catch (e) {
       console.warn(`Error fetching tab order for space ${registration.spaceId}:`, e);
