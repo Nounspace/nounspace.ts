@@ -35,7 +35,8 @@ const cspHeader = `
       https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3
       https://auth.privy.io/api/v1/analytics_events
       https://cdn.segment.com
-      https://api.segment.io;
+      https://api.segment.io
+      https://api.imgbb.com;
 
     upgrade-insecure-requests;
 `;
