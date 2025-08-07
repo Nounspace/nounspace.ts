@@ -2,7 +2,7 @@
 import React from "react";
 import { FaPlus, FaPaintbrush } from "react-icons/fa6";
 import { map } from "lodash";
-import { Reorder, AnimatePresence } from "framer-motion";
+import { Reorder } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { Address } from "viem";
 import { useAppStore } from "@/common/data/stores/app";
@@ -10,7 +10,6 @@ import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
@@ -66,7 +65,6 @@ function TabBar({
   isEditable
 }: TabBarProps) {
   const isMobile = useIsMobile();
-  const { mobilePreview } = useMobilePreview();
   const { setEditMode } = useSidebarContext();
 
   const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
@@ -75,17 +73,19 @@ function TabBar({
     getIsInitializing: state.getIsInitializing,
   }));
 
-  function generateNewTabName() {
+  function generateNewTabName(): string {
     const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
-    return generateUniqueTabName(base);
+    const uniqueName = generateUniqueTabName(base);
+    return uniqueName || `Tab ${Date.now()}`; // Fallback to timestamp if unique name fails
   }
 
   function generateUniqueTabName(tabName: string) {
     // First validate the base name
     const validationError = validateTabName(tabName);
     if (validationError) {
-      throw new Error(validationError);
+      console.error("Invalid base tab name:", tabName, validationError);
+      return null; // Return null instead of throwing
     }
 
     let iter = 1;
@@ -95,7 +95,8 @@ function TabBar({
       // Validate each generated name
       const validationError = validateTabName(uniqueName);
       if (validationError) {
-        throw new Error(validationError);
+        console.error("Could not generate unique name:", uniqueName, validationError);
+        return null; // Return null instead of throwing
       }
       iter += 1;
     }
@@ -103,67 +104,101 @@ function TabBar({
   }
 
   async function handleCreateTab(tabName: string) {
-    // Validate the tab name before proceeding
-    const validationError = validateTabName(tabName);
-    if (validationError) {
-      throw new Error(validationError);
-    }
-
-    // Start the tab creation process but don't await it
-    const creationPromise = createTab(tabName);
-
-    // Switch to the new tab immediately
-    switchTabTo(tabName);
-
-    // Handle the remote operations in the background
-    creationPromise.then(result => {
-      if (result?.tabName) {
-        // If the tab name changed during creation, update the URL
-        if (result.tabName !== tabName) {
-          switchTabTo(result.tabName);
-        }
+    try {
+      // Basic validation
+      const validationError = validateTabName(tabName);
+      if (validationError) {
+        console.error("Tab creation validation failed:", validationError);
+        return;
       }
-      // Commit the tab order in the background
-      commitTabOrder();
-    }).catch(error => {
-      console.error("Failed to create tab:", error);
-      // Optionally show an error message to the user
-    });
+
+      // Check if tab already exists
+      if (tabList.includes(tabName)) {
+        switchTabTo(tabName);
+        return;
+      }
+
+      // Simple create tab
+      const result = await createTab(tabName);
+      
+      if (result?.tabName) {
+        switchTabTo(result.tabName);
+      } else {
+        switchTabTo(tabName);
+      }
+      
+      // Commit in background
+      setTimeout(() => {
+        commitTabOrder();
+      }, 100);
+      
+    } catch (error) {
+      console.error("Error in handleCreateTab:", error);
+    }
   }
 
   async function handleDeleteTab(tabName: string) {
-    // Get the next tab before any state changes
-    const nextTab = nextClosestTab(tabName);
-
-    try {
-      // First update the tab order and delete the tab
-      const newOrder = tabList.filter((name) => name !== tabName);
-      await updateTabOrder(newOrder);
-      await deleteTab(tabName);
-      await commitTabOrder();
-
-      switchTabTo(nextTab, false);
-    } catch (error) {
-      console.error("Failed to delete tab:", error);
-      // Optionally add error handling UI here
+    // Simple and safe delete function
+    if (!isEditableTab(tabName)) {
+      return;
     }
+
+    if (tabList.length <= 1) {
+      return;
+    }
+
+    const nextTab = nextClosestTab(tabName);
+    
+    // Switch to next tab first
+    switchTabTo(nextTab);
+    
+    // Delete the tab
+    deleteTab(tabName);
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
-    // Validate the new name before proceeding
-    const validationError = validateTabName(newName);
-    if (validationError) {
-      throw new Error(validationError);
-    }
+    try {
+      // Basic validation
+      if (!newName || typeof newName !== 'string') {
+        return;
+      }
 
-    const uniqueName = generateUniqueTabName(newName);
-    await renameTab(tabName, uniqueName);
-    updateTabOrder(
-      tabList.map((name) => (name === tabName ? uniqueName : name)),
-    );
-    await commitTab(uniqueName);
-    await commitTabOrder();
-    switchTabTo(uniqueName);
+      const sanitizedName = newName.trim();
+      if (!sanitizedName || sanitizedName === tabName) {
+        return;
+      }
+
+      // Validate the new name
+      const validationError = validateTabName(sanitizedName);
+      if (validationError) {
+        console.error("Tab name validation failed:", validationError);
+        return;
+      }
+
+      const uniqueName = generateUniqueTabName(sanitizedName);
+      if (!uniqueName || uniqueName === tabName) {
+        return;
+      }
+      
+      // Simple rename without complex rollback logic
+      renameTab(tabName, uniqueName);
+      
+      // Update tab order
+      const newOrder = tabList.map((name) => (name === tabName ? uniqueName : name));
+      updateTabOrder(newOrder);
+      
+      // Switch to the new tab name
+      switchTabTo(uniqueName);
+      
+      // Commit in background
+      setTimeout(() => {
+        commitTab(uniqueName);
+        commitTabOrder();
+      }, 100);
+      
+    } catch (error) {
+      console.error("Error in handleRenameTab:", error);
+    }
   }
 
   function nextClosestTab(tabName: string) {
@@ -190,10 +225,15 @@ function TabBar({
       e.preventDefault();
     }
 
+    // Don't do anything if it's already the current tab
+    if (currentTab === tabName) {
+      return;
+    }
+
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
 
     switchTabTo(tabName, true);
-  }, [switchTabTo]);
+  }, [switchTabTo, currentTab]);
 
   const isLoggedIn = getIsLoggedIn();
 
@@ -218,26 +258,24 @@ function TabBar({
                 className="flex flex-nowrap gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
               >
-                <AnimatePresence initial={false}>
-                  {map(
-                    inHomebase ? ["Feed", ...tabList] : tabList,
-                    (tabName: string) => (
-                      <Tab
-                        key={tabName}
-                        getSpacePageUrl={getSpacePageUrl}
-                        tabName={tabName}
-                        inEditMode={inEditMode}
-                        isSelected={currentTab === tabName}
-                        onClick={() => handleTabClick(tabName)}
-                        removeable={isEditableTab(tabName)}
-                        draggable={inEditMode}
-                        renameable={isEditableTab(tabName)}
-                        onRemove={() => handleDeleteTab(tabName)}
-                        renameTab={handleRenameTab}
-                      />
-                    )
-                  )}
-                </AnimatePresence>
+                {map(
+                  inHomebase ? ["Feed", ...tabList] : tabList,
+                  (tabName: string) => (
+                    <Tab
+                      key={`tab-${tabName}`}
+                      getSpacePageUrl={getSpacePageUrl}
+                      tabName={tabName}
+                      inEditMode={inEditMode}
+                      isSelected={currentTab === tabName}
+                      onClick={() => handleTabClick(tabName)}
+                      removeable={isEditableTab(tabName)}
+                      draggable={inEditMode}
+                      renameable={isEditableTab(tabName)}
+                      onRemove={() => handleDeleteTab(tabName)}
+                      renameTab={handleRenameTab}
+                    />
+                  )
+                )}
               </Reorder.Group>
             </div>
           </div>
