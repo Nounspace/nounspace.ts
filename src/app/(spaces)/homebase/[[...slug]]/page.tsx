@@ -21,7 +21,6 @@ const HomebaseDynamicPage = () => {
     }
   }
 
-  console.log(`HomebaseDynamicPage: Rendering tab ${tabName} with castHash: ${castHash || 'none'}`);
   return <PrivateSpace key={tabName} tabName={tabName} castHash={castHash} />;
 };
 
