@@ -1,17 +1,64 @@
 const fetch = require('node-fetch');
 const { load } = require('cheerio');
 
-module.exports = async function handler(req, res) {
-  const { url } = req.query;
+function resolveTargetUrl(req) {
+  if (req.query && req.query.url) {
+    return decodeURIComponent(req.query.url);
+  }
 
-  if (!url) {
+  try {
+    const original = req.url;
+    const prefix = '/api/proxy/';
+    const i = original.indexOf(prefix);
+    if (i !== -1) {
+      const tail = original.slice(i + prefix.length);
+      if (tail && !tail.startsWith('?')) {
+        const qIndex = tail.indexOf('?');
+        const pathPart = qIndex === -1 ? tail : tail.slice(0, qIndex);
+        const searchPart = qIndex === -1 ? '' : tail.slice(qIndex);
+
+        const parts = pathPart.split('/');
+        const scheme = parts.shift();
+        const host = parts.shift();
+        if ((scheme === 'http' || scheme === 'https') && host) {
+          const pathname = '/' + parts.join('/');
+          return `${scheme}://${host}${pathname}${searchPart}`;
+        }
+      }
+    }
+  } catch {}
+
+  try {
+    const referer = req.headers.referer;
+    if (referer) {
+      const ref = new URL(referer);
+      const parentEncoded = ref.searchParams.get('url');
+      if (parentEncoded) {
+        const parent = new URL(decodeURIComponent(parentEncoded));
+        const current = new URL(
+          req.url,
+          `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
+        );
+        current.searchParams.forEach((v, k) => {
+          if (k !== 'url') parent.searchParams.append(k, v);
+        });
+        return parent.toString();
+      }
+    }
+  } catch {}
+
+  return null;
+}
+
+module.exports = async function handler(req, res) {
+  const targetUrl = resolveTargetUrl(req);
+
+  if (!targetUrl) {
     res.status(400).json({ error: "Missing 'url' query parameter" });
     return;
   }
 
   try {
-    const targetUrl = decodeURIComponent(url);
-
     let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       body = await new Promise((resolve, reject) => {
@@ -81,7 +128,12 @@ function rewriteHtml(html, targetUrl, req, load) {
   const $ = load(html, { decodeEntities: false });
 
   const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
-  const proxyBase = `${proxyOrigin}/api/proxy?url=`;
+
+  function toProxy(abs) {
+    const u = new URL(abs);
+    const proto = u.protocol.replace(':', '');
+    return `${proxyOrigin}/api/proxy/${proto}/${u.host}${u.pathname}${u.search}${u.hash}`;
+  }
 
   const rewriteAttr = (index, el, attr) => {
     const value = $(el).attr(attr);
@@ -90,7 +142,7 @@ function rewriteHtml(html, targetUrl, req, load) {
     }
     try {
       const abs = new URL(value, targetUrl).toString();
-      $(el).attr(attr, `${proxyBase}${encodeURIComponent(abs)}`);
+      $(el).attr(attr, toProxy(abs));
     } catch {
       /* ignore */
     }
@@ -113,7 +165,7 @@ function rewriteHtml(html, targetUrl, req, load) {
         }
         try {
           const abs = new URL(u, targetUrl).toString();
-          return `${proxyBase}${encodeURIComponent(abs)}${descriptor ? ` ${descriptor}` : ''}`;
+          return `${toProxy(abs)}${descriptor ? ` ${descriptor}` : ''}`;
         } catch {
           return part;
         }
@@ -122,7 +174,15 @@ function rewriteHtml(html, targetUrl, req, load) {
     $(el).attr('srcset', rewritten);
   });
 
-  const scriptContent = `(function(){const p=${JSON.stringify(proxyBase)};function r(u){try{const a=new URL(u, window.location.href);return p+encodeURIComponent(a.toString());}catch(e){return u;}}document.addEventListener('click',e=>{const t=e.target.closest('a');if(t&&t.href){t.href=r(t.href);}});document.addEventListener('submit',e=>{const f=e.target;if(f&&f.action){f.action=r(f.action);}});const ofetch=window.fetch;window.fetch=function(i,o){if(typeof i==='string'){i=r(i);}else if(i instanceof Request){i=new Request(r(i.url),i);}return ofetch(i,o);};const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){return oopen.call(this,m,r(u),...Array.prototype.slice.call(arguments,2));};})();`;
+  const scriptContent = `(function(){
+  const PROXY_ORIGIN=${JSON.stringify(proxyOrigin)};
+  const BASE=new URL(${JSON.stringify(targetUrl)});
+  function toProxy(u){const abs=new URL(u,BASE);return PROXY_ORIGIN+'/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}
+  document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(a){try{a.href=toProxy(a.getAttribute('href'));}catch{}}},true);
+  document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();window.location.href=toProxy(actionAbs.toString());}else{f.action=toProxy(actionAbs.toString());}}catch{}},true);
+  const ofetch=window.fetch;window.fetch=function(i,o){let url=typeof i==='string'?i:i&&i.url;if(url){try{const abs=new URL(url,BASE).toString();const proxied=toProxy(abs);return typeof i==='string'?ofetch(proxied,o):ofetch(new Request(proxied,i),o);}catch{}}return ofetch(i,o);};
+  const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{u=toProxy(new URL(u,BASE).toString());}catch{}return oopen.call(this,m,u,...r);};
+})();`;
 
   $('body').append(`<script>${scriptContent}</script>`);
 
