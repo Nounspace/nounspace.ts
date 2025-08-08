@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import isNil from 'lodash/isNil';
 import { Address } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
 

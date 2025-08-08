@@ -1,7 +1,8 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import { FeedType } from "@neynar/nodejs-sdk/build/api";
 import axios, { AxiosRequestConfig, isAxiosError } from "axios";
-import { isArray, isNil } from "lodash";
+import isArray from "lodash/isArray";
+import isNil from "lodash/isNil";
 import { NextApiRequest, NextApiResponse } from "next/types";
 
 async function loadCasts(req: NextApiRequest, res: NextApiResponse) {

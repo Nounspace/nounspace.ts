@@ -6,7 +6,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import neynar from "@/common/data/api/neynar";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import moment from "moment";
-import { first, isArray, isUndefined, map } from "lodash";
+import first from "lodash/first";
+import isArray from "lodash/isArray";
+import isUndefined from "lodash/isUndefined";
+import map from "lodash/map";
 
 export type FidLinkToIdentityRequest = {
   fid: number;

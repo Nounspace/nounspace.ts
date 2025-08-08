@@ -3,7 +3,7 @@ import requestHandler from "@/common/data/api/requestHandler";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import { NotificationsResponse } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
-import { isString } from "lodash";
+import isString from "lodash/isString";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { z, ZodSchema } from "zod";
 

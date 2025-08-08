@@ -6,7 +6,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import neynar from "@/common/data/api/neynar";
 import { User } from "@neynar/nodejs-sdk/build/api";
-import { flatMap } from "lodash";
+import flatMap from "lodash/flatMap";
 
 const QuerySchema = z.object({
   // q is a string of max length 20, or an address

@@ -7,7 +7,10 @@ import {
   Signable,
   validateSignable,
 } from "@/common/lib/signedFiles";
-import { isArray, isString, isNull, first } from "lodash";
+import isArray from "lodash/isArray";
+import isString from "lodash/isString";
+import isNull from "lodash/isNull";
+import first from "lodash/first";
 import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./tabs/[tabId]";
 import stringify from "fast-json-stable-stringify";
