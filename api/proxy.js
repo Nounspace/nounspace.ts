@@ -9,6 +9,7 @@ export default async function handler(req, res) {
   try {
     const { default: fetch } = await import('node-fetch');
     const targetUrl = decodeURIComponent(url);
+
     let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       body = await new Promise((resolve, reject) => {
@@ -19,15 +20,22 @@ export default async function handler(req, res) {
       });
     }
 
+    const fetchHeaders = { ...req.headers };
+    delete fetchHeaders.host;
+    delete fetchHeaders['content-length'];
+
     const response = await fetch(targetUrl, {
       method: req.method,
-      headers: { ...req.headers, host: new URL(targetUrl).host },
+      headers: fetchHeaders,
       body,
+      redirect: 'follow',
+      compress: false,
     });
 
     res.status(response.status);
     response.headers.forEach((value, key) => {
-      if (['x-frame-options', 'content-security-policy'].includes(key.toLowerCase())) {
+      const lower = key.toLowerCase();
+      if (['x-frame-options', 'content-security-policy'].includes(lower)) {
         return;
       }
       res.setHeader(key, value);
