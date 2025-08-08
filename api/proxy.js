@@ -25,19 +25,24 @@ module.exports = async function handler(req, res) {
     const fetchHeaders = { ...req.headers };
     delete fetchHeaders.host;
     delete fetchHeaders['content-length'];
+    delete fetchHeaders['accept-encoding'];
 
     const response = await fetch(targetUrl, {
       method: req.method,
       headers: fetchHeaders,
       body,
       redirect: 'follow',
-      compress: false,
     });
+
+    const contentType = response.headers.get('content-type') || '';
+    console.log('Proxy fetch:', targetUrl, response.status, contentType);
 
     res.status(response.status);
     response.headers.forEach((value, key) => {
       const lower = key.toLowerCase();
-      if (['x-frame-options', 'content-security-policy'].includes(lower)) {
+      if (
+        ['x-frame-options', 'content-security-policy', 'content-length', 'content-encoding', 'transfer-encoding'].includes(lower)
+      ) {
         return;
       }
       res.setHeader(key, value);
@@ -53,15 +58,15 @@ module.exports = async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=3600');
     }
 
-    const contentType = response.headers.get('content-type') || '';
-
     if (contentType.includes('text/html')) {
       const html = await response.text();
       const rewritten = rewriteHtml(html, targetUrl, req, load);
-      res.setHeader('Content-Type', 'text/html');
-      res.setHeader('Content-Length', Buffer.byteLength(rewritten));
+      res.setHeader('Content-Type', contentType || 'text/html');
       res.end(rewritten);
     } else if (response.body) {
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
       response.body.pipe(res);
     } else {
       res.end();
