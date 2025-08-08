@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* eslint-disable @typescript-eslint/no-var-requires */
 const fetch = (...args) =>
   import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const { load } = require('cheerio');
@@ -27,7 +29,7 @@ function resolveTargetUrl(req) {
         }
       }
     }
-  } catch {}
+  } catch { /* empty */ }
 
   try {
     const referer = req.headers.referer;
@@ -46,7 +48,7 @@ function resolveTargetUrl(req) {
         return parent.toString();
       }
     }
-  } catch {}
+  } catch { /* empty */ }
 
   return null;
 }
@@ -83,7 +85,7 @@ module.exports = async function handler(req, res) {
     try {
       fetchHeaders.origin = `${base.protocol}//${base.host}`;
       fetchHeaders.referer = targetUrl;
-    } catch {}
+    } catch { /* empty */ }
     ['sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest'].forEach((h) =>
       delete fetchHeaders[h]
     );
@@ -203,7 +205,7 @@ module.exports = async function handler(req, res) {
 
     if (ct.includes('text/css')) {
       let css = await response.text();
-      css = css.replace(/url\(\s*(['"]?)\/(?!api\/proxy\/)([^'"\)]+)\1\s*\)/g, (m, q, p) => `url(${q}${prefix}/${p}${q})`);
+      css = css.replace(/url\(\s*(['"]?)\/(?!api\/proxy\/)([^'")]+)\1\s*\)/g, (m, q, p) => `url(${q}${prefix}/${p}${q})`);
       res.setHeader('Content-Type', contentType || 'text/css');
       res.end(css);
       return;
@@ -211,8 +213,8 @@ module.exports = async function handler(req, res) {
 
     if (ct.includes('javascript') || ct.includes('ecmascript') || ct.includes('module')) {
       let js = await response.text();
-      js = js.replace(/import\(\s*(['"])\/(?!api\/proxy\/)([^'"\)]+)\1\s*\)/g, (m, q, p) => `import(${q}${prefix}/${p}${q})`);
-      js = js.replace(/new\s+URL\(\s*(['"])\/(?!api\/proxy\/)([^'"\)]+)\1\s*,\s*import\.meta\.url\s*\)/g, (m, q, p) => `new URL(${q}${prefix}/${p}${q}, import.meta.url)`);
+      js = js.replace(/import\(\s*(['"])\/(?!api\/proxy\/)([^'")]+)\1\s*\)/g, (m, q, p) => `import(${q}${prefix}/${p}${q})`);
+      js = js.replace(/new\s+URL\(\s*(['"])\/(?!api\/proxy\/)([^'")]+)\1\s*,\s*import\.meta\.url\s*\)/g, (m, q, p) => `new URL(${q}${prefix}/${p}${q}, import.meta.url)`);
       js = js.replace(/(__webpack_require__\.p\s*=\s*)(['"])\/(?!api\/proxy\/)/g, (m, pre, q) => `${pre}${q}${prefix}/`);
       js = js.replace(/(['"])\/(?!api\/proxy\/)(_next|assets|api)\/([^'"]+)\1/g, (m, q, bucket, rest) => `${q}${prefix}/${bucket}/${rest}${q}`);
       res.setHeader('Content-Type', contentType || 'application/javascript');
@@ -241,7 +243,7 @@ function rewriteHtml(html, targetUrl, req, load) {
 
   let baseHref = $('base[href]').attr('href');
   if (baseHref) {
-    try { targetUrl = new URL(baseHref, targetUrl).toString(); } catch {}
+    try { targetUrl = new URL(baseHref, targetUrl).toString(); } catch { /* empty */ }
   }
 
   $('link[integrity]').removeAttr('integrity');
@@ -322,3 +324,6 @@ function rewriteHtml(html, targetUrl, req, load) {
 
   return $.html({ decodeEntities: false });
 }
+
+module.exports.config = { api: { bodyParser: false } };
+
