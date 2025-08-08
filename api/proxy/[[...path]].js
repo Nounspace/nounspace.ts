@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+const fetch = (...args) =>
+  import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const { load } = require('cheerio');
 
 function resolveTargetUrl(req) {
@@ -58,6 +59,11 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  if (targetUrl.startsWith('ws:') || targetUrl.startsWith('wss:')) {
+    res.status(400).json({ error: 'WebSocket protocols not supported' });
+    return;
+  }
+
   try {
     let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
@@ -80,8 +86,11 @@ module.exports = async function handler(req, res) {
       body,
       redirect: 'follow',
     });
-
     const contentType = response.headers.get('content-type') || '';
+    const ct = contentType.toLowerCase();
+    const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
+    const base = new URL(targetUrl);
+    const prefix = `${proxyOrigin}/api/proxy/${base.protocol.replace(':', '')}/${base.host}`;
     console.log('Proxy fetch:', targetUrl, response.status, contentType);
 
     res.status(response.status);
@@ -105,12 +114,32 @@ module.exports = async function handler(req, res) {
       res.setHeader('Cache-Control', 'public, max-age=3600');
     }
 
-    if (contentType.includes('text/html')) {
+    if (ct.includes('text/html')) {
       const html = await response.text();
       const rewritten = rewriteHtml(html, targetUrl, req, load);
       res.setHeader('Content-Type', contentType || 'text/html');
       res.end(rewritten);
-    } else if (response.body) {
+      return;
+    }
+
+    if (ct.includes('text/css')) {
+      let css = await response.text();
+      css = css.replace(/url\(\s*(['"]?)\/(?!api\/proxy\/)([^'"\)]+)\1\s*\)/g, (m, q, p) => `url(${q}${prefix}/${p}${q})`);
+      res.setHeader('Content-Type', contentType || 'text/css');
+      res.end(css);
+      return;
+    }
+
+    if (ct.includes('javascript') || ct.includes('ecmascript') || ct.includes('module')) {
+      let js = await response.text();
+      js = js.replace(/import\(\s*(['"])\/(?!api\/proxy\/)([^'"\)]+)\1\s*\)/g, (m, q, p) => `import(${q}${prefix}/${p}${q})`);
+      js = js.replace(/(['"])\/(?!api\/proxy\/)(_next|assets|api)\/([^'"]+)\1/g, (m, q, bucket, rest) => `${q}${prefix}/${bucket}/${rest}${q}`);
+      res.setHeader('Content-Type', contentType || 'application/javascript');
+      res.end(js);
+      return;
+    }
+
+    if (response.body) {
       if (contentType) {
         res.setHeader('Content-Type', contentType);
       }
@@ -175,16 +204,23 @@ function rewriteHtml(html, targetUrl, req, load) {
   });
 
   const scriptContent = `(function(){
-  const PROXY_ORIGIN=${JSON.stringify(proxyOrigin)};
+  const PROXY_ORIGIN=location.origin;
   const BASE=new URL(${JSON.stringify(targetUrl)});
-  function toProxy(u){const abs=new URL(u,BASE);return PROXY_ORIGIN+'/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}
+  const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
+  function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
+  function toProxy(u){try{if(isAlreadyProxied(u))return typeof u==='string'?u:u.toString();let abs=new URL(u,BASE);if(abs.origin===PROXY_ORIGIN&&!abs.pathname.startsWith('/api/proxy/')){abs=new URL(abs.pathname+abs.search+abs.hash,BASE);}return PROXY_PREFIX+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}
   document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(a){try{a.href=toProxy(a.getAttribute('href'));}catch{}}},true);
   document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();window.location.href=toProxy(actionAbs.toString());}else{f.action=toProxy(actionAbs.toString());}}catch{}},true);
-  const ofetch=window.fetch;window.fetch=function(i,o){let url=typeof i==='string'?i:i&&i.url;if(url){try{const abs=new URL(url,BASE).toString();const proxied=toProxy(abs);return typeof i==='string'?ofetch(proxied,o):ofetch(new Request(proxied,i),o);}catch{}}return ofetch(i,o);};
+  const ofetch=window.fetch;window.fetch=function(i,o){try{let url=typeof i==='string'?i:i&&i.url;if(url){const proxied=toProxy(url);return typeof i==='string'?ofetch(proxied,o):ofetch(new Request(proxied,i),o);}}catch{}return ofetch(i,o);};
   const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{u=toProxy(new URL(u,BASE).toString());}catch{}return oopen.call(this,m,u,...r);};
+  if(navigator.sendBeacon){const obeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,data){try{u=toProxy(new URL(u,BASE).toString());}catch{}return obeacon(u,data);};}
+  if(window.EventSource){const OES=window.EventSource;window.EventSource=function(u,conf){try{u=toProxy(new URL(u,BASE).toString());}catch{}return new OES(u,conf);};window.EventSource.prototype=OES.prototype;}
+  if(window.Worker){const OW=window.Worker;window.Worker=function(u,opts){try{u=toProxy(new URL(u,BASE).toString());}catch{}return new OW(u,opts);};window.Worker.prototype=OW.prototype;}
+  if(window.SharedWorker){const OSW=window.SharedWorker;window.SharedWorker=function(u,opts){try{u=toProxy(new URL(u,BASE).toString());}catch{}return new OSW(u,opts);};window.SharedWorker.prototype=OSW.prototype;}
+  if(navigator.serviceWorker&&navigator.serviceWorker.register){navigator.serviceWorker.register=function(){return Promise.resolve(undefined);};}
 })();`;
 
-  $('body').append(`<script>${scriptContent}</script>`);
+  $('head').prepend(`<script>${scriptContent}</script>`);
 
   return $.html({ decodeEntities: false });
 }
