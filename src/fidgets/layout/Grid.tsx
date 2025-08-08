@@ -1,13 +1,4 @@
-import React, {
-  DragEvent,
-  useEffect,
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-  ComponentType,
-  ErrorInfo,
-} from "react";
+import React, { DragEvent, useEffect, useMemo, useState, useCallback, useRef, ComponentType, ErrorInfo } from "react";
 import dynamic from "next/dynamic";
 import useWindowSize from "@/common/lib/hooks/useWindowSize";
 import {
@@ -25,10 +16,7 @@ import { CompleteFidgets } from "..";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import EditorPanel from "@/common/components/organisms/EditorPanel";
-import {
-  FidgetWrapper,
-  getSettingsWithDefaults,
-} from "@/common/fidgets/FidgetWrapper";
+import { FidgetWrapper, getSettingsWithDefaults } from "@/common/fidgets/FidgetWrapper";
 import map from "lodash/map";
 import reject from "lodash/reject";
 import fromPairs from "lodash/fromPairs";
@@ -70,12 +58,7 @@ export interface PlacedGridItem extends GridItem {
   isBounded?: boolean;
 }
 
-const makeGridDetails = (
-  hasProfile: boolean,
-  hasFeed: boolean,
-  spacing: number,
-  borderRadius: string,
-) => ({
+const makeGridDetails = (hasProfile: boolean, hasFeed: boolean, spacing: number, borderRadius: string) => ({
   items: 0,
   isDroppable: true,
   isBounded: false,
@@ -124,7 +107,7 @@ interface ReactGridLayoutProps {
 
 // Loading component for the grid layout
 const GridLayoutLoader: React.FC<{ height: number }> = ({ height }) => (
-  <div 
+  <div
     className="flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
     style={{ height: `${height}px` }}
   >
@@ -137,13 +120,13 @@ const GridLayoutLoader: React.FC<{ height: number }> = ({ height }) => (
 
 // Error component for failed grid layout loading
 const GridLayoutError: React.FC<{ height: number; onRetry: () => void }> = ({ height, onRetry }) => (
-  <div 
+  <div
     className="flex items-center justify-center bg-red-50 rounded-lg border-2 border-dashed border-red-200"
     style={{ height: `${height}px` }}
   >
     <div className="text-center">
       <p className="text-sm text-red-600 mb-2">Failed to load grid layout</p>
-      <button 
+      <button
         onClick={onRetry}
         className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
       >
@@ -154,15 +137,18 @@ const GridLayoutError: React.FC<{ height: number; onRetry: () => void }> = ({ he
 );
 
 const ReactGridLayout = dynamic(
-  () => import('react-grid-layout').then(mod => {
-    const RGL = mod.default;
-    const WidthProvider = mod.WidthProvider;
-    return WidthProvider(RGL);
-  }).catch(error => {
-    console.error('Failed to load react-grid-layout:', error);
-    throw error;
-  }),
-  { 
+  () =>
+    import("react-grid-layout")
+      .then((mod) => {
+        const RGL = mod.default;
+        const WidthProvider = RGL.WidthProvider;
+        return WidthProvider(RGL);
+      })
+      .catch((error) => {
+        console.error("Failed to load react-grid-layout:", error);
+        throw error;
+      }),
+  {
     ssr: false,
     loading: () => <GridLayoutLoader height={600} />,
   }
@@ -177,14 +163,7 @@ interface GridlinesProps {
   borderRadius: string;
 }
 
-const Gridlines: React.FC<GridlinesProps> = ({
-  maxRows,
-  cols,
-  rowHeight,
-  margin,
-  containerPadding,
-  borderRadius,
-}) => {
+const Gridlines: React.FC<GridlinesProps> = ({ maxRows, cols, rowHeight, margin, containerPadding, borderRadius }) => {
   return (
     <div
       className="absolute inset-0 grid-overlap w-full h-full opacity-50 pointer-events-none z-0"
@@ -230,7 +209,7 @@ class GridErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Grid layout error:', error, errorInfo);
+    console.error("Grid layout error:", error, errorInfo);
   }
 
   render() {
@@ -257,9 +236,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   fid,
 }) => {
   // State to handle selecting, dragging, and Grid edit functionality
-  const [element, setElement] = useState<HTMLDivElement | null>(
-    portalRef.current,
-  );
+  const [element, setElement] = useState<HTMLDivElement | null>(portalRef.current);
   useEffect(() => {
     setElement(portalRef.current);
   }, []);
@@ -271,8 +248,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [selectedFidgetID, setSelectedFidgetID] = useState("");
   const [currentlyDragging, setCurrentlyDragging] = useState(false);
   const [currentlyResizing, setCurrentlyResizing] = useState(false);
-  const [currentFidgetSettings, setCurrentFidgetSettings] =
-    useState<React.ReactNode>(<></>);
+  const [currentFidgetSettings, setCurrentFidgetSettings] = useState<React.ReactNode>(<></>);
   const [isFidgetPickerModalOpen, setIsFidgetPickerModalOpen] = useState(false);
   const [targetPosition, setTargetPosition] = useState<{ x: number; y: number } | null>(null);
   const [gridLoadError, setGridLoadError] = useState(false);
@@ -290,58 +266,51 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         hasProfile,
         hasFeed,
         parseInt(theme?.properties?.gridSpacing ?? "16"),
-        theme?.properties?.fidgetBorderRadius ?? "12px",
+        theme?.properties?.fidgetBorderRadius ?? "12px"
       ),
-    [
-      hasProfile,
-      hasFeed,
-      theme?.properties?.gridSpacing,
-      theme?.properties?.fidgetBorderRadius,
-    ],
+    [hasProfile, hasFeed, theme?.properties?.gridSpacing, theme?.properties?.fidgetBorderRadius]
   );
 
   // Consolidated collision detection utility
-  const isSpaceAvailable = useCallback((
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    options: {
-      checkBoundaries?: boolean;
-      excludeItemId?: string;
-    } = {}
-  ): boolean => {
-    const { checkBoundaries = false, excludeItemId } = options;
-    
-    // Check boundaries if requested
-    if (checkBoundaries) {
-      if (x + w > memoizedGridDetails.cols || y + h > memoizedGridDetails.maxRows) {
-        return false;
+  const isSpaceAvailable = useCallback(
+    (
+      x: number,
+      y: number,
+      w: number,
+      h: number,
+      options: {
+        checkBoundaries?: boolean;
+        excludeItemId?: string;
+      } = {}
+    ): boolean => {
+      const { checkBoundaries = false, excludeItemId } = options;
+
+      // Check boundaries if requested
+      if (checkBoundaries) {
+        if (x + w > memoizedGridDetails.cols || y + h > memoizedGridDetails.maxRows) {
+          return false;
+        }
+        if (x < 0 || y < 0) {
+          return false;
+        }
       }
-      if (x < 0 || y < 0) {
-        return false;
+
+      // Check for collisions with existing items
+      for (const item of layoutConfig.layout) {
+        // Skip the item we're excluding (useful for resizing/moving)
+        if (excludeItemId && item.i === excludeItemId) {
+          continue;
+        }
+
+        if (x < item.x + item.w && x + w > item.x && y < item.y + item.h && y + h > item.y) {
+          return false;
+        }
       }
-    }
-    
-    // Check for collisions with existing items
-    for (const item of layoutConfig.layout) {
-      // Skip the item we're excluding (useful for resizing/moving)
-      if (excludeItemId && item.i === excludeItemId) {
-        continue;
-      }
-      
-      if (
-        x < item.x + item.w &&
-        x + w > item.x &&
-        y < item.y + item.h &&
-        y + h > item.y
-      ) {
-        return false;
-      }
-    }
-    
-    return true;
-  }, [layoutConfig.layout, memoizedGridDetails.cols, memoizedGridDetails.maxRows]);
+
+      return true;
+    },
+    [layoutConfig.layout, memoizedGridDetails.cols, memoizedGridDetails.maxRows]
+  );
 
   const saveTrayContents = async (newTrayData: typeof fidgetTrayContents) => {
     return await saveConfig({
@@ -349,9 +318,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     });
   };
 
-  const saveFidgetInstanceDatums = async (
-    datums: typeof fidgetInstanceDatums,
-  ) => {
+  const saveFidgetInstanceDatums = async (datums: typeof fidgetInstanceDatums) => {
     return await saveConfig({
       fidgetInstanceDatums: datums,
     });
@@ -378,25 +345,24 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }, [fidgetInstanceDatums]);
 
   const saveFidgetConfig = useCallback(
-    (id: string, fidgetType?: string) =>
-      async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
-        const currentDatums = fidgetInstanceDatumsRef.current;
-        const existing = currentDatums[id];
+    (id: string, fidgetType?: string) => async (newInstanceConfig: FidgetConfig<FidgetSettings>) => {
+      const currentDatums = fidgetInstanceDatumsRef.current;
+      const existing = currentDatums[id];
 
-        const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
+      const determinedFidgetType = existing?.fidgetType ?? fidgetType ?? "unknown";
 
-        const updatedDatum: FidgetInstanceData = {
-          id: existing?.id ?? id,
-          fidgetType: determinedFidgetType,
-          config: newInstanceConfig,
-        };
+      const updatedDatum: FidgetInstanceData = {
+        id: existing?.id ?? id,
+        fidgetType: determinedFidgetType,
+        config: newInstanceConfig,
+      };
 
-        return await saveFidgetInstanceDatums({
-          ...currentDatums,
-          [id]: updatedDatum,
-        });
-      },
-    [saveFidgetInstanceDatums],
+      return await saveFidgetInstanceDatums({
+        ...currentDatums,
+        [id]: updatedDatum,
+      });
+    },
+    [saveFidgetInstanceDatums]
   );
 
   // Debounced save function
@@ -404,7 +370,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     debounce((config) => {
       saveConfig(config);
     }, 100),
-    [saveConfig],
+    [saveConfig]
   );
 
   function unselectFidget() {
@@ -424,16 +390,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function selectFidget(bundle: FidgetBundle) {
-    const settingsWithDefaults = getSettingsWithDefaults(
-      bundle.config.settings,
-      bundle.properties,
-    );
-    const onSave = async (
-      newSettings: FidgetSettings,
-      shouldUnselect?: boolean,
-    ) => {
+    const settingsWithDefaults = getSettingsWithDefaults(bundle.config.settings, bundle.properties);
+    const onSave = async (newSettings: FidgetSettings, shouldUnselect?: boolean) => {
       try {
-        await saveFidgetConfig(bundle.id, bundle.fidgetType)({
+        await saveFidgetConfig(
+          bundle.id,
+          bundle.fidgetType
+        )({
           ...bundle.config,
           settings: newSettings,
         });
@@ -455,7 +418,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
         onSave={onSave}
         unselect={unselectFidget}
         removeFidget={removeFidget}
-      />,
+      />
     );
   }
 
@@ -464,14 +427,14 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     return fromPairs(
       map(fidget.properties.fields, (field) => {
         return [field.fieldName, field.default];
-      }),
+      })
     );
   }
 
   function generateFidgetInstance(
     fidgetId: string,
     fidget: FidgetModule<FidgetArgs>,
-    customSettings?: Partial<FidgetSettings>,
+    customSettings?: Partial<FidgetSettings>
   ): FidgetInstanceData {
     const baseSettings = allFields(fidget);
     const finalSettings = customSettings ? { ...baseSettings, ...customSettings } : baseSettings;
@@ -491,12 +454,12 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Common helper function to add a fidget with optional custom settings
   function addFidgetCommon(
-    fidgetId: string, 
-    fidget: FidgetModule<FidgetArgs>, 
+    fidgetId: string,
+    fidget: FidgetModule<FidgetArgs>,
     customSettings?: Partial<FidgetSettings>
   ) {
     const newFidgetInstanceData = generateFidgetInstance(fidgetId, fidget, customSettings);
-    
+
     // Create a new copy of fidgetInstanceDatums and add the new fidget instance
     const newFidgetInstanceDatums = {
       ...fidgetInstanceDatums,
@@ -531,8 +494,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
   // Add fidget with custom settings to grid if space is available, otherwise add to tray
   function addFidgetWithCustomSettings(
-    fidgetId: string, 
-    fidget: FidgetModule<FidgetArgs>, 
+    fidgetId: string,
+    fidget: FidgetModule<FidgetArgs>,
     customSettings: Partial<FidgetSettings>
   ) {
     addFidgetCommon(fidgetId, fidget, customSettings);
@@ -549,23 +512,17 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
           memoizedGridDetails.margin[0] * (memoizedGridDetails.maxRows - 1) -
           memoizedGridDetails.containerPadding[0] * 2) /
           memoizedGridDetails.maxRows
-              : memoizedGridDetails.rowHeight;
+      : memoizedGridDetails.rowHeight;
   }, [
-    height, 
-    hasProfile, 
-    memoizedGridDetails.margin, 
-    memoizedGridDetails.containerPadding, 
-    memoizedGridDetails.maxRows
+    height,
+    hasProfile,
+    memoizedGridDetails.margin,
+    memoizedGridDetails.containerPadding,
+    memoizedGridDetails.maxRows,
   ]);
 
-  async function handleDrop(
-    _layout: PlacedGridItem[],
-    item: PlacedGridItem,
-    e: DragEvent<HTMLDivElement>,
-  ) {
-    const fidgetData: FidgetInstanceData = JSON.parse(
-      e.dataTransfer.getData("text/plain"),
-    );
+  async function handleDrop(_layout: PlacedGridItem[], item: PlacedGridItem, e: DragEvent<HTMLDivElement>) {
+    const fidgetData: FidgetInstanceData = JSON.parse(e.dataTransfer.getData("text/plain"));
 
     const newItem: PlacedGridItem = {
       i: fidgetData.id,
@@ -602,10 +559,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function removeFidgetFromTray(fidgetId: string) {
-    const newFidgetTrayContents = reject(
-      fidgetTrayContents,
-      (fidget) => fidget.id === fidgetId,
-    );
+    const newFidgetTrayContents = reject(fidgetTrayContents, (fidget) => fidget.id === fidgetId);
 
     saveTrayContents(newFidgetTrayContents);
   }
@@ -622,17 +576,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     // Create new state objects
     const newLayout = layoutConfig.layout.filter((item) => item.i !== fidgetId);
-    const newTrayContents = fidgetTrayContents.filter(
-      (fidget) => fidget.id !== fidgetId,
-    );
-    const { [fidgetId]: removed, ...newFidgetInstanceDatums } =
-      fidgetInstanceDatums;
+    const newTrayContents = fidgetTrayContents.filter((fidget) => fidget.id !== fidgetId);
+    const { [fidgetId]: removed, ...newFidgetInstanceDatums } = fidgetInstanceDatums;
 
     // Only save if we have fidgets left or if we're removing the last one
-    if (
-      Object.keys(newFidgetInstanceDatums).length > 0 ||
-      newLayout.length === 0
-    ) {
+    if (Object.keys(newFidgetInstanceDatums).length > 0 || newLayout.length === 0) {
       debouncedSaveConfig({
         layoutConfig: { layout: newLayout },
         fidgetTrayContents: newTrayContents,
@@ -642,10 +590,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   }
 
   function moveFidgetFromGridToTray(fidgetId: string) {
-    const newFidgetTrayContents = [
-      ...fidgetTrayContents,
-      fidgetInstanceDatums[fidgetId],
-    ];
+    const newFidgetTrayContents = [...fidgetTrayContents, fidgetInstanceDatums[fidgetId]];
     saveTrayContents(newFidgetTrayContents);
     removeFidgetFromGrid(fidgetId);
   }
@@ -655,11 +600,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
     // We only update if the same items exist
     // We aren't adding or removing an item
     // And we are in edit mode
-    if (
-      !currentlyDragging &&
-      inEditMode &&
-      newLayout.length === layoutConfig.layout.length
-    ) {
+    if (!currentlyDragging && inEditMode && newLayout.length === layoutConfig.layout.length) {
       debouncedSaveConfig({
         layoutConfig: { layout: newLayout },
       });
@@ -761,11 +702,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
             fidgetTrayContents,
             layoutConfig,
             theme,
-            layoutID: layoutConfig.layout.length > 0 ? 'grid' : undefined,
+            layoutID: layoutConfig.layout.length > 0 ? "grid" : undefined,
           })}
           onApplySpaceConfig={saveConfig}
         />,
-        portalNode,
+        portalNode
       )
     ) : (
       <></>
@@ -777,17 +718,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   // so that SSR and hydration don't render blank content.
 
   // Log initial config state
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   // Export function to generate SpaceConfig JSON
   const exportSpaceConfig = useCallback(() => {
     // Convert theme to UserTheme if needed
     let exportTheme: typeof defaultUserTheme = defaultUserTheme;
-    if (theme && 'properties' in theme) {
+    if (theme && "properties" in theme) {
       // Check if all required UserTheme properties exist
       const requiredKeys = Object.keys(defaultUserTheme.properties);
-      const hasAllKeys = requiredKeys.every(key => key in theme.properties);
+      const hasAllKeys = requiredKeys.every((key) => key in theme.properties);
       if (hasAllKeys) {
         exportTheme = theme as typeof defaultUserTheme;
       } else {
@@ -819,11 +759,11 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
     // Create and download the JSON file
     const dataStr = JSON.stringify(spaceConfig, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const dataBlob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `space-config-${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `space-config-${new Date().toISOString().split("T")[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -838,21 +778,24 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const [isMouseOverControlButtons, setIsMouseOverControlButtons] = useState(false);
 
   // DOM-based control button detection
-  const checkControlButtonArea = useCallback((e: MouseEvent) => {
-    const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
-    const controlElement = elementUnderMouse?.closest('[data-fidget-controls]');
-    const isOverControls = !!controlElement;
-    
-    if (isOverControls !== isMouseOverControlButtons) {
-      setIsMouseOverControlButtons(isOverControls);
-    }
-  }, [isMouseOverControlButtons]);
+  const checkControlButtonArea = useCallback(
+    (e: MouseEvent) => {
+      const elementUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+      const controlElement = elementUnderMouse?.closest("[data-fidget-controls]");
+      const isOverControls = !!controlElement;
+
+      if (isOverControls !== isMouseOverControlButtons) {
+        setIsMouseOverControlButtons(isOverControls);
+      }
+    },
+    [isMouseOverControlButtons]
+  );
 
   // Add document-level mouse detection
   useEffect(() => {
     if (inEditMode) {
-      document.addEventListener('mousemove', checkControlButtonArea);
-      return () => document.removeEventListener('mousemove', checkControlButtonArea);
+      document.addEventListener("mousemove", checkControlButtonArea);
+      return () => document.removeEventListener("mousemove", checkControlButtonArea);
     }
   }, [inEditMode, checkControlButtonArea]);
 
@@ -871,26 +814,33 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   const firstEmptySquare = useMemo(() => findFirstEmptySquare(), [findFirstEmptySquare]);
 
   // Simplified grid cell click handler using CSS Grid auto-placement
-  const handleGridCellClick = useCallback((e: React.MouseEvent) => {
-    if (!inEditMode) return;
-    
-    // Find the clicked cell using event delegation
-    const target = e.target as HTMLElement;
-    const cellElement = target.closest('[data-grid-x]') as HTMLElement;
-    
-    if (!cellElement) return;
-    
-    // Get grid position from data attributes (much simpler!)
-    const gridX = parseInt(cellElement.dataset.gridX || '0');
-    const gridY = parseInt(cellElement.dataset.gridY || '0');
-    
-    // Check if position is valid and not occupied
-    if (gridX >= 0 && gridX < memoizedGridDetails.cols && 
-        gridY >= 0 && gridY < memoizedGridDetails.maxRows && 
-        isSpaceAvailable(gridX, gridY, 1, 1)) {
-      openFidgetPickerAtPosition(gridX, gridY);
-    }
-  }, [inEditMode, memoizedGridDetails.cols, memoizedGridDetails.maxRows, isSpaceAvailable]);
+  const handleGridCellClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!inEditMode) return;
+
+      // Find the clicked cell using event delegation
+      const target = e.target as HTMLElement;
+      const cellElement = target.closest("[data-grid-x]") as HTMLElement;
+
+      if (!cellElement) return;
+
+      // Get grid position from data attributes (much simpler!)
+      const gridX = parseInt(cellElement.dataset.gridX || "0");
+      const gridY = parseInt(cellElement.dataset.gridY || "0");
+
+      // Check if position is valid and not occupied
+      if (
+        gridX >= 0 &&
+        gridX < memoizedGridDetails.cols &&
+        gridY >= 0 &&
+        gridY < memoizedGridDetails.maxRows &&
+        isSpaceAvailable(gridX, gridY, 1, 1)
+      ) {
+        openFidgetPickerAtPosition(gridX, gridY);
+      }
+    },
+    [inEditMode, memoizedGridDetails.cols, memoizedGridDetails.maxRows, isSpaceAvailable]
+  );
 
   // CSS Grid auto-placement overlay component
   const GridOverlay = ({ inEditMode }: { inEditMode: boolean }) => {
@@ -938,10 +888,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                 duration-300 
                 ease-out 
                 group
-                ${isHintSquare 
-                  ? 'opacity-30' 
-                  : 'opacity-0'
-                }
+                ${isHintSquare ? "opacity-30" : "opacity-0"}
                 hover:opacity-80
               `}
               style={{
@@ -953,7 +900,7 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               onClick={handleGridCellClick}
             >
               {/* Visual feedback area - matches original cell size */}
-              <div 
+              <div
                 className={`
                   absolute
                   inset-0
@@ -961,26 +908,23 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
                   duration-300 
                   ease-out 
                   group-hover:border-blue-200
-                  ${isHintSquare 
-                    ? 'border-blue-100' 
-                    : ''
-                  }
+                  ${isHintSquare ? "border-blue-100" : ""}
                 `}
                 style={{
                   borderRadius: memoizedGridDetails.borderRadius,
-                  border: '2px solid transparent',
+                  border: "2px solid transparent",
                   // Position within the padded area to match original cell size
                   margin: `${memoizedGridDetails.margin[0] / 2}px ${memoizedGridDetails.margin[1] / 2}px`,
                   ...(isHintSquare && {
-                    borderColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: "rgba(59, 130, 246, 0.1)",
                   }),
                 }}
               >
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-400 ease-out ${
-                  isHintSquare 
-                    ? 'opacity-30 group-hover:opacity-100' 
-                    : 'opacity-0 group-hover:opacity-100'
-                }`}>
+                <div
+                  className={`absolute inset-0 flex items-center justify-center transition-opacity duration-400 ease-out ${
+                    isHintSquare ? "opacity-30 group-hover:opacity-100" : "opacity-0 group-hover:opacity-100"
+                  }`}
+                >
                   <div className="text-blue-600 hover:text-blue-700 transition-colors duration-250 ease-out">
                     <AddFidgetIcon />
                   </div>
@@ -999,105 +943,88 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
 
       <div className="flex flex-col z-0">
         <div className="flex-1 grid-container grow relative">
-          {inEditMode && (
-            <Gridlines 
-              {...memoizedGridDetails} 
-              rowHeight={rowHeight} 
-            />
-          )}
+          {inEditMode && <Gridlines {...memoizedGridDetails} rowHeight={rowHeight} />}
 
           <div className="relative">
             {gridLoadError ? (
-              <GridLayoutError 
-                height={rowHeight * memoizedGridDetails.maxRows} 
-                onRetry={handleGridRetry}
-              />
+              <GridLayoutError height={rowHeight * memoizedGridDetails.maxRows} onRetry={handleGridRetry} />
             ) : (
-              <React.Suspense 
-                fallback={<GridLayoutLoader height={rowHeight * memoizedGridDetails.maxRows} />}
-              >
+              <React.Suspense fallback={<GridLayoutLoader height={rowHeight * memoizedGridDetails.maxRows} />}>
                 <GridErrorBoundary
                   fallback={
-                    <GridLayoutError 
-                      height={rowHeight * memoizedGridDetails.maxRows} 
-                      onRetry={handleGridRetry}
-                    />
+                    <GridLayoutError height={rowHeight * memoizedGridDetails.maxRows} onRetry={handleGridRetry} />
                   }
                 >
                   <ReactGridLayout
-                  {...memoizedGridDetails}
-                  isDraggable={inEditMode}
-                  isResizable={inEditMode}
-                  resizeHandles={resizeDirections}
-                  layout={layoutConfig.layout}
-                  items={layoutConfig.layout.length}
-                  rowHeight={rowHeight}
-                  isDroppable={true}
-                  droppingItem={externalDraggedItem}
-                  onDrop={handleDrop}
-                  onLayoutChange={saveLayoutConditional}
-                  onResizeStart={() => setCurrentlyResizing(true)}
-                  onResizeStop={() => setCurrentlyResizing(false)}
-                  className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
-                  style={{
-                    height: rowHeight * memoizedGridDetails.maxRows + "px",
-                    transition: "opacity 0.2s ease-in",
-                    opacity: itemsVisible ? 1 : 0,
-                    position: "relative",
-                  }}
-                >
-                {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
-                  const fidgetDatum = fidgetInstanceDatums[gridItem.i];
-                  const fidgetModule = fidgetDatum
-                    ? CompleteFidgets[fidgetDatum.fidgetType]
-                    : null;
-                  if (!fidgetModule) return null;
-
-                  return (
-                    <div
-                      key={gridItem.i}
-                      className="grid-item"
-                      style={{
-                        borderRadius: memoizedGridDetails.borderRadius,
-                        outline:
-                          selectedFidgetID === gridItem.i
-                            ? "4px solid rgb(2 132 199)" /* sky-600 */
-                            : undefined,
-                    outlineOffset:
-                      selectedFidgetID === gridItem.i
-                        ? -parseInt(theme?.properties?.fidgetBorderWidth ?? "0")
-                        : undefined,
-                  }}
-                >
-                  <FidgetWrapper
-                    fidget={fidgetModule.fidget}
-                    context={{ theme }}
-                    borderRadius={memoizedGridDetails.borderRadius}
-                    removeFidget={removeFidget}
-                    minimizeFidget={moveFidgetFromGridToTray}
-                    saveConfig={saveFidgetConfig(fidgetDatum.id)}
-                    setCurrentFidgetSettings={setCurrentFidgetSettings}
-                    setSelectedFidgetID={setSelectedFidgetID}
-                    selectedFidgetID={selectedFidgetID}
-                    bundle={{
-                      ...fidgetDatum,
-                      properties: fidgetModule.properties,
-                      config: { ...fidgetDatum.config, editable: inEditMode },
+                    {...memoizedGridDetails}
+                    isDraggable={inEditMode}
+                    isResizable={inEditMode}
+                    resizeHandles={resizeDirections}
+                    layout={layoutConfig.layout}
+                    items={layoutConfig.layout.length}
+                    rowHeight={rowHeight}
+                    isDroppable={true}
+                    droppingItem={externalDraggedItem}
+                    onDrop={handleDrop}
+                    onLayoutChange={saveLayoutConditional}
+                    onResizeStart={() => setCurrentlyResizing(true)}
+                    onResizeStop={() => setCurrentlyResizing(false)}
+                    className={`grid-overlap ${itemsVisible ? "items-visible" : ""} z-10`}
+                    style={{
+                      height: rowHeight * memoizedGridDetails.maxRows + "px",
+                      transition: "opacity 0.2s ease-in",
+                      opacity: itemsVisible ? 1 : 0,
+                      position: "relative",
                     }}
-                  />
-                </div>
-              );
-            })}
-            </ReactGridLayout>
-            </GridErrorBoundary>
-            </React.Suspense>
+                  >
+                    {map(layoutConfig.layout, (gridItem: PlacedGridItem) => {
+                      const fidgetDatum = fidgetInstanceDatums[gridItem.i];
+                      const fidgetModule = fidgetDatum ? CompleteFidgets[fidgetDatum.fidgetType] : null;
+                      if (!fidgetModule) return null;
+
+                      return (
+                        <div
+                          key={gridItem.i}
+                          className="grid-item"
+                          style={{
+                            borderRadius: memoizedGridDetails.borderRadius,
+                            outline:
+                              selectedFidgetID === gridItem.i ? "4px solid rgb(2 132 199)" /* sky-600 */ : undefined,
+                            outlineOffset:
+                              selectedFidgetID === gridItem.i
+                                ? -parseInt(theme?.properties?.fidgetBorderWidth ?? "0")
+                                : undefined,
+                          }}
+                        >
+                          <FidgetWrapper
+                            fidget={fidgetModule.fidget}
+                            context={{ theme }}
+                            borderRadius={memoizedGridDetails.borderRadius}
+                            removeFidget={removeFidget}
+                            minimizeFidget={moveFidgetFromGridToTray}
+                            saveConfig={saveFidgetConfig(fidgetDatum.id)}
+                            setCurrentFidgetSettings={setCurrentFidgetSettings}
+                            setSelectedFidgetID={setSelectedFidgetID}
+                            selectedFidgetID={selectedFidgetID}
+                            bundle={{
+                              ...fidgetDatum,
+                              properties: fidgetModule.properties,
+                              config: { ...fidgetDatum.config, editable: inEditMode },
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </ReactGridLayout>
+                </GridErrorBoundary>
+              </React.Suspense>
             )}
-          
-          <GridOverlay inEditMode={inEditMode} />
+
+            <GridOverlay inEditMode={inEditMode} />
           </div>
         </div>
       </div>
-      
+
       <FidgetPickerModal
         isOpen={isFidgetPickerModalOpen}
         setIsOpen={setIsFidgetPickerModalOpen}

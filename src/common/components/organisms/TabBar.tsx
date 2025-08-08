@@ -63,7 +63,7 @@ function TabBar({
   isTokenPage,
   contractAddress,
   pageType,
-  isEditable
+  isEditable,
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { mobilePreview } = useMobilePreview();
@@ -116,19 +116,21 @@ function TabBar({
     switchTabTo(tabName);
 
     // Handle the remote operations in the background
-    creationPromise.then(result => {
-      if (result?.tabName) {
-        // If the tab name changed during creation, update the URL
-        if (result.tabName !== tabName) {
-          switchTabTo(result.tabName);
+    creationPromise
+      .then((result) => {
+        if (result?.tabName) {
+          // If the tab name changed during creation, update the URL
+          if (result.tabName !== tabName) {
+            switchTabTo(result.tabName);
+          }
         }
-      }
-      // Commit the tab order in the background
-      commitTabOrder();
-    }).catch(error => {
-      console.error("Failed to create tab:", error);
-      // Optionally show an error message to the user
-    });
+        // Commit the tab order in the background
+        commitTabOrder();
+      })
+      .catch((error) => {
+        console.error("Failed to create tab:", error);
+        // Optionally show an error message to the user
+      });
   }
 
   async function handleDeleteTab(tabName: string) {
@@ -158,9 +160,7 @@ function TabBar({
 
     const uniqueName = generateUniqueTabName(newName);
     await renameTab(tabName, uniqueName);
-    updateTabOrder(
-      tabList.map((name) => (name === tabName ? uniqueName : name)),
-    );
+    updateTabOrder(tabList.map((name) => (name === tabName ? uniqueName : name)));
     await commitTab(uniqueName);
     await commitTabOrder();
     switchTabTo(uniqueName);
@@ -184,33 +184,34 @@ function TabBar({
     }
   }
 
-  const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-      e.preventDefault();
-    }
+  const handleTabClick = React.useCallback(
+    (tabName: string, e?: React.MouseEvent) => {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
 
-    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
+      console.log("Tab clicked:", tabName, "Current tab:", currentTab);
 
-    switchTabTo(tabName, true);
-  }, [switchTabTo]);
+      switchTabTo(tabName, true);
+    },
+    [switchTabTo]
+  );
 
   const isLoggedIn = getIsLoggedIn();
 
-
-
   return (
     <TooltipProvider>
-      <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full"> 
+      <div className="flex flex-col md:flex-row justify-start md:h-16 z-30 bg-white w-full">
         {isTokenPage && contractAddress && (
           <div className="flex flex-row justify-start h-16 w-full md:w-fit z-20 bg-white">
             <TokenDataHeader />
           </div>
         )}
-        <div className="flex w-full h-16 bg-white items-center justify-between"> 
+        <div className="flex w-full h-16 bg-white items-center justify-between">
           {/* Tabs Section - grows until it hits buttons */}
           <div className="flex-1 min-w-0 overflow-hidden">
-            <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
               <Reorder.Group
                 as="ol"
                 axis="x"
@@ -219,31 +220,28 @@ function TabBar({
                 values={tabList}
               >
                 <AnimatePresence initial={false}>
-                  {map(
-                    inHomebase ? ["Feed", ...tabList] : tabList,
-                    (tabName: string) => (
-                      <Tab
-                        key={tabName}
-                        getSpacePageUrl={getSpacePageUrl}
-                        tabName={tabName}
-                        inEditMode={inEditMode}
-                        isSelected={currentTab === tabName}
-                        onClick={() => handleTabClick(tabName)}
-                        removeable={isEditableTab(tabName)}
-                        draggable={inEditMode}
-                        renameable={isEditableTab(tabName)}
-                        onRemove={() => handleDeleteTab(tabName)}
-                        renameTab={handleRenameTab}
-                      />
-                    )
-                  )}
+                  {map(inHomebase ? ["Feed", ...tabList] : tabList, (tabName: string) => (
+                    <Tab
+                      key={tabName}
+                      getSpacePageUrl={getSpacePageUrl}
+                      tabName={tabName}
+                      inEditMode={inEditMode}
+                      isSelected={currentTab === tabName}
+                      onClick={() => handleTabClick(tabName)}
+                      removeable={isEditableTab(tabName)}
+                      draggable={inEditMode}
+                      renameable={isEditableTab(tabName)}
+                      onRemove={() => handleDeleteTab(tabName)}
+                      renameTab={handleRenameTab}
+                    />
+                  ))}
                 </AnimatePresence>
               </Reorder.Group>
             </div>
           </div>
 
           {/* Action Buttons - pushed to right side */}
-          {(isEditable) && (
+          {isEditable && (
             <div className="flex items-center gap-2 px-2 flex-shrink-0">
               {!inEditMode && (
                 <Button
@@ -254,7 +252,7 @@ function TabBar({
                   {!isMobile && <span className="ml-2">Customize</span>}
                 </Button>
               )}
-              {(inEditMode) && (
+              {inEditMode && (
                 <Button
                   onClick={() => handleCreateTab(generateNewTabName())}
                   className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"

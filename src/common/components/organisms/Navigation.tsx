@@ -9,11 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { CgProfile } from "react-icons/cg";
-import {
-    FaChevronLeft,
-    FaChevronRight,
-    FaDiscord,
-} from "react-icons/fa6";
+import { FaChevronLeft, FaChevronRight, FaDiscord } from "react-icons/fa6";
 import { Button } from "../atoms/button";
 import BrandHeader from "../molecules/BrandHeader";
 import Modal from "../molecules/Modal";
@@ -66,20 +62,13 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({
-  isEditable,
-  enterEditMode,
-  mobile = false,
-  onNavigate,
-}) => {
+const Navigation: React.FC<NavProps> = ({ isEditable, enterEditMode, mobile = false, onNavigate }) => {
   const searchRef = useRef<HTMLInputElement>(null);
-  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
-    (state) => ({
-      setModalOpen: state.setup.setModalOpen,
-      getIsAccountReady: state.getIsAccountReady,
-      getIsInitializing: state.getIsInitializing,
-    })
-  );
+  const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore((state) => ({
+    setModalOpen: state.setup.setModalOpen,
+    getIsAccountReady: state.getIsAccountReady,
+    getIsInitializing: state.getIsInitializing,
+  }));
   const userTheme: UserTheme = useUserTheme();
 
   const logout = useLogout();
@@ -113,14 +102,7 @@ const Navigation: React.FC<NavProps> = ({
 
   const CurrentUserImage = useCallback(
     () =>
-      user && user.pfp_url ? (
-        <img
-          className="aspect-square rounded-full w-6 h-6"
-          src={user.pfp_url}
-        />
-      ) : (
-        <CgProfile />
-      ),
+      user && user.pfp_url ? <img className="aspect-square rounded-full w-6 h-6" src={user.pfp_url} /> : <CgProfile />,
     [user]
   );
 
@@ -160,13 +142,7 @@ const Navigation: React.FC<NavProps> = ({
     );
   };
 
-  const NavButton: React.FC<NavButtonProps> = ({
-    label,
-    Icon,
-    onClick,
-    disable = false,
-    badgeText = null,
-  }) => {
+  const NavButton: React.FC<NavButtonProps> = ({ label, Icon, onClick, disable = false, badgeText = null }) => {
     return (
       <li>
         <button
@@ -196,35 +172,19 @@ const Navigation: React.FC<NavProps> = ({
       id="logo-sidebar"
       className={mergeClasses(
         "border-r-2 bg-white",
-        mobile
-          ? "w-[270px]"
-          : "w-full transition-transform -translate-x-full sm:translate-x-0"
+        mobile ? "w-[270px]" : "w-full transition-transform -translate-x-full sm:translate-x-0"
       )}
       aria-label="Sidebar"
     >
-      <Modal
-        open={showCastModal}
-        setOpen={setShowCastModal}
-        focusMode={false}
-        showClose={false}
-      >
+      <Modal open={showCastModal} setOpen={setShowCastModal} focusMode={false} showClose={false}>
         <CreateCast afterSubmit={() => setShowCastModal(false)} />
       </Modal>
       <SearchModal ref={searchRef} />
-      <div
-        className={mergeClasses(
-          "pt-12 pb-12 h-full",
-          mobile ? "block" : "md:block hidden"
-        )}
-      >
+      <div className={mergeClasses("pt-12 pb-12 h-full", mobile ? "block" : "md:block hidden")}>
         <div
           className={mergeClasses(
             "flex flex-col h-full transition-all duration-300 relative",
-            mobile
-              ? "w-[270px]"
-              : shrunk
-              ? "w-[90px]"
-              : "w-[270px]"
+            mobile ? "w-[270px]" : shrunk ? "w-[90px]" : "w-[270px]"
           )}
         >
           {!mobile && (
@@ -233,11 +193,7 @@ const Navigation: React.FC<NavProps> = ({
               className="absolute right-0 top-4 transform translate-x-1/2 bg-white rounded-full border border-gray-200 shadow-sm p-2 hover:bg-gray-50 sidebar-expand-button z-50"
               aria-label={shrunk ? "Expand sidebar" : "Collapse sidebar"}
             >
-              {shrunk ? (
-                <FaChevronRight size={14} />
-              ) : (
-                <FaChevronLeft size={14} />
-              )}
+              {shrunk ? <FaChevronRight size={14} /> : <FaChevronLeft size={14} />}
             </button>
           )}
 
@@ -256,18 +212,14 @@ const Navigation: React.FC<NavProps> = ({
                   label={isLoggedIn ? "Homebase" : "Home"}
                   Icon={HomeIcon}
                   href={isLoggedIn ? "/homebase" : "/home"}
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)
-                  }
+                  onClick={() => trackAnalyticsEvent(AnalyticsEvent.CLICK_HOMEBASE)}
                 />
                 {isLoggedIn && (
                   <NavItem
                     label="Notifications"
                     Icon={NotificationsIcon}
                     href="/notifications"
-                    onClick={() =>
-                      trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)
-                    }
+                    onClick={() => trackAnalyticsEvent(AnalyticsEvent.CLICK_NOTIFICATIONS)}
                     badgeText={notificationBadgeText}
                   />
                 )}
@@ -283,17 +235,13 @@ const Navigation: React.FC<NavProps> = ({
                   label="Explore"
                   Icon={ExploreIcon}
                   href="/explore"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)
-                  }
+                  onClick={() => trackAnalyticsEvent(AnalyticsEvent.CLICK_EXPLORE)}
                 />
                 <NavItem
                   label="$SPACE"
                   Icon={RocketIcon}
                   href="https://nounspace.com/t/base/0x48C6740BcF807d6C47C864FaEEA15Ed4dA3910Ab/Profile"
-                  onClick={() =>
-                    trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)
-                  }
+                  onClick={() => trackAnalyticsEvent(AnalyticsEvent.CLICK_SPACE_FAIR_LAUNCH)}
                   openInNewTab
                 />
                 {isLoggedIn && (
@@ -301,18 +249,10 @@ const Navigation: React.FC<NavProps> = ({
                     label={"My Space"}
                     Icon={CurrentUserImage}
                     href={`/s/${username}`}
-                    onClick={() =>
-                      trackAnalyticsEvent(AnalyticsEvent.CLICK_MY_SPACE)
-                    }
+                    onClick={() => trackAnalyticsEvent(AnalyticsEvent.CLICK_MY_SPACE)}
                   />
                 )}
-                {isLoggedIn && (
-                  <NavButton
-                    label={"Logout"}
-                    Icon={LogoutIcon}
-                    onClick={handleLogout}
-                  />
-                )}
+                {isLoggedIn && <NavButton label={"Logout"} Icon={LogoutIcon} onClick={handleLogout} />}
                 {!isLoggedIn && (
                   <NavButton
                     label={isInitializing ? "Complete Signup" : "Login"}
@@ -324,20 +264,12 @@ const Navigation: React.FC<NavProps> = ({
             </div>
           </div>
           <div className="flex flex-col flex-auto justify-between border-t px-4">
-            <div
-              className={mergeClasses("mt-8 px-2", shrunk ? "px-0" : "px-2")}
-            >
-              <Player
-                url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL}
-                shrunk={shrunk}
-              />
+            <div className={mergeClasses("mt-8 px-2", shrunk ? "px-0" : "px-2")}>
+              <Player url={userTheme?.properties?.musicURL || NOUNISH_LOWFI_URL} shrunk={shrunk} />
             </div>
             {isLoggedIn && (
               <div
-                className={mergeClasses(
-                  "pt-3 flex items-center gap-2 justify-center",
-                  shrunk ? "flex-col gap-1" : ""
-                )}
+                className={mergeClasses("pt-3 flex items-center gap-2 justify-center", shrunk ? "flex-col gap-1" : "")}
               >
                 <Button
                   onClick={openCastModal}
@@ -368,9 +300,7 @@ const Navigation: React.FC<NavProps> = ({
                   <FaDiscord className="text-[#5865f2] w-6 h-6" />
                   {!shrunk && "Join"}
                 </Link>
-                <div
-                  className="flex flex-col items-center text-xs text-gray-500 mt-5"
-                >
+                <div className="flex flex-col items-center text-xs text-gray-500 mt-5">
                   <Link href="/terms" className="hover:underline">
                     Terms
                   </Link>

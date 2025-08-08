@@ -4,17 +4,10 @@ import { FidgetBundle, FidgetInstanceData } from "@/common/fidgets";
 import { CompleteFidgets } from "@/fidgets";
 import { Button } from "@/common/components/atoms/button";
 import AddFidgetIcon from "@/common/components/atoms/icons/AddFidget";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/common/components/atoms/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/common/components/atoms/tooltip";
 import { FaInfoCircle } from "react-icons/fa";
 export interface FidgetTrayProps {
-  setExternalDraggedItem: Dispatch<
-    SetStateAction<{ i: string; w: number; h: number } | undefined>
-  >;
+  setExternalDraggedItem: Dispatch<SetStateAction<{ i: string; w: number; h: number } | undefined>>;
   contents: FidgetInstanceData[];
   openFidgetPicker: () => void;
   saveTrayContents: (fidgetTrayContents: FidgetInstanceData[]) => Promise<void>;
@@ -33,13 +26,13 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
   selectFidget,
 }) => {
   const hasContents = contents.length > 0;
-  
+
   return (
     <div className="w-full h-screen flex flex-col justify-start items-center gap-2 bg-sky-50 py-7 px-6 overflow-auto">
-      <div 
+      <div
         className={`
           transition-all duration-300 ease-in-out w-full flex flex-col justify-start items-center gap-2
-          ${hasContents ? 'opacity-100 delay-150' : 'opacity-0 delay-0'}
+          ${hasContents ? "opacity-100 delay-150" : "opacity-0 delay-0"}
         `}
       >
         <TooltipProvider>
@@ -60,9 +53,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <h5 className="text-xs font-medium text-center -mx-3 mb-3">
-          Fidget Tray
-        </h5>
+        <h5 className="text-xs font-medium text-center -mx-3 mb-3">Fidget Tray</h5>
         {map(contents, (fidgetData: FidgetInstanceData) => {
           const fidgetBundle = {
             ...fidgetData,
@@ -79,9 +70,7 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
             <div key={fidgetData.id} className="w-full">
               <div
                 className={`z-20 droppable-element px-2 py-2 flex justify-center items-center border rounded-md hover:bg-sky-100 group cursor-pointer ${
-                  selectedFidgetID === fidgetData.id
-                    ? "outline outline-4 outline-offset-1 outline-sky-600"
-                    : ""
+                  selectedFidgetID === fidgetData.id ? "outline outline-4 outline-offset-1 outline-sky-600" : ""
                 }`}
                 draggable={true}
                 // unselectable helps with IE support
@@ -90,22 +79,15 @@ export const FidgetTray: React.FC<FidgetTrayProps> = ({
                 onClick={onClick}
                 onDragStart={(e) => {
                   setCurrentlyDragging(true);
-                  e.dataTransfer.setData(
-                    "text/plain",
-                    JSON.stringify(fidgetData),
-                  );
+                  e.dataTransfer.setData("text/plain", JSON.stringify(fidgetData));
                   setExternalDraggedItem({
                     i: fidgetData.id,
-                    w: CompleteFidgets[fidgetData.fidgetType].properties.size
-                      .minWidth,
-                    h: CompleteFidgets[fidgetData.fidgetType].properties.size
-                      .minHeight,
+                    w: CompleteFidgets[fidgetData.fidgetType].properties.size.minWidth,
+                    h: CompleteFidgets[fidgetData.fidgetType].properties.size.minHeight,
                   });
                 }}
               >
-                {String.fromCodePoint(
-                  CompleteFidgets[fidgetData.fidgetType].properties.icon,
-                )}
+                {String.fromCodePoint(CompleteFidgets[fidgetData.fidgetType].properties.icon)}
               </div>
             </div>
           );
