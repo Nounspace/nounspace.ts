@@ -1,4 +1,7 @@
-export default async function handler(req, res) {
+const fetch = require('node-fetch');
+const { load } = require('cheerio');
+
+module.exports = async function handler(req, res) {
   const { url } = req.query;
 
   if (!url) {
@@ -7,9 +10,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { default: fetch } = await import('node-fetch');
-    const { load } = await import('cheerio');
-
     const targetUrl = decodeURIComponent(url);
 
     let body;
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
     console.error('Proxy error:', error);
     res.status(500).json({ error: 'Failed to fetch the requested site' });
   }
-}
+};
 
 function rewriteHtml(html, targetUrl, req, load) {
   const $ = load(html, { decodeEntities: false });
