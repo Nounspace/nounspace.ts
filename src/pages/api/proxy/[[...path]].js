@@ -1,8 +1,6 @@
 /* eslint-env node */
-/* eslint-disable @typescript-eslint/no-var-requires */
-const fetch = (...args) =>
-  import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const { load } = require('cheerio');
+import fetch from 'node-fetch';
+import { load } from 'cheerio';
 
 function resolveTargetUrl(req) {
   if (req.query && req.query.url) {
@@ -53,7 +51,8 @@ function resolveTargetUrl(req) {
   return null;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
+  console.log('[proxy] handler mounted, url=', req.url);
   const targetUrl = resolveTargetUrl(req);
 
   if (!targetUrl) {
@@ -234,7 +233,7 @@ module.exports = async function handler(req, res) {
     console.error('Proxy error:', error);
     res.status(500).json({ error: 'Failed to fetch the requested site' });
   }
-};
+}
 
 function rewriteHtml(html, targetUrl, req, load) {
   const $ = load(html, { decodeEntities: false });
@@ -325,5 +324,5 @@ function rewriteHtml(html, targetUrl, req, load) {
   return $.html({ decodeEntities: false });
 }
 
-module.exports.config = { api: { bodyParser: false } };
+export const config = { api: { bodyParser: false } };
 
