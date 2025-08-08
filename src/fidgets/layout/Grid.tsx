@@ -29,6 +29,7 @@ import { SpaceConfig } from "../../app/(spaces)/Space";
 import { defaultUserTheme } from "@/common/lib/theme/defaultTheme";
 import { v4 as uuidv4 } from "uuid";
 import { FidgetPickerModal } from "@/common/components/organisms/FidgetPickerModal";
+import Spinner from "@/common/components/atoms/spinner";
 
 export const resizeDirections = ["s", "w", "e", "n", "sw", "nw", "se", "ne"];
 export type ResizeDirection = (typeof resizeDirections)[number];
@@ -108,13 +109,10 @@ interface ReactGridLayoutProps {
 // Loading component for the grid layout
 const GridLayoutLoader: React.FC<{ height: number }> = ({ height }) => (
   <div
-    className="flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+    className="flex items-center justify-center"
     style={{ height: `${height}px` }}
   >
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-      <p className="text-sm text-gray-500">Loading grid layout...</p>
-    </div>
+    <Spinner />
   </div>
 );
 
