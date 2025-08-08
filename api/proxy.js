@@ -46,7 +46,7 @@ module.exports = async function handler(req, res) {
     res.setHeader('X-Frame-Options', 'ALLOW-FROM *');
     res.setHeader(
       'Content-Security-Policy',
-      "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; style-src * 'unsafe-inline' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; font-src * data:; connect-src * data: blob:; frame-src *; frame-ancestors *".
+      "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; style-src * 'unsafe-inline' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; font-src * data:; connect-src * data: blob:; frame-src *; frame-ancestors *"
     );
 
     if (!res.getHeader('Cache-Control')) {
