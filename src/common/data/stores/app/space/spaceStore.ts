@@ -260,110 +260,88 @@ export const createSpaceStoreFunc = (
     }
   },
   commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
-    try {
-      const localCopy = cloneDeep(
-        get().space.localSpaces[spaceId].tabs[tabName],
+    const localCopy = cloneDeep(
+      get().space.localSpaces[spaceId].tabs[tabName],
+    );
+    const oldTabName =
+      get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
+    
+    if (localCopy) {
+      const file = await get().account.createSignedFile(
+        stringify(localCopy),
+        "json",
+        { fileName: tabName },
       );
-      const oldTabName =
-        get().space.localSpaces[spaceId].changedNames[tabName] || tabName;
       
-      if (localCopy) {
-        const file = await get().account.createSignedFile(
-          stringify(localCopy),
-          "json",
-          { fileName: tabName },
+      try {
+        await axiosBackend.post(
+          `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
+          { ...file, network },
         );
         
-        try {
-          await axiosBackend.post(
-            `/api/space/registry/${spaceId}/tabs/${oldTabName}`,
-            { ...file, network },
-          );
-          
-          set((draft) => {
-            // Ensure the remote space structure exists
-            if (!draft.space.remoteSpaces[spaceId]) {
-              draft.space.remoteSpaces[spaceId] = {
-                tabs: {},
-                order: [],
-                updatedAt: moment().toISOString(),
-                id: spaceId,
-              };
-            }
-            
-            draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
-            delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
-            delete draft.space.localSpaces[spaceId].changedNames[tabName];
-          }, "commitSpaceTabToDatabase");
-        } catch (e) {
-          console.error("Failed to commit space tab to remote:", e);
-          // Don't throw the error to prevent app crashes
-          // The tab is still saved locally, so the user can continue working
-        }
+        set((draft) => {
+          draft.space.remoteSpaces[spaceId].tabs[tabName] = localCopy;
+          delete draft.space.remoteSpaces[spaceId].tabs[oldTabName];
+          delete draft.space.localSpaces[spaceId].changedNames[tabName];
+        }, "commitSpaceTabToDatabase");
+      } catch (e) {
+        console.error("Failed to commit space tab:", e);
+        throw e;
       }
-    } catch (error) {
-      console.error("Unexpected error in commitSpaceTabToDatabase:", error);
-      // Log error but don't throw to prevent crashes
     }
   },
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
-    try {
-      // Check if the new name contains special characters
-      if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
-        // Show error
-        showTooltipError(
-          "Invalid Tab Name",
-          "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-        );
-
-        // Log the error but don't throw to prevent app crashes
-        console.error("Invalid tab name characters:", newName);
-        return; // Return early instead of throwing
-      }
-
-      console.log("NewConfig", config);
-      let localCopy;
-      const newTimestamp = moment().toISOString();
-
-      // If the tab doesn't exist yet, use the new config directly
-      if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
-        localCopy = {
-          ...cloneDeep(config),
-          timestamp: newTimestamp,
-        };
-      } else {
-        // Otherwise merge with existing config
-        localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
-        mergeWith(localCopy, config, (objValue, srcValue) => {
-          if (isArray(srcValue)) return srcValue;
-          if (typeof srcValue === 'object' && srcValue !== null) {
-            // For objects, return the source value to replace the target completely
-            return srcValue;
-          }
-        });
-        localCopy.timestamp = newTimestamp;
-        console.log("localCopy", localCopy);
-      }
-
-      set((draft) => {
-        if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
-          draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
-          draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
-          delete draft.space.localSpaces[spaceId].tabs[tabName];
-        } else {
-          draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
-        }
-        const newSpaceTimestamp = moment().toISOString();
-        draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
-      }, "saveLocalSpaceTab");
-    } catch (error) {
-      console.error("Error in saveLocalSpaceTab:", error);
-      // Prevent the error from propagating and crashing the app
+    // Check if the new name contains special characters
+    if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
+      // Show error tooltip
       showTooltipError(
-        "Save Error",
-        "Failed to save tab. Please try again."
+        "Invalid Tab Name",
+        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
       );
+
+      // Log error but don't crash the app
+      console.error("Invalid tab name characters:", newName);
+      
+      // Wait a bit to ensure tooltip shows, then exit
+      setTimeout(() => {}, 100);
+      return; // Exit safely instead of throwing
     }
+
+    console.log("NewConfig", config);
+    let localCopy;
+    const newTimestamp = moment().toISOString();
+
+    // If the tab doesn't exist yet, use the new config directly
+    if (!get().space.localSpaces[spaceId]?.tabs[tabName]) {
+      localCopy = {
+        ...cloneDeep(config),
+        timestamp: newTimestamp,
+      };
+    } else {
+      // Otherwise merge with existing config
+      localCopy = cloneDeep(get().space.localSpaces[spaceId].tabs[tabName]);
+      mergeWith(localCopy, config, (objValue, srcValue) => {
+        if (isArray(srcValue)) return srcValue;
+        if (typeof srcValue === 'object' && srcValue !== null) {
+          // For objects, return the source value to replace the target completely
+          return srcValue;
+        }
+      });
+      localCopy.timestamp = newTimestamp;
+      console.log("localCopy", localCopy);
+    }
+
+    set((draft) => {
+      if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
+        draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
+        draft.space.localSpaces[spaceId].tabs[newName] = localCopy;
+        delete draft.space.localSpaces[spaceId].tabs[tabName];
+      } else {
+        draft.space.localSpaces[spaceId].tabs[tabName] = localCopy;
+      }
+      const newSpaceTimestamp = moment().toISOString();
+      draft.space.localSpaces[spaceId].updatedAt = newSpaceTimestamp;
+    }, "saveLocalSpaceTab");
   },
   deleteSpaceTab: async (
     spaceId,
@@ -422,7 +400,9 @@ export const createSpaceStoreFunc = (
     // Validate the tab name before proceeding
     const validationError = validateTabName(tabName);
     if (validationError) {
-      throw new Error(validationError);
+      console.error("Invalid tab name:", tabName, validationError);
+      // Use a safe fallback name instead of throwing
+      tabName = `Tab ${Date.now()}`;
     }
 
     if (isNil(initialConfig)) {
