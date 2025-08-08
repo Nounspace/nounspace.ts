@@ -109,6 +109,7 @@
     "next": "^15.2.2",
     "next-themes": "^0.3.0",
     "node-fetch": "^3.3.2",
+    "cheerio": "^1.0.0",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-aria": "^3.33.1",
