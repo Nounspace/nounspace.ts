@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
   const { url } = req.query;
 
@@ -9,6 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    const { default: fetch } = await import('node-fetch');
     const targetUrl = decodeURIComponent(url);
     let body;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
