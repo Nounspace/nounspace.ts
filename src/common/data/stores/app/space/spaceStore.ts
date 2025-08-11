@@ -886,7 +886,8 @@ export const createSpaceStoreFunc = (
           },
         },
       );
-      
+      console.log("Nounspace existing spaces response:", existingSpaces);
+
       if (existingSpaces.value) {
         const existingSpace = existingSpaces.value.spaces.find(
           space => space.contractAddress === address && space.network === network
@@ -937,6 +938,7 @@ export const createSpaceStoreFunc = (
           "/api/space/registry",
           registration,
         );
+        console.log("Nounspace registration response:", data);
         const newSpaceId = data.value!.spaceId;
         
         // Initialize both local and remote spaces with proper structure
@@ -977,6 +979,9 @@ export const createSpaceStoreFunc = (
       return newSpaceId;
       } catch (e) {
         console.error("Failed to register contract space:", e);
+        if (axios.isAxiosError(e)) {
+          console.error("Nounspace error response:", e.response?.data);
+        }
         throw e;
       }
     } catch (e) {
