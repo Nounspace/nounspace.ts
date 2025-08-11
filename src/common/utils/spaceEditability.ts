@@ -1,5 +1,5 @@
 import { isNil } from 'lodash';
-import { Address } from 'viem';
+import { Address, isAddressEqual } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
 
 export type EditabilityCheck = {
@@ -63,7 +63,10 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     }
 
     // Check if user owns the wallet address (doesn't require clankerData)
-    if (spaceOwnerAddress && wallets.some(w => w.address === spaceOwnerAddress)) {
+    if (
+      spaceOwnerAddress &&
+      wallets.some((w) => isAddressEqual(w.address as Address, spaceOwnerAddress))
+    ) {
       // console.log('Editable: User owns by address', {
       //   spaceOwnerAddress,
       //   matchingWallet: wallets.find(w => w.address === spaceOwnerAddress),
