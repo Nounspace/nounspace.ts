@@ -391,9 +391,9 @@ export default function PublicSpace({
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
 
-    // Only proceed with registration if we're sure the space doesn't exist and FID is linked
+    // Attempt registration when space is missing and user is identified
     if (
-      editabilityCheck.isEditable &&
+      (isTokenPage || editabilityCheck.isEditable) &&
       isNil(currentSpaceId) &&
       !isNil(currentUserFid) &&
       !loading &&
@@ -430,6 +430,16 @@ export default function PublicSpace({
           }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
+            try {
+              const resp = await fetch(
+                `/api/space/owner?contractAddress=${contractAddress}`,
+              );
+              const ownerData = await resp.json();
+              console.log("Token owner lookup:", ownerData);
+            } catch (error) {
+              console.error("Token owner lookup failed:", error);
+            }
+
             newSpaceId = await registerSpaceContract(
               contractAddress,
               "Profile",

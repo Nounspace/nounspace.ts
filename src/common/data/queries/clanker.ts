@@ -1,7 +1,7 @@
 import { Address } from "viem";
 import { OwnerType } from "../api/etherscan";
 import neynar from "../api/neynar";
-import { fetchEmpireByAddress } from "./empireBuilder";
+import { fetchEmpireByAddress, EmpireToken } from "./empireBuilder";
 
 export interface ClankerToken {
   id: number;
@@ -48,9 +48,17 @@ export async function fetchClankerByAddress(
   }
 }
 
+export interface TokenOwnerLookup {
+  ownerId: string | undefined;
+  ownerIdType: OwnerType;
+  clankerData: ClankerToken | null;
+  empireData: EmpireToken | null;
+  neynarUsers?: Record<string, unknown>;
+}
+
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
-) {
+): Promise<TokenOwnerLookup> {
   const [clankerData, empireData] = await Promise.all([
     fetchClankerByAddress(contractAddress as Address),
     fetchEmpireByAddress(contractAddress as Address),
@@ -64,13 +72,14 @@ export async function tokenRequestorFromContractAddress(
   if (empireData && empireData.owner) {
     let ownerId: string = empireData.owner.toLowerCase();
     let ownerIdType: OwnerType = "address";
+    let neynarUsers: Record<string, unknown> | undefined;
 
     if (process.env.NEYNAR_API_KEY) {
       try {
         const addresses = [ownerId];
-        const users = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
-        console.log("Neynar response:", users);
-        const user = users[ownerId]?.[0];
+        neynarUsers = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+        console.log("Neynar response:", neynarUsers);
+        const user = neynarUsers[ownerId]?.[0] as { fid?: number } | undefined;
         if (user?.fid) {
           ownerId = String(user.fid);
           ownerIdType = "fid";
@@ -82,18 +91,22 @@ export async function tokenRequestorFromContractAddress(
       console.error("NEYNAR_API_KEY is not set");
     }
 
-    return { ownerId, ownerIdType };
+    return { ownerId, ownerIdType, clankerData, empireData, neynarUsers };
   }
 
   if (clankerData && clankerData.requestor_fid) {
     return {
       ownerId: String(clankerData.requestor_fid),
       ownerIdType: "fid" as OwnerType,
+      clankerData,
+      empireData,
     };
   }
 
   return {
     ownerId: undefined,
     ownerIdType: "fid" as OwnerType,
+    clankerData,
+    empireData,
   };
 }
