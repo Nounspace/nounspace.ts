@@ -151,6 +151,7 @@ const Navigation: React.FC<NavProps> = ({
           onClick={handleClick}
           rel={openInNewTab ? "noopener noreferrer" : undefined}
           target={openInNewTab ? "_blank" : undefined}
+          prefetch={false}
         >
           {badgeText && <NavIconBadge>{badgeText}</NavIconBadge>}
           <Icon />
@@ -364,6 +365,7 @@ const Navigation: React.FC<NavProps> = ({
                   )}
                   rel="noopener noreferrer"
                   target="_blank"
+                  prefetch={false}
                 >
                   <FaDiscord className="text-[#5865f2] w-6 h-6" />
                   {!shrunk && "Join"}
@@ -371,10 +373,10 @@ const Navigation: React.FC<NavProps> = ({
                 <div
                   className="flex flex-col items-center text-xs text-gray-500 mt-5"
                 >
-                  <Link href="/terms" className="hover:underline">
+                  <Link href="/terms" className="hover:underline" prefetch={false}>
                     Terms
                   </Link>
-                  <Link href="/privacy" className="hover:underline">
+                  <Link href="/privacy" className="hover:underline" prefetch={false}>
                     Privacy
                   </Link>
                 </div>

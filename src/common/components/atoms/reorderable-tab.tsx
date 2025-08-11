@@ -55,6 +55,7 @@ export const Tab = ({
           }
         }}
         onDragStart={(e) => e.preventDefault()}
+        prefetch={false}
       >
         <div
           className={`static flex md:p-2 items-center transition-colors duration-300 group 

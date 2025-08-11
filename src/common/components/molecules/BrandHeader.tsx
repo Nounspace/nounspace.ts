@@ -21,6 +21,7 @@ const BrandHeader = () => {
             href="/home"
             className="flex items-center ps-2.5"
             rel="noopener noreferrer"
+            prefetch={false}
           >
             <TooltipTrigger asChild>
               <Image
