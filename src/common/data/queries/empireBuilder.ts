@@ -22,6 +22,7 @@ export async function fetchEmpireByAddress(
     }
 
     const json = await response.json();
+    console.log("Empire Builder response:", json);
 
     const empire =
       (Array.isArray(json.empires) && json.empires.length > 0
