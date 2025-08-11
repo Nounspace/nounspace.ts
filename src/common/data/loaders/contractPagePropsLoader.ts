@@ -8,6 +8,7 @@ import {
   loadOwnedItentitiesForFid,
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
+import { tokenRequestorFromContractAddress } from "../queries/clanker";
 import createSupabaseServerClient from "../database/supabase/clients/server";
 import { string } from "prop-types";
 import { unstable_noStore as noStore } from 'next/cache';
@@ -69,17 +70,28 @@ export async function loadContractData(
   let owningIdentities: string[] = [];
   let ownerId: string | null = null;
   let ownerIdType: OwnerType = "address";
+
   try {
-    const ownerData = await contractOwnerFromContract(
-      contract,
-      abi,
-      contractAddress,
-      isString(network) ? network : undefined,
-    );
-    ownerId = ownerData.ownerId || null;
-    ownerIdType = ownerData.ownerIdType;
+    const tokenOwner = await tokenRequestorFromContractAddress(contractAddress);
+    ownerId = tokenOwner.ownerId || null;
+    ownerIdType = tokenOwner.ownerIdType;
   } catch (error) {
-    console.error("Error fetching contract owner:", error);
+    console.error("Error fetching token owner:", error);
+  }
+
+  if (isNil(ownerId)) {
+    try {
+      const ownerData = await contractOwnerFromContract(
+        contract,
+        abi,
+        contractAddress,
+        isString(network) ? network : undefined,
+      );
+      ownerId = ownerData.ownerId || null;
+      ownerIdType = ownerData.ownerIdType;
+    } catch (error) {
+      console.error("Error fetching contract owner:", error);
+    }
   }
 
   if (isNil(ownerId)) {
