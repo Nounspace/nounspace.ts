@@ -32,6 +32,7 @@ export async function fetchClankerByAddress(
     });
 
     const json = await response.json();
+    console.log("Clanker response:", json);
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -55,6 +56,11 @@ export async function tokenRequestorFromContractAddress(
     fetchEmpireByAddress(contractAddress as Address),
   ]);
 
+  console.log("tokenRequestorFromContractAddress data:", {
+    clankerData,
+    empireData,
+  });
+
   if (empireData && empireData.owner) {
     let ownerId: string = empireData.owner.toLowerCase();
     let ownerIdType: OwnerType = "address";
@@ -63,6 +69,7 @@ export async function tokenRequestorFromContractAddress(
       try {
         const addresses = [ownerId];
         const users = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+        console.log("Neynar response:", users);
         const user = users[ownerId]?.[0];
         if (user?.fid) {
           ownerId = String(user.fid);
