@@ -56,19 +56,23 @@ export async function tokenRequestorFromContractAddress(
   ]);
 
   if (empireData && empireData.owner) {
-    let ownerId: string = empireData.owner;
+    let ownerId: string = empireData.owner.toLowerCase();
     let ownerIdType: OwnerType = "address";
 
-    try {
-      const addresses = [ownerId];
-      const users = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
-      const user = users[ownerId]?.[0];
-      if (user?.fid) {
-        ownerId = String(user.fid);
-        ownerIdType = "fid";
+    if (process.env.NEYNAR_API_KEY) {
+      try {
+        const addresses = [ownerId];
+        const users = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+        const user = users[ownerId]?.[0];
+        if (user?.fid) {
+          ownerId = String(user.fid);
+          ownerIdType = "fid";
+        }
+      } catch (error) {
+        console.error("Error fetching owner FID:", error);
       }
-    } catch (error) {
-      console.error("Error fetching owner FID:", error);
+    } else {
+      console.error("NEYNAR_API_KEY is not set");
     }
 
     return { ownerId, ownerIdType };

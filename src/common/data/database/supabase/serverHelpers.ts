@@ -10,7 +10,7 @@ export async function loadOwnedItentitiesForWalletAddress(
   const { data } = await createSupabaseServerClient()
     .from("walletIdentities")
     .select("identityPublicKey")
-    .eq("walletAddress", walletAddress);
+    .eq("walletAddress", walletAddress.toLowerCase());
   return map(data, "identityPublicKey");
 }
 
