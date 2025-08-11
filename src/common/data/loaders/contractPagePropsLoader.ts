@@ -1,4 +1,4 @@
-import { isArray, isNil, isString, isUndefined } from "lodash";
+import { isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,
@@ -40,7 +40,7 @@ export async function loadContractData(
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
-    isArray(contractAddress) ||
+    Array.isArray(contractAddress) ||
     !ETH_CONTRACT_ADDRESS_REGEX.test(contractAddress)
   ) {
     return {
@@ -50,10 +50,11 @@ export async function loadContractData(
       },
     };
   }
+  const contractAddressStr = contractAddress as string;
   // console.log("network contractPageProps", network);
 
   const contractData = await loadViemViewOnlyContract(
-    contractAddress,
+    contractAddressStr,
     isString(network) ? network : undefined,
   );
   if (isUndefined(contractData)) {
@@ -72,7 +73,7 @@ export async function loadContractData(
   let ownerIdType: OwnerType = "address";
 
   try {
-    const tokenOwner = await tokenRequestorFromContractAddress(contractAddress);
+      const tokenOwner = await tokenRequestorFromContractAddress(contractAddressStr);
     ownerId = tokenOwner.ownerId || null;
     ownerIdType = tokenOwner.ownerIdType;
   } catch (error) {
@@ -84,7 +85,7 @@ export async function loadContractData(
       const ownerData = await contractOwnerFromContract(
         contract,
         abi,
-        contractAddress,
+        contractAddressStr,
         isString(network) ? network : undefined,
       );
       ownerId = ownerData.ownerId || null;
@@ -99,7 +100,7 @@ export async function loadContractData(
       props: {
         ...defaultContractPageProps,
         tabName,
-        contractAddress,
+        contractAddressStr,
         pinnedCastId,
         owningIdentities,
       },
@@ -125,13 +126,13 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  // console.log("Debug - Contract Address before query:", contractAddress);
+  // console.log("Debug - Contract Address before query:", contractAddressStr);
   // console.log("Debug - Network:", network);
 
   let query = createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("spaceId, spaceName, contractAddress, network")
-    .eq("contractAddress", contractAddress);
+    .select("spaceId, spaceName, contractAddress, network, fidRegistrations(fid)")
+    .eq("contractAddress", contractAddressStr);
 
   if (isString(network)) {
     query = query.eq("network", network);
@@ -139,18 +140,18 @@ export async function loadContractData(
 
   const { data } = await query
     .order("timestamp", { ascending: true })
-    .limit(1)
+    .limit(1);
 
-  // console.log("Debug - Database Query Error:", error);
-  // console.log("Debug - Raw Query Results:", data);
-  // console.log("Debug - First Space ID:", data?.[0]?.spaceId);
-  // console.log("Debug - Query Details:", {
-  //   contractAddress,
-  //   network,
-  //   error: error?.message,
-  // });
+  const registrationRow = data?.[0];
+  const spaceId = registrationRow?.spaceId || null;
+  const registeredFid = Array.isArray(registrationRow?.fidRegistrations)
+    ? registrationRow?.fidRegistrations[0]?.fid
+    : registrationRow?.fidRegistrations?.fid;
 
-  const spaceId = data?.[0]?.spaceId || null;
+  if (!isNil(registeredFid)) {
+    ownerId = String(registeredFid);
+    ownerIdType = "fid";
+  }
 
   return {
     props: {
@@ -158,7 +159,7 @@ export async function loadContractData(
       ownerId,
       ownerIdType,
       tabName,
-      contractAddress,
+      contractAddress: contractAddressStr,
       pinnedCastId,
       owningIdentities,
     },
