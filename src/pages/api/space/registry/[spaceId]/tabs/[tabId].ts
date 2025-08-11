@@ -48,7 +48,7 @@ export async function identityCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  // console.log("identityCanModifySpace", identity, spaceId, network);
+  console.log("identityCanModifySpace", identity, spaceId, network);
   const data = await identitiesCanModifySpace(spaceId, network);
   return findIndex(data, (i) => i === identity) !== -1;
 }

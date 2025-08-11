@@ -79,6 +79,8 @@ async function updateSpaceTabOrder(
   // TODO: check that timestamp is recent (1 minute? 5 minutes?)
   // and is more recent than most recent file uploaded
   if (
+    // debug
+    console.log("Checking identity permissions", updateOrderRequest.publicKey, updateOrderRequest.spaceId, updateOrderRequest?.network),
     !(await identityCanModifySpace(
       updateOrderRequest.publicKey,
       updateOrderRequest.spaceId,
