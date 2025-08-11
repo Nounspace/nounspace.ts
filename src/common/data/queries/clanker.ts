@@ -1,5 +1,6 @@
 import { Address } from "viem";
 import { OwnerType } from "../api/etherscan";
+import neynar from "../api/neynar";
 import { fetchEmpireByAddress } from "./empireBuilder";
 
 export interface ClankerToken {
@@ -55,10 +56,22 @@ export async function tokenRequestorFromContractAddress(
   ]);
 
   if (empireData && empireData.owner) {
-    return {
-      ownerId: empireData.owner,
-      ownerIdType: "address" as OwnerType,
-    };
+    let ownerId: string = empireData.owner;
+    let ownerIdType: OwnerType = "address";
+
+    try {
+      const addresses = [ownerId];
+      const users = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+      const user = users[ownerId]?.[0];
+      if (user?.fid) {
+        ownerId = String(user.fid);
+        ownerIdType = "fid";
+      }
+    } catch (error) {
+      console.error("Error fetching owner FID:", error);
+    }
+
+    return { ownerId, ownerIdType };
   }
 
   if (clankerData && clankerData.requestor_fid) {
