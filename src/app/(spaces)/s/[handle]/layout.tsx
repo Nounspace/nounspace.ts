@@ -13,8 +13,8 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = params;
-  
+  const { handle, tabName: tabNameParam } = await params;
+
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle
   }
@@ -30,14 +30,11 @@ export async function generateMetadata({ params }): Promise<Metadata> {
 
   // Process tabName parameter if it exists
   const tabName = tabNameParam ? decodeURIComponent(tabNameParam) : undefined;
-  
+
   // Create Frame metadata for Farcaster with the correct path
-  const frameUrl = tabName 
-    ? `${WEBSITE_URL}/s/${handle}/${encodeURIComponent(tabName)}`
-    : `${WEBSITE_URL}/s/${handle}`;
-    
-  const displayName =
-    userMetadata?.displayName || userMetadata?.username || handle;
+  const frameUrl = tabName ? `${WEBSITE_URL}/s/${handle}/${encodeURIComponent(tabName)}` : `${WEBSITE_URL}/s/${handle}`;
+
+  const displayName = userMetadata?.displayName || userMetadata?.username || handle;
 
   // Build Open Graph image URL matching the dynamic metadata
   const encodedDisplayName = encodeURIComponent(displayName || "");
@@ -56,27 +53,28 @@ export async function generateMetadata({ params }): Promise<Metadata> {
         name: `${displayName}'s Nounspace`,
         splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
         splashBackgroundColor: "#FFFFFF",
-      }
-    }
+      },
+    },
   };
 
   const baseMetadata = getUserMetadataStructure(userMetadata);
-  
+
   // Type-safe way to add frame metadata
   const metadataWithFrame = {
     ...baseMetadata,
     title: `${displayName}'s Space | Nounspace`,
-    description: userMetadata?.bio || 
+    description:
+      userMetadata?.bio ||
       `${displayName}'s customized space on Nounspace, the customizable web3 social app built on Farcaster.`,
   };
-  
+
   // Add the fc:frame metadata
   if (!metadataWithFrame.other) {
     metadataWithFrame.other = {};
   }
-  
-  metadataWithFrame.other['fc:frame'] = JSON.stringify(spaceFrame);
-  
+
+  metadataWithFrame.other["fc:frame"] = JSON.stringify(spaceFrame);
+
   return metadataWithFrame;
 }
 

@@ -22,9 +22,9 @@ export async function fetchEmpireByAddress(
     }
 
     const json = await response.json();
-
-    return json.empires && json.empires.length > 0
-      ? (json.empires[0] as EmpireToken)
+    console.log("Empire Token Data:", json);
+    return json.empire && json.empire.length > 0
+      ? (json.empire[0] as EmpireToken)
       : null;
   } catch (_error) {
     return null;

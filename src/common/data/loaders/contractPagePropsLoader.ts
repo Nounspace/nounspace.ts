@@ -9,6 +9,7 @@ import {
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
 import createSupabaseServerClient from "../database/supabase/clients/server";
+import { tokenRequestorFromContractAddress } from "../queries/clanker";
 import { string } from "prop-types";
 import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
@@ -69,17 +70,32 @@ export async function loadContractData(
   let owningIdentities: string[] = [];
   let ownerId: string | null = null;
   let ownerIdType: OwnerType = "address";
+  
+  // First try to get owner from Clanker/Empire data
   try {
-    const ownerData = await contractOwnerFromContract(
-      contract,
-      abi,
-      contractAddress,
-      isString(network) ? network : undefined,
-    );
-    ownerId = ownerData.ownerId || null;
-    ownerIdType = ownerData.ownerIdType;
+    const tokenOwnerData = await tokenRequestorFromContractAddress(contractAddress);
+    if (tokenOwnerData.ownerId) {
+      ownerId = tokenOwnerData.ownerId;
+      ownerIdType = tokenOwnerData.ownerIdType;
+    }
   } catch (error) {
-    console.error("Error fetching contract owner:", error);
+    console.error("Error fetching token owner from Clanker/Empire:", error);
+  }
+
+  // If no owner found from Clanker/Empire, try Etherscan
+  if (isNil(ownerId)) {
+    try {
+      const ownerData = await contractOwnerFromContract(
+        contract,
+        abi,
+        contractAddress,
+        isString(network) ? network : undefined,
+      );
+      ownerId = ownerData.ownerId || null;
+      ownerIdType = ownerData.ownerIdType;
+    } catch (error) {
+      console.error("Error fetching contract owner from Etherscan:", error);
+    }
   }
 
   if (isNil(ownerId)) {

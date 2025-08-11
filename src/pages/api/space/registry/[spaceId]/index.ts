@@ -128,12 +128,12 @@ export async function identitiesCanModifySpace(
   spaceId: string,
   network?: string,
 ) {
-  // console.log(
-  //   "Checking identities that can modify space",
-  //   stringify(spaceId),
-  //   network,
-  //   "network",
-  // );
+  console.log(
+    "Checking identities that can modify space",
+    stringify(spaceId),
+    network,
+    "network",
+  );
   const supabase = createSupabaseServerClient();
   const { data: spaceRegistrationData } = await supabase
     .from("spaceRegistrations")
