@@ -137,7 +137,7 @@
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.1.6",
     "viem": "^2.31.0",
-    "wagmi": "^2.10.2",
+    "wagmi": "^2.16.2",
     "web-push": "^3.6.7",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
