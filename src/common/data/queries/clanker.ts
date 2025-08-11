@@ -49,22 +49,23 @@ export async function fetchClankerByAddress(
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
 ) {
-  const [clankerData, empireData] = await Promise.all([
-    fetchClankerByAddress(contractAddress as Address),
-    fetchEmpireByAddress(contractAddress as Address),
-  ]);
-
-  if (empireData && empireData.owner) {
-    return {
-      ownerId: empireData.owner,
-      ownerIdType: "address" as OwnerType,
-    };
-  }
-
+  // First check if it's a Clanker token
+  const clankerData = await fetchClankerByAddress(contractAddress as Address);
+  
   if (clankerData && clankerData.requestor_fid) {
     return {
       ownerId: String(clankerData.requestor_fid),
       ownerIdType: "fid" as OwnerType,
+    };
+  }
+
+  // If not a Clanker token, check if it's an Empire token
+  const empireData = await fetchEmpireByAddress(contractAddress as Address);
+  
+  if (empireData && empireData.owner) {
+    return {
+      ownerId: empireData.owner,
+      ownerIdType: "address" as OwnerType,
     };
   }
 
