@@ -69,7 +69,7 @@ export const NOUNS_TAB_CONFIG = {
   timestamp: "2025-06-20T05:58:44.080Z",
 };
 
-export const NOUNSPOT_TAB_CONFIG: SpaceConfig = {
+export const PLACES_TAB_CONFIG: SpaceConfig = {
   layoutID: "cdb57e20-254c-476f-aadc-bcce8bbfa772",
   layoutDetails: {
     layoutConfig: {
@@ -94,8 +94,8 @@ export const NOUNSPOT_TAB_CONFIG: SpaceConfig = {
     layoutFidget: "grid",
   },
   theme: {
-    id: "Homebase-Tab Nounspot-Theme",
-    name: "Homebase-Tab Nounspot-Theme",
+    id: "Homebase-Tab Places-Theme",
+    name: "Homebase-Tab Places-Theme",
     properties: {
       background: "#ffffff",
       backgroundHTML: "",
@@ -120,7 +120,7 @@ export const NOUNSPOT_TAB_CONFIG: SpaceConfig = {
         settings: {
           background: "var(--user-theme-fidget-background)",
           cropOffsetX: 0,
-          cropOffsetY: -4,
+          cropOffsetY: 0,
           fidgetBorderColor: "rgba(238, 238, 238, 0)",
           fidgetBorderWidth: "0",
           fidgetShadow: "none",
