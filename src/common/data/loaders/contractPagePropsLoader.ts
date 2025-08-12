@@ -131,7 +131,9 @@ export async function loadContractData(
 
   let query = createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("spaceId, spaceName, contractAddress, network, fidRegistrations(fid)")
+    .select(
+      "spaceId, spaceName, contractAddress, network, identityPublicKey, fidRegistrations(fid)"
+    )
     .eq("contractAddress", contractAddressStr);
 
   if (isString(network)) {
@@ -147,6 +149,12 @@ export async function loadContractData(
   const registeredFid = Array.isArray(registrationRow?.fidRegistrations)
     ? registrationRow?.fidRegistrations[0]?.fid
     : registrationRow?.fidRegistrations?.fid;
+
+  if (registrationRow?.identityPublicKey) {
+    if (!owningIdentities.includes(registrationRow.identityPublicKey)) {
+      owningIdentities.push(registrationRow.identityPublicKey);
+    }
+  }
 
   if (!isNil(registeredFid)) {
     ownerId = String(registeredFid);
