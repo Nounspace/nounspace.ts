@@ -5,33 +5,51 @@ interface XFeedProps {
   style?: string;
 }
 
-const XFeedComponent: React.FC<XFeedProps> = ({ Xhandle, style }) => {
-  const url = useMemo(() => {
-    const theme = style || "light";
-    return `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=false&hideHeader=false&hideScrollBar=true&lang=en&origin=https%3A%2F%2Fpublish.twitter.com%2F%23&theme=${theme}&widgetsVersion=2615f7e52b7e0%3A1702314776716`;
-  }, [Xhandle, style]);
+// Cache iframes by handle and style so remounts reuse the same element
+const iframeCache = new Map<string, HTMLIFrameElement>();
 
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const srcRef = useRef(url);
+const buildUrl = (handle: string, theme: string) =>
+  `https://syndication.twitter.com/srv/timeline-profile/screen-name/${handle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=false&hideHeader=false&hideScrollBar=true&lang=en&origin=https%3A%2F%2Fpublish.twitter.com%2F%23&theme=${theme}&widgetsVersion=2615f7e52b7e0%3A1702314776716`;
+
+const XFeedComponent: React.FC<XFeedProps> = ({ Xhandle, style }) => {
+  const theme = style || "light";
+  const url = useMemo(() => buildUrl(Xhandle, theme), [Xhandle, theme]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (srcRef.current !== url && iframeRef.current) {
-      iframeRef.current.src = url;
-      srcRef.current = url;
-    }
-  }, [url]);
+    const key = `${Xhandle}-${theme}`;
+    const cachedIframe = iframeCache.get(key);
 
-  return (
-    <iframe
-      ref={iframeRef}
-      src={srcRef.current}
-      style={{ border: "none", width: "100%", height: "100%" }}
-      title="Twitter Feed"
-      scrolling="yes"
-      frameBorder="0"
-      className="scrollbar-none"
-    />
-  );
+    if (containerRef.current) {
+      if (cachedIframe) {
+        if (cachedIframe.src !== url) {
+          cachedIframe.src = url;
+        }
+        containerRef.current.appendChild(cachedIframe);
+      } else {
+        const iframe = document.createElement("iframe");
+        iframe.src = url;
+        iframe.style.border = "none";
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.title = "Twitter Feed";
+        iframe.scrolling = "yes";
+        iframe.frameBorder = "0";
+        iframe.className = "scrollbar-none";
+        iframeCache.set(key, iframe);
+        containerRef.current.appendChild(iframe);
+      }
+    }
+
+    return () => {
+      const iframe = iframeCache.get(key);
+      if (iframe && containerRef.current?.contains(iframe)) {
+        containerRef.current.removeChild(iframe);
+      }
+    };
+  }, [Xhandle, theme, url]);
+
+  return <div ref={containerRef} className="h-full w-full" />;
 };
 
 export const XFeed = React.memo(XFeedComponent);
