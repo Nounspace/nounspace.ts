@@ -9,10 +9,13 @@ export type EditabilityCheck = {
 
 export type EditabilityContext = {
   currentUserFid: number | null;
+  currentUserIdentityPublicKey?: string | null;
   // Profile ownership
   spaceOwnerFid?: number;
   // Contract ownership
   spaceOwnerAddress?: Address;
+  // Identity-based ownership
+  spaceOwnerIdentities?: string[];
   // Token-specific data
   tokenData?: MasterToken;
   // User's wallets for address ownership checks
@@ -24,8 +27,10 @@ export type EditabilityContext = {
 export const createEditabilityChecker = (context: EditabilityContext) => {
   const {
     currentUserFid,
+    currentUserIdentityPublicKey,
     spaceOwnerFid,
     spaceOwnerAddress,
+    spaceOwnerIdentities,
     tokenData,
     wallets = [],
     isTokenPage = false,
@@ -43,18 +48,30 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
   //   isTokenPage,
   // });
 
-  // If we don't have a current user FID, we're definitely not editable
-  if (isNil(currentUserFid)) {
-    // console.log('Not editable: No current user FID');
+  // If we don't have a current user identity (FID or public key), we're definitely not editable
+  if (isNil(currentUserFid) && isNil(currentUserIdentityPublicKey)) {
+    // console.log('Not editable: No current user identifier');
     return { isEditable: false, isLoading: false };
   }
 
   // For token spaces, check requestor and ownership
   if (isTokenPage) {
     // console.log('Checking token space editability');
-    
+
+    // Check if user owns via identity public key
+    if (
+      currentUserIdentityPublicKey &&
+      spaceOwnerIdentities?.includes(currentUserIdentityPublicKey)
+    ) {
+      return { isEditable: true, isLoading: false };
+    }
+
     // Check if user is the owner by FID first (doesn't require clankerData)
-    if (spaceOwnerFid && currentUserFid === spaceOwnerFid) {
+    if (
+      spaceOwnerFid &&
+      !isNil(currentUserFid) &&
+      currentUserFid === spaceOwnerFid
+    ) {
       // console.log('Editable: User owns by FID', {
       //   currentUserFid,
       //   spaceOwnerFid,
@@ -77,7 +94,11 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     // Only check requestor status if we have clankerData
     if (tokenData && !isNil(tokenData.clankerData)) {
       const requestorFid = tokenData.clankerData?.requestor_fid;
-      if (requestorFid && currentUserFid === Number(requestorFid)) {
+      if (
+        requestorFid &&
+        !isNil(currentUserFid) &&
+        currentUserFid === Number(requestorFid)
+      ) {
         // console.log('Editable: User is the requestor', {
         //   currentUserFid,
         //   requestorFid: Number(requestorFid),
@@ -92,7 +113,18 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
   } else {
     // For profile spaces, just check FID match
     // console.log('Checking profile space editability');
-    if (spaceOwnerFid && currentUserFid === spaceOwnerFid) {
+    if (
+      currentUserIdentityPublicKey &&
+      spaceOwnerIdentities?.includes(currentUserIdentityPublicKey)
+    ) {
+      return { isEditable: true, isLoading: false };
+    }
+
+    if (
+      spaceOwnerFid &&
+      !isNil(currentUserFid) &&
+      currentUserFid === spaceOwnerFid
+    ) {
       // console.log('Editable: User owns profile space', {
       //   currentUserFid,
       //   spaceOwnerFid,
