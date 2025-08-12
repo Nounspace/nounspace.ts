@@ -32,6 +32,7 @@ import { useFarcasterSigner } from ".";
 import { mobileStyleSettings, WithMargin } from "../helpers";
 import { CastRow } from "./components/CastRow";
 import { CastThreadView } from "./components/CastThreadView";
+import { XFeed } from "./XFeed";
 
 export enum FilterType {
   Channel = "channel_id",
@@ -365,6 +366,27 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
     Xhandle,
     style,
   } = settings;
+
+  const containerStyle = {
+    fontFamily: settings.useDefaultColors
+      ? "var(--user-theme-font)"
+      : settings.fontFamily,
+    color: settings.useDefaultColors
+      ? "var(--user-theme-font-color)"
+      : settings.fontColor,
+    background: settings.useDefaultColors
+      ? "var(--user-theme-fidget-background)"
+      : settings.background,
+  };
+
+  if (selectPlatform.name === "X") {
+    return (
+      <div className="h-full overflow-y-auto" style={containerStyle}>
+        <XFeed Xhandle={Xhandle} style={style} />
+      </div>
+    );
+  }
+
   const {
     feedType,
     users,
@@ -484,28 +506,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
     />
   );
 
-  const renderXFeed = () => {
-    const theme = style || "light";
-    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${Xhandle}?dnt=true&embedId=twitter-widget-0&frame=false&hideBorder=true&hideFooter=false&hideHeader=false&hideScrollBar=true&lang=en&origin=https%3A%2F%2Fpublish.twitter.com%2F%23&theme=${theme}&widgetsVersion=2615f7e52b7e0%3A1702314776716`;
-
-    return (
-      <iframe
-        src={url}
-        style={{ border: "none", width: "100%", height: "100%" }}
-        title="Twitter Feed"
-        scrolling="yes"
-        frameBorder="0"
-        className="scrollbar-none"
-      />
-    );
-  };
-
-  const renderFeedContent = () => {
-    if (selectPlatform.name === "X") {
-      return renderXFeed();
-    }
-    return renderFeed();
-  };
+  
 
   const renderFeed = () => {
     if (isTransitioning || isPending) {
@@ -605,20 +606,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
   const isThreadView = last !== undefined;
 
   return (
-    <div
-      className="h-full overflow-y-auto"
-      style={{
-        fontFamily: settings.useDefaultColors
-          ? "var(--user-theme-font)"
-          : settings.fontFamily,
-        color: settings.useDefaultColors
-          ? "var(--user-theme-font-color)"
-          : settings.fontColor,
-        background: settings.useDefaultColors
-          ? "var(--user-theme-fidget-background)"
-          : settings.background,
-      }}
-    >
+    <div className="h-full overflow-y-auto" style={containerStyle}>
       {isTransitioning ? (
         <div className="h-full w-full flex justify-center items-center">
           <Loading />
@@ -626,7 +614,7 @@ const Feed: React.FC<FidgetArgs<FeedFidgetSettings, FeedFidgetData>> = ({
       ) : isThreadView ? (
         <div className="h-full">{renderThread()}</div>
       ) : (
-        <div className="h-full">{renderFeedContent()}</div>
+        <div className="h-full">{renderFeed()}</div>
       )}
     </div>
   );
