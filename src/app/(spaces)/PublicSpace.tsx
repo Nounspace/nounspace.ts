@@ -20,6 +20,7 @@ import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -35,6 +36,7 @@ interface PublicSpaceProps {
   // Ownership props
   spaceOwnerFid?: number;
   spaceOwnerAddress?: Address;
+  owningIdentities?: string[];
   // Token data
   tokenData?: MasterToken;
   // New prop to identify page type
@@ -49,6 +51,7 @@ export default function PublicSpace({
   // Ownership props
   spaceOwnerFid,
   spaceOwnerAddress,
+  owningIdentities,
   // Token-specific props
   isTokenPage = false,
   contractAddress,
@@ -111,6 +114,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   
   // Clear cache only when switching to a different space
@@ -133,8 +137,10 @@ export default function PublicSpace({
   const editabilityCheck = useMemo(() => {
     const checker = createEditabilityChecker({
       currentUserFid,
+      currentUserIdentityPublicKey,
       spaceOwnerFid,
       spaceOwnerAddress,
+       spaceOwnerIdentities: owningIdentities,
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
       isTokenPage,
@@ -143,8 +149,10 @@ export default function PublicSpace({
     return checker;
   }, [
     currentUserFid,
+    currentUserIdentityPublicKey,
     spaceOwnerFid,
     spaceOwnerAddress,
+    owningIdentities,
     tokenData,
     wallets,
     isTokenPage,
