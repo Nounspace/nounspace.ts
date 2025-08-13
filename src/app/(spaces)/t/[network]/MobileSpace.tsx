@@ -82,8 +82,6 @@ export const MobileContractDefinedSpace = ({
     config.theme,
   ]);
 
-  console.log("memoizedConfig", memoizedConfig);
-
   const {
     data,
     isFetchingNextPage,

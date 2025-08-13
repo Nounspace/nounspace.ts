@@ -63,7 +63,6 @@ export default function DesktopContractDefinedSpace({
     }).then((authManagerResp) => {
       if (authManagerResp.result === "success") {
         setCurrentUserFid(authManagerResp.value as number);
-        console.log("Current user FID:", currentUserFid, "isSignedIntoFarcaster:", isSignedIntoFarcaster);
       }
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);

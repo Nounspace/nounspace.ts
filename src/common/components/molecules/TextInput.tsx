@@ -1,3 +1,5 @@
+"use client";
+
 import { InputProps } from "@/common/components/atoms/input";
 import React, { forwardRef, useCallback, useState } from "react";
 import styled from "styled-components";
