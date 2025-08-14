@@ -351,6 +351,7 @@ export function ThemeSettingsEditor({
                 {/* Fonts */}
                 <TabsContent value={ThemeEditorTab.SPACE} className={tabContentClasses}>
                   <SpaceTabContent 
+                    background={background}
                     headingsFontColor={headingsFontColor}
                     headingsFont={headingsFont}
                     fontColor={fontColor}
@@ -372,7 +373,6 @@ export function ThemeSettingsEditor({
                 {/* Style */}
                 <TabsContent value={ThemeEditorTab.FIDGETS} className={tabContentClasses}>
                   <StyleTabContent 
-                    background={background}
                     fidgetBackground={fidgetBackground}
                     fidgetBorderColor={fidgetBorderColor}
                     fidgetBorderWidth={fidgetBorderWidth}

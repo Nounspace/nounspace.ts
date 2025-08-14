@@ -5,6 +5,7 @@ import FontSelector from "@/common/components/molecules/FontSelector";
 import ThemeSettingsTooltip from "./ThemeSettingsTooltip";
 
 interface SpaceTabContentProps {
+  background: Color | string;
   headingsFontColor: Color | string;
   headingsFont: string;
   fontColor: Color | string;
@@ -13,6 +14,7 @@ interface SpaceTabContentProps {
 }
 
 export const SpaceTabContent: React.FC<SpaceTabContentProps> = ({
+  background,
   headingsFontColor,
   headingsFont,
   fontColor,
@@ -21,6 +23,18 @@ export const SpaceTabContent: React.FC<SpaceTabContentProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-row gap-1">
+          <h4 className="text-sm">Background color</h4>
+          <ThemeSettingsTooltip text="Set a solid background or gradient color. You can also add custom backgrounds with HTML/CSS on the Code tab." />
+        </div>
+        <ColorSelector
+          className="rounded-full overflow-hidden w-6 h-6 shrink-0"
+          innerClassName="rounded-full"
+          value={background as Color}
+          onChange={onPropertyChange("background")}
+        />
+      </div>
       <div className="flex flex-col gap-1">
         <div className="flex flex-row gap-1">
           <h4 className="text-sm">Headings</h4>
