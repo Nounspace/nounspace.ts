@@ -59,13 +59,10 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
       
-      // For Farcaster posts: Use our proxy endpoint WITHOUT .mp4 extension
-      // The endpoint serves proper video/mp4 Content-Type headers
+      // FIXED: Use working endpoint that accepts .mp4 extension
       if (typeof window !== 'undefined') {
-        // Client-side: use current origin
-        return `${window.location.origin}/api/walrus/video/${blobId}`;
+        return `${window.location.origin}/api/walrus-video/${blobId}.mp4`;
       } else {
-        // Server-side: construct base URL
         const isDev = process.env.NODE_ENV === 'development';
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                        process.env.NEXT_PUBLIC_URL ||
@@ -73,10 +70,9 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
                        (isDev ? 'http://localhost:3000' : null);
         
         if (baseUrl) {
-          return `${baseUrl}/api/walrus/video/${blobId}`;
+          return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
         }
         
-        // Final fallback: direct Walrus URL (might not work in Farcaster but will work for playback)
         return `${aggregatorUrl}/v1/blobs/${blobId}`;
       }
       
