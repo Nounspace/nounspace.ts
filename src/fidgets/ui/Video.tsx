@@ -11,7 +11,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { isValidUrl } from "@/common/lib/utils/url";
 import { validateVideoFile } from "@/common/lib/utils/files";
-import { convertToAggregatorUrl, isWalrusUrl, uploadVideoToWalrus } from "@/common/lib/utils/walrus";
+import { getWalrusDirectVideoUrl, isWalrusUrl, uploadVideoToWalrus } from "@/common/lib/utils/walrus";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
 import { VideoCameraIcon } from "@heroicons/react/20/solid";
 import React, { useState } from "react";
@@ -141,7 +141,7 @@ const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
 
   // For Walrus videos, render directly as video element
   if (isWalrusVideo) {
-    const aggregatorUrl = convertToAggregatorUrl(url);
+    const directVideoUrl = getWalrusDirectVideoUrl(url);
     return (
       <div style={{ 
         overflow: "hidden", 
@@ -150,7 +150,7 @@ const VideoFidget: React.FC<FidgetArgs<VideoFidgetSettings>> = ({
         position: "relative"
       }}>
         <video
-          src={aggregatorUrl}
+          src={directVideoUrl}
           controls
           style={{
             transform: isMobile ? 'none' : `scale(${scaleValue})`,

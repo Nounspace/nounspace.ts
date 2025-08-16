@@ -59,11 +59,11 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
       
-      // For Farcaster posts: Use our proxy endpoint with .mp4 extension
-      // This helps Farcaster recognize as video while our proxy handles the actual Walrus request
+      // For Farcaster posts: Use our proxy endpoint WITHOUT .mp4 extension
+      // The endpoint serves proper video/mp4 Content-Type headers
       if (typeof window !== 'undefined') {
         // Client-side: use current origin
-        return `${window.location.origin}/api/walrus/video/${blobId}.mp4`;
+        return `${window.location.origin}/api/walrus/video/${blobId}`;
       } else {
         // Server-side: construct base URL
         const isDev = process.env.NODE_ENV === 'development';
@@ -73,7 +73,7 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
                        (isDev ? 'http://localhost:3000' : null);
         
         if (baseUrl) {
-          return `${baseUrl}/api/walrus/video/${blobId}.mp4`;
+          return `${baseUrl}/api/walrus/video/${blobId}`;
         }
         
         // Final fallback: direct Walrus URL (might not work in Farcaster but will work for playback)
@@ -173,4 +173,29 @@ export function getWalrusVideoUrl(url: string, useProxy: boolean = false): strin
   // For posts and embeds, use direct URL with .mp4 extension for better recognition
   const aggregatorUrl = convertToAggregatorUrl(url);
   return `${aggregatorUrl}.mp4`;
+}
+
+/**
+ * Get the direct video URL for playback (not for sharing)
+ * This returns the actual video file URL for use in video players
+ */
+export function getWalrusDirectVideoUrl(url: string): string {
+  if (!isWalrusUrl(url)) {
+    return url;
+  }
+
+  const blobId = extractBlobIdFromWalrusUrl(url);
+  if (!blobId) {
+    return url;
+  }
+
+  // Use our proxy endpoint that serves with proper Content-Type headers
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 
+      process.env.NEXT_PUBLIC_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+      'http://localhost:3000';
+  
+  return `${baseUrl}/api/walrus/video/${blobId}`;
 }

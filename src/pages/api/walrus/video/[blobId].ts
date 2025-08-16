@@ -68,8 +68,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+    
+    // Add headers to help with video detection by social platforms
+    res.setHeader('Content-Disposition', 'inline; filename="video.mp4"');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // Add Open Graph type header (some crawlers check this)
+    res.setHeader('X-OG-Type', 'video');
+    
     // Send the video data
     res.status(200).send(Buffer.from(videoBuffer));
 
