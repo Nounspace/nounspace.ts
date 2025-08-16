@@ -1,4 +1,4 @@
-import { convertToAggregatorUrl, isWalrusUrl } from "@/common/lib/utils/walrus";
+import { isWalrusUrl, getWalrusDirectVideoUrl } from "@/common/lib/utils/walrus";
 import dynamic from "next/dynamic";
 import React, { useCallback, useState } from "react";
 
@@ -34,14 +34,14 @@ const VideoEmbed = ({ url }: { url: string }) => {
     [didUnmute, togglePlay],
   );
 
-  // For Walrus videos, use native video element with aggregator URL
+  // For Walrus videos, use proxy endpoint for reliable playback
   if (isWalrusUrl(url)) {
-    const aggregatorUrl = convertToAggregatorUrl(url);
+    const videoUrl = getWalrusDirectVideoUrl(url);
     
     return (
       <video
         ref={playerRef}
-        src={aggregatorUrl}
+        src={videoUrl}
         muted={muted}
         autoPlay={false}
         controls={true}

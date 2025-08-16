@@ -40,11 +40,24 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta name="twitter:player" content={videoUrl} />
         <meta name="twitter:player:width" content="1280" />
         <meta name="twitter:player:height" content="720" />
+        <meta name="twitter:player:stream" content={videoUrl} />
+        <meta name="twitter:player:stream:content_type" content="video/mp4" />
         
-        {/* Farcaster specific meta tags */}
+        {/* Farcaster specific meta tags for video recognition */}
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:video" content={videoUrl} />
         <meta property="fc:frame:video:type" content="video/mp4" />
+        <meta property="fc:frame:aspect_ratio" content="16:9" />
+        
+        {/* Additional video meta tags for better platform support */}
+        <meta name="video_src" content={videoUrl} />
+        <meta name="video_type" content="video/mp4" />
+        <meta name="video_width" content="1280" />
+        <meta name="video_height" content="720" />
+        
+        {/* Neynar/Farcaster specific tags */}
+        <meta name="farcaster:video" content={videoUrl} />
+        <meta name="farcaster:video:type" content="video/mp4" />
         
         {thumbnailUrl && (
           <>
@@ -76,7 +89,6 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
                   src={videoUrl}
                   controls
                   className="w-full h-full"
-                  onClick={handleVideoClick}
                   preload="metadata"
                 >
                   Your browser does not support the video tag.

@@ -5,7 +5,15 @@ import { NextApiRequest, NextApiResponse } from 'next';
  * This endpoint handles URLs like /api/walrus-video/[blobId].mp4
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
+  // Allow GET, HEAD and OPTIONS methods
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+    return res.status(204).end();
+  }
+
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -15,8 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Invalid blob ID' });
   }
 
-  // Remove .mp4 extension if present
-  const blobId = rawBlobId.replace(/\.mp4$/, '');
+  // Remove file extension if present (supports .mp4, .webm, .mov etc.)
+  const blobId = rawBlobId.replace(/\.(mp4|webm|mov|ogg|ogv|mkv)$/, '');
 
   // Validate blob ID format
   if (!/^[a-zA-Z0-9_-]+$/.test(blobId)) {
@@ -32,11 +40,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     let videoResponse: Response | null = null;
     let lastError: Error | null = null;
+    const range = req.headers.range as string | undefined;
 
     for (const aggregator of aggregators) {
       try {
         const walrusUrl = `${aggregator}/v1/blobs/${blobId}`;
-        const response = await fetch(walrusUrl);
+        const upstreamHeaders: HeadersInit = {};
+        
+        // Forward Range header for seeking support
+        if (range) upstreamHeaders['Range'] = range;
+        
+        // Forward cache-related headers
+        if (req.headers['if-none-match']) upstreamHeaders['If-None-Match'] = String(req.headers['if-none-match']);
+        if (req.headers['if-modified-since']) upstreamHeaders['If-Modified-Since'] = String(req.headers['if-modified-since']);
+        
+        const response = await fetch(walrusUrl, {
+          method: req.method, // GET or HEAD
+          headers: upstreamHeaders,
+        });
         
         if (response.ok) {
           videoResponse = response;
@@ -55,22 +76,73 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Get the video data
-    const videoBuffer = await videoResponse.arrayBuffer();
+    // Forward relevant headers from upstream response
+    const passThroughHeaders = [
+      'content-type',
+      'content-length',
+      'accept-ranges',
+      'content-range',
+      'cache-control',
+      'etag',
+      'last-modified',
+      'content-disposition',
+    ];
     
-    // Set proper headers for video content
-    res.setHeader('Content-Type', 'video/mp4');
-    res.setHeader('Content-Length', videoBuffer.byteLength);
-    res.setHeader('Accept-Ranges', 'bytes');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    const upstreamContentType = videoResponse.headers.get('content-type');
+    
+    // Set content type - prefer upstream, fallback to video/mp4
+    res.setHeader('Content-Type', upstreamContentType || 'video/mp4');
+    
+    // Forward other relevant headers
+    for (const headerName of passThroughHeaders) {
+      const headerValue = videoResponse.headers.get(headerName);
+      if (headerValue && headerName !== 'content-type') {
+        res.setHeader(headerName, headerValue);
+      }
+    }
+    
+    // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
-    res.setHeader('Content-Disposition', 'inline; filename="video.mp4"');
+    
+    // Set cache control if not provided by upstream
+    if (!videoResponse.headers.get('cache-control')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+    
+    // Add security headers
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    
+    // Support HEAD requests - return headers only
+    if (req.method === 'HEAD') {
+      return res.status(videoResponse.status).end();
+    }
 
-    // Send the video data
-    res.status(200).send(Buffer.from(videoBuffer));
+    // Stream the response body
+    if (videoResponse.body) {
+      res.status(videoResponse.status);
+      const reader = videoResponse.body.getReader();
+      
+      try {
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          res.write(value);
+        }
+        res.end();
+      } catch (error) {
+        console.error('Error streaming video:', error);
+        res.status(500).end();
+      } finally {
+        reader.releaseLock();
+      }
+    } else {
+      // Fallback: buffer the entire response
+      const videoBuffer = await videoResponse.arrayBuffer();
+      res.status(videoResponse.status).send(Buffer.from(videoBuffer));
+    }
 
   } catch (error) {
     console.error('Error serving Walrus video:', error);

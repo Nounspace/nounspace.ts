@@ -59,9 +59,9 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
       
-      // FIXED: Use working endpoint that accepts .mp4 extension
+      // Return URL to video page (with proper Open Graph tags) for better Farcaster integration
       if (typeof window !== 'undefined') {
-        return `${window.location.origin}/api/walrus-video/${blobId}.mp4`;
+        return `${window.location.origin}/video/walrus/${blobId}`;
       } else {
         const isDev = process.env.NODE_ENV === 'development';
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
@@ -70,7 +70,7 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
                        (isDev ? 'http://localhost:3000' : null);
         
         if (baseUrl) {
-          return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
+          return `${baseUrl}/video/walrus/${blobId}`;
         }
         
         return `${aggregatorUrl}/v1/blobs/${blobId}`;
@@ -101,16 +101,25 @@ export function isWalrusUrl(url: string): boolean {
   // Check for blob ID pattern (with or without file extension)
   const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.[a-z0-9]+)?(\?.*)?$/i.test(url);
   
-  return hasV1Blobs && (hasWalrusDomain || hasBlobPattern);
+  // Check for Walrus video page URLs (e.g., /video/walrus/[blobId])
+  const isWalrusVideoPage = /\/video\/walrus\/[a-zA-Z0-9_-]+/.test(url);
+  
+  return (hasV1Blobs && (hasWalrusDomain || hasBlobPattern)) || isWalrusVideoPage;
 }
 
 /**
  * Get the blob ID from a Walrus URL
  */
 export function extractBlobIdFromWalrusUrl(url: string): string | null {
+  // Check for video page URLs first (e.g., /video/walrus/[blobId])
+  const pageMatch = url.match(/\/video\/walrus\/([a-zA-Z0-9_-]+)/i);
+  if (pageMatch) {
+    return pageMatch[1];
+  }
+  
   // Match blob ID with optional file extension and query parameters
-  const match = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?(?:\?.*)?$/i);
-  return match ? match[1] : null;
+  const apiMatch = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?(?:\?.*)?$/i);
+  return apiMatch ? apiMatch[1] : null;
 }
 
 /**
@@ -145,6 +154,30 @@ export function convertToAggregatorUrl(url: string): string {
   }
   
   return `${aggregatorUrl}/v1/blobs/${blobId}`;
+}
+
+/**
+ * Get a Walrus video page URL for sharing (with proper Open Graph tags)
+ * This returns a URL to the video page which has proper meta tags for Farcaster
+ */
+export function getWalrusVideoPageUrl(url: string): string {
+  if (!isWalrusUrl(url)) {
+    return url;
+  }
+
+  const blobId = extractBlobIdFromWalrusUrl(url);
+  if (!blobId) {
+    return url;
+  }
+
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 
+      process.env.NEXT_PUBLIC_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+      'http://localhost:3000';
+  
+  return `${baseUrl}/video/walrus/${blobId}`;
 }
 
 /**
