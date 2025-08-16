@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from "react";
+import { convertToAggregatorUrl, isWalrusUrl } from "@/common/lib/utils/walrus";
 import dynamic from "next/dynamic";
+import React, { useCallback, useState } from "react";
 
 const ReactHlsPlayer = dynamic(() => import("@gumlet/react-hls-player"), {
   ssr: false,
@@ -33,6 +34,27 @@ const VideoEmbed = ({ url }: { url: string }) => {
     [didUnmute, togglePlay],
   );
 
+  // For Walrus videos, use native video element with aggregator URL
+  if (isWalrusUrl(url)) {
+    const aggregatorUrl = convertToAggregatorUrl(url);
+    return (
+      <video
+        ref={playerRef}
+        src={aggregatorUrl}
+        muted={muted}
+        autoPlay={false}
+        controls={true}
+        width="100%"
+        height="auto"
+        onClick={onClick}
+        className="object-contain size-full"
+      >
+        Your browser does not support the video tag.
+      </video>
+    );
+  }
+
+  // For HLS streams and other video formats
   return (
     <ReactHlsPlayer
       src={url}

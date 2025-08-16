@@ -1,12 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // import neynar from "@/common/data/api/neynar";
+import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import {
   CastAddBody,
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/core";
-import useIsMobile from "@/common/lib/hooks/useIsMobile";
 
+import { Button } from "@/common/components/atoms/button";
 import {
   ModManifest,
   fetchUrlMetadata,
@@ -20,7 +21,6 @@ import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/compon
 import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
 import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
 import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
-import { Button } from "@/common/components/atoms/button";
 import { debounce, isEmpty, isUndefined, map } from "lodash";
 import { MentionList } from "./mentionList";
 
@@ -31,13 +31,15 @@ import {
 } from "@/common/components/atoms/popover";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
+import { isVideoFile, validateVideoFile } from "@/common/lib/utils/files";
+import { uploadVideoToWalrus } from "@/common/lib/utils/walrus";
 import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
-import { PhotoIcon } from "@heroicons/react/20/solid";
+import { PhotoIcon, VideoCameraIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
 import EmojiPicker, {
-  Theme,
   EmojiClickData,
+  Theme,
 } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
@@ -161,7 +163,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
 
   // Real image upload function for imgBB
@@ -186,21 +190,58 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return data.data.display_url || data.data.url;
   }
 
-  // Drop handler
+  // Video upload function for Walrus
+  async function handleVideoUpload(file: File): Promise<void> {
+    const validation = validateVideoFile(file);
+    if (!validation.valid) {
+      alert(`Error: ${validation.error}`);
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const uploadResult = await uploadVideoToWalrus(file);
+      addEmbed({ url: uploadResult, status: "loaded" });
+    } catch (err) {
+      alert("Error uploading video: " + (err as Error).message);
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  }
+
+  // Video upload button handler
+  const handleVideoButtonClick = () => {
+    videoInputRef.current?.click();
+  };
+
+  // Video file change handler
+  const handleVideoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await handleVideoUpload(file);
+    e.target.value = ""; // Reset input
+  };
+
+  // Enhanced drop handler to support both images and videos
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     if (!e.dataTransfer.files || e.dataTransfer.files.length === 0) return;
+    
     const file = e.dataTransfer.files[0];
-    if (!file.type.startsWith("image/")) return;
-    setIsUploadingImage(true);
-    try {
-      const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
-    } catch (err) {
-      alert("Error uploading image: " + (err as Error).message);
-    } finally {
-      setIsUploadingImage(false);
+    
+    if (file.type.startsWith("image/")) {
+      setIsUploadingImage(true);
+      try {
+        const url = await uploadImageToImgBB(file);
+        addEmbed({ url, status: "loaded" });
+      } catch (err) {
+        alert("Error uploading image: " + (err as Error).message);
+      } finally {
+        setIsUploadingImage(false);
+      }
+    } else if (isVideoFile(file)) {
+      await handleVideoUpload(file);
     }
   };
 
@@ -676,6 +717,13 @@ const CreateCast: React.FC<CreateCastProps> = ({
           onChange={handleFileChange}
           className="hidden"
         />
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept="video/*"
+          onChange={handleVideoFileChange}
+          className="hidden"
+        />
         {isPublishing ? (
           <div className="w-full h-full min-h-[150px]">{draft.text}</div>
         ) : (
@@ -687,13 +735,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
           >
             {isDragging && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
-                <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
+                <span className="text-blue-700 font-semibold text-lg">Drop media here…</span>
               </div>
             )}
             {isUploadingImage && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
                 <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+              </div>
+            )}
+            {isUploadingVideo && (
+              <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
+                <Spinner style={{ width: "40px", height: "40px" }} />
+                <span className="ml-2 text-gray-700 font-medium">Uploading video to Walrus…</span>
               </div>
             )}
             <EditorContent
@@ -746,35 +800,67 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 </div>
               )}
 
-              {/* Add media button moved to left side on mobile */}
+              {/* Add media buttons moved to left side on mobile */}
               {isMobile && (
-                <Button
-                  className="h-10"
-                  type="button"
-                  variant="outline"
-                  disabled={isPublishing}
-                  onClick={handleFileButtonClick}
-                >
-                  <PhotoIcon className="mr-1 w-5 h-5" />
-                  Add
-                </Button>
+                <>
+                  <Button
+                    className="h-10"
+                    type="button"
+                    variant="outline"
+                    disabled={isPublishing}
+                    onClick={handleFileButtonClick}
+                  >
+                    <PhotoIcon className="mr-1 w-5 h-5" />
+                    Photo
+                  </Button>
+                  <Button
+                    className="h-10"
+                    type="button"
+                    variant="outline"
+                    disabled={isPublishing || isUploadingVideo}
+                    onClick={handleVideoButtonClick}
+                  >
+                    {isUploadingVideo ? (
+                      <Spinner style={{ width: "20px", height: "20px" }} />
+                    ) : (
+                      <VideoCameraIcon className="mr-1 w-5 h-5" />
+                    )}
+                    Video
+                  </Button>
+                </>
               )}
             </div>
 
             {/* Right side: Other action buttons */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
-              {/* Only show Add button here for desktop */}
+              {/* Only show Add buttons here for desktop */}
               {!isMobile && (
-                <Button
-                  className="h-10"
-                  type="button"
-                  variant="outline"
-                  disabled={isPublishing}
-                  onClick={handleFileButtonClick}
-                >
-                  <PhotoIcon className="mr-1 w-5 h-5" />
-                  Add
-                </Button>
+                <>
+                  <Button
+                    className="h-10"
+                    type="button"
+                    variant="outline"
+                    disabled={isPublishing}
+                    onClick={handleFileButtonClick}
+                  >
+                    <PhotoIcon className="mr-1 w-5 h-5" />
+                    Photo
+                  </Button>
+                  <Button
+                    className="h-10"
+                    type="button"
+                    variant="outline"
+                    disabled={isPublishing || isUploadingVideo}
+                    onClick={handleVideoButtonClick}
+                  >
+                    {isUploadingVideo ? (
+                      <Spinner style={{ width: "20px", height: "20px" }} />
+                    ) : (
+                      <VideoCameraIcon className="mr-1 w-5 h-5" />
+                    )}
+                    Video
+                  </Button>
+                </>
               )}
 
               <Button

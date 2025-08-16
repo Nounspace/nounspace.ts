@@ -1,3 +1,5 @@
+import { isWalrusUrl } from './walrus';
+
 export const isImageUrl = (url: string) => {
   if (!url) {
     return false;
@@ -36,6 +38,7 @@ export const isVideoUrl = (url: string): boolean => {
   return (
     VIDEO_STREAM_DOMAINS.some((domain) => lowerUrl.startsWith(domain)) ||
     VIDEO_PATH_REGEX.test(lowerUrl) ||
-    VIDEO_EXTENSION_REGEX.test(lowerUrl)
+    VIDEO_EXTENSION_REGEX.test(lowerUrl) ||
+    isWalrusUrl(url) // Support Walrus video URLs
   );
 };

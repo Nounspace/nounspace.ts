@@ -1,8 +1,6 @@
 import bundlerAnalyzer from "@next/bundle-analyzer";
+import process from "node:process";
 import packageInfo from "./package.json" with { type: "json" };
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
 
 const withBundleAnalyzer = bundlerAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -13,6 +11,7 @@ const cspHeader = `
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com https://cdn.segment.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
     img-src 'self' blob: data: https:;
+    media-src 'self' blob: data: https: https://walrus-testnet-aggregator.nodes.guru https://aggregator.walrus-testnet.walrus.space https://*.walrus.space https://*.walrus-testnet.walrus.space https://*.walrus.site https://*.wal.app;
     font-src 'self' https: data: blob: https://fonts.googleapis.com https://fonts.gstatic.com;
     object-src 'none';
     base-uri 'self';
@@ -39,7 +38,16 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
-      https://base-mainnet.g.alchemy.com;
+      https://base-mainnet.g.alchemy.com
+      https://walrus-testnet-publisher.nodes.guru
+      https://walrus-testnet-aggregator.nodes.guru
+      https://walrus-mainnet-publisher.nodes.guru
+      https://publisher.walrus-testnet.walrus.space
+      https://aggregator.walrus-testnet.walrus.space
+      https://*.walrus.space
+      https://*.walrus-testnet.walrus.space
+      https://*.walrus.site
+      https://*.wal.app;
 
     upgrade-insecure-requests;
 `;
