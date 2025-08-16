@@ -59,8 +59,9 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
       
-      // Add media parameter to help Farcaster recognize as video
-      return `${aggregatorUrl}/v1/blobs/${blobId}?media=video`;
+      // Return URL with .mp4 extension to help Farcaster recognize as video
+      // This is a widely-used heuristic for content type detection
+      return `${aggregatorUrl}/v1/blobs/${blobId}.mp4`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -85,7 +86,7 @@ export function isWalrusUrl(url: string): boolean {
     url.includes('.nodes.guru');
   
   // Check for blob ID pattern (with or without file extension)
-  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.[a-z0-9]+)?$/i.test(url);
+  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.[a-z0-9]+)?(\?.*)?$/i.test(url);
   
   return hasV1Blobs && (hasWalrusDomain || hasBlobPattern);
 }
@@ -94,8 +95,8 @@ export function isWalrusUrl(url: string): boolean {
  * Get the blob ID from a Walrus URL
  */
 export function extractBlobIdFromWalrusUrl(url: string): string | null {
-  // Match blob ID with optional file extension
-  const match = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?$/i);
+  // Match blob ID with optional file extension and query parameters
+  const match = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?(?:\?.*)?$/i);
   return match ? match[1] : null;
 }
 
@@ -112,11 +113,11 @@ export function convertToAggregatorUrl(url: string): string {
     return url;
   }
 
-  // If it's already an aggregator URL, return as is but remove extension
+  // If it's already an aggregator URL, return as is but clean up extension/params
   if (url.includes('aggregator')) {
-    // Remove extension if present - Walrus needs clean blob ID
-    const baseAggregatorUrl = url.replace(/\.(mp4|webm|avi|mov)$/i, '');
-    return baseAggregatorUrl; // Return without extension for actual video playback
+    // Get base aggregator URL and reconstruct with clean blob ID
+    const baseAggregatorUrl = url.split('/v1/blobs/')[0];
+    return `${baseAggregatorUrl}/v1/blobs/${blobId}`;
   }
 
   // Convert publisher URL to aggregator URL using the same mapping
@@ -131,4 +132,28 @@ export function convertToAggregatorUrl(url: string): string {
   }
   
   return `${aggregatorUrl}/v1/blobs/${blobId}`;
+}
+
+/**
+ * Get a Walrus video URL that works well with Farcaster and other platforms
+ * This function decides whether to use the direct URL or proxy based on the context
+ */
+export function getWalrusVideoUrl(url: string, useProxy: boolean = false): string {
+  if (!isWalrusUrl(url)) {
+    return url;
+  }
+
+  const blobId = extractBlobIdFromWalrusUrl(url);
+  if (!blobId) {
+    return url;
+  }
+
+  if (useProxy) {
+    // Use our proxy endpoint that serves with proper Content-Type headers
+    return `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/walrus/video/${blobId}`;
+  }
+
+  // For posts and embeds, use direct URL with .mp4 extension for better recognition
+  const aggregatorUrl = convertToAggregatorUrl(url);
+  return `${aggregatorUrl}.mp4`;
 }

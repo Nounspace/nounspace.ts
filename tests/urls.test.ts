@@ -10,6 +10,13 @@ describe('isVideoUrl', () => {
     expect(isVideoUrl('https://example.com/test.MOV')).toBe(true);
   });
 
+  it('detects Walrus video URLs', () => {
+    expect(isVideoUrl('https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc123')).toBe(true);
+    expect(isVideoUrl('https://walrus-testnet-aggregator.nodes.guru/v1/blobs/xyz789')).toBe(true);
+    expect(isVideoUrl('https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc123.mp4')).toBe(true);
+    expect(isVideoUrl('https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc123?media=video')).toBe(true);
+  });
+
   it('returns false for non-video URLs', () => {
     expect(isVideoUrl('https://example.com/image.png')).toBe(false);
   });

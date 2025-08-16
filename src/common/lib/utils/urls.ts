@@ -35,10 +35,14 @@ export const isVideoUrl = (url: string): boolean => {
 
   const lowerUrl = url.toLowerCase();
 
+  // Check for Walrus URLs first (they should always be treated as videos)
+  if (isWalrusUrl(url)) {
+    return true;
+  }
+
   return (
     VIDEO_STREAM_DOMAINS.some((domain) => lowerUrl.startsWith(domain)) ||
     VIDEO_PATH_REGEX.test(lowerUrl) ||
-    VIDEO_EXTENSION_REGEX.test(lowerUrl) ||
-    isWalrusUrl(url) // Support Walrus video URLs
+    VIDEO_EXTENSION_REGEX.test(lowerUrl)
   );
 };
