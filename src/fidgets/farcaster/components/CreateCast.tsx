@@ -213,7 +213,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     if (!blobId) {
       throw new Error("Invalid Walrus response");
     }
-    return `${WALRUS_AGGREGATOR_URL}/v1/blobs/${blobId}`;
+    return `${WALRUS_AGGREGATOR_URL}/v1/blobs/${blobId}#video.mp4`;
   }
 
   // Drop handler

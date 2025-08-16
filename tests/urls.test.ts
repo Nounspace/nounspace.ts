@@ -13,6 +13,11 @@ describe('isVideoUrl', () => {
         'https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc',
       ),
     ).toBe(true);
+    expect(
+      isVideoUrl(
+        'https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc#video.mp4',
+      ),
+    ).toBe(true);
   });
 
   it('returns false for non-video URLs', () => {
