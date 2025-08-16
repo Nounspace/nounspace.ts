@@ -8,6 +8,11 @@ describe('isVideoUrl', () => {
     expect(isVideoUrl('https://Stream.Warpcast.com/video.WEBM')).toBe(true);
     expect(isVideoUrl('https://warpcast.com/~/video/123')).toBe(true);
     expect(isVideoUrl('https://example.com/test.MOV')).toBe(true);
+    expect(
+      isVideoUrl(
+        'https://aggregator.walrus-testnet.walrus.space/v1/blobs/abc',
+      ),
+    ).toBe(true);
   });
 
   it('returns false for non-video URLs', () => {

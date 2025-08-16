@@ -136,6 +136,11 @@ type CreateCastProps = {
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
+const WALRUS_PUBLISHER_URL =
+  "https://publisher.walrus-testnet.walrus.space";
+const WALRUS_AGGREGATOR_URL =
+  "https://aggregator.walrus-testnet.walrus.space";
+
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
   afterSubmit = () => { },
@@ -161,6 +166,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -184,6 +190,30 @@ const CreateCast: React.FC<CreateCastProps> = ({
       throw new Error(data.error?.message || "Failed to upload to ImgBB");
 
     return data.data.display_url || data.data.url;
+  }
+
+  async function uploadVideoToWalrus(file: File): Promise<string> {
+    const res = await fetch(
+      `${WALRUS_PUBLISHER_URL}/v1/blobs?epochs=5`,
+      {
+        method: "PUT",
+        body: file,
+      },
+    );
+    if (!res.ok) {
+      throw new Error("Failed to upload video to Walrus");
+    }
+    const data = await res.json();
+    let blobId: string | undefined;
+    if (data.newlyCreated) {
+      blobId = data.newlyCreated.blobObject.blobId;
+    } else if (data.alreadyCertified) {
+      blobId = data.alreadyCertified.blobId;
+    }
+    if (!blobId) {
+      throw new Error("Invalid Walrus response");
+    }
+    return `${WALRUS_AGGREGATOR_URL}/v1/blobs/${blobId}`;
   }
 
   // Drop handler
@@ -221,17 +251,40 @@ const CreateCast: React.FC<CreateCastProps> = ({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith("image/")) return;
-    setIsUploadingImage(true);
-    try {
-      const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
-    } catch (err) {
-      alert("Error uploading image: " + (err as Error).message);
-    } finally {
-      setIsUploadingImage(false);
-      e.target.value = "";
+    if (file.type.startsWith("image/")) {
+      setIsUploadingImage(true);
+      try {
+        const url = await uploadImageToImgBB(file);
+        addEmbed({ url, status: "loaded" });
+      } catch (err) {
+        alert("Error uploading image: " + (err as Error).message);
+      } finally {
+        setIsUploadingImage(false);
+        e.target.value = "";
+      }
+      return;
     }
+    if (file.type.startsWith("video/")) {
+      const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+      if (file.size > MAX_VIDEO_BYTES) {
+        alert("Video file is too large (max 100 MB).");
+        e.target.value = "";
+        return;
+      }
+      setIsUploadingVideo(true);
+      try {
+        const url = await uploadVideoToWalrus(file);
+        addEmbed({ url, status: "loaded" });
+      } catch (err) {
+        alert("Error uploading video: " + (err as Error).message);
+      } finally {
+        setIsUploadingVideo(false);
+        e.target.value = "";
+      }
+      return;
+    }
+    alert("Unsupported file type.");
+    e.target.value = "";
   };
 
   const handleFileButtonClick = () => {
@@ -672,7 +725,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,video/*"
           onChange={handleFileChange}
           className="hidden"
         />
@@ -690,10 +743,12 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
               </div>
             )}
-            {isUploadingImage && (
+            {(isUploadingImage || isUploadingVideo) && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
-                <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+                <span className="ml-2 text-gray-700 font-medium">
+                  Uploading {isUploadingVideo ? "video" : "image"}…
+                </span>
               </div>
             )}
             <EditorContent
