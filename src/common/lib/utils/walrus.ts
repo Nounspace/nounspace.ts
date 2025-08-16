@@ -58,7 +58,14 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
 
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
-      return `${aggregatorUrl}/v1/blobs/${blobId}`;
+      
+      // Add video file extension to help platforms recognize it as video
+      const fileExtension = file.type.includes('mp4') ? '.mp4' : 
+                           file.type.includes('webm') ? '.webm' :
+                           file.type.includes('avi') ? '.avi' :
+                           file.type.includes('mov') ? '.mov' : '.mp4';
+      
+      return `${aggregatorUrl}/v1/blobs/${blobId}${fileExtension}`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -82,8 +89,8 @@ export function isWalrusUrl(url: string): boolean {
     url.includes('aggregator') ||
     url.includes('.nodes.guru');
   
-  // Check for blob ID pattern at the end
-  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+$/.test(url);
+  // Check for blob ID pattern (with or without file extension)
+  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.[a-z0-9]+)?$/i.test(url);
   
   return hasV1Blobs && (hasWalrusDomain || hasBlobPattern);
 }
@@ -92,7 +99,8 @@ export function isWalrusUrl(url: string): boolean {
  * Get the blob ID from a Walrus URL
  */
 export function extractBlobIdFromWalrusUrl(url: string): string | null {
-  const match = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)$/);
+  // Match blob ID with optional file extension
+  const match = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?$/i);
   return match ? match[1] : null;
 }
 

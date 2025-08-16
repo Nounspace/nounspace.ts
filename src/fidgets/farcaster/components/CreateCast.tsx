@@ -610,10 +610,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
       : [];
     const mentionsPositions = draft.mentionsPositions || [];
 
+    // Convert FarcasterEmbed to proper embed format for Farcaster protocol
+    const processedEmbeds = draft.embeds?.map((embed) => {
+      if (isFarcasterUrlEmbed(embed)) {
+        return { url: embed.url };
+      } else {
+        return { castId: embed.castId };
+      }
+    }) || [];
+
     const castBody: CastAddBody = {
       type: CastType.CAST,
       text: draft.text,
-      embeds: draft.embeds || [],
+      embeds: processedEmbeds,
       embedsDeprecated: [],
       parentUrl: draft.parentUrl || undefined,
       parentCastId: draft.parentCastId,
