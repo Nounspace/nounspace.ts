@@ -59,13 +59,8 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
       // Get the correct aggregator URL for this publisher
       const aggregatorUrl = getAggregatorUrl(publisherUrl);
       
-      // Add video file extension to help platforms recognize it as video
-      const fileExtension = file.type.includes('mp4') ? '.mp4' : 
-                           file.type.includes('webm') ? '.webm' :
-                           file.type.includes('avi') ? '.avi' :
-                           file.type.includes('mov') ? '.mov' : '.mp4';
-      
-      return `${aggregatorUrl}/v1/blobs/${blobId}${fileExtension}`;
+      // Add media parameter to help Farcaster recognize as video
+      return `${aggregatorUrl}/v1/blobs/${blobId}?media=video`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -117,9 +112,11 @@ export function convertToAggregatorUrl(url: string): string {
     return url;
   }
 
-  // If it's already an aggregator URL, return as is
+  // If it's already an aggregator URL, return as is but remove extension
   if (url.includes('aggregator')) {
-    return url;
+    // Remove extension if present - Walrus needs clean blob ID
+    const baseAggregatorUrl = url.replace(/\.(mp4|webm|avi|mov)$/i, '');
+    return baseAggregatorUrl; // Return without extension for actual video playback
   }
 
   // Convert publisher URL to aggregator URL using the same mapping
