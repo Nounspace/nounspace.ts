@@ -9,11 +9,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { blobId } = req.query;
+  const { blobId: rawBlobId } = req.query;
 
-  if (!blobId || typeof blobId !== 'string') {
+  if (!rawBlobId || typeof rawBlobId !== 'string') {
     return res.status(400).json({ error: 'Invalid blob ID' });
   }
+
+  // Remove .mp4 extension if present (for Farcaster compatibility)
+  const blobId = rawBlobId.replace(/\.mp4$/, '');
 
   // Validate blob ID format (should be alphanumeric with possible hyphens/underscores)
   if (!/^[a-zA-Z0-9_-]+$/.test(blobId)) {
