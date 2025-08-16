@@ -13,6 +13,7 @@ const cspHeader = `
     script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://www.youtube.com https://www.youtube.com/iframe_api https://auth.privy.nounspace.com https://cdn.segment.com;
     style-src 'self' 'unsafe-inline' https://i.ytimg.com https://mint.highlight.xyz;
     img-src 'self' blob: data: https:;
+    media-src 'self' https://aggregator.walrus-testnet.walrus.space;
     font-src 'self' https: data: blob: https://fonts.googleapis.com https://fonts.gstatic.com;
     object-src 'none';
     base-uri 'self';
@@ -39,7 +40,9 @@ const cspHeader = `
       https://api.segment.io
       https://api.imgbb.com
       https://api.goldsky.com
-      https://base-mainnet.g.alchemy.com;
+      https://base-mainnet.g.alchemy.com
+      https://publisher.walrus-testnet.walrus.space
+      https://aggregator.walrus-testnet.walrus.space;
 
     upgrade-insecure-requests;
 `;
