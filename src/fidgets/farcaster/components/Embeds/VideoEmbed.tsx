@@ -37,6 +37,7 @@ const VideoEmbed = ({ url }: { url: string }) => {
   // For Walrus videos, use native video element with aggregator URL
   if (isWalrusUrl(url)) {
     const aggregatorUrl = convertToAggregatorUrl(url);
+    
     return (
       <video
         ref={playerRef}
@@ -48,6 +49,9 @@ const VideoEmbed = ({ url }: { url: string }) => {
         height="auto"
         onClick={onClick}
         className="object-contain size-full"
+        preload="metadata"
+        playsInline
+        crossOrigin="anonymous"
       >
         Your browser does not support the video tag.
       </video>

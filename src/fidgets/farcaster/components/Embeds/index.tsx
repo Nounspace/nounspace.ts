@@ -8,6 +8,7 @@ import VideoEmbed from "./VideoEmbed";
 import ImageEmbed from "./ImageEmbed";
 import SmartFrameEmbed from "./SmartFrameEmbed";
 import { isImageUrl, isVideoUrl } from "@/common/lib/utils/urls";
+import { isWalrusUrl } from "@/common/lib/utils/walrus";
 import CreateCastImage from "./createCastImage";
 
 export type CastEmbed = {
@@ -27,6 +28,11 @@ export const renderEmbedForUrl = (
     return <EmbededCast castId={castId} key={key} />;
   }
   if (!url) return null;
+
+  // Check Walrus URLs first to ensure they are treated as videos
+  if (isWalrusUrl(url)) {
+    return <VideoEmbed url={url} key={key} />;
+  }
 
   if (isImageUrl(url)) {
     return !isCreateCast ? (
