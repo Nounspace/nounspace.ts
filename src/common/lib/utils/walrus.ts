@@ -74,13 +74,18 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
  * Check if a URL is a Walrus URL
  */
 export function isWalrusUrl(url: string): boolean {
-  return url.includes('/v1/blobs/') && (
-    url.includes('walrus') || 
+  // Check for /v1/blobs/ pattern (standard Walrus API)
+  const hasV1Blobs = url.includes('/v1/blobs/');
+  
+  // Check for known Walrus domains
+  const hasWalrusDomain = url.includes('walrus') || 
     url.includes('aggregator') ||
-    url.includes('.nodes.guru') ||
-    // Add other known Walrus aggregator patterns
-    /\/v1\/blobs\/[a-zA-Z0-9_-]+$/.test(url)
-  );
+    url.includes('.nodes.guru');
+  
+  // Check for blob ID pattern at the end
+  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+$/.test(url);
+  
+  return hasV1Blobs && (hasWalrusDomain || hasBlobPattern);
 }
 
 /**

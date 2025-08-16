@@ -67,9 +67,10 @@ export const renderEmbedForUrl = (
     return <NounsBuildEmbed url={url} key={key} />;
   } else if (url.includes("paragraph.xyz") || url.includes("pgrph.xyz")) {
     return <ParagraphXyzEmbed url={url} key={key} />;
-  } else if (!isImageUrl(url)) {
+  } else if (!isImageUrl(url) && !isWalrusUrl(url)) {
     // Use smart frame detection to render Frame v2 when possible
     // Falls back to legacy frame system if Frame v2 metadata is not detected
+    // Exclude Walrus URLs from smart frame detection
     return <SmartFrameEmbed url={url} key={key} />;
   } else {
     return null;
