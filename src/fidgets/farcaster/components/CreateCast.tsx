@@ -1008,13 +1008,20 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
-          {map(draft.embeds, (embed) => (
-            <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
-            >
-              {renderEmbedForUrl(embed, true)}
-            </div>
-          ))}
+          {map(draft.embeds, (embed) => {
+            // Convert FarcasterEmbed to CastEmbed format
+            const castEmbed = isFarcasterUrlEmbed(embed) 
+              ? { url: embed.url } 
+              : { castId: embed.castId };
+            
+            return (
+              <div
+                key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
+              >
+                {renderEmbedForUrl(castEmbed, true)}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
