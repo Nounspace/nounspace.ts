@@ -12,14 +12,16 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
   return (
     <>
       <Head>
-        <title>Video</title>
-        <meta name="description" content="Video" />
+        <title>Walrus Video</title>
+        <meta name="description" content="Video hosted on Walrus storage" />
         
-        {/* Essential meta tags for Farcaster video recognition */}
-        <meta property="og:title" content="Video" />
-        <meta property="og:description" content="Video" />
+        {/* Basic Open Graph tags */}
+        <meta property="og:title" content="Walrus Video" />
+        <meta property="og:description" content="Video hosted on Walrus storage" />
         <meta property="og:type" content="video.other" />
         <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
+        
+        {/* Video-specific Open Graph tags */}
         <meta property="og:video" content={videoUrl} />
         <meta property="og:video:url" content={videoUrl} />
         <meta property="og:video:secure_url" content={videoUrl} />
@@ -27,13 +29,20 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
         
-        {/* Image tag pointing to video for thumbnail */}
-        <meta property="og:image" content={videoUrl} />
+        {/* Image fallback for platforms that don't support video */}
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/api/walrus/thumbnail/${blobId}`} />
+        <meta property="og:image:width" content="1280" />
+        <meta property="og:image:height" content="720" />
+        <meta property="og:image:type" content="image/jpeg" />
         
-        {/* Farcaster Frame tags */}
-        <meta property="fc:frame" content="vNext" />
-        <meta property="fc:frame:video" content={videoUrl} />
-        <meta property="fc:frame:video:type" content="video/mp4" />
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="player" />
+        <meta name="twitter:title" content="Walrus Video" />
+        <meta name="twitter:description" content="Video hosted on Walrus storage" />
+        <meta name="twitter:player" content={videoUrl} />
+        <meta name="twitter:player:width" content="1280" />
+        <meta name="twitter:player:height" content="720" />
+        <meta name="twitter:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/api/walrus/thumbnail/${blobId}`} />
       </Head>
      
       <div className="w-full h-screen bg-black">
