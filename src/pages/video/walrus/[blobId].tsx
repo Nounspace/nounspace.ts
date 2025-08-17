@@ -12,16 +12,11 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
   return (
     <>
       <Head>
-        <title>Walrus Video - Nounspace</title>
-        <meta name="description" content="Video stored on Walrus decentralized storage" />
+        <title></title>
+        <meta name="description" content="" />
         
-        {/* Open Graph tags - CRITICAL for Farcaster inline video */}
-        <meta property="og:title" content="Walrus Video - Nounspace" />
-        <meta property="og:description" content="Video stored on Walrus decentralized storage" />
-        <meta property="og:type" content="video.other" />
-        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
-        
-        {/* Direct video for inline playback in Farcaster */}
+        {/* Essential meta tags for Farcaster video recognition */}
+        <meta property="og:type" content="video" />
         <meta property="og:video" content={videoUrl} />
         <meta property="og:video:url" content={videoUrl} />
         <meta property="og:video:secure_url" content={videoUrl} />
@@ -29,34 +24,12 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
         
-        {/* Image for thumbnail - use video thumbnail */}
-        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/api/walrus/thumbnail/${blobId}`} />
-        <meta property="og:image:width" content="1280" />
-        <meta property="og:image:height" content="720" />
-        
-        {/* Twitter player tags for video */}
-        <meta name="twitter:card" content="player" />
-        <meta name="twitter:title" content="Walrus Video - Nounspace" />
-        <meta name="twitter:description" content="Video stored on Walrus decentralized storage" />
-        <meta name="twitter:player" content={videoUrl} />
-        <meta name="twitter:player:width" content="1280" />
-        <meta name="twitter:player:height" content="720" />
-        <meta name="twitter:player:stream" content={videoUrl} />
-        <meta name="twitter:player:stream:content_type" content="video/mp4" />
-        
-        {/* Farcaster Frame tags for direct video support */}
+        {/* Farcaster Frame tags */}
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:video" content={videoUrl} />
         <meta property="fc:frame:video:type" content="video/mp4" />
-        <meta property="fc:frame:aspect_ratio" content="16:9" />
-        
-        {/* Essential meta tags */}
-        <meta property="og:site_name" content="Nounspace" />
-        
-        {/* Canonical URL */}
-        <link rel="canonical" href={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
       </Head>
-
+     
       <div className="w-full h-screen bg-black">
         <video
           src={videoUrl}
