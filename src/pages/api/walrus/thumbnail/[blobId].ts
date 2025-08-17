@@ -24,13 +24,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // For now, return a placeholder thumbnail
+    // For now, return the video URL itself - some platforms can extract thumbnail from video
     // In the future, this could generate actual video thumbnails
     
-    // Redirect to a default video thumbnail image
-    const defaultThumbnail = `${process.env.NEXT_PUBLIC_BASE_URL || ''}/images/video-placeholder.png`;
+    // Try to get the video URL and let platforms extract thumbnail
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                    process.env.NEXT_PUBLIC_URL ||
+                    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+                    'http://localhost:3000';
     
-    res.redirect(302, defaultThumbnail);
+    const videoUrl = `${baseUrl}/api/walrus/video/${blobId}`;
+    
+    // Return the video URL itself - Farcaster can extract thumbnail from video
+    res.redirect(302, videoUrl);
     
   } catch (error) {
     console.error('Error generating Walrus video thumbnail:', error);

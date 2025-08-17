@@ -29,8 +29,10 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
         
-        {/* Image for thumbnail */}
-        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/images/nounspace_logo.png`} />
+        {/* Image for thumbnail - use video thumbnail */}
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL}/api/walrus/thumbnail/${blobId}`} />
+        <meta property="og:image:width" content="1280" />
+        <meta property="og:image:height" content="720" />
         
         {/* Twitter player tags for video */}
         <meta name="twitter:card" content="player" />
@@ -55,33 +57,16 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
       </Head>
 
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="max-w-4xl w-full p-4">
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6">
-              <h1 className="text-2xl font-bold mb-4">Walrus Video</h1>
-              <p className="text-gray-600 mb-6">
-                This video is stored on Walrus decentralized storage.
-              </p>
-              
-              <div className="aspect-video bg-black rounded-lg overflow-hidden mb-4">
-                <video
-                  src={videoUrl}
-                  controls
-                  className="w-full h-full"
-                  preload="metadata"
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-              
-              <div className="mt-4 text-sm text-gray-500">
-                <p>Blob ID: {blobId}</p>
-                <p>Powered by Walrus decentralized storage</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full h-screen bg-black">
+        <video
+          src={videoUrl}
+          controls
+          className="w-full h-full object-contain"
+          preload="metadata"
+          autoPlay
+        >
+          Your browser does not support the video tag.
+        </video>
       </div>
     </>
   );
