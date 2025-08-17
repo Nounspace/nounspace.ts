@@ -27,11 +27,14 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta property="og:title" content="Walrus Video - Nounspace" />
         <meta property="og:description" content="Video stored on Walrus decentralized storage" />
         <meta property="og:type" content="video.other" />
-        <meta property="og:video" content={videoUrl} />
+        <meta property="og:video:url" content={videoUrl} />
         <meta property="og:video:secure_url" content={videoUrl} />
         <meta property="og:video:type" content="video/mp4" />
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
+        
+        {/* Use video URL as image for direct video display */}
+        <meta property="og:image" content={videoUrl} />
         
         {/* Twitter Card tags for video */}
         <meta name="twitter:card" content="player" />
@@ -42,6 +45,7 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta name="twitter:player:height" content="720" />
         <meta name="twitter:player:stream" content={videoUrl} />
         <meta name="twitter:player:stream:content_type" content="video/mp4" />
+        <meta name="twitter:image" content={videoUrl} />
         
         {/* Farcaster specific meta tags for video recognition */}
         <meta property="fc:frame" content="vNext" />
@@ -58,14 +62,6 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         {/* Neynar/Farcaster specific tags */}
         <meta name="farcaster:video" content={videoUrl} />
         <meta name="farcaster:video:type" content="video/mp4" />
-        
-        {thumbnailUrl && (
-          <>
-            <meta property="og:image" content={thumbnailUrl} />
-            <meta name="twitter:image" content={thumbnailUrl} />
-            <meta property="fc:frame:image" content={thumbnailUrl} />
-          </>
-        )}
         
         {/* Additional meta tags */}
         <meta property="og:site_name" content="Nounspace" />
