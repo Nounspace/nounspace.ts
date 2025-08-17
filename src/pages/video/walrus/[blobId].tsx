@@ -1,7 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
 import { GetServerSideProps } from 'next';
-import { useRouter } from 'next/router';
 
 interface WalrusVideoPageProps {
   blobId: string;
@@ -10,57 +9,47 @@ interface WalrusVideoPageProps {
 }
 
 export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: WalrusVideoPageProps) {
-  const router = useRouter();
-
-  // If accessed directly, redirect to video player
-  const handleVideoClick = () => {
-    router.push(`/video/player?url=${encodeURIComponent(videoUrl)}`);
-  };
-
   return (
     <>
       <Head>
         <title>Walrus Video - Nounspace</title>
         <meta name="description" content="Video stored on Walrus decentralized storage" />
         
-        {/* Open Graph tags for video preview */}
+        {/* Open Graph tags - CRITICAL for Farcaster inline video */}
         <meta property="og:title" content="Walrus Video - Nounspace" />
         <meta property="og:description" content="Video stored on Walrus decentralized storage" />
         <meta property="og:type" content="video.other" />
+        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
+        
+        {/* Direct video for inline playback in Farcaster */}
+        <meta property="og:video" content={videoUrl} />
         <meta property="og:video:url" content={videoUrl} />
         <meta property="og:video:secure_url" content={videoUrl} />
         <meta property="og:video:type" content="video/mp4" />
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
         
-        {/* Use video URL as image for direct video display */}
-        <meta property="og:image" content={videoUrl} />
+        {/* Image for thumbnail */}
+        <meta property="og:image" content={`${process.env.NEXT_PUBLIC_BASE_URL || ''}/images/nounspace_logo.png`} />
         
-        {/* Twitter Card tags for video */}
-        <meta name="twitter:card" content="summary_large_image" />
+        {/* Twitter player tags for video */}
+        <meta name="twitter:card" content="player" />
         <meta name="twitter:title" content="Walrus Video - Nounspace" />
         <meta name="twitter:description" content="Video stored on Walrus decentralized storage" />
-        <meta name="twitter:image" content={videoUrl} />
+        <meta name="twitter:player" content={videoUrl} />
+        <meta name="twitter:player:width" content="1280" />
+        <meta name="twitter:player:height" content="720" />
+        <meta name="twitter:player:stream" content={videoUrl} />
+        <meta name="twitter:player:stream:content_type" content="video/mp4" />
         
-        {/* Farcaster specific meta tags for video recognition */}
+        {/* Farcaster Frame tags for direct video support */}
         <meta property="fc:frame" content="vNext" />
         <meta property="fc:frame:video" content={videoUrl} />
         <meta property="fc:frame:video:type" content="video/mp4" />
         <meta property="fc:frame:aspect_ratio" content="16:9" />
         
-        {/* Additional video meta tags for better platform support */}
-        <meta name="video_src" content={videoUrl} />
-        <meta name="video_type" content="video/mp4" />
-        <meta name="video_width" content="1280" />
-        <meta name="video_height" content="720" />
-        
-        {/* Neynar/Farcaster specific tags */}
-        <meta name="farcaster:video" content={videoUrl} />
-        <meta name="farcaster:video:type" content="video/mp4" />
-        
-        {/* Additional meta tags */}
+        {/* Essential meta tags */}
         <meta property="og:site_name" content="Nounspace" />
-        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
         
         {/* Canonical URL */}
         <link rel="canonical" href={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
@@ -84,23 +73,6 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
                 >
                   Your browser does not support the video tag.
                 </video>
-              </div>
-              
-              <div className="flex gap-4">
-                <button
-                  onClick={handleVideoClick}
-                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  Open in Player
-                </button>
-                <a
-                  href={videoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
-                >
-                  Direct Link
-                </a>
               </div>
               
               <div className="mt-4 text-sm text-gray-500">
@@ -139,7 +111,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                   process.env.NEXT_PUBLIC_URL ||
                   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
                   'http://localhost:3000';
-  
+
   const videoUrl = `${baseUrl}/api/walrus/video/${cleanBlobId}`;
   
   // For now, we don't have thumbnail generation, but we could add it later
