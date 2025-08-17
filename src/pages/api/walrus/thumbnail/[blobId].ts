@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
                     'http://localhost:3000';
     
-    const videoUrl = `${baseUrl}/api/walrus/video/${blobId}`;
+    const videoUrl = `${baseUrl}/api/walrus-video/${blobId}.mp4`;
     
     // Return the video URL itself - Farcaster can extract thumbnail from video
     res.redirect(302, videoUrl);
