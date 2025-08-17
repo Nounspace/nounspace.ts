@@ -32,7 +32,7 @@ import {
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { isVideoFile, validateVideoFile } from "@/common/lib/utils/files";
-import { uploadVideoToWalrus } from "@/common/lib/utils/walrus";
+import { uploadVideoToWalrus, getWalrusVideoUrl } from "@/common/lib/utils/walrus";
 import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon, VideoCameraIcon } from "@heroicons/react/20/solid";
@@ -201,7 +201,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingVideo(true);
     try {
       const uploadResult = await uploadVideoToWalrus(file);
-      addEmbed({ url: uploadResult, status: "loaded" });
+      // Use video page URL for better Farcaster social sharing
+      const socialUrl = getWalrusVideoUrl(uploadResult, true);
+      addEmbed({ url: socialUrl, status: "loaded" });
     } catch (err) {
       alert("Error uploading video: " + (err as Error).message);
     } finally {

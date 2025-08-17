@@ -44,13 +44,13 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
         throw new Error('Failed to get blob ID from response');
       }
 
-      // Return direct video URL for Farcaster inline display
+      // Return direct video URL with .mp4 extension for better Farcaster recognition
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                      process.env.NEXT_PUBLIC_URL ||
                      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
                      'http://localhost:3000';
       
-      return `${baseUrl}/api/walrus/video/${blobId}`;
+      return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -66,6 +66,10 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
  * Check if a URL is a Walrus URL
  */
 export function isWalrusUrl(url: string): boolean {
+  if (typeof url !== 'string' || !url) {
+    return false;
+  }
+
   // Check for /v1/blobs/ pattern (standard Walrus API)
   const hasV1Blobs = url.includes('/v1/blobs/');
   
@@ -75,12 +79,16 @@ export function isWalrusUrl(url: string): boolean {
     url.includes('.nodes.guru');
   
   // Check for blob ID pattern (with or without file extension)
-  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.[a-z0-9]+)?(\?.*)?$/i.test(url);
+  const hasBlobPattern = /\/v1\/blobs\/[a-zA-Z0-9_-]+(\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi))?(\?.*)?$/i.test(url);
   
   // Check for Walrus video page URLs (e.g., /video/walrus/[blobId])
   const isWalrusVideoPage = /\/video\/walrus\/[a-zA-Z0-9_-]+/.test(url);
   
-  return (hasV1Blobs && (hasWalrusDomain || hasBlobPattern)) || isWalrusVideoPage;
+  // Check for our proxy API URLs
+  const isWalrusApiProxy = /\/api\/walrus(-video)?\/[a-zA-Z0-9_-]+(\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi))?(\?.*)?$/i
+    .test(url);
+  
+  return (hasV1Blobs && (hasWalrusDomain || hasBlobPattern)) || isWalrusVideoPage || isWalrusApiProxy;
 }
 
 /**
@@ -93,7 +101,13 @@ export function extractBlobIdFromWalrusUrl(url: string): string | null {
     return pageMatch[1];
   }
   
-  // Match blob ID with optional file extension and query parameters
+  // Check for API proxy URLs (e.g., /api/walrus-video/[blobId].mp4)
+  const apiProxyMatch = url.match(/\/api\/walrus(-video)?\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?(?:\?.*)?$/i);
+  if (apiProxyMatch) {
+    return apiProxyMatch[2];
+  }
+  
+  // Match standard Walrus API blob ID with optional file extension and query parameters
   const apiMatch = url.match(/\/v1\/blobs\/([a-zA-Z0-9_-]+)(?:\.[a-z0-9]+)?(?:\?.*)?$/i);
   return apiMatch ? apiMatch[1] : null;
 }
@@ -158,9 +172,10 @@ export function getWalrusVideoPageUrl(url: string): string {
 
 /**
  * Get a Walrus video URL that works well with Farcaster and other platforms
- * This function decides whether to use the direct URL or proxy based on the context
+ * For social media sharing, use the video page URL with proper meta tags
+ * For direct playback, use the proxy API
  */
-export function getWalrusVideoUrl(url: string, useProxy: boolean = false): string {
+export function getWalrusVideoUrl(url: string, forSocialSharing: boolean = false): string {
   if (!isWalrusUrl(url)) {
     return url;
   }
@@ -170,14 +185,20 @@ export function getWalrusVideoUrl(url: string, useProxy: boolean = false): strin
     return url;
   }
 
-  if (useProxy) {
-    // Use our proxy endpoint that serves with proper Content-Type headers
-    return `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/walrus/video/${blobId}`;
+  const baseUrl = typeof window !== 'undefined' 
+    ? window.location.origin 
+    : process.env.NEXT_PUBLIC_BASE_URL || 
+      process.env.NEXT_PUBLIC_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+      'http://localhost:3000';
+
+  if (forSocialSharing) {
+    // Return page URL with proper meta tags for social media
+    return `${baseUrl}/video/walrus/${blobId}`;
   }
 
-  // For posts and embeds, use direct URL with .mp4 extension for better recognition
-  const aggregatorUrl = convertToAggregatorUrl(url);
-  return `${aggregatorUrl}.mp4`;
+  // For direct playback, use proxy API with .mp4 extension
+  return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
 }
 
 /**
@@ -194,7 +215,7 @@ export function getWalrusDirectVideoUrl(url: string): string {
     return url;
   }
 
-  // Use our proxy endpoint that serves with proper Content-Type headers
+  // Use our proxy endpoint that preserves upstream Content-Type
   const baseUrl = typeof window !== 'undefined' 
     ? window.location.origin 
     : process.env.NEXT_PUBLIC_BASE_URL || 
@@ -202,5 +223,5 @@ export function getWalrusDirectVideoUrl(url: string): string {
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       'http://localhost:3000';
   
-  return `${baseUrl}/api/walrus/video/${blobId}`;
+  return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
 }

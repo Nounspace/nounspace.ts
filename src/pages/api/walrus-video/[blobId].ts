@@ -13,7 +13,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Invalid blobId" });
   }
 
-  const cleanBlobId = blobId.replace(/\.(mp4|webm|mov|ogg|ogv|mkv)$/, "");
+  const cleanBlobId = blobId.replace(/\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi)$/i, "");
+  
+  // Validate blob ID format  
+  if (!/^[a-zA-Z0-9_-]+$/.test(cleanBlobId)) {
+    return res.status(400).json({ error: "Invalid blob ID format" });
+  }
 
   let upstreamResponse: Response | null = null;
   let lastError: Error | null = null;
@@ -61,7 +66,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   res.status(upstreamResponse.status);
 
-  if (req.method === "HEAD") {
+  // Handle HEAD requests and conditional responses properly
+  if (req.method === "HEAD" || upstreamResponse.status === 304) {
     return res.end();
   }
 
