@@ -44,13 +44,13 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
         throw new Error('Failed to get blob ID from response');
       }
 
-      // Return video page URL with meta tags for Farcaster inline display
+      // Return direct video URL for Farcaster inline display
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                      process.env.NEXT_PUBLIC_URL ||
                      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
                      'http://localhost:3000';
       
-      return `${baseUrl}/video/walrus/${blobId}`;
+      return `${baseUrl}/api/walrus/video/${blobId}`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
