@@ -37,14 +37,9 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
         <meta property="og:image" content={videoUrl} />
         
         {/* Twitter Card tags for video */}
-        <meta name="twitter:card" content="player" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Walrus Video - Nounspace" />
         <meta name="twitter:description" content="Video stored on Walrus decentralized storage" />
-        <meta name="twitter:player" content={videoUrl} />
-        <meta name="twitter:player:width" content="1280" />
-        <meta name="twitter:player:height" content="720" />
-        <meta name="twitter:player:stream" content={videoUrl} />
-        <meta name="twitter:player:stream:content_type" content="video/mp4" />
         <meta name="twitter:image" content={videoUrl} />
         
         {/* Farcaster specific meta tags for video recognition */}
