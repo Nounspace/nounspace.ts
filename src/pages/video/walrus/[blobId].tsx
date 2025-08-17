@@ -12,17 +12,23 @@ export default function WalrusVideoPage({ blobId, videoUrl, thumbnailUrl }: Walr
   return (
     <>
       <Head>
-        <title></title>
-        <meta name="description" content="" />
+        <title>Video</title>
+        <meta name="description" content="Video" />
         
         {/* Essential meta tags for Farcaster video recognition */}
-        <meta property="og:type" content="video" />
+        <meta property="og:title" content="Video" />
+        <meta property="og:description" content="Video" />
+        <meta property="og:type" content="video.other" />
+        <meta property="og:url" content={`${process.env.NEXT_PUBLIC_BASE_URL}/video/walrus/${blobId}`} />
         <meta property="og:video" content={videoUrl} />
         <meta property="og:video:url" content={videoUrl} />
         <meta property="og:video:secure_url" content={videoUrl} />
         <meta property="og:video:type" content="video/mp4" />
         <meta property="og:video:width" content="1280" />
         <meta property="og:video:height" content="720" />
+        
+        {/* Image tag pointing to video for thumbnail */}
+        <meta property="og:image" content={videoUrl} />
         
         {/* Farcaster Frame tags */}
         <meta property="fc:frame" content="vNext" />

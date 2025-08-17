@@ -17,18 +17,6 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
     'https://walrus-testnet-publisher.nodes.guru'
   ].filter(Boolean);
 
-  // Aggregator URLs for download (must match publisher)
-  const getAggregatorUrl = (publisherUrl: string): string => {
-    if (publisherUrl.includes('nodes.guru')) {
-      return 'https://walrus-testnet-aggregator.nodes.guru';
-    } else if (publisherUrl.includes('walrus-testnet.walrus.space')) {
-      return 'https://aggregator.walrus-testnet.walrus.space';
-    } else {
-      // Default fallback
-      return process.env.NEXT_PUBLIC_WALRUS_AGGREGATOR_URL || 'https://aggregator.walrus-testnet.walrus.space';
-    }
-  };
-
   let lastError: Error | null = null;
   
   for (const publisherUrl of publisherUrls) {
@@ -56,25 +44,13 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
         throw new Error('Failed to get blob ID from response');
       }
 
-      // Get the correct aggregator URL for this publisher
-      const aggregatorUrl = getAggregatorUrl(publisherUrl);
+      // Return direct video URL for Farcaster embedding
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                     process.env.NEXT_PUBLIC_URL ||
+                     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+                     'http://localhost:3000';
       
-      // Return URL to video page (with proper Open Graph tags) for better Farcaster integration
-      if (typeof window !== 'undefined') {
-        return `${window.location.origin}/video/walrus/${blobId}`;
-      } else {
-        const isDev = process.env.NODE_ENV === 'development';
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-                       process.env.NEXT_PUBLIC_URL ||
-                       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-                       (isDev ? 'http://localhost:3000' : null);
-        
-        if (baseUrl) {
-          return `${baseUrl}/video/walrus/${blobId}`;
-        }
-        
-        return `${aggregatorUrl}/v1/blobs/${blobId}`;
-      }
+      return `${baseUrl}/api/walrus/video/${blobId}`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
