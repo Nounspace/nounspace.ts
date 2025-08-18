@@ -12,6 +12,7 @@ import {
   SOCIAL_TAB_CONFIG,
   GOVERNANCE_TAB_CONFIG,
   FUNDED_WORKS_TAB_CONFIG,
+  PLACES_TAB_CONFIG,
 } from "./homePageTabsConfig";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 
@@ -25,6 +26,8 @@ const getTabConfig = (tabName: string) => {
       return FUNDED_WORKS_TAB_CONFIG;
     case "Social":
       return SOCIAL_TAB_CONFIG;
+    case "Places":
+      return PLACES_TAB_CONFIG;
     case "Nouns":
       return NOUNS_TAB_CONFIG;
     default:
@@ -44,7 +47,7 @@ const Home = () => {
   const isInitializing = getIsInitializing();
 
   // Local state to manage current tab name and ordering
-  const tabOrdering = ["Nouns","Social", "Governance", "Resources", "Funded Works"];
+  const tabOrdering = ["Nouns", "Social", "Governance", "Resources", "Funded Works", "Places"];
   const [tabName, setTabName] = useState<string>("Nouns");
 
   useEffect(() => {

@@ -33,7 +33,7 @@ const MobileHeader = () => {
   const openLogin = useCallback(() => setModalOpen(true), [setModalOpen]);
   const openNav = useCallback(() => setNavOpen(true), []);
   const enterEditMode = useCallback(() => setEditMode(true), [setEditMode]);
-  
+
   // Memoize the touch handlers to prevent recreation on each render
   const handleTouchStart = useCallback((e: TouchEvent) => {
     const EDGE_THRESHOLD = 20;
@@ -42,17 +42,20 @@ const MobileHeader = () => {
       (e.currentTarget as any)._startX = x;
     }
   }, []);
-  
-  const handleTouchEnd = useCallback((e: TouchEvent) => {
-    const target = e.currentTarget as any;
-    if (target._startX !== undefined) {
-      const deltaX = e.changedTouches[0].clientX - target._startX;
-      if (deltaX > 50) {
-        setNavOpen(true);
+
+  const handleTouchEnd = useCallback(
+    (e: TouchEvent) => {
+      const target = e.currentTarget as any;
+      if (target._startX !== undefined) {
+        const deltaX = e.changedTouches[0].clientX - target._startX;
+        if (deltaX > 50) {
+          setNavOpen(true);
+        }
+        target._startX = undefined;
       }
-      target._startX = undefined;
-    }
-  }, [setNavOpen]);
+    },
+    [setNavOpen]
+  );
 
   useEffect(() => {
     document.addEventListener("touchstart", handleTouchStart);
@@ -63,13 +66,6 @@ const MobileHeader = () => {
     };
   }, [handleTouchStart, handleTouchEnd]);
 
-  // Logging for detailed debugging
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      console.log("[MobileHeader] isLoggedIn:", isLoggedIn, "isInitializing:", isInitializing);
-    }
-  }, [isLoggedIn, isInitializing]);
-
   // Memoize the component parts to avoid re-renders
   const userAvatar = useMemo(() => {
     if (!isLoggedIn) return null;
@@ -79,18 +75,14 @@ const MobileHeader = () => {
         className="rounded-full overflow-hidden w-8 h-8 bg-gray-200 flex items-center justify-center"
       >
         {user?.pfp_url ? (
-          <img
-            src={user.pfp_url}
-            alt={user?.username}
-            className="object-cover w-full h-full"
-          />
+          <img src={user.pfp_url} alt={user?.username} className="object-cover w-full h-full" />
         ) : (
           <CgProfile />
         )}
       </button>
     );
   }, [isLoggedIn, user, openNav]);
-  
+
   const menuButton = useMemo(() => {
     if (isLoggedIn) return null;
     return (
@@ -99,8 +91,8 @@ const MobileHeader = () => {
       </Button>
     );
   }, [isLoggedIn, openNav]);
-  
- // fallback: if it takes more than 3s to initialize, it shows the login/cast button normally
+
+  // fallback: if it takes more than 3s to initialize, it shows the login/cast button normally
   const [timedOut, setTimedOut] = React.useState(false);
   useEffect(() => {
     if (isInitializing) {
@@ -113,7 +105,7 @@ const MobileHeader = () => {
 
   const actionButton = useMemo(() => {
     if (isInitializing && !timedOut) {
-     // Shows a loading while initializing
+      // Shows a loading while initializing
       return (
         <Button variant="primary" size="icon" disabled>
           <span className="animate-spin">⏳</span>
@@ -122,12 +114,7 @@ const MobileHeader = () => {
     }
     if (isLoggedIn) {
       return (
-        <Button
-          variant="primary"
-          size="icon"
-          onClick={() => setCastOpen(true)}
-          aria-label="Cast"
-        >
+        <Button variant="primary" size="icon" onClick={() => setCastOpen(true)} aria-label="Cast">
           <RiQuillPenLine className="w-5 h-5 text-white" />
         </Button>
       );
@@ -150,19 +137,12 @@ const MobileHeader = () => {
 
   return (
     <header className="z-30 flex items-center justify-between h-14 px-4 bg-white overflow-hidden sticky top-0">
-      <div className="flex items-center gap-2">
-        {isLoggedIn ? userAvatar : menuButton}
-      </div>
+      <div className="flex items-center gap-2">{isLoggedIn ? userAvatar : menuButton}</div>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         <BrandHeader />
       </div>
-      <div className="flex items-center gap-2">
-        {actionButton}
-      </div>
-      <Drawer
-        open={navOpen}
-        onOpenChange={handleDrawerOpenChange}
-      >
+      <div className="flex items-center gap-2">{actionButton}</div>
+      <Drawer open={navOpen} onOpenChange={handleDrawerOpenChange}>
         <DrawerContent className="p-0" showCloseButton={false}>
           <Navigation
             isEditable={sidebarEditable}
@@ -175,12 +155,7 @@ const MobileHeader = () => {
           />
         </DrawerContent>
       </Drawer>
-      <Modal
-        open={castOpen}
-        setOpen={setCastOpen}
-        focusMode={false}
-        showClose={false}
-      >
+      <Modal open={castOpen} setOpen={setCastOpen} focusMode={false} showClose={false}>
         <CreateCast afterSubmit={() => setCastOpen(false)} />
       </Modal>
     </header>

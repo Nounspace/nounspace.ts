@@ -19,8 +19,6 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { network, contractAddress, tabName: tabNameParam } = await params;
   
-  console.log("Generating metadata for contract space");
-  console.log("Params:", { network, contractAddress, tabNameParam });
   if (!network || !contractAddress) {
     return defaultMetadata; // Return default metadata if no network/contractAddress
   }
@@ -42,8 +40,6 @@ export async function generateMetadata({
     
     const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
     const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
-
-    console.log("Token data fetched:", tokenData);
 
     symbol = clankerData?.symbol || tokenData?.symbol || "";
     name = clankerData?.name || tokenData?.name || "";
