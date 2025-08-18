@@ -13,6 +13,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Invalid blobId" });
   }
 
+  // Handle preflight CORS requests quickly
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Range,Accept,Content-Type");
+  res.setHeader("Access-Control-Expose-Headers", "Content-Range,Content-Length,ETag,Last-Modified,Cache-Control");
+  res.setHeader("Vary", "Origin");
+
+  if (req.method === "OPTIONS") {
+    // preflight
+    return res.status(204).end();
+  }
+
   const cleanBlobId = blobId.replace(/\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi)$/i, "");
   
   // Validate blob ID format  
@@ -50,10 +62,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  // forward headers importantes
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  // forward headers importantes (overwrite some defaults)
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader("X-Content-Type-Options", "nosniff");
+  // Instruct browsers and scrapers that the content is intended to be displayed inline
+  res.setHeader("Content-Disposition", "inline");
 
   const contentType = upstreamResponse.headers.get("content-type");
   res.setHeader("Content-Type", contentType?.startsWith("video/") ? contentType : "video/mp4");

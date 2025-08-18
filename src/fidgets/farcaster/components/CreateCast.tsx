@@ -32,7 +32,7 @@ import {
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { isVideoFile, validateVideoFile } from "@/common/lib/utils/files";
-import { uploadVideoToWalrus, getWalrusVideoUrl } from "@/common/lib/utils/walrus";
+import { uploadVideoToWalrus, getWalrusDirectVideoUrl } from "@/common/lib/utils/walrus";
 import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon, VideoCameraIcon } from "@heroicons/react/20/solid";
@@ -201,9 +201,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingVideo(true);
     try {
       const uploadResult = await uploadVideoToWalrus(file);
-      // Use the video page URL (with OG / fc:frame meta tags) so Farcaster scrapers recognize and render a player
-      const pageUrl = getWalrusVideoUrl(uploadResult, true);
-      addEmbed({ url: pageUrl, status: "loaded" });
+      // Share the direct video URL (proxy .mp4). Farcaster will treat this as media and try to render a player.
+      const directUrl = getWalrusDirectVideoUrl(uploadResult);
+      addEmbed({ url: directUrl, status: "loaded" });
     } catch (err) {
       alert("Error uploading video: " + (err as Error).message);
     } finally {
