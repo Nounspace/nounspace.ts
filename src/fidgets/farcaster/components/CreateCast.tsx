@@ -201,9 +201,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingVideo(true);
     try {
       const uploadResult = await uploadVideoToWalrus(file);
-      // Use video page URL for better Farcaster social sharing
-      const socialUrl = getWalrusVideoUrl(uploadResult, true);
-      addEmbed({ url: socialUrl, status: "loaded" });
+      // Use the video page URL (with OG / fc:frame meta tags) so Farcaster scrapers recognize and render a player
+      const pageUrl = getWalrusVideoUrl(uploadResult, true);
+      addEmbed({ url: pageUrl, status: "loaded" });
     } catch (err) {
       alert("Error uploading video: " + (err as Error).message);
     } finally {

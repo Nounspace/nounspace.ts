@@ -80,12 +80,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { notFound: true };
   }
 
-  // Use computed baseUrl from SSR for consistent URLs
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    "http://localhost:3000";
+  // Use host and proto from incoming request when available (ensures correct public URL on Vercel/preview)
+  const forwardedProto = (context.req.headers["x-forwarded-proto"] as string) || "https";
+  const host = context.req.headers.host || (process.env.VERCEL_URL ? process.env.VERCEL_URL : "localhost:3000");
+  const baseUrl = `${forwardedProto}://${host}`;
 
   const videoUrl = `${baseUrl}/api/walrus-video/${cleanBlobId}.mp4`;
 
