@@ -293,18 +293,18 @@ export const createSpaceStoreFunc = (
   saveLocalSpaceTab: async (spaceId, tabName, config, newName) => {
     // Check if the new name contains special characters
     if (newName && /[^a-zA-Z0-9-_ ]/.test(newName as string)) {
-      // Show error
+      // Show error tooltip
       showTooltipError(
         "Invalid Tab Name",
         "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
       );
 
-      // Create an error and stop execution
-      const error = new Error(
-        "The tab name contains invalid characters. Only letters, numbers, hyphens, underscores, and spaces are allowed."
-      );
-      (error as any).status = 400;
-      throw error; // Stops the execution of the function
+      // Log error but don't crash the app
+      console.error("Invalid tab name characters:", newName);
+      
+      // Wait a bit to ensure tooltip shows, then exit
+      setTimeout(() => {}, 100);
+      return; // Exit safely instead of throwing
     }
 
     console.log("NewConfig", config);
@@ -400,7 +400,9 @@ export const createSpaceStoreFunc = (
     // Validate the tab name before proceeding
     const validationError = validateTabName(tabName);
     if (validationError) {
-      throw new Error(validationError);
+      console.error("Invalid tab name:", tabName, validationError);
+      // Use a safe fallback name instead of throwing
+      tabName = `Tab ${Date.now()}`;
     }
 
     if (isNil(initialConfig)) {

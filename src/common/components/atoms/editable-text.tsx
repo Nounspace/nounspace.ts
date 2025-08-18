@@ -13,6 +13,14 @@ const EditableText = ({ initialText, updateMethod }) => {
   const [text, settext] = useState(initialText);
 
   const onEditEnd = () => {
+    // Validate characters before calling updateMethod
+    if (/[^a-zA-Z0-9-_ ]/.test(text)) {
+      // Reset text to original and stay in edit mode
+      settext(initialText);
+      console.warn("Invalid characters in tab name:", text);
+      return; // Don't exit edit mode, don't call updateMethod
+    }
+    
     setisEditing(false);
     updateMethod(initialText, text);
   };
