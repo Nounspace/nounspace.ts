@@ -1,4 +1,5 @@
 // Pure API integration - no database dependencies
+import { mapToNounspaceCategory, generateEnhancedTags, calculatePopularity, type AppForCategoryMapping } from '@/common/utils/categoryMapping';
 
 export interface NeynarMiniAppManifest {
   version: string;
@@ -398,8 +399,8 @@ export class NeynarMiniAppService {
     const miniApps = await this.fetchMiniApps({ limit: 100 });
     
     return miniApps.map(app => {
-      const mappedCategory = this.mapToNounspaceCategory(app);
-      const enhancedTags = this.generateEnhancedTags(app, mappedCategory);
+      const mappedCategory = mapToNounspaceCategory(app);
+      const enhancedTags = generateEnhancedTags(app, mappedCategory);
       
       return {
         id: `neynar-miniapp-${app.domain}`,
@@ -419,101 +420,6 @@ export class NeynarMiniAppService {
         verified: app.author.isPowerUser,
       };
     });
-  }
-
-  /**
-   * Map Neynar categories to Nounspace category system
-   */
-  private mapToNounspaceCategory(app: ProcessedMiniApp): string {
-    const neynarCategory = app.category?.toLowerCase();
-    const tags = app.tags.map(tag => tag.toLowerCase());
-    const description = app.description?.toLowerCase() || '';
-    const name = app.name.toLowerCase();
-    
-    // Helper function to check for keywords across tags, description, and name
-    const hasKeyword = (keywords: string[]) => 
-      tags.some(tag => keywords.some(keyword => tag.includes(keyword))) ||
-      keywords.some(keyword => description.includes(keyword)) ||
-      keywords.some(keyword => name.includes(keyword));
-    
-    // Tag-based analysis (prioritized over Neynar category for better accuracy)
-    if (hasKeyword(['game', 'gaming', 'play', 'battle', 'league', 'mech', 'versus', 'fight'])) return 'games';
-    if (hasKeyword(['defi', 'finance', 'trading', 'swap', 'token', 'coin', 'money', 'pay'])) return 'defi';
-    if (hasKeyword(['tool', 'utility', 'productivity', 'earn', 'discover', 'qr', 'scan'])) return 'tools';
-    if (hasKeyword(['art', 'content', 'media', 'nft', 'create', 'design'])) return 'content';
-    if (hasKeyword(['governance', 'voting', 'dao', 'proposal', 'vote'])) return 'governance';
-    if (hasKeyword(['donate', 'impact', 'charity', 'public', 'social-impact'])) return 'social-impact';
-    
-    // Direct Neynar category mapping (fallback after tag analysis)
-    if (neynarCategory) {
-      switch (neynarCategory) {
-        case 'games':
-        case 'gaming':
-          return 'games';
-        case 'social':
-        case 'community':
-          return 'social';
-        case 'defi':
-        case 'finance':
-          return 'defi';
-        case 'utility':
-        case 'tools':
-          return 'tools';
-        case 'content':
-        case 'media':
-          return 'content';
-        case 'governance':
-          return 'governance';
-      }
-    }
-    
-    // Social fallback (if no other category matches)
-    if (hasKeyword(['social', 'community', 'chat', 'follow', 'friend'])) return 'social';
-    
-    // Default fallback
-    return 'mini-apps';
-  }
-
-  /**
-   * Generate enhanced tags for better discoverability
-   */
-  private generateEnhancedTags(app: ProcessedMiniApp, category: string): string[] {
-    const tags = new Set<string>();
-    
-    // Always include core tags
-    tags.add('mini-apps');
-    tags.add('neynar');
-    tags.add('farcaster');
-    
-    // Add the mapped category
-    if (category !== 'mini-apps') {
-      tags.add(category);
-    }
-    
-    // Add original Neynar category if different
-    if (app.category && app.category.toLowerCase() !== category) {
-      tags.add(app.category.toLowerCase());
-    }
-    
-    // Add original app tags (filtered and cleaned)
-    app.tags.forEach(tag => {
-      const cleanTag = tag.toLowerCase().trim();
-      if (cleanTag && cleanTag !== 'miniapp' && cleanTag.length > 1) {
-        tags.add(cleanTag);
-      }
-    });
-    
-    // Add author-based tags if power user
-    if (app.author.isPowerUser) {
-      tags.add('verified');
-    }
-    
-    // Add engagement-based tags
-    if (app.engagement.followerCount > 10000) {
-      tags.add('popular');
-    }
-    
-    return Array.from(tags);
   }
 
   /**

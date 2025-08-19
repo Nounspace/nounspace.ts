@@ -11,6 +11,7 @@ import {
 } from "@/common/types/fidgetOptions";
 import { CURATED_SITES } from "@/common/data/curated/curatedSites";
 import { NeynarMiniAppService } from "./neynarMiniAppService";
+import { mapToNounspaceCategory, generateEnhancedTags, calculatePopularity } from '@/common/utils/categoryMapping';
 
 // Default categories configuration
 const DEFAULT_CATEGORIES: FidgetCategory[] = [
@@ -386,8 +387,8 @@ export class FidgetOptionsService {
   // Helper method to convert mini apps to fidget options
   private convertMiniAppsToFidgetOptions(miniApps: any[]): MiniAppFidgetOption[] {
     return miniApps.map(app => {
-      const mappedCategory = this.mapToNounspaceCategory(app);
-      const enhancedTags = this.generateEnhancedTags(app, mappedCategory);
+      const mappedCategory = mapToNounspaceCategory(app);
+      const enhancedTags = generateEnhancedTags(app, mappedCategory);
       
       return {
         id: `neynar-search-${app.domain}`,
@@ -402,60 +403,11 @@ export class FidgetOptionsService {
         domain: app.domain,
         buttonTitle: app.metadata.buttonTitle || 'Open',
         imageUrl: app.metadata.heroImage || app.iconUrl,
-        popularity: this.calculatePopularity(app),
+        popularity: calculatePopularity(app),
         metadata: app.metadata,
         lastFetched: app.lastFetched,
       };
     });
-  }
-
-  // Helper methods from neynar service
-  private mapToNounspaceCategory(app: any): string {
-    const category = app.category?.toLowerCase();
-    const tags = app.tags?.map((tag: string) => tag.toLowerCase()) || [];
-    
-    // Category mapping logic
-    if (category === 'social' || tags.some(tag => ['social', 'farcaster', 'chat'].includes(tag))) {
-      return 'social';
-    }
-    if (category === 'defi' || tags.some(tag => ['defi', 'swap', 'trading', 'lending'].includes(tag))) {
-      return 'defi';
-    }
-    if (category === 'games' || tags.some(tag => ['game', 'gaming', 'play'].includes(tag))) {
-      return 'games';
-    }
-    if (category === 'tools' || tags.some(tag => ['tool', 'utility', 'analytics'].includes(tag))) {
-      return 'tools';
-    }
-    if (category === 'governance' || tags.some(tag => ['governance', 'voting', 'dao'].includes(tag))) {
-      return 'governance';
-    }
-    if (tags.some(tag => ['nft', 'art', 'creative', 'content'].includes(tag))) {
-      return 'content';
-    }
-    
-    return 'mini-apps';
-  }
-
-  private generateEnhancedTags(app: any, category: string): string[] {
-    const tags = new Set<string>();
-    
-    // Add the mapped category
-    tags.add(category);
-    
-    // Add original tags
-    if (app.tags) {
-      app.tags.forEach((tag: string) => tags.add(tag.toLowerCase()));
-    }
-    
-    // Add mini-apps tag for all
-    tags.add('mini-apps');
-    
-    return Array.from(tags);
-  }
-
-  private calculatePopularity(app: any): number {
-    return app.engagement?.followerCount || 0;
   }
 
   // Get categories only
