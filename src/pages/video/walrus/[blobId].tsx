@@ -59,7 +59,7 @@ export default function WalrusVideoPage({ blobId, videoUrl, baseUrl, videoMimeTy
           preload="metadata"
           autoPlay
         >
-          Seu navegador não suporta vídeo.
+          Your browser does not support the video tag.
         </video>
       </div>
     </>
@@ -84,7 +84,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const host = context.req.headers.host || (process.env.VERCEL_URL ? process.env.VERCEL_URL : "localhost:3000");
   const baseUrl = `${forwardedProto}://${host}`;
 
-  const videoUrl = `${baseUrl}/api/walrus-video/${cleanBlobId}.mp4`;
+  const videoUrl = `${baseUrl}/api/walrus-video/${cleanBlobId}`;
   let videoMimeType = "video/mp4";
   try {
     const res = await fetch(videoUrl, { method: "HEAD" });

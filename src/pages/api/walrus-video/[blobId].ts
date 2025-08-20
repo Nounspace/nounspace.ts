@@ -25,11 +25,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(204).end();
   }
 
-  // Do not remove the extension from blobId, send as received in the query
-  const cleanBlobId = blobId;
+  // Remove extension from blobId if present
+  const cleanBlobId = blobId.replace(/\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi)$/i, "");
   
-  // Validate blob ID format (accepts letters, numbers, underscore, hyphen, dot, and optional video extension)
-  if (!/^[a-zA-Z0-9_.-]+(\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi))?$/i.test(cleanBlobId)) {
+  // Validate blobId without extension
+  if (!/^[a-zA-Z0-9_.-]+$/.test(cleanBlobId)) {
     return res.status(400).json({ error: "Invalid blob ID format" });
   }
 
@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let lastError: Error | null = null;
   const range = req.headers.range as string | undefined;
 
-  // Try multiple aggregators
+  // Try to fetch from aggregators using blobId without extension
   for (const aggregator of aggregators) {
     try {
       const url = `${aggregator}/v1/blobs/${cleanBlobId}`;
@@ -68,8 +68,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Content-Disposition", "inline; filename=video.mp4");
 
-  const contentType = upstreamResponse.headers.get("content-type");
-  res.setHeader("Content-Type", contentType?.startsWith("video/") ? contentType : "video/mp4");
+  // Força Content-Type para video/mp4 SEMPRE
+  res.setHeader("Content-Type", "video/mp4");
 
   const passHeaders = ["content-length", "content-range", "etag", "last-modified", "cache-control"];
   passHeaders.forEach((h) => {
