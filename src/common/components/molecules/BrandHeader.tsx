@@ -23,7 +23,7 @@ const BrandHeader = () => {
             rel="noopener noreferrer"
           >
             <TooltipTrigger asChild>
-              <div className="w-12 h-12 sm:w-15 sm:h-13 me-3 flex items-center justify-center">
+              <div className="w-12 h-8 sm:w-16 sm:h-10 me-3 flex items-center justify-center">
                 <Image
                   src="/images/noggles.svg"
                   alt="Nounspace Logo"
