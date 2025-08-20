@@ -153,6 +153,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
   const [submitStatus, setSubmitStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [videoError, setVideoError] = useState<string>("");
 
   const hasEmbeds = draft?.embeds && !!draft.embeds.length;
   const isReply = draft?.parentCastId !== undefined;
@@ -192,12 +193,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
   // Video upload function for Walrus
   async function handleVideoUpload(file: File): Promise<void> {
-    const validation = validateVideoFile(file);
-    if (!validation.valid) {
-      alert(`Error: ${validation.error}`);
+    setVideoError("");
+    // Only accepts mp4 files
+    if (file.type !== "video/mp4" && !file.name.endsWith(".mp4")) {
+      setVideoError("Only MP4 video files are allowed.");
       return;
     }
-
+    const validation = validateVideoFile(file);
+    if (!validation.valid) {
+      setVideoError(`Error: ${validation.error}`);
+      return;
+    }
     setIsUploadingVideo(true);
     try {
       const uploadResult = await uploadVideoToWalrus(file);
@@ -205,7 +211,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
       const directUrl = getWalrusDirectVideoUrl(uploadResult);
       addEmbed({ url: directUrl, status: "loaded" });
     } catch (err) {
-      alert("Error uploading video: " + (err as Error).message);
+      setVideoError("Error uploading video: " + (err as Error).message);
     } finally {
       setIsUploadingVideo(false);
     }
@@ -786,6 +792,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
         {submitStatus === "error" && (
           <div className="mt-2 p-2 bg-red-100 text-red-800 rounded">
             An error occurred while submitting the cast.
+          </div>
+        )}
+        {videoError && (
+          <div className="mt-2 p-2 bg-red-100 text-red-800 rounded">
+            {videoError}
           </div>
         )}
 

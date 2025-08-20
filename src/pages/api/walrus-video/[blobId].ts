@@ -62,11 +62,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  // forward headers importantes (overwrite some defaults)
+  // forward important headers (overwrite some defaults)
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  // Instruct browsers and scrapers that the content is intended to be displayed inline
-  res.setHeader("Content-Disposition", "inline");
+  // Ensure video is displayed inline and never downloaded
+  res.setHeader("Content-Disposition", "inline; filename=video.mp4");
 
   const contentType = upstreamResponse.headers.get("content-type");
   res.setHeader("Content-Type", contentType?.startsWith("video/") ? contentType : "video/mp4");
