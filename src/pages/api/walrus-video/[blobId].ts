@@ -25,7 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(204).end();
   }
 
-  const cleanBlobId = blobId.replace(/\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi)$/i, "");
+  // Do not remove the extension from blobId, send as received in the query
+  const cleanBlobId = blobId;
   
   // Validate blob ID format  
   if (!/^[a-zA-Z0-9_-]+$/.test(cleanBlobId)) {
@@ -36,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let lastError: Error | null = null;
   const range = req.headers.range as string | undefined;
 
-  // tenta múltiplos agregadores
+  // Try multiple aggregators
   for (const aggregator of aggregators) {
     try {
       const url = `${aggregator}/v1/blobs/${cleanBlobId}`;
@@ -65,7 +66,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // forward important headers (overwrite some defaults)
   res.setHeader("Accept-Ranges", "bytes");
   res.setHeader("X-Content-Type-Options", "nosniff");
-  // Ensure video is displayed inline and never downloaded
   res.setHeader("Content-Disposition", "inline; filename=video.mp4");
 
   const contentType = upstreamResponse.headers.get("content-type");
@@ -77,48 +77,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (v) res.setHeader(h, v);
   });
 
-  res.status(upstreamResponse.status);
+  // Suporte ao Range: responde com status 206 se Range solicitado
+  if (range && upstreamResponse.status === 206) {
+    res.status(206);
+  } else {
+    res.status(upstreamResponse.status);
+  }
 
-  // Handle HEAD requests and conditional responses properly
   if (req.method === "HEAD" || upstreamResponse.status === 304) {
     return res.end();
   }
 
-  // Streaming compatível com Web ReadableStream (getReader) e Node async iterable streams
   try {
-    const body = upstreamResponse.body as any;
-
-    if (!body) {
-      const buffer = await upstreamResponse.arrayBuffer();
-      return res.send(Buffer.from(buffer));
-    }
-
-    // Web ReadableStream (browsers / some fetch implementations)
-    if (typeof body.getReader === "function") {
-      const reader = body.getReader();
-      let streamDone = false;
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        streamDone = !!done;
-        if (value) res.write(Buffer.from(value));
-      }
-      return res.end();
-    }
-
-    // Node.js readable stream / async iterable (Node 18+ fetch returns a stream with async iterator)
-    if (typeof body[Symbol.asyncIterator] === "function") {
-      for await (const chunk of body) {
-        // chunk can be a Buffer or Uint8Array
-        res.write(Buffer.from(chunk));
-      }
-      return res.end();
-    }
-
-    // Fallback: read full buffer
     const buffer = await upstreamResponse.arrayBuffer();
     return res.send(Buffer.from(buffer));
   } catch (err) {
-    console.error("Error streaming walrus video:", err);
-    return res.status(500).end("Error streaming video");
+    console.error("Error sending walrus video as buffer:", err);
+    return res.status(500).end("Error sending video");
   }
 }
