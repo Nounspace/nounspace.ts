@@ -60,19 +60,18 @@ export function formatFileSize(bytes: number): string {
  * Validate video file size and type
  */
 export function validateVideoFile(file: File): { valid: boolean; error?: string } {
-  if (!isVideoFile(file)) {
+  // Aceita apenas MP4
+  if (file.type !== 'video/mp4') {
     return {
       valid: false,
-      error: 'File must be a video format (MP4, WebM, MOV, etc.)'
+      error: 'File must be MP4 format (video/mp4, H.264/AAC)'
     };
   }
-  
   if (file.size > MAX_VIDEO_SIZE_BYTES) {
     return {
       valid: false,
       error: `File size exceeds ${MAX_VIDEO_SIZE_MB}MB limit. Your file is ${formatFileSize(file.size)}`
     };
   }
-  
   return { valid: true };
 }

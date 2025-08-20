@@ -73,18 +73,20 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { notFound: true };
   }
 
+  // Remove .mp4 extension if present
   const cleanBlobId = blobId.replace(/\.mp4$/, "");
 
-  if (!/^[a-zA-Z0-9_-]+$/.test(cleanBlobId)) {
-    return { notFound: true };
-  }
+  // Skip validation temporarily to debug
+  // if (!/^[a-zA-Z0-9_-]+$/.test(cleanBlobId)) {
+  //   return { notFound: true };
+  // }
 
   // Use host and proto from incoming request when available (ensures correct public URL on Vercel/preview)
   const forwardedProto = (context.req.headers["x-forwarded-proto"] as string) || "https";
   const host = context.req.headers.host || (process.env.VERCEL_URL ? process.env.VERCEL_URL : "localhost:3000");
   const baseUrl = `${forwardedProto}://${host}`;
 
-  const videoUrl = `${baseUrl}/api/walrus-video/${cleanBlobId}`;
+  const videoUrl = `${baseUrl}/api/walrus-video/${cleanBlobId}.mp4`;
   let videoMimeType = "video/mp4";
   try {
     const res = await fetch(videoUrl, { method: "HEAD" });

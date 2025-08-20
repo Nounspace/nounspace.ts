@@ -44,7 +44,7 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
         throw new Error('Failed to get blob ID from response');
       }
 
-      // Return direct video URL with .mp4 extension for better Farcaster recognition
+      // Return direct video URL with .mp4 extension for Farcaster compatibility
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                      process.env.NEXT_PUBLIC_URL ||
                      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
@@ -197,8 +197,8 @@ export function getWalrusVideoUrl(url: string, forSocialSharing: boolean = false
     return `${baseUrl}/video/walrus/${blobId}`;
   }
 
-  // For direct playback, use proxy API with .mp4 extension
-  return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
+  // For direct playback, use proxy API without .mp4 extension
+  return `${baseUrl}/api/walrus-video/${blobId}`;
 }
 
 /**
@@ -223,5 +223,5 @@ export function getWalrusDirectVideoUrl(url: string): string {
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       'http://localhost:3000';
   
-  return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
+  return `${baseUrl}/api/walrus-video/${blobId}`;
 }
