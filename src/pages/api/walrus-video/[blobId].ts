@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   // Do not remove the extension from blobId, send as received in the query
   const cleanBlobId = blobId;
   
-  // Validate blob ID format  
-  if (!/^[a-zA-Z0-9_-]+$/.test(cleanBlobId)) {
+  // Validate blob ID format (accepts letters, numbers, underscore, hyphen, dot, and optional video extension)
+  if (!/^[a-zA-Z0-9_.-]+(\.(mp4|webm|mov|m4v|ogv|ogg|mkv|avi))?$/i.test(cleanBlobId)) {
     return res.status(400).json({ error: "Invalid blob ID format" });
   }
 
