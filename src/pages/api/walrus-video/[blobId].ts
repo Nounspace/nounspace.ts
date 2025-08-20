@@ -70,6 +70,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   // Força Content-Type para video/mp4 SEMPRE
   res.setHeader("Content-Type", "video/mp4");
+  
+  // Add Farcaster-specific headers
+  res.setHeader("Cache-Control", "public, max-age=31536000");
+  res.setHeader("X-Frame-Options", "ALLOWALL");
 
   const passHeaders = ["content-length", "content-range", "etag", "last-modified", "cache-control"];
   passHeaders.forEach((h) => {
