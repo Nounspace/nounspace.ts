@@ -24,20 +24,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   <meta charset="utf-8">
   <title>Walrus Video</title>
   
-  <!-- Farcaster Frame meta tags -->
+  <!-- Farcaster Frame meta tags for video -->
   <meta property="fc:frame" content="vNext" />
   <meta property="fc:frame:video" content="${videoUrl}" />
   <meta property="fc:frame:video:type" content="video/mp4" />
-  <meta property="fc:frame:image" content="${baseUrl}/images/nounspace_logo.png" />
+  <meta property="fc:frame:image" content="${baseUrl}/api/walrus/thumbnail/${cleanBlobId}" />
+  <meta name="fc:frame" content="vNext" />
+  <meta name="fc:frame:video" content="${videoUrl}" />
+  <meta name="fc:frame:video:type" content="video/mp4" />
   
-  <!-- Open Graph meta tags -->
-  <meta property="og:type" content="video.other" />
+  <!-- Open Graph meta tags for video -->
+  <meta property="og:type" content="video" />
   <meta property="og:title" content="Walrus Video" />
   <meta property="og:description" content="Video hosted on Walrus decentralized storage" />
   <meta property="og:url" content="${pageUrl}" />
-  <meta property="og:video" content="${videoUrl}" />
   <meta property="og:video:url" content="${videoUrl}" />
   <meta property="og:video:secure_url" content="${videoUrl}" />
+  <meta property="og:video:type" content="video/mp4" />
+  <meta property="og:video:width" content="1280" />
+  <meta property="og:video:height" content="720" />
+  <meta property="og:image" content="${baseUrl}/api/walrus/thumbnail/${cleanBlobId}" />
   <meta property="og:video:type" content="video/mp4" />
   <meta property="og:video:width" content="1280" />
   <meta property="og:video:height" content="720" />
