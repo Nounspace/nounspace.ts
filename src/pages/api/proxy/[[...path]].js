@@ -17,9 +17,38 @@ function pipeRawBody(resp, res, contentType) {
   res.on('close', () => console.log('[proxy] response closed'));
 }
 
+function extractParentFromReferer(req) {
+  try {
+    const ref = new URL(req.headers.referer || '');
+    const path = ref.pathname || '';
+    if (path.startsWith('/api/proxy/')) {
+      const tail = path.slice('/api/proxy/'.length);
+      const parts = tail.split('/');
+      const scheme = parts.shift();
+      const host = parts.shift();
+      if ((scheme === 'http' || scheme === 'https') && host) {
+        const parentPath = '/' + parts.join('/');
+        const parentAbs = `${scheme}://${host}${parentPath}${ref.search}`;
+        return new URL(
+          decodeURIComponent(ref.searchParams.get('url') || parentAbs)
+        );
+      }
+    }
+    const enc = ref.searchParams.get('url');
+    if (enc) return new URL(decodeURIComponent(enc));
+  } catch {
+    /* empty */
+  }
+  return null;
+}
+
 function resolveTargetUrl(req) {
   if (req.query && req.query.url) {
-    return decodeURIComponent(req.query.url);
+    try {
+      return decodeURIComponent(req.query.url);
+    } catch {
+      /* empty */
+    }
   }
 
   try {
@@ -42,26 +71,37 @@ function resolveTargetUrl(req) {
         }
       }
     }
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
 
   try {
-    const referer = req.headers.referer;
-    if (referer) {
-      const ref = new URL(referer);
-      const parentEncoded = ref.searchParams.get('url');
-      if (parentEncoded) {
-        const parent = new URL(decodeURIComponent(parentEncoded));
-        const current = new URL(
-          req.url,
-          `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
-        );
-        current.searchParams.forEach((v, k) => {
-          if (k !== 'url') parent.searchParams.append(k, v);
-        });
-        return parent.toString();
-      }
+    const current = new URL(
+      req.url,
+      `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
+    );
+    const rel = current.searchParams.get('__rel');
+    const parent = extractParentFromReferer(req);
+    if (rel && parent) {
+      return new URL(rel, parent).toString();
     }
-  } catch { /* empty */ }
+  } catch {
+    /* empty */
+  }
+
+  try {
+    const parent = extractParentFromReferer(req);
+    if (parent) {
+      const currAbs = new URL(
+        req.url,
+        `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
+      );
+      const relPathAndQuery = currAbs.pathname + currAbs.search + currAbs.hash;
+      return new URL(relPathAndQuery, parent).toString();
+    }
+  } catch {
+    /* empty */
+  }
 
   return null;
 }
