@@ -3,6 +3,23 @@ import fetch from 'node-fetch';
 import { load } from 'cheerio';
 import { Readable } from 'stream';
 
+function guessContentType(urlPath, upstreamCT) {
+  const ct = (upstreamCT || '').toLowerCase();
+  if (ct && !/^(text\/plain|application\/octet-stream)$/.test(ct)) return upstreamCT;
+  const q = urlPath.split('?')[0];
+  if (q.endsWith('.css')) return 'text/css; charset=utf-8';
+  if (q.endsWith('.mjs') || q.endsWith('.js')) return 'application/javascript; charset=utf-8';
+  if (q.endsWith('.json')) return 'application/json; charset=utf-8';
+  if (q.endsWith('.svg')) return 'image/svg+xml';
+  if (q.endsWith('.png')) return 'image/png';
+  if (q.endsWith('.jpg') || q.endsWith('.jpeg')) return 'image/jpeg';
+  if (q.endsWith('.webp')) return 'image/webp';
+  if (q.endsWith('.woff2')) return 'font/woff2';
+  if (q.endsWith('.woff')) return 'font/woff';
+  if (q.endsWith('.ttf')) return 'font/ttf';
+  return upstreamCT || 'application/octet-stream';
+}
+
 function pipeRawBody(resp, res, contentType) {
   if (contentType) res.setHeader('Content-Type', contentType);
   const b = resp.body;
@@ -40,6 +57,19 @@ function extractParentFromReferer(req) {
     /* empty */
   }
   return null;
+}
+
+function extractParentFromCookie(req) {
+  try {
+    const raw = req.headers.cookie || '';
+    const m = raw.match(/(?:^|;\s*)__ns_pxy_ctx=([^;]+)/);
+    if (!m) return null;
+    const [proto, host] = decodeURIComponent(m[1]).split('|');
+    if (!proto || !host) return null;
+    return new URL(`${proto}://${host}/`);
+  } catch {
+    return null;
+  }
 }
 
 function resolveTargetUrl(req) {
@@ -81,16 +111,19 @@ function resolveTargetUrl(req) {
       `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`
     );
     const rel = current.searchParams.get('__rel');
-    const parent = extractParentFromReferer(req);
-    if (rel && parent) {
-      return new URL(rel, parent).toString();
+    const ctx = current.searchParams.get('__ctx');
+    const parentFromCtx = ctx
+      ? new URL(`${ctx.split('|')[0]}://${ctx.split('|')[1]}/`)
+      : extractParentFromCookie(req);
+    if (rel && parentFromCtx) {
+      return new URL(rel, parentFromCtx).toString();
     }
   } catch {
     /* empty */
   }
 
   try {
-    const parent = extractParentFromReferer(req);
+    const parent = extractParentFromReferer(req) || extractParentFromCookie(req);
     if (parent) {
       const currAbs = new URL(
         req.url,
@@ -189,6 +222,10 @@ export default async function handler(req, res) {
       body,
       redirect: 'follow',
     });
+    const upstreamCT = response.headers.get('content-type') || '';
+    const pathForCT = base.pathname + base.search;
+    const contentType = guessContentType(pathForCT, upstreamCT);
+    const ct = contentType.toLowerCase();
 
     if (
       (response.status === 403 || response.status === 503) &&
@@ -214,8 +251,6 @@ export default async function handler(req, res) {
       console.log('[proxy] response ended, bytes=', buf.length);
       return;
     }
-    const contentType = response.headers.get('content-type') || '';
-    const ct = contentType.toLowerCase();
     const proxyOrigin = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}`;
     const prefix = `${proxyOrigin}/api/proxy/${base.protocol.replace(':', '')}/${base.host}`;
     const toProxy = (abs) => {
@@ -288,6 +323,14 @@ export default async function handler(req, res) {
       const buf = Buffer.from(rewritten, 'utf8');
       if (!res.getHeader('Content-Type')) {
         res.setHeader('Content-Type', contentType || 'text/html');
+      }
+      const ctxCookie = `__ns_pxy_ctx=${encodeURIComponent(base.protocol.replace(':','') + '|' + base.host)}; Path=/; SameSite=Lax; Secure`;
+      const existing = res.getHeader('Set-Cookie');
+      if (existing) {
+        const arr = Array.isArray(existing) ? existing : [existing];
+        res.setHeader('Set-Cookie', [...arr, ctxCookie]);
+      } else {
+        res.setHeader('Set-Cookie', ctxCookie);
       }
       res.setHeader('Content-Length', String(buf.length));
       res.setHeader('Connection', 'close');
@@ -451,7 +494,7 @@ function rewriteHtml(html, targetUrl, req, load) {
     const _insertAdjacentElement=Element.prototype.insertAdjacentElement;Element.prototype.insertAdjacentElement=function(pos,el){try{rewriteTree(el);}catch{}return _insertAdjacentElement.call(this,pos,el);};
     const _insertAdjacentHTML=Element.prototype.insertAdjacentHTML;Element.prototype.insertAdjacentHTML=function(pos,html){try{const frag=rewriteHTMLString(html,this);if(frag)return Element.prototype.insertAdjacentElement.call(this,pos,frag);}catch{}return _insertAdjacentHTML.call(this,pos,html);};
     const _write=Document.prototype.write;const _writeln=Document.prototype.writeln;function writeRewriter(fn,args){try{const html=Array.prototype.join.call(args,'');const frag=rewriteHTMLString(html,document.documentElement);if(frag){const tmp=document.createElement('div');tmp.appendChild(frag);return _insertAdjacentHTML.call(document.documentElement,'beforeend',tmp.innerHTML);}}catch{}return fn.apply(document,args);}Document.prototype.write=function(...a){return writeRewriter(_write,a);};Document.prototype.writeln=function(...a){return writeRewriter(_writeln,a);};
-    document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;try{const v=a.getAttribute('href');const nv=toProxy(v);if(nv&&nv!==v)a.href=nv;}catch{}},true);
+    document.addEventListener('click',function(e){if(e.defaultPrevented)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;if(a.target&&a.target!=='_self')return;if(a.hasAttribute('download'))return;try{const v=a.getAttribute('href');const nu=toProxy(v);if(nu&&nu!==v){e.preventDefault();location.assign(nu);}}catch{}},true);
     document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
     const ORequest=window.Request;window.Request=new Proxy(ORequest,{construct(target,args){try{const input=args[0];let u=typeof input==='string'?input:(input&&input.url)||(input&&input.href)||String(input);if(u)args[0]=toProxy(u);}catch{}return new target(...args);}});
     const ofetch=window.fetch;function wrappedFetch(i,o){try{let u=typeof i==='string'?i:(i&&i.url)||(i&&i.href)||String(i);if(u){const p=toProxy(u);if(typeof i==='string')return ofetch(p,o);const req=i instanceof Request?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);}window.fetch=wrappedFetch;try{Object.defineProperty(window,'fetch',{configurable:true,get(){return wrappedFetch;},set(){}});}catch{}
