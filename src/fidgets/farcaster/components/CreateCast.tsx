@@ -207,10 +207,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingVideo(true);
     try {
       const uploadResult = await uploadVideoToWalrus(file);
-      // Extract blobId from the result URL and use Farcaster-specific endpoint
-      const blobId = uploadResult.split('/').pop();
-      const farcasterVideoUrl = `${window.location.origin}/api/farcaster/video/${blobId}`;
-      addEmbed({ url: farcasterVideoUrl, status: "loaded" });
+      // Convert page URL to direct video URL for Farcaster
+      const directVideoUrl = uploadResult.replace('/video/walrus/', '/api/walrus-video/') + '.mp4';
+      addEmbed({ url: directVideoUrl, status: "loaded" });
     } catch (err) {
       setVideoError("Error uploading video: " + (err as Error).message);
     } finally {
