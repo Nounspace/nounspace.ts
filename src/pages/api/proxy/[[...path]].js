@@ -237,7 +237,8 @@ export default async function handler(req, res) {
 
     if (ct.includes('text/css')) {
       let css = await response.text();
-      css = css.replace(/url\(\s*(['"]?)\/(?!api\/proxy\/)([^'")]+)\1\s*\)/g, (m, q, p) => `url(${q}${prefix}/${p}${q})`);
+      css = css.replace(/url\(\s*(['"]?)(\/(?!api\/proxy\/)[^'")]+)\1\s*\)/g, (m, q, p) => `url(${q}${prefix}/${p.slice(1)}${q})`);
+      css = css.replace(/@import\s+(?:url\(\s*(['"]?)(\/(?!api\/proxy\/)[^'")]+)\1\s*\)|(['"])(\/(?!api\/proxy\/)[^'"]+)\3)/g, (_m, _q1, p1, _q2, p2) => `@import url("${prefix}/${(p1 || p2).slice(1)}")`);
       const buf = Buffer.from(css, 'utf8');
       if (!res.getHeader('Content-Type')) {
         res.setHeader('Content-Type', contentType || 'text/css');
@@ -259,6 +260,8 @@ export default async function handler(req, res) {
       js = js.replace(/new\s+URL\(\s*(['"])\/(?!api\/proxy\/)([^'")]+)\1\s*,\s*import\.meta\.url\s*\)/g, (m, q, p) => `new URL(${q}${prefix}/${p}${q}, import.meta.url)`);
       js = js.replace(/(__webpack_require__\.p\s*=\s*)(['"])\/(?!api\/proxy\/)/g, (m, pre, q) => `${pre}${q}${prefix}/`);
       js = js.replace(/(['"])\/(?!api\/proxy\/)(_next|assets|api|static|build|dist|_nuxt)\/([^'"]+)\1/g, (m, q, bucket, rest) => `${q}${prefix}/${bucket}/${rest}${q}`);
+      const jsShim = `;(function(g){if(g.__NS_PROXY_INSTALLED__)return;g.__NS_PROXY_INSTALLED__=true;var NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;var abs=new URL(u,(typeof location!=='undefined'&&location.href)?location.href:(typeof self!=='undefined'&&self.location?self.location.href:'${targetUrl}'));return '${proxyOrigin}/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}var ofetch=g.fetch;if(ofetch)g.fetch=function(i,o){try{var url=(typeof i==='string')?i:(i&&i.url)||(i&&i.href)||String(i);if(url){var p=toProxy(url);if(typeof i==='string')return ofetch(p,o);var req=(typeof Request!=='undefined'&&i instanceof Request)?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);};if(g.XMLHttpRequest){var oopen=g.XMLHttpRequest.prototype.open;g.XMLHttpRequest.prototype.open=function(m,u){try{if(u&&!NOOP_RE.test(u))u=toProxy(u);}catch{}return oopen.apply(this,arguments);};}})(typeof globalThis!=='undefined'?globalThis:this);`;
+      js = jsShim + '\n' + js;
       const buf = Buffer.from(js, 'utf8');
       if (!res.getHeader('Content-Type')) {
         res.setHeader('Content-Type', contentType || 'application/javascript');
@@ -349,30 +352,37 @@ function rewriteHtml(html, targetUrl, req, load) {
 
   /* eslint-disable no-useless-escape */
   const scriptContent = `(function(){
-  if(window.__NS_PROXY_INSTALLED__)return;window.__NS_PROXY_INSTALLED__=true;
-  const PROXY_ORIGIN=location.origin;
-  const BASE=new URL(${JSON.stringify(targetUrl)});
-  const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
-  const NOOP_RE=/^(?:|#|javascript:|mailto:|data:)/i;
-  function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
-  function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;if(isAlreadyProxied(u))return u;let abs=new URL(u,BASE);if(abs.origin===PROXY_ORIGIN&&!abs.pathname.startsWith('/api/proxy/')){abs=new URL(abs.pathname+abs.search+abs.hash,BASE);}return PROXY_PREFIX+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}
-  function rewriteEl(el){if(!el||!el.getAttribute)return;const ATTRS=['src','href','srcset','action'];for(const a of ATTRS){const v=el.getAttribute(a);if(!v||NOOP_RE.test(v))continue;try{if(a==='srcset'){const parts=v.split(',').map(s=>s.trim()).filter(Boolean);const next=parts.map(p=>{const [u,d]=p.split(/\s+/,2);if(!u||NOOP_RE.test(u))return p;const nu=toProxy(u);return nu&&nu!==u?(d?nu+' '+d:nu):p;}).join(', ');if(next&&next!==v)el.setAttribute(a,next);}else{const nv=toProxy(v);if(nv&&nv!==v)el.setAttribute(a,nv);}}catch{}}}
-  document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;try{const v=a.getAttribute('href');const nv=toProxy(v);if(nv&&nv!==v)a.href=nv;}catch{}},true);
-  document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
-  const ofetch=window.fetch;window.fetch=function(i,o){try{let url=typeof i==='string'?i:i&&i.url;if(url&&!NOOP_RE.test(url)){const proxied=toProxy(url);return typeof i==='string'?ofetch(proxied,o):ofetch(new Request(proxied,i),o);}}catch{}return ofetch(i,o);};
-  const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return oopen.call(this,m,u,...r);};
-  if(navigator.sendBeacon){const obeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,data){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return obeacon(u,data);};}
-  if(window.EventSource){const OES=window.EventSource;window.EventSource=function(u,conf){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OES(u,conf);};window.EventSource.prototype=OES.prototype;}
-  if(window.Worker){const OW=window.Worker;window.Worker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OW(u,opts);};window.Worker.prototype=OW.prototype;}
-  if(window.SharedWorker){const OSW=window.SharedWorker;window.SharedWorker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OSW(u,opts);};window.SharedWorker.prototype=OSW.prototype;}
-  if(navigator.serviceWorker&&navigator.serviceWorker.register){navigator.serviceWorker.register=function(){return Promise.resolve(undefined);};}
-  const mo=new MutationObserver(muts=>{for(const m of muts){if(m.type==='childList'&&m.addedNodes){m.addedNodes.forEach(rewriteEl);}else if(m.type==='attributes'&&m.target){rewriteEl(m.target);}}});
-  mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','href','srcset','action'],attributeOldValue:true});
-  const _push=history.pushState.bind(history);history.pushState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _push(s,t,nu);}return _push(s,t,u);};
-  const _replace=history.replaceState.bind(history);history.replaceState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _replace(s,t,nu);}return _replace(s,t,u);};
-  const _assign=location.assign.bind(location);location.assign=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _assign(nu);};
-  const _replaceLoc=location.replace.bind(location);location.replace=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _replaceLoc(nu);};
-})();`;
+    if(window.__NS_PROXY_INSTALLED__)return;window.__NS_PROXY_INSTALLED__=true;
+    const PROXY_ORIGIN=location.origin;
+    const BASE=new URL(${JSON.stringify(targetUrl)});
+    const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
+    const NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;
+    function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
+    function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;if(isAlreadyProxied(u))return u;let abs=new URL(u,BASE);if(abs.origin===PROXY_ORIGIN&&!abs.pathname.startsWith('/api/proxy/')){abs=new URL(abs.pathname+abs.search+abs.hash,BASE);}return PROXY_PREFIX+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}
+    function rewriteSrcset(v){return v.split(',').map(p=>{const t=p.trim();if(!t)return'';const [u,d]=t.split(/\s+/,2);if(!u||NOOP_RE.test(u))return p;const nu=toProxy(u);return nu&&nu!==u?(d?nu+' '+d:nu):p;}).join(', ');}
+    const URL_ATTRS=new Set(['src','href','action','poster','srcset']);
+    const _setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){try{if(URL_ATTRS.has(n)){if(n==='srcset')v=rewriteSrcset(v);else if(v&&!NOOP_RE.test(v))v=toProxy(v);}}catch{}return _setAttribute.call(this,n,v);};
+    function patchProp(C,p){const d=Object.getOwnPropertyDescriptor(C.prototype,p);if(!d||!d.set)return;Object.defineProperty(C.prototype,p,{configurable:d.configurable,enumerable:d.enumerable,get:d.get?function(){return d.get.call(this);}:undefined,set:function(v){try{if(p==='srcset')v=rewriteSrcset(v);else if(v&&!NOOP_RE.test(v))v=toProxy(v);}catch{}return d.set.call(this,v);}});}
+    [[HTMLAnchorElement,'href'],[HTMLLinkElement,'href'],[HTMLImageElement,'src'],[HTMLScriptElement,'src'],[HTMLIFrameElement,'src'],[HTMLSourceElement,'src'],[HTMLMediaElement,'src'],[HTMLVideoElement,'poster'],[HTMLFormElement,'action']].forEach(([C,p])=>{try{patchProp(C,p);}catch{}});
+    function rewriteEl(el){if(!el||!el.getAttribute)return;URL_ATTRS.forEach(a=>{const v=el.getAttribute(a);if(!v||NOOP_RE.test(v))return;try{if(a==='srcset'){const next=rewriteSrcset(v);if(next&&next!==v)el.setAttribute(a,next);}else{const nv=toProxy(v);if(nv&&nv!==v)el.setAttribute(a,nv);}}catch{}});}
+    function rewriteTree(r){try{rewriteEl(r);if(r.querySelectorAll)r.querySelectorAll('[src],[href],[action],[poster],[srcset]').forEach(rewriteEl);}catch{}}
+    document.addEventListener('click',e=>{const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;try{const v=a.getAttribute('href');const nv=toProxy(v);if(nv&&nv!==v)a.href=nv;}catch{}},true);
+    document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
+    const ORequest=window.Request;window.Request=new Proxy(ORequest,{construct(target,args){try{const input=args[0];let u=typeof input==='string'?input:(input&&input.url)||(input&&input.href)||String(input);if(u)args[0]=toProxy(u);}catch{}return new target(...args);}});
+    const ofetch=window.fetch;window.fetch=function(i,o){try{let u=typeof i==='string'?i:(i&&i.url)||(i&&i.href)||String(i);if(u){const p=toProxy(u);if(typeof i==='string')return ofetch(p,o);const req=i instanceof Request?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);};
+    const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return oopen.call(this,m,u,...r);};
+    if(navigator.sendBeacon){const obeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,data){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return obeacon(u,data);};}
+    if(window.EventSource){const OES=window.EventSource;window.EventSource=function(u,conf){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OES(u,conf);};window.EventSource.prototype=OES.prototype;}
+    if(window.Worker){const OW=window.Worker;window.Worker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OW(u,opts);};window.Worker.prototype=OW.prototype;}
+    if(window.SharedWorker){const OSW=window.SharedWorker;window.SharedWorker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OSW(u,opts);};window.SharedWorker.prototype=OSW.prototype;}
+    if(navigator.serviceWorker&&navigator.serviceWorker.register){navigator.serviceWorker.register=function(){return Promise.resolve(undefined);};}
+    const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList'&&m.addedNodes){m.addedNodes.forEach(n=>rewriteTree(n));}else if(m.type==='attributes'&&m.target){rewriteEl(m.target);}}});
+    mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','href','srcset','action','poster'],attributeOldValue:true});
+    const _push=history.pushState.bind(history);history.pushState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _push(s,t,nu);}return _push(s,t,u);};
+    const _replace=history.replaceState.bind(history);history.replaceState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _replace(s,t,nu);}return _replace(s,t,u);};
+    const _assign=location.assign.bind(location);location.assign=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _assign(nu);};
+    const _replaceLoc=location.replace.bind(location);location.replace=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _replaceLoc(nu);};
+  })();`;
   /* eslint-enable no-useless-escape */
 
   if ($('head').length === 0) $('html').prepend('<head></head>');
