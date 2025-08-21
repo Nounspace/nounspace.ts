@@ -69,6 +69,75 @@ export const NOUNS_TAB_CONFIG = {
   timestamp: "2025-06-20T05:58:44.080Z",
 };
 
+export const PLACES_TAB_CONFIG: SpaceConfig = {
+  layoutID: "cdb57e20-254c-476f-aadc-bcce8bbfa772",
+  layoutDetails: {
+    layoutConfig: {
+      layout: [
+        {
+          w: 12,
+          h: 10,
+          x: 0,
+          y: 0,
+          i: "iframe:8c9ce902-336e-4f11-ac2e-bf604da43b5d",
+          minW: 2,
+          maxW: 36,
+          minH: 2,
+          maxH: 36,
+          moved: false,
+          static: false,
+          resizeHandles: ["s", "w", "e", "n", "sw", "nw", "se", "ne"],
+          isBounded: false,
+        },
+      ],
+    },
+    layoutFidget: "grid",
+  },
+  theme: {
+    id: "Homebase-Tab Places-Theme",
+    name: "Homebase-Tab Places-Theme",
+    properties: {
+      background: "#ffffff",
+      backgroundHTML: "",
+      fidgetBackground: "#ffffff",
+      fidgetBorderColor: "#eeeeee",
+      fidgetBorderRadius: "0px",
+      fidgetBorderWidth: "0px",
+      fidgetShadow: "none",
+      font: "Inter",
+      fontColor: "#000000",
+      gridSpacing: "0",
+      headingsFont: "Inter",
+      headingsFontColor: "#000000",
+      musicURL: "https://www.youtube.com/watch?v=dMXlZ4y7OK4&t=1804",
+    },
+  },
+  fidgetInstanceDatums: {
+    "iframe:8c9ce902-336e-4f11-ac2e-bf604da43b5d": {
+      config: {
+        data: {},
+        editable: true,
+        settings: {
+          background: "var(--user-theme-fidget-background)",
+          cropOffsetX: 0,
+          cropOffsetY: 0,
+          fidgetBorderColor: "rgba(238, 238, 238, 0)",
+          fidgetBorderWidth: "0",
+          fidgetShadow: "none",
+          isScrollable: false,
+          showOnMobile: true,
+          url: "https://nounspot.com/",
+        },
+      },
+      fidgetType: "iframe",
+      id: "iframe:8c9ce902-336e-4f11-ac2e-bf604da43b5d",
+    },
+  },
+  fidgetTrayContents: [],
+  isEditable: false,
+  timestamp: "2025-08-12T19:44:39.689Z",
+};
+
 export const SOCIAL_TAB_CONFIG: SpaceConfig = {
   layoutID: "48073f43-70dd-459c-be6d-e31ac89f267f",
   layoutDetails: {
@@ -514,4 +583,5 @@ export const HOMEBASE_TABS_CONFIG = {
   GOVERNANCE_TAB_CONFIG,
   RESOURCES_TAB_CONFIG,
   FUNDED_WORKS_TAB_CONFIG,
+  PLACES_TAB_CONFIG,
 };
