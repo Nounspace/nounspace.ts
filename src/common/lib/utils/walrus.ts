@@ -44,13 +44,13 @@ export async function uploadVideoToWalrus(file: File): Promise<string> {
         throw new Error('Failed to get blob ID from response');
       }
 
-      // Return direct video URL with .mp4 extension for Farcaster compatibility
+      // Return video page URL with meta tags for Farcaster compatibility
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                      process.env.NEXT_PUBLIC_URL ||
                      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
                      'http://localhost:3000';
       
-      return `${baseUrl}/api/walrus-video/${blobId}.mp4`;
+      return `${baseUrl}/video/walrus/${blobId}`;
       
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
@@ -172,8 +172,7 @@ export function getWalrusVideoPageUrl(url: string): string {
 
 /**
  * Get a Walrus video URL that works well with Farcaster and other platforms
- * For social media sharing, use the video page URL with proper meta tags
- * For direct playback, use the proxy API
+ * Always returns the video page URL with proper meta tags for social sharing
  */
 export function getWalrusVideoUrl(url: string, forSocialSharing: boolean = false): string {
   if (!isWalrusUrl(url)) {
@@ -192,13 +191,8 @@ export function getWalrusVideoUrl(url: string, forSocialSharing: boolean = false
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       'http://localhost:3000';
 
-  if (forSocialSharing) {
-    // Return page URL with proper meta tags for social media
-    return `${baseUrl}/video/walrus/${blobId}`;
-  }
-
-  // For direct playback, use proxy API without .mp4 extension
-  return `${baseUrl}/api/walrus-video/${blobId}`;
+  // Always return page URL with proper meta tags for Farcaster compatibility
+  return `${baseUrl}/video/walrus/${blobId}`;
 }
 
 /**
