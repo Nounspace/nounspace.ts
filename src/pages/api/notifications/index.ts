@@ -1,7 +1,11 @@
 import neynar from "@/common/data/api/neynar";
 import requestHandler from "@/common/data/api/requestHandler";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
-import { NotificationsResponse } from "@neynar/nodejs-sdk/build/api";
+import {
+  NotificationType,
+  NotificationTypeEnum,
+  NotificationsResponse,
+} from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
 import { isString } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
@@ -46,9 +50,17 @@ const get = async (
 
   try {
     const data = await neynar.fetchAllNotifications({
-      fid, 
+      fid,
       limit,
       cursor,
+      type: [
+        NotificationType.Follows,
+        NotificationType.Recasts,
+        NotificationType.Likes,
+        NotificationType.Mentions,
+        NotificationType.Replies,
+        NotificationType.Quotes,
+      ],
     });
 
     res.status(200).json({
