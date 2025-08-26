@@ -163,7 +163,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl);
   const transformedUrl = transformUrl(sanitizedUrl || "");
-  const scaleValue = size;
+  // Scale value is set from size prop
+  const _scaleValue = size;
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
     const clean = DOMPurify.sanitize(embedScript, {
