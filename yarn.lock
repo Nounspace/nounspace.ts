@@ -870,7 +870,7 @@
   resolved "https://registry.npmjs.org/@faker-js/faker/-/faker-7.6.0.tgz"
   integrity sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==
 
-"@farcaster/core@^0.14.11", "@farcaster/core@^0.14.16", "@farcaster/core@^0.14.8":
+"@farcaster/core@^0.14.8":
   version "0.14.20"
   resolved "https://registry.npmjs.org/@farcaster/core/-/core-0.14.20.tgz"
   integrity sha512-VHnvt78fITnztYwRrrLAI0MTxgUelGw8ieync4yLxDx/BA2wSr9gNNeLxnQupLXD6qf8k7JsxqLJrFAuVDzt5A==
@@ -885,6 +885,18 @@
   version "0.15.6"
   resolved "https://registry.npmjs.org/@farcaster/core/-/core-0.15.6.tgz"
   integrity sha512-Vxq2JhqdZYEMjH4PIwPXQkalY46S4Mol2oCSHUafXenDx6WSoQJqF/4an4KyxGQbmA7Cf8+hl6zuNzkkHXEUyQ==
+  dependencies:
+    "@faker-js/faker" "^7.6.0"
+    "@noble/curves" "^1.0.0"
+    "@noble/hashes" "^1.3.0"
+    bs58 "^5.0.0"
+    neverthrow "^6.0.0"
+    viem "^2.17.4"
+
+"@farcaster/core@^0.18.5":
+  version "0.18.5"
+  resolved "https://registry.yarnpkg.com/@farcaster/core/-/core-0.18.5.tgz#0fe9a8f098d837f33c778682f458352d8628f2d6"
+  integrity sha512-YlD3PxoYNUKRVe98J+Q9WcXK+8ZQY935WZ5xmNqYiOH+p1yW3H5oLvrVEglr+RLcxp7mJONYaFvtO5J473otbg==
   dependencies:
     "@faker-js/faker" "^7.6.0"
     "@noble/curves" "^1.0.0"
@@ -940,12 +952,12 @@
     eventemitter3 "^5.0.1"
     ox "^0.4.4"
 
-"@farcaster/hub-web@^0.8.12":
-  version "0.8.12"
-  resolved "https://registry.npmjs.org/@farcaster/hub-web/-/hub-web-0.8.12.tgz"
-  integrity sha512-GXqujDKOS4/5/YHgibIvKSS73c/6ZB+coTuyTTfpseUMmX0bVAh4TA9zV2ZTzWAw8Sm7cVTWGnyVX6rSv83vgA==
+"@farcaster/hub-web@^0.11.4":
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/@farcaster/hub-web/-/hub-web-0.11.4.tgz#7cd476bf157be95b052707566003f59a003379d1"
+  integrity sha512-h4LiVsePvxdEAK7dCjTXOKh4kM4gQmONBT99u1tX1wYZVNWQ8g5iaobNSo7D0Q1vPFSEYHYUXGcXLnRmSie4aw==
   dependencies:
-    "@farcaster/core" "^0.14.16"
+    "@farcaster/core" "^0.18.5"
     "@improbable-eng/grpc-web" "^0.15.0"
     rxjs "^7.8.0"
 
@@ -4971,9 +4983,9 @@
   resolved "https://registry.npmjs.org/@stablelib/wipe/-/wipe-1.0.1.tgz"
   integrity sha512-WfqfX/eXGiAd3RJe4VU2snh/ZPwtSjLG4ynQ/vYzvghTh7dHFcI1wl+nrkWG6lGhukOxOsUHfv8dUXr58D0ayg==
 
-"@standard-crypto/farcaster-js-hub-rest@^1.3.0":
+"@standard-crypto/farcaster-js-hub-rest@^1.5.0":
   version "1.5.0"
-  resolved "https://registry.npmjs.org/@standard-crypto/farcaster-js-hub-rest/-/farcaster-js-hub-rest-1.5.0.tgz"
+  resolved "https://registry.yarnpkg.com/@standard-crypto/farcaster-js-hub-rest/-/farcaster-js-hub-rest-1.5.0.tgz#065de7e4245017a62b00d65e26e09d407623d0c1"
   integrity sha512-qBwvRg4C18CbhqEpkgMsEeLcGJcRvAz7JORGoxuTjfjE70DtjxSC2BzzVpxK9Qa74Z7uH7/XSYM4SL1kcr/kiA==
   dependencies:
     "@farcaster/core" "^0.14.8"
