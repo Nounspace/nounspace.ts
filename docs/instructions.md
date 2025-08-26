@@ -30,19 +30,20 @@ Nounspace is a highly customizable [Farcaster](https://farcaster.xyz/) client, i
 ### Backend & Services
 - **Database**: Supabase (PostgreSQL)
 - **Storage**: Supabase Storage
-- **API Client**: Axios v1.8.2
+- **API Client**: Axios v1.8.3
 - **Data Fetching**: React Query v5.40.0
 
 ### Authentication & Blockchain
 - **Auth**: Privy v1.73.1
 - **Wallet Integration**: 
   - Wagmi v2.16.3
-  - Viem v2.31.0
+  - Viem v2.35.1
   - Rainbow Kit v2.2.5
 - **Farcaster Integration**: 
-  - @farcaster/core v0.14.11
+  - @farcaster/core v0.18.5
   - @farcaster/frame-sdk v0.0.53
-  - @farcaster/hub-web v0.8.12
+  - @farcaster/hub-nodejs v0.15.5
+  - @farcaster/hub-web v0.11.4
   - @farcaster/miniapp-sdk v0.1.7
   - Neynar SDK v2.23.0
 
@@ -58,7 +59,7 @@ Nounspace is a highly customizable [Farcaster](https://farcaster.xyz/) client, i
 - **Git Hooks**: Husky v9.0.11, lint-staged v15.2.5
 
 ### Environment Requirements
-- **Node**: v20.x
+- **Node**: v22.11.0
 - **Browsers**: Last 3 Chrome versions, Safari 13+
 
 ## 3. Project Structure
