@@ -52,7 +52,6 @@
     "@heroicons/react": "^2.0.18",
     "@internationalized/date": "^3.5.4",
     "@mod-protocol/core": "^0.2.1",
-    "@mod-protocol/mod-registry": "^0.2.2",
     "@mod-protocol/react": "^0.2.0",
     "@mod-protocol/react-editor": "^0.1.0",
     "@mod-protocol/react-ui-shadcn": "^0.3.1",
@@ -81,7 +80,6 @@
     "@segment/analytics-next": "^1.81.0",
     "@sentry/react": "^10.0.0",
     "@snapshot-labs/snapshot.js": "^0.14.3",
-
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.44.1",
     "@tailwindcss/typography": "^0.5.10",
@@ -151,7 +149,6 @@
     "@solana/web3.js": "^1.98.0",
     "@stylistic/eslint-plugin": "^3.1.0",
     "@types/node": "^24.0.2",
-    "@types/ramda": "^0.29.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
@@ -165,7 +162,6 @@
     "lint-staged": "^15.2.5",
     "postcss": "^8.5.6",
     "prettier": "3.3.1",
-    "ramda": "^0.30.1",
     "supabase": "^1.123.0",
     "vitest": "^1.5.0"
   },
