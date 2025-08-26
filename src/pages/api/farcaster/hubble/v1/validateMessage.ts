@@ -1,26 +1,36 @@
-import axiosInstance from "@/common/data/api/backend";
 import requestHandler from "@/common/data/api/requestHandler";
-import { HubRestAPIClient } from "@standard-crypto/farcaster-js-hub-rest";
-import { isAxiosError } from "axios";
+import { getInsecureHubRpcClient, HubRpcClient } from "@farcaster/hub-nodejs";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const writeClient = new HubRestAPIClient({
-  hubUrl: process.env.NEXT_PUBLIC_HUB_HTTP_URL,
-  axiosInstance,
-});
+// Create a client that connects to a Hub
+const hubClient: HubRpcClient = getInsecureHubRpcClient(
+  process.env.NEXT_PUBLIC_HUB_HTTP_URL || "https://hub.farcaster.standardcrypto.vc:2283"
+);
 
 async function submitMessage(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const result = await writeClient.apis.validateMessage.validateMessage({
-      body: req.body,
-    });
-    res.status(result.status).json(result.data);
-  } catch (e) {
-    if (isAxiosError(e)) {
-      res.status(e.status || 500).json(e.response?.data);
+    // Validate the message using the hub-nodejs client
+    const validateResult = await hubClient.validateMessage(req.body);
+    
+    if (validateResult.isOk()) {
+      // Return success with validated message
+      res.status(200).json({
+        valid: true,
+        message: validateResult.value
+      });
     } else {
-      res.status(500).json("Unknown error occurred");
+      // Return error details
+      res.status(400).json({
+        valid: false,
+        error: validateResult.error.message
+      });
     }
+  } catch (e) {
+    const error = e as Error;
+    res.status(500).json({
+      valid: false,
+      error: error.message || "Unknown error occurred"
+    });
   }
 }
 
