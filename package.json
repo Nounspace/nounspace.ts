@@ -79,7 +79,7 @@
     "@react-stately/datepicker": "^3.9.4",
     "@segment/analytics-next": "^1.81.0",
     "@sentry/react": "^10.0.0",
-    "@snapshot-labs/snapshot.js": "^0.14.3",
+    "@snapshot-labs/snapshot.js": "^0.14.9",
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.44.1",
     "@tailwindcss/typography": "^0.5.10",
@@ -89,7 +89,7 @@
     "@uiw/react-md-editor": "^4.0.4",
     "@vercel/speed-insights": "^1.0.12",
     "@xmtp/frames-validator": "^0.6.2",
-    "axios": "^1.8.2",
+    "axios": "^1.8.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "0.2.1",
@@ -100,7 +100,7 @@
     "gray-matter": "^4.0.3",
     "isomorphic-dompurify": "^2.12.0",
     "linkify-react": "^4.1.1",
-    "linkifyjs": "^4.1.3",
+    "linkifyjs": "^4.3.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.469.0",
     "moment": "^2.30.1",
@@ -168,6 +168,8 @@
   "resolutions": {
     "@noble/curves": "1.9.2",
     "@noble/hashes": "1.8.0",
-    "viem": "2.35.1"
+    "viem": "2.35.1",
+    "esbuild": "0.25.0",
+    "cookie": "0.7.0"
   }
 }
