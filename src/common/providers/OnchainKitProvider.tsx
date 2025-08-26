@@ -1,11 +1,29 @@
 import React, { ReactNode } from 'react';
 import { OnchainKitProvider as BaseOnchainKitProvider } from '@coinbase/onchainkit';
 import '@coinbase/onchainkit/styles.css';
-import { base } from 'viem/chains';
 
 interface OnchainKitProviderProps {
   children: ReactNode;
 }
+
+// Simple Base chain definition with minimum required properties
+const baseChain = {
+  id: 8453,
+  name: 'Base',
+  nativeCurrency: {
+    name: 'Ether',
+    symbol: 'ETH',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://mainnet.base.org'],
+    },
+    public: {
+      http: ['https://mainnet.base.org'],
+    },
+  },
+};
 
 /**
  * OnchainKit provider wrapper component for Nounspace
@@ -21,7 +39,7 @@ export const OnchainKitProvider: React.FC<OnchainKitProviderProps> = ({ children
   return (
     <BaseOnchainKitProvider 
       apiKey={apiKey}
-      chain={base}
+      chain={baseChain}
     >
       {children}
     </BaseOnchainKitProvider>
