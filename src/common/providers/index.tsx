@@ -15,6 +15,7 @@ import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
 import MobilePreviewProvider from "./MobilePreviewProvider";
 import { SharedDataProvider } from "./SharedDataProvider";
+import { OnchainKitProvider } from "./OnchainKitProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -22,27 +23,29 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <Privy>
         <Query>
           <Wagmi>
-            <Theme>
-              <AppStoreProvider>
-                <UserThemeProvider>
-                  <AuthenticatorProvider>
-                    <LoggedInStateProvider>
-                      <SidebarContextProvider>
-                        <MobilePreviewProvider>
-                          <AnalyticsProvider>
-                            <MiniAppSdkProvider>
-                              <SharedDataProvider>
-                                <ToastProvider>{children}</ToastProvider>
-                              </SharedDataProvider>
-                            </MiniAppSdkProvider>
-                          </AnalyticsProvider>
-                        </MobilePreviewProvider>
-                      </SidebarContextProvider>
-                    </LoggedInStateProvider>
-                  </AuthenticatorProvider>
-                </UserThemeProvider>
-              </AppStoreProvider>
-            </Theme>
+            <OnchainKitProvider>
+              <Theme>
+                <AppStoreProvider>
+                  <UserThemeProvider>
+                    <AuthenticatorProvider>
+                      <LoggedInStateProvider>
+                        <SidebarContextProvider>
+                          <MobilePreviewProvider>
+                            <AnalyticsProvider>
+                              <MiniAppSdkProvider>
+                                <SharedDataProvider>
+                                  <ToastProvider>{children}</ToastProvider>
+                                </SharedDataProvider>
+                              </MiniAppSdkProvider>
+                            </AnalyticsProvider>
+                          </MobilePreviewProvider>
+                        </SidebarContextProvider>
+                      </LoggedInStateProvider>
+                    </AuthenticatorProvider>
+                  </UserThemeProvider>
+                </AppStoreProvider>
+              </Theme>
+            </OnchainKitProvider>
           </Wagmi>
         </Query>
       </Privy>
