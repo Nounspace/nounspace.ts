@@ -2064,7 +2064,7 @@
   resolved "https://registry.npmjs.org/@mod-protocol/farcaster/-/farcaster-0.2.0.tgz"
   integrity sha512-vYd1TTStQ3VDO1vSXlEOBpYAVpE2E71oaSZisyBLBAcL7KfJqMVz8TzfERNLD2qI7l7Q20hGP59R+4gbzHczOw==
 
-"@mod-protocol/mod-registry@*", "@mod-protocol/mod-registry@^0.2.2":
+"@mod-protocol/mod-registry@*":
   version "0.2.2"
   resolved "https://registry.npmjs.org/@mod-protocol/mod-registry/-/mod-registry-0.2.2.tgz"
   integrity sha512-iiprU3xAw2QtRcEA7BJDagYDBjuNdd7pdEQdOaKCWW5u9b1d4x+9j8CoiwSSgcsgZRLX2gNRIPK7ARb9MEuvWA==
@@ -5423,13 +5423,6 @@
   version "6.14.0"
   resolved "https://registry.npmjs.org/@types/qs/-/qs-6.14.0.tgz"
   integrity sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==
-
-"@types/ramda@^0.29.11":
-  version "0.29.12"
-  resolved "https://registry.npmjs.org/@types/ramda/-/ramda-0.29.12.tgz"
-  integrity sha512-sgIEjpJhdQPB52gDF4aphs9nl0xe54CR22DPdWqT8gQHjZYmVApgA0R3/CpMbl0Y8az2TEZrPNL2zy0EvjbkLA==
-  dependencies:
-    types-ramda "^0.29.10"
 
 "@types/range-parser@*":
   version "1.2.7"
@@ -12594,11 +12587,6 @@ ramda@^0.29.0:
   resolved "https://registry.npmjs.org/ramda/-/ramda-0.29.1.tgz"
   integrity sha512-OfxIeWzd4xdUNxlWhgFazxsA/nl3mS4/jGZI5n00uWOoSSFRhC1b6gl6xvmzUamgmqELraWp0J/qqVlXYPDPyA==
 
-ramda@^0.30.1:
-  version "0.30.1"
-  resolved "https://registry.npmjs.org/ramda/-/ramda-0.30.1.tgz"
-  integrity sha512-tEF5I22zJnuclswcZMc8bDIrwRHRzf+NqVEmqg50ShAZMP7MWeR/RGDthfM/p+BlqvF2fXAzpn8i+SJcYD3alw==
-
 randombytes@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/randombytes/-/randombytes-2.1.0.tgz"
@@ -14469,11 +14457,6 @@ ts-mixer@^6.0.3:
   resolved "https://registry.npmjs.org/ts-mixer/-/ts-mixer-6.0.4.tgz"
   integrity sha512-ufKpbmrugz5Aou4wcr5Wc1UUFWOLhq+Fm6qa6P0w0K5Qw2yhaUoiWszhCVuNQyNwrlGiscHOmqYoAox1PtvgjA==
 
-ts-toolbelt@^9.6.0:
-  version "9.6.0"
-  resolved "https://registry.npmjs.org/ts-toolbelt/-/ts-toolbelt-9.6.0.tgz"
-  integrity sha512-nsZd8ZeNUzukXPlJmTBwUAuABDe/9qtVDelJeT/qW0ow3ZS3BsQJtNkan1802aM9Uf68/Y8ljw86Hu0h5IUW3w==
-
 tslib@1.14.1, tslib@^1.9.0:
   version "1.14.1"
   resolved "https://registry.npmjs.org/tslib/-/tslib-1.14.1.tgz"
@@ -14601,13 +14584,6 @@ typedarray.prototype.slice@^1.0.5:
     math-intrinsics "^1.1.0"
     typed-array-buffer "^1.0.3"
     typed-array-byte-offset "^1.0.4"
-
-types-ramda@^0.29.10:
-  version "0.29.10"
-  resolved "https://registry.npmjs.org/types-ramda/-/types-ramda-0.29.10.tgz"
-  integrity sha512-5PJiW/eiTPyXXBYGZOYGezMl6qj7keBiZheRwfjJZY26QPHsNrjfJnz0mru6oeqqoTHOni893Jfd6zyUXfQRWg==
-  dependencies:
-    ts-toolbelt "^9.6.0"
 
 typescript@^5.1.6:
   version "5.8.3"
