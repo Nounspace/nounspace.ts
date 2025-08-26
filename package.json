@@ -170,6 +170,7 @@
     "@noble/hashes": "1.8.0",
     "viem": "2.35.1",
     "esbuild": "0.25.0",
-    "cookie": "0.7.0"
+    "cookie": "0.7.0",
+    "lodash.set": "4.3.2"
   }
 }
