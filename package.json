@@ -1,6 +1,6 @@
 {
   "name": "nounspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "",
   "private": true,
   "scripts": {
@@ -34,7 +34,7 @@
     ]
   },
   "engines": {
-    "node": "22.11.0"
+    "node": "^22.11.0"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
