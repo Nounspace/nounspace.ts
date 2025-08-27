@@ -8,14 +8,34 @@ import AuthenticatorProvider from "./AutheticatorProvider";
 import { AppStoreProvider } from "@/common/data/stores/app";
 import UserThemeProvider from "@/common/lib/theme/UserThemeProvider";
 import LoggedInStateProvider from "./LoggedInStateProvider";
-import AnalyticsProvider from "./AnalyticsProvider";
 import VersionCheckProivder from "./VersionCheckProvider";
 import { SidebarContextProvider } from "@/common/components/organisms/Sidebar";
+import AnalyticsProvider from "./AnalyticsProvider";
 import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
 import MobilePreviewProvider from "./MobilePreviewProvider";
 import { SharedDataProvider } from "./SharedDataProvider";
 import { OnchainKitProvider } from "./OnchainKitProvider";
+
+const RarelyUpdatedProviders = React.memo(
+  function RarelyUpdatedProviders({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) {
+    return (
+      <MobilePreviewProvider>
+        <AnalyticsProvider>
+          <MiniAppSdkProvider>
+            <SharedDataProvider>
+              <ToastProvider>{children}</ToastProvider>
+            </SharedDataProvider>
+          </MiniAppSdkProvider>
+        </AnalyticsProvider>
+      </MobilePreviewProvider>
+    );
+  },
+);
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -30,15 +50,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
                     <AuthenticatorProvider>
                       <LoggedInStateProvider>
                         <SidebarContextProvider>
-                          <MobilePreviewProvider>
-                            <AnalyticsProvider>
-                              <MiniAppSdkProvider>
-                                <SharedDataProvider>
-                                  <ToastProvider>{children}</ToastProvider>
-                                </SharedDataProvider>
-                              </MiniAppSdkProvider>
-                            </AnalyticsProvider>
-                          </MobilePreviewProvider>
+                          <RarelyUpdatedProviders>{children}</RarelyUpdatedProviders>
                         </SidebarContextProvider>
                       </LoggedInStateProvider>
                     </AuthenticatorProvider>
