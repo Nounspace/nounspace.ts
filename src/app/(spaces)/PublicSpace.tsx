@@ -173,7 +173,6 @@ export default function PublicSpace({
     [editabilityCheck],
   );
 
-  
 
   // Control to avoid infinite space/tab update cycles
   const prevSpaceId = useRef<string | null>(null);
