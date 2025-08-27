@@ -214,7 +214,8 @@ export default function PublicSpace({
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
-        nextTabName = decodeURIComponent(providedTabName);
+        // default to Overview for proposals if tab is missing
+        nextTabName = decodeURIComponent(providedTabName || 'Overview');
       }
     }
 
@@ -438,7 +439,7 @@ export default function PublicSpace({
 
             if (existingSpace) {
               setCurrentSpaceId(existingSpace.id);
-              setCurrentTabName('Profile');
+              setCurrentTabName('Overview');
               return;
             }
           } else if (!isTokenPage) {
@@ -480,19 +481,22 @@ export default function PublicSpace({
           }
 
           if (newSpaceId) {
+            // Determine initial tab name depending on space type
+            const initialTabName = resolvedPageType === 'proposal' ? 'Overview' : 'Profile';
+
             // Set both spaceId and currentSpaceId atomically
             setCurrentSpaceId(newSpaceId);
-            setCurrentTabName("Profile");
+            setCurrentTabName(initialTabName);
 
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
             await loadEditableSpaces(); // First load
-            await loadSpaceTab(newSpaceId, "Profile");
+            await loadSpaceTab(newSpaceId, initialTabName);
 
             // Load remaining tabs
             const tabOrder = localSpaces[newSpaceId]?.order || [];
             for (const tabName of tabOrder) {
-              if (tabName !== "Profile") {
+              if (tabName !== initialTabName) {
                 await loadSpaceTab(newSpaceId, tabName);
               }
             }
@@ -501,7 +505,7 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            const newUrl = getSpacePageUrl("Profile");
+            const newUrl = getSpacePageUrl(initialTabName);
             router.replace(newUrl);
           }
         } catch (error) {
