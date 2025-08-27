@@ -15,6 +15,7 @@ import { ToastProvider } from "../components/atoms/Toast";
 import MiniAppSdkProvider from "./MiniAppSdkProvider";
 import MobilePreviewProvider from "./MobilePreviewProvider";
 import { SharedDataProvider } from "./SharedDataProvider";
+import { OnchainKitProvider } from "./OnchainKitProvider";
 
 const RarelyUpdatedProviders = React.memo(
   function RarelyUpdatedProviders({
@@ -42,19 +43,21 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <Privy>
         <Query>
           <Wagmi>
-            <Theme>
-              <AppStoreProvider>
-                <UserThemeProvider>
-                  <AuthenticatorProvider>
-                    <LoggedInStateProvider>
-                      <SidebarContextProvider>
-                        <RarelyUpdatedProviders>{children}</RarelyUpdatedProviders>
-                      </SidebarContextProvider>
-                    </LoggedInStateProvider>
-                  </AuthenticatorProvider>
-                </UserThemeProvider>
-              </AppStoreProvider>
-            </Theme>
+            <OnchainKitProvider>
+              <Theme>
+                <AppStoreProvider>
+                  <UserThemeProvider>
+                    <AuthenticatorProvider>
+                      <LoggedInStateProvider>
+                        <SidebarContextProvider>
+                          <RarelyUpdatedProviders>{children}</RarelyUpdatedProviders>
+                        </SidebarContextProvider>
+                      </LoggedInStateProvider>
+                    </AuthenticatorProvider>
+                  </UserThemeProvider>
+                </AppStoreProvider>
+              </Theme>
+            </OnchainKitProvider>
           </Wagmi>
         </Query>
       </Privy>

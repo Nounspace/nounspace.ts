@@ -1,6 +1,6 @@
 {
   "name": "nounspace",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "",
   "private": true,
   "scripts": {
@@ -34,15 +34,17 @@
     ]
   },
   "engines": {
-    "node": "20.x"
+    "node": "^22.11.0"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20240423.0",
+    "@coinbase/onchainkit": "^0.38.19",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@farcaster/core": "^0.14.11",
+    "@farcaster/core": "^0.18.5",
     "@farcaster/frame-sdk": "^0.0.53",
-    "@farcaster/hub-web": "^0.8.12",
+    "@farcaster/hub-nodejs": "^0.15.5",
+    "@farcaster/hub-web": "^0.11.4",
     "@farcaster/miniapp-sdk": "^0.1.7",
     "@frames.js/render": "^0.5.6",
     "@googleapis/youtube": "^18.0.0",
@@ -50,7 +52,6 @@
     "@heroicons/react": "^2.0.18",
     "@internationalized/date": "^3.5.4",
     "@mod-protocol/core": "^0.2.1",
-    "@mod-protocol/mod-registry": "^0.2.2",
     "@mod-protocol/react": "^0.2.0",
     "@mod-protocol/react-editor": "^0.1.0",
     "@mod-protocol/react-ui-shadcn": "^0.3.1",
@@ -78,8 +79,7 @@
     "@react-stately/datepicker": "^3.9.4",
     "@segment/analytics-next": "^1.81.0",
     "@sentry/react": "^10.0.0",
-    "@snapshot-labs/snapshot.js": "^0.14.3",
-    "@standard-crypto/farcaster-js-hub-rest": "^1.3.0",
+    "@snapshot-labs/snapshot.js": "^0.14.9",
     "@supabase/ssr": "^0.3.0",
     "@supabase/supabase-js": "^2.44.1",
     "@tailwindcss/typography": "^0.5.10",
@@ -89,7 +89,7 @@
     "@uiw/react-md-editor": "^4.0.4",
     "@vercel/speed-insights": "^1.0.12",
     "@xmtp/frames-validator": "^0.6.2",
-    "axios": "^1.8.2",
+    "axios": "^1.8.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "cmdk": "0.2.1",
@@ -100,7 +100,7 @@
     "gray-matter": "^4.0.3",
     "isomorphic-dompurify": "^2.12.0",
     "linkify-react": "^4.1.1",
-    "linkifyjs": "^4.1.3",
+    "linkifyjs": "^4.3.2",
     "lodash": "^4.17.21",
     "lucide-react": "^0.469.0",
     "moment": "^2.30.1",
@@ -136,7 +136,7 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.1.6",
-    "viem": "^2.31.0",
+    "viem": "^2.35.1",
     "wagmi": "^2.16.3",
     "web-push": "^3.6.7",
     "zod": "^3.22.4",
@@ -149,7 +149,6 @@
     "@solana/web3.js": "^1.98.0",
     "@stylistic/eslint-plugin": "^3.1.0",
     "@types/node": "^24.0.2",
-    "@types/ramda": "^0.29.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
@@ -163,12 +162,15 @@
     "lint-staged": "^15.2.5",
     "postcss": "^8.5.6",
     "prettier": "3.3.1",
-    "ramda": "^0.30.1",
     "supabase": "^1.123.0",
     "vitest": "^1.5.0"
   },
   "resolutions": {
-    "@noble/curves": "1.9.2",
-    "@noble/hashes": "1.8.0"
+    "@noble/curves": "1.9.6",
+    "@noble/hashes": "1.8.0",
+    "viem": "2.35.1",
+    "esbuild": "0.25.0",
+    "cookie": "0.7.0",
+    "lodash.set": "4.3.2"
   }
 }
