@@ -13,38 +13,38 @@ function isInternalUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname;
-    
+
     // Block localhost variations
     if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') {
       return true;
     }
-    
+
     // Block private IP ranges
     const ip = hostname.split('.');
     if (ip.length === 4 && ip.every(octet => /^\d+$/.test(octet))) {
-      const [a, b, c, d] = ip.map(Number);
-      
+      const [a, b, _c, _d] = ip.map(Number);
+
       // 10.0.0.0/8 (10.0.0.0 - 10.255.255.255)
       if (a === 10) return true;
-      
+
       // 172.16.0.0/12 (172.16.0.0 - 172.31.255.255)
       if (a === 172 && b >= 16 && b <= 31) return true;
-      
+
       // 192.168.0.0/16 (192.168.0.0 - 192.168.255.255)
       if (a === 192 && b === 168) return true;
-      
+
       // 169.254.0.0/16 (Link-local addresses)
       if (a === 169 && b === 254) return true;
-      
+
       // 0.0.0.0/8 (Current network)
       if (a === 0) return true;
     }
-    
+
     // Block other localhost variations
     if (hostname.endsWith('.localhost') || hostname.includes('local')) {
       return true;
     }
-    
+
     return false;
   } catch {
     return true; // If URL parsing fails, consider it unsafe
@@ -65,33 +65,64 @@ interface FrameData {
 
 // Helper: Regex-based fallback parser for frame metadata
 async function parseFrameFallback(url: string): Promise<FrameData> {
-  
+
   const response = await fetch(url, {
     headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; FrameViewer/1.0)",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Cache-Control": "no-cache",
+      "Pragma": "no-cache",
+      "Sec-Fetch-Dest": "document",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-User": "?1",
+      "Upgrade-Insecure-Requests": "1",
     },
   });
-  if (!response.ok) throw new Error(`Failed to fetch URL: ${response.statusText}`);
+  
+  if (!response.ok) {
+    // Handle common HTTP errors gracefully
+    if (response.status === 403) {
+      throw new Error(`Access denied by ${new URL(url).hostname}. Site may be blocking automated requests.`);
+    } else if (response.status === 404) {
+      throw new Error(`Page not found: ${response.statusText}`);
+    } else if (response.status >= 500) {
+      throw new Error(`Server error from ${new URL(url).hostname}: ${response.statusText}`);
+    } else {
+      throw new Error(`Failed to fetch URL: ${response.statusText}`);
+    }
+  }
   const html = await response.text();
 
-  // Check for fc:frame metadata to determine if this is actually a frame
-  const hasFrameMetadata = html.includes('fc:frame') || html.includes('of:frame');
-
-  // Log a sample of the HTML to see what we're working with
-  const metaTags = html.match(/<meta[^>]*>/gi) || [];
-  const frameMetaTags = metaTags.filter(tag => tag.includes('fc:frame') || tag.includes('og:'));
+  // Check for fc:frame or fc:miniapp metadata to determine if this is actually a frame/miniapp
+  const hasFrameMetadata = html.includes('fc:frame') || html.includes('fc:miniapp') || html.includes('of:frame');
 
   // Check for JSON-based frame format (name="fc:frame" with JSON content)
   const jsonFrameMatch = html.match(/<meta\s+name="fc:frame"\s+content='([^']+)'/i) ||
-                         html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
-  
+    html.match(/<meta\s+name="fc:frame"\s+content="([^"]+)"/i);
+
+  // Check for JSON-based miniapp format (name="fc:miniapp" with JSON content)
+  const jsonMiniappMatch = html.match(/<meta\s+name="fc:miniapp"\s+content='([^']+)'/i) ||
+    html.match(/<meta\s+name="fc:miniapp"\s+content="([^"]+)"/i);
+
   let jsonFrameData: any = null;
-  if (jsonFrameMatch) {
+  const jsonMatch = jsonFrameMatch || jsonMiniappMatch;
+  
+  if (jsonMatch) {
+    // Decode HTML entities before parsing JSON
+    const decodedJson = jsonMatch[1]
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&');
+    
     try {
-      jsonFrameData = JSON.parse(jsonFrameMatch[1]);
-      // console.log('parseFrameFallback - JSON frame data found:', jsonFrameData);
+      jsonFrameData = JSON.parse(decodedJson);
     } catch (e) {
-      console.error('parseFrameFallback - Failed to parse JSON frame data:', e);
+      // JSON parsing failed, continue with traditional meta tag parsing
     }
   }
 
@@ -122,21 +153,13 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     /<meta\s+content="([^"]+)"\s+property="fc:frame:post_url"/i
   );
 
-  // console.log('parseFrameFallback - Parsed metadata:', {
-  //   url,
-  //   hasImageMatch: !!imageMatch,
-  //   imageMatchValue: imageMatch ? imageMatch[1] : null,
-  //   hasTitleMatch: !!titleMatch,
-  //   buttonsCount: buttonsMatch.length,
-  //   hasInputText: !!inputTextMatch,
-  //   hasPostUrl: !!postUrlMatch,
-  // });
+  // --- Removed commented-out debug logs for production ---
 
   let imageUrl: string | null = null;
   let title: string | null = null;
   const buttons: { index: number; label: string; action: string }[] = [];
 
-  // First, try to extract from JSON frame data
+  // First, try to extract from JSON frame/miniapp data
   if (jsonFrameData) {
     if (jsonFrameData.imageUrl) {
       imageUrl = jsonFrameData.imageUrl;
@@ -187,11 +210,11 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
         buttons.push({ index, label, action: "post" });
       }
     });
-    
+
     buttons.sort((a, b) => a.index - b.index);
   }
   const postUrl: string | null = postUrlMatch ? postUrlMatch[1] || url : url;
-  
+
   const result = {
     image: imageUrl,
     title,
@@ -200,15 +223,6 @@ async function parseFrameFallback(url: string): Promise<FrameData> {
     postUrl,
     isFrame: hasFrameMetadata,
   };
-
-  // console.log('parseFrameFallback - Final result:', {
-  //   url,
-  //   finalImageUrl: result.image,
-  //   isFrame: result.isFrame,
-  //   buttonsCount: result.buttons.length,
-  //   hasJsonFrame: !!jsonFrameData,
-  //   extractedFromJson: !!jsonFrameData && !!jsonFrameData.imageUrl,
-  // });
 
   return result;
 }
@@ -232,12 +246,15 @@ export async function GET(request: NextRequest): Promise<Response> {
   }
 
   try {
-    // console.log('Frames API - GET request:', { url, specification, fid });
-    
     let html: string;
     {
       const urlRes = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; FrameViewer/1.0)" },
+        headers: { 
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Cache-Control": "no-cache",
+        },
       });
       html = await urlRes.text();
     }
@@ -247,13 +264,6 @@ export async function GET(request: NextRequest): Promise<Response> {
       url: url,
       specification: specification,
     });
-
-    // console.log('Frames API - getFrame result:', {
-    //   url,
-    //   status: frameResult.status,
-    //   hasFrame: frameResult.status === "success" && !!frameResult.frame,
-    //   frameImage: frameResult.status === "success" && frameResult.frame ? frameResult.frame.image : null,
-    // });
 
     let frameData: FrameData;
     if (frameResult.status === "success" && frameResult.frame) {
@@ -270,7 +280,6 @@ export async function GET(request: NextRequest): Promise<Response> {
         isFrame: true, // frames.js successfully parsed frame metadata
       };
     } else {
-      // console.log('Frames API - getFrame failed, falling back to manual parsing');
       // Fall back to manual parsing if getFrame fails
       frameData = await parseFrameFallback(url);
     }
@@ -278,14 +287,6 @@ export async function GET(request: NextRequest): Promise<Response> {
     if (!frameData.buttons || frameData.buttons.length === 0) {
       frameData.buttons = [{ label: "Open", action: "post" }];
     }
-
-    // console.log('Frames API - Final frame data:', {
-    //   url,
-    //   image: frameData.image,
-    //   isFrame: frameData.isFrame,
-    //   hasButtons: frameData.buttons?.length > 0,
-    //   buttonCount: frameData.buttons?.length,
-    // });
 
     if (fid) {
       const fidNumber = parseInt(fid as string);
@@ -313,7 +314,7 @@ export async function GET(request: NextRequest): Promise<Response> {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const body = await request.json();
-    const { frameUrl, buttonIndex } = body;
+    const { frameUrl } = body;
     const specification = normalizeSpecification(request.nextUrl.searchParams.get("specification"));
 
     if (!frameUrl) {
@@ -329,7 +330,12 @@ export async function POST(request: NextRequest): Promise<Response> {
     let html: string;
     {
       const urlRes = await fetch(frameUrl, {
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; FrameViewer/1.0)" },
+        headers: { 
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+          "Cache-Control": "no-cache",
+        },
       });
       html = await urlRes.text();
     }

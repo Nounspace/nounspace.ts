@@ -1,5 +1,6 @@
 import { Address } from "viem";
 import { OwnerType } from "../api/etherscan";
+import { fetchEmpireByAddress } from "./empireBuilder";
 
 export interface ClankerToken {
   id: number;
@@ -48,13 +49,25 @@ export async function fetchClankerByAddress(
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
 ) {
-  const clankerData = await fetchClankerByAddress(contractAddress as Address);
-  if (clankerData && clankerData?.requestor_fid) {
+  const [clankerData, empireData] = await Promise.all([
+    fetchClankerByAddress(contractAddress as Address),
+    fetchEmpireByAddress(contractAddress as Address),
+  ]);
+
+  if (empireData && empireData.owner) {
+    return {
+      ownerId: empireData.owner,
+      ownerIdType: "address" as OwnerType,
+    };
+  }
+
+  if (clankerData && clankerData.requestor_fid) {
     return {
       ownerId: String(clankerData.requestor_fid),
       ownerIdType: "fid" as OwnerType,
     };
   }
+
   return {
     ownerId: undefined,
     ownerIdType: "fid" as OwnerType,

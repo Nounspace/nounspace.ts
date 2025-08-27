@@ -31,7 +31,6 @@ import {
 } from "@/common/lib/hooks/useNotificationsLastSeenCursor"
 import moment from "moment"
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange"
-import { useLoadFarcasterUser } from "@/common/data/queries/farcaster"
 import { FaHeart } from "react-icons/fa"
 import { useRouter } from "next/navigation"
 
@@ -224,17 +223,45 @@ const RecastNotificationRow: NotificationRowProps = ({
   );
 };
 
+const QuoteNotificationRow: NotificationRowProps = ({
+  notification,
+  onSelect,
+}) => {
+  const quotedByUser = notification.cast?.author ? [notification.cast.author] : [];
+
+  return (
+    <div className="flex flex-col gap-2">
+      <NotificationHeader
+        notification={notification}
+        relatedUsers={quotedByUser}
+        descriptionSuffix="quoted your cast"
+      />
+      <div className="ml-4 w-full">
+        <CastRow
+          cast={notification.cast!}
+          key={notification.cast!.hash}
+          showChannel={false}
+          isFocused={false}
+          isEmbed={true}
+          isReply={false}
+          hasReplies={false}
+          onSelect={onSelect}
+          hideReactions={false}
+          className="border-b-0 px-0 pb-0 hover:bg-transparent"
+          castTextStyle={{
+            fontSize: "16px",
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
 const ReplyNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
   const repliedByUser = notification.cast?.author ? [notification.cast.author] : [];
-  const fid = useCurrentFid()
-  const replyHasReplies = (notification?.cast?.replies?.count ?? 0) > 0
-  const { data: replyingTo } = useLoadFarcasterUser(fid ?? -1)
-  const replyingToUsername = replyingTo?.users?.length
-    ? replyingTo.users[0].username
-    : undefined
 
   return (
     <div className="flex flex-col gap-2">
@@ -326,6 +353,7 @@ const NOTIFICATION_ROW_TYPE = {
   [NotificationTypeEnum.Mention]: MentionNotificationRow,
   [NotificationTypeEnum.Follows]: FollowNotificationRow,
   [NotificationTypeEnum.Recasts]: RecastNotificationRow,
+  [NotificationTypeEnum.Quote]: QuoteNotificationRow,
   [NotificationTypeEnum.Reply]: ReplyNotificationRow,
   [NotificationTypeEnum.Likes]: LikeNotificationRow,
 }
@@ -414,9 +442,19 @@ function NotificationsPageContent() {
 
   const filterByType = useCallback(
     (_notifications: Notification[]): Notification[] => {
-      return tab === TAB_OPTIONS.ALL
-        ? _notifications
-        : _notifications.filter((notification) => notification.type === tab)
+      if (tab === TAB_OPTIONS.ALL) {
+        return _notifications
+      }
+
+      if (tab === TAB_OPTIONS.RECASTS) {
+        return _notifications.filter(
+          (notification) =>
+            notification.type === NotificationTypeEnum.Recasts ||
+            notification.type === NotificationTypeEnum.Quote,
+        )
+      }
+
+      return _notifications.filter((notification) => notification.type === tab)
     },
     [tab]
   )

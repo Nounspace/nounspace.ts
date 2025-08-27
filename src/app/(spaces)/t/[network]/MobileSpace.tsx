@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Loading from "@/common/components/molecules/Loading";
 import { useGetCastsByKeyword } from "@/common/data/queries/farcaster";
 import { mergeClasses as cn } from "@/common/lib/utils/mergeClasses";
@@ -13,17 +13,44 @@ import { SiFarcaster } from "react-icons/si";
 import { useInView } from "react-intersection-observer";
 import { useToken } from "@/common/providers/TokenProvider";
 import TokenDataHeader from "../../../../common/components/organisms/TokenDataHeader";
-import {
-  getGeckoUrl,
-  getMatchaUrl,
-  getGeckoIframe,
-} from "@/common/lib/utils/links";
+import { getGeckoUrl, getMatchaUrl, getGeckoIframe } from "@/common/lib/utils/links";
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { useAppStore } from "@/common/data/stores/app";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
+
+// Memoized IconButton component to prevent unnecessary re-renders
+const IconButton = React.memo(
+  ({
+    icon: Icon,
+    label,
+    currentTab,
+    size,
+    onClick,
+  }: {
+    icon: IconType;
+    label: Pages;
+    currentTab: Pages;
+    size: number;
+    onClick: (label: Pages) => void;
+  }) => {
+    return (
+      <div
+        onClick={() => onClick(label)}
+        className={cn(
+          "gap-1 text-sm font-semibold flex flex-col items-center cursor-pointer",
+          currentTab === label && "text-purple-500"
+        )}
+      >
+        <Icon size={size} /> {label}
+      </div>
+    );
+  }
+);
+
+IconButton.displayName = "IconButton";
 
 export const MobileContractDefinedSpace = ({
   contractAddress,
@@ -35,28 +62,28 @@ export const MobileContractDefinedSpace = ({
   const [tab, setTab] = useState<Pages>("Price");
   const [ref, inView] = useInView();
   const { tokenData } = useToken();
-  const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+  const symbol = tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
   const decimals = tokenData?.geckoData?.decimals || "";
   const image =
     tokenData?.clankerData?.img_url ||
-    (tokenData?.geckoData?.image_url !== "missing.png"
-      ? tokenData?.geckoData?.image_url
-      : null);
+    (tokenData?.geckoData?.image_url !== "missing.png" ? tokenData?.geckoData?.image_url : null);
+
+  // Stable callback for tab changes
+  const handleTabChange = useCallback((label: Pages) => {
+    setTab(label);
+  }, []);
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
       createInitialContractSpaceConfigForAddress(
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
-        tokenData?.clankerData?.requestor_fid
-          ? String(tokenData.clankerData.requestor_fid)
-          : "",
+        tokenData?.clankerData?.requestor_fid ? String(tokenData.clankerData.requestor_fid) : "",
         tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
         !!tokenData?.clankerData,
-        tokenData?.network,
+        tokenData?.network
       ),
-    [contractAddress, tokenData, tokenData?.network],
+    [contractAddress, tokenData, tokenData?.network]
   );
 
   const { getCurrentSpaceConfig } = useAppStore((state) => ({
@@ -64,9 +91,7 @@ export const MobileContractDefinedSpace = ({
   }));
   const currentConfig = getCurrentSpaceConfig();
   const config = {
-    ...(currentConfig?.tabs[providedTabName]
-      ? currentConfig.tabs[providedTabName]
-      : INITIAL_SPACE_CONFIG),
+    ...(currentConfig?.tabs[providedTabName] ? currentConfig.tabs[providedTabName] : INITIAL_SPACE_CONFIG),
     isEditable: false,
   };
 
@@ -74,24 +99,9 @@ export const MobileContractDefinedSpace = ({
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { ...restConfig } = config;
     return restConfig;
-  }, [
-    config.fidgetInstanceDatums,
-    config.layoutID,
-    config.layoutDetails,
-    config.fidgetTrayContents,
-    config.theme,
-  ]);
+  }, [config.fidgetInstanceDatums, config.layoutID, config.layoutDetails, config.fidgetTrayContents, config.theme]);
 
-  console.log("memoizedConfig", memoizedConfig);
-
-  const {
-    data,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-    isError,
-    isPending,
-  } = useGetCastsByKeyword({
+  const { data, isFetchingNextPage, fetchNextPage, hasNextPage, isError, isPending } = useGetCastsByKeyword({
     keyword: tokenData ? `$${symbol}` : "",
   });
 
@@ -101,39 +111,7 @@ export const MobileContractDefinedSpace = ({
     }
   }, [inView]);
 
-  const IconButton = ({
-    icon: Icon,
-    label,
-    currentTab,
-    size,
-  }: {
-    icon: IconType;
-    label: Pages;
-    currentTab: Pages;
-    size: number;
-  }) => (
-    <div
-      onClick={() => setTab(label)}
-      className={cn(
-        "gap-1 text-sm font-semibold flex flex-col items-center cursor-pointer",
-        currentTab === label && "text-purple-500",
-      )}
-    >
-      <Icon size={size} /> {label}
-    </div>
-  );
-
-  const LinkItem = ({
-    href,
-    imgSrc,
-    alt,
-    label,
-  }: {
-    href: string;
-    imgSrc: string;
-    alt: string;
-    label: string;
-  }) => (
+  const LinkItem = ({ href, imgSrc, alt, label }: { href: string; imgSrc: string; alt: string; label: string }) => (
     <a
       href={href}
       target="_blank"
@@ -147,7 +125,7 @@ export const MobileContractDefinedSpace = ({
 
   const handleAddToMetamask = async () => {
     try {
-      const wasAdded = await (window as any).ethereum.request({
+      await (window as any).ethereum.request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",
@@ -172,44 +150,23 @@ export const MobileContractDefinedSpace = ({
         <TokenDataHeader />
       </div>
       <div className="flex-1 overflow-y-scroll">
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Price" && "hidden",
-          )}
-        >
+        <div className={cn("w-full h-full overflow-hidden", tab !== "Price" && "hidden")}>
           <iframe
-            src={getGeckoIframe(
-              contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
-            )}
+            src={getGeckoIframe(contractAddress as Address, tokenData?.network as EtherScanChainName)}
             title="Market Data"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
           />
         </div>
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Swaps" && "hidden",
-          )}
-        >
+        <div className={cn("w-full h-full overflow-hidden", tab !== "Swaps" && "hidden")}>
           <iframe
-            src={getMatchaUrl(
-              contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
-            )}
+            src={getMatchaUrl(contractAddress as Address, tokenData?.network as EtherScanChainName)}
             title="Swap Fidget"
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             className="size-full"
           />
         </div>
-        <div
-          className={cn(
-            "w-full h-full overflow-hidden",
-            tab !== "Chat" && "hidden",
-          )}
-        >
+        <div className={cn("w-full h-full overflow-hidden", tab !== "Chat" && "hidden")}>
           <iframe
             src={`https://chat-fidget.vercel.app/?room=${contractAddress}&viewport=mobile`}
             title="Chat Widget"
@@ -217,9 +174,7 @@ export const MobileContractDefinedSpace = ({
             className="size-full"
           />
         </div>
-        <div
-          className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}
-        >
+        <div className={cn("flex flex-col gap-3 p-3", tab !== "Links" && "hidden")}>
           {tokenData?.clankerData?.cast_hash && (
             <LinkItem
               href={`https://www.clanker.world/clanker/${contractAddress}`}
@@ -229,10 +184,7 @@ export const MobileContractDefinedSpace = ({
             />
           )}
           <LinkItem
-            href={getGeckoUrl(
-              contractAddress as Address,
-              tokenData?.network as EtherScanChainName,
-            )}
+            href={getGeckoUrl(contractAddress as Address, tokenData?.network as EtherScanChainName)}
             imgSrc="https://www.geckoterminal.com/_next/image?url=https%3A%2F%2Fs.geckoterminal.com%2F_next%2Fstatic%2Fmedia%2Flogo_icon.845c1574.png&w=64&q=75"
             alt="CoinGecko"
             label="CoinGecko"
@@ -265,9 +217,7 @@ export const MobileContractDefinedSpace = ({
                 ) : !isNil(data) ? (
                   data.pages.map((page, pageNum) => (
                     <React.Fragment key={pageNum}>
-                      {page.result.casts?.map((cast, index) => (
-                        <CastRow cast={cast} key={index} />
-                      ))}
+                      {page.result.casts?.map((cast, index) => <CastRow cast={cast} key={index} />)}
                     </React.Fragment>
                   ))
                 ) : (
@@ -290,31 +240,11 @@ export const MobileContractDefinedSpace = ({
         </div>
       </div>
       <div className="flex flex-shrink-1 items-end justify-around w-full py-2 border-t border-t-gray-200">
-        <IconButton
-          size={20}
-          icon={BsBarChartFill}
-          label="Price"
-          currentTab={tab}
-        />
-        <IconButton
-          size={26}
-          icon={MdOutlineSwapHoriz}
-          label="Swaps"
-          currentTab={tab}
-        />
-        <IconButton
-          size={20}
-          icon={IoIosChatboxes}
-          label="Chat"
-          currentTab={tab}
-        />
-        <IconButton size={20} icon={FaLink} label="Links" currentTab={tab} />
-        <IconButton
-          size={20}
-          icon={SiFarcaster}
-          label="Feed"
-          currentTab={tab}
-        />
+        <IconButton size={20} icon={BsBarChartFill} label="Price" currentTab={tab} onClick={handleTabChange} />
+        <IconButton size={26} icon={MdOutlineSwapHoriz} label="Swaps" currentTab={tab} onClick={handleTabChange} />
+        <IconButton size={20} icon={IoIosChatboxes} label="Chat" currentTab={tab} onClick={handleTabChange} />
+        <IconButton size={20} icon={FaLink} label="Links" currentTab={tab} onClick={handleTabChange} />
+        <IconButton size={20} icon={SiFarcaster} label="Feed" currentTab={tab} onClick={handleTabChange} />
       </div>
     </div>
   );

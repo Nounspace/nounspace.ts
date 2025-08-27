@@ -19,8 +19,6 @@ export const ProfileSpace = ({
   spaceId,
   tabName,
 }: UserDefinedSpacePageProps) => {
-  console.log("ProfileSpace component mounting with props:", { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName });
-
   if (isNil(spaceOwnerFid)) {
     return <SpaceNotFound />;
   }

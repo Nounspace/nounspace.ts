@@ -75,15 +75,6 @@ export default function FrameRenderer({
 
         const data = await response.json();
 
-        // Log the frame data for debugging
-        console.log("FrameRenderer - Frame data received:", {
-          frameUrl,
-          data,
-          hasImage: !!data.image,
-          imageUrl: data.image,
-          isFrame: data.isFrame,
-        });
-
         setFrameData({
           image: data.image || null,
           title: data.title || null,
@@ -97,14 +88,12 @@ export default function FrameRenderer({
         console.error("FrameRenderer - Error fetching frame:", {
           frameUrl,
           error,
-          errorMessage:
-            error instanceof Error ? error.message : "Unknown error",
+          errorMessage: error instanceof Error ? error.message : "Unknown error",
           stack: error instanceof Error ? error.stack : undefined,
         });
         setFrameData((prev) => ({
           ...prev,
-          error:
-            error instanceof Error ? error.message : "Failed to load frame",
+          error: error instanceof Error ? error.message : "Failed to load frame",
           loading: false,
         }));
       }
@@ -156,17 +145,12 @@ export default function FrameRenderer({
               Enter a Farcaster Frame URL
             </h2>
             <p style={{ color: "#4b5563" }}>
-              Enter a valid Frame URL in the input field above and click
-              &quot;Load Frame&quot; to view it.
+              Enter a valid Frame URL in the input field above and click &quot;Load Frame&quot; to view it.
             </p>
             <div style={{ marginTop: "24px", color: "#4b5563" }}>
               <p style={{ fontSize: "14px" }}>Try these example frames:</p>
-              <ul
-                style={{ marginTop: "8px", color: "#3b82f6", fontSize: "14px" }}
-              >
-                <li style={{ marginTop: "4px" }}>
-                  https://frame.onchnsummer.xyz
-                </li>
+              <ul style={{ marginTop: "8px", color: "#3b82f6", fontSize: "14px" }}>
+                <li style={{ marginTop: "4px" }}>https://frame.onchnsummer.xyz</li>
                 <li style={{ marginTop: "4px" }}>https://framesjs.org</li>
                 <li style={{ marginTop: "4px" }}>https://skatehive.app</li>
                 <li style={{ marginTop: "4px" }}>https://gnars.com</li>
@@ -347,12 +331,6 @@ export default function FrameRenderer({
                   target: e.target,
                 });
                 setImgError(true);
-              }}
-              onLoad={() => {
-                console.log("FrameRenderer - Image loaded successfully:", {
-                  frameUrl,
-                  imageUrl: frameData.image,
-                });
               }}
             />
           </div>

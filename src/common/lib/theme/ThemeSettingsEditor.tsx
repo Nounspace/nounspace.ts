@@ -5,36 +5,36 @@ import {
   Tabs,
   TabsContent
 } from "@/common/components/atoms/tabs";
-import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
-import SpaceTabContent from "./components/SpaceTabContent";
-import StyleTabContent from "./components/StyleTabContent";
-import CodeTabContent from "./components/CodeTabContent";
-import MobileTabContent from "./components/MobileTabContent";
-import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
+import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
 import { VideoSelector } from "@/common/components/molecules/VideoSelector";
+import AiChatSidebar from "@/common/components/organisms/AgentChat";
+import NogsGateButton from "@/common/components/organisms/NogsGateButton";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
+import { useAppStore } from "@/common/data/stores/app";
 import { FidgetInstanceData } from "@/common/fidgets";
 import { ThemeSettings } from "@/common/lib/theme";
 import { ThemeCard } from "@/common/lib/theme/ThemeCard";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { ThemeEditorTab } from "@/common/lib/theme/types";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
 import {
   tabContentClasses,
 } from "@/common/lib/theme/helpers";
+import { ThemeEditorTab } from "@/common/lib/theme/types";
 import { analytics } from "@/common/providers/AnalyticsProvider";
+import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
+import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
 import { THEMES } from "@/constants/themes";
+import { CompleteFidgets } from "@/fidgets";
 import { SparklesIcon } from "@heroicons/react/24/solid";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaFloppyDisk, FaTriangleExclamation, FaX } from "react-icons/fa6";
 import { MdMenuBook } from "react-icons/md";
-import { CompleteFidgets } from "@/fidgets";
-import { DEFAULT_FIDGET_ICON_MAP } from "@/constants/mobileFidgetIcons";
-import { useMobilePreview } from "@/common/providers/MobilePreviewProvider";
-import { MiniApp } from "@/common/components/molecules/MiniAppSettings";
-import { useAppStore } from "@/common/data/stores/app";
-import AiChatSidebar from "@/common/components/organisms/AgentChat";
-import NogsGateButton from "@/common/components/organisms/NogsGateButton";
+import CodeTabContent from "./components/CodeTabContent";
+import MobileTabContent from "./components/MobileTabContent";
+import SpaceTabContent from "./components/SpaceTabContent";
+import StyleTabContent from "./components/StyleTabContent";
+import ThemeSettingsTabs from "./components/ThemeSettingsTabs";
+import ThemeSettingsTooltip from "./components/ThemeSettingsTooltip";
 
 export type ThemeSettingsEditorArgs = {
   theme: ThemeSettings;
@@ -50,6 +50,125 @@ export type ThemeSettingsEditorArgs = {
   onApplySpaceConfig?: (config: any) => Promise<void>;
 };
 
+// Handle theme-related logic
+const useThemeManager = (theme: ThemeSettings, saveTheme: (theme: ThemeSettings) => void) => {
+  const [activeTheme, setActiveTheme] = useState(theme.id);
+
+  const themePropSetter = useCallback(<_T extends string>(property: string): (value: string) => void => {
+    return (value: string): void => {
+      const newTheme = {
+        ...theme,
+        properties: {
+          ...theme.properties,
+          [property]: value,
+        },
+      };
+      
+      if (property === "musicURL") {
+        analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
+      }
+
+      // Update CSS variables for global theme
+      if (property === "font" || property === "headingsFont") {
+        const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
+        if (fontConfig) {
+          document.documentElement.style.setProperty(
+            property === "font" ? "--user-theme-font" : "--user-theme-headings-font",
+            fontConfig.config.style.fontFamily,
+          );
+        }
+      }
+
+      if (property === "fontColor" || property === "headingsFontColor") {
+        document.documentElement.style.setProperty(
+          property === "fontColor" ? "--user-theme-font-color" : "--user-theme-headings-font-color",
+          value,
+        );
+      }
+
+      saveTheme(newTheme);
+    };
+  }, [theme, saveTheme]);
+
+  const handleApplyTheme = useCallback((selectedTheme: ThemeSettings) => {
+    saveTheme(selectedTheme);
+    setActiveTheme(selectedTheme.id);
+  }, [saveTheme]);
+
+  return { activeTheme, setActiveTheme, themePropSetter, handleApplyTheme };
+};
+
+// Manage mobile app settings
+const useMobileAppsManager = (
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData }, 
+  saveFidgetInstanceDatums: (newFidgetInstanceDatums: { [key: string]: FidgetInstanceData }) => Promise<void>
+) => {
+  // Convert fidget data to mobile app format
+  const miniApps: MiniApp[] = Object.values(fidgetInstanceDatums).map((d, i) => {
+    const props = CompleteFidgets[d.fidgetType]?.properties;
+    const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
+    
+    const mobileName = (d.config.settings.customMobileDisplayName as string) ||
+      props?.mobileFidgetName ||
+      props?.fidgetName ||
+      d.fidgetType;
+    
+    return {
+      id: d.id,
+      name: d.fidgetType,
+      mobileDisplayName: mobileName,
+      context: props?.fidgetName || d.fidgetType,
+      order: i + 1,
+      icon: (d.config.settings.mobileIconName as string) || defaultIcon,
+      displayOnMobile: d.config.settings.showOnMobile !== false,
+    } as MiniApp;
+  }).sort((a, b) => a.order - b.order);
+
+  const handleUpdateMiniApp = useCallback((app: MiniApp) => {
+    const datum = fidgetInstanceDatums[app.id];
+    if (!datum) return;
+    const newDatums = {
+      ...fidgetInstanceDatums,
+      [app.id]: {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+            customMobileDisplayName: app.mobileDisplayName,
+            mobileIconName: app.icon,
+            showOnMobile: app.displayOnMobile,
+          },
+        },
+      },
+    };
+    saveFidgetInstanceDatums(newDatums);
+  }, [fidgetInstanceDatums, saveFidgetInstanceDatums]);
+
+  const handleReorderMiniApps = useCallback((apps: MiniApp[]) => {
+    const newDatums: { [key: string]: FidgetInstanceData } = {};
+    
+    apps.forEach((app) => {
+      const datum = fidgetInstanceDatums[app.id];
+      if (!datum) return;
+      
+      newDatums[app.id] = {
+        ...datum,
+        config: {
+          ...datum.config,
+          settings: {
+            ...datum.config.settings,
+          },
+        },
+      };
+    });
+    
+    saveFidgetInstanceDatums(newDatums);
+  }, [fidgetInstanceDatums, saveFidgetInstanceDatums]);
+
+  return { miniApps, handleUpdateMiniApp, handleReorderMiniApps };
+};
+
 export function ThemeSettingsEditor({
   theme = DEFAULT_THEME,
   saveTheme,
@@ -62,10 +181,16 @@ export function ThemeSettingsEditor({
   onApplySpaceConfig,
 }: ThemeSettingsEditorArgs) {
   const [showConfirmCancel, setShowConfirmCancel] = useState(false);
-  const [activeTheme, setActiveTheme] = useState(theme.id);
   const { mobilePreview, setMobilePreview } = useMobilePreview();
   const [tabValue, setTabValue] = useState(mobilePreview ? ThemeEditorTab.MOBILE : ThemeEditorTab.SPACE);
   const [showVibeEditor, setShowVibeEditor] = useState(false);
+
+  // Our theme and mobile app helpers
+  const { activeTheme, themePropSetter, handleApplyTheme } = useThemeManager(theme, saveTheme);
+  const { miniApps, handleUpdateMiniApp, handleReorderMiniApps } = useMobileAppsManager(
+    fidgetInstanceDatums, 
+    saveFidgetInstanceDatums
+  );
 
   // Use checkpoint store for theme change tracking
   const { createCheckpointFromContext } = useAppStore((state) => ({
@@ -89,108 +214,6 @@ export function ThemeSettingsEditor({
     setMobilePreview(tabValue === ThemeEditorTab.MOBILE);
   }, [tabValue, setMobilePreview]);
 
-  const miniApps = useMemo<MiniApp[]>(() => {
-    return Object.values(fidgetInstanceDatums).map((d, i) => {
-      const props = CompleteFidgets[d.fidgetType]?.properties;
-      const defaultIcon = DEFAULT_FIDGET_ICON_MAP[d.fidgetType] ?? 'HomeIcon';
-      const mobileName = (d.config.settings.customMobileDisplayName as string) ||
-        props?.mobileFidgetName ||
-        props?.fidgetName;
-      
-      return {
-        id: d.id,
-        name: d.fidgetType,
-        mobileDisplayName: mobileName,
-        context: props?.fidgetName || d.fidgetType,
-        order: (d.config.settings.mobileOrder as number) || i + 1,
-        icon: (d.config.settings.mobileIconName as string) || defaultIcon,
-        displayOnMobile: d.config.settings.showOnMobile !== false,
-      };
-    });
-  }, [fidgetInstanceDatums]);
-
-  const handleUpdateMiniApp = (app: MiniApp) => {
-    const datum = fidgetInstanceDatums[app.id];
-    if (!datum) return;
-    const newDatums = {
-      ...fidgetInstanceDatums,
-      [app.id]: {
-        ...datum,
-        config: {
-          ...datum.config,
-          settings: {
-            ...datum.config.settings,
-            customMobileDisplayName: app.mobileDisplayName,
-            mobileIconName: app.icon,
-            showOnMobile: app.displayOnMobile,
-            mobileOrder: app.order,
-          },
-        },
-      },
-    };
-    saveFidgetInstanceDatums(newDatums);
-  };
-
-  const handleReorderMiniApps = (apps: MiniApp[]) => {
-    const newDatums: { [key: string]: FidgetInstanceData } = {};
-    apps.forEach((app, index) => {
-      const datum = fidgetInstanceDatums[app.id];
-      if (!datum) return;
-      newDatums[app.id] = {
-        ...datum,
-        config: {
-          ...datum.config,
-          settings: {
-            ...datum.config.settings,
-            mobileOrder: index + 1,
-          },
-        },
-      };
-    });
-    saveFidgetInstanceDatums(newDatums);
-  };
-
-  function themePropSetter<_T extends string>(
-    property: string,
-  ): (value: string) => void {
-    return (value: string): void => {
-      const newTheme = {
-        ...theme,
-        properties: {
-          ...theme.properties,
-          [property]: value,
-        },
-      };
-      if (property === "musicURL") {
-        analytics.track(AnalyticsEvent.MUSIC_UPDATED, { url: value });
-      }
-
-      // Update CSS variables for global theme
-      if (property === "font" || property === "headingsFont") {
-        const fontConfig = FONT_FAMILY_OPTIONS_BY_NAME[value];
-        if (fontConfig) {
-          document.documentElement.style.setProperty(
-            property === "font"
-              ? "--user-theme-font"
-              : "--user-theme-headings-font",
-            fontConfig.config.style.fontFamily,
-          );
-        }
-      }
-
-      if (property === "fontColor" || property === "headingsFontColor") {
-        document.documentElement.style.setProperty(
-          property === "fontColor"
-            ? "--user-theme-font-color"
-            : "--user-theme-headings-font-color",
-          value,
-        );
-      }
-
-      saveTheme(newTheme);
-    };
-  }
-
   const {
     background,
     font,
@@ -210,11 +233,6 @@ export function ThemeSettingsEditor({
     saveTheme(theme);
     saveExitEditMode();
   }
-
-  const handleApplyTheme = (selectedTheme: ThemeSettings) => {
-    saveTheme(selectedTheme);
-    setActiveTheme(selectedTheme.id);
-  };
 
   const handleVibeEditorApplyConfig = async (config: any) => {
     // Create checkpoint before AI applies changes
@@ -333,6 +351,7 @@ export function ThemeSettingsEditor({
                 {/* Fonts */}
                 <TabsContent value={ThemeEditorTab.SPACE} className={tabContentClasses}>
                   <SpaceTabContent 
+                    background={background}
                     headingsFontColor={headingsFontColor}
                     headingsFont={headingsFont}
                     fontColor={fontColor}
@@ -354,7 +373,6 @@ export function ThemeSettingsEditor({
                 {/* Style */}
                 <TabsContent value={ThemeEditorTab.FIDGETS} className={tabContentClasses}>
                   <StyleTabContent 
-                    background={background}
                     fidgetBackground={fidgetBackground}
                     fidgetBorderColor={fidgetBorderColor}
                     fidgetBorderWidth={fidgetBorderWidth}

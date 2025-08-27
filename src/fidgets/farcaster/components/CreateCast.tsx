@@ -14,7 +14,6 @@ import {
   handleOpenFile,
   handleSetInput,
 } from "@mod-protocol/core";
-import { creationMods } from "@mod-protocol/mod-registry";
 import { CreationMod } from "@mod-protocol/react";
 import { EditorContent, useEditor } from "@mod-protocol/react-editor";
 import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
@@ -36,7 +35,10 @@ import { useBannerStore } from "@/common/stores/bannerStore";
 import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import EmojiPicker, { Theme } from "emoji-picker-react";
+import EmojiPicker, {
+  Theme,
+  EmojiClickData,
+} from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { Address, formatUnits, zeroAddress } from "viem";
@@ -361,7 +363,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     getText,
     addEmbed,
     getEmbeds,
-    setEmbeds,
     setChannel,
     getChannel,
     handleSubmit,
@@ -616,7 +617,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return "Cast";
   };
 
-  const handleEmojiClick = (emojiObject: any) => {
+  const handleEmojiClick = (
+    emojiObject: EmojiClickData,
+    event: MouseEvent,
+  ) => {
+    event.stopPropagation();
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
@@ -740,7 +745,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   )}
                 </div>
               )}
-              
+
               {/* Add media button moved to left side on mobile */}
               {isMobile && (
                 <Button
@@ -755,7 +760,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 </Button>
               )}
             </div>
-            
+
             {/* Right side: Other action buttons */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
               {/* Only show Add button here for desktop */}
@@ -771,7 +776,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
                   Add
                 </Button>
               )}
-              
+
               <Button
                 className="h-10"
                 type="button"
@@ -791,7 +796,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
                 type="button"
                 variant="ghost"
                 disabled={isPublishing}
-                onClick={() => setIsPickingEmoji(!isPickingEmoji)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsPickingEmoji(!isPickingEmoji);
+                }}
               >
                 <GoSmiley size={20} />
               </Button>
@@ -811,7 +819,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </Button>
             </div>
           )}
-          
+
           <div
             ref={parentRef}
             className="z-50"
@@ -855,7 +863,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               </div>
             </PopoverContent>
           </Popover>
-          
+
           {/* Desktop cast button */}
           {!isMobile && (
             <>
@@ -864,7 +872,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               <div className="flex flex-row pt-0 justify-end">
                 <Button
                   size="lg"
-              variant="primary"
+                  variant="primary"
                   type="submit"
                   className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white line-clamp-1 min-w-40 max-w-xs truncate"
                   disabled={isPublishing || isLoadingSigner}

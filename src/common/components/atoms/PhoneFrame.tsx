@@ -35,17 +35,6 @@ const PhoneFrame: React.FC<PhoneFrameProps> = ({
       </mask>
     </defs>
     
-    {/* White background fill for screen area */}
-    <rect
-      x="12"
-      y="32"
-      width="320"
-      height="680"
-      rx="28"
-      ry="28"
-      fill="white"
-    />
-    
     {/* Phone outer frame with screen cutout */}
     <rect
       x="2"

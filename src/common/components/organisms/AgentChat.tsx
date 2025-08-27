@@ -3,7 +3,6 @@ import React, {
   useRef,
   useEffect,
   useCallback,
-  useMemo,
 } from "react";
 import { Button } from "@/common/components/atoms/button";
 import { Textarea } from "@/common/components/atoms/textarea";
@@ -12,17 +11,16 @@ import {
   LucideSparkle,
   Send,
   Loader2,
-  Settings,
   AlertCircle,
   Wifi,
   WifiOff,
   RotateCcw,
-  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
 import { useAppStore } from "@/common/data/stores/app";
 import { SpaceCheckpoint } from "@/common/data/stores/app/checkpoints/checkpointStore";
+import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 import { ChatMessage } from "@/common/data/stores/app/chat/chatStore";
 import { SpaceConfig, SpaceConfigSaveDetails } from "@/app/(spaces)/Space";
 import { FONT_FAMILY_OPTIONS_BY_NAME } from "@/common/lib/theme/fonts";
@@ -99,8 +97,8 @@ const ConnectionStatusIndicator: React.FC<{ status: ConnectionStatus }> = ({ sta
 
   return (
     <div className="flex items-center gap-1">
-      <IconComponent 
-        className={`w-3 h-3 ${config.color} ${config.animated ? 'animate-spin' : ''}`} 
+      <IconComponent
+        className={`w-3 h-3 ${config.color} ${config.animated ? 'animate-spin' : ''}`}
       />
       <span className={`text-xs ${config.textColor}`}>
         {config.text}
@@ -136,9 +134,9 @@ interface AiChatSidebarProps {
 // Helper function to manually apply theme to CSS variables
 const applyThemeToCSS = (theme: any) => {
   if (!theme?.properties) return;
-  
+
   const { properties } = theme;
-  
+
   // Apply theme properties directly to CSS variables
   if (properties.background) {
     document.documentElement.style.setProperty("--user-theme-background", properties.background);
@@ -167,7 +165,7 @@ const applyThemeToCSS = (theme: any) => {
   if (properties.gridSpacing) {
     document.documentElement.style.setProperty("--user-theme-grid-spacing", properties.gridSpacing);
   }
-  
+
   // Apply fonts with proper lookup
   if (properties.font) {
     // Need to import the font lookup at the top of the file
@@ -272,11 +270,11 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
     return currentTabConfig;
   }, [
-    getCurrentSpaceContext, 
-    getCurrentSpaceId, 
-    getCurrentTabName, 
-    homebaseConfig, 
-    homebaseTabs, 
+    getCurrentSpaceContext,
+    getCurrentSpaceId,
+    getCurrentTabName,
+    homebaseConfig,
+    homebaseTabs,
     getCurrentSpaceConfig
   ]);
 
@@ -306,7 +304,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   const captureSpaceScreenshot = async (): Promise<string | null> => {
     try {
       // Target specifically the grid/fidget area, excluding sidebars
-      const gridElement = 
+      const gridElement =
         document.querySelector('[data-testid="fidget-grid"]') ||
         document.querySelector('.fidget-grid') ||
         document.querySelector('[class*="grid"]') ||
@@ -356,7 +354,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   // Create a comprehensive checkpoint from current configuration
   const createSpaceCheckpoint = useCallback((
-    description?: string, 
+    description?: string,
     source: SpaceCheckpoint['source'] = 'ai-chat'
   ): SpaceCheckpoint => {
     return createCheckpointFromContext(
@@ -369,13 +367,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
   // Restore to a specific checkpoint using the store
   const handleRestoreCheckpoint = async (checkpointId: string) => {
     if (!onApplySpaceConfig) return;
-    
+
     const success = await restoreCheckpoint(checkpointId, onApplySpaceConfig);
-    
+
     if (success) {
       const checkpoint = checkpoints.find(cp => cp.id === checkpointId);
       toast.success(`Restored to "${checkpoint?.name || 'checkpoint'}"`);
-      
+
       // Log detailed restoration information
       try {
         const currentTabConfig = getFreshSpaceContext();
@@ -402,13 +400,13 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     if (!onApplySpaceConfig) return;
 
     try {
-      // Extract layoutConfig from the AI's layoutDetails structure
-      const layoutConfig = spaceConfig.layoutDetails?.layoutConfig;
+      // Extract layoutConfig using the utility function for both new and old formats
+      const layoutConfigData = getLayoutConfig(spaceConfig.layoutDetails);
 
       // Convert SpaceConfig to the format expected by saveLocalConfig
       const saveDetails = {
         theme: spaceConfig.theme,
-        layoutConfig: layoutConfig,
+        layoutConfig: layoutConfigData,
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
         fidgetTrayContents: spaceConfig.fidgetTrayContents,
       };
@@ -426,16 +424,16 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       // Transform AI config format to checkpoint format
       const checkpointConfig = {
         fidgetInstanceDatums: spaceConfig.fidgetInstanceDatums,
-        layoutConfig: spaceConfig.layoutDetails?.layoutConfig,
+        layoutConfig: getLayoutConfig(spaceConfig.layoutDetails),
         theme: spaceConfig.theme,
       };
-      
+
       const checkpoint = createCheckpointFromContext(
         () => checkpointConfig,
         'After AI Edits',
         'ai-chat'
       );
-      
+
       console.log("💾 Auto-created checkpoint after applying config:", {
         checkpointId: checkpoint.id,
         checkpointName: checkpoint.name,
@@ -512,7 +510,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   // Helper function to add message and update loading state
   const addMessageAndUpdateState = useCallback((
-    message: Message, 
+    message: Message,
     shouldStopLoading: boolean = false,
     newLoadingType?: "thinking" | "building" | null
   ) => {
@@ -610,7 +608,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
   // Handle other log messages
   const handleLogMessage = useCallback((
-    wsMessage: IncomingMessage, 
+    wsMessage: IncomingMessage,
     messageType: "planner" | "comm",
     defaultContent: string,
     loadingType?: "thinking" | null
@@ -654,7 +652,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
     }
   }, [
     handlePongMessage,
-    handleReplyMessage, 
+    handleReplyMessage,
     handleLogMessage,
     handleBuilderLogsMessage
   ]);
@@ -717,7 +715,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
       // Send message via WebSocket with FRESH context
       if (wsServiceRef.current?.isConnected()) {
         console.log("📤 Sending user message with fresh space config context");
-        
+
         // Get the current context right before sending
         const freshContext = getFreshSpaceContext();
         console.log("🔧 Fresh context for AI:", {
@@ -731,7 +729,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
 
         // Update the WebSocket service with fresh context
         wsServiceRef.current.updateSpaceContext(freshContext);
-        
+
         const success = wsServiceRef.current.sendUserMessage(
           userMessage.content
         );
@@ -795,22 +793,20 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"
+                  }`}
               >
                 <div
-                  className={`min-w-0 rounded-lg px-2 py-2 break-words overflow-wrap-anywhere ${
-                    message.role === "user"
-                      ? message.type === "checkpoint"
-                        ? "bg-green-500 text-white max-w-[95%]"
-                        : "bg-blue-500 text-white max-w-[95%]"
-                      : message.type === "checkpoint"
-                        ? "bg-green-50 border border-green-200 text-gray-900 max-w-[95%]"
-                        : message.aiType === "builder"
-                          ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900 max-w-[95%]"
-                          : "bg-gray-100 text-gray-900 max-w-[95%]"
-                  }`}
+                  className={`min-w-0 rounded-lg px-2 py-2 break-words overflow-wrap-anywhere ${message.role === "user"
+                    ? message.type === "checkpoint"
+                      ? "bg-green-500 text-white max-w-[95%]"
+                      : "bg-blue-500 text-white max-w-[95%]"
+                    : message.type === "checkpoint"
+                      ? "bg-green-50 border border-green-200 text-gray-900 max-w-[95%]"
+                      : message.aiType === "builder"
+                        ? "bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 text-gray-900 max-w-[95%]"
+                        : "bg-gray-100 text-gray-900 max-w-[95%]"
+                    }`}
                 >
                   {/* Checkpoint button */}
                   {message.type === "checkpoint" && message.checkpointId && (
@@ -826,7 +822,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                           <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
                         </div>
                       )}
-                      
+
                       {/* Checkpoint controls */}
                       <div className="flex items-center justify-between">
                         <span className={`text-sm font-medium ${message.role === "user" ? "text-green-100" : "text-green-800"}`}>
@@ -837,11 +833,10 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                           size="sm"
                           onClick={() => handleRestoreCheckpoint(message.checkpointId!)}
                           disabled={isRestoring}
-                          className={`h-7 w-7 p-0 ${
-                            message.role === "user" 
-                              ? "text-green-200 hover:text-white hover:bg-green-600" 
-                              : "text-green-600 hover:text-green-700 hover:bg-green-100"
-                          }`}
+                          className={`h-7 w-7 p-0 ${message.role === "user"
+                            ? "text-green-200 hover:text-white hover:bg-green-600"
+                            : "text-green-600 hover:text-green-700 hover:bg-green-100"
+                            }`}
                         >
                           <RotateCcw className="w-3 h-3" />
                         </Button>
@@ -885,7 +880,7 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                               <div className="absolute inset-0 bg-black bg-opacity-10 rounded"></div>
                             </div>
                           )}
-                          
+
                           {/* Checkpoint controls */}
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-800">
@@ -906,20 +901,19 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
                         <div className="text-xs text-gray-600 bg-green-50 p-2 rounded">
                           ✅ Configuration automatically applied
                         </div>
-                      ) }
+                      )}
                     </div>
                   )}
 
                   <div
-                    className={`text-xs mt-1 opacity-70 ${
-                      message.role === "user"
-                        ? message.type === "checkpoint"
-                          ? "text-green-100"
-                          : "text-blue-100"
-                        : message.type === "checkpoint"
-                          ? "text-green-600"
-                          : "text-gray-500"
-                    }`}
+                    className={`text-xs mt-1 opacity-70 ${message.role === "user"
+                      ? message.type === "checkpoint"
+                        ? "text-green-100"
+                        : "text-blue-100"
+                      : message.type === "checkpoint"
+                        ? "text-green-600"
+                        : "text-gray-500"
+                      }`}
                   >
                     {new Date(message.timestamp).toLocaleTimeString([], {
                       hour: "2-digit",
@@ -982,18 +976,18 @@ export const AiChatSidebar: React.FC<AiChatSidebarProps> = ({
           {/* Reconnect button when disconnected */}
           {(connectionStatus === "disconnected" ||
             connectionStatus === "error") && (
-            <div className="mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={initializeWebSocketService}
-                className="text-xs h-7 w-full"
-              >
-                <Wifi className="w-3 h-3 mr-1" />
-                Reconnect to AI
-              </Button>
-            </div>
-          )}
+              <div className="mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={initializeWebSocketService}
+                  className="text-xs h-7 w-full"
+                >
+                  <Wifi className="w-3 h-3 mr-1" />
+                  Reconnect to AI
+                </Button>
+              </div>
+            )}
         </div>
       </div>
     </aside>

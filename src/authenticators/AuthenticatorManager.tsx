@@ -155,9 +155,10 @@ export const AuthenticatorManagerProvider: React.FC<
   }>();
   const [initializationQueue, setInitializationQueue] = useState<string[]>([]);
 
-  const {
-    setup: { setModalOpen, modalOpen },
-  } = useAppStore((state) => state);
+  const { modalOpen, setModalOpen } = useAppStore((state) => ({
+    modalOpen: state.setup.modalOpen,
+    setModalOpen: state.setup.setModalOpen
+  }));
 
   const authenticatorManager = useMemo<AuthenticatorManager>(
     () => ({
