@@ -173,14 +173,6 @@ export default function PublicSpace({
     [editabilityCheck],
   );
 
-  const resolvedPageType = useMemo(() => {
-    if (pageType) return pageType;
-    if (isTokenPage) return "token";
-    if (spaceOwnerFid) return "person";
-    if (providedSpaceId?.startsWith("proposal:")) return "proposal";
-    return "person"; // Default to person page
-  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
-
   // Control to avoid infinite space/tab update cycles
   const prevSpaceId = useRef<string | null>(null);
   const prevTabName = useRef<string | null>(null);
