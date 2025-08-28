@@ -3,7 +3,6 @@ import requestHandler from "@/common/data/api/requestHandler";
 import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import {
   NotificationType,
-  NotificationTypeEnum,
   NotificationsResponse,
   CastParamType,
 } from "@neynar/nodejs-sdk/build/api";
@@ -112,9 +111,9 @@ const get = async (
           });
           positions.forEach(({ n, r }) => {
             if (typeof r === "number") {
-              notifications[n].reactions![r].cast = cast;
+              notifications[n].reactions![r].cast = cast as any;
             } else {
-              notifications[n].cast = cast;
+              notifications[n].cast = cast as any;
             }
           });
         } catch (_) {
