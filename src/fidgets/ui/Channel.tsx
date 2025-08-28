@@ -73,16 +73,16 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
       return;
     }
 
-    if (!authToken) return;
+    if (!authToken) {
+      console.error("Missing authToken");
+      return;
+    }
 
     setFollowing((p) => !p);
-    const success = following
+    const ok = following
       ? await unfollowChannel(channel, authToken)
       : await followChannel(channel, authToken);
-    if (!success) {
-      // revert state on failure
-      setFollowing((p) => !p);
-    }
+    if (!ok) setFollowing((p) => !p);
   };
 
   const displayName = useMemo(
