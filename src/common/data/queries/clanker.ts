@@ -1,6 +1,7 @@
 import { Address } from "viem";
 import { OwnerType } from "../api/etherscan";
-import { fetchEmpireByAddress } from "./empireBuilder";
+import neynar from "../api/neynar";
+import { fetchEmpireByAddress, EmpireToken } from "./empireBuilder";
 
 export interface ClankerToken {
   id: number;
@@ -31,6 +32,7 @@ export async function fetchClankerByAddress(
     });
 
     const json = await response.json();
+    console.log("Clanker response:", json);
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -46,30 +48,65 @@ export async function fetchClankerByAddress(
   }
 }
 
+export interface TokenOwnerLookup {
+  ownerId: string | undefined;
+  ownerIdType: OwnerType;
+  clankerData: ClankerToken | null;
+  empireData: EmpireToken | null;
+  neynarUsers?: Record<string, unknown>;
+}
+
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
-) {
+): Promise<TokenOwnerLookup> {
   const [clankerData, empireData] = await Promise.all([
     fetchClankerByAddress(contractAddress as Address),
     fetchEmpireByAddress(contractAddress as Address),
   ]);
 
+  console.log("tokenRequestorFromContractAddress data:", {
+    clankerData,
+    empireData,
+  });
+
   if (empireData && empireData.owner) {
-    return {
-      ownerId: empireData.owner,
-      ownerIdType: "address" as OwnerType,
-    };
+    let ownerId: string = empireData.owner.toLowerCase();
+    let ownerIdType: OwnerType = "address";
+    let neynarUsers: Record<string, unknown> | undefined;
+
+    if (process.env.NEYNAR_API_KEY) {
+      try {
+        const addresses = [ownerId];
+        neynarUsers = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+        console.log("Neynar response:", neynarUsers);
+        const user = neynarUsers[ownerId]?.[0] as { fid?: number } | undefined;
+        if (user?.fid) {
+          ownerId = String(user.fid);
+          ownerIdType = "fid";
+        }
+      } catch (error) {
+        console.error("Error fetching owner FID:", error);
+      }
+    } else {
+      console.error("NEYNAR_API_KEY is not set");
+    }
+
+    return { ownerId, ownerIdType, clankerData, empireData, neynarUsers };
   }
 
   if (clankerData && clankerData.requestor_fid) {
     return {
       ownerId: String(clankerData.requestor_fid),
       ownerIdType: "fid" as OwnerType,
+      clankerData,
+      empireData,
     };
   }
 
   return {
     ownerId: undefined,
     ownerIdType: "fid" as OwnerType,
+    clankerData,
+    empireData,
   };
 }

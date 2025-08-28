@@ -236,16 +236,21 @@ export async function contractOwnerFromContract(
         contractAddress,
         network,
       );
-      ownerId = contractCreation.contractCreator;
-      try {
-        const addresses = [ownerId];
-        const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({addresses});
-        if (userFid[ownerId]) {
-          ownerId = userFid[ownerId][0].fid.toString();
-          ownerIdType = "fid" as OwnerType;
+      ownerId = contractCreation.contractCreator.toLowerCase();
+      if (process.env.NEYNAR_API_KEY) {
+        try {
+          const addresses = [ownerId];
+          const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+          const user = userFid[ownerId]?.[0];
+          if (user?.fid) {
+            ownerId = user.fid.toString();
+            ownerIdType = "fid" as OwnerType;
+          }
+        } catch (error) {
+          console.error("Error fetching user FID:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user FID:", error);
+      } else {
+        console.error("NEYNAR_API_KEY is not set");
       }
       // console.log("Contract creator:", contractCreation);
     }

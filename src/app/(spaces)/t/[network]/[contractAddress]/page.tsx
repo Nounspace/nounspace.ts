@@ -31,21 +31,22 @@ export default async function ContractPrimarySpace({ params }) {
     },
   } = await loadContractData(resolvedParams || {});
   const network = resolvedParams?.network as EtherScanChainName;
+  const contractAddressStr = contractAddress as string | null;
 
   return (
-    <TokenProvider
-      contractAddress={contractAddress as Address}
-      network={network}
-    >
-      <ContractPrimarySpaceContent
-        spaceId={spaceId}
-        tabName={tabName}
-        ownerId={ownerId}
-        ownerIdType={ownerIdType}
-        contractAddress={contractAddress}
-        owningIdentities={owningIdentities}
+      <TokenProvider
+        contractAddress={contractAddressStr as Address}
         network={network}
-      />
-    </TokenProvider>
+      >
+        <ContractPrimarySpaceContent
+          spaceId={spaceId}
+          tabName={tabName}
+          ownerId={ownerId}
+          ownerIdType={ownerIdType}
+          contractAddress={contractAddressStr}
+          owningIdentities={owningIdentities}
+          network={network}
+        />
+      </TokenProvider>
   );
 }

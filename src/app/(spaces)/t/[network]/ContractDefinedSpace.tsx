@@ -11,6 +11,7 @@ export interface ContractDefinedSpaceProps {
   pinnedCastId?: string
   ownerId: string | number | null
   ownerIdType: OwnerType
+  owningIdentities: string[]
 }
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
