@@ -85,26 +85,26 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
     if (!isNil(tabName)) {
-      loadTabConfig();
+      loadTabConfigAsync();
     }
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
   // Function to load the configuration for the current tab
-  async function loadTabConfig() {
-    await loadTabNames();
-
-    if (tabOrdering.local.length === 0) {
-      await loadTabOrder();
-    }
-
-    if (tabName === "Feed") {
-      await loadFeedConfig();
-    } else {
-      await loadTab(tabName);
-    }
-
-    // After the current tab is loaded, preload other tabs in the background
-    void loadRemainingTabs();
+        function loadTabConfigAsync() {
+          // Executa carregamento em background, não bloqueia render
+          setTimeout(async () => {
+            await loadTabNames();
+            if (tabOrdering.local.length === 0) {
+              await loadTabOrder();
+            }
+            if (tabName === "Feed") {
+              await loadFeedConfig();
+            } else {
+              await loadTab(tabName);
+            }
+            // Preload outros tabs em background
+            void loadRemainingTabs();
+          }, 0);
   }
 
   // Preload all tabs except the current one
@@ -119,17 +119,18 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Function to switch to a different tab
   async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    if (shouldSave) {
-      await commitConfigHandler();
-    }
-
-    // Update the store immediately for better responsiveness
+    // Atualiza a rota imediatamente
     setCurrentTabName(newTabName);
-
     if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
       router.push(`/homebase/${newTabName}`);
+    }
+    // Commit em background
+    if (shouldSave) {
+      setTimeout(() => {
+        commitConfigHandler();
+      }, 0);
     }
   }
 
@@ -251,4 +252,4 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   );
 }
 
-export default PrivateSpace; 
+export default PrivateSpace;

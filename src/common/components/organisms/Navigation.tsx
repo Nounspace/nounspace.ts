@@ -66,12 +66,13 @@ const NavIconBadge = ({ children }) => {
   );
 };
 
-const Navigation: React.FC<NavProps> = ({
+const Navigation = React.memo(
+({
   isEditable,
   enterEditMode,
   mobile = false,
   onNavigate,
-}) => {
+}: NavProps) => {
   const searchRef = useRef<HTMLInputElement>(null);
   const { setModalOpen, getIsAccountReady, getIsInitializing } = useAppStore(
     (state) => ({
@@ -135,10 +136,26 @@ const Navigation: React.FC<NavProps> = ({
     openInNewTab = false,
     badgeText = null,
   }) => {
-    const handleClick = useCallback(() => {
+    const handleClick = useCallback((e: React.MouseEvent) => {
+      if (disable) {
+        e.preventDefault();
+        return;
+      }
+      // Navegação instantânea SEMPRE primeiro
+      if (!openInNewTab && href && href.startsWith("/")) {
+        e.preventDefault();
+        router.push(href);
+        // Executa analytics e outras funções em background
+        setTimeout(() => {
+          onClick?.();
+          onNavigate?.();
+        }, 0);
+        return;
+      }
+      // Para links externos ou nova aba, executa normalmente
       onClick?.();
       onNavigate?.();
-    }, [onClick, onNavigate]);
+    }, [onClick, onNavigate, href, disable, openInNewTab, router]);
     return (
       <li>
         <Link
@@ -385,6 +402,9 @@ const Navigation: React.FC<NavProps> = ({
       </div>
     </nav>
   );
-};
+  }
+);
+
+Navigation.displayName = 'Navigation';
 
 export default Navigation;

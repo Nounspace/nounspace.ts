@@ -13,7 +13,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import Profile from "@/fidgets/ui/profile";
 import { useWallets } from "@privy-io/react-auth";
-import { indexOf, isNil, mapValues, noop } from "lodash";
+import { indexOf, isNil, mapValues, noop, debounce } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
@@ -554,44 +554,47 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Update the store immediately for better responsiveness
+    // Atualiza a rota imediatamente
     setCurrentTabName(tabName);
-    
-    // Check if we already have the tab in cache
+    router.push(getSpacePageUrl(tabName));
+
+    // Operações de salvamento/commit em background
+    if (currentSpaceId && shouldSave) {
+      const resolvedConfig = await config;
+      Promise.all([
+        saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
+        commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
+      ]).catch((err) => console.error("Erro ao salvar/commitar tab:", err));
+    }
+
+    // Carregamento do tab, se necessário, também em background
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
-    
     if (currentSpaceId && !tabExists) {
-      // Show skeleton when loading a tab from the database
       setLoading(true);
-      // Mark as loaded to avoid loading again
       if (loadedTabsRef.current[currentSpaceId]) {
         loadedTabsRef.current[currentSpaceId].add(tabName);
       } else {
         loadedTabsRef.current[currentSpaceId] = new Set([tabName]);
       }
-
-      // Load the tab showing the skeleton for better UX
       loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined)
-        .catch(error => console.error(`Error loading tab ${tabName}:`, error));
+        .finally(() => setLoading(false));
     } else if (currentSpaceId && tabExists) {
-      // Tab already in cache - no need to show skeleton
       if (!loadedTabsRef.current[currentSpaceId]) {
         loadedTabsRef.current[currentSpaceId] = new Set();
       }
       loadedTabsRef.current[currentSpaceId].add(tabName);
       setLoading(false);
     }
-
-    if (currentSpaceId && shouldSave) {
-      const resolvedConfig = await config;
-      await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
-      await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
-    }
-    // Update the URL without triggering a full navigation
-    router.push(getSpacePageUrl(tabName));
   }
 
   const { editMode } = useSidebarContext();
+
+  // Função debounced para navegação de abas
+  const debouncedSwitchTabTo = useMemo(() =>
+    debounce((tabName: string, shouldSave: boolean = true) => {
+      switchTabTo(tabName, shouldSave);
+    }, 150), [switchTabTo]
+  );
 
   const tabBar = (
     <TabBar
@@ -605,7 +608,7 @@ export default function PublicSpace({
           : ["Profile"]
       }
       contractAddress={contractAddress as Address}
-      switchTabTo={switchTabTo}
+      switchTabTo={debouncedSwitchTabTo}
       updateTabOrder={async (newOrder) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
@@ -730,3 +733,5 @@ export default function PublicSpace({
   
   return MemoizedSpacePage;
 }
+
+// Remover código fora do componente principal
