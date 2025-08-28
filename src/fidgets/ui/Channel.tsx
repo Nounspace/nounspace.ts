@@ -67,10 +67,13 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
 
     if (!signer) return;
 
+    const signerUuid = (signer as unknown as { uuid?: string }).uuid;
+    if (!signerUuid) return;
+
     setFollowing((p) => !p);
     const success = following
-      ? await unfollowChannel(channel, signer)
-      : await followChannel(channel, signer);
+      ? await unfollowChannel(channel, signerUuid)
+      : await followChannel(channel, signerUuid);
     if (!success) {
       // revert state on failure
       setFollowing((p) => !p);
