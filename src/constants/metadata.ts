@@ -4,7 +4,7 @@ export const defaultFrame = {
   version: "next",
   imageUrl: `${WEBSITE_URL}/images/nounspace_og_low.png`,
   button: {
-    title: "Start Nounspace",
+    title: "Open Space",
     action: {
       type: "launch_frame",
       url: WEBSITE_URL,
@@ -18,14 +18,15 @@ export const defaultFrame = {
 export const metadata = {
   APP_NAME: 'Nouns',
   APP_ICON: 'https://www.nounspace.com/images/frames/icon.png',
-  APP_SUBTITLE: 'The Nounish Homepage',
-  APP_DESCRIPTION: 'A social hub for all things Nouns',
+  APP_SUBTITLE: 'A space for Nouns',
+  APP_BUTTON_TITLE: 'Open Space',
+  APP_DESCRIPTION: 'The social hub for Nouns',
   APP_SPLASH_IMAGE: 'https://www.nounspace.com/images/frames/splash.png',
   SPLASH_BACKGROUND_COLOR: '#FFFFFF',
   APP_PRIMARY_CATEGORY: 'social',
   APP_HERO_IMAGE: 'https://your-app.vercel.app/og.png',
-  APP_TAGLINE: 'The Nounish Homepage',
+  APP_TAGLINE: 'A space for Nouns',
   APP_OG_TITLE: 'Nouns',
-  APP_OG_DESCRIPTION: 'A social hub for all things Nouns',
+  APP_OG_DESCRIPTION: 'The social hub for Nouns',
   APP_OG_IMAGE: 'https://www.nounspace.com/images/icon-192x192.png',
 }
