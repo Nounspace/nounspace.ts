@@ -14,8 +14,10 @@ export async function GET() {
       payload: process.env.FARCASTER_PAYLOAD,
       signature: process.env.FARCASTER_SIGNATURE,
     },
-    frame: withValidProperties({
+    miniapp: withValidProperties({
       version: '1',
+      imageUrl: metadata.APP_OG_IMAGE || process.env.NEXT_PUBLIC_APP_OG_IMAGE,
+      buttonTitle: metadata.APP_NAME || process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
       name: metadata.APP_NAME || process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME,
       subtitle: metadata.APP_SUBTITLE || process.env.NEXT_PUBLIC_APP_SUBTITLE,
       description: metadata.APP_DESCRIPTION || process.env.NEXT_PUBLIC_APP_DESCRIPTION,
@@ -35,5 +37,8 @@ export async function GET() {
       // use only while testing
       // noindex: 'true',
     }),
+    baseBuilder: {
+      allowedAddresses: ["0x857Ba87e094BF962D0B933bBf2C706893e14d3bE"]
+    }
   });
 }
