@@ -90,8 +90,8 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
   // Function to load the configuration for the current tab
+        // Executes loading in background, does not block render
         function loadTabConfigAsync() {
-          // Executa carregamento em background, não bloqueia render
           setTimeout(async () => {
             await loadTabNames();
             if (tabOrdering.local.length === 0) {
@@ -102,7 +102,7 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
             } else {
               await loadTab(tabName);
             }
-            // Preload outros tabs em background
+            // Preload other tabs in background
             void loadRemainingTabs();
           }, 0);
   }
@@ -119,14 +119,14 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Function to switch to a different tab
   async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    // Atualiza a rota imediatamente
+    // Updates the route immediately
     setCurrentTabName(newTabName);
     if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
       router.push(`/homebase/${newTabName}`);
     }
-    // Commit em background
+    // Commit in background
     if (shouldSave) {
       setTimeout(() => {
         commitConfigHandler();

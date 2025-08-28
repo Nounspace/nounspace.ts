@@ -554,20 +554,20 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Atualiza a rota imediatamente
+    // Updates the route immediately
     setCurrentTabName(tabName);
     router.push(getSpacePageUrl(tabName));
 
-    // Operações de salvamento/commit em background
+    // Save/commit operations in background
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
       Promise.all([
         saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
         commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
-      ]).catch((err) => console.error("Erro ao salvar/commitar tab:", err));
+      ]).catch((err) => console.error("Error saving/committing tab:", err));
     }
 
-    // Carregamento do tab, se necessário, também em background
+    // Tab loading, if necessary, also in background
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
     if (currentSpaceId && !tabExists) {
       setLoading(true);
@@ -589,7 +589,7 @@ export default function PublicSpace({
 
   const { editMode } = useSidebarContext();
 
-  // Função debounced para navegação de abas
+  // Debounced function for tab navigation
   const debouncedSwitchTabTo = useMemo(() =>
     debounce((tabName: string, shouldSave: boolean = true) => {
       switchTabTo(tabName, shouldSave);
@@ -734,4 +734,4 @@ export default function PublicSpace({
   return MemoizedSpacePage;
 }
 
-// Remover código fora do componente principal
+// Remove code outside the main component

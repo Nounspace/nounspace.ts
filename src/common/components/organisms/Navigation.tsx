@@ -141,18 +141,18 @@ const Navigation = React.memo(
         e.preventDefault();
         return;
       }
-      // Navegação instantânea SEMPRE primeiro
+      // Instant navigation ALWAYS first
       if (!openInNewTab && href && href.startsWith("/")) {
         e.preventDefault();
         router.push(href);
-        // Executa analytics e outras funções em background
+        // Executes analytics and other functions in background
         setTimeout(() => {
           onClick?.();
           onNavigate?.();
         }, 0);
         return;
       }
-      // Para links externos ou nova aba, executa normalmente
+      // For external links or new tab, executes normally
       onClick?.();
       onNavigate?.();
     }, [onClick, onNavigate, href, disable, openInNewTab, router]);
