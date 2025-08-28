@@ -54,13 +54,13 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
 }) => {
   const { user } = usePrivy();
   const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
-  const fid = farcaster?.fid ?? 0;
+  const viewerFid = farcaster?.fid;
   const authToken = farcaster?.token;
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsAccountReady: state.getIsAccountReady,
   }));
-  const { data } = useChannelInfo(channel, fid > 0 ? fid : undefined);
+  const { data } = useChannelInfo(channel, viewerFid);
   const [following, setFollowing] = useState(false);
 
   useEffect(() => {

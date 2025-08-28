@@ -160,6 +160,7 @@ export const followChannel = async (
     );
     return true;
   } catch (e) {
+    console.error("followChannel failed", e);
     return false;
   }
 };
@@ -175,6 +176,7 @@ export const unfollowChannel = async (
     });
     return true;
   } catch (e) {
+    console.error("unfollowChannel failed", e);
     return false;
   }
 };
