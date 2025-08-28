@@ -5,6 +5,7 @@ import {
   NotificationType,
   NotificationTypeEnum,
   NotificationsResponse,
+  CastParamType,
 } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
 import { isString } from "lodash";
@@ -62,6 +63,45 @@ const get = async (
         NotificationType.Quotes,
       ],
     });
+
+    // Neynar changed the notifications API to return dehydrated casts without
+    // text or embed details. Hydrate any casts missing text so the client can
+    // render notification contents properly.
+    const notifications = data.notifications || [];
+    const castsToFetch: Record<string, number[]> = {};
+
+    notifications.forEach((notification, index) => {
+      const cast: any = notification.cast;
+      const hasText = typeof cast?.text === "string" && cast.text.length > 0;
+
+      if (hasText) {
+        return;
+      }
+
+      const hash = cast?.hash || notification.reactions?.[0]?.cast?.hash;
+      if (hash) {
+        if (!castsToFetch[hash]) {
+          castsToFetch[hash] = [];
+        }
+        castsToFetch[hash].push(index);
+      }
+    });
+
+    await Promise.all(
+      Object.entries(castsToFetch).map(async ([hash, indexes]) => {
+        try {
+          const { cast } = await neynar.lookupCastByHashOrWarpcastUrl({
+            identifier: hash,
+            type: CastParamType.Hash,
+          });
+          indexes.forEach((i) => {
+            notifications[i].cast = cast;
+          });
+        } catch (_) {
+          // If hydration fails, leave the notification as-is
+        }
+      }),
+    );
 
     res.status(200).json({
       result: "success",
