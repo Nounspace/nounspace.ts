@@ -17,7 +17,7 @@ export const defaultFrame = {
 
 export const metadata = {
   APP_NAME: 'Nouns',
-  APP_ICON: 'https://www.nounspace.com/images/frames/icon.png',
+  APP_ICON: 'https://www.nounspace.com/images/mini_app_icon.png',
   APP_SUBTITLE: 'A space for Nouns',
   APP_BUTTON_TITLE: 'Open Space',
   APP_DESCRIPTION: 'The social hub for Nouns',
