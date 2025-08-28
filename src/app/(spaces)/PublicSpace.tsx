@@ -569,7 +569,7 @@ export default function PublicSpace({
 
     // Check if tab exists and if it is already loaded
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
-    const tabLoaded = loadedTabsRef.current[currentSpaceId]?.has(tabName);
+    const tabLoaded = currentSpaceId ? loadedTabsRef.current[currentSpaceId]?.has(tabName) : false;
 
     if (currentSpaceId && !tabExists) {
       // Only set loading if it really needs to load from database
