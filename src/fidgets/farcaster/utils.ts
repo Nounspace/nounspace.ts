@@ -14,7 +14,6 @@ import {
   FarcasterNetwork,
   makeCastAdd,
 } from "@farcaster/hub-web";
-import { bytesToHex } from "@noble/ciphers/utils";
 import {
   LinkBody,
   makeLinkAdd,
@@ -149,16 +148,16 @@ export const unfollowUser = async (
 
 export const followChannel = async (
   channelId: string,
-  signer: Signer,
+  authToken: string,
 ) => {
   try {
-    const keyResult = await signer.getSignerKey();
-    if (keyResult.isErr()) return false;
-    const publicKey = `0x${bytesToHex(keyResult.value)}`;
-    await axiosBackend.post("/api/farcaster/neynar/channel-follow", {
-      channel_id: channelId,
-      signer_public_key: publicKey,
-    });
+    await axiosBackend.post(
+      "/api/farcaster/channel-follow",
+      { channelId },
+      {
+        headers: { Authorization: `Bearer ${authToken}` },
+      },
+    );
     return true;
   } catch (e) {
     return false;
@@ -167,14 +166,12 @@ export const followChannel = async (
 
 export const unfollowChannel = async (
   channelId: string,
-  signer: Signer,
+  authToken: string,
 ) => {
   try {
-    const keyResult = await signer.getSignerKey();
-    if (keyResult.isErr()) return false;
-    const publicKey = `0x${bytesToHex(keyResult.value)}`;
-    await axiosBackend.delete("/api/farcaster/neynar/channel-follow", {
-      data: { channel_id: channelId, signer_public_key: publicKey },
+    await axiosBackend.delete("/api/farcaster/channel-follow", {
+      data: { channelId },
+      headers: { Authorization: `Bearer ${authToken}` },
     });
     return true;
   } catch (e) {

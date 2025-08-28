@@ -4,13 +4,18 @@ import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
 import { useQuery } from "@tanstack/react-query";
-import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
+import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore } from "@/common/data/stores/app";
 
 export type ChannelFidgetSettings = {
   channel: string;
 };
+
+interface FarcasterProfile {
+  fid: number;
+  token: string;
+}
 
 const channelProperties: FidgetProperties = {
   fidgetName: "Channel",
@@ -47,7 +52,10 @@ const useChannelInfo = (channel: string, viewerFid?: number) => {
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { signer, fid } = useFarcasterSigner("channel-fidget");
+  const { user } = usePrivy();
+  const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
+  const fid = farcaster?.fid ?? 0;
+  const authToken = farcaster?.token;
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsAccountReady: state.getIsAccountReady,
@@ -65,12 +73,12 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
       return;
     }
 
-    if (!signer) return;
+    if (!authToken) return;
 
     setFollowing((p) => !p);
     const success = following
-      ? await unfollowChannel(channel, signer)
-      : await followChannel(channel, signer);
+      ? await unfollowChannel(channel, authToken)
+      : await followChannel(channel, authToken);
     if (!success) {
       // revert state on failure
       setFollowing((p) => !p);
