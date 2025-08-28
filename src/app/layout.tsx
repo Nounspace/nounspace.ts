@@ -4,7 +4,7 @@ import "@/styles/globals.css";
 import '@coinbase/onchainkit/styles.css';
 import Providers from "@/common/providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { defaultFrame } from "@/common/lib/frames/metadata";
+import { defaultFrame } from "@/constants/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
 import type { Metadata } from 'next' // Migrating next/head

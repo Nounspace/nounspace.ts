@@ -6,6 +6,8 @@ import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import { SpaceConfig } from "@/app/(spaces)/Space";
 import TabBar from "@/common/components/organisms/TabBar";
+import { useMiniKit } from "@coinbase/onchainkit/minikit";
+
 import {
   RESOURCES_TAB_CONFIG,
   NOUNS_TAB_CONFIG,
@@ -49,6 +51,12 @@ const Home = () => {
   // Local state to manage current tab name and ordering
   const tabOrdering = ["Nouns", "Social", "Governance", "Resources", "Funded Works", "Places"];
   const [tabName, setTabName] = useState<string>("Nouns");
+
+  const { setFrameReady, isFrameReady } = useMiniKit();
+
+  useEffect(() => {
+    if (!isFrameReady) setFrameReady();
+  }, [isFrameReady, setFrameReady]);
 
   useEffect(() => {
     const newTabName = params?.tabname
