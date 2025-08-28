@@ -554,11 +554,11 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Updates the route immediately
+    // Update tab name and navigate
     setCurrentTabName(tabName);
     router.push(getSpacePageUrl(tabName));
 
-    // Save/commit operations in background
+    // Save and commit in background if needed
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
       Promise.all([
@@ -567,18 +567,21 @@ export default function PublicSpace({
       ]).catch((err) => console.error("Error saving/committing tab:", err));
     }
 
-    // Tab loading, if necessary, also in background
+    // Check if tab exists and if it is already loaded
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
+    const tabLoaded = loadedTabsRef.current[currentSpaceId]?.has(tabName);
+
     if (currentSpaceId && !tabExists) {
+      // Only set loading if it really needs to load from database
       setLoading(true);
-      if (loadedTabsRef.current[currentSpaceId]) {
-        loadedTabsRef.current[currentSpaceId].add(tabName);
-      } else {
-        loadedTabsRef.current[currentSpaceId] = new Set([tabName]);
+      if (!loadedTabsRef.current[currentSpaceId]) {
+        loadedTabsRef.current[currentSpaceId] = new Set();
       }
-      loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined)
-        .finally(() => setLoading(false));
-    } else if (currentSpaceId && tabExists) {
+      loadedTabsRef.current[currentSpaceId].add(tabName);
+      await loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined);
+      setLoading(false);
+    } else if (currentSpaceId && tabExists && !tabLoaded) {
+      // If exists but is not marked as loaded, mark and disable loading
       if (!loadedTabsRef.current[currentSpaceId]) {
         loadedTabsRef.current[currentSpaceId] = new Set();
       }

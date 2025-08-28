@@ -89,22 +89,21 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     }
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
-  // Function to load the configuration for the current tab
-        // Executes loading in background, does not block render
-        function loadTabConfigAsync() {
-          setTimeout(async () => {
-            await loadTabNames();
-            if (tabOrdering.local.length === 0) {
-              await loadTabOrder();
-            }
-            if (tabName === "Feed") {
-              await loadFeedConfig();
-            } else {
-              await loadTab(tabName);
-            }
-            // Preload other tabs in background
-            void loadRemainingTabs();
-          }, 0);
+  // Executes loading in background, does not block render
+  function loadTabConfigAsync() {
+    Promise.resolve().then(async () => {
+      await loadTabNames();
+      if (tabOrdering.local.length === 0) {
+        await loadTabOrder();
+      }
+      if (tabName === "Feed") {
+        await loadFeedConfig();
+      } else {
+        await loadTab(tabName);
+      }
+      // Preload other tabs in background
+      void loadRemainingTabs();
+    });
   }
 
   // Preload all tabs except the current one
@@ -128,9 +127,9 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     }
     // Commit in background
     if (shouldSave) {
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         commitConfigHandler();
-      }, 0);
+      });
     }
   }
 
