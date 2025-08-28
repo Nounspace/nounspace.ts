@@ -1,4 +1,6 @@
 import { Address } from "viem";
+import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
+import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
 
 export interface ProposalData {
@@ -17,6 +19,10 @@ export interface ProposalData {
   quorumVotes?: string;
   endBlock?: string;
   status?: string;
+}
+
+interface ProposalSpaceRow {
+  spaceId: string;
 }
 
 // Helper function to create timeout signal compatible with Edge runtime
@@ -191,4 +197,24 @@ export async function generateProposalThumbnailUrl(proposalData: ProposalData, s
   }
   
   return url;
+}
+
+export async function loadProposalSpaceId(proposalId: string): Promise<string | null> {
+  noStore();
+  try {
+    const { data, error } = await createSupabaseServerClient()
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
+    if (error) {
+      console.error("Error fetching proposal space id:", error);
+      return null;
+    }
+    return data && data.length > 0 ? (data as ProposalSpaceRow[])[0].spaceId : null;
+  } catch (e) {
+    console.error("Exception in loadProposalSpaceId:", e);
+    return null;
+  }
 }

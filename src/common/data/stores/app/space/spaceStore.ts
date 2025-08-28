@@ -92,6 +92,7 @@ interface CachedSpace {
   orderUpdatedAt?: string;
   contractAddress?: string | null;
   network?: string | null;
+  proposalId?: string | null;
 }
 
 interface LocalSpace extends CachedSpace {
@@ -174,6 +175,7 @@ interface SpaceActions {
   ) => Promise<string | undefined>;
   registerProposalSpace: (
     proposalId: string,
+    initialConfig: Omit<SpaceConfig, "isEditable">,
   ) => Promise<string | undefined>;
   clear: () => void;
 }
@@ -986,32 +988,42 @@ export const createSpaceStoreFunc = (
       throw e;
     }
   },
-  registerProposalSpace: async (proposalId) => {
+  registerProposalSpace: async (proposalId, initialConfig) => {
     try {
-      // Check if a space already exists for this proposal
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-            proposalId,
-          },
-        },
-      );
+      let existingSpaceId: string | undefined;
 
-      if (existingSpaces.value) {
-        const existingSpace = existingSpaces.value.spaces.find(
-          (space) => space.proposalId === proposalId
+      // Check if a space already exists for this proposal
+      try {
+        const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+              proposalId,
+            },
+          },
         );
-        if (existingSpace) {
-          return existingSpace.spaceId;
+
+        if (existingSpaces.value) {
+          const existingSpace = existingSpaces.value.spaces.find(
+            (space) => space.proposalId === proposalId
+          );
+          if (existingSpace) {
+            existingSpaceId = existingSpace.spaceId;
+          }
         }
+      } catch (checkError) {
+        console.error("Error checking for existing proposal space:", checkError);
+      }
+
+      if (existingSpaceId) {
+        return existingSpaceId;
       }
 
       // Register a new space for the proposal
       const unsignedRegistration: Omit<SpaceRegistrationProposer, "signature"> = {
         identityPublicKey: get().account.currentSpaceIdentityPublicKey!,
-        spaceName: `Proposal-${proposalId}`,
+        spaceName: `Nouns-Prop-${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
       };
@@ -1035,14 +1047,15 @@ export const createSpaceStoreFunc = (
           tabs: {},
           order: [],
           changedNames: {},
+          proposalId,
         };
       });
 
-      // Create and commit the initial "Overview" tab
+      // Create and commit the initial Profile tab
       await get().space.createSpaceTab(
         newSpaceId,
-        "Overview",
-        INITIAL_SPACE_CONFIG_EMPTY
+        "Profile",
+        initialConfig
       );
 
 
@@ -1094,6 +1107,7 @@ export const createSpaceStoreFunc = (
                   contractAddress: spaceInfo.contractAddress,
                   network: spaceInfo.network,
                   fid: spaceInfo.fid,
+                  proposalId: spaceInfo.proposalId,
                 };
               }
             });

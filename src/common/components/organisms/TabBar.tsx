@@ -32,6 +32,7 @@ interface TabBarProps {
   contractAddress?: Address;
   pageType?: SpacePageType | undefined;
   isEditable?: boolean;
+  spaceId?: string | null;
 }
 
 const PERMANENT_TABS = ["Feed", "Profile"];
@@ -62,7 +63,8 @@ function TabBar({
   isTokenPage,
   contractAddress,
   pageType,
-  isEditable
+  isEditable,
+  spaceId
 }: TabBarProps) {
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
@@ -304,7 +306,10 @@ function TabBar({
             </div>
           )}
         </div>
-        {isTokenPage && !getIsInitializing() && !isLoggedIn && !isMobile && (
+        {((isTokenPage || (pageType === 'proposal' && !spaceId)) &&
+          !getIsInitializing() &&
+          !isLoggedIn &&
+          !isMobile) && (
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
       </div>

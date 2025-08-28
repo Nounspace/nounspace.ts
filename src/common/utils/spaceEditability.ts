@@ -19,6 +19,7 @@ export type EditabilityContext = {
   wallets?: { address: Address }[];
   // Space type
   isTokenPage?: boolean;
+  isProposalPage?: boolean;
 };
 
 export const createEditabilityChecker = (context: EditabilityContext) => {
@@ -29,6 +30,7 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     tokenData,
     wallets = [],
     isTokenPage = false,
+    isProposalPage = false,
   } = context;
 
   // console.log('Editability check context:', {
@@ -63,7 +65,12 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     }
 
     // Check if user owns the wallet address (doesn't require clankerData)
-    if (spaceOwnerAddress && wallets.some(w => w.address === spaceOwnerAddress)) {
+    if (
+      spaceOwnerAddress &&
+      wallets.some(
+        (w) => w.address.toLowerCase() === spaceOwnerAddress.toLowerCase(),
+      )
+    ) {
       // console.log('Editable: User owns by address', {
       //   spaceOwnerAddress,
       //   matchingWallet: wallets.find(w => w.address === spaceOwnerAddress),
@@ -86,6 +93,15 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     }
 
     // console.log('Not editable: No matching ownership conditions met for token space');
+  } else if (isProposalPage) {
+    if (
+      spaceOwnerAddress &&
+      wallets.some(
+        (w) => w.address.toLowerCase() === spaceOwnerAddress.toLowerCase(),
+      )
+    ) {
+      return { isEditable: true, isLoading: false };
+    }
   } else {
     // For profile spaces, just check FID match
     // console.log('Checking profile space editability');

@@ -251,7 +251,12 @@ async function handleGetRequest(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const { contractAddress: contractAddressQuery, network: networkQuery, identityPublicKey } = req.query;
+  const {
+    contractAddress: contractAddressQuery,
+    network: networkQuery,
+    identityPublicKey,
+    proposalId: proposalIdQuery,
+  } = req.query;
 
   // Handle contract lookup case
   if (contractAddressQuery && networkQuery) {
@@ -272,6 +277,35 @@ async function handleGetRequest(
       .select("spaceId")
       .eq("contractAddress", contractAddress)
       .eq("network", network);
+
+    if (error) {
+      return res
+        .status(500)
+        .json({ result: "error", error: { message: error.message } });
+    }
+
+    const space = first(data);
+
+    if (space) {
+      return res.status(200).json({ result: "success", value: space });
+    } else {
+      return res.status(404).json({ result: "error", error: { message: "Space not found" } });
+    }
+  }
+
+  // Handle proposal lookup case
+  if (proposalIdQuery) {
+    const proposalId = Array.isArray(proposalIdQuery)
+      ? proposalIdQuery[0]
+      : proposalIdQuery;
+
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("spaceRegistrations")
+      .select("spaceId")
+      .eq("proposalId", proposalId)
+      .order("timestamp", { ascending: true })
+      .limit(1);
 
     if (error) {
       return res
