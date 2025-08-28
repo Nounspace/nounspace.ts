@@ -3,7 +3,8 @@ import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFarcasterSigner } from "@/fidgets/farcaster";
 import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore } from "@/common/data/stores/app";
@@ -14,7 +15,7 @@ export type ChannelFidgetSettings = {
 
 interface FarcasterProfile {
   fid: number;
-  token: string;
+  token?: string; // token may be absent
 }
 
 const channelProperties: FidgetProperties = {
@@ -46,16 +47,19 @@ const useChannelInfo = (channel: string, viewerFid?: number) => {
       );
       return data.channel as any;
     },
+    enabled: Boolean(channel),
   });
 };
 
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
+  const { fid: signerFid } = useFarcasterSigner("channel-fidget");
   const { user } = usePrivy();
   const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
-  const viewerFid = farcaster?.fid;
+  const viewerFid = farcaster?.fid ?? signerFid ?? undefined;
   const authToken = farcaster?.token;
+  const queryClient = useQueryClient();
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsAccountReady: state.getIsAccountReady,
@@ -73,16 +77,29 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
       return;
     }
 
-    if (!authToken) {
-      console.error("Missing authToken");
+    if (!viewerFid) {
+      console.error("Missing viewerFid");
       return;
     }
 
     setFollowing((p) => !p);
+
+    const auth = authToken
+      ? ({ authToken } as const)
+      : ({ fid: viewerFid, useServerAuth: true } as const);
+
     const ok = following
-      ? await unfollowChannel(channel, authToken)
-      : await followChannel(channel, authToken);
-    if (!ok) setFollowing((p) => !p);
+      ? await unfollowChannel(channel, auth)
+      : await followChannel(channel, auth);
+
+    if (!ok) {
+      setFollowing((p) => !p);
+      return;
+    }
+
+    queryClient.invalidateQueries({
+      queryKey: ["channel-info", channel, viewerFid],
+    });
   };
 
   const displayName = useMemo(
@@ -109,7 +126,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
           variant={following ? "secondary" : "primary"}
           onClick={handleToggle}
         >
-          {following ? "Unfollow" : "Follow"}
+          {following ? "Following" : "Follow"}
         </Button>
       </div>
       {data.description && (

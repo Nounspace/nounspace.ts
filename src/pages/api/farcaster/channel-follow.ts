@@ -1,11 +1,10 @@
 import requestHandler from "@/common/data/api/requestHandler";
 import axios, { isAxiosError } from "axios";
-import { createHash } from "crypto";
-import { NobleEd25519Signer } from "@farcaster/core";
+import { NobleEd25519Signer } from "@farcaster/hub-nodejs";
 import type { NextApiRequest, NextApiResponse } from "next";
 
-function base64url(input: string | Uint8Array) {
-  return Buffer.from(input).toString("base64url");
+function b64url(obj: unknown) {
+  return Buffer.from(JSON.stringify(obj)).toString("base64url");
 }
 
 async function makeAppKeyBearer(
@@ -13,25 +12,25 @@ async function makeAppKeyBearer(
   privHex: string,
   pubHex: string,
 ) {
-  const header = { fid, type: "app_key", key: pubHex };
-  const payload = {
-    exp: Math.floor(Date.now() / 1000) + 60 * 5,
-  };
-  const body = `${base64url(JSON.stringify(header))}.${base64url(
-    JSON.stringify(payload),
-  )}`;
   const signer = new NobleEd25519Signer(
-    Buffer.from(privHex.replace(/^0x/, ""), "hex"),
+    new Uint8Array(Buffer.from(privHex.replace(/^0x/, ""), "hex")),
   );
-  const hash = createHash("sha256").update(body).digest();
-  const sigResult = await signer.signMessageHash(hash);
-  if (sigResult.isErr()) {
-    throw sigResult.error;
-  }
-  return `Bearer ${body}.${base64url(sigResult.value)}`;
+
+  const header = { fid, type: "app_key", key: pubHex.replace(/^0x/, "") };
+  const encodedHeader = b64url(header);
+
+  const payload = { exp: Math.floor(Date.now() / 1000) + 300 };
+  const encodedPayload = b64url(payload);
+
+  const toSign = Buffer.from(`${encodedHeader}.${encodedPayload}`, "utf-8");
+  const sig = await signer.signMessageHash(toSign);
+  if (sig.isErr()) throw sig.error;
+
+  const encodedSig = Buffer.from(sig.value).toString("base64url");
+  return `Bearer ${encodedHeader}.${encodedPayload}.${encodedSig}`;
 }
 
-async function getAppKey(fid: number) {
+async function getAppKeyForFid(fid: number) {
   const privHex = process.env.NOUNSPACE_APP_KEY_PRIV_HEX;
   const pubHex = process.env.NOUNSPACE_APP_KEY_PUB_HEX;
   if (!privHex || !pubHex) return null;
@@ -45,19 +44,27 @@ async function proxy(req: NextApiRequest, res: NextApiResponse) {
       fid?: number;
       useServerAuth?: boolean;
     };
+
+    if (!channelId || typeof channelId !== "string") {
+      res.status(400).json("channelId is required");
+      return;
+    }
+
     let authHeader = req.headers.authorization;
-    if (!authHeader && useServerAuth && typeof fid === "number") {
-      const keypair = await getAppKey(fid);
-      if (keypair) {
-        authHeader = await makeAppKeyBearer(fid, keypair.privHex, keypair.pubHex);
+    if (
+      (!authHeader || !authHeader.startsWith("Bearer ")) &&
+      useServerAuth &&
+      typeof fid === "number"
+    ) {
+      const keypair = await getAppKeyForFid(fid);
+      if (!keypair) {
+        res.status(401).json("No app key available for fid");
+        return;
       }
+      authHeader = await makeAppKeyBearer(fid, keypair.privHex, keypair.pubHex);
     }
     if (!authHeader?.startsWith("Bearer ")) {
       res.status(401).json("Missing or invalid Authorization header");
-      return;
-    }
-    if (!channelId || typeof channelId !== "string") {
-      res.status(400).json("channelId is required");
       return;
     }
     const url = "https://api.farcaster.xyz/fc/channel-follows";

@@ -163,4 +163,13 @@ export function resolveOverlaps(
   }
 
   return { cleanedLayout, removedFidgetIds };
-} 
+}
+
+export function cleanupLayout(
+  layout: PlacedGridItem[],
+  fidgetInstanceDatums: { [key: string]: FidgetInstanceData },
+  hasProfile: boolean,
+  hasFeed: boolean,
+): { cleanedLayout: PlacedGridItem[]; removedFidgetIds: string[] } {
+  return resolveOverlaps(layout, fidgetInstanceDatums, hasProfile, hasFeed);
+}

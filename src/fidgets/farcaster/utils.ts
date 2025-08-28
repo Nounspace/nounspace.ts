@@ -146,37 +146,53 @@ export const unfollowUser = async (
   return false;
 };
 
+type ChannelFollowAuth =
+  | { authToken: string }
+  | { fid: number; useServerAuth: true };
+
 export const followChannel = async (
   channelId: string,
-  authToken: string,
+  auth: ChannelFollowAuth,
 ) => {
   try {
-    await axiosBackend.post(
-      "/api/farcaster/channel-follow",
-      { channelId },
-      {
-        headers: { Authorization: `Bearer ${authToken}` },
-      },
-    );
+    if ("authToken" in auth) {
+      await axiosBackend.post(
+        "/api/farcaster/channel-follow",
+        { channelId },
+        { headers: { Authorization: `Bearer ${auth.authToken}` } },
+      );
+    } else {
+      await axiosBackend.post("/api/farcaster/channel-follow", {
+        channelId,
+        fid: auth.fid,
+        useServerAuth: true,
+      });
+    }
     return true;
   } catch (e) {
-    console.error("followChannel failed", e);
+    console.error("followChannel failed:", e);
     return false;
   }
 };
 
 export const unfollowChannel = async (
   channelId: string,
-  authToken: string,
+  auth: ChannelFollowAuth,
 ) => {
   try {
-    await axiosBackend.delete("/api/farcaster/channel-follow", {
-      data: { channelId },
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
+    if ("authToken" in auth) {
+      await axiosBackend.delete("/api/farcaster/channel-follow", {
+        data: { channelId },
+        headers: { Authorization: `Bearer ${auth.authToken}` },
+      });
+    } else {
+      await axiosBackend.delete("/api/farcaster/channel-follow", {
+        data: { channelId, fid: auth.fid, useServerAuth: true },
+      });
+    }
     return true;
   } catch (e) {
-    console.error("unfollowChannel failed", e);
+    console.error("unfollowChannel failed:", e);
     return false;
   }
 };
