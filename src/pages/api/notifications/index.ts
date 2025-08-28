@@ -68,34 +68,54 @@ const get = async (
     // text or embed details. Hydrate any casts missing text so the client can
     // render notification contents properly.
     const notifications = data.notifications || [];
-    const castsToFetch: Record<string, number[]> = {};
+    const castsToFetch: Record<string, { n: number; r?: number }[]> = {};
 
-    notifications.forEach((notification, index) => {
+    notifications.forEach((notification, nIndex) => {
       const cast: any = notification.cast;
       const hasText = typeof cast?.text === "string" && cast.text.length > 0;
 
-      if (hasText) {
-        return;
+      if (!hasText) {
+        const hash = cast?.hash;
+        if (hash) {
+          if (!castsToFetch[hash]) {
+            castsToFetch[hash] = [];
+          }
+          castsToFetch[hash].push({ n: nIndex });
+        }
       }
 
-      const hash = cast?.hash || notification.reactions?.[0]?.cast?.hash;
-      if (hash) {
-        if (!castsToFetch[hash]) {
-          castsToFetch[hash] = [];
+      notification.reactions?.forEach((reaction, rIndex) => {
+        const rCast: any = reaction.cast;
+        const rHasText =
+          typeof rCast?.text === "string" && rCast.text.length > 0;
+
+        if (rHasText) {
+          return;
         }
-        castsToFetch[hash].push(index);
-      }
+
+        const hash = rCast?.hash;
+        if (hash) {
+          if (!castsToFetch[hash]) {
+            castsToFetch[hash] = [];
+          }
+          castsToFetch[hash].push({ n: nIndex, r: rIndex });
+        }
+      });
     });
 
     await Promise.all(
-      Object.entries(castsToFetch).map(async ([hash, indexes]) => {
+      Object.entries(castsToFetch).map(async ([hash, positions]) => {
         try {
           const { cast } = await neynar.lookupCastByHashOrWarpcastUrl({
             identifier: hash,
             type: CastParamType.Hash,
           });
-          indexes.forEach((i) => {
-            notifications[i].cast = cast;
+          positions.forEach(({ n, r }) => {
+            if (typeof r === "number") {
+              notifications[n].reactions![r].cast = cast;
+            } else {
+              notifications[n].cast = cast;
+            }
           });
         } catch (_) {
           // If hydration fails, leave the notification as-is
