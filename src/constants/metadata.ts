@@ -8,7 +8,7 @@ export const defaultFrame = {
     action: {
       type: "launch_frame",
       url: WEBSITE_URL,
-      name: "Nounspace",
+      name: "Nouns",
       splashImageUrl: `${WEBSITE_URL}/images/nounspace_logo.png`,
       splashBackgroundColor: "#FFFFFF",
     }
