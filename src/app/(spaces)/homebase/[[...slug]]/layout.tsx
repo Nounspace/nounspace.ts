@@ -5,7 +5,7 @@ import { WEBSITE_URL } from "@/constants/app";
 import { CastParamType } from "@neynar/nodejs-sdk/build/api";
 import neynar from "@/common/data/api/neynar";
 import { getCastMetadataStructure } from "@/common/lib/utils/castMetadata";
-import { defaultFrame } from "@/common/lib/frames/metadata";
+import { defaultFrame } from "@/constants/metadata";
 
 const defaultMetadata = {
   other: {
