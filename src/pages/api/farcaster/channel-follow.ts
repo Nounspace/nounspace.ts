@@ -3,8 +3,16 @@ import axios, { isAxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { NobleEd25519Signer } from "@farcaster/hub-nodejs";
 
+function toBase64Url(buffer: Buffer): string {
+  return buffer
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 function b64url(obj: unknown) {
-  return Buffer.from(JSON.stringify(obj)).toString("base64url");
+  return toBase64Url(Buffer.from(JSON.stringify(obj)));
 }
 
 async function makeAppKeyBearer(fid: number, privHex: string, pubHex: string) {
@@ -21,7 +29,7 @@ async function makeAppKeyBearer(fid: number, privHex: string, pubHex: string) {
   const toSign = Buffer.from(`${h}.${p}`, "utf-8");
   const sigRes = await signer.signMessageHash(toSign);
   if (sigRes.isErr()) throw sigRes.error;
-  const s = Buffer.from(sigRes.value).toString("base64url");
+  const s = toBase64Url(Buffer.from(sigRes.value));
 
   return `Bearer ${h}.${p}.${s}`;
 }

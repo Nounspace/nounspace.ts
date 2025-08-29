@@ -449,8 +449,16 @@ export async function fetchChannelsByName(
   }
 }
 
+function toBase64Url(buffer: Buffer): string {
+  return buffer
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
 function b64url(obj: unknown): string {
-  return Buffer.from(JSON.stringify(obj)).toString("base64url");
+  return toBase64Url(Buffer.from(JSON.stringify(obj)));
 }
 
 async function makeAuthToken(fid: number, signer: Signer) {
@@ -467,7 +475,7 @@ async function makeAuthToken(fid: number, signer: Signer) {
   const toSign = Buffer.from(`${h}.${p}`);
   const sigRes = await signer.signMessageHash(toSign);
   if (sigRes.isErr()) return undefined;
-  const s = Buffer.from(sigRes.value).toString("base64url");
+  const s = toBase64Url(Buffer.from(sigRes.value));
   return `${h}.${p}.${s}`;
 }
 
