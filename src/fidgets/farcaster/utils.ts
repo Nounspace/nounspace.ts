@@ -449,16 +449,41 @@ export async function fetchChannelsByName(
   }
 }
 
+function b64url(obj: unknown): string {
+  return Buffer.from(JSON.stringify(obj)).toString("base64url");
+}
+
+async function makeAuthToken(fid: number, signer: Signer) {
+  const pubRes = await signer.getSignerKey();
+  if (pubRes.isErr()) return undefined;
+  const header = {
+    fid,
+    type: "app_key",
+    key: Buffer.from(pubRes.value).toString("hex"),
+  };
+  const payload = { exp: Math.floor(Date.now() / 1000) + 300 };
+  const h = b64url(header);
+  const p = b64url(payload);
+  const toSign = Buffer.from(`${h}.${p}`);
+  const sigRes = await signer.signMessageHash(toSign);
+  if (sigRes.isErr()) return undefined;
+  const s = Buffer.from(sigRes.value).toString("base64url");
+  return `${h}.${p}.${s}`;
+}
+
 export const followChannel = async (
   channelId: string,
-  authToken: string,
+  fid: number,
+  signer: Signer,
 ) => {
   try {
+    const token = await makeAuthToken(fid, signer);
+    if (!token) throw new Error("missing token");
     await axiosBackend.post(
       "/api/farcaster/channel-follow",
       { channelId },
       {
-        headers: { Authorization: `Bearer ${authToken}` },
+        headers: { Authorization: `Bearer ${token}` },
       },
     );
     return true;
@@ -470,12 +495,15 @@ export const followChannel = async (
 
 export const unfollowChannel = async (
   channelId: string,
-  authToken: string,
+  fid: number,
+  signer: Signer,
 ) => {
   try {
+    const token = await makeAuthToken(fid, signer);
+    if (!token) throw new Error("missing token");
     await axiosBackend.delete("/api/farcaster/channel-follow", {
       data: { channelId },
-      headers: { Authorization: `Bearer ${authToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     return true;
   } catch (e) {
