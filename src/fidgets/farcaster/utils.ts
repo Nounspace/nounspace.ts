@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from "axios";
+import { blake3 } from "@noble/hashes/blake3";
 import {
   ID_REGISTRY_ADDRESS,
   KEY_GATEWAY_ADDRESS,
@@ -449,19 +450,52 @@ export async function fetchChannelsByName(
   }
 }
 
-type ChannelFollowAuth =
-  | { authToken: string }
-  | { fid: number; useServerAuth: true };
+function toBase64Url(buffer: Buffer): string {
+  return buffer
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 
-export const followChannel = async (channelId: string, auth: ChannelFollowAuth) => {
+function b64url(obj: unknown): string {
+  return toBase64Url(Buffer.from(JSON.stringify(obj)));
+}
+
+async function makeAuthToken(fid: number, signer: Signer) {
+  const pubRes = await signer.getSignerKey();
+  if (pubRes.isErr()) return undefined;
+  const header = {
+    fid,
+    type: "app_key",
+    // Warpcast expects the signer public key to be base64url encoded
+    key: toBase64Url(Buffer.from(pubRes.value)),
+  };
+  const payload = { exp: Math.floor(Date.now() / 1000) + 300 };
+  const h = b64url(header);
+  const p = b64url(payload);
+  const toSign = blake3(Buffer.from(`${h}.${p}`));
+  const sigRes = await signer.signMessageHash(toSign);
+  if (sigRes.isErr()) return undefined;
+  const s = toBase64Url(Buffer.from(sigRes.value));
+  return `${h}.${p}.${s}`;
+}
+
+export const followChannel = async (
+  channelId: string,
+  fid: number,
+  signer: Signer,
+) => {
   try {
-    if ("authToken" in auth) {
-      await axiosBackend.post("/api/farcaster/channel-follow", { channelId }, {
-        headers: { Authorization: `Bearer ${auth.authToken}` },
-      });
-    } else {
-      await axiosBackend.post("/api/farcaster/channel-follow", { channelId, fid: auth.fid, useServerAuth: true });
-    }
+    const token = await makeAuthToken(fid, signer);
+    if (!token) throw new Error("missing token");
+    await axiosBackend.post(
+      "/api/farcaster/channel-follow",
+      { channelId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
     return true;
   } catch (e) {
     console.error("followChannel failed:", e);
@@ -469,18 +503,18 @@ export const followChannel = async (channelId: string, auth: ChannelFollowAuth) 
   }
 };
 
-export const unfollowChannel = async (channelId: string, auth: ChannelFollowAuth) => {
+export const unfollowChannel = async (
+  channelId: string,
+  fid: number,
+  signer: Signer,
+) => {
   try {
-    if ("authToken" in auth) {
-      await axiosBackend.delete("/api/farcaster/channel-follow", {
-        data: { channelId },
-        headers: { Authorization: `Bearer ${auth.authToken}` },
-      });
-    } else {
-      await axiosBackend.delete("/api/farcaster/channel-follow", {
-        data: { channelId, fid: auth.fid, useServerAuth: true },
-      });
-    }
+    const token = await makeAuthToken(fid, signer);
+    if (!token) throw new Error("missing token");
+    await axiosBackend.delete("/api/farcaster/channel-follow", {
+      data: { channelId },
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return true;
   } catch (e) {
     console.error("unfollowChannel failed:", e);

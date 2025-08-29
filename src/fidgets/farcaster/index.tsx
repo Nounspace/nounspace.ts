@@ -95,11 +95,29 @@ export function useFarcasterSigner(
         return setFid(-1);
       });
   }, [authenticatorManager.lastUpdatedAt]);
+  const [authToken, setAuthToken] = useState<string | undefined>();
+  useEffect(() => {
+    authenticatorManager
+      .callMethod({
+        requestingFidgetId: fidgetId,
+        authenticatorId: FARCASTER_AUTHENTICATOR_NAME,
+        methodName: "getAccessToken",
+        isLookup: true,
+      })
+      .then((methodResult) => {
+        if (methodResult.result === "success") {
+          setAuthToken(methodResult.value as string);
+        } else {
+          setAuthToken(undefined);
+        }
+      });
+  }, [authenticatorManager.lastUpdatedAt]);
 
   return {
     authenticatorManager,
     isLoadingSigner,
     signer,
     fid,
+    token: authToken,
   };
 }

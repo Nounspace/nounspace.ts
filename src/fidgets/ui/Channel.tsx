@@ -5,8 +5,8 @@ import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
-import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore } from "@/common/data/stores/app";
+import { useFarcasterSigner } from "../farcaster";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -57,15 +57,11 @@ const useFollowStatus = (channel: string, viewerFid?: number) => {
   });
 };
 
-interface FarcasterProfile { fid: number; token?: string; }
-
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { user } = usePrivy();
-  const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
-  const viewerFid = farcaster?.fid;
-  const authToken = farcaster?.token;
+  const { fid, signer } = useFarcasterSigner("channel");
+  const viewerFid = fid > 0 ? fid : undefined;
 
   const queryClient = useQueryClient();
   const { setModalOpen, getIsAccountReady } = useAppStore((s) => ({
@@ -84,15 +80,13 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   const handleToggle = async () => {
     if (!getIsAccountReady()) { setModalOpen(true); return; }
     if (!viewerFid) { console.error("Missing viewerFid"); return; }
+    if (!signer) { console.error("Missing signer"); return; }
 
     setFollowing((p) => !p); // optimistic
-    const auth = authToken
-      ? ({ authToken } as const)
-      : ({ fid: viewerFid, useServerAuth: true } as const);
 
     const ok = following
-      ? await unfollowChannel(channel, auth)
-      : await followChannel(channel, auth);
+      ? await unfollowChannel(channel, viewerFid, signer)
+      : await followChannel(channel, viewerFid, signer);
 
     if (!ok) {
       setFollowing((p) => !p); // revert on failure
