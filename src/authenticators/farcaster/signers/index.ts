@@ -42,6 +42,11 @@ export interface FarcasterSignerAuthenticatorMethods<
   getSignerFid: AuthenticatorMethodWrapper<() => Promise<number>, D>;
   // FID of the account that the signer signs on behalf of
   getAccountFid: AuthenticatorMethodWrapper<() => Promise<number>, D>;
+  // Returns the Warpcast access token, if available
+  getAccessToken: AuthenticatorMethodWrapper<
+    () => Promise<string | undefined>,
+    D
+  >;
   // Says if the Authenticator is a signer or an account
   getRegistrationType: AuthenticatorMethodWrapper<
     () => Promise<FarcasterRegistrationType>,

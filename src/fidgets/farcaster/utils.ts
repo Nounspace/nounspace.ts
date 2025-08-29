@@ -449,19 +449,18 @@ export async function fetchChannelsByName(
   }
 }
 
-type ChannelFollowAuth =
-  | { authToken: string }
-  | { fid: number; useServerAuth: true };
-
-export const followChannel = async (channelId: string, auth: ChannelFollowAuth) => {
+export const followChannel = async (
+  channelId: string,
+  authToken: string,
+) => {
   try {
-    if ("authToken" in auth) {
-      await axiosBackend.post("/api/farcaster/channel-follow", { channelId }, {
-        headers: { Authorization: `Bearer ${auth.authToken}` },
-      });
-    } else {
-      await axiosBackend.post("/api/farcaster/channel-follow", { channelId, fid: auth.fid, useServerAuth: true });
-    }
+    await axiosBackend.post(
+      "/api/farcaster/channel-follow",
+      { channelId },
+      {
+        headers: { Authorization: `Bearer ${authToken}` },
+      },
+    );
     return true;
   } catch (e) {
     console.error("followChannel failed:", e);
@@ -469,18 +468,15 @@ export const followChannel = async (channelId: string, auth: ChannelFollowAuth) 
   }
 };
 
-export const unfollowChannel = async (channelId: string, auth: ChannelFollowAuth) => {
+export const unfollowChannel = async (
+  channelId: string,
+  authToken: string,
+) => {
   try {
-    if ("authToken" in auth) {
-      await axiosBackend.delete("/api/farcaster/channel-follow", {
-        data: { channelId },
-        headers: { Authorization: `Bearer ${auth.authToken}` },
-      });
-    } else {
-      await axiosBackend.delete("/api/farcaster/channel-follow", {
-        data: { channelId, fid: auth.fid, useServerAuth: true },
-      });
-    }
+    await axiosBackend.delete("/api/farcaster/channel-follow", {
+      data: { channelId },
+      headers: { Authorization: `Bearer ${authToken}` },
+    });
     return true;
   } catch (e) {
     console.error("unfollowChannel failed:", e);

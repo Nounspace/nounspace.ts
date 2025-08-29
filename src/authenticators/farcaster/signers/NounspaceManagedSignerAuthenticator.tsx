@@ -181,6 +181,9 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
         return data.accountFid!;
       };
     },
+    getAccessToken: (data) => {
+      return async () => data.token;
+    },
     getRegistrationType: (data) => {
       return async () => {
         isDataInitialized(data, true);
