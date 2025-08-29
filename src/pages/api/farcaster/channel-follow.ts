@@ -18,10 +18,10 @@ function b64url(obj: unknown) {
 
 async function makeAppKeyBearer(fid: number, privHex: string, pubHex: string) {
   const priv = privHex.replace(/^0x/, "");
-  const pub = pubHex.replace(/^0x/, "");
+  const pubBytes = Buffer.from(pubHex.replace(/^0x/, ""), "hex");
   const signer = new NobleEd25519Signer(new Uint8Array(Buffer.from(priv, "hex")));
 
-  const header = { fid, type: "app_key", key: pub };
+  const header = { fid, type: "app_key", key: toBase64Url(pubBytes) };
   const payload = { exp: Math.floor(Date.now() / 1000) + 300 }; // 5 min
   const h = b64url(header);
   const p = b64url(payload);

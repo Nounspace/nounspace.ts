@@ -468,7 +468,8 @@ async function makeAuthToken(fid: number, signer: Signer) {
   const header = {
     fid,
     type: "app_key",
-    key: Buffer.from(pubRes.value).toString("hex"),
+    // Warpcast expects the signer public key to be base64url encoded
+    key: toBase64Url(Buffer.from(pubRes.value)),
   };
   const payload = { exp: Math.floor(Date.now() / 1000) + 300 };
   const h = b64url(header);
