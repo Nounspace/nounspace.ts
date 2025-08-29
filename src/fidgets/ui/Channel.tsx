@@ -1,9 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { Button } from "@/common/components/atoms/button";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
+import { usePrivy } from "@privy-io/react-auth";
+import { useAppStore } from "@/common/data/stores/app";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -41,13 +44,62 @@ const useChannelInfo = (channel: string) => {
   });
 };
 
+const useFollowStatus = (channel: string, viewerFid?: number) => {
+  return useQuery({
+    queryKey: ["channel-follow-status", channel, viewerFid],
+    enabled: Boolean(channel && viewerFid),
+    queryFn: async () => {
+      const { data } = await axiosBackend.get("/api/farcaster/user-channel", {
+        params: { channelId: channel, fid: viewerFid },
+      });
+      return data.result?.following === true;
+    },
+  });
+};
+
+interface FarcasterProfile { fid: number; token?: string; }
+
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { data } = useChannelInfo(channel);
-  const [following, setFollowing] = useState(false);
+  const { user } = usePrivy();
+  const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
+  const viewerFid = farcaster?.fid;
+  const authToken = farcaster?.token;
 
-  const handleToggle = () => setFollowing((p) => !p);
+  const queryClient = useQueryClient();
+  const { setModalOpen, getIsAccountReady } = useAppStore((s) => ({
+    setModalOpen: s.setup.setModalOpen,
+    getIsAccountReady: s.getIsAccountReady,
+  }));
+
+  const { data } = useChannelInfo(channel);
+  const { data: isFollowing } = useFollowStatus(channel, viewerFid);
+  const [following, setFollowing] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof isFollowing === "boolean") setFollowing(isFollowing);
+  }, [isFollowing]);
+
+  const handleToggle = async () => {
+    if (!getIsAccountReady()) { setModalOpen(true); return; }
+    if (!viewerFid) { console.error("Missing viewerFid"); return; }
+
+    setFollowing((p) => !p); // optimistic
+    const auth = authToken
+      ? ({ authToken } as const)
+      : ({ fid: viewerFid, useServerAuth: true } as const);
+
+    const ok = following
+      ? await unfollowChannel(channel, auth)
+      : await followChannel(channel, auth);
+
+    if (!ok) {
+      setFollowing((p) => !p); // revert on failure
+      return;
+    }
+    queryClient.invalidateQueries({ queryKey: ["channel-follow-status", channel, viewerFid] });
+  };
 
   const displayName = useMemo(
     () => data?.name || channel,
@@ -73,7 +125,7 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
           variant={following ? "secondary" : "primary"}
           onClick={handleToggle}
         >
-          {following ? "Unfollow" : "Follow"}
+          {following ? "Following" : "Follow"}
         </Button>
       </div>
       {data.description && (
