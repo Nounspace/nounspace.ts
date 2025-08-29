@@ -4,7 +4,6 @@ import { NounspaceResponse } from "@/common/data/api/requestHandler";
 import {
   NotificationType,
   NotificationsResponse,
-  CastParamType,
 } from "@neynar/nodejs-sdk/build/api";
 import { isAxiosError } from "axios";
 import { isString } from "lodash";
@@ -102,25 +101,31 @@ const get = async (
       });
     });
 
-    await Promise.all(
-      Object.entries(castsToFetch).map(async ([hash, positions]) => {
-        try {
-          const { cast } = await neynar.lookupCastByHashOrWarpcastUrl({
-            identifier: hash,
-            type: CastParamType.Hash,
-          });
-          positions.forEach(({ n, r }) => {
+    const hashes = Object.keys(castsToFetch);
+    if (hashes.length > 0) {
+      try {
+        const { result } = await neynar.fetchBulkCasts({
+          casts: hashes,
+          viewerFid: fid,
+        });
+        const castMap = new Map(result.casts.map((c: any) => [c.hash, c]));
+        hashes.forEach((hash) => {
+          const cast = castMap.get(hash);
+          if (!cast) return;
+          castsToFetch[hash].forEach(({ n, r }) => {
             if (typeof r === "number") {
               notifications[n].reactions![r].cast = cast as any;
             } else {
               notifications[n].cast = cast as any;
             }
           });
-        } catch (_) {
-          // If hydration fails, leave the notification as-is
-        }
-      }),
-    );
+        });
+      } catch (_) {
+        // If hydration fails, leave notifications as-is
+      }
+    }
+
+    data.notifications = notifications;
 
     res.status(200).json({
       result: "success",
