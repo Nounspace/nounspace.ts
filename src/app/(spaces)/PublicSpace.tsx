@@ -736,5 +736,3 @@ export default function PublicSpace({
   
   return MemoizedSpacePage;
 }
-
-// Remove code outside the main component
