@@ -35,7 +35,15 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         const lineHeight = Math.ceil(
           parseFloat(window.getComputedStyle(textRef.current).lineHeight),
         );
-        setMaxHeight(`${lineHeight * maxLines}px`);
+        // Fix: If lineHeight calculation fails or returns invalid value, use a fallback
+        const validLineHeight = isNaN(lineHeight) || lineHeight <= 0 ? 20 : lineHeight;
+        const calculatedMaxHeight = validLineHeight * maxLines;
+        // Additional safety check: don't set maxHeight to 0 or very small values
+        if (calculatedMaxHeight > 10) {
+          setMaxHeight(`${calculatedMaxHeight}px`);
+        } else {
+          setMaxHeight("none"); // Fallback to no height restriction
+        }
       }
     };
 
@@ -46,8 +54,11 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
       }
     };
 
-    computeMaxHeight();
-    checkOverflow();
+    // Add a small delay to ensure the element is properly rendered
+    const timer = setTimeout(() => {
+      computeMaxHeight();
+      checkOverflow();
+    }, 0);
 
     const resizeObserver = new ResizeObserver(() => {
       computeMaxHeight();
@@ -55,7 +66,10 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     });
     if (textRef.current) resizeObserver.observe(textRef.current);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      clearTimeout(timer);
+      resizeObserver.disconnect();
+    };
   }, [maxLines]);
 
   if (!maxLines) {

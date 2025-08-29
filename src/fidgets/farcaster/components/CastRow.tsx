@@ -1,7 +1,6 @@
-"use client"
+"use client";
 
 import { Avatar, AvatarImage } from "@/common/components/atoms/avatar";
-import ExpandableText from "@/common/components/molecules/ExpandableText";
 import Modal from "@/common/components/molecules/Modal";
 import { trackAnalyticsEvent } from "@/common/lib/utils/analyticsUtils";
 import { useAppStore } from "@/common/data/stores/app";
@@ -18,11 +17,7 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
-import {
-  CastWithInteractions,
-  EmbedUrl,
-  User,
-} from "@neynar/nodejs-sdk/build/api";
+import { CastWithInteractions, EmbedUrl, User } from "@neynar/nodejs-sdk/build/api";
 import { hexToBytes } from "@noble/ciphers/utils";
 import { ErrorBoundary } from "@sentry/react";
 import { Properties } from "csstype";
@@ -34,7 +29,6 @@ import { FaReply } from "react-icons/fa6";
 import { IoMdShare } from "react-icons/io";
 import CreateCast, { DraftType } from "./CreateCast";
 import { renderEmbedForUrl, type CastEmbed } from "./Embeds";
-import FarcasterLinkify from "./linkify";
 import { AnalyticsEvent } from "@/common/constants/analyticsEvents";
 import { useToastStore } from "@/common/data/stores/toastStore";
 
@@ -92,7 +86,7 @@ export const PriorityLink = ({ children, href, ...props }) => {
       e.stopPropagation();
       router.push(href);
     },
-    [href],
+    [href]
   );
 
   return (
@@ -102,26 +96,16 @@ export const PriorityLink = ({ children, href, ...props }) => {
   );
 };
 
-export const CastAvatar = ({
-  user,
-  className,
-}: {
-  user: User;
-  className?: string;
-}) => {
+export const CastAvatar = ({ user, className }: { user: User; className?: string }) => {
   return (
     <PriorityLink className="cursor-pointer h-fit" href={`/s/${user.username}`}>
       <Avatar
         className={classNames(
           "size-10 flex-none bg-background hover:brightness-[90%] transition duration-300 ease-out",
-          className,
+          className
         )}
       >
-        <AvatarImage
-          src={`${user.pfp_url}`}
-          alt={user?.display_name}
-          className="object-cover"
-        />
+        <AvatarImage src={`${user.pfp_url}`} alt={user?.display_name} className="object-cover" />
       </Avatar>
     </PriorityLink>
   );
@@ -140,9 +124,9 @@ const extractUrlsFromText = (text: string): string[] => {
 
 const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
   // Get URLs from embeds and also extract any URLs from the cast text
-  const embedUrls = ("embeds" in cast && cast.embeds) ? cast.embeds : [];
-  const textUrls = extractUrlsFromText(cast.text || '');
-  
+  const embedUrls = "embeds" in cast && cast.embeds ? cast.embeds : [];
+  const textUrls = extractUrlsFromText(cast.text || "");
+
   // If no embeds from API and no URLs in text, return null
   if (!embedUrls.length && !textUrls.length) {
     return null;
@@ -154,27 +138,28 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
       {map(embedUrls, (embed, i) => {
         const embedData: CastEmbed = isEmbedUrl(embed)
           ? {
-            url: embed.url,
-            key: embed.url,
-          }
+              url: embed.url,
+              key: embed.url,
+            }
           : {
-            castId: embed.cast_id,
-            key: embed.cast_id?.hash?.toString() || '',
-          };
+              castId: embed.cast_id,
+              key: embed.cast_id?.hash?.toString() || "",
+            };
 
         return (
           <div
             key={`embed-${i}`}
             className={classNames(
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
-              embedData.castId ? "max-w-[100%]" : "max-w-max",
+              embedData.castId ? "max-w-[100%]" : "max-w-max"
             )}
             onClick={(event) => {
               event.stopPropagation();
               if (embedData?.castId?.hash) {
-                const hashString = typeof embedData.castId.hash === 'string' 
-                  ? embedData.castId.hash 
-                  : Buffer.from(embedData.castId.hash).toString('hex');
+                const hashString =
+                  typeof embedData.castId.hash === "string"
+                    ? embedData.castId.hash
+                    : Buffer.from(embedData.castId.hash).toString("hex");
                 onSelectCast(hashString, cast.author.username);
               }
             }}
@@ -183,14 +168,12 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
           </div>
         );
       })}
-      
+
       {/* Render URLs found in text that aren't already in embeds */}
       {textUrls.map((url, i) => {
         // Skip if this URL is already in the embeds
-        const isAlreadyEmbedded = embedUrls.some(embed => 
-          isEmbedUrl(embed) && embed.url === url
-        );
-        
+        const isAlreadyEmbedded = embedUrls.some((embed) => isEmbedUrl(embed) && embed.url === url);
+
         if (isAlreadyEmbedded) {
           return null;
         }
@@ -205,7 +188,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             key={`text-url-${i}`}
             className={classNames(
               "mt-4 gap-y-4 border border-foreground/15 rounded-xl flex justify-center items-center overflow-hidden max-h-[500px] w-full bg-background/50",
-              "max-w-max",
+              "max-w-max"
             )}
           >
             {renderEmbedForUrl(embedData, false)}
@@ -217,7 +200,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
 };
 
 const CastEmbeds = React.memo(CastEmbedsComponent);
-CastEmbeds.displayName = 'CastEmbeds';
+CastEmbeds.displayName = "CastEmbeds";
 
 const CastAttributionHeader = ({
   cast,
@@ -232,21 +215,9 @@ const CastAttributionHeader = ({
 }) => {
   return (
     <div className="flex justify-start w-full gap-x-2">
-      {isReply && avatar && !inline && (
-        <ThreadConnector className="h-[8px] top-0 left-[31px]" />
-      )}
-      {avatar && (
-        <CastAvatar
-          user={cast.author}
-          className={inline ? "size-5" : "size-10"}
-        />
-      )}
-      <div
-        className={classNames(
-          "flex gap-x-1 truncate flex-wrap",
-          inline ? "flex-row mb-0.5" : "flex-col",
-        )}
-      >
+      {isReply && avatar && !inline && <ThreadConnector className="h-[8px] top-0 left-[31px]" />}
+      {avatar && <CastAvatar user={cast.author} className={inline ? "size-5" : "size-10"} />}
+      <div className={classNames("flex gap-x-1 truncate flex-wrap", inline ? "flex-row mb-0.5" : "flex-col")}>
         <CastAttributionPrimary cast={cast} />
         <CastAttributionSecondary cast={cast} />
       </div>
@@ -259,20 +230,11 @@ const CastAttributionPrimary = ({ cast }) => {
 
   return (
     <div className="flex items-center justify-start font-bold opacity-80 cursor-pointer gap-1 tracking-tight leading-[1.3] truncate flex-auto">
-      <PriorityLink
-        href={`/s/${cast.author.username}`}
-        className="cursor-pointer truncate"
-      >
+      <PriorityLink href={`/s/${cast.author.username}`} className="cursor-pointer truncate">
         <span className="hover:underline">{cast.author.display_name}</span>
       </PriorityLink>
       {cast?.author?.power_badge && (
-        <Image
-          src="/images/ActiveBadge.webp"
-          className="size-4"
-          alt="power badge"
-          width={50}
-          height={30}
-        />
+        <Image src="/images/ActiveBadge.webp" className="size-4" alt="power badge" width={50} height={30} />
       )}
     </div>
   );
@@ -297,12 +259,8 @@ const CastAttributionSecondary = ({ cast }) => {
 };
 
 const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
-  const [didLike, setDidLike] = useState(
-    cast.viewer_context?.liked ?? false,
-  );
-  const [didRecast, setDidRecast] = useState(
-    cast.viewer_context?.recasted ?? false,
-  );
+  const [didLike, setDidLike] = useState(cast.viewer_context?.liked ?? false);
+  const [didRecast, setDidRecast] = useState(cast.viewer_context?.recasted ?? false);
   const { signer, fid: userFid } = useFarcasterSigner("render-cast");
   const { showToast } = useToastStore();
   const { setModalOpen, getIsAccountReady } = useAppStore((state) => ({
@@ -336,17 +294,11 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     return {
       [CastReactionType.likes]: {
         count: likesCount + (!viewerLiked ? Number(didLike) : 0),
-        isActive:
-          didLike ||
-          viewerLiked ||
-          includes(likeFids, userFid),
+        isActive: didLike || viewerLiked || includes(likeFids, userFid),
       },
       [CastReactionType.recasts]: {
         count: recastsCount + (!viewerRecasted ? Number(didRecast) : 0),
-        isActive:
-          didRecast ||
-          viewerRecasted ||
-          includes(recastFids, userFid),
+        isActive: didRecast || viewerRecasted || includes(recastFids, userFid),
       },
       [CastReactionType.replies]: { count: repliesCount },
     };
@@ -395,10 +347,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
         setDidRecast(!isActive);
       }
 
-      const reactionBodyType: ReactionType =
-        key === CastReactionType.likes
-          ? ReactionType.LIKE
-          : ReactionType.RECAST;
+      const reactionBodyType: ReactionType = key === CastReactionType.likes ? ReactionType.LIKE : ReactionType.RECAST;
       const reaction = {
         type: reactionBodyType,
         targetCastId: castId,
@@ -421,12 +370,7 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     }
   };
 
-  const renderReaction = (
-    key: CastReactionType,
-    isActive: boolean,
-    count?: number | string,
-    icon?: JSX.Element,
-  ) => {
+  const renderReaction = (key: CastReactionType, isActive: boolean, count?: number | string, icon?: JSX.Element) => {
     return (
       <div
         key={`cast-${cast.hash}-${key}`}
@@ -453,19 +397,14 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
     });
 
     // Clean the hash by removing the "0x" prefix if present
-    const cleanedHash = cast.hash.startsWith("0x")
-      ? cast.hash.slice(2)
-      : cast.hash;
+    const cleanedHash = cast.hash.startsWith("0x") ? cast.hash.slice(2) : cast.hash;
 
     // Convert the hex string to Uint8Array
     const parentCastHash = hexToBytes(cleanedHash);
 
     // Check for invalid length and prevent submission if necessary
     if (parentCastHash.length !== 20) {
-      console.error(
-        "Hash must be 20 bytes, but received length:",
-        parentCastHash.length,
-      );
+      console.error("Hash must be 20 bytes, but received length:", parentCastHash.length);
       return;
     }
 
@@ -494,24 +433,10 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
 
   const reactions = getReactions();
 
-  // const linksCount = cast?.embeds ? cast.embeds.length : 0;
-
-  // const isOnchainLink =
-  //   linksCount > 0 && "url" in cast.embeds[0]
-  //     ? cast.embeds[0].url.startsWith("chain:")
-  //     : false;
-
   return (
     <>
-      <Modal
-        open={showModal}
-        setOpen={setShowModal}
-        focusMode
-        showClose={false}
-      >
-        <div className="mb-4">
-          {replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}
-        </div>
+      <Modal open={showModal} setOpen={setShowModal} focusMode showClose={false}>
+        <div className="mb-4">{replyCastType === "reply" ? <CastRowExport cast={cast} isEmbed /> : null}</div>
         <div className="flex">
           <CreateCast initialDraft={replyCastDraft} />
         </div>
@@ -519,43 +444,12 @@ const CastReactions = ({ cast }: { cast: CastWithInteractions }) => {
       <div className="-ml-1.5 flex items-center space-x-3 w-full">
         {Object.entries(reactions).map(([key, reactionInfo]) => {
           const isActive = get(reactionInfo, "isActive", false);
-          const icon = getIconForCastReactionType(
-            key as CastReactionType,
-            isActive,
-          );
-          const reaction = renderReaction(
-            key as CastReactionType,
-            isActive,
-            reactionInfo.count,
-            icon,
-          );
+          const icon = getIconForCastReactionType(key as CastReactionType, isActive);
+          const reaction = renderReaction(key as CastReactionType, isActive, reactionInfo.count, icon);
           return reaction;
         })}
 
-        {/* Commented out this button to "Open cast in a new tab" until we add that functionality*/}
-
-        {/* {linksCount && !isOnchainLink ? (
-          <a
-            tabIndex={-1}
-            href={"url" in cast.embeds[0] ? cast.embeds[0].url : "#"}
-            target="_blank"
-            rel="noreferrer"
-            className="cursor-pointer"
-          >
-            {renderReaction(
-              CastReactionType.links,
-              linksCount > 1,
-              linksCount ?? undefined,
-              getIconForCastReactionType(CastReactionType.links),
-            )}
-          </a>
-        ) : null} */}
-        {renderReaction(
-          CastReactionType.quote,
-          true,
-          undefined,
-          getIconForCastReactionType(CastReactionType.quote),
-        )}
+        {renderReaction(CastReactionType.quote, true, undefined, getIconForCastReactionType(CastReactionType.quote))}
         {cast.channel && cast.channel.name && (
           <div
             key={`cast-${cast.hash}-channel-name`}
@@ -595,6 +489,130 @@ interface CastBodyProps {
   hideEmbeds?: boolean;
 }
 
+// Safe text expansion component with character-based truncation
+const SafeExpandableText: React.FC<{ 
+  children: string; 
+  maxLines?: number | null; 
+  style?: React.CSSProperties;
+}> = ({ children, maxLines, style }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  
+  // If no maxLines specified, render without truncation
+  if (!maxLines || maxLines <= 0) {
+    return (
+      <EnhancedLinkify style={style}>
+        {children}
+      </EnhancedLinkify>
+    );
+  }
+  
+  // Character-based truncation (more reliable than height calculations)
+  const maxChars = maxLines * 80; // Approximate 80 characters per line
+  const shouldTruncate = children.length > maxChars;
+  const displayText = isExpanded || !shouldTruncate 
+    ? children 
+    : children.slice(0, maxChars) + '...';
+  
+  return (
+    <div style={style}>
+      <EnhancedLinkify style={style}>
+        {displayText}
+      </EnhancedLinkify>
+      {shouldTruncate && !isExpanded && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(true);
+          }}
+          className="text-blue-500 hover:underline ml-1 font-medium"
+          type="button"
+        >
+          Show more
+        </button>
+      )}
+    </div>
+  );
+};
+// Enhanced text linkifier for Farcaster content
+const EnhancedLinkify: React.FC<{ children: string; style?: React.CSSProperties }> = ({ children, style }) => {
+  const linkifyText = (text: string) => {
+    // Production-ready regex patterns optimized for performance
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/g;
+    const mentionRegex = /(@[a-zA-Z0-9_.-]+)/g;
+    const channelRegex = /(\/[a-zA-Z0-9_-]+)(?=\s|$)/g;
+    const hashtagRegex = /(#[a-zA-Z0-9_-]+)/g;
+    
+    // Efficient text splitting that preserves special tokens
+    const combinedRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+|@[a-zA-Z0-9_.-]+|\/[a-zA-Z0-9_-]+(?=\s|$)|#[a-zA-Z0-9_-]+)/g;
+    const parts = text.split(combinedRegex);
+    
+    return parts.map((part, index) => {
+      if (!part) return null;
+      
+      // URL links
+      if (urlRegex.test(part)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline cursor-pointer break-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      
+      // User mentions
+      if (mentionRegex.test(part)) {
+        const username = part.slice(1);
+        return (
+          <a
+            key={index}
+            href={`/s/${username}`}
+            className="text-blue-500 hover:underline cursor-pointer font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </a>
+        );
+      }
+      
+      // Channel references
+      if (channelRegex.test(part) && part.length > 1) {
+        return (
+          <span
+            key={index}
+            className="text-blue-500 hover:underline cursor-pointer font-medium"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </span>
+        );
+      }
+      
+      // Hashtags
+      if (hashtagRegex.test(part)) {
+        return (
+          <span
+            key={index}
+            className="font-medium text-slate-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+          </span>
+        );
+      }
+      
+      return part;
+    }).filter(Boolean);
+  };
+
+  return <span style={style}>{linkifyText(children)}</span>;
+};
+
 const CastBodyComponent = ({
   cast,
   channel,
@@ -609,46 +627,39 @@ const CastBodyComponent = ({
   maxLines = 0,
   hideEmbeds = false,
 }: CastBodyProps) => {
-  const handleSelectCast = useCallback((hash: string, username: string) => {
-    if (onSelectCast) {
-      onSelectCast(hash, username);
-    }
-  }, [onSelectCast]);
-  
+  const handleSelectCast = useCallback(
+    (hash: string, username: string) => {
+      if (onSelectCast) {
+        onSelectCast(hash, username);
+      }
+    },
+    [onSelectCast]
+  );
+
   return (
     <div className="flex flex-col grow">
       {cast.text && (
-        <FarcasterLinkify attributes={userFid}>
-          <p
-            className={
-              isDetailView ? "text-lg leading-[1.3]" : "text-base leading-[1.3]"
-            }
+        <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
+          <SafeExpandableText 
+            maxLines={maxLines || (isDetailView ? null : 10)}
             style={castTextStyle}
           >
-            <ExpandableText maxLines={maxLines || (isDetailView ? null : 10)}>
-              {React.createElement('span', {}, cast.text)}
-            </ExpandableText>
-          </p>
-        </FarcasterLinkify>
+            {cast.text}
+          </SafeExpandableText>
+        </div>
       )}
-      {!isEmbed && !hideEmbeds && (
-        <CastEmbeds cast={cast} onSelectCast={handleSelectCast} />
-      )}
+      
+      {!isEmbed && !hideEmbeds && <CastEmbeds cast={cast} onSelectCast={handleSelectCast} />}
       {!hideReactions && <CastReactions cast={cast} />}
     </div>
   );
 };
 
 export const CastBody = React.memo(CastBodyComponent);
-CastBody.displayName = 'CastBody';
-
+CastBody.displayName = "CastBody";
 
 const ThreadConnector = ({ className }) => {
-  return (
-    <div
-      className={classNames("absolute w-[2px] bg-border flex-1", className)}
-    />
-  );
+  return <div className={classNames("absolute w-[2px] bg-border flex-1", className)} />;
 };
 
 const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
@@ -656,17 +667,12 @@ const CastLeftGutter = ({ cast, connectTop, connectBottom }) => {
     <div className="flex flex-0 justify-center top-0 bottom-0">
       {connectTop && <ThreadConnector className="top-0 h-[4px]" />}
       <CastAvatar user={cast.author} className="size-10" />
-      {connectBottom && (
-        <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />
-      )}
+      {connectBottom && <ThreadConnector className="bottom-0 h-[calc(100%-60px)]" />}
     </div>
   );
 };
 
-const getIconForCastReactionType = (
-  reactionType: CastReactionType,
-  isActive?: boolean,
-): JSX.Element | undefined => {
+const getIconForCastReactionType = (reactionType: CastReactionType, isActive?: boolean): JSX.Element | undefined => {
   const baseColor = isActive
     ? reactionType === CastReactionType.likes
       ? "text-red-500"
@@ -684,19 +690,13 @@ const getIconForCastReactionType = (
         <HeartIcon className={className} aria-hidden="true" />
       );
     case CastReactionType.recasts:
-      return (
-        <ArrowPathRoundedSquareIcon className={className} aria-hidden="true" />
-      );
+      return <ArrowPathRoundedSquareIcon className={className} aria-hidden="true" />;
     case CastReactionType.quote:
-      return (
-        <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />
-      );
+      return <ChatBubbleLeftRightIcon className={className} aria-hidden="true" />;
     case CastReactionType.replies:
       return <FaReply className={className} aria-hidden="true" />;
     case CastReactionType.links:
-      return (
-        <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />
-      );
+      return <ArrowTopRightOnSquareIcon className={className} aria-hidden="true" />;
     default:
       return undefined;
   }
@@ -719,9 +719,7 @@ const CastRowComponent = ({
 }: CastRowProps) => {
   const { fid: userFid } = useFarcasterSigner("render-cast");
 
-  const getChannelForParentUrl = (
-    _parentUrl: string | null,
-  ): { name: string } | null => null;
+  const getChannelForParentUrl = (_parentUrl: string | null): { name: string } | null => null;
 
   const renderRecastBadge = () => {
     const shouldShowBadge =
@@ -738,10 +736,7 @@ const CastRowComponent = ({
     );
   };
 
-  const channel =
-    showChannel && "parent_url" in cast
-      ? getChannelForParentUrl(cast.parent_url)
-      : null;
+  const channel = showChannel && "parent_url" in cast ? getChannelForParentUrl(cast.parent_url) : null;
 
   const handleClick = useCallback(
     (event: React.MouseEvent) => {
@@ -758,7 +753,7 @@ const CastRowComponent = ({
         onSelect && onSelect(cast.hash, cast.author.username);
       }
     },
-    [cast.hash, isFocused, cast.author.username, onSelect],
+    [cast.hash, isFocused, cast.author.username, onSelect]
   );
 
   return (
@@ -766,36 +761,14 @@ const CastRowComponent = ({
       className={classNames(
         "![&(:last-child)]:border-b-none relative p-3",
         !isFocused && "hover:bg-foreground/5 cursor-pointer",
-        !isEmbed && (!hasReplies || isFocused)
-          ? "border-b border-b-foreground/10"
-          : "",
-        className,
+        !isEmbed && (!hasReplies || isFocused) ? "border-b border-b-foreground/10" : "",
+        className
       )}
     >
-      <div
-        onClick={handleClick}
-        className={classNames("transition duration-300 ease-out flex gap-2")}
-      >
-        {!isFocused && !isEmbed && (
-          <CastLeftGutter
-            cast={cast}
-            connectTop={isReply}
-            connectBottom={hasReplies}
-          />
-        )}
-        <div
-          className={
-            isFocused
-              ? "flex flex-col flex-1 gap-3"
-              : "flex-1 overflow-x-hidden truncate"
-          }
-        >
-          <CastAttributionHeader
-            cast={cast}
-            avatar={isFocused || isEmbed}
-            inline={!isFocused}
-            isReply={isReply}
-          />
+      <div onClick={handleClick} className={classNames("transition duration-300 ease-out flex gap-2")}>
+        {!isFocused && !isEmbed && <CastLeftGutter cast={cast} connectTop={isReply} connectBottom={hasReplies} />}
+        <div className={isFocused ? "flex flex-col flex-1 gap-3" : "flex-1 overflow-x-hidden truncate"}>
+          <CastAttributionHeader cast={cast} avatar={isFocused || isEmbed} inline={!isFocused} isReply={isReply} />
           {replyingToUsername && (
             <p className="mb-1 tracking-tight text-sm leading-[1.3] truncate gap-1 opacity-60 font-medium">
               Replying to{" "}
@@ -830,6 +803,6 @@ const CastRowComponent = ({
 };
 
 export const CastRow = React.memo(CastRowComponent);
-CastRow.displayName = 'CastRow';
+CastRow.displayName = "CastRow";
 
 export const CastRowExport = CastRow;
