@@ -7,6 +7,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { followChannel, unfollowChannel } from "@/fidgets/farcaster/utils";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAppStore } from "@/common/data/stores/app";
+import { useFarcasterSigner } from "../farcaster";
 
 export type ChannelFidgetSettings = {
   channel: string;
@@ -63,8 +64,9 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
   const { user } = usePrivy();
+  const { fid } = useFarcasterSigner("channel");
   const farcaster = user?.farcaster as unknown as FarcasterProfile | undefined;
-  const viewerFid = farcaster?.fid;
+  const viewerFid = fid > 0 ? fid : undefined;
   const authToken = farcaster?.token;
 
   const queryClient = useQueryClient();
