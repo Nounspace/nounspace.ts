@@ -8,6 +8,7 @@ import {
   Notification,
   NotificationTypeEnum,
   User,
+  CastWithInteractions,
 } from "@neynar/nodejs-sdk/build/api"
 import {
   Tabs,
@@ -42,6 +43,29 @@ const TAB_OPTIONS = {
   REPLIES: NotificationTypeEnum.Reply,
   LIKES: NotificationTypeEnum.Likes,
 }
+const getNotificationCast = (
+  notification: Notification,
+): CastWithInteractions | undefined => {
+  if (
+    notification.cast &&
+    typeof (notification.cast as any).text === "string" &&
+    (notification.cast as any).text.length > 0
+  ) {
+    return notification.cast as any;
+  }
+
+  const reactionCast = notification.reactions?.[0]?.cast as any;
+  if (
+    reactionCast &&
+    typeof reactionCast.text === "string" &&
+    reactionCast.text.length > 0
+  ) {
+    return reactionCast;
+  }
+
+  return undefined;
+};
+
 
 export type NotificationRowProps = React.FC<{
   notification: Notification;
@@ -139,7 +163,10 @@ const MentionNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
-  const mentionedByUser = notification.cast?.author ? [notification.cast.author] : [];
+  const cast = getNotificationCast(notification);
+  if (!cast) return null;
+
+  const mentionedByUser = cast.author ? [cast.author] : [];
 
   return (
     <div className="flex flex-col gap-2">
@@ -150,8 +177,8 @@ const MentionNotificationRow: NotificationRowProps = ({
       />
       <div className="ml-4 w-full">
         <CastRow
-          cast={notification.cast!}
-          key={notification.cast!.hash}
+          cast={cast}
+          key={cast.hash}
           showChannel={false}
           isFocused={false}
           isEmbed={true}
@@ -195,6 +222,9 @@ const RecastNotificationRow: NotificationRowProps = ({
       .map((r) => r.user)
   }, [notification?.reactions])
 
+  const cast = getNotificationCast(notification);
+  if (!cast) return null;
+
   return (
     <div className="flex flex-col gap-2">
       <NotificationHeader
@@ -204,8 +234,8 @@ const RecastNotificationRow: NotificationRowProps = ({
       />
       <div className="ml-4 w-full">
         <CastRow
-          cast={notification.cast!}
-          key={notification.cast!.hash}
+          cast={cast}
+          key={cast.hash}
           showChannel={false}
           isFocused={false}
           isEmbed={true}
@@ -227,7 +257,10 @@ const QuoteNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
-  const quotedByUser = notification.cast?.author ? [notification.cast.author] : [];
+  const cast = getNotificationCast(notification);
+  if (!cast) return null;
+
+  const quotedByUser = cast.author ? [cast.author] : [];
 
   return (
     <div className="flex flex-col gap-2">
@@ -238,8 +271,8 @@ const QuoteNotificationRow: NotificationRowProps = ({
       />
       <div className="ml-4 w-full">
         <CastRow
-          cast={notification.cast!}
-          key={notification.cast!.hash}
+          cast={cast}
+          key={cast.hash}
           showChannel={false}
           isFocused={false}
           isEmbed={true}
@@ -261,7 +294,10 @@ const ReplyNotificationRow: NotificationRowProps = ({
   notification,
   onSelect,
 }) => {
-  const repliedByUser = notification.cast?.author ? [notification.cast.author] : [];
+  const cast = getNotificationCast(notification);
+  if (!cast) return null;
+
+  const repliedByUser = cast.author ? [cast.author] : [];
 
   return (
     <div className="flex flex-col gap-2">
@@ -272,13 +308,13 @@ const ReplyNotificationRow: NotificationRowProps = ({
       />
       <div className="ml-4 w-full">
         <CastRow
-          cast={notification.cast!}
-          key={notification.cast!.hash}
+          cast={cast}
+          key={cast.hash}
           showChannel={false}
           isFocused={false}
           isEmbed={true}
           isReply={true}
-          hasReplies={(notification?.cast?.replies?.count ?? 0) > 0}
+          hasReplies={(cast?.replies?.count ?? 0) > 0}
           onSelect={onSelect}
           hideReactions={false}
           className="border-b-0 px-0 pb-0 hover:bg-transparent"
@@ -302,6 +338,9 @@ const LikeNotificationRow: NotificationRowProps = ({
       .map((r) => r.user);
   }, [notification?.reactions]);
 
+  const cast = getNotificationCast(notification);
+  if (!cast) return null;
+
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       const selection = window.getSelection();
@@ -311,9 +350,9 @@ const LikeNotificationRow: NotificationRowProps = ({
         return;
       }
 
-      onSelect(notification.cast!.hash, notification.cast!.author.username);
+      onSelect(cast.hash, cast.author.username);
     },
-    [notification.cast, onSelect],
+    [cast, onSelect],
   );
 
   return (
@@ -326,7 +365,7 @@ const LikeNotificationRow: NotificationRowProps = ({
       />
       <div className="ml-4 w-full cursor-pointer" onClick={handleClick}>
         <CastBody
-          cast={notification.cast!}
+          cast={cast}
           channel={null}
           isEmbed={false}
           showChannel={false}
@@ -342,7 +381,7 @@ const LikeNotificationRow: NotificationRowProps = ({
           renderRecastBadge={() => null}
           userFid={fid || undefined}
           isDetailView={false}
-          onSelectCast={(hash) => onSelect(hash, notification.cast!.author.username)}
+          onSelectCast={(hash) => onSelect(hash, cast.author.username)}
         />
       </div>
     </div>
