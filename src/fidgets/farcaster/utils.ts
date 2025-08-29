@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from "axios";
+import { blake3 } from "@noble/hashes/blake3";
 import {
   ID_REGISTRY_ADDRESS,
   KEY_GATEWAY_ADDRESS,
@@ -472,7 +473,7 @@ async function makeAuthToken(fid: number, signer: Signer) {
   const payload = { exp: Math.floor(Date.now() / 1000) + 300 };
   const h = b64url(header);
   const p = b64url(payload);
-  const toSign = Buffer.from(`${h}.${p}`);
+  const toSign = blake3(Buffer.from(`${h}.${p}`));
   const sigRes = await signer.signMessageHash(toSign);
   if (sigRes.isErr()) return undefined;
   const s = toBase64Url(Buffer.from(sigRes.value));

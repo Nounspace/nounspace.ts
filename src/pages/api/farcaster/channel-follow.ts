@@ -2,6 +2,7 @@ import requestHandler from "@/common/data/api/requestHandler";
 import axios, { isAxiosError } from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { NobleEd25519Signer } from "@farcaster/hub-nodejs";
+import { blake3 } from "@noble/hashes/blake3";
 
 function toBase64Url(buffer: Buffer): string {
   return buffer
@@ -25,8 +26,8 @@ async function makeAppKeyBearer(fid: number, privHex: string, pubHex: string) {
   const h = b64url(header);
   const p = b64url(payload);
 
-  // Sign the bytes of "h.p" exactly as in the docs
-  const toSign = Buffer.from(`${h}.${p}`, "utf-8");
+  // Sign the BLAKE3 hash of "h.p" as required by Warpcast
+  const toSign = blake3(Buffer.from(`${h}.${p}`, "utf-8"));
   const sigRes = await signer.signMessageHash(toSign);
   if (sigRes.isErr()) throw sigRes.error;
   const s = toBase64Url(Buffer.from(sigRes.value));
