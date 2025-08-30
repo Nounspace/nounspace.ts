@@ -111,6 +111,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const { editMode } = useSidebarContext();
 
   
   // Clear cache only when switching to a different space
@@ -550,47 +551,61 @@ export default function PublicSpace({
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
 
   // Common tab management
-  async function switchTabTo(tabName: string, shouldSave: boolean = true) {
+  const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Update tab name and navigate
+    // Protect against fast navigation: ignore if there is no space or tab
+    if (!currentSpaceId || !tabName) return;
+
+    // Update tab name and navigate instantly
     setCurrentTabName(tabName);
     router.push(getSpacePageUrl(tabName));
 
     // Save and commit in background if needed
-    if (currentSpaceId && shouldSave) {
-      const resolvedConfig = await config;
-      Promise.all([
-        saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
-        commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
-      ]).catch((err) => console.error("Error saving/committing tab:", err));
+    if (shouldSave) {
+      try {
+        const resolvedConfig = await config;
+        await Promise.all([
+          saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig),
+          commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network)
+        ]);
+      } catch (err) {
+        console.error("Error saving/committing tab:", err);
+      }
     }
 
     // Check if tab exists and if it is already loaded
-    const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
-    const tabLoaded = currentSpaceId ? loadedTabsRef.current[currentSpaceId]?.has(tabName) : false;
+    const tabExists = localSpaces[currentSpaceId]?.tabs?.[tabName];
+    const tabLoaded = loadedTabsRef.current[currentSpaceId]?.has(tabName) ?? false;
 
-    if (currentSpaceId && !tabExists) {
-      // Only set loading if it really needs to load from database
-      setLoading(true);
-      if (!loadedTabsRef.current[currentSpaceId]) {
-        loadedTabsRef.current[currentSpaceId] = new Set();
+    // Protect against race condition: only execute if component is mounted
+    let isMounted = true;
+    setLoading(true);
+    try {
+      if (!tabExists) {
+        if (!loadedTabsRef.current[currentSpaceId]) {
+          loadedTabsRef.current[currentSpaceId] = new Set();
+        }
+        loadedTabsRef.current[currentSpaceId].add(tabName);
+        await loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined);
+      } else if (tabExists && !tabLoaded) {
+        if (!loadedTabsRef.current[currentSpaceId]) {
+          loadedTabsRef.current[currentSpaceId] = new Set();
+        }
+        loadedTabsRef.current[currentSpaceId].add(tabName);
       }
-      loadedTabsRef.current[currentSpaceId].add(tabName);
-      await loadSpaceTab(currentSpaceId, tabName, currentUserFid || undefined);
-      setLoading(false);
-    } else if (currentSpaceId && tabExists && !tabLoaded) {
-      // If exists but is not marked as loaded, mark and disable loading
-      if (!loadedTabsRef.current[currentSpaceId]) {
-        loadedTabsRef.current[currentSpaceId] = new Set();
+    } catch (err) {
+      if (isMounted) {
+        console.error("Error loading tab:", err);
       }
-      loadedTabsRef.current[currentSpaceId].add(tabName);
-      setLoading(false);
+    } finally {
+      if (isMounted) setLoading(false);
     }
-  }
-
-  const { editMode } = useSidebarContext();
+    // Clear flag on unmount
+    return () => { isMounted = false; };
+  }, [getCurrentSpaceId, getCurrentTabName, getSpacePageUrl, router, 
+    saveLocalSpaceTab, commitSpaceTab, tokenData?.network, localSpaces, loadSpaceTab, currentUserFid, config]);
 
   // Debounced function for tab navigation
   const debouncedSwitchTabTo = useMemo(() =>
@@ -598,6 +613,10 @@ export default function PublicSpace({
       switchTabTo(tabName, shouldSave);
     }, 150), [switchTabTo]
   );
+
+  useEffect(() => {
+    return () => debouncedSwitchTabTo.cancel();
+  }, [debouncedSwitchTabTo]);
 
   const tabBar = (
     <TabBar

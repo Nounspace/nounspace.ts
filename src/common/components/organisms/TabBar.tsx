@@ -127,10 +127,12 @@ const TabBar = React.memo(function TabBar({
         switchTabTo(tabName);
       }
       
+
+
       // Commit in background
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         commitTabOrder();
-      }, 100);
+      });
       
     } catch (error) {
       console.error("Error in handleCreateTab:", error);
@@ -138,20 +140,25 @@ const TabBar = React.memo(function TabBar({
   }
 
   async function handleDeleteTab(tabName: string) {
-    // Simple and safe delete function
-    if (!isEditableTab(tabName)) {
+    // Só permite deletar tabs editáveis e se houver mais de uma tab
+    if (!isEditableTab(tabName) || tabList.length <= 1) {
       return;
     }
 
-    if (tabList.length <= 1) {
-      return;
+    // Remove the tab from the tabList locally
+    const updatedTabList = tabList.filter((name) => name !== tabName);
+    updateTabOrder(updatedTabList);
+
+    // Decide which tab to activate after deletion
+    let nextTab = nextClosestTab(tabName);
+    if (!updatedTabList.includes(nextTab)) {
+      // If the next tab no longer exists, take the first available one
+      nextTab = updatedTabList[0] || "Profile";
     }
 
-    const nextTab = nextClosestTab(tabName);
-    
-    // Switch to next tab first
+    // Navigate to the next valid tab
     switchTabTo(nextTab);
-    
+
     // Delete the tab
     deleteTab(tabName);
   }
@@ -189,12 +196,12 @@ const TabBar = React.memo(function TabBar({
       
       // Switch to the new tab name
       switchTabTo(uniqueName);
-      
+
       // Commit in background
-      setTimeout(() => {
+      Promise.resolve().then(() => {
         commitTab(uniqueName);
         commitTabOrder();
-      }, 100);
+      });
       
     } catch (error) {
       console.error("Error in handleRenameTab:", error);
