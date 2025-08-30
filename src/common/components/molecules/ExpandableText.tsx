@@ -24,7 +24,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         onExpand();
       }
     },
-    [onExpand],
+    [onExpand]
   );
 
   useEffect(() => {
@@ -32,9 +32,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
     const computeMaxHeight = () => {
       if (textRef.current) {
-        const lineHeight = Math.ceil(
-          parseFloat(window.getComputedStyle(textRef.current).lineHeight),
-        );
+        const lineHeight = Math.ceil(parseFloat(window.getComputedStyle(textRef.current).lineHeight));
         // Fix: If lineHeight calculation fails or returns invalid value, use a fallback
         const validLineHeight = isNaN(lineHeight) || lineHeight <= 0 ? 20 : lineHeight;
         const calculatedMaxHeight = validLineHeight * maxLines;
@@ -78,18 +76,11 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
   return (
     <>
-      <span
-        ref={textRef}
-        className="overflow-hidden block"
-        style={{ maxHeight }}
-      >
+      <span ref={textRef} className="overflow-hidden block" style={{ maxHeight }}>
         {children}
       </span>
       {overflow && (
-        <span
-          onClick={handleShowMore}
-          className="hover:underline text-blue-500 block"
-        >
+        <span onClick={handleShowMore} className="hover:underline text-blue-500 block">
           {expandButtonText}
         </span>
       )}

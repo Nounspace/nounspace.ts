@@ -5,6 +5,7 @@ import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
 import { FaCircleExclamation, FaHeart } from "react-icons/fa6";
 import { Notification, NotificationTypeEnum, User } from "@neynar/nodejs-sdk/build/api";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { Alert, AlertDescription } from "@/common/components/atoms/alert";
 import { CastAvatar, CastBody, PriorityLink } from "@/fidgets/farcaster/components/CastRow";
 import Loading from "@/common/components/molecules/Loading";
@@ -17,6 +18,15 @@ import {
 import moment from "moment";
 import useDelayedValueChange from "@/common/lib/hooks/useDelayedValueChange";
 import { useRouter } from "next/navigation";
+
+const TAB_OPTIONS = {
+  ALL: "all",
+  MENTIONS: NotificationTypeEnum.Mention,
+  FOLLOWS: NotificationTypeEnum.Follows,
+  RECASTS: NotificationTypeEnum.Recasts,
+  REPLIES: NotificationTypeEnum.Reply,
+  LIKES: NotificationTypeEnum.Likes,
+};
 
 export type NotificationRowProps = React.FC<{
   notification: Notification;
@@ -244,6 +254,7 @@ export default function NotificationsPage() {
 }
 
 function NotificationsPageContent() {
+  const [tab, setTab] = useState<string>(TAB_OPTIONS.ALL);
   const fid = useCurrentFid();
   const identityPublicKey = useCurrentSpaceIdentityPublicKey();
   const { data, error, fetchNextPage, hasNextPage, isFetching } = useNotifications(fid);
@@ -262,11 +273,33 @@ function NotificationsPageContent() {
 
   const router = useRouter();
 
+  const onTabChange = useCallback((value: string) => {
+    setTab(value);
+  }, []);
+
   const onSelectNotification = useCallback(
     (hash: string, username: string) => {
       router.push(`/homebase/c/${username}/${hash}`);
     },
     [router]
+  );
+
+  const filterByType = useCallback(
+    (_notifications: Notification[]): Notification[] => {
+      if (tab === TAB_OPTIONS.ALL) {
+        return _notifications;
+      }
+
+      if (tab === TAB_OPTIONS.RECASTS) {
+        return _notifications.filter(
+          (notification) =>
+            notification.type === NotificationTypeEnum.Recasts || notification.type === NotificationTypeEnum.Quote
+        );
+      }
+
+      return _notifications.filter((notification) => notification.type === tab);
+    },
+    [tab]
   );
 
   const lastSeenNotificationDate = useMemo<moment.Moment | null | undefined>(() => {
@@ -283,11 +316,12 @@ function NotificationsPageContent() {
   }, [data]);
 
   const shouldUpdateNotificationsCursor: boolean = useMemo(() => {
+    if (tab !== TAB_OPTIONS.ALL) return false;
     if (!mostRecentNotificationTimestamp) return false;
     if (!lastSeenNotificationDate) return true;
 
     return moment.utc(mostRecentNotificationTimestamp).isAfter(lastSeenNotificationDate);
-  }, [mostRecentNotificationTimestamp, lastSeenNotificationDate]);
+  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate]);
 
   const updateNotificationsCursor = useCallback(() => {
     if (shouldUpdateNotificationsCursor && mostRecentNotificationTimestamp) {
@@ -318,50 +352,64 @@ function NotificationsPageContent() {
 
   return (
     <div className="w-full min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="px-4 py-4 border-b border-border/40 bg-background sticky top-0 z-10">
-          <h1 className="text-xl font-semibold text-foreground">Notifications</h1>
-        </div>
-
-        {/* Notifications List */}
-        <div className="relative">
-          <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Loading...</div>}>
-            {data?.pages?.map((page, pageIndex) => (
-              <React.Fragment key={pageIndex}>
-                {(page?.notifications ?? []).map((notification, pageItemIndex) => {
-                  const isUnseen = isNotificationUnseen(notification, delayedLastSeenNotificationDate);
-                  return (
-                    <NotificationRow
-                      notification={notification}
-                      onSelect={onSelectNotification}
-                      isUnseen={isUnseen}
-                      key={`${pageIndex}-${pageItemIndex}`}
-                    />
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </Suspense>
-        </div>
-
-        {error && (
-          <div className="p-4">
-            <ErrorPanel message={error.message} />
+      <Tabs value={tab} onValueChange={onTabChange} className="min-h-full">
+        <div className="max-w-2xl mx-auto">
+          {/* Header */}
+          <div className="px-4 py-4 border-b border-border/40 bg-background sticky top-0 z-10">
+            <h1 className="text-xl font-semibold text-foreground mb-4">Notifications</h1>
+            <div className="overflow-x-auto pb-2 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
+              <TabsList className="grid min-w-[600px] md:min-w-fit w-full grid-cols-6 max-w-2xl bg-muted">
+                <TabsTrigger value={TAB_OPTIONS.ALL} className="data-[state=active]:bg-background data-[state=active]:text-foreground">All</TabsTrigger>
+                <TabsTrigger value={TAB_OPTIONS.MENTIONS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Mentions</TabsTrigger>
+                <TabsTrigger value={TAB_OPTIONS.FOLLOWS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Follows</TabsTrigger>
+                <TabsTrigger value={TAB_OPTIONS.RECASTS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Recasts</TabsTrigger>
+                <TabsTrigger value={TAB_OPTIONS.REPLIES} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Replies</TabsTrigger>
+                <TabsTrigger value={TAB_OPTIONS.LIKES} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Likes</TabsTrigger>
+              </TabsList>
+            </div>
           </div>
-        )}
 
-        {!error && (
-          <div ref={ref} className="h-[100px] flex items-center justify-center">
-            {isFetching && (
-              <div className="h-full w-full flex flex-col justify-center items-center">
-                <Loading />
+          <TabsContent value={tab} className="mt-0">
+            {/* Notifications List */}
+            <div className="relative">
+              <Suspense fallback={<div className="p-4 text-center text-muted-foreground">Loading...</div>}>
+                {data?.pages?.map((page, pageIndex) => (
+                  <React.Fragment key={pageIndex}>
+                    {filterByType(page?.notifications ?? []).map((notification, pageItemIndex) => {
+                      const isUnseen = isNotificationUnseen(notification, delayedLastSeenNotificationDate);
+                      return (
+                        <NotificationRow
+                          notification={notification}
+                          onSelect={onSelectNotification}
+                          isUnseen={isUnseen}
+                          key={`${pageIndex}-${pageItemIndex}`}
+                        />
+                      );
+                    })}
+                  </React.Fragment>
+                ))}
+              </Suspense>
+            </div>
+
+            {error && (
+              <div className="p-4">
+                <ErrorPanel message={error.message} />
               </div>
             )}
-            {!isFetching && !hasNextPage && <p className="text-muted-foreground text-sm">No more notifications</p>}
-          </div>
-        )}
-      </div>
+
+            {!error && (
+              <div ref={ref} className="h-[100px] flex items-center justify-center">
+                {isFetching && (
+                  <div className="h-full w-full flex flex-col justify-center items-center">
+                    <Loading />
+                  </div>
+                )}
+                {!isFetching && !hasNextPage && <p className="text-muted-foreground text-sm">No more notifications</p>}
+              </div>
+            )}
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 }

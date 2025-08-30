@@ -490,34 +490,26 @@ interface CastBodyProps {
 }
 
 // Safe text expansion component with character-based truncation
-const SafeExpandableText: React.FC<{ 
-  children: string; 
-  maxLines?: number | null; 
+const SafeExpandableText: React.FC<{
+  children: string;
+  maxLines?: number | null;
   style?: React.CSSProperties;
 }> = ({ children, maxLines, style }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // If no maxLines specified, render without truncation
   if (!maxLines || maxLines <= 0) {
-    return (
-      <EnhancedLinkify style={style}>
-        {children}
-      </EnhancedLinkify>
-    );
+    return <EnhancedLinkify style={style}>{children}</EnhancedLinkify>;
   }
-  
+
   // Character-based truncation (more reliable than height calculations)
   const maxChars = maxLines * 80; // Approximate 80 characters per line
   const shouldTruncate = children.length > maxChars;
-  const displayText = isExpanded || !shouldTruncate 
-    ? children 
-    : children.slice(0, maxChars) + '...';
-  
+  const displayText = isExpanded || !shouldTruncate ? children : children.slice(0, maxChars) + "...";
+
   return (
     <div style={style}>
-      <EnhancedLinkify style={style}>
-        {displayText}
-      </EnhancedLinkify>
+      <EnhancedLinkify style={style}>{displayText}</EnhancedLinkify>
       {shouldTruncate && !isExpanded && (
         <button
           onClick={(e) => {
@@ -541,73 +533,71 @@ const EnhancedLinkify: React.FC<{ children: string; style?: React.CSSProperties 
     const mentionRegex = /(@[a-zA-Z0-9_.-]+)/g;
     const channelRegex = /(\/[a-zA-Z0-9_-]+)(?=\s|$)/g;
     const hashtagRegex = /(#[a-zA-Z0-9_-]+)/g;
-    
+
     // Efficient text splitting that preserves special tokens
     const combinedRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+|@[a-zA-Z0-9_.-]+|\/[a-zA-Z0-9_-]+(?=\s|$)|#[a-zA-Z0-9_-]+)/g;
     const parts = text.split(combinedRegex);
-    
-    return parts.map((part, index) => {
-      if (!part) return null;
-      
-      // URL links
-      if (urlRegex.test(part)) {
-        return (
-          <a
-            key={index}
-            href={part}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline cursor-pointer break-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {part}
-          </a>
-        );
-      }
-      
-      // User mentions
-      if (mentionRegex.test(part)) {
-        const username = part.slice(1);
-        return (
-          <a
-            key={index}
-            href={`/s/${username}`}
-            className="text-blue-500 hover:underline cursor-pointer font-medium"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {part}
-          </a>
-        );
-      }
-      
-      // Channel references
-      if (channelRegex.test(part) && part.length > 1) {
-        return (
-          <span
-            key={index}
-            className="text-blue-500 hover:underline cursor-pointer font-medium"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {part}
-          </span>
-        );
-      }
-      
-      // Hashtags
-      if (hashtagRegex.test(part)) {
-        return (
-          <span
-            key={index}
-            className="font-medium text-slate-700"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {part}
-          </span>
-        );
-      }
-      
-      return part;
-    }).filter(Boolean);
+
+    return parts
+      .map((part, index) => {
+        if (!part) return null;
+
+        // URL links
+        if (urlRegex.test(part)) {
+          return (
+            <a
+              key={index}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:underline cursor-pointer break-all"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </a>
+          );
+        }
+
+        // User mentions
+        if (mentionRegex.test(part)) {
+          const username = part.slice(1);
+          return (
+            <a
+              key={index}
+              href={`/s/${username}`}
+              className="text-blue-500 hover:underline cursor-pointer font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </a>
+          );
+        }
+
+        // Channel references
+        if (channelRegex.test(part) && part.length > 1) {
+          return (
+            <span
+              key={index}
+              className="text-blue-500 hover:underline cursor-pointer font-medium"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </span>
+          );
+        }
+
+        // Hashtags
+        if (hashtagRegex.test(part)) {
+          return (
+            <span key={index} className="font-medium text-slate-700" onClick={(e) => e.stopPropagation()}>
+              {part}
+            </span>
+          );
+        }
+
+        return part;
+      })
+      .filter(Boolean);
   };
 
   return <span style={style}>{linkifyText(children)}</span>;
@@ -640,15 +630,12 @@ const CastBodyComponent = ({
     <div className="flex flex-col grow">
       {cast.text && (
         <div className={isDetailView ? "text-lg leading-[1.4]" : "text-base leading-[1.4]"}>
-          <SafeExpandableText 
-            maxLines={maxLines || (isDetailView ? null : 10)}
-            style={castTextStyle}
-          >
+          <SafeExpandableText maxLines={maxLines || (isDetailView ? null : 10)} style={castTextStyle}>
             {cast.text}
           </SafeExpandableText>
         </div>
       )}
-      
+
       {!isEmbed && !hideEmbeds && <CastEmbeds cast={cast} onSelectCast={handleSelectCast} />}
       {!hideReactions && <CastReactions cast={cast} />}
     </div>
