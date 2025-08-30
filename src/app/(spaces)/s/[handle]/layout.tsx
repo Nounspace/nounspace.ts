@@ -13,7 +13,8 @@ const defaultMetadata = {
 };
 
 export async function generateMetadata({ params }): Promise<Metadata> {
-  const { handle, tabName: tabNameParam } = params;
+  const resolvedParams = await params;
+  const { handle, tabName: tabNameParam } = resolvedParams;
   
   if (!handle) {
     return defaultMetadata; // Return default metadata if no handle
