@@ -144,7 +144,8 @@ const Navigation = React.memo(
       if (!openInNewTab && href && href.startsWith("/")) {
         e.preventDefault();
         router.push(href);
-        Promise.resolve().then(() => {
+        // Execute callbacks after navigation
+        React.startTransition(() => {
           onClick?.();
           onNavigate?.();
         });

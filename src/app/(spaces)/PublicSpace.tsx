@@ -550,7 +550,7 @@ export default function PublicSpace({
     saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
   }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
 
-  // Common tab management
+  // Tab switching function with proper memoization
   const switchTabTo = useCallback(async (tabName: string, shouldSave: boolean = true) => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
@@ -604,16 +604,31 @@ export default function PublicSpace({
     }
     // Clear flag on unmount
     return () => { isMounted = false; };
-  }, [getCurrentSpaceId, getCurrentTabName, getSpacePageUrl, router, 
-    saveLocalSpaceTab, commitSpaceTab, tokenData?.network, localSpaces, loadSpaceTab, currentUserFid, config]);
+  }, [
+    getCurrentSpaceId,
+    getCurrentTabName,
+    getSpacePageUrl,
+    router,
+    saveLocalSpaceTab,
+    commitSpaceTab,
+    tokenData?.network,
+    localSpaces,
+    loadSpaceTab,
+    currentUserFid,
+    config,
+    setCurrentTabName,
+    setLoading
+  ]);
 
-  // Debounced function for tab navigation
-  const debouncedSwitchTabTo = useMemo(() =>
-    debounce((tabName: string, shouldSave: boolean = true) => {
+  // Debounce tab switching to prevent rapid clicks
+  const debouncedSwitchTabTo = useMemo(
+    () => debounce((tabName: string, shouldSave: boolean = true) => {
       switchTabTo(tabName, shouldSave);
-    }, 150), [switchTabTo]
+    }, 150),
+    [switchTabTo]
   );
 
+  // Cleanup debounced function on unmount
   useEffect(() => {
     return () => debouncedSwitchTabTo.cancel();
   }, [debouncedSwitchTabTo]);

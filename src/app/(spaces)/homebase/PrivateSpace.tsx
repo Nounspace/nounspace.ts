@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useCallback, lazy } from "react";
+import React, { useEffect, useMemo, useCallback, lazy, useTransition } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -16,6 +16,8 @@ const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
 function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
+  const [_isPending, startTransition] = useTransition();
+  
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -89,20 +91,22 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     }
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
-  // Executes loading in background, does not block render
+  // Load tab config without blocking the initial render
   function loadTabConfigAsync() {
-    Promise.resolve().then(async () => {
-      await loadTabNames();
-      if (tabOrdering.local.length === 0) {
-        await loadTabOrder();
-      }
-      if (tabName === "Feed") {
-        await loadFeedConfig();
-      } else {
-        await loadTab(tabName);
-      }
-      // Preload other tabs in background
-      void loadRemainingTabs();
+    startTransition(() => {
+      Promise.resolve().then(async () => {
+        await loadTabNames();
+        if (tabOrdering.local.length === 0) {
+          await loadTabOrder();
+        }
+        if (tabName === "Feed") {
+          await loadFeedConfig();
+        } else {
+          await loadTab(tabName);
+        }
+        // Load remaining tabs
+        void loadRemainingTabs();
+      });
     });
   }
 
@@ -125,9 +129,9 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     } else {
       router.push(`/homebase/${newTabName}`);
     }
-    // Commit in background
+    // Save config changes in background
     if (shouldSave) {
-      Promise.resolve().then(() => {
+      startTransition(() => {
         commitConfigHandler();
       });
     }
