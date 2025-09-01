@@ -94,9 +94,11 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   // Load tab config without blocking the initial render
   function loadTabConfigAsync() {
     startTransition(() => {
-      Promise.resolve().then(async () => {
+      (async () => {
         await loadTabNames();
-        if (tabOrdering.local.length === 0) {
+        // Re-read current ordering to avoid stale state
+        const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
+        if (freshTabOrdering.local.length === 0) {
           await loadTabOrder();
         }
         if (tabName === "Feed") {
@@ -106,13 +108,15 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
         }
         // Load remaining tabs
         void loadRemainingTabs();
-      });
+      })().catch(() => {});
     });
   }
 
   // Preload all tabs except the current one
   async function loadRemainingTabs() {
-    const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
+    // Get fresh state to avoid stale reads
+    const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
+    const otherTabs = freshTabOrdering.local.filter((name) => name !== tabName);
     await Promise.all(
       otherTabs.map((name) =>
         name === "Feed" ? loadFeedConfig() : loadTab(name),

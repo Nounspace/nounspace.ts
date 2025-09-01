@@ -136,12 +136,16 @@ const Navigation = React.memo(
     openInNewTab = false,
     badgeText = null,
   }) => {
-    const handleClick = useCallback((e: React.MouseEvent) => {
+    const handleClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
       if (disable) {
         e.preventDefault();
         return;
       }
-      if (!openInNewTab && href && href.startsWith("/")) {
+      
+      const isPrimary = e.button === 0;
+      const hasMod = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
+      
+      if (!openInNewTab && href && href.startsWith("/") && isPrimary && !hasMod) {
         e.preventDefault();
         router.push(href);
         // Execute callbacks after navigation
