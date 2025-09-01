@@ -60,7 +60,7 @@ const useFollowStatus = (channel: string, viewerFid?: number) => {
 const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
-  const { fid, signer } = useFarcasterSigner("channel");
+  const { fid } = useFarcasterSigner("channel");
   const viewerFid = fid > 0 ? fid : undefined;
 
   const queryClient = useQueryClient();
@@ -80,13 +80,12 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   const handleToggle = async () => {
     if (!getIsAccountReady()) { setModalOpen(true); return; }
     if (!viewerFid) { console.error("Missing viewerFid"); return; }
-    if (!signer) { console.error("Missing signer"); return; }
 
     setFollowing((p) => !p); // optimistic
 
     const ok = following
-      ? await unfollowChannel(channel, viewerFid, signer)
-      : await followChannel(channel, viewerFid, signer);
+      ? await unfollowChannel(channel, viewerFid)
+      : await followChannel(channel, viewerFid);
 
     if (!ok) {
       setFollowing((p) => !p); // revert on failure
