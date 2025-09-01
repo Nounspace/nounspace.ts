@@ -76,6 +76,9 @@ function TabBar({
 
   const [isOperating, setIsOperating] = React.useState(false);
 
+  /// State to control post-delete navigation
+  const [pendingTabSwitch, setPendingTabSwitch] = React.useState<string | null>(null);
+
   // Debounced functions
   const debouncedCreateTab = React.useCallback(
     debounce(async (tabName: string) => {
@@ -185,9 +188,8 @@ function TabBar({
   async function handleDeleteTab(tabName: string) {
     if (isOperating) return;
     try {
-      // Simple and safe delete function
       if (!isEditableTab(tabName)) {
-    toast.error("Cannot delete this tab.");
+        toast.error("Cannot delete this tab.");
         return;
       }
       if (!safeTabList || safeTabList.length <= 1) {
@@ -195,16 +197,22 @@ function TabBar({
         return;
       }
       const nextTab = nextClosestTab(tabName);
-      // Switch to next tab first
-      switchTabTo(nextTab);
-      // Delete the tab
       await Promise.resolve(deleteTab(tabName));
+      setPendingTabSwitch(nextTab); // just mark to switch later
       toast.success("Tab deleted successfully!");
     } catch (error) {
       console.error("Error deleting tab:", error);
       toast.error("Error deleting tab. Please try again.");
     }
   }
+
+  // Effect to navigate only when the deleted tab disappears from the tabList
+  React.useEffect(() => {
+    if (pendingTabSwitch && !tabList.includes(pendingTabSwitch)) {
+      switchTabTo(pendingTabSwitch);
+      setPendingTabSwitch(null);
+    }
+  }, [tabList, pendingTabSwitch, switchTabTo]);
 
   async function handleRenameTab(tabName: string, newName: string) {
     if (isOperating) return;
