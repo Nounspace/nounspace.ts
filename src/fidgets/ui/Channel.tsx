@@ -84,8 +84,8 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
     setFollowing((p) => !p); // optimistic
 
     const ok = following
-      ? await unfollowChannel(channel, viewerFid)
-      : await followChannel(channel, viewerFid);
+      ? await unfollowChannel(channel)
+      : await followChannel(channel);
 
     if (!ok) {
       setFollowing((p) => !p); // revert on failure

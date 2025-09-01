@@ -449,14 +449,12 @@ export async function fetchChannelsByName(
   }
 }
 
-export const followChannel = async (
-  channelId: string,
-  fid: number,
-) => {
+export const followChannel = async (channelId: string) => {
   try {
+    const appFid = Number(process.env.NEXT_PUBLIC_APP_FID);
     await axiosBackend.post("/api/farcaster/channel-follow", {
       channelId,
-      fid,
+      fid: appFid,
       useServerAuth: true,
     });
     return true;
@@ -466,13 +464,11 @@ export const followChannel = async (
   }
 };
 
-export const unfollowChannel = async (
-  channelId: string,
-  fid: number,
-) => {
+export const unfollowChannel = async (channelId: string) => {
   try {
+    const appFid = Number(process.env.NEXT_PUBLIC_APP_FID);
     await axiosBackend.delete("/api/farcaster/channel-follow", {
-      data: { channelId, fid, useServerAuth: true },
+      data: { channelId, fid: appFid, useServerAuth: true },
     });
     return true;
   } catch (e) {
