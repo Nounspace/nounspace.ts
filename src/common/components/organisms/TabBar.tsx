@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { FaPlus, FaPaintbrush } from "react-icons/fa6";
-import { map } from "lodash";
+import { debounce, map } from "lodash";
 import { Reorder } from "framer-motion";
 import { Tab } from "../atoms/reorderable-tab";
 import { Address } from "viem";
@@ -13,6 +13,7 @@ import useIsMobile from "@/common/lib/hooks/useIsMobile";
 import { SpacePageType } from "@/app/(spaces)/PublicSpace";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
+import { toast } from "sonner";
 
 interface TabBarProps {
   inHome?: boolean;
@@ -73,6 +74,45 @@ function TabBar({
     getIsInitializing: state.getIsInitializing,
   }));
 
+  const [isOperating, setIsOperating] = React.useState(false);
+
+  // Debounced functions
+  const debouncedCreateTab = React.useCallback(
+    debounce(async (tabName: string) => {
+      setIsOperating(true);
+      try {
+        await handleCreateTab(tabName);
+      } finally {
+        setIsOperating(false);
+      }
+    }, 500),
+    [tabList]
+  );
+
+  const debouncedDeleteTab = React.useCallback(
+    debounce(async (tabName: string) => {
+      setIsOperating(true);
+      try {
+        await handleDeleteTab(tabName);
+      } finally {
+        setIsOperating(false);
+      }
+    }, 500),
+    []
+  );
+
+  const debouncedRenameTab = React.useCallback(
+    debounce(async (tabName: string, newName: string) => {
+      setIsOperating(true);
+      try {
+        await handleRenameTab(tabName, newName);
+      } finally {
+        setIsOperating(false);
+      }
+    }, 500),
+    []
+  );
+
   function generateNewTabName(): string {
     const endIndex = tabList.length + 1;
     const base = `Tab ${endIndex}`;
@@ -104,6 +144,8 @@ function TabBar({
   }
 
   async function handleCreateTab(tabName: string) {
+    if (isOperating) return;
+
     try {
       // Basic validation
       const validationError = validateTabName(tabName);
@@ -137,26 +179,36 @@ function TabBar({
     }
   }
 
+  // Utility function to ensure valid array
+  const safeTabList = Array.isArray(tabList) ? tabList : ["Profile"];
+
   async function handleDeleteTab(tabName: string) {
-    // Simple and safe delete function
-    if (!isEditableTab(tabName)) {
-      return;
+    if (isOperating) return;
+    try {
+      // Simple and safe delete function
+      if (!isEditableTab(tabName)) {
+    toast.error("Cannot delete this tab.");
+        return;
+      }
+      if (!safeTabList || safeTabList.length <= 1) {
+        toast.error("You must have at least one tab.");
+        return;
+      }
+      const nextTab = nextClosestTab(tabName);
+      // Switch to next tab first
+      switchTabTo(nextTab);
+      // Delete the tab
+      await Promise.resolve(deleteTab(tabName));
+      toast.success("Tab deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting tab:", error);
+      toast.error("Error deleting tab. Please try again.");
     }
-
-    if (tabList.length <= 1) {
-      return;
-    }
-
-    const nextTab = nextClosestTab(tabName);
-    
-    // Switch to next tab first
-    switchTabTo(nextTab);
-    
-    // Delete the tab
-    deleteTab(tabName);
   }
 
   async function handleRenameTab(tabName: string, newName: string) {
+    if (isOperating) return;
+
     try {
       // Basic validation
       if (!newName || typeof newName !== 'string') {
@@ -254,7 +306,15 @@ function TabBar({
               <Reorder.Group
                 as="ol"
                 axis="x"
-                onReorder={updateTabOrder}
+                onReorder={debounce((newOrder) => {
+                  if (isOperating) return;
+                  setIsOperating(true);
+                  updateTabOrder(newOrder);
+                  setTimeout(() => {
+                    commitTabOrder();
+                    setIsOperating(false);
+                  }, 100);
+                }, 500)}
                 className="flex flex-nowrap gap-5 md:gap-4 items-start ml-2 my-4 mr-4 tabs"
                 values={tabList}
               >
@@ -271,8 +331,8 @@ function TabBar({
                       removeable={isEditableTab(tabName)}
                       draggable={inEditMode}
                       renameable={isEditableTab(tabName)}
-                      onRemove={() => handleDeleteTab(tabName)}
-                      renameTab={handleRenameTab}
+                      onRemove={() => debouncedDeleteTab(tabName)}
+                      renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
                     />
                   )
                 )}
@@ -294,7 +354,8 @@ function TabBar({
               )}
               {(inEditMode) && (
                 <Button
-                  onClick={() => handleCreateTab(generateNewTabName())}
+                  onClick={() => debouncedCreateTab(generateNewTabName())}
+                  disabled={isOperating}
                   className="flex items-center rounded-xl p-2 bg-[#F3F4F6] hover:bg-sky-100 text-[#1C64F2] font-semibold shadow-md"
                 >
                   <FaPlus />
@@ -308,6 +369,16 @@ function TabBar({
           <ClaimButtonWithModal contractAddress={contractAddress} />
         )}
       </div>
+     {/* Visual operation feedback as a tooltip */}
+      {isOperating && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <TooltipProvider>
+            <div className="bg-blue-100 border border-blue-300 rounded-lg px-4 py-2 shadow-lg flex items-center">
+              <span className="text-blue-600 font-bold">Processing operation...</span>
+            </div>
+          </TooltipProvider>
+        </div>
+      )}
     </TooltipProvider>
   );
 }

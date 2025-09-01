@@ -44,7 +44,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   saveTheme,
   selectedFidgetID,
   currentFidgetSettings,
-  fidgetTrayContents,
+  fidgetTrayContents = [], // fallback to empty array
   saveTrayContents,
   fidgetInstanceDatums,
   saveFidgetInstanceDatums,
@@ -56,9 +56,7 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
   getCurrentSpaceContext,
   onApplySpaceConfig,
 }) => {
-
-
-
+  const safeFidgetTrayContents = Array.isArray(fidgetTrayContents) ? fidgetTrayContents : [];
 
   return (
     <aside
@@ -88,13 +86,13 @@ export const EditorPanel: React.FC<EditorPanelProps> = ({
       <div 
         className={`
           transition-all duration-300 ease-in-out overflow-hidden
-          ${fidgetTrayContents.length > 0 ? 'w-24 opacity-100' : 'w-0 opacity-0'}
+          ${safeFidgetTrayContents.length > 0 ? 'w-24 opacity-100' : 'w-0 opacity-0'}
         `}
       >
         <FidgetTray
           setCurrentlyDragging={setCurrentlyDragging}
           setExternalDraggedItem={setExternalDraggedItem}
-          contents={fidgetTrayContents}
+          contents={safeFidgetTrayContents}
           openFidgetPicker={openFidgetPicker}
           saveTrayContents={saveTrayContents}
           removeFidget={removeFidget}
