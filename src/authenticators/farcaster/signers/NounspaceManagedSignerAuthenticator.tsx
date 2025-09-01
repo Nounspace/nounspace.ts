@@ -23,7 +23,6 @@ import {
 } from "@/pages/api/signerRequests";
 import QRCode from "@/common/components/atoms/qr-code";
 import { SignatureScheme } from "@farcaster/core";
-import { FaRegCopy } from "react-icons/fa6";
 import { FaRedo } from "react-icons/fa";
 import TextInput from "@/common/components/molecules/TextInput";
 
@@ -301,17 +300,18 @@ const initializer: AuthenticatorInitializer<
           <div className="flex flex-col text-center mt-4">
             <center>
               <Button
-                withIcon
                 variant="outline"
                 size="sm"
                 className="border-gray-500 text-black bg-gray-200 border-none hover:bg-gray-300 hover:text-black rounded-full"
                 style={{ width: "150px" }}
-                onClick={() => {
-                  navigator.clipboard.writeText(warpcastSignerUrl);
-                }}
+                asChild
               >
-                <FaRegCopy size={18} color="grey.500" />
-                <p className="font-bold text-lg text-gray-500">Copy URL</p>
+                <a
+                  href={data.signerUrl ?? ""}
+                  className="font-bold text-lg text-gray-500"
+                >
+                  On Mobile? Tap here
+                </a>
               </Button>
             </center>
             <Button
