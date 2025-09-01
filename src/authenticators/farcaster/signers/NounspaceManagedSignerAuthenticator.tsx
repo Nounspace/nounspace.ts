@@ -108,7 +108,12 @@ const methods: FarcasterSignerAuthenticatorMethods<NounspaceDeveloperManagedSign
     getSignerPublicKey: (data) => {
       return async () => {
         isDataInitialized(data, true);
-        return hexToBytes(stripKeyOhEx(data.publicKeyHex!));
+        // Derive the public key from the stored private key to ensure we
+        // return the full 32-byte value. Some stored public keys may lose
+        // leading or trailing zeros when serialized, resulting in an invalid
+        // 31-byte key and causing token verification to fail.
+        const privKey = hexToBytes(stripKeyOhEx(data.privateKeyHex!));
+        return ed25519.getPublicKey(privKey);
       };
     },
     getSignerStatus: (data) => {
