@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { Button } from "@/common/components/atoms/button";
+import React, { useMemo } from "react";
 import TextInput from "@/common/components/molecules/TextInput";
 import { FidgetArgs, FidgetModule, FidgetProperties } from "@/common/fidgets";
 import axiosBackend from "@/common/data/api/backend";
@@ -45,9 +44,6 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
   settings: { channel },
 }) => {
   const { data } = useChannelInfo(channel);
-  const [following, setFollowing] = useState(false);
-
-  const handleToggle = () => setFollowing((p) => !p);
 
   const displayName = useMemo(
     () => data?.name || channel,
@@ -68,13 +64,6 @@ const Channel: React.FC<FidgetArgs<ChannelFidgetSettings>> = ({
           <span className="text-xl">{displayName}</span>
           <small className="text-slate-500">/{data.id}</small>
         </div>
-        <Button
-          className="ml-auto px-3 py-1 text-sm"
-          variant={following ? "secondary" : "primary"}
-          onClick={handleToggle}
-        >
-          {following ? "Unfollow" : "Follow"}
-        </Button>
       </div>
       {data.description && (
         <p className="text-sm mb-3">{data.description}</p>
