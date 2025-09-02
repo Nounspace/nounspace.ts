@@ -23,11 +23,16 @@ const VideoEmbed = ({ url }: { url: string }) => {
     (e: React.MouseEvent) => {
       e.preventDefault();
 
+      if (!playerRef.current) return;
+
       if (didUnmute) {
         togglePlay();
       } else {
+        // Unmute and immediately begin playback so a single click starts the video
+        playerRef.current.muted = false;
         setMuted(false);
         setDidUnmute(true);
+        playerRef.current.play();
       }
     },
     [didUnmute, togglePlay],
