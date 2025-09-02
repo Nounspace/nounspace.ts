@@ -13,11 +13,24 @@ import axiosBackend from "../api/backend";
 export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
   return useQuery({
     queryKey: ["user", fid, viewerFid],
+    initialData: () => {
+      if (typeof window !== "undefined") {
+        try {
+          const cached = sessionStorage.getItem(`farcaster-user-${fid}`);
+          if (cached) {
+            return JSON.parse(cached) as BulkUsersResponse;
+          }
+        } catch {
+          /* noop */
+        }
+      }
+      return { users: [] } as BulkUsersResponse;
+    },
     // We increased staleTime to avoid unnecessary requests
-    staleTime: 1000 * 60 * 5, 
+    staleTime: 1000 * 60 * 5,
     // Avoid reloading data when the window is focused
     refetchOnWindowFocus: false,
-   // Limit retry attempts to avoid excessive calls
+    // Limit retry attempts to avoid excessive calls
     retry: 1,
     queryFn: async () => {
       if (fid === -1) {
@@ -35,6 +48,15 @@ export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
         },
       );
       return data;
+    },
+    onSuccess: (data) => {
+      if (typeof window !== "undefined") {
+        try {
+          sessionStorage.setItem(`farcaster-user-${fid}`, JSON.stringify(data));
+        } catch {
+          /* noop */
+        }
+      }
     },
   });
 };

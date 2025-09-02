@@ -233,9 +233,7 @@ export default function Space({
         <div className="z-10 bg-white md:h-40">{profile}</div>
       ) : null}
 
-      <div className="relative">
-        <Suspense fallback={<TabBarSkeleton />}>{tabBar}</Suspense>
-      </div>
+      <div className="relative">{tabBar ?? <TabBarSkeleton />}</div>
 
       <div className={isMobile ? "size-full" : "flex h-full"}>
         {/* Feed section */}
