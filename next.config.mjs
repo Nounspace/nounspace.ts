@@ -20,7 +20,7 @@ const cspHeader = `
     frame-ancestors 'self';
     frame-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://*;
     child-src 'self' https://auth.privy.nounspace.com https://verify.walletconnect.com https://verify.walletconnect.org https://www.youtube.com https://*;
-    connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://auth.privy.nounspace.com https://privy.nounspace.com/api/v1/analytics_events wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems;
+    connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://auth.privy.nounspace.com https://privy.nounspace.com https://privy.nounspace.com/api/v1/analytics_events https://privy.nounspace.com/api/v1/siwe/init wss://relay.walletconnect.com wss://relay.walletconnect.org https://explorer-api.walletconnect.com wss://www.walletlink.org https://*.rpc.privy.systems https://auth.privy.io https://auth.privy.io/api/v1/apps/clw9qpfkl01nnpox6rcsb5wy3 https://auth.privy.io/api/v1/analytics_events https://cdn.segment.com https://api.segment.io https://api.imgbb.com https://api.goldsky.com https://base-mainnet.g.alchemy.com https://cca-lite.coinbase.com;
     upgrade-insecure-requests;
 `;
 
