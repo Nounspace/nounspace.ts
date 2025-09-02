@@ -47,9 +47,6 @@ export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
           },
         },
       );
-      return data;
-    },
-    onSuccess: (data) => {
       if (typeof window !== "undefined") {
         try {
           sessionStorage.setItem(`farcaster-user-${fid}`, JSON.stringify(data));
@@ -57,6 +54,7 @@ export const useLoadFarcasterUser = (fid: number, viewerFid?: number) => {
           /* noop */
         }
       }
+      return data;
     },
   });
 };
