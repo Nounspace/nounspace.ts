@@ -12,11 +12,15 @@ function guessContentType(urlPath, upstreamCT) {
   if (q.endsWith('.json')) return 'application/json; charset=utf-8';
   if (q.endsWith('.svg')) return 'image/svg+xml';
   if (q.endsWith('.png')) return 'image/png';
+  if (q.endsWith('.gif')) return 'image/gif';
   if (q.endsWith('.jpg') || q.endsWith('.jpeg')) return 'image/jpeg';
   if (q.endsWith('.webp')) return 'image/webp';
   if (q.endsWith('.woff2')) return 'font/woff2';
   if (q.endsWith('.woff')) return 'font/woff';
   if (q.endsWith('.ttf')) return 'font/ttf';
+  if (q.endsWith('.ico')) return 'image/x-icon';
+  if (q.endsWith('.wasm')) return 'application/wasm';
+  if (q.endsWith('.map')) return 'application/json';
   return upstreamCT || 'application/octet-stream';
 }
 
@@ -32,6 +36,48 @@ function pipeRawBody(resp, res, contentType) {
   stream.pipe(res);
   res.on('finish', () => console.log('[proxy] response finished'));
   res.on('close', () => console.log('[proxy] response closed'));
+}
+
+async function handleNextImage(targetUrl, fetchHeaders, res) {
+  const u = new URL(targetUrl);
+  if (u.pathname !== '/_next/image') return false;
+
+  const paramUrl = u.searchParams.get('url');
+  if (!paramUrl) return false;
+
+  const imgHeaders = {
+    ...fetchHeaders,
+    accept: 'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5',
+  };
+
+  try {
+    const r1 = await fetch(targetUrl, {
+      method: 'GET',
+      headers: imgHeaders,
+      redirect: 'follow',
+    });
+    const ct1 = r1.headers.get('content-type') || '';
+    if (r1.ok && /^image\//i.test(ct1)) {
+      pipeRawBody(r1, res, ct1);
+      return true;
+    }
+    } catch { /* empty */ }
+
+  try {
+    const baseAbs = `${u.protocol}//${u.host}`;
+    const direct = new URL(paramUrl, baseAbs).toString();
+    const r2 = await fetch(direct, {
+      method: 'GET',
+      headers: imgHeaders,
+      redirect: 'follow',
+    });
+    const rawCt2 = r2.headers.get('content-type') || '';
+    const ct2 = guessContentType(direct, rawCt2);
+    pipeRawBody(r2, res, ct2);
+    return true;
+    } catch { /* empty */ }
+
+  return false;
 }
 
 function extractParentFromReferer(req) {
@@ -181,6 +227,16 @@ export default async function handler(req, res) {
     ['sec-fetch-site', 'sec-fetch-mode', 'sec-fetch-dest'].forEach((h) =>
       delete fetchHeaders[h]
     );
+    fetchHeaders['x-forwarded-proto'] = base.protocol.replace(':', '');
+    fetchHeaders['x-forwarded-host'] = base.host;
+    fetchHeaders['x-forwarded-for'] =
+      req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '';
+
+    const pathLower = base.pathname.toLowerCase();
+    if (/\.(avif|webp|png|jpe?g|gif|svg|ico)$/.test(pathLower)) {
+      fetchHeaders.accept =
+        'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5';
+    }
 
     const cookiePrefix = `__PXY_${base.protocol.replace(':', '')}_${base.host}__`;
     const mapIncomingCookies = (raw) => {
@@ -215,6 +271,8 @@ export default async function handler(req, res) {
     if (req.headers.cookie) {
       fetchHeaders.cookie = mapIncomingCookies(req.headers.cookie);
     }
+
+    if (await handleNextImage(targetUrl, fetchHeaders, res)) return;
 
     const response = await fetch(targetUrl, {
       method: req.method,
@@ -270,6 +328,7 @@ export default async function handler(req, res) {
           'content-encoding',
           'transfer-encoding',
           'set-cookie',
+          'x-content-type-options',
         ].includes(lower)
       ) {
         return;
@@ -333,7 +392,6 @@ export default async function handler(req, res) {
         res.setHeader('Set-Cookie', ctxCookie);
       }
       res.setHeader('Content-Length', String(buf.length));
-      res.setHeader('Connection', 'close');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -352,7 +410,6 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', contentType || 'text/css');
       }
       res.setHeader('Content-Length', String(buf.length));
-      res.setHeader('Connection', 'close');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -368,14 +425,13 @@ export default async function handler(req, res) {
       js = js.replace(/new\s+URL\(\s*(['"])\/(?!api\/proxy\/)([^'")]+)\1\s*,\s*import\.meta\.url\s*\)/g, (m, q, p) => `new URL(${q}${prefix}/${p}${q}, import.meta.url)`);
       js = js.replace(/(__webpack_require__\.p\s*=\s*)(['"])\/(?!api\/proxy\/)/g, (m, pre, q) => `${pre}${q}${prefix}/`);
       js = js.replace(/(['"])\/(?!api\/proxy\/)(_next|assets|api|static|build|dist|_nuxt)\/([^'"]+)\1/g, (m, q, bucket, rest) => `${q}${prefix}/${bucket}/${rest}${q}`);
-      const jsShim = `;(function(g){if(g.__NS_PROXY_INSTALLED__)return;g.__NS_PROXY_INSTALLED__=true;var NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;var abs=new URL(u,(typeof location!=='undefined'&&location.href)?location.href:(typeof self!=='undefined'&&self.location?self.location.href:'${targetUrl}'));return '${proxyOrigin}/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}var ofetch=g.fetch;if(ofetch)g.fetch=function(i,o){try{var url=(typeof i==='string')?i:(i&&i.url)||(i&&i.href)||String(i);if(url){var p=toProxy(url);if(typeof i==='string')return ofetch(p,o);var req=(typeof Request!=='undefined'&&i instanceof Request)?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);};if(g.XMLHttpRequest){var oopen=g.XMLHttpRequest.prototype.open;g.XMLHttpRequest.prototype.open=function(m,u){try{if(u&&!NOOP_RE.test(u))u=toProxy(u);}catch{}return oopen.apply(this,arguments);};}})(typeof globalThis!=='undefined'?globalThis:this);`;
+      const jsShim = `;(function(g){if(g.__NS_PROXY_BOOTSTRAP__)return;g.__NS_PROXY_BOOTSTRAP__=true;var NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;var abs=new URL(u,(typeof location!=='undefined'&&location.href)?location.href:(typeof self!=='undefined'&&self.location?self.location.href:'${targetUrl}'));return '${proxyOrigin}/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}var ofetch=g.fetch;if(ofetch)g.fetch=function(i,o){try{var url=(typeof i==='string')?i:(i&&i.url)||(i&&i.href)||String(i);if(url){var p=toProxy(url);if(typeof i==='string')return ofetch(p,o);var req=(typeof Request!=='undefined'&&i instanceof Request)?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);};if(g.XMLHttpRequest){var oopen=g.XMLHttpRequest.prototype.open;g.XMLHttpRequest.prototype.open=function(m,u){try{if(u&&!NOOP_RE.test(u))u=toProxy(u);}catch{}return oopen.apply(this,arguments);};}})(typeof globalThis!=='undefined'?globalThis:this);`;
       js = jsShim + '\n' + js;
       const buf = Buffer.from(js, 'utf8');
       if (!res.getHeader('Content-Type')) {
         res.setHeader('Content-Type', contentType || 'application/javascript');
       }
       res.setHeader('Content-Length', String(buf.length));
-      res.setHeader('Connection', 'close');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -387,7 +443,6 @@ export default async function handler(req, res) {
 
     if (req.method === 'HEAD') {
       if (contentType) res.setHeader('Content-Type', contentType);
-      res.setHeader('Connection', 'close');
       res.end();
       console.log('[proxy] response ended, bytes=0');
       return;
@@ -474,11 +529,12 @@ function rewriteHtml(html, targetUrl, req, load) {
   const scriptContent = `(function(){
     if(window.__NS_PROXY_INSTALLED__)return;window.__NS_PROXY_INSTALLED__=true;
     const PROXY_ORIGIN=location.origin;
-    const BASE=new URL(${JSON.stringify(targetUrl)});
+    const SERVER_BASE=new URL(${JSON.stringify(targetUrl)});
+    function currentBase(){try{return new URL(document.baseURI);}catch{return SERVER_BASE;}}
     const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
     const NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;
     function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
-    function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;if(isAlreadyProxied(u))return u;let abs=new URL(u,BASE);if(abs.origin===PROXY_ORIGIN&&!abs.pathname.startsWith('/api/proxy/')){abs=new URL(abs.pathname+abs.search+abs.hash,BASE);}return PROXY_PREFIX+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}
+    function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;if(isAlreadyProxied(u))return u;let abs=new URL(u,currentBase());if(abs.origin===PROXY_ORIGIN&&!abs.pathname.startsWith('/api/proxy/')){abs=new URL(abs.pathname+abs.search+abs.hash,currentBase());}return PROXY_PREFIX+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}
     function rewriteSrcset(v){return v.split(',').map(p=>{const t=p.trim();if(!t)return'';const [u,d]=t.split(/\s+/,2);if(!u||NOOP_RE.test(u))return p;const nu=toProxy(u);return nu&&nu!==u?(d?nu+' '+d:nu):p;}).join(', ');}
     const URL_ATTRS=new Set(['src','href','action','poster','srcset']);
     const _setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(n,v){try{if(URL_ATTRS.has(n)){if(n==='srcset')v=rewriteSrcset(v);else if(v&&!NOOP_RE.test(v))v=toProxy(v);}}catch{}return _setAttribute.call(this,n,v);};
@@ -486,23 +542,23 @@ function rewriteHtml(html, targetUrl, req, load) {
     [[HTMLAnchorElement,'href'],[HTMLLinkElement,'href'],[HTMLImageElement,'src'],[HTMLScriptElement,'src'],[HTMLIFrameElement,'src'],[HTMLSourceElement,'src'],[HTMLMediaElement,'src'],[HTMLVideoElement,'poster'],[HTMLFormElement,'action']].forEach(([C,p])=>{try{patchProp(C,p);}catch{}});
     function rewriteEl(el){if(!el||!el.getAttribute)return;URL_ATTRS.forEach(a=>{const v=el.getAttribute(a);if(!v||NOOP_RE.test(v))return;try{if(a==='srcset'){const next=rewriteSrcset(v);if(next&&next!==v)el.setAttribute(a,next);}else{const nv=toProxy(v);if(nv&&nv!==v)el.setAttribute(a,nv);}}catch{}});}
     function rewriteTree(r){try{rewriteEl(r);if(r.querySelectorAll)r.querySelectorAll('[src],[href],[action],[poster],[srcset]').forEach(rewriteEl);}catch{}}
-    function rewriteHTMLString(h,c){try{const range=document.createRange();range.selectNode(c||document.body||document.documentElement);const frag=range.createContextualFragment(h);rewriteTree(frag);return frag;}catch{return null;}}
+      function rewriteHtmlStringOnce(html){try{html=html.replace(/\b(src|href|action|poster)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>\`]+))/gi,(m,attr,quoted,dq,sq,bare)=>{const val=dq??sq??bare;if(!val)return m;try{const nv=toProxy(val);if(!nv||nv===val)return m;const q=quoted?.[0]||'"';return attr + '=' + q + nv + q;}catch{return m;}}).replace(/\bsrcset\s*=\s*("([^"]*)"|'([^']*)')/gi,(m,quoted,dq,sq)=>{const val=dq??sq??'';const next=val.split(',').map(p=>{const t=p.trim();if(!t)return t;const[u,d]=t.split(/\s+/,2);try{const nu=toProxy(u);return nu&&nu!==u?(d?nu+' '+d:nu):p;}catch{return p;}}).join(', ');const q=quoted?.[0]||'"';return 'srcset=' + q + next + q;});}catch{}return html;}
     const _appendChild=Node.prototype.appendChild;Node.prototype.appendChild=function(n){try{rewriteTree(n);}catch{}return _appendChild.call(this,n);};
     const _insertBefore=Node.prototype.insertBefore;Node.prototype.insertBefore=function(n,r){try{rewriteTree(n);}catch{}return _insertBefore.call(this,n,r);};
     const _replaceChild=Node.prototype.replaceChild;Node.prototype.replaceChild=function(n,o){try{rewriteTree(n);}catch{}return _replaceChild.call(this,n,o);};
     ['append','prepend','before','after','replaceWith'].forEach(m=>{const orig=Element.prototype[m];if(!orig)return;Element.prototype[m]=function(...nodes){try{nodes.forEach(x=>{if(typeof x!=='string')rewriteTree(x);});}catch{}return orig.apply(this,nodes);};});
     const _insertAdjacentElement=Element.prototype.insertAdjacentElement;Element.prototype.insertAdjacentElement=function(pos,el){try{rewriteTree(el);}catch{}return _insertAdjacentElement.call(this,pos,el);};
-    const _insertAdjacentHTML=Element.prototype.insertAdjacentHTML;Element.prototype.insertAdjacentHTML=function(pos,html){try{const frag=rewriteHTMLString(html,this);if(frag)return Element.prototype.insertAdjacentElement.call(this,pos,frag);}catch{}return _insertAdjacentHTML.call(this,pos,html);};
-    const _write=Document.prototype.write;const _writeln=Document.prototype.writeln;function writeRewriter(fn,args){try{const html=Array.prototype.join.call(args,'');const frag=rewriteHTMLString(html,document.documentElement);if(frag){const tmp=document.createElement('div');tmp.appendChild(frag);return _insertAdjacentHTML.call(document.documentElement,'beforeend',tmp.innerHTML);}}catch{}return fn.apply(document,args);}Document.prototype.write=function(...a){return writeRewriter(_write,a);};Document.prototype.writeln=function(...a){return writeRewriter(_writeln,a);};
+    const _insertAdjacentHTML=Element.prototype.insertAdjacentHTML;Element.prototype.insertAdjacentHTML=function(pos,html){try{html=rewriteHtmlStringOnce(html);}catch{}return _insertAdjacentHTML.call(this,pos,html);};
+    const _write=Document.prototype.write;const _writeln=Document.prototype.writeln;function rewriteThen(fn,args){try{const html=Array.prototype.join.call(args,'');return fn.call(document,rewriteHtmlStringOnce(html));}catch{return fn.apply(document,args);}}Document.prototype.write=function(...a){return rewriteThen(_write,a);};Document.prototype.writeln=function(...a){return rewriteThen(_writeln,a);};
     document.addEventListener('click',function(e){if(e.defaultPrevented)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;if(a.target&&a.target!=='_self')return;if(a.hasAttribute('download'))return;try{const v=a.getAttribute('href');const nu=toProxy(v);if(nu&&nu!==v){e.preventDefault();location.assign(nu);}}catch{}},true);
-    document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',BASE);if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
+    document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',currentBase());if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
     const ORequest=window.Request;window.Request=new Proxy(ORequest,{construct(target,args){try{const input=args[0];let u=typeof input==='string'?input:(input&&input.url)||(input&&input.href)||String(input);if(u)args[0]=toProxy(u);}catch{}return new target(...args);}});
     const ofetch=window.fetch;function wrappedFetch(i,o){try{let u=typeof i==='string'?i:(i&&i.url)||(i&&i.href)||String(i);if(u){const p=toProxy(u);if(typeof i==='string')return ofetch(p,o);const req=i instanceof Request?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);}window.fetch=wrappedFetch;try{Object.defineProperty(window,'fetch',{configurable:true,get(){return wrappedFetch;},set(){}});}catch{}
-    const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return oopen.call(this,m,u,...r);};
-    if(navigator.sendBeacon){const obeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,data){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return obeacon(u,data);};}
-    if(window.EventSource){const OES=window.EventSource;window.EventSource=function(u,conf){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OES(u,conf);};window.EventSource.prototype=OES.prototype;}
-    if(window.Worker){const OW=window.Worker;window.Worker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OW(u,opts);};window.Worker.prototype=OW.prototype;}
-    if(window.SharedWorker){const OSW=window.SharedWorker;window.SharedWorker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,BASE).toString());}catch{}return new OSW(u,opts);};window.SharedWorker.prototype=OSW.prototype;}
+    const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return oopen.call(this,m,u,...r);};
+    if(navigator.sendBeacon){const obeacon=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u,data){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return obeacon(u,data);};}
+    if(window.EventSource){const OES=window.EventSource;window.EventSource=function(u,conf){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return new OES(u,conf);};window.EventSource.prototype=OES.prototype;}
+    if(window.Worker){const OW=window.Worker;window.Worker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return new OW(u,opts);};window.Worker.prototype=OW.prototype;}
+    if(window.SharedWorker){const OSW=window.SharedWorker;window.SharedWorker=function(u,opts){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return new OSW(u,opts);};window.SharedWorker.prototype=OSW.prototype;}
     if(navigator.serviceWorker&&navigator.serviceWorker.register){navigator.serviceWorker.register=function(){return Promise.resolve(undefined);};}
     const mo=new MutationObserver(ms=>{for(const m of ms){if(m.type==='childList'&&m.addedNodes){m.addedNodes.forEach(n=>rewriteTree(n));}else if(m.type==='attributes'&&m.target){rewriteEl(m.target);}}});
     mo.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['src','href','srcset','action','poster'],attributeOldValue:true});
