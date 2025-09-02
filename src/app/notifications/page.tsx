@@ -318,10 +318,15 @@ function NotificationsPageContent() {
   const shouldUpdateNotificationsCursor: boolean = useMemo(() => {
     if (tab !== TAB_OPTIONS.ALL) return false;
     if (!mostRecentNotificationTimestamp) return false;
+    
+    // Return false if user is not authenticated or system is not ready
+    if (!fid || !identityPublicKey) return false;
+    if (lastSeenNotificationTimestamp === undefined) return false;
+    
     if (!lastSeenNotificationDate) return true;
 
     return moment.utc(mostRecentNotificationTimestamp).isAfter(lastSeenNotificationDate);
-  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate]);
+  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate, fid, identityPublicKey, lastSeenNotificationTimestamp]);
 
   const updateNotificationsCursor = useCallback(() => {
     if (shouldUpdateNotificationsCursor && mostRecentNotificationTimestamp) {
