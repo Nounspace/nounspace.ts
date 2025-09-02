@@ -1,7 +1,10 @@
 /* eslint-env node */
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
-import { Readable } from 'stream';
+import { Readable, pipeline as nodePipeline } from 'stream';
+import { promisify } from 'util';
+
+const pipeline = promisify(nodePipeline);
 
 function guessContentType(urlPath, upstreamCT) {
   const ct = (upstreamCT || '').toLowerCase();
@@ -24,58 +27,64 @@ function guessContentType(urlPath, upstreamCT) {
   return upstreamCT || 'application/octet-stream';
 }
 
-function pipeRawBody(resp, res, contentType) {
-  if (contentType) res.setHeader('Content-Type', contentType);
+async function pipeRawBody(resp, res, contentType) {
+  if (contentType && !res.getHeader('Content-Type')) res.setHeader('Content-Type', contentType);
   const b = resp.body;
   if (!b) {
     res.end();
-    console.log('[proxy] response ended, bytes=0');
     return;
   }
   const stream = typeof b.pipe === 'function' ? b : Readable.fromWeb(b);
-  stream.pipe(res);
-  res.on('finish', () => console.log('[proxy] response finished'));
-  res.on('close', () => console.log('[proxy] response closed'));
+  try {
+    await pipeline(stream, res);
+  } catch (err) {
+    console.warn('[proxy] stream pipeline error', err?.message || err);
+    try {
+      if (!res.headersSent) res.statusCode = 502;
+    } catch { /* empty */ }
+    try { res.end(); } catch { /* empty */ }
+  }
 }
 
-async function handleNextImage(targetUrl, fetchHeaders, res) {
-  const u = new URL(targetUrl);
-  if (u.pathname !== '/_next/image') return false;
+function copySelectedHeaders(srcHeaders, res, keys) {
+  for (const k of keys) {
+    const v = srcHeaders.get(k);
+    if (v != null) res.setHeader(k, v);
+  }
+}
 
+async function handleNextImage(req, targetUrl, fetchHeaders, res) {
+  const u = new URL(targetUrl);
+  if (!u.pathname.includes('/_next/image')) return false;
+
+  const method = req.method === 'HEAD' ? 'HEAD' : 'GET';
   const paramUrl = u.searchParams.get('url');
   if (!paramUrl) return false;
 
-  const imgHeaders = {
-    ...fetchHeaders,
-    accept: 'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5',
-  };
+  const imgHeaders = { ...fetchHeaders, accept: 'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5' };
+  const safeCopy = (r) => copySelectedHeaders(r.headers, res, ['cache-control','etag','last-modified','expires','content-length']);
 
   try {
-    const r1 = await fetch(targetUrl, {
-      method: 'GET',
-      headers: imgHeaders,
-      redirect: 'follow',
-    });
-    const ct1 = r1.headers.get('content-type') || '';
-    if (r1.ok && /^image\//i.test(ct1)) {
-      pipeRawBody(r1, res, ct1);
+    const r1 = await fetch(targetUrl, { method, headers: imgHeaders, redirect: 'follow' });
+    const ct1raw = r1.headers.get('content-type') || '';
+    if (r1.ok && /^image\//i.test(ct1raw)) {
+      res.status(r1.status);
+      safeCopy(r1);
+      await pipeRawBody(r1, res, ct1raw);
       return true;
     }
-    } catch { /* empty */ }
+  } catch { /* empty */ }
 
   try {
-    const baseAbs = `${u.protocol}//${u.host}`;
+    const baseAbs = u.origin;
     const direct = new URL(paramUrl, baseAbs).toString();
-    const r2 = await fetch(direct, {
-      method: 'GET',
-      headers: imgHeaders,
-      redirect: 'follow',
-    });
-    const rawCt2 = r2.headers.get('content-type') || '';
-    const ct2 = guessContentType(direct, rawCt2);
-    pipeRawBody(r2, res, ct2);
+    const r2 = await fetch(direct, { method, headers: imgHeaders, redirect: 'follow' });
+    const ct2 = guessContentType(direct, r2.headers.get('content-type') || '');
+    res.status(r2.status);
+    safeCopy(r2);
+    await pipeRawBody(r2, res, ct2);
     return true;
-    } catch { /* empty */ }
+  } catch { /* empty */ }
 
   return false;
 }
@@ -272,7 +281,7 @@ export default async function handler(req, res) {
       fetchHeaders.cookie = mapIncomingCookies(req.headers.cookie);
     }
 
-    if (await handleNextImage(targetUrl, fetchHeaders, res)) return;
+    if (await handleNextImage(req, targetUrl, fetchHeaders, res)) return;
 
     const response = await fetch(targetUrl, {
       method: req.method,
@@ -329,6 +338,10 @@ export default async function handler(req, res) {
           'transfer-encoding',
           'set-cookie',
           'x-content-type-options',
+          'etag',
+          'last-modified',
+          'content-range',
+          'accept-ranges',
         ].includes(lower)
       ) {
         return;
@@ -366,13 +379,15 @@ export default async function handler(req, res) {
     if (ct.includes('text/event-stream')) {
       res.setHeader('Cache-Control', 'no-cache, no-transform');
       res.setHeader('X-Accel-Buffering', 'no');
-      pipeRawBody(response, res, contentType);
+      res.status(response.status);
+      await pipeRawBody(response, res, contentType);
       return;
     }
 
     if (ct.includes('text/html') && debugRaw) {
       console.log('[proxy] RAW HTML passthrough enabled');
-      pipeRawBody(response, res, contentType);
+      res.status(response.status);
+      await pipeRawBody(response, res, contentType);
       return;
     }
 
@@ -392,6 +407,8 @@ export default async function handler(req, res) {
         res.setHeader('Set-Cookie', ctxCookie);
       }
       res.setHeader('Content-Length', String(buf.length));
+      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
+      res.setHeader('Cache-Control', 'no-store');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -410,6 +427,8 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', contentType || 'text/css');
       }
       res.setHeader('Content-Length', String(buf.length));
+      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
+      res.setHeader('Cache-Control', 'no-store');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -425,6 +444,7 @@ export default async function handler(req, res) {
       js = js.replace(/new\s+URL\(\s*(['"])\/(?!api\/proxy\/)([^'")]+)\1\s*,\s*import\.meta\.url\s*\)/g, (m, q, p) => `new URL(${q}${prefix}/${p}${q}, import.meta.url)`);
       js = js.replace(/(__webpack_require__\.p\s*=\s*)(['"])\/(?!api\/proxy\/)/g, (m, pre, q) => `${pre}${q}${prefix}/`);
       js = js.replace(/(['"])\/(?!api\/proxy\/)(_next|assets|api|static|build|dist|_nuxt)\/([^'"]+)\1/g, (m, q, bucket, rest) => `${q}${prefix}/${bucket}/${rest}${q}`);
+      js = js.replace(/(`)\/(?!api\/proxy\/)(_next|assets|api|static|build|dist|_nuxt)\/([^`]+?)\1/g, (m, bt, bucket, rest) => `${bt}${prefix}/${bucket}/${rest}${bt}`);
       const jsShim = `;(function(g){if(g.__NS_PROXY_BOOTSTRAP__)return;g.__NS_PROXY_BOOTSTRAP__=true;var NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;function toProxy(u){try{if(!u||NOOP_RE.test(String(u)))return u;var abs=new URL(u,(typeof location!=='undefined'&&location.href)?location.href:(typeof self!=='undefined'&&self.location?self.location.href:'${targetUrl}'));return '${proxyOrigin}/api/proxy/'+abs.protocol.replace(':','')+'/'+abs.host+abs.pathname+abs.search+abs.hash;}catch{return u;}}var ofetch=g.fetch;if(ofetch)g.fetch=function(i,o){try{var url=(typeof i==='string')?i:(i&&i.url)||(i&&i.href)||String(i);if(url){var p=toProxy(url);if(typeof i==='string')return ofetch(p,o);var req=(typeof Request!=='undefined'&&i instanceof Request)?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);};if(g.XMLHttpRequest){var oopen=g.XMLHttpRequest.prototype.open;g.XMLHttpRequest.prototype.open=function(m,u){try{if(u&&!NOOP_RE.test(u))u=toProxy(u);}catch{}return oopen.apply(this,arguments);};}})(typeof globalThis!=='undefined'?globalThis:this);`;
       js = jsShim + '\n' + js;
       const buf = Buffer.from(js, 'utf8');
@@ -432,6 +452,8 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', contentType || 'application/javascript');
       }
       res.setHeader('Content-Length', String(buf.length));
+      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
+      res.setHeader('Cache-Control', 'no-store');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -447,7 +469,7 @@ export default async function handler(req, res) {
       console.log('[proxy] response ended, bytes=0');
       return;
     }
-    pipeRawBody(response, res, contentType);
+    await pipeRawBody(response, res, contentType);
   } catch (error) {
     console.error('Proxy error:', error);
     res.status(500).json({ error: 'Failed to fetch the requested site' });
