@@ -38,6 +38,7 @@ const cspHeader = `
       https://auth.privy.io/api/v1/analytics_events
       https://cdn.segment.com
       https://api.segment.io
+      https://stream.farcaster.xyz
       https://api.imgbb.com
       https://api.goldsky.com
       https://base-mainnet.g.alchemy.com;
