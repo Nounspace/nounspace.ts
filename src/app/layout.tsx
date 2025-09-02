@@ -1,5 +1,5 @@
 import { WEBSITE_URL } from "@/constants/app";
-import React from "react";
+import React, { Suspense } from "react";
 import "@/styles/globals.css";
 import '@coinbase/onchainkit/styles.css';
 import Providers from "@/common/providers";
@@ -7,6 +7,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { defaultFrame } from "@/constants/metadata";
 import ClientMobileHeaderWrapper from "@/common/components/organisms/ClientMobileHeaderWrapper";
 import ClientSidebarWrapper from "@/common/components/organisms/ClientSidebarWrapper";
+import NavigationSkeleton from "@/common/components/organisms/NavigationSkeleton";
 import type { Metadata } from 'next' // Migrating next/head
 
 export const metadata: Metadata = {
@@ -73,13 +74,17 @@ const sidebarLayout = (page: React.ReactNode) => {
       <div className="min-h-screen max-w-screen w-screen flex flex-col">
         {/* App Navigation Bar */}
         <div className="w-full flex-shrink-0 md:hidden">
-          <ClientMobileHeaderWrapper />
+          <Suspense fallback={<div className="h-14" />}>
+            <ClientMobileHeaderWrapper />
+          </Suspense>
         </div>
 
         {/* Main Content with Sidebar */}
         <div className="flex w-full h-full flex-grow">
           <div className="transition-all duration-100 ease-out z-50 hidden md:block flex-shrink-0">
-            <ClientSidebarWrapper />
+            <Suspense fallback={<NavigationSkeleton />}>
+              <ClientSidebarWrapper />
+            </Suspense>
           </div>
           {page}
         </div>
