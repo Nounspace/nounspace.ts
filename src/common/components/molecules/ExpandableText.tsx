@@ -24,7 +24,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
         onExpand();
       }
     },
-    [onExpand],
+    [onExpand]
   );
 
   useEffect(() => {
@@ -32,10 +32,16 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
     const computeMaxHeight = () => {
       if (textRef.current) {
-        const lineHeight = Math.ceil(
-          parseFloat(window.getComputedStyle(textRef.current).lineHeight),
-        );
-        setMaxHeight(`${lineHeight * maxLines}px`);
+        const lineHeight = Math.ceil(parseFloat(window.getComputedStyle(textRef.current).lineHeight));
+        // Fix: If lineHeight calculation fails or returns invalid value, use a fallback
+        const validLineHeight = isNaN(lineHeight) || lineHeight <= 0 ? 20 : lineHeight;
+        const calculatedMaxHeight = validLineHeight * maxLines;
+        // Additional safety check: don't set maxHeight to 0 or very small values
+        if (calculatedMaxHeight > 10) {
+          setMaxHeight(`${calculatedMaxHeight}px`);
+        } else {
+          setMaxHeight("none"); // Fallback to no height restriction
+        }
       }
     };
 
@@ -46,8 +52,11 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
       }
     };
 
-    computeMaxHeight();
-    checkOverflow();
+    // Use requestAnimationFrame to ensure the element is properly rendered and avoid layout thrash
+    const rafId = window.requestAnimationFrame(() => {
+      computeMaxHeight();
+      checkOverflow();
+    });
 
     const resizeObserver = new ResizeObserver(() => {
       computeMaxHeight();
@@ -55,7 +64,10 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     });
     if (textRef.current) resizeObserver.observe(textRef.current);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
+    };
   }, [maxLines]);
 
   if (!maxLines) {
@@ -64,18 +76,11 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
 
   return (
     <>
-      <span
-        ref={textRef}
-        className="overflow-hidden block"
-        style={{ maxHeight }}
-      >
+      <span ref={textRef} className="overflow-hidden block" style={{ maxHeight }}>
         {children}
       </span>
       {overflow && (
-        <span
-          onClick={handleShowMore}
-          className="hover:underline text-blue-500 block"
-        >
+        <span onClick={handleShowMore} className="hover:underline text-blue-500 block">
           {expandButtonText}
         </span>
       )}
