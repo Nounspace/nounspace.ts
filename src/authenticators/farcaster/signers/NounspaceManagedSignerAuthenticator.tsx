@@ -247,8 +247,7 @@ const initializer: AuthenticatorInitializer<
       data.status === "revoked" ? (
         <>
           <p className="text-lg text-gray-500 mt-4">
-            Use of Nounspace requires a Farcaster account. Click the button
-            below to connect your Farcaster account via Warpcast.
+            Click the button below to connect your Farcaster account.
           </p>
           <Button
             style={{
@@ -293,8 +292,8 @@ const initializer: AuthenticatorInitializer<
               />
             </div>
             <p className="text-xl text-gray-500 m-5">
-              Scan the QR code with your phone camera <br /> or enter the link
-              on a mobile browser
+              Scan the QR code with your phone camera <br /> or tap the button below
+              if you're already on mobile.
             </p>
           </div>
           <div className="flex flex-col text-center mt-4">
@@ -321,7 +320,7 @@ const initializer: AuthenticatorInitializer<
               onClick={createSigner}
             >
               <FaRedo color="gray.400" />
-              Still having trouble? Reset the QR
+              Having trouble? Reset the QR
             </Button>
           </div>
         </>
