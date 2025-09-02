@@ -18,7 +18,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartFilledIcon } from "@heroicons/react/24/solid";
 import { CastWithInteractions, EmbedUrl, User } from "@neynar/nodejs-sdk/build/api";
-import { hexToBytes } from "@noble/ciphers/utils";
+import { hexToBytes, bytesToHex } from "@noble/ciphers/utils";
 import { ErrorBoundary } from "@sentry/react";
 import { Properties } from "csstype";
 import { get, includes, isObject, isUndefined, map } from "lodash";
@@ -143,7 +143,11 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
             }
           : {
               castId: embed.cast_id,
-              key: embed.cast_id?.hash?.toString() || "",
+              key: embed.cast_id?.hash 
+                ? (typeof embed.cast_id.hash === "string" 
+                    ? embed.cast_id.hash 
+                    : bytesToHex(embed.cast_id.hash))
+                : "",
             };
 
         return (
@@ -159,7 +163,7 @@ const CastEmbedsComponent = ({ cast, onSelectCast }: CastEmbedsProps) => {
                 const hashString =
                   typeof embedData.castId.hash === "string"
                     ? embedData.castId.hash
-                    : Buffer.from(embedData.castId.hash).toString("hex");
+                    : bytesToHex(embedData.castId.hash);
                 onSelectCast(hashString, cast.author.username);
               }
             }}
@@ -529,12 +533,13 @@ const SafeExpandableText: React.FC<{
 const EnhancedLinkify: React.FC<{ children: string; style?: React.CSSProperties }> = ({ children, style }) => {
   const linkifyText = (text: string) => {
     // Production-ready regex patterns optimized for performance
-    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/g;
-    const mentionRegex = /(@[a-zA-Z0-9_.-]+)/g;
-    const channelRegex = /(\/[a-zA-Z0-9_-]+)(?=\s|$)/g;
-    const hashtagRegex = /(#[a-zA-Z0-9_-]+)/g;
+    // Non-global versions for .test() to avoid stateful behavior
+    const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+)/;
+    const mentionRegex = /(@[a-zA-Z0-9_.-]+)/;
+    const channelRegex = /(\/[a-zA-Z0-9_-]+)(?=\s|$)/;
+    const hashtagRegex = /(#[a-zA-Z0-9_-]+)/;
 
-    // Efficient text splitting that preserves special tokens
+    // Efficient text splitting that preserves special tokens (keeps global flag for split)
     const combinedRegex = /(https?:\/\/[^\s<>"{}|\\^`[\]]+|@[a-zA-Z0-9_.-]+|\/[a-zA-Z0-9_-]+(?=\s|$)|#[a-zA-Z0-9_-]+)/g;
     const parts = text.split(combinedRegex);
 

@@ -52,11 +52,11 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
       }
     };
 
-    // Add a small delay to ensure the element is properly rendered
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame to ensure the element is properly rendered and avoid layout thrash
+    const rafId = window.requestAnimationFrame(() => {
       computeMaxHeight();
       checkOverflow();
-    }, 0);
+    });
 
     const resizeObserver = new ResizeObserver(() => {
       computeMaxHeight();
@@ -65,7 +65,7 @@ const ExpandableText: React.FC<ExpandableTextProps> = ({
     if (textRef.current) resizeObserver.observe(textRef.current);
 
     return () => {
-      clearTimeout(timer);
+      window.cancelAnimationFrame(rafId);
       resizeObserver.disconnect();
     };
   }, [maxLines]);

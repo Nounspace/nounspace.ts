@@ -1,9 +1,17 @@
 "use client";
 
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
-import useNotifications from "@/common/lib/hooks/useNotifications";
-import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
-import { FaCircleExclamation, FaHeart } from "react-icons/fa6";
+import { useNotifications } from "@/common/lib/hooks/useNotifications";
+import { useCurrentFid } from "@/common/lib/hooks/useCurrentFid";
+import { FaCircleExclamation } from "react-icons/fa6";
+import { FaReply } from "react-icons/fa6";
+import { 
+  HeartIcon,
+  UserPlusIcon,
+  ArrowPathRoundedSquareIcon,
+  ChatBubbleLeftRightIcon,
+  AtSymbolIcon,
+} from "@heroicons/react/24/outline";
 import { Notification, NotificationTypeEnum, User } from "@neynar/nodejs-sdk/build/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
 import { Alert, AlertDescription } from "@/common/components/atoms/alert";
@@ -33,6 +41,20 @@ export type NotificationRowProps = React.FC<{
   onSelect: (castHash: string, username: string) => void;
   isUnseen?: boolean;
 }>;
+
+// Type guard to safely extract error message
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String(error.message);
+  }
+  return 'An unexpected error occurred';
+};
 
 const ErrorPanel = ({ message }: { message: string }) => {
   return (
@@ -72,8 +94,9 @@ const getNotificationActionText = (type: NotificationTypeEnum): string => {
     case NotificationTypeEnum.Follows:
       return "followed you";
     case NotificationTypeEnum.Recasts:
-    case NotificationTypeEnum.Quote:
       return "recasted your cast";
+    case NotificationTypeEnum.Quote:
+      return "quoted your cast";
     case NotificationTypeEnum.Likes:
       return "liked your cast";
     case NotificationTypeEnum.Mention:
@@ -88,16 +111,16 @@ const getNotificationActionText = (type: NotificationTypeEnum): string => {
 const getNotificationIcon = (type: NotificationTypeEnum): React.ReactNode => {
   switch (type) {
     case NotificationTypeEnum.Follows:
-      return <span className="text-xs">👥</span>;
+      return <UserPlusIcon className="text-blue-500 w-3 h-3" />;
     case NotificationTypeEnum.Recasts:
     case NotificationTypeEnum.Quote:
-      return <span className="text-xs">🔄</span>;
+      return <ArrowPathRoundedSquareIcon className="text-green-500 w-3 h-3" />;
     case NotificationTypeEnum.Likes:
-      return <FaHeart className="text-red-500 w-3 h-3" />;
+      return <HeartIcon className="text-red-500 w-3 h-3" />;
     case NotificationTypeEnum.Mention:
-      return <span className="text-xs">💬</span>;
+      return <AtSymbolIcon className="text-purple-500 w-3 h-3" />;
     case NotificationTypeEnum.Reply:
-      return <span className="text-xs">↩️</span>;
+      return <FaReply className="text-blue-500 w-3 h-3" />;
     default:
       return null;
   }
@@ -165,16 +188,16 @@ const NotificationRow: NotificationRowProps = ({ notification, onSelect, isUnsee
             }`}
           >
             {notification.type === NotificationTypeEnum.Likes ? (
-              <FaHeart className="text-white w-2.5 h-2.5" />
+              <HeartIcon className="text-white w-4 h-4" />
             ) : notification.type === NotificationTypeEnum.Follows ? (
-              <span className="text-white text-xs">👥</span>
+              <UserPlusIcon className="text-white w-4 h-4" />
             ) : notification.type === NotificationTypeEnum.Recasts ||
               notification.type === NotificationTypeEnum.Quote ? (
-              <span className="text-white text-xs">🔄</span>
+              <ArrowPathRoundedSquareIcon className="text-white w-4 h-4" />
             ) : notification.type === NotificationTypeEnum.Mention ? (
-              <span className="text-white text-xs">@</span>
+              <AtSymbolIcon className="text-white w-4 h-4" />
             ) : notification.type === NotificationTypeEnum.Reply ? (
-              <span className="text-white text-xs">↩</span>
+              <FaReply className="text-white w-4 h-4" />
             ) : (
               getNotificationIcon(notification.type)
             )}
@@ -419,12 +442,17 @@ function NotificationsPageContent() {
                   <React.Fragment key={pageIndex}>
                     {filterByType(page?.notifications ?? []).map((notification, pageItemIndex) => {
                       const isUnseen = isNotificationUnseen(notification, delayedLastSeenNotificationDate);
+                      // Create a stable key from notification properties instead of index
+                      const notificationKey = (notification as any).id ?? 
+                        (notification as any).uuid ?? 
+                        `${notification.type}-${notification.most_recent_timestamp}-${notification.cast?.hash ?? pageItemIndex}`;
+                      
                       return (
                         <NotificationRow
                           notification={notification}
                           onSelect={onSelectNotification}
                           isUnseen={isUnseen}
-                          key={`${pageIndex}-${pageItemIndex}`}
+                          key={notificationKey}
                         />
                       );
                     })}
@@ -435,7 +463,7 @@ function NotificationsPageContent() {
 
             {error && (
               <div className="p-4">
-                <ErrorPanel message={error.message} />
+                <ErrorPanel message={getErrorMessage(error)} />
               </div>
             )}
 
