@@ -318,15 +318,22 @@ function NotificationsPageContent() {
   const shouldUpdateNotificationsCursor: boolean = useMemo(() => {
     if (tab !== TAB_OPTIONS.ALL) return false;
     if (!mostRecentNotificationTimestamp) return false;
-    
+
     // Return false if user is not authenticated or system is not ready
     if (!fid || !identityPublicKey) return false;
     if (lastSeenNotificationTimestamp === undefined) return false;
-    
+
     if (!lastSeenNotificationDate) return true;
 
     return moment.utc(mostRecentNotificationTimestamp).isAfter(lastSeenNotificationDate);
-  }, [tab, mostRecentNotificationTimestamp, lastSeenNotificationDate, fid, identityPublicKey, lastSeenNotificationTimestamp]);
+  }, [
+    tab,
+    mostRecentNotificationTimestamp,
+    lastSeenNotificationDate,
+    fid,
+    identityPublicKey,
+    lastSeenNotificationTimestamp,
+  ]);
 
   const updateNotificationsCursor = useCallback(() => {
     if (shouldUpdateNotificationsCursor && mostRecentNotificationTimestamp) {
@@ -364,12 +371,42 @@ function NotificationsPageContent() {
             <h1 className="text-xl font-semibold text-foreground mb-4">Notifications</h1>
             <div className="overflow-x-auto pb-2 -mx-4 px-4 md:overflow-visible md:pb-0 md:mx-0 md:px-0">
               <TabsList className="grid min-w-[600px] md:min-w-fit w-full grid-cols-6 max-w-2xl bg-muted">
-                <TabsTrigger value={TAB_OPTIONS.ALL} className="data-[state=active]:bg-background data-[state=active]:text-foreground">All</TabsTrigger>
-                <TabsTrigger value={TAB_OPTIONS.MENTIONS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Mentions</TabsTrigger>
-                <TabsTrigger value={TAB_OPTIONS.FOLLOWS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Follows</TabsTrigger>
-                <TabsTrigger value={TAB_OPTIONS.RECASTS} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Recasts</TabsTrigger>
-                <TabsTrigger value={TAB_OPTIONS.REPLIES} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Replies</TabsTrigger>
-                <TabsTrigger value={TAB_OPTIONS.LIKES} className="data-[state=active]:bg-background data-[state=active]:text-foreground">Likes</TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.ALL}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.MENTIONS}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  Mentions
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.FOLLOWS}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  Follows
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.RECASTS}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  Recasts
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.REPLIES}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  Replies
+                </TabsTrigger>
+                <TabsTrigger
+                  value={TAB_OPTIONS.LIKES}
+                  className="data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  Likes
+                </TabsTrigger>
               </TabsList>
             </div>
           </div>
