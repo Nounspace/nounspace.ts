@@ -6,6 +6,42 @@ import { promisify } from 'util';
 
 const pipeline = promisify(nodePipeline);
 
+function lowerKeys(o) {
+  const out = {};
+  for (const k in o) out[k.toLowerCase()] = o[k];
+  return out;
+}
+
+function stripConditionalAndRangeHeaders(h) {
+  const drop = [
+    'if-none-match',
+    'if-modified-since',
+    'if-match',
+    'if-unmodified-since',
+    'if-range',
+    'range',
+  ];
+  for (const k of drop) delete h[k];
+}
+
+function shouldRewriteByPathOrCT(pathname, ct) {
+  const p = pathname.toLowerCase();
+  const c = (ct || '').toLowerCase();
+  if (c.includes('text/html')) return true;
+  if (c.includes('javascript') || c.includes('ecmascript') || c.includes('module'))
+    return true;
+  if (c.includes('text/css')) return true;
+  if (/\.(m?js|css|html?)($|\?)/i.test(p)) return true;
+  return false;
+}
+
+async function refetchUncached(method, url, headers) {
+  const h = { ...headers };
+  stripConditionalAndRangeHeaders(h);
+  h['cache-control'] = 'no-cache';
+  return fetch(url, { method, headers: h, redirect: 'follow' });
+}
+
 function guessContentType(urlPath, upstreamCT) {
   const ct = (upstreamCT || '').toLowerCase();
   if (ct && !/^(text\/plain|application\/octet-stream)$/.test(ct)) return upstreamCT;
@@ -46,13 +82,6 @@ async function pipeRawBody(resp, res, contentType) {
   }
 }
 
-function copySelectedHeaders(srcHeaders, res, keys) {
-  for (const k of keys) {
-    const v = srcHeaders.get(k);
-    if (v != null) res.setHeader(k, v);
-  }
-}
-
 async function handleNextImage(req, targetUrl, fetchHeaders, res) {
   const u = new URL(targetUrl);
   if (!u.pathname.includes('/_next/image')) return false;
@@ -61,30 +90,48 @@ async function handleNextImage(req, targetUrl, fetchHeaders, res) {
   const paramUrl = u.searchParams.get('url');
   if (!paramUrl) return false;
 
-  const imgHeaders = { ...fetchHeaders, accept: 'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5' };
-  const safeCopy = (r) => copySelectedHeaders(r.headers, res, ['cache-control','etag','last-modified','expires','content-length']);
+  const baseHeaders = { ...fetchHeaders };
+  stripConditionalAndRangeHeaders(baseHeaders);
+  baseHeaders.accept = 'image/avif,image/webp,image/*;q=0.8,*/*;q=0.5';
+
+  const copyImgCaching = (r) =>
+    ['cache-control', 'etag', 'last-modified', 'expires'].forEach((k) => {
+      const v = r.headers.get(k);
+      if (v != null) res.setHeader(k, v);
+    });
 
   try {
-    const r1 = await fetch(targetUrl, { method, headers: imgHeaders, redirect: 'follow' });
-    const ct1raw = r1.headers.get('content-type') || '';
-    if (r1.ok && /^image\//i.test(ct1raw)) {
+    const r1 = await fetch(targetUrl, {
+      method,
+      headers: baseHeaders,
+      redirect: 'follow',
+    });
+    const ct1 = r1.headers.get('content-type') || '';
+    if (r1.ok && /^image\//i.test(ct1) && r1.status !== 304 && r1.status !== 206) {
       res.status(r1.status);
-      safeCopy(r1);
-      await pipeRawBody(r1, res, ct1raw);
+      copyImgCaching(r1);
+      await pipeRawBody(r1, res, ct1);
       return true;
     }
-  } catch { /* empty */ }
+  } catch {
+    /* ignore */
+  }
 
   try {
-    const baseAbs = u.origin;
-    const direct = new URL(paramUrl, baseAbs).toString();
-    const r2 = await fetch(direct, { method, headers: imgHeaders, redirect: 'follow' });
+    const direct = new URL(paramUrl, u.origin).toString();
+    const r2 = await fetch(direct, {
+      method,
+      headers: baseHeaders,
+      redirect: 'follow',
+    });
     const ct2 = guessContentType(direct, r2.headers.get('content-type') || '');
     res.status(r2.status);
-    safeCopy(r2);
+    copyImgCaching(r2);
     await pipeRawBody(r2, res, ct2);
     return true;
-  } catch { /* empty */ }
+  } catch {
+    /* ignore */
+  }
 
   return false;
 }
@@ -226,9 +273,11 @@ export default async function handler(req, res) {
     );
     const debugRaw = currentUrl.searchParams.get('__raw') === '1';
     const fetchHeaders = { ...req.headers };
-    delete fetchHeaders.host;
-    delete fetchHeaders['content-length'];
+    Object.assign(fetchHeaders, lowerKeys(fetchHeaders));
+    stripConditionalAndRangeHeaders(fetchHeaders);
     delete fetchHeaders['accept-encoding'];
+    delete fetchHeaders['host'];
+    delete fetchHeaders['content-length'];
     try {
       fetchHeaders.origin = `${base.protocol}//${base.host}`;
       fetchHeaders.referer = targetUrl;
@@ -283,12 +332,23 @@ export default async function handler(req, res) {
 
     if (await handleNextImage(req, targetUrl, fetchHeaders, res)) return;
 
-    const response = await fetch(targetUrl, {
+    let response = await fetch(targetUrl, {
       method: req.method,
       headers: fetchHeaders,
       body,
       redirect: 'follow',
     });
+
+    const initialCT = response.headers.get('content-type') || '';
+    const willRewrite = shouldRewriteByPathOrCT(base.pathname, initialCT);
+    if (willRewrite && (response.status === 304 || response.status === 206)) {
+      response = await refetchUncached(
+        req.method === 'HEAD' ? 'HEAD' : 'GET',
+        targetUrl,
+        fetchHeaders
+      );
+    }
+
     const upstreamCT = response.headers.get('content-type') || '';
     const pathForCT = base.pathname + base.search;
     const contentType = guessContentType(pathForCT, upstreamCT);
@@ -342,6 +402,8 @@ export default async function handler(req, res) {
           'last-modified',
           'content-range',
           'accept-ranges',
+          'age',
+          'vary',
         ].includes(lower)
       ) {
         return;
@@ -407,8 +469,10 @@ export default async function handler(req, res) {
         res.setHeader('Set-Cookie', ctxCookie);
       }
       res.setHeader('Content-Length', String(buf.length));
-      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
-      res.setHeader('Cache-Control', 'no-store');
+      ['etag','last-modified','content-range','accept-ranges','age','vary'].forEach((h) =>
+        res.removeHeader(h)
+      );
+      res.setHeader('Cache-Control', 'no-store, no-transform');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -427,8 +491,10 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', contentType || 'text/css');
       }
       res.setHeader('Content-Length', String(buf.length));
-      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
-      res.setHeader('Cache-Control', 'no-store');
+      ['etag','last-modified','content-range','accept-ranges','age','vary'].forEach((h) =>
+        res.removeHeader(h)
+      );
+      res.setHeader('Cache-Control', 'no-store, no-transform');
       if (req.method === 'HEAD') {
         res.end();
       } else {
@@ -452,8 +518,10 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', contentType || 'application/javascript');
       }
       res.setHeader('Content-Length', String(buf.length));
-      ['etag','last-modified','content-range','accept-ranges','age'].forEach((h) => res.removeHeader(h));
-      res.setHeader('Cache-Control', 'no-store');
+      ['etag','last-modified','content-range','accept-ranges','age','vary'].forEach((h) =>
+        res.removeHeader(h)
+      );
+      res.setHeader('Cache-Control', 'no-store, no-transform');
       if (req.method === 'HEAD') {
         res.end();
       } else {
