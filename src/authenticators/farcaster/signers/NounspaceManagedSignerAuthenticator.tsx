@@ -293,7 +293,7 @@ const initializer: AuthenticatorInitializer<
             </div>
             <p className="text-xl text-gray-500 m-5">
               Scan the QR code with your phone camera <br /> or tap the button below
-              if you're already on mobile.
+              if you&apos;re already on mobile.
             </p>
           </div>
           <div className="flex flex-col text-center mt-4">
