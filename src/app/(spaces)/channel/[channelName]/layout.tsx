@@ -2,7 +2,7 @@ import { WEBSITE_URL } from "@/constants/app";
 import React from "react";
 import { getChannelMetadata } from "./utils";
 import { Metadata } from "next/types";
-import { defaultFrame } from "@/common/lib/frames/metadata";
+import { defaultFrame } from "@/constants/metadata";
 
 const defaultMetadata = {
   other: {
