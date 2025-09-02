@@ -118,22 +118,30 @@ const {
   context: AppStoreContext,
 } = createStoreBindings<AppStore>("AppStore", createAppStore);
 
-const HydrationGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const HydrationGate: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ children, fallback }) => {
   const store = React.useContext(AppStoreContext);
   const [hydrated, setHydrated] = React.useState(false);
 
   React.useEffect(() => {
-    const unsub = (store as any).persist.onFinishHydration(() =>
-      setHydrated(true),
-    );
-    if ((store as any).persist.hasHydrated?.()) setHydrated(true);
-    return unsub;
+    if (!store) {
+      setHydrated(true);
+      return;
+    }
+
+    const persist = (store as any)?.persist;
+    if (!persist) {
+      setHydrated(true);
+      return;
+    }
+
+    const off = persist.onFinishHydration?.(() => setHydrated(true));
+    if (persist.hasHydrated?.()) setHydrated(true);
+    return typeof off === "function" ? off : undefined;
   }, [store]);
 
-  if (!hydrated) return null;
+  if (!hydrated) return <>{fallback ?? null}</>;
   return <>{children}</>;
 };
-
 const AppStoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
