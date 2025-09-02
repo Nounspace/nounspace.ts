@@ -34,6 +34,7 @@ import {
 } from "./chat/chatStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { createCurrentSpaceStoreFunc, CurrentSpaceStore } from "./currentSpace";
+import React from "react";
 
 export type AppStore = {
   account: AccountStore;
@@ -111,8 +112,35 @@ export function createAppStore() {
   });
 }
 
-const { useStore: useAppStore, provider: AppStoreProvider } =
-  createStoreBindings<AppStore>("AppStore", createAppStore);
+const {
+  useStore: useAppStore,
+  provider: BaseAppStoreProvider,
+  context: AppStoreContext,
+} = createStoreBindings<AppStore>("AppStore", createAppStore);
+
+const HydrationGate: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const store = React.useContext(AppStoreContext);
+  const [hydrated, setHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    const unsub = (store as any).persist.onFinishHydration(() =>
+      setHydrated(true),
+    );
+    if ((store as any).persist.hasHydrated?.()) setHydrated(true);
+    return unsub;
+  }, [store]);
+
+  if (!hydrated) return null;
+  return <>{children}</>;
+};
+
+const AppStoreProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <BaseAppStoreProvider>
+    <HydrationGate>{children}</HydrationGate>
+  </BaseAppStoreProvider>
+);
 
 function useLogout() {
   const { logout: privyLogout } = usePrivy();
