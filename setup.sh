@@ -22,13 +22,13 @@ elif ! node -v | grep -q "^v20\\." ; then
   echo "⚠️  Node 20.x recommended. Continuing with $(node -v)" >&2
 fi
 
-# Enable Yarn through corepack if available
+# Enable pnpm through corepack if available
 if command -v corepack >/dev/null 2>&1; then
-  corepack enable
+  corepack enable pnpm
 fi
 
 echo "▶ Installing JS dependencies"
-if ! yarn install; then
+if ! pnpm install; then
   echo "⚠️  Failed to install JS dependencies; continuing" >&2
 fi
 
@@ -55,3 +55,4 @@ else
 fi
 
 echo "✅ Setup script finished"
+

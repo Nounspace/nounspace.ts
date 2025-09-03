@@ -26,9 +26,15 @@ a protocol for decentralized social apps: https://www.farcaster.xyz
    install docker
    install supabase
    npx supabase init
+3. Ensure pnpm is available
+   ```bash
+   corepack enable pnpm # or: npm install -g pnpm
+   ```
 4. Install dependencies
    ```bash
-   yarn install
+   pnpm install
+   # In CI, use: pnpm install --frozen-lockfile
+   ```
 6. Create a file `.env.development.local`
 7. Get the environment variables you need for the file <br>
   a. get a Neynar API key https://docs.neynar.com/docs -> `NEYNAR_API_KEY` <br>
@@ -49,11 +55,17 @@ The script will attempt to start Supabase automatically if Docker is running; ot
 
 9. Run the test suite
    ```bash
-   yarn test
+   pnpm test
    ```
 
 9. cp .env.development.local .env.local
-10. yarn build
+10. pnpm build
+
+11. Common pnpm commands
+    ```bash
+    pnpm dev       # start the development server
+    pnpm lint:fix  # fix lint issues
+    ```
 
 ## Contributing and making Fidgets
 
@@ -88,3 +100,4 @@ nounspace is released under the GPL-3.0 License. Feel free to fork and modify th
 
 **Made with ❤️ by the Nounspace team & community.**
 Questions or feedback? Create a [Github issue](https://github.com/Nounspace/nounspace.ts/issues) or contact us in [Discord](https://discord.gg/eYQeXU2WuH)
+

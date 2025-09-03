@@ -14,10 +14,10 @@ docs:
 
 sandbox:
   install:
-    - yarn install --ignore-engines
+    - pnpm install --ignore-engines
   check:
-    - yarn run prettier --write {file_path}
-    - yarn run eslint {file_path}
+    - pnpm prettier --write {file_path}
+    - pnpm eslint {file_path}
 
 rules:
   - "Any clearly inefficient or repeated code should be optimized or refactored."

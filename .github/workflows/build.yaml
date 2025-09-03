@@ -28,16 +28,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 18.16
-        cache: yarn
-        cache-dependency-path: |
-          yarn.lock
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
 
     - name: Run Type Check
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: tsc
+      run: pnpm tsc
 
     - name: Build
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: build
+      run: pnpm build
+
