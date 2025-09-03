@@ -620,7 +620,21 @@ function rewriteHtml(html, targetUrl, req, load) {
     if(window.__NS_PROXY_INSTALLED__)return;window.__NS_PROXY_INSTALLED__=true;
     const PROXY_ORIGIN=location.origin;
     const SERVER_BASE=new URL(${JSON.stringify(targetUrl)});
-    function currentBase(){try{return new URL(document.baseURI);}catch{return SERVER_BASE;}}
+    function currentBase(){
+      try{
+        var b=new URL(document.baseURI);
+        if(b.origin===PROXY_ORIGIN&&b.pathname.startsWith('/api/proxy/')){
+          var p=b.pathname.slice(11).split('/');
+          var sc=p.shift();
+          var h=p.shift();
+          if(sc&&h){
+            var rest=p.join('/');
+            return new URL(sc+'://'+h+(rest?'/' + rest:''));
+          }
+        }
+        return b;
+      }catch{return SERVER_BASE;}
+    }
     const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
     const NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;
     function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
