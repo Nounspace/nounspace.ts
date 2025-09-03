@@ -220,52 +220,24 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     const frame = iframeRef.current;
     if (!frame) return;
 
-    const rewriteLinks = () => {
-      try {
-        const doc = frame.contentDocument;
-        const win = frame.contentWindow;
-        if (!doc || !win) return;
-        const anchors = doc.querySelectorAll<HTMLAnchorElement>("a[href]");
-        anchors.forEach((anchor) => {
-          const href = anchor.getAttribute("href");
-          if (!href) return;
-          try {
-            const absolute = new URL(href, win.location.href);
-            if (absolute.hostname === "proxy.nounspace.com") {
-              if (!absolute.pathname.startsWith("/api/proxy/")) {
-                anchor.href = `${proxyBase}${absolute.pathname}${absolute.search}${absolute.hash}`;
-              }
-            } else {
-              anchor.href = `https://proxy.nounspace.com/api/proxy/${absolute.protocol.replace(":", "")}/${absolute.host}${absolute.pathname}${absolute.search}${absolute.hash}`;
-            }
-          } catch {
-            // ignore invalid links
-          }
-        });
-      } catch {
-        // unable to access iframe contents
-      }
-    };
-
     const handleLoad = () => {
-      rewriteLinks();
+      const src = frame.src;
       try {
-        const doc = frame.contentDocument;
-        if (doc) {
-          observer.disconnect();
-          observer.observe(doc, { childList: true, subtree: true });
+        const urlObj = new URL(src);
+        if (
+          urlObj.hostname === "proxy.nounspace.com" &&
+          !urlObj.pathname.startsWith("/api/proxy/")
+        ) {
+          frame.src = `${proxyBase}${urlObj.pathname}${urlObj.search}${urlObj.hash}`;
         }
       } catch {
-        // ignore
+        // ignore parsing errors
       }
     };
 
-    const observer = new MutationObserver(() => rewriteLinks());
     frame.addEventListener("load", handleLoad);
-
     return () => {
       frame.removeEventListener("load", handleLoad);
-      observer.disconnect();
     };
   }, [loadWithProxy, proxyBase]);
 
