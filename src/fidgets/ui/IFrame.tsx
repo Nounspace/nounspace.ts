@@ -9,7 +9,7 @@ import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
 import { debounce } from "lodash";
 import { isValidHttpUrl } from "@/common/lib/utils/url";
 import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fidgets/helpers";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
 
@@ -179,17 +179,21 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl);
-  const transformedUrl = useMemo(() => {
+  const { transformedUrl, proxyBase } = useMemo(() => {
     const base = transformUrl(sanitizedUrl || "");
     if (loadWithProxy && base) {
       try {
         const urlObj = new URL(base);
-        return `https://proxy.nounspace.com/api/proxy/${urlObj.protocol.replace(":", "")}/${urlObj.host}${urlObj.pathname}${urlObj.search}${urlObj.hash}`;
+        const basePath = `https://proxy.nounspace.com/api/proxy/${urlObj.protocol.replace(":", "")}/${urlObj.host}`;
+        return {
+          transformedUrl: `${basePath}${urlObj.pathname}${urlObj.search}${urlObj.hash}`,
+          proxyBase: basePath,
+        };
       } catch {
-        return base;
+        return { transformedUrl: base, proxyBase: null };
       }
     }
-    return base;
+    return { transformedUrl: base, proxyBase: null };
   }, [sanitizedUrl, loadWithProxy]);
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
@@ -208,6 +212,62 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     });
     return clean.trim() ? clean : null;
   }, [embedScript]);
+
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    if (!loadWithProxy || !proxyBase) return;
+    const frame = iframeRef.current;
+    if (!frame) return;
+
+    const rewriteLinks = () => {
+      try {
+        const doc = frame.contentDocument;
+        const win = frame.contentWindow;
+        if (!doc || !win) return;
+        const anchors = doc.querySelectorAll<HTMLAnchorElement>("a[href]");
+        anchors.forEach((anchor) => {
+          const href = anchor.getAttribute("href");
+          if (!href) return;
+          try {
+            const absolute = new URL(href, win.location.href);
+            if (absolute.hostname === "proxy.nounspace.com") {
+              if (!absolute.pathname.startsWith("/api/proxy/")) {
+                anchor.href = `${proxyBase}${absolute.pathname}${absolute.search}${absolute.hash}`;
+              }
+            } else {
+              anchor.href = `https://proxy.nounspace.com/api/proxy/${absolute.protocol.replace(":", "")}/${absolute.host}${absolute.pathname}${absolute.search}${absolute.hash}`;
+            }
+          } catch {
+            // ignore invalid links
+          }
+        });
+      } catch {
+        // unable to access iframe contents
+      }
+    };
+
+    const handleLoad = () => {
+      rewriteLinks();
+      try {
+        const doc = frame.contentDocument;
+        if (doc) {
+          observer.disconnect();
+          observer.observe(doc, { childList: true, subtree: true });
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    const observer = new MutationObserver(() => rewriteLinks());
+    frame.addEventListener("load", handleLoad);
+
+    return () => {
+      frame.removeEventListener("load", handleLoad);
+      observer.disconnect();
+    };
+  }, [loadWithProxy, proxyBase]);
 
   useEffect(() => {
     if (sanitizedEmbedScript) return;
@@ -404,6 +464,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             }}
           >
             <iframe
+              ref={iframeRef}
               src={transformedUrl}
               title="IFrame Fidget"
               sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
@@ -434,6 +495,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               }}
             >
               <iframe
+                ref={iframeRef}
                 src={transformedUrl}
                 title="IFrame Fidget"
                 sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
