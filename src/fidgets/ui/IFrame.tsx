@@ -2,6 +2,7 @@ import IFrameWidthSlider from "@/common/components/molecules/IframeScaleSlider";
 import TextInput from "@/common/components/molecules/TextInput";
 import HTMLInput from "@/common/components/molecules/HTMLInput";
 import CropControls from "@/common/components/molecules/CropControls";
+import SwitchButton from "@/common/components/molecules/SwitchButton";
 import { FidgetArgs, FidgetModule, FidgetProperties, type FidgetSettingsStyle } from "@/common/fidgets";
 import useSafeUrl from "@/common/lib/hooks/useSafeUrl";
 import { useIsMobile } from "@/common/lib/hooks/useIsMobile";
@@ -19,6 +20,7 @@ export type IFrameFidgetSettings = {
   cropOffsetX: number;
   cropOffsetY: number;
   isScrollable: boolean;
+  loadWithProxy?: boolean;
 } & FidgetSettingsStyle;
 
 const frameConfig: FidgetProperties = {
@@ -103,6 +105,20 @@ const frameConfig: FidgetProperties = {
       ),
       group: "settings",
     },
+    {
+      fieldName: "loadWithProxy",
+      displayName: "Load with proxy",
+      displayNameHint:
+        "If you experience issues embedding a website, loading via Nounspace's reverse proxy server may solve them. If neither works, the only way the website can be embedded is for the owner to whitelist nounspace.com.",
+      required: false,
+      default: false,
+      inputSelector: (props) => (
+        <WithMargin>
+          <SwitchButton {...props} />
+        </WithMargin>
+      ),
+      group: "settings",
+    },
     ...defaultStyleFields,
   ],
   size: {
@@ -137,7 +153,8 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     size = 1,
     cropOffsetX = 0,
     cropOffsetY = 0,
-    isScrollable = false
+    isScrollable = false,
+    loadWithProxy = false
   },
 }) => {
   const isMobile = useIsMobile();
@@ -162,8 +179,18 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   const isValid = isValidHttpUrl(debouncedUrl);
   const sanitizedUrl = useSafeUrl(debouncedUrl);
-  const transformedUrl = transformUrl(sanitizedUrl || "");
-  const scaleValue = size;
+  const transformedUrl = useMemo(() => {
+    const base = transformUrl(sanitizedUrl || "");
+    if (loadWithProxy && base) {
+      try {
+        const urlObj = new URL(base);
+        return `https://proxy.nounspace.com/api/proxy/${urlObj.protocol.replace(":", "")}/${urlObj.host}${urlObj.pathname}${urlObj.search}${urlObj.hash}`;
+      } catch {
+        return base;
+      }
+    }
+    return base;
+  }, [sanitizedUrl, loadWithProxy]);
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
     const clean = DOMPurify.sanitize(embedScript, {
@@ -184,6 +211,10 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   useEffect(() => {
     if (sanitizedEmbedScript) return;
+    if (loadWithProxy) {
+      setEmbedInfo({ directEmbed: true });
+      return;
+    }
     async function checkEmbedInfo() {
       if (!isValid || !sanitizedUrl) return;
 
@@ -231,7 +262,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     }
 
     checkEmbedInfo();
-  }, [sanitizedUrl, isValid, sanitizedEmbedScript]);
+  }, [sanitizedUrl, isValid, sanitizedEmbedScript, loadWithProxy]);
 
   if (sanitizedEmbedScript) {
     return (
