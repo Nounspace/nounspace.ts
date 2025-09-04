@@ -26,13 +26,12 @@ export async function getAllMarkdownFiles(): Promise<PostData[]> {
     if (isNull(data)) {
       return [];
     }
-    return (
-      await Promise.all(
-        map(data, (d: FileObject) =>
-          getMarkdownFileBySlug(d.name.replace(/\.md$/, "")),
-        ),
-      )
-    ).filter((d) => !isNull(d));
+    const results = await Promise.all(
+      data.map((d: FileObject) =>
+        getMarkdownFileBySlug(d.name.replace(/\.md$/, "")),
+      ),
+    );
+    return results.filter((d): d is PostData => d !== null);
   }
 }
 
@@ -69,12 +68,8 @@ export async function getAllSlugs() {
     if (isNull(data)) {
       return [];
     }
-    return map(
-      filter(
-        data,
-        (d: FileObject) => endsWith(d.name, ".md") && !startsWith(d.name, "."),
-      ),
-      (d) => d.name.replace(/\.md$/, ""),
-    );
+    return data
+      .filter((d: FileObject) => endsWith(d.name, ".md") && !startsWith(d.name, "."))
+      .map((d) => d.name.replace(/\.md$/, ""));
   }
 }

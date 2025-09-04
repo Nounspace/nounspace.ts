@@ -1,13 +1,31 @@
 "use client";
 
 import { useCallback, useContext, useEffect, useState } from "react";
-import type {
-  CastEmbedLocationContext,
-  ChannelLocationContext,
-  FrameContext,
-  LauncherLocationContext,
-  NotificationLocationContext
-} from "@farcaster/frame-core/dist/context";
+// Type definitions for frame context (replacing missing @farcaster/frame-core types)
+interface CastEmbedLocationContext {
+  type: 'cast_embed';
+  cast: any;
+}
+
+interface ChannelLocationContext {
+  type: 'channel';
+  channel: any;
+}
+
+interface LauncherLocationContext {
+  type: 'launcher';
+}
+
+interface NotificationLocationContext {
+  type: 'notification';
+  notification: any;
+}
+
+interface FrameContext {
+  client: any;
+  user: any;
+  location: CastEmbedLocationContext | ChannelLocationContext | LauncherLocationContext | NotificationLocationContext;
+}
 import { MiniAppSdkContext } from "../../providers/MiniAppSdkProvider";
 
 /**
@@ -21,7 +39,7 @@ import { MiniAppSdkContext } from "../../providers/MiniAppSdkProvider";
  */
 export function useMiniAppSdk() {
   const { isInitializing, isReady, error, sdk: sdkInstance } = useContext(MiniAppSdkContext);
-  const [frameContext, setFrameContext] = useState<FrameContext | undefined>(undefined);
+  const [frameContext, setFrameContext] = useState<any>(undefined);
 
   // Fetch context when SDK is available
   useEffect(() => {

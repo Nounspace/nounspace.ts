@@ -19,18 +19,38 @@ import {
 } from "lodash";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { ed25519 } from "@noble/curves/ed25519";
-import { managedNonce } from "@noble/ciphers/webcrypto";
 import {
   bytesToHex,
   bytesToUtf8,
   hexToBytes,
   utf8ToBytes,
+  randomBytes,
 } from "@noble/ciphers/utils";
 import moment from "moment";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "../../../api/backend";
 import { createClient } from "../../../database/supabase/clients/component";
 import axios from "axios";
+
+// Helper function to replace managedNonce functionality
+function createCipherWithNonce(key: Uint8Array) {
+  return {
+    encrypt: (data: Uint8Array) => {
+      const nonce = randomBytes(24); // XChaCha20-Poly1305 uses 24-byte nonce
+      const encrypted = xchacha20poly1305(key, nonce).encrypt(data);
+      // Prepend nonce to encrypted data
+      const result = new Uint8Array(nonce.length + encrypted.length);
+      result.set(nonce);
+      result.set(encrypted, nonce.length);
+      return result;
+    },
+    decrypt: (data: Uint8Array) => {
+      const nonce = data.slice(0, 24);
+      const encrypted = data.slice(24);
+      return xchacha20poly1305(key, nonce).decrypt(encrypted);
+    }
+  };
+}
 
 class NoCurrentIdentity extends Error {
   constructor(...args) {
@@ -104,7 +124,7 @@ export const prekeyStore = (
       ? get().account.getCurrentIdentity()!.rootKeys
       : get().account.getCurrentPrekey() ||
         (await get().account.generatePreKey());
-    const cipher = managedNonce(xchacha20poly1305)(
+    const cipher = createCipherWithNonce(
       stringToCipherKey(key.privateKey),
     );
     const file: UnsignedFile = {
@@ -140,7 +160,7 @@ export const prekeyStore = (
     if (isUndefined(keyPair)) {
       throw new NoPreKeyFoundError(encryptingKey);
     }
-    const cipher = managedNonce(xchacha20poly1305)(
+    const cipher = createCipherWithNonce(
       stringToCipherKey(keyPair.privateKey),
     );
     return bytesToUtf8(cipher.decrypt(hexToBytes(file.fileData)));

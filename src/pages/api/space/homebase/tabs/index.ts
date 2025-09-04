@@ -10,7 +10,6 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { homebaseTabsPath } from "@/constants/supabase";
 import { isArray, isNil, isUndefined, map } from "lodash";
-import { StorageError } from "@supabase/storage-js";
 import stringify from "fast-json-stable-stringify";
 
 const homeBaseTabRequestTypes = ["create", "rename", "delete"] as const;
@@ -75,7 +74,7 @@ async function manageHomebaseTabs(
     });
     return;
   }
-  let errorResult: StorageError | null;
+  let errorResult: any;
 
   if (updateReq.type === "create") {
     const { error } = await createSupabaseServerClient()

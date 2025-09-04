@@ -4,12 +4,12 @@ import { ed25519 } from "@noble/curves/ed25519";
 import { xchacha20poly1305 } from "@noble/ciphers/chacha";
 import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha256";
-import { managedNonce, randomBytes } from "@noble/ciphers/webcrypto";
 import {
   bytesToHex,
   bytesToUtf8,
   hexToBytes,
   utf8ToBytes,
+  randomBytes,
 } from "@noble/ciphers/utils";
 import { StoreGet, StoreSet } from "../../createStore";
 import { AppStore } from "..";
@@ -105,6 +105,26 @@ function randomNonce(length = 32) {
   return bytesToHex(randomBytes(length));
 }
 
+// Helper function to replace managedNonce functionality
+function createCipherWithNonce(key: Uint8Array) {
+  return {
+    encrypt: (data: Uint8Array) => {
+      const nonce = randomBytes(24); // XChaCha20-Poly1305 uses 24-byte nonce
+      const encrypted = xchacha20poly1305(key, nonce).encrypt(data);
+      // Prepend nonce to encrypted data
+      const result = new Uint8Array(nonce.length + encrypted.length);
+      result.set(nonce);
+      result.set(encrypted, nonce.length);
+      return result;
+    },
+    decrypt: (data: Uint8Array) => {
+      const nonce = data.slice(0, 24);
+      const encrypted = data.slice(24);
+      return xchacha20poly1305(key, nonce).decrypt(encrypted);
+    }
+  };
+}
+
 function generateMessage(nonce) {
   return `${identityMessaage}\n${nonce}\n${moreInfo}`;
 }
@@ -128,7 +148,7 @@ async function decryptKeyFile(
     wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
-  const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
+  const cipher = createCipherWithNonce(stringToCipherKey(signature));
   return JSON.parse(bytesToUtf8(cipher.decrypt(encryptedBlob))) as
     | RootSpaceKeys
     | PreSpaceKeys;
@@ -149,7 +169,7 @@ async function encryptKeyFile(
     wallet as Partial<ConnectedWallet>,
     generateMessage(nonce)
   );
-  const cipher = managedNonce(xchacha20poly1305)(stringToCipherKey(signature));
+  const cipher = createCipherWithNonce(stringToCipherKey(signature));
   return cipher.encrypt(utf8ToBytes(stringify(keysToEncrypt)));
 }
 
