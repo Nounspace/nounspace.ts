@@ -563,6 +563,10 @@ function rewriteHtml(html, targetUrl, req, load) {
     return `${proxyOrigin}/api/proxy/${proto}/${u.host}${u.pathname}${u.search}${u.hash}`;
   }
 
+  if (baseHref) {
+    $('base[href]').attr('href', toProxy(targetUrl));
+  }
+
   const rewriteAttr = (index, el, attr) => {
     const value = $(el).attr(attr);
     if (!value || /^(?:|#|data:|javascript:|mailto:)/i.test(value)) {
@@ -620,7 +624,21 @@ function rewriteHtml(html, targetUrl, req, load) {
     if(window.__NS_PROXY_INSTALLED__)return;window.__NS_PROXY_INSTALLED__=true;
     const PROXY_ORIGIN=location.origin;
     const SERVER_BASE=new URL(${JSON.stringify(targetUrl)});
-    function currentBase(){try{return new URL(document.baseURI);}catch{return SERVER_BASE;}}
+    function currentBase(){
+      try{
+        var b=new URL(location.href);
+        if(b.origin===PROXY_ORIGIN&&b.pathname.startsWith('/api/proxy/')){
+          var p=b.pathname.slice(11).split('/');
+          var sc=p.shift();
+          var h=p.shift();
+          if(sc&&h){
+            var rest=p.join('/');
+            return new URL(sc+'://'+h+(rest?'/' + rest:''));
+          }
+        }
+        return b;
+      }catch{return SERVER_BASE;}
+    }
     const PROXY_PREFIX=PROXY_ORIGIN+'/api/proxy/';
     const NOOP_RE=/^(?:|#|javascript:|mailto:|data:|blob:)/i;
     function isAlreadyProxied(u){try{const abs=new URL(typeof u==='string'?u:u.toString(),location.href);return abs.origin===PROXY_ORIGIN&&abs.pathname.startsWith('/api/proxy/');}catch{return false;}}
@@ -640,8 +658,8 @@ function rewriteHtml(html, targetUrl, req, load) {
     const _insertAdjacentElement=Element.prototype.insertAdjacentElement;Element.prototype.insertAdjacentElement=function(pos,el){try{rewriteTree(el);}catch{}return _insertAdjacentElement.call(this,pos,el);};
     const _insertAdjacentHTML=Element.prototype.insertAdjacentHTML;Element.prototype.insertAdjacentHTML=function(pos,html){try{html=rewriteHtmlStringOnce(html);}catch{}return _insertAdjacentHTML.call(this,pos,html);};
     const _write=Document.prototype.write;const _writeln=Document.prototype.writeln;function rewriteThen(fn,args){try{const html=Array.prototype.join.call(args,'');return fn.call(document,rewriteHtmlStringOnce(html));}catch{return fn.apply(document,args);}}Document.prototype.write=function(...a){return rewriteThen(_write,a);};Document.prototype.writeln=function(...a){return rewriteThen(_writeln,a);};
-    document.addEventListener('click',function(e){if(e.defaultPrevented)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;if(a.target&&a.target!=='_self')return;if(a.hasAttribute('download'))return;try{const v=a.getAttribute('href');const nu=toProxy(v);if(nu&&nu!==v){e.preventDefault();location.assign(nu);}}catch{}},true);
-    document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',currentBase());if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href)location.href=u;}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
+    document.addEventListener('click',function(e){if(e.defaultPrevented)return;if(e.metaKey||e.ctrlKey||e.shiftKey||e.button!==0)return;const a=e.target&&e.target.closest&&e.target.closest('a[href]');if(!a)return;if(a.target&&a.target!=='_self')return;if(a.hasAttribute('download'))return;try{const v=a.getAttribute('href');const nu=toProxy(v);if(nu&&nu!==v){e.preventDefault();if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:nu},'*');}catch{}}else{location.assign(nu);}}}catch{}},true);
+    document.addEventListener('submit',e=>{const f=e.target;if(!(f instanceof HTMLFormElement))return;try{const m=(f.method||'GET').toUpperCase();const actionAttr=f.getAttribute('action')||'';const actionAbs=new URL(actionAttr||'.',currentBase());if(m==='GET'){e.preventDefault();const params=new URLSearchParams(new FormData(f));new URLSearchParams(actionAbs.search).forEach((v,k)=>params.append(k,v));actionAbs.search='?'+params.toString();const u=toProxy(actionAbs.toString());if(u&&u!==location.href){if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:u},'*');}catch{}}else{location.href=u;}}}else{const u=toProxy(actionAbs.toString());if(u&&u!==f.action)f.action=u;}}catch{}},true);
     const ORequest=window.Request;window.Request=new Proxy(ORequest,{construct(target,args){try{const input=args[0];let u=typeof input==='string'?input:(input&&input.url)||(input&&input.href)||String(input);if(u)args[0]=toProxy(u);}catch{}return new target(...args);}});
     const ofetch=window.fetch;function wrappedFetch(i,o){try{let u=typeof i==='string'?i:(i&&i.url)||(i&&i.href)||String(i);if(u){const p=toProxy(u);if(typeof i==='string')return ofetch(p,o);const req=i instanceof Request?new Request(p,i):new Request(p,o);return ofetch(req,o);}}catch{}return ofetch(i,o);}window.fetch=wrappedFetch;try{Object.defineProperty(window,'fetch',{configurable:true,get(){return wrappedFetch;},set(){}});}catch{}
     const oopen=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u,...r){try{if(u&&!NOOP_RE.test(u))u=toProxy(new URL(u,currentBase()).toString());}catch{}return oopen.call(this,m,u,...r);};
@@ -655,10 +673,10 @@ function rewriteHtml(html, targetUrl, req, load) {
     function patchLocationHref(){const d=Object.getOwnPropertyDescriptor(Location.prototype,'href');if(!d||!d.set)return;Object.defineProperty(Location.prototype,'href',{configurable:d.configurable,enumerable:d.enumerable,get:function(){return d.get.call(this);},set:function(v){try{if(v)v=toProxy(v);}catch{}return d.set.call(this,v);}});}patchLocationHref();
     ['pathname','search','hash'].forEach(prop=>{const d=Object.getOwnPropertyDescriptor(Location.prototype,prop);if(!d||!d.set)return;Object.defineProperty(Location.prototype,prop,{configurable:d.configurable,enumerable:d.enumerable,get:function(){return d.get.call(this);},set:function(v){try{const u=new URL(location.href);u[prop]=v;location.assign(toProxy(u.toString()));return;}catch{}return d.set.call(this,v);}});});
     const _open=window.open;window.open=function(u,n,s){try{if(u)u=toProxy(u);}catch{}return _open.call(this,u,n,s);};
-    const _push=history.pushState.bind(history);history.pushState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _push(s,t,nu);}return _push(s,t,u);};
-    const _replace=history.replaceState.bind(history);history.replaceState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href)return _replace(s,t,nu);}return _replace(s,t,u);};
-    const _assign=location.assign.bind(location);location.assign=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _assign(nu);};
-    const _replaceLoc=location.replace.bind(location);location.replace=function(u){const nu=toProxy(u);if(nu&&nu!==location.href)return _replaceLoc(nu);};
+    const _push=history.pushState.bind(history);history.pushState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href){if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:nu},'*');}catch{}}else{return _push(s,t,nu);}return;}return _push(s,t,u);}return _push(s,t,u);};
+    const _replace=history.replaceState.bind(history);history.replaceState=function(s,t,u){if(u!=null){const nu=toProxy(u);if(nu&&nu!==location.href){if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:nu},'*');}catch{}}else{return _replace(s,t,nu);}return;}return _replace(s,t,u);}return _replace(s,t,u);};
+    const _assign=location.assign.bind(location);location.assign=function(u){const nu=toProxy(u);if(nu&&nu!==location.href){if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:nu},'*');}catch{}}else{return _assign(nu);}return;}return _assign(u);};
+    const _replaceLoc=location.replace.bind(location);location.replace=function(u){const nu=toProxy(u);if(nu&&nu!==location.href){if(window.top!==window){try{parent.postMessage({__ns_proxy_nav__:nu},'*');}catch{}}else{return _replaceLoc(nu);}return;}return _replaceLoc(u);};
   })();`;
   /* eslint-enable no-useless-escape */
 
