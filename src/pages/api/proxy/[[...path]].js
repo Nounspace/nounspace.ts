@@ -563,6 +563,10 @@ function rewriteHtml(html, targetUrl, req, load) {
     return `${proxyOrigin}/api/proxy/${proto}/${u.host}${u.pathname}${u.search}${u.hash}`;
   }
 
+  if (baseHref) {
+    $('base[href]').attr('href', toProxy(targetUrl));
+  }
+
   const rewriteAttr = (index, el, attr) => {
     const value = $(el).attr(attr);
     if (!value || /^(?:|#|data:|javascript:|mailto:)/i.test(value)) {
@@ -622,7 +626,7 @@ function rewriteHtml(html, targetUrl, req, load) {
     const SERVER_BASE=new URL(${JSON.stringify(targetUrl)});
     function currentBase(){
       try{
-        var b=new URL(document.baseURI);
+        var b=new URL(location.href);
         if(b.origin===PROXY_ORIGIN&&b.pathname.startsWith('/api/proxy/')){
           var p=b.pathname.slice(11).split('/');
           var sc=p.shift();
