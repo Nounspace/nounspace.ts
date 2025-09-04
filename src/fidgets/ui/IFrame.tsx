@@ -220,24 +220,17 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     const frame = iframeRef.current;
     if (!frame) return;
 
-    const handleLoad = () => {
-      const src = frame.src;
-      try {
-        const urlObj = new URL(src);
-        if (
-          urlObj.hostname === "proxy.nounspace.com" &&
-          !urlObj.pathname.startsWith("/api/proxy/")
-        ) {
-          frame.src = `${proxyBase}${urlObj.pathname}${urlObj.search}${urlObj.hash}`;
-        }
-      } catch {
-        // ignore parsing errors
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== "https://proxy.nounspace.com") return;
+      const next = (event.data as { __ns_proxy_nav__?: string })?.__ns_proxy_nav__;
+      if (typeof next === "string") {
+        frame.src = next;
       }
     };
 
-    frame.addEventListener("load", handleLoad);
+    window.addEventListener("message", handleMessage);
     return () => {
-      frame.removeEventListener("load", handleLoad);
+      window.removeEventListener("message", handleMessage);
     };
   }, [loadWithProxy, proxyBase]);
 
