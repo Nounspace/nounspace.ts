@@ -61,7 +61,19 @@ const nextConfig = {
     parallelServerBuildTraces: true,
   },
   // Optimize edge runtime bundle sizes  
-  serverExternalPackages: ['sharp', 'canvas', 'styled-components'],
+  serverExternalPackages: [
+    'sharp', 
+    'canvas', 
+    'styled-components',
+    '@farcaster/quick-auth',
+    'frames.js',
+    'htmlparser2',
+    'cheerio',
+    'ox',
+    'viem',
+    'parse5',
+    'entities',
+  ],
   // Reduce bundle analysis in development
   productionBrowserSourceMaps: false,
   transpilePackages: [
@@ -123,6 +135,17 @@ const nextConfig = {
     config.resolve.fallback = {
       ...config.resolve.fallback,
       os: false,
+      fs: false,
+      net: false,
+      tls: false,
+      crypto: false,
+      stream: false,
+      url: false,
+      zlib: false,
+      http: false,
+      https: false,
+      assert: false,
+      util: false,
     };
 
     // Aggressive performance optimizations
@@ -191,7 +214,18 @@ const nextConfig = {
 
     // Exclude heavy dependencies from bundling where possible
     if (isServer) {
-      config.externals = [...(config.externals || []), 'sharp', 'canvas'];
+      config.externals = [
+        ...(config.externals || []), 
+        'sharp', 
+        'canvas',
+        'parse5',
+        'entities',
+        '@farcaster/quick-auth',
+        'frames.js',
+        'htmlparser2',
+        'cheerio',
+        'ox',
+      ];
     }
 
     // Optimize edge runtime bundle sizes
@@ -200,6 +234,15 @@ const nextConfig = {
       // Reduce bundle size for edge functions
       'react-dom/server': false,
       'styled-components': false,
+      // Fix module resolution issues for packages with missing exports
+      '@farcaster/quick-auth/decodeJwt': '@farcaster/quick-auth',
+      'frames.js/parseFramesWithReports': 'frames.js',
+      'ox/BlockOverrides': 'ox',
+      // Skip problematic submodules
+      'entities/decode': 'entities',
+      'entities/escape': 'entities',
+      'entities/lib/decode.js': 'entities',
+      'entities/lib/escape.js': 'entities',
     };
 
     return config;

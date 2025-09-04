@@ -112,6 +112,7 @@
     "csstype": "^3.1.3",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.12.0",
+    "entities": "^6.0.1",
     "fast-json-stable-stringify": "^2.1.0",
     "framer-motion": "^11.3.30",
     "frames.js": "^0.18.2",

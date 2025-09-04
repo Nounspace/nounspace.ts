@@ -225,6 +225,9 @@ importers:
       emoji-picker-react:
         specifier: ^4.12.0
         version: 4.12.3(react@18.3.1)
+      entities:
+        specifier: ^6.0.1
+        version: 6.0.1
       fast-json-stable-stringify:
         specifier: ^2.1.0
         version: 2.1.0
@@ -21385,6 +21388,19 @@ snapshots:
       flow-enums-runtime: 0.0.6
       metro-core: 0.80.12
 
+  metro-config@0.80.12:
+    dependencies:
+      connect: 3.7.0
+      cosmiconfig: 5.2.1
+      flow-enums-runtime: 0.0.6
+      jest-validate: 29.7.0
+      metro: 0.80.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      metro-cache: 0.80.12
+      metro-core: 0.80.12
+      metro-runtime: 0.80.12
+    transitivePeerDependencies:
+      - supports-color
+
   metro-config@0.80.12(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       connect: 3.7.0
@@ -21522,7 +21538,7 @@ snapshots:
       metro-babel-transformer: 0.80.12
       metro-cache: 0.80.12
       metro-cache-key: 0.80.12
-      metro-config: 0.80.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      metro-config: 0.80.12
       metro-core: 0.80.12
       metro-file-map: 0.80.12
       metro-resolver: 0.80.12
