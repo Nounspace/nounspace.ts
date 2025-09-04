@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useCallback, lazy } from "react";
+import React, { useEffect, useMemo, useCallback, lazy, useTransition } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import SpacePage, { SpacePageArgs } from "@/app/(spaces)/SpacePage";
 import FeedModule, { FilterType } from "@/fidgets/farcaster/Feed";
@@ -16,6 +16,8 @@ const TabBar = lazy(() => import('@/common/components/organisms/TabBar'));
 
 // Main component for the private space
 function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: string }) {
+  const [_isPending, startTransition] = useTransition();
+  
   // Destructure and retrieve various state and actions from the app store
   const {
     tabConfigs,
@@ -85,31 +87,36 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
     if (!isNil(tabName)) {
-      loadTabConfig();
+      loadTabConfigAsync();
     }
   }, [tabName, setCurrentSpaceId, setCurrentTabName]);
 
-  // Function to load the configuration for the current tab
-  async function loadTabConfig() {
-    await loadTabNames();
-
-    if (tabOrdering.local.length === 0) {
-      await loadTabOrder();
-    }
-
-    if (tabName === "Feed") {
-      await loadFeedConfig();
-    } else {
-      await loadTab(tabName);
-    }
-
-    // After the current tab is loaded, preload other tabs in the background
-    void loadRemainingTabs();
+  // Load tab config without blocking the initial render
+  function loadTabConfigAsync() {
+    startTransition(() => {
+      (async () => {
+        await loadTabNames();
+        // Re-read current ordering to avoid stale state
+        const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
+        if (freshTabOrdering.local.length === 0) {
+          await loadTabOrder();
+        }
+        if (tabName === "Feed") {
+          await loadFeedConfig();
+        } else {
+          await loadTab(tabName);
+        }
+        // Load remaining tabs
+        void loadRemainingTabs();
+      })().catch(() => {});
+    });
   }
 
   // Preload all tabs except the current one
   async function loadRemainingTabs() {
-    const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
+    // Get fresh state to avoid stale reads
+    const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
+    const otherTabs = freshTabOrdering.local.filter((name) => name !== tabName);
     await Promise.all(
       otherTabs.map((name) =>
         name === "Feed" ? loadFeedConfig() : loadTab(name),
@@ -119,17 +126,18 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Function to switch to a different tab
   async function switchTabTo(newTabName: string, shouldSave: boolean = true) {
-    if (shouldSave) {
-      await commitConfigHandler();
-    }
-
-    // Update the store immediately for better responsiveness
+    // Updates the route immediately
     setCurrentTabName(newTabName);
-
     if (newTabName === "Feed") {
       router.push(`/homebase`);
     } else {
       router.push(`/homebase/${newTabName}`);
+    }
+    // Save config changes in background
+    if (shouldSave) {
+      startTransition(() => {
+        commitConfigHandler();
+      });
     }
   }
 
@@ -251,4 +259,4 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
   );
 }
 
-export default PrivateSpace; 
+export default PrivateSpace;

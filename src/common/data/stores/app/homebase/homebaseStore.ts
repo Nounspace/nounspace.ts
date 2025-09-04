@@ -131,7 +131,10 @@ export const createHomeBaseStoreFunc = (
     }
   }, 1000),
   saveHomebaseConfig: async (config) => {
-    const localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
+    let localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
+    if (!localCopy) {
+      localCopy = cloneDeep(INITIAL_HOMEBASE_CONFIG) as SpaceConfig;
+    }
     mergeWith(localCopy, config, (objValue, srcValue) => {
       if (isArray(srcValue)) return srcValue;
       if (typeof srcValue === 'object' && srcValue !== null) {
