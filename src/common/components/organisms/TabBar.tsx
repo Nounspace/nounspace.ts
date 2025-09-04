@@ -68,10 +68,11 @@ function TabBar({
   const isMobile = useIsMobile();
   const { setEditMode } = useSidebarContext();
 
-  const { getIsLoggedIn, getIsInitializing } = useAppStore((state) => ({
+  const { getIsLoggedIn, getIsInitializing, homebaseLoadTab } = useAppStore((state) => ({
     setModalOpen: state.setup.setModalOpen,
     getIsLoggedIn: state.getIsAccountReady,
     getIsInitializing: state.getIsInitializing,
+    homebaseLoadTab: state.homebase.loadHomebaseTab,
   }));
 
   const [isOperating, setIsOperating] = React.useState(false);
@@ -279,21 +280,41 @@ function TabBar({
     }
   }
 
+  // Protection to avoid double loading/browsing
+  const isSwitchingRef = React.useRef(false);
+
+  // Releases the ref whenever the tab actually changes
+  React.useEffect(() => {
+    isSwitchingRef.current = false;
+  }, [currentTab]);
+
   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
       e.preventDefault();
     }
 
-    // Don't do anything if it's already the current tab
-    if (currentTab === tabName) {
+    // Does nothing if it's already the current tab or if it's already switching
+    if (currentTab === tabName || isSwitchingRef.current) {
       return;
     }
 
+    isSwitchingRef.current = true;
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-
+    // Ensures that navigation uses the correctly encoded URL
+    if (typeof getSpacePageUrl === 'function') {
+      const url = getSpacePageUrl(encodeURIComponent(tabName));
+      window.history.pushState({}, '', url);
+    }
     switchTabTo(tabName, true);
-  }, [switchTabTo, currentTab]);
+  }, [switchTabTo, currentTab, getSpacePageUrl]);
+
+  // Function to preload tab data (only for homebase tabs)
+  const preloadTabData = React.useCallback((tabName: string) => {
+    if (inHomebase && typeof homebaseLoadTab === 'function') {
+      homebaseLoadTab(tabName);
+    }
+  }, [inHomebase, homebaseLoadTab]);
 
   const isLoggedIn = getIsLoggedIn();
 
@@ -341,6 +362,7 @@ function TabBar({
                       renameable={isEditableTab(tabName)}
                       onRemove={() => debouncedDeleteTab(tabName)}
                       renameTab={(tab, newName) => debouncedRenameTab(tab, newName)}
+                      preloadTabData={preloadTabData}
                     />
                   )
                 )}
