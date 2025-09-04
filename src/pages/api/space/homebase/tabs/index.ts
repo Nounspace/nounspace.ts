@@ -74,7 +74,7 @@ async function manageHomebaseTabs(
     });
     return;
   }
-  let errorResult: any;
+  let errorResult: Error | null;
 
   if (updateReq.type === "create") {
     const { error } = await createSupabaseServerClient()

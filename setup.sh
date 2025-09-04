@@ -22,41 +22,34 @@ elif ! node -v | grep -q "^v20\\." ; then
   echo "⚠️  Node 20.x recommended. Continuing with $(node -v)" >&2
 fi
 
-# Enable pnpm through corepack if available
+# Enable/activate pnpm via Corepack to match package.json's packageManager
 if command -v corepack >/dev/null 2>&1; then
-  # Try to extract pnpm version from package.json packageManager field
-  if [[ -f package.json ]] && command -v jq >/dev/null 2>&1; then
-    PACKAGE_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null || echo "")
-    if [[ -n "$PACKAGE_MANAGER" ]] && [[ "$PACKAGE_MANAGER" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-echo "▶ Installing JS dependencies"
-if command -v pnpm >/dev/null 2>&1; then
-  if ! pnpm install --frozen-lockfile; then
-    echo "⚠️  pnpm install failed; continuing" >&2
+  PM=""
+  if command -v jq >/dev/null 2>&1 && [[ -f package.json ]]; then
+    PM="$(jq -r '.packageManager // empty' package.json 2>/dev/null)"
   fi
-else
-  echo "ℹ️  pnpm not found; falling back to npm ci"
-  if ! npm ci; then
-    echo "⚠️  npm ci failed; continuing" >&2
-  fi
-fi
-      else
-        echo "⚠️  Failed to prepare $PACKAGE_MANAGER, falling back to default" >&2
-        corepack enable pnpm
-      fi
-    else
-      echo "▶ No valid packageManager field found, using default pnpm"
-      corepack enable pnpm
-    fi
+  if [[ "$PM" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    corepack prepare "$PM" --activate || corepack enable pnpm
   else
-    # Fallback when jq is not available or package.json is missing
-    echo "▶ jq not available or package.json missing, using default pnpm"
     corepack enable pnpm
   fi
 fi
 
 echo "▶ Installing JS dependencies"
-if ! pnpm install; then
-  echo "⚠️  Failed to install JS dependencies; continuing" >&2
+if command -v pnpm >/dev/null 2>&1; then
+  if ! pnpm install --frozen-lockfile; then
+    echo "⚠️  pnpm install failed, trying npm ci as fallback" >&2
+    if ! npm ci; then
+      echo "❌ Both pnpm and npm install failed" >&2
+      exit 1
+    fi
+  fi
+else
+  echo "ℹ️  pnpm not found; falling back to npm ci"
+  if ! npm ci; then
+    echo "❌ npm ci failed" >&2
+    exit 1
+  fi
 fi
 
 echo "▶ Running optional generators"

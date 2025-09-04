@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:fast": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_PRIVATE_SKIP_SIZE_LIMIT=1 next build",
     "build:parallel": "NODE_OPTIONS='--max-old-space-size=8192' next build",
     "start": "next start",
     "serve": "serve -s build",
@@ -194,7 +195,6 @@
       "@noble/curves": "1.9.6",
       "@noble/hashes": "1.8.0",
       "viem": "2.35.1",
-      "esbuild": "0.25.0",
       "cookie": "0.7.0",
       "lodash.set": "4.3.2"
     }

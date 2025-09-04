@@ -1,3 +1,4 @@
+/* eslint-env node */
 import bundlerAnalyzer from "@next/bundle-analyzer";
 import packageInfo from "./package.json" with { type: "json" };
 import { createRequire } from "node:module";
@@ -54,8 +55,10 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    optimizeCss: true,
-    optimizeServerReact: true,
+    cssChunking: process.env.NODE_ENV === 'production',
+    webpackBuildWorker: true,
+    parallelServerCompiles: true,
+    parallelServerBuildTraces: true,
   },
   transpilePackages: [
     "react-tweet", 
@@ -106,13 +109,38 @@ const nextConfig = {
       },
     ];
   },
-  webpack: (config) => {
+  webpack: (config, { dev, isServer }) => {
     // Prevent webpack from attempting to bundle Node "os" module
     // which can cause erroneous imports of @walletconnect/types
     config.resolve.fallback = {
       ...config.resolve.fallback,
       os: false,
     };
+
+    // Performance optimizations
+    if (!dev) {
+      // Production optimizations
+      config.optimization = {
+        ...config.optimization,
+        moduleIds: 'deterministic',
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+            },
+          },
+        },
+      };
+    }
+
+    // Improve build performance
+    config.infrastructureLogging = {
+      level: 'error',
+    };
+
     return config;
   },
 

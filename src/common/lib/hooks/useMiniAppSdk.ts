@@ -39,7 +39,7 @@ import { MiniAppSdkContext } from "../../providers/MiniAppSdkProvider";
  */
 export function useMiniAppSdk() {
   const { isInitializing, isReady, error, sdk: sdkInstance } = useContext(MiniAppSdkContext);
-  const [frameContext, setFrameContext] = useState<any>(undefined);
+  const [frameContext, setFrameContext] = useState<FrameContext | undefined>(undefined);
 
   // Fetch context when SDK is available
   useEffect(() => {
@@ -48,7 +48,7 @@ export function useMiniAppSdk() {
         try {
           // Context is a promise in the SDK
           const context = await sdkInstance.context;
-          setFrameContext(context);
+          setFrameContext(context as FrameContext);
         } catch (err) {
           console.error("Error fetching context:", err);
         }

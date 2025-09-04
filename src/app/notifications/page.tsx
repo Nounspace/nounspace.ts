@@ -3,6 +3,9 @@
 import React, { useState, useMemo, useCallback, useEffect, Suspense } from "react";
 import useNotifications from "@/common/lib/hooks/useNotifications";
 import useCurrentFid from "@/common/lib/hooks/useCurrentFid";
+
+// Force dynamic rendering for this page since it requires client-side authentication state
+export const dynamic = 'force-dynamic';
 import { FaCircleExclamation, FaHeart } from "react-icons/fa6";
 import { Notification, NotificationTypeEnum, User } from "@neynar/nodejs-sdk/build/api";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/common/components/atoms/tabs";
