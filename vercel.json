@@ -1,3 +1,19 @@
 {
-  "trailingSlash": false
+  "trailingSlash": false,
+  "buildCommand": "pnpm run build:fast",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "functions": {
+    "src/pages/api/**/*.ts": {
+      "maxDuration": 30
+    },
+    "src/pages/api/**/*.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "SKIP_ENV_VALIDATION": "1",
+    "NEXT_PRIVATE_SKIP_SIZE_LIMIT": "1",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  }
 }
