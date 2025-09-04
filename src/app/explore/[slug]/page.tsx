@@ -33,8 +33,15 @@ function isExplorePost(maybe: unknown): maybe is ExplorePost {
 }
 
 export async function generateStaticParams() {
-  const slugs = await getAllSlugs();
-  return map(slugs, (s) => ({ slug: s }));
+  // During build time, we may not have access to Supabase credentials
+  // so we'll generate params dynamically instead
+  try {
+    const slugs = await getAllSlugs();
+    return map(slugs, (s) => ({ slug: s }));
+  } catch (error) {
+    console.warn('Failed to get static params for explore, falling back to dynamic routing:', error);
+    return [];
+  }
 }
 
 const getPostOrSlug = async (
