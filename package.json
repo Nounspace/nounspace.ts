@@ -3,6 +3,7 @@
   "version": "0.1.1",
   "license": "",
   "private": true,
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -165,12 +166,13 @@
     "supabase": "^1.123.0",
     "vitest": "^1.5.0"
   },
-  "resolutions": {
-    "@noble/curves": "1.9.6",
-    "@noble/hashes": "1.8.0",
-    "viem": "2.35.1",
-    "esbuild": "0.25.0",
-    "cookie": "0.7.0",
-    "lodash.set": "4.3.2"
+  "pnpm": {
+    "overrides": {
+      "@noble/curves": "1.9.6",
+      "@noble/hashes": "1.8.0",
+      "viem": "2.35.1",
+      "cookie": "0.7.0",
+      "lodash.set": "4.3.2"
+    }
   }
 }
