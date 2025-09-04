@@ -361,9 +361,6 @@ importers:
       typescript:
         specifier: ^5.1.6
         version: 5.8.3
-      utils:
-        specifier: link:noble/ciphers/utils
-        version: link:noble/ciphers/utils
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
