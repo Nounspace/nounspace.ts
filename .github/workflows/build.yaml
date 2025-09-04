@@ -27,17 +27,21 @@ jobs:
     - name: Install Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 18.16
-        cache: yarn
-        cache-dependency-path: |
-          yarn.lock
+        node-version: 22.x
+        cache: pnpm
+        cache-dependency-path: pnpm-lock.yaml
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10.11.0
+        run_install: false
+
+    - name: Install deps
+      run: pnpm install --frozen-lockfile
 
     - name: Run Type Check
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: tsc
+      run: pnpm tsc
 
     - name: Build
-        uses: borales/actions-yarn@v4
-        with:
-          cmd: build
+      run: pnpm build
