@@ -2,9 +2,10 @@ import React from "react";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
 
-export const config = {
-  runtime: "edge",
-};
+// Convert to Node.js runtime to avoid 4MB edge bundle size limit
+// export const config = {
+//   runtime: "edge",
+// };
 
 interface CastCardData {
   username: string;

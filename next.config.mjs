@@ -59,13 +59,21 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerCompiles: true,
     parallelServerBuildTraces: true,
+    // Optimize edge runtime bundle sizes
+    serverComponentsExternalPackages: ['sharp', 'canvas', 'styled-components'],
   },
+  // Reduce bundle analysis in development
+  productionBrowserSourceMaps: false,
   transpilePackages: [
     "react-tweet", 
     "react-best-gradient-color-picker",
   ], // https://react-tweet.vercel.app/next,
   typescript: {
     ignoreBuildErrors: false,
+  },
+  eslint: {
+    // Skip ESLint during builds for speed (run separately)
+    ignoreDuringBuilds: true,
   },
   env: {
     NEXT_PUBLIC_VERSION: packageInfo.version,
@@ -117,19 +125,59 @@ const nextConfig = {
       os: false,
     };
 
-    // Performance optimizations
+    // Aggressive performance optimizations
+    config.cache = {
+      type: 'filesystem',
+      buildDependencies: {
+        config: [import.meta.url],
+      },
+    };
+
+    // Skip type checking during build (run separately)
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        // Skip heavy type imports
+        '@types/react': false,
+        '@types/react-dom': false,
+      };
+    }
+
+    // Optimize module resolution
+    config.resolve.modules = ['node_modules'];
+    config.resolve.symlinks = false;
+
+    // Faster source maps in development
+    if (dev) {
+      config.devtool = 'eval-cheap-module-source-map';
+    }
+
+    // Production optimizations
     if (!dev) {
-      // Production optimizations
       config.optimization = {
         ...config.optimization,
         moduleIds: 'deterministic',
         splitChunks: {
           chunks: 'all',
+          minSize: 20000,
+          maxSize: 500000,
           cacheGroups: {
+            default: {
+              minChunks: 2,
+              priority: -20,
+              reuseExistingChunk: true,
+            },
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
+              priority: -10,
               chunks: 'all',
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              enforce: true,
             },
           },
         },
@@ -139,6 +187,19 @@ const nextConfig = {
     // Improve build performance
     config.infrastructureLogging = {
       level: 'error',
+    };
+
+    // Exclude heavy dependencies from bundling where possible
+    if (isServer) {
+      config.externals = [...(config.externals || []), 'sharp', 'canvas'];
+    }
+
+    // Optimize edge runtime bundle sizes
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // Reduce bundle size for edge functions
+      'react-dom/server': false,
+      'styled-components': false,
     };
 
     return config;

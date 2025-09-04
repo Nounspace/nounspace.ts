@@ -2,9 +2,10 @@ import React from "react";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ImageResponse } from "next/og";
 
-export const config = {
-  runtime: "edge",
-};
+// Remove edge runtime to avoid 4MB bundle size limit
+// export const config = {
+//   runtime: "edge",
+// };
 
 interface ProposalCardData {
   id: string;
