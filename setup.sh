@@ -24,7 +24,26 @@ fi
 
 # Enable pnpm through corepack if available
 if command -v corepack >/dev/null 2>&1; then
-  corepack enable pnpm
+  # Try to extract pnpm version from package.json packageManager field
+  if [[ -f package.json ]] && command -v jq >/dev/null 2>&1; then
+    PACKAGE_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null || echo "")
+    if [[ -n "$PACKAGE_MANAGER" ]] && [[ "$PACKAGE_MANAGER" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+      echo "▶ Preparing pnpm version from packageManager field: $PACKAGE_MANAGER"
+      if corepack prepare "$PACKAGE_MANAGER" --activate; then
+        echo "✅ Successfully activated $PACKAGE_MANAGER"
+      else
+        echo "⚠️  Failed to prepare $PACKAGE_MANAGER, falling back to default" >&2
+        corepack enable pnpm
+      fi
+    else
+      echo "▶ No valid packageManager field found, using default pnpm"
+      corepack enable pnpm
+    fi
+  else
+    # Fallback when jq is not available or package.json is missing
+    echo "▶ jq not available or package.json missing, using default pnpm"
+    corepack enable pnpm
+  fi
 fi
 
 echo "▶ Installing JS dependencies"

@@ -28,8 +28,20 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: 18.16
-        cache: pnpm
-        cache-dependency-path: pnpm-lock.yaml
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.16
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
     - name: Run Type Check
       run: pnpm tsc
