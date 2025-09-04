@@ -28,9 +28,17 @@ if command -v corepack >/dev/null 2>&1; then
   if [[ -f package.json ]] && command -v jq >/dev/null 2>&1; then
     PACKAGE_MANAGER=$(jq -r '.packageManager // empty' package.json 2>/dev/null || echo "")
     if [[ -n "$PACKAGE_MANAGER" ]] && [[ "$PACKAGE_MANAGER" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-      echo "▶ Preparing pnpm version from packageManager field: $PACKAGE_MANAGER"
-      if corepack prepare "$PACKAGE_MANAGER" --activate; then
-        echo "✅ Successfully activated $PACKAGE_MANAGER"
+echo "▶ Installing JS dependencies"
+if command -v pnpm >/dev/null 2>&1; then
+  if ! pnpm install --frozen-lockfile; then
+    echo "⚠️  pnpm install failed; continuing" >&2
+  fi
+else
+  echo "ℹ️  pnpm not found; falling back to npm ci"
+  if ! npm ci; then
+    echo "⚠️  npm ci failed; continuing" >&2
+  fi
+fi
       else
         echo "⚠️  Failed to prepare $PACKAGE_MANAGER, falling back to default" >&2
         corepack enable pnpm
