@@ -59,9 +59,9 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerCompiles: true,
     parallelServerBuildTraces: true,
-    // Optimize edge runtime bundle sizes
-    serverComponentsExternalPackages: ['sharp', 'canvas', 'styled-components'],
   },
+  // Optimize edge runtime bundle sizes  
+  serverExternalPackages: ['sharp', 'canvas', 'styled-components'],
   // Reduce bundle analysis in development
   productionBrowserSourceMaps: false,
   transpilePackages: [
