@@ -10,7 +10,7 @@
     "build:fast": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_PRIVATE_SKIP_SIZE_LIMIT=1 next build",
     "build:turbo": "NODE_OPTIONS='--max-old-space-size=8192' SKIP_ENV_VALIDATION=1 NEXT_PRIVATE_SKIP_SIZE_LIMIT=1 next build",
     "build:analyze": "ANALYZE=true pnpm run build",
-    "build:parallel": "NODE_OPTIONS='--max-old-space-size=8192' next build",
+    "build:debug": "NODE_OPTIONS='--max-old-space-size=8192' NEXT_PRIVATE_SKIP_SIZE_LIMIT=1 next build --debug",
     "start": "next start",
     "serve": "serve -s build",
     "lint": "next lint",
