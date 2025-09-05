@@ -280,12 +280,9 @@ function TabBar({
     }
   }
 
-  // Protection to avoid double loading/browsing
-  const isSwitchingRef = React.useRef(false);
-
   // Releases the ref whenever the tab actually changes
   React.useEffect(() => {
-    isSwitchingRef.current = false;
+    // No longer needed, but keeping for potential future use
   }, [currentTab]);
 
   const handleTabClick = React.useCallback((tabName: string, e?: React.MouseEvent) => {
@@ -294,20 +291,26 @@ function TabBar({
       e.preventDefault();
     }
 
-    // Does nothing if it's already the current tab or if it's already switching
-    if (currentTab === tabName || isSwitchingRef.current) {
+    // Does nothing if it's already the current tab
+    if (currentTab === tabName) {
       return;
     }
 
-    isSwitchingRef.current = true;
     console.log("Tab clicked:", tabName, "Current tab:", currentTab);
-    // Ensures that navigation uses the correctly encoded URL
-    if (typeof getSpacePageUrl === 'function') {
-      const url = getSpacePageUrl(encodeURIComponent(tabName));
-      window.history.pushState({}, '', url);
+    
+    // Update URL immediately on click for instant visual feedback
+    try {
+      if (typeof getSpacePageUrl === 'function') {
+        const url = getSpacePageUrl(encodeURIComponent(tabName));
+        window.history.pushState({}, '', url);
+      }
+    } catch (error) {
+      console.error("Error updating URL:", error);
     }
+    
+    // Direct call to switchTabTo
     switchTabTo(tabName, true);
-  }, [switchTabTo, currentTab, getSpacePageUrl]);
+  }, [currentTab, getSpacePageUrl, switchTabTo]);
 
   // Function to preload tab data (only for homebase tabs)
   const preloadTabData = React.useCallback((tabName: string) => {
