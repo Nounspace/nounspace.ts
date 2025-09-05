@@ -98,13 +98,14 @@ function TabBar({
         }
 
         const result = await createTab(tabName);
-        if (result?.tabName) {
-          switchTabTo(result.tabName);
-        } else {
-          switchTabTo(tabName);
-        }
+        const finalTabName = result?.tabName || tabName;
         
         commitTabOrder();
+        
+        // Use a small delay to ensure the tab is in the list before switching
+        setTimeout(() => {
+          switchTabTo(finalTabName);
+        }, 50);
         
       } catch (error) {
         console.error("Error in handleCreateTab:", error);
@@ -187,33 +188,55 @@ function TabBar({
   );
 
   function generateNewTabName(): string {
-    const endIndex = tabList.length + 1;
-    const base = `Tab ${endIndex}`;
-    const uniqueName = generateUniqueTabName(base);
-    return uniqueName || `Tab ${Date.now()}`; // Fallback to timestamp if unique name fails
+    try {
+      const endIndex = tabList.length + 1;
+      const base = `Tab ${endIndex}`;
+      const uniqueName = generateUniqueTabName(base);
+      const finalName = uniqueName || `Tab ${Date.now()}`;
+      console.log("Generated tab name:", finalName);
+      return finalName;
+    } catch (error) {
+      console.error("Error generating tab name:", error);
+      return `Tab ${Date.now()}`;
+    }
   }
 
   function generateUniqueTabName(tabName: string) {
-    // First validate the base name
-    const validationError = validateTabName(tabName);
-    if (validationError) {
-      console.error("Invalid base tab name:", tabName, validationError);
-      return null; // Return null instead of throwing
-    }
-
-    let iter = 1;
-    let uniqueName = tabName;
-    while (tabList.includes(uniqueName)) {
-      uniqueName = `${tabName} - ${iter}`;
-      // Validate each generated name
-      const validationError = validateTabName(uniqueName);
+    try {
+      // First validate the base name
+      const validationError = validateTabName(tabName);
       if (validationError) {
-        console.error("Could not generate unique name:", uniqueName, validationError);
-        return null; // Return null instead of throwing
+        console.error("Invalid base tab name:", tabName, validationError);
+        return null;
       }
-      iter += 1;
+
+      let iter = 1;
+      let uniqueName = tabName;
+      
+      // Safety limit to prevent infinite loops
+      const maxIterations = 100;
+      
+      while (tabList.includes(uniqueName) && iter <= maxIterations) {
+        uniqueName = `${tabName} - ${iter}`;
+        // Validate each generated name
+        const validationError = validateTabName(uniqueName);
+        if (validationError) {
+          console.error("Could not generate unique name:", uniqueName, validationError);
+          return null;
+        }
+        iter += 1;
+      }
+      
+      if (iter > maxIterations) {
+        console.error("Max iterations reached for unique name generation");
+        return null;
+      }
+      
+      return uniqueName;
+    } catch (error) {
+      console.error("Error in generateUniqueTabName:", error);
+      return null;
     }
-    return uniqueName;
   }
 
   function nextClosestTab(tabName: string) {
