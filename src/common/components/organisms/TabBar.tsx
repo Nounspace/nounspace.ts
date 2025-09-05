@@ -83,37 +83,48 @@ function TabBar({
   // Simple debounced functions without complex optimizations
   const debouncedCreateTab = React.useCallback(
     debounce(async (tabName: string) => {
-      if (isOperating) return;
+      if (isOperating) {
+        console.log("Operation already in progress, skipping");
+        return;
+      }
+      
+      console.log("Creating tab with name:", tabName);
       setIsOperating(true);
+      
       try {
-        const validationError = validateTabName(tabName);
-        if (validationError) {
-          console.error("Tab creation validation failed:", validationError);
+        if (!tabName || typeof tabName !== 'string' || tabName.trim() === '') {
+          console.error("Invalid tab name provided:", tabName);
           return;
         }
-
-        if (tabList.includes(tabName)) {
-          switchTabTo(tabName);
-          return;
-        }
-
-        const result = await createTab(tabName);
-        const finalTabName = result?.tabName || tabName;
         
+        const cleanTabName = tabName.trim();
+        
+        // If tab already exists, just switch to it
+        if (tabList.includes(cleanTabName)) {
+          console.log("Tab already exists, switching to it");
+          return;
+        }
+
+        console.log("Calling createTab function...");
+        const result = await createTab(cleanTabName);
+        console.log("CreateTab result:", result);
+        
+        const finalTabName = result?.tabName || cleanTabName;
+        console.log("Final tab name:", finalTabName);
+        
+        // Only commit, don't auto-switch to avoid race conditions
+        console.log("Committing tab order...");
         commitTabOrder();
         
-        // Use a small delay to ensure the tab is in the list before switching
-        setTimeout(() => {
-          switchTabTo(finalTabName);
-        }, 50);
+        console.log("Tab creation completed successfully");
         
       } catch (error) {
-        console.error("Error in handleCreateTab:", error);
+        console.error("Error in createTab:", error);
       } finally {
         setIsOperating(false);
       }
     }, 300),
-    [isOperating, tabList, switchTabTo, createTab, commitTabOrder]
+    [isOperating, tabList, createTab, commitTabOrder]
   );
 
   const debouncedDeleteTab = React.useCallback(
@@ -189,12 +200,25 @@ function TabBar({
 
   function generateNewTabName(): string {
     try {
-      const endIndex = tabList.length + 1;
-      const base = `Tab ${endIndex}`;
-      const uniqueName = generateUniqueTabName(base);
-      const finalName = uniqueName || `Tab ${Date.now()}`;
-      console.log("Generated tab name:", finalName);
-      return finalName;
+      // Use the list length to determine the next tab number
+      const nextNumber = tabList.length + 1;
+      const baseName = `Tab ${nextNumber}`;
+      
+      // If this name is available, use it
+      if (!tabList.includes(baseName)) {
+        return baseName;
+      }
+      
+      // If somehow that number is taken, find the next available
+      let counter = nextNumber + 1;
+      let newName = `Tab ${counter}`;
+      
+      while (tabList.includes(newName) && counter < 200) {
+        counter++;
+        newName = `Tab ${counter}`;
+      }
+      
+      return newName;
     } catch (error) {
       console.error("Error generating tab name:", error);
       return `Tab ${Date.now()}`;
