@@ -274,27 +274,26 @@ function TabBar({
 
   function nextClosestTab(tabName: string) {
     const index = tabList.indexOf(tabName);
-    // For middle tabs, prefer the next tab
-    if (index >= 0 && index < tabList.length - 1) {
-      // If there's a next tab, use it
-      return tabList[index + 1];
-    } else if (index > 0) {
-      // If we're at the end, go to previous tab
+    
+    // If we're at the end (last tab), go to previous tab
+    if (index === tabList.length - 1 && index > 0) {
       return tabList[index - 1];
-    } else if (inHomebase) {
-      // If no other tabs, go to Feed
+    }
+    // For middle tabs, prefer the next tab
+    else if (index >= 0 && index < tabList.length - 1) {
+      return tabList[index + 1];
+    } 
+    // If only one tab or first tab, use defaults
+    else if (inHomebase) {
       return "Feed";
     } else {
-      // If no other tabs in profile space, go to Profile
       return "Profile";
     }
   }
 
   // Effect to navigate safely after tab deletion
   React.useEffect(() => {
-    if (pendingTabSwitch && !tabList.includes(pendingTabSwitch)) {
-      console.log("Switching to pending tab:", pendingTabSwitch);
-      // Add a small delay to ensure the tab list is fully updated
+    if (pendingTabSwitch && tabList.includes(pendingTabSwitch)) {
       setTimeout(() => {
         switchTabTo(pendingTabSwitch);
         setPendingTabSwitch(null);
