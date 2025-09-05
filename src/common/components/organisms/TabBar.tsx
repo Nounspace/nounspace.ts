@@ -143,9 +143,18 @@ function TabBar({
           return;
         }
         
-        const nextTab = nextClosestTab(tabName);
+        console.log("Deleting tab:", tabName);
+        
+        // Only set pending switch if we're deleting the current tab
+        if (currentTab === tabName) {
+          const nextTab = nextClosestTab(tabName);
+          console.log("Setting pending switch to:", nextTab);
+          setPendingTabSwitch(nextTab);
+        }
+        
         await deleteTab(tabName);
-        setPendingTabSwitch(nextTab);
+        console.log("Tab deleted successfully");
+        
         toast.success("Tab deleted successfully!");
       } catch (error) {
         console.error("Error deleting tab:", error);
@@ -154,7 +163,7 @@ function TabBar({
         setIsOperating(false);
       }
     }, 300),
-    [isOperating, tabList, deleteTab, inHomebase]
+    [isOperating, tabList, deleteTab, currentTab]
   );
 
   const debouncedRenameTab = React.useCallback(
@@ -281,13 +290,17 @@ function TabBar({
     }
   }
 
-  // Effect to navigate only when the deleted tab disappears from the tabList
+  // Effect to navigate safely after tab deletion
   React.useEffect(() => {
     if (pendingTabSwitch && !tabList.includes(pendingTabSwitch)) {
-      switchTabTo(pendingTabSwitch);
-      setPendingTabSwitch(null);
+      console.log("Switching to pending tab:", pendingTabSwitch);
+      // Add a small delay to ensure the tab list is fully updated
+      setTimeout(() => {
+        switchTabTo(pendingTabSwitch);
+        setPendingTabSwitch(null);
+      }, 100);
     }
-  }, [tabList, pendingTabSwitch, switchTabTo]); 
+  }, [tabList, pendingTabSwitch, switchTabTo]);
 
   // Releases the ref whenever the tab actually changes
   React.useEffect(() => {
