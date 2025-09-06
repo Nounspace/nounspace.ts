@@ -295,11 +295,21 @@ function TabBar({
   React.useEffect(() => {
     if (pendingTabSwitch && tabList.includes(pendingTabSwitch)) {
       setTimeout(() => {
+        // Update URL when navigating after tab deletion
+        try {
+          if (typeof getSpacePageUrl === 'function') {
+            const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
+            window.history.pushState({}, '', url);
+          }
+        } catch (error) {
+          console.error("Error updating URL after tab deletion:", error);
+        }
+        
         switchTabTo(pendingTabSwitch);
         setPendingTabSwitch(null);
       }, 100);
     }
-  }, [tabList, pendingTabSwitch, switchTabTo]);
+  }, [tabList, pendingTabSwitch, switchTabTo, getSpacePageUrl]);
 
   // Releases the ref whenever the tab actually changes
   React.useEffect(() => {
