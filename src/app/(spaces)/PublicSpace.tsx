@@ -554,8 +554,9 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
 
-    // Update the store immediately for better responsiveness
+    // Update the store and URL immediately for instant responsiveness
     setCurrentTabName(tabName);
+    router.push(getSpacePageUrl(tabName));
     
     // Check if we already have the tab in cache
     const tabExists = currentSpaceId && localSpaces[currentSpaceId]?.tabs?.[tabName];
@@ -582,13 +583,19 @@ export default function PublicSpace({
       setLoading(false);
     }
 
+    // Perform save operations in background without blocking navigation
     if (currentSpaceId && shouldSave) {
-      const resolvedConfig = await config;
-      await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
-      await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
+      // Use setTimeout to defer these operations to the next tick
+      setTimeout(async () => {
+        try {
+          const resolvedConfig = await config;
+          await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
+          await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
+        } catch (error) {
+          console.error(`Error saving tab ${currentTabName}:`, error);
+        }
+      }, 0);
     }
-    // Update the URL without triggering a full navigation
-    router.push(getSpacePageUrl(tabName));
   }
 
   const { editMode } = useSidebarContext();
