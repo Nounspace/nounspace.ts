@@ -80,6 +80,29 @@ function TabBar({
   /// State to control post-delete navigation
   const [pendingTabSwitch, setPendingTabSwitch] = React.useState<string | null>(null);
 
+  // Function to calculate next tab after deletion
+  const nextClosestTab = React.useCallback((tabName: string) => {
+    const index = tabList.indexOf(tabName);
+    const futureTabList = tabList.filter(tab => tab !== tabName);
+    
+    if (futureTabList.length === 0) {
+      return inHomebase ? "Feed" : "Profile";
+    }
+    
+    if (index === tabList.length - 1 && index > 0) {
+      return futureTabList[futureTabList.length - 1];
+    }
+    else if (index >= 0 && index < futureTabList.length) {
+      return futureTabList[index];
+    }
+    else if (futureTabList.length > 0) {
+      return futureTabList[futureTabList.length - 1];
+    }
+    else {
+      return inHomebase ? "Feed" : "Profile";
+    }
+  }, [tabList, inHomebase]);
+
   // Simple debounced functions without complex optimizations
   const debouncedCreateTab = React.useCallback(
     debounce(async (tabName: string) => {
@@ -137,23 +160,18 @@ function TabBar({
           return;
         }
         
-        const safeTabList = Array.isArray(tabList) ? tabList : ["Profile"];
-        if (!safeTabList || safeTabList.length <= 1) {
+        if (tabList.length <= 1) {
           toast.error("You must have at least one tab.");
           return;
         }
         
-        console.log("Deleting tab:", tabName);
-        
         // Only set pending switch if we're deleting the current tab
         if (currentTab === tabName) {
           const nextTab = nextClosestTab(tabName);
-          console.log("Setting pending switch to:", nextTab);
           setPendingTabSwitch(nextTab);
         }
         
         await deleteTab(tabName);
-        console.log("Tab deleted successfully");
         
         toast.success("Tab deleted successfully!");
       } catch (error) {
@@ -163,7 +181,7 @@ function TabBar({
         setIsOperating(false);
       }
     }, 300),
-    [isOperating, tabList, deleteTab, currentTab]
+    [isOperating, tabList, deleteTab, currentTab, nextClosestTab]
   );
 
   const debouncedRenameTab = React.useCallback(
@@ -272,43 +290,35 @@ function TabBar({
     }
   }
 
-  function nextClosestTab(tabName: string) {
-    const index = tabList.indexOf(tabName);
-    
-    // If we're at the end (last tab), go to previous tab
-    if (index === tabList.length - 1 && index > 0) {
-      return tabList[index - 1];
-    }
-    // For middle tabs, prefer the next tab
-    else if (index >= 0 && index < tabList.length - 1) {
-      return tabList[index + 1];
-    } 
-    // If only one tab or first tab, use defaults
-    else if (inHomebase) {
-      return "Feed";
-    } else {
-      return "Profile";
-    }
-  }
-
   // Effect to navigate safely after tab deletion
   React.useEffect(() => {
-    if (pendingTabSwitch && tabList.includes(pendingTabSwitch)) {
-      setTimeout(() => {
+    if (!pendingTabSwitch || !tabList.includes(pendingTabSwitch)) {
+      return;
+    }
+    
+    const timeoutId = setTimeout(() => {
+      try {
         // Update URL when navigating after tab deletion
         try {
           if (typeof getSpacePageUrl === 'function') {
             const url = getSpacePageUrl(encodeURIComponent(pendingTabSwitch));
-            window.history.pushState({}, '', url);
+            if (url && typeof url === 'string') {
+              window.history.pushState({}, '', url);
+            }
           }
-        } catch (error) {
-          console.error("Error updating URL after tab deletion:", error);
+        } catch (urlError) {
+          // Continue with navigation even if URL update fails
         }
         
         switchTabTo(pendingTabSwitch);
         setPendingTabSwitch(null);
-      }, 100);
-    }
+      } catch (error) {
+        // Silent fallback - just clear the pending switch
+        setPendingTabSwitch(null);
+      }
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
   }, [tabList, pendingTabSwitch, switchTabTo, getSpacePageUrl]);
 
   // Releases the ref whenever the tab actually changes
@@ -326,8 +336,6 @@ function TabBar({
     if (currentTab === tabName) {
       return;
     }
-
-    console.log("Tab clicked:", tabName, "Current tab:", currentTab);
     
     // Update URL immediately on click for instant visual feedback
     try {
