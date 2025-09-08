@@ -4,7 +4,7 @@ import axios from "axios";
 import { createClient } from "@/common/data/database/supabase/clients/component";
 import { homebasePath } from "@/constants/supabase";
 import { SignedFile } from "@/common/lib/signedFiles";
-import { cloneDeep, debounce, isArray, isUndefined, mergeWith } from "lodash";
+import { cloneDeep, debounce, isArray, mergeWith } from "lodash";
 import stringify from "fast-json-stable-stringify";
 import axiosBackend from "@/common/data/api/backend";
 import {
@@ -68,27 +68,36 @@ export const createHomeBaseStoreFunc = (
       ) as SpaceConfig;
       
       const currentHomebase = get().homebase.homebaseConfig;
-      if (
-        (spaceConfig &&
+      
+      // This preserves local changes that haven't been committed yet
+      if (currentHomebase && 
+          currentHomebase.timestamp && 
+          spaceConfig && 
           spaceConfig.timestamp &&
-          currentHomebase &&
-          currentHomebase.timestamp &&
-          moment(spaceConfig.timestamp).isAfter(
-            moment(currentHomebase.timestamp),
-          )) ||
-        (spaceConfig &&
-          isUndefined(spaceConfig.timestamp) &&
-          currentHomebase &&
-          currentHomebase.timestamp)
-      ) {
+          moment(currentHomebase.timestamp).isAfter(moment(spaceConfig.timestamp))) {
         return cloneDeep(currentHomebase);
       }
+      
+      // Load the remote configuration since it's newer or local doesn't exist
       set((draft) => {
         draft.homebase.homebaseConfig = cloneDeep(spaceConfig);
         draft.homebase.remoteHomebaseConfig = cloneDeep(spaceConfig);
       }, "loadHomebase-found");
       return spaceConfig;
     } catch (e) {
+      console.warn('Failed to load homebase config from remote, using fallback');
+      
+      // Check if we have any existing local config to preserve
+      const currentHomebase = get().homebase.homebaseConfig;
+      if (currentHomebase) {
+        // Use existing local configuration if available
+        set((draft) => {
+          draft.homebase.remoteHomebaseConfig = cloneDeep(currentHomebase);
+        }, "loadHomebase-preserve-local");
+        return currentHomebase;
+      }
+      
+      // Only use initial config as last resort
       set((draft) => {
         draft.homebase.homebaseConfig = {
           ...cloneDeep(INITIAL_HOMEBASE_CONFIG),
@@ -126,14 +135,15 @@ export const createHomeBaseStoreFunc = (
         analytics.track(AnalyticsEvent.SAVE_HOMEBASE_THEME);
       } catch (e) {
         console.error('Failed to commit homebase:', e);
-        throw e;
       }
     }
   }, 1000),
   saveHomebaseConfig: async (config) => {
     let localCopy = cloneDeep(get().homebase.homebaseConfig) as SpaceConfig;
     if (!localCopy) {
-      localCopy = cloneDeep(INITIAL_HOMEBASE_CONFIG) as SpaceConfig;
+      // First try to load the remote configuration if it exists
+      const remoteConfig = get().homebase.remoteHomebaseConfig;
+      localCopy = remoteConfig ? cloneDeep(remoteConfig) : cloneDeep(INITIAL_HOMEBASE_CONFIG) as SpaceConfig;
     }
     mergeWith(localCopy, config, (objValue, srcValue) => {
       if (isArray(srcValue)) return srcValue;

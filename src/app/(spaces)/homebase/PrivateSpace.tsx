@@ -87,18 +87,23 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
     setCurrentSpaceId(HOMEBASE_ID);
     setCurrentTabName(tabName);
     if (!isNil(tabName)) {
-      loadTabConfigAsync();
+      // For Feed tab, ensure we have the homebase config loaded first
+      if (tabName === "Feed" && !homebaseConfig) {
+        // Try to load homebase config first before proceeding
+        loadFeedConfig().then(() => loadTabConfigAsync());
+      } else {
+        loadTabConfigAsync();
+      }
     }
-  }, [tabName, setCurrentSpaceId, setCurrentTabName]);
+  }, [tabName, setCurrentSpaceId, setCurrentTabName, homebaseConfig]);
 
   // Load tab config without blocking the initial render
   function loadTabConfigAsync() {
     startTransition(() => {
       (async () => {
         await loadTabNames();
-        // Re-read current ordering to avoid stale state
-        const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
-        if (freshTabOrdering.local.length === 0) {
+        // Check current ordering from our local state
+        if (tabOrdering.local.length === 0) {
           await loadTabOrder();
         }
         if (tabName === "Feed") {
@@ -114,9 +119,8 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
 
   // Preload all tabs except the current one
   async function loadRemainingTabs() {
-    // Get fresh state to avoid stale reads
-    const freshTabOrdering = useAppStore(state => state.homebase.tabOrdering);
-    const otherTabs = freshTabOrdering.local.filter((name) => name !== tabName);
+    // Use the current tabOrdering from component state
+    const otherTabs = tabOrdering.local.filter((name) => name !== tabName);
     await Promise.all(
       otherTabs.map((name) =>
         name === "Feed" ? loadFeedConfig() : loadTab(name),
@@ -215,8 +219,22 @@ function PrivateSpace({ tabName, castHash }: { tabName: string; castHash?: strin
         tabName === "Feed"
           ? homebaseConfig
           : tabConfigs[tabName]?.config;
+      
+      // This prevents overwriting custom configurations with the default
+      const baseConfig = sourceConfig || INITIAL_SPACE_CONFIG_EMPTY;
+      
+      // Debug logging to help track configuration issues
+      if (process.env.NODE_ENV === 'development' && !sourceConfig) {
+        console.warn(`[PrivateSpace] No source config found for tab: ${tabName}`, {
+          tabName,
+          homebaseConfigExists: !!homebaseConfig,
+          tabConfigExists: !!tabConfigs[tabName]?.config,
+          tabConfigs: Object.keys(tabConfigs)
+        });
+      }
+      
       const { ...restConfig } = {
-        ...(sourceConfig ?? INITIAL_SPACE_CONFIG_EMPTY),
+        ...baseConfig,
         isEditable: true,
       };
       return restConfig;
