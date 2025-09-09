@@ -125,6 +125,7 @@ function TabBar({
         // If tab already exists, just switch to it
         if (tabList.includes(cleanTabName)) {
           console.log("Tab already exists, switching to it");
+          switchTabTo(cleanTabName, true);
           return;
         }
 
@@ -134,9 +135,12 @@ function TabBar({
         
         const finalTabName = result?.tabName || cleanTabName;
         console.log("Final tab name:", finalTabName);
-        
+
         // Only commit, don't auto-switch to avoid race conditions
         console.log("Committing tab order...");
+        
+        // Immediately navigate to the new tab
+        switchTabTo(finalTabName, true);
         commitTabOrder();
         
         console.log("Tab creation completed successfully");
@@ -147,7 +151,7 @@ function TabBar({
         setIsOperating(false);
       }
     }, 300),
-    [isOperating, tabList, createTab, commitTabOrder]
+    [isOperating, tabList, createTab, commitTabOrder, switchTabTo]
   );
 
   const debouncedDeleteTab = React.useCallback(
