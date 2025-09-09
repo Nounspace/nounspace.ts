@@ -18,7 +18,10 @@ export const generateContractMetadataHtml = (
     : "";
 
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenData?.clankerData?.symbol ||
+    tokenData?.empireData?.token_symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
 
   const title = `${symbol}${priceInfo}`;
 

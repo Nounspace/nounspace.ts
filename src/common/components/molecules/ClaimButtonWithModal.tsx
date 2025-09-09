@@ -20,7 +20,10 @@ const ClaimButtonWithModal: React.FC<ClaimButtonWithModalProps> = ({
   const [isModalOpen, setModalOpenState] = React.useState(false);
   const { tokenData } = useToken();
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenData?.clankerData?.symbol ||
+    tokenData?.empireData?.token_symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
 
   const handleClaimClick = () => {
     setModalOpenState(true);

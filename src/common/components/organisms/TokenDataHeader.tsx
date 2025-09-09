@@ -6,11 +6,20 @@ import { useToken } from "@/common/providers/TokenProvider";
 
 const TokenDataHeader: React.FC = () => {
   const { tokenData } = useToken();
-  const contractAddress = tokenData?.clankerData?.contract_address || "";
+  const contractAddress =
+    tokenData?.clankerData?.contract_address ||
+    tokenData?.empireData?.base_token ||
+    "";
   const name =
-    tokenData?.clankerData?.name || tokenData?.geckoData?.name || "Loading...";
+    tokenData?.clankerData?.name ||
+    tokenData?.empireData?.token_name ||
+    tokenData?.geckoData?.name ||
+    "Loading...";
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenData?.clankerData?.symbol ||
+    tokenData?.empireData?.token_symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
   const image =
     tokenData?.clankerData?.img_url ||
     (tokenData?.geckoData?.image_url !== "missing.png"

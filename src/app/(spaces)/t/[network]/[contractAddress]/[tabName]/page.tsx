@@ -7,6 +7,7 @@ import { MasterToken, TokenProvider } from "@/common/providers/TokenProvider";
 import { Address } from "viem";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import ContractPrimarySpaceContent from "../../ContractPrimarySpaceContent";
 
@@ -15,22 +16,29 @@ async function loadTokenData(
   network: EtherScanChainName
 ): Promise<MasterToken> {
   if (network === "base") {
-    const [tokenResponse, clankerResponse] = await Promise.all([
-      fetchTokenData(contractAddress, null, network),
-      fetchClankerByAddress(contractAddress),
-    ]);
+    const [tokenResponse, clankerResponse, empireResponse] =
+      await Promise.all([
+        fetchTokenData(contractAddress, null, network),
+        fetchClankerByAddress(contractAddress),
+        fetchEmpireByAddress(contractAddress),
+      ]);
 
     return {
       network,
       geckoData: tokenResponse,
       clankerData: clankerResponse,
+      empireData: empireResponse,
     };
   } else {
-    const tokenResponse = await fetchTokenData(contractAddress, null, network);
+    const [tokenResponse, empireResponse] = await Promise.all([
+      fetchTokenData(contractAddress, null, network),
+      fetchEmpireByAddress(contractAddress),
+    ]);
     return {
       network,
       geckoData: tokenResponse,
       clankerData: null,
+      empireData: empireResponse,
     };
   }
 }

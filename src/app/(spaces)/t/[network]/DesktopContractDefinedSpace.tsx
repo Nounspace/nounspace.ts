@@ -23,7 +23,10 @@ export default function DesktopContractDefinedSpace({
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
         String(tokenData?.clankerData?.requestor_fid || ""),
-        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
+        tokenData?.clankerData?.symbol ||
+          tokenData?.empireData?.token_symbol ||
+          tokenData?.geckoData?.symbol ||
+          "",
         !!tokenData?.clankerData,
         tokenData?.network,
       ),

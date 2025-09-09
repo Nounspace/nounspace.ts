@@ -5,6 +5,7 @@ import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
 import { defaultFrame } from "@/common/lib/frames/metadata";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
 import { Address } from "viem";
 
 // Default metadata (used as fallback)
@@ -33,16 +34,18 @@ export async function generateMetadata({
   
   try {
     // Replace Promise.all with Promise.allSettled for more resilient error handling
-    const [tokenResult, clankerResult] = await Promise.allSettled([
+    const [tokenResult, clankerResult, empireResult] = await Promise.allSettled([
       fetchTokenData(contractAddress, null, network as string),
       fetchClankerByAddress(contractAddress as Address),
+      fetchEmpireByAddress(contractAddress as Address),
     ]);
-    
+
     const tokenData = tokenResult.status === 'fulfilled' ? tokenResult.value : null;
     const clankerData = clankerResult.status === 'fulfilled' ? clankerResult.value : null;
+    const empireData = empireResult.status === 'fulfilled' ? empireResult.value : null;
 
-    symbol = clankerData?.symbol || tokenData?.symbol || "";
-    name = clankerData?.name || tokenData?.name || "";
+    symbol = clankerData?.symbol || empireData?.token_symbol || tokenData?.symbol || "";
+    name = clankerData?.name || empireData?.token_name || tokenData?.name || "";
     imageUrl =
       clankerData?.img_url ||
       (tokenData?.image_url !== "missing.png" ? tokenData?.image_url || "" : "");

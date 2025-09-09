@@ -36,7 +36,10 @@ export const MobileContractDefinedSpace = ({
   const [ref, inView] = useInView();
   const { tokenData } = useToken();
   const symbol =
-    tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "";
+    tokenData?.clankerData?.symbol ||
+    tokenData?.empireData?.token_symbol ||
+    tokenData?.geckoData?.symbol ||
+    "";
   const decimals = tokenData?.geckoData?.decimals || "";
   const image =
     tokenData?.clankerData?.img_url ||
@@ -52,7 +55,10 @@ export const MobileContractDefinedSpace = ({
         tokenData?.clankerData?.requestor_fid
           ? String(tokenData.clankerData.requestor_fid)
           : "",
-        tokenData?.clankerData?.symbol || tokenData?.geckoData?.symbol || "",
+        tokenData?.clankerData?.symbol ||
+          tokenData?.empireData?.token_symbol ||
+          tokenData?.geckoData?.symbol ||
+          "",
         !!tokenData?.clankerData,
         tokenData?.network,
       ),
