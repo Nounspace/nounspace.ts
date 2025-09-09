@@ -3,7 +3,7 @@ import React from "react";
 import { getUserMetadata } from "./utils";
 import type { Metadata } from "next/types";
 import { getUserMetadataStructure } from "@/common/lib/utils/userMetadata";
-import { defaultFrame } from "@/common/lib/frames/metadata";
+import { defaultFrame } from "@/constants/metadata";
 
 // Default metadata (used as fallback)
 const defaultMetadata = {
