@@ -16,6 +16,7 @@ export interface ContractSpacePageProps {
   ownerId: string | null;
   tokenData?: MasterToken;
   network: EtherScanChainName;
+  spaceIdentityPublicKey: string | null;
 }
 
 export default async function ContractPrimarySpace({ params }) {
@@ -28,6 +29,7 @@ export default async function ContractPrimarySpace({ params }) {
       ownerIdType,
       contractAddress,
       owningIdentities,
+      spaceIdentityPublicKey,
     },
   } = await loadContractData(resolvedParams || {});
   const network = resolvedParams?.network as EtherScanChainName;
@@ -45,6 +47,7 @@ export default async function ContractPrimarySpace({ params }) {
         contractAddress={contractAddress}
         owningIdentities={owningIdentities}
         network={network}
+        spaceIdentityPublicKey={spaceIdentityPublicKey}
       />
     </TokenProvider>
   );

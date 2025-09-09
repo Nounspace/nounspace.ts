@@ -43,8 +43,6 @@ const ProposalDefinedSpace = ({
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}
         isTokenPage={false}
-        spaceOwnerFid={1}
-        spaceOwnerAddress={ownerId}
         pageType="proposal"
       />
     </div>

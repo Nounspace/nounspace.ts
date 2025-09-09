@@ -21,21 +21,23 @@ const loadUserSpaceData = async (
       spaceOwnerUsername: null,
       spaceId: null,
       tabName: null,
+      spaceIdentityPublicKey: null,
     };
   }
 
   const tabList = await getTabList(spaceOwnerFid);
 
   if (!tabList || tabList.length === 0) {
-    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
+    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null, spaceIdentityPublicKey: null };
   }
 
   const defaultTab: Tab = tabList[0];
 
   const spaceId = defaultTab.spaceId;
   const tabName = tabNameParam || defaultTab.spaceName;
+  const spaceIdentityPublicKey = defaultTab.identityPublicKey;
 
-  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName };
+  return { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName, spaceIdentityPublicKey };
 };
 
 const ProfileSpacePage = async ({
@@ -54,7 +56,7 @@ const ProfileSpacePage = async ({
     decodedTabNameParam = decodeURIComponent(tabNameParam);
   }
 
-  const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName } =
+  const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName, spaceIdentityPublicKey } =
     await loadUserSpaceData(handle, decodedTabNameParam);
 
   return (
@@ -63,6 +65,7 @@ const ProfileSpacePage = async ({
       spaceOwnerUsername={spaceOwnerUsername}
       spaceId={spaceId}
       tabName={tabName}
+      spaceIdentityPublicKey={spaceIdentityPublicKey}
     />
   );
 };

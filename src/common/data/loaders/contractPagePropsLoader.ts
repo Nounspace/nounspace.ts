@@ -118,7 +118,7 @@ export async function loadContractData(
 
   let query = createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("spaceId, spaceName, contractAddress, network")
+    .select("spaceId, spaceName, contractAddress, network, identityPublicKey")
     .eq("contractAddress", contractAddress);
 
   if (isString(network)) {
@@ -139,6 +139,7 @@ export async function loadContractData(
   // });
 
   const spaceId = data?.[0]?.spaceId || null;
+  const spaceIdentityPublicKey = data?.[0]?.identityPublicKey || null;
 
   return {
     props: {
@@ -149,6 +150,7 @@ export async function loadContractData(
       contractAddress,
       pinnedCastId,
       owningIdentities,
+      spaceIdentityPublicKey,
     },
   };
 }

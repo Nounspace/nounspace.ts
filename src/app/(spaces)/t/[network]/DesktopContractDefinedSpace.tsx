@@ -6,7 +6,6 @@ import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { Address } from 'viem';
 
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
@@ -14,8 +13,9 @@ export default function DesktopContractDefinedSpace({
   spaceId,
   tabName,
   contractAddress,
-  ownerId,
-  ownerIdType,
+  ownerId: _ownerId,
+  ownerIdType: _ownerIdType,
+  spaceIdentityPublicKey,
 }: ContractDefinedSpaceProps) {
   const { tokenData } = useToken();
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
@@ -67,10 +67,6 @@ export default function DesktopContractDefinedSpace({
     });
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
-  // Convert ownerId to the appropriate type based on ownerIdType
-  const spaceOwnerFid = ownerIdType === 'fid' ? Number(ownerId) : undefined;
-  const spaceOwnerAddress = ownerIdType === 'address' ? ownerId as Address : undefined;
-
   return (
     <PublicSpace
       spaceId={spaceId}
@@ -79,9 +75,8 @@ export default function DesktopContractDefinedSpace({
       getSpacePageUrl={getSpacePageUrl}
       isTokenPage={true}
       contractAddress={contractAddress}
-      spaceOwnerFid={spaceOwnerFid}
-      spaceOwnerAddress={spaceOwnerAddress}
       tokenData={tokenData || undefined}
+      spaceIdentityPublicKey={spaceIdentityPublicKey}
     />
   );
 }

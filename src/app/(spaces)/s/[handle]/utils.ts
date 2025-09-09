@@ -5,6 +5,7 @@ import neynar from "@/common/data/api/neynar";
 export type Tab = {
   spaceId: string;
   spaceName: string;
+  identityPublicKey: string;
 };
 
 export const getUserMetadata = async (
@@ -32,7 +33,7 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     // Add timestamp to bust cache
     const { data: registrations, error: regError } = await createSupabaseServerClient()
       .from("spaceRegistrations")
-      .select('spaceId, spaceName, fid')
+      .select('spaceId, spaceName, fid, identityPublicKey')
       .eq('fid', fid)
       .limit(1)
     

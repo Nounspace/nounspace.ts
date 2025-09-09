@@ -11,6 +11,7 @@ export type UserDefinedSpacePageProps = {
   spaceOwnerUsername: string | null;
   spaceId: string | null;
   tabName: string | string[] | null | undefined;
+  spaceIdentityPublicKey: string | null;
 };
 
 export const ProfileSpace = ({
@@ -18,6 +19,7 @@ export const ProfileSpace = ({
   spaceOwnerUsername,
   spaceId,
   tabName,
+  spaceIdentityPublicKey,
 }: UserDefinedSpacePageProps) => {
   if (isNil(spaceOwnerFid)) {
     return <SpaceNotFound />;
@@ -40,6 +42,7 @@ export const ProfileSpace = ({
       initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
       spaceOwnerFid={spaceOwnerFid}
+      spaceIdentityPublicKey={spaceIdentityPublicKey}
     />
   );
 };

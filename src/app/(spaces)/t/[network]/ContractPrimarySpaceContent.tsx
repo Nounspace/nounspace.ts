@@ -18,6 +18,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   contractAddress,
   owningIdentities,
   network,
+  spaceIdentityPublicKey,
 }) => {
   const [spaceId, setSpaceId] = useState(initialSpaceId);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,6 +87,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
         spaceId={spaceId}
         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
         contractAddress={contractAddress}
+        spaceIdentityPublicKey={spaceIdentityPublicKey}
       />
     </>
   );

@@ -12,7 +12,6 @@ import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import Profile from "@/fidgets/ui/profile";
-import { useWallets } from "@privy-io/react-auth";
 import { indexOf, isNil, mapValues, noop } from "lodash";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -34,11 +34,12 @@ interface PublicSpaceProps {
   contractAddress?: string;
   // Ownership props
   spaceOwnerFid?: number;
-  spaceOwnerAddress?: Address;
   // Token data
   tokenData?: MasterToken;
   // New prop to identify page type
   pageType?: SpacePageType;
+  // Space identity
+  spaceIdentityPublicKey?: string | null;
 }
 
 export default function PublicSpace({
@@ -48,12 +49,12 @@ export default function PublicSpace({
   getSpacePageUrl,
   // Ownership props
   spaceOwnerFid,
-  spaceOwnerAddress,
   // Token-specific props
   isTokenPage = false,
   contractAddress,
   tokenData,
   pageType, // New prop
+  spaceIdentityPublicKey: initialSpaceIdentityPublicKey,
 }: PublicSpaceProps) {
 
   const {
@@ -110,7 +111,13 @@ export default function PublicSpace({
   const [loading, setLoading] = useState<boolean>(initialLoading);
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
-  const { wallets } = useWallets();
+
+  const [spaceIdentityPublicKey, setSpaceIdentityPublicKey] = useState<string | null | undefined>(initialSpaceIdentityPublicKey);
+  const currentIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
+
+  useEffect(() => {
+    setSpaceIdentityPublicKey(initialSpaceIdentityPublicKey);
+  }, [initialSpaceIdentityPublicKey]);
 
   
   // Clear cache only when switching to a different space
@@ -131,32 +138,14 @@ export default function PublicSpace({
 
   // Create an editability checker
   const editabilityCheck = useMemo(() => {
-    const checker = createEditabilityChecker({
-      currentUserFid,
-      spaceOwnerFid,
-      spaceOwnerAddress,
-      tokenData,
-      wallets: wallets.map((w) => ({ address: w.address as Address })),
-      isTokenPage,
+    return createEditabilityChecker({
+      currentIdentityPublicKey: currentIdentityPublicKey,
+      spaceIdentityPublicKey,
     });
-
-    return checker;
-  }, [
-    currentUserFid,
-    spaceOwnerFid,
-    spaceOwnerAddress,
-    tokenData,
-    wallets,
-    isTokenPage,
-  ]);
+  }, [currentIdentityPublicKey, spaceIdentityPublicKey]);
 
   // Internal isEditable function
-  const isEditable = useCallback(
-    (userFid: number) => {
-      return editabilityCheck.isEditable;
-    },
-    [editabilityCheck],
-  );
+  const isEditable = useCallback(() => editabilityCheck.isEditable, [editabilityCheck]);
 
   // Determine the page type if not explicitly provided
   const resolvedPageType = useMemo(() => {
@@ -453,6 +442,8 @@ export default function PublicSpace({
             setCurrentSpaceId(newSpaceId);
             setCurrentTabName("Profile");
 
+            setSpaceIdentityPublicKey(currentIdentityPublicKey);
+
             // Load the space data after registration
             await loadSpaceTabOrder(newSpaceId);
             await loadEditableSpaces(); // First load
@@ -491,6 +482,7 @@ export default function PublicSpace({
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
+    currentIdentityPublicKey,
   ]);
 
   const saveConfig = useCallback(
