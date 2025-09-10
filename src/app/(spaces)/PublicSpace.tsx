@@ -112,7 +112,8 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
 
-  const [spaceIdentityPublicKey, setSpaceIdentityPublicKey] = useState<string | null | undefined>(initialSpaceIdentityPublicKey);
+  const [spaceIdentityPublicKey, setSpaceIdentityPublicKey] =
+    useState<string | null | undefined>(initialSpaceIdentityPublicKey);
   const currentIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   useEffect(() => {
