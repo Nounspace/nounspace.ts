@@ -11,6 +11,14 @@ describe('createEditabilityChecker', () => {
     expect(result.isLoading).toBe(false);
   });
 
+  it('treats key comparison as case-insensitive', () => {
+    const result = createEditabilityChecker({
+      currentIdentityPublicKey: 'ABC',
+      spaceIdentityPublicKey: 'abc',
+    });
+    expect(result.isEditable).toBe(true);
+  });
+
   it('returns not editable when keys differ', () => {
     const result = createEditabilityChecker({
       currentIdentityPublicKey: 'abc',

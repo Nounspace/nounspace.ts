@@ -20,18 +20,18 @@ export type EditabilityContext = {
 export const createEditabilityChecker = (
   context: EditabilityContext,
 ): EditabilityCheck => {
-  const { currentIdentityPublicKey, spaceIdentityPublicKey } = context;
+  const normalizeKey = (key?: string | null) =>
+    typeof key === "string" && key.length > 0 ? key.toLowerCase() : null;
 
-  if (!currentIdentityPublicKey) {
-    return { isEditable: false, isLoading: false };
-  }
+  const currentKey = normalizeKey(context.currentIdentityPublicKey);
+  const spaceKey = normalizeKey(context.spaceIdentityPublicKey);
 
-  if (!spaceIdentityPublicKey) {
+  if (!currentKey || !spaceKey) {
     return { isEditable: false, isLoading: false };
   }
 
   return {
-    isEditable: currentIdentityPublicKey === spaceIdentityPublicKey,
+    isEditable: currentKey === spaceKey,
     isLoading: false,
   };
 };
