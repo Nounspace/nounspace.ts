@@ -145,9 +145,6 @@ export default function PublicSpace({
     });
   }, [currentIdentityPublicKey, spaceIdentityPublicKey]);
 
-  // Internal isEditable function
-  const isEditable = useCallback(() => editabilityCheck.isEditable, [editabilityCheck]);
-
   // Determine the page type if not explicitly provided
   const resolvedPageType = useMemo(() => {
     if (pageType) return pageType;
@@ -359,7 +356,7 @@ export default function PublicSpace({
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
       ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
       : { ...initialConfig }),
-    isEditable,
+    isEditable: editabilityCheck.isEditable,
   };
 
   const memoizedConfig = useMemo(() => {
