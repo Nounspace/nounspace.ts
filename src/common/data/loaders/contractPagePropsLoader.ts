@@ -21,6 +21,7 @@ const defaultContractPageProps = {
   contractAddress: null,
   owningIdentities: [],
   network: string,
+  spaceIdentityPublicKey: null,
 };
 
 export async function loadContractData(
