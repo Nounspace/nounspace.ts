@@ -19,6 +19,14 @@ describe('createEditabilityChecker', () => {
     expect(result.isEditable).toBe(true);
   });
 
+  it('ignores leading 0x prefixes when comparing keys', () => {
+    const result = createEditabilityChecker({
+      currentIdentityPublicKey: '0xabc',
+      spaceIdentityPublicKey: 'abc',
+    });
+    expect(result.isEditable).toBe(true);
+  });
+
   it('returns not editable when keys differ', () => {
     const result = createEditabilityChecker({
       currentIdentityPublicKey: 'abc',
