@@ -9,8 +9,7 @@ import {
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
 import { tokenRequestorFromContractAddress } from "../queries/clanker";
-import createSupabaseServerClient from "../database/supabase/clients/server";
-import { string } from "prop-types";
+import { createSupabaseServerClient } from "../database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
@@ -21,7 +20,7 @@ const defaultContractPageProps = {
   tabName: "Profile",
   contractAddress: null,
   owningIdentities: [],
-  network: string,
+  network: "base",
 };
 
 export async function loadContractData(

@@ -12,7 +12,7 @@ import {
   fetchTokenData,
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
-import { ClankerToken } from "../data/queries/clanker";
+import { ClankerToken, fetchClankerByAddress } from "../data/queries/clanker";
 import { fetchEmpireByAddress, EmpireToken } from "../data/queries/empireBuilder";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 

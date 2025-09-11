@@ -438,14 +438,38 @@ export default function PublicSpace({
           }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
             try {
-              const resp = await fetch(
-                `/api/space/owner?contractAddress=${contractAddress}`,
-              );
+              // Construct URL with network parameter when available
+              const url = new URL(`/api/space/owner`, window.location.origin);
+              url.searchParams.set('contractAddress', contractAddress);
+              if (tokenData.network) {
+                url.searchParams.set('network', tokenData.network);
+              }
+
+              const resp = await fetch(url.toString(), {
+                signal: controller.signal,
+              });
+
+              if (!resp.ok) {
+                throw new Error(`Owner lookup failed: ${resp.status} ${resp.statusText}`);
+              }
+
               const ownerData = await resp.json();
-              console.log("Token owner lookup:", ownerData);
+              // Only log on debug level or when needed for debugging
+              if (process.env.NODE_ENV === 'development') {
+                console.debug("Token owner lookup:", ownerData);
+              }
             } catch (error) {
-              console.error("Token owner lookup failed:", error);
+              if (error instanceof Error && error.name === 'AbortError') {
+                console.error("Token owner lookup timed out");
+              } else {
+                console.error("Token owner lookup failed:", error);
+              }
+            } finally {
+              clearTimeout(timeoutId);
             }
 
             newSpaceId = await registerSpaceContract(
