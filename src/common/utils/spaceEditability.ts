@@ -21,8 +21,11 @@ export const createEditabilityChecker = (
   context: EditabilityContext,
 ): EditabilityCheck => {
   const normalizeKey = (key?: string | null) =>
-    typeof key === "string" && key.length > 0
-      ? key.replace(/^0x/i, "").toLowerCase()
+    typeof key === "string" && key.trim().length > 0
+      ? key
+          .trim()
+          .replace(/^0x/i, "")
+          .toLowerCase()
       : null;
 
   const currentKey = normalizeKey(context.currentIdentityPublicKey);

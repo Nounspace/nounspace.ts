@@ -27,6 +27,14 @@ describe('createEditabilityChecker', () => {
     expect(result.isEditable).toBe(true);
   });
 
+  it('trims surrounding whitespace before comparing', () => {
+    const result = createEditabilityChecker({
+      currentIdentityPublicKey: ' abc ',
+      spaceIdentityPublicKey: '\tabc\n',
+    });
+    expect(result.isEditable).toBe(true);
+  });
+
   it('returns not editable when keys differ', () => {
     const result = createEditabilityChecker({
       currentIdentityPublicKey: 'abc',
