@@ -2,6 +2,11 @@ import { isNil } from 'lodash';
 import { Address } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
 
+// Normalize wallet keys for comparison
+// - Lowercase the key
+// - Strip a leading `0x` if present
+export const normalizeKey = (key: string) => key.replace(/^0x/i, '').toLowerCase();
+
 export type EditabilityCheck = {
   isEditable: boolean;
   isLoading: boolean;
@@ -63,7 +68,10 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     }
 
     // Check if user owns the wallet address (doesn't require clankerData)
-    if (spaceOwnerAddress && wallets.some(w => w.address === spaceOwnerAddress)) {
+    if (
+      spaceOwnerAddress &&
+      wallets.some(w => normalizeKey(w.address) === normalizeKey(spaceOwnerAddress))
+    ) {
       // console.log('Editable: User owns by address', {
       //   spaceOwnerAddress,
       //   matchingWallet: wallets.find(w => w.address === spaceOwnerAddress),
