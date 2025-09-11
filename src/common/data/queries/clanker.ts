@@ -78,17 +78,32 @@ export async function tokenRequestorFromContractAddress(
       try {
         const addresses = [ownerId];
         neynarUsers = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
-        console.log("Neynar response:", neynarUsers);
-        const user = neynarUsers[ownerId]?.[0] as { fid?: number } | undefined;
-        if (user?.fid) {
-          ownerId = String(user.fid);
-          ownerIdType = "fid";
+        
+        // Safe type guards for neynar response
+        if (
+          neynarUsers && 
+          typeof neynarUsers === 'object' && 
+          neynarUsers[ownerId] &&
+          Array.isArray(neynarUsers[ownerId]) &&
+          (neynarUsers[ownerId] as unknown[]).length > 0
+        ) {
+          const userArray = neynarUsers[ownerId] as unknown[];
+          const user = userArray[0];
+          
+          if (
+            typeof user === 'object' && 
+            user !== null && 
+            'fid' in user && 
+            typeof (user as { fid: unknown }).fid === 'number'
+          ) {
+            ownerId = String((user as { fid: number }).fid);
+            ownerIdType = "fid";
+            console.debug("Found user FID for address:", ownerId);
+          }
         }
       } catch (error) {
         console.error("Error fetching owner FID:", error);
       }
-    } else {
-      console.error("NEYNAR_API_KEY is not set");
     }
 
     return { ownerId, ownerIdType, clankerData, empireData, neynarUsers };

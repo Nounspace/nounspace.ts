@@ -10,7 +10,7 @@ export async function loadOwnedItentitiesForWalletAddress(
   const { data } = await createSupabaseServerClient()
     .from("walletIdentities")
     .select("identityPublicKey")
-    .eq("walletAddress", walletAddress.toLowerCase());
+    .ilike("walletAddress", walletAddress);
   return map(data, "identityPublicKey");
 }
 
@@ -19,8 +19,8 @@ export async function loadIdentitiesOwningContractSpace(
   network: string,
 ) {
   // Fetch the owner of the contract from Clanker
-  let { ownerId, ownerIdType } =
-    await tokenRequestorFromContractAddress(contractAddress);
+  const tokenOwnerLookup = await tokenRequestorFromContractAddress(contractAddress);
+  let { ownerId, ownerIdType } = tokenOwnerLookup;
 
   // Load the owner of the contract from Etherscan if not found
   if (isNil(ownerId)) {

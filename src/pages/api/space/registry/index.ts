@@ -110,9 +110,10 @@ async function identityCanRegisterForContract(
   tokenOwnerFid?: number,
   network?: string,
 ) {
-  let { ownerId, ownerIdType } = await tokenRequestorFromContractAddress(
+  const tokenOwnerLookup = await tokenRequestorFromContractAddress(
     contractAddress,
   );
+  let { ownerId, ownerIdType } = tokenOwnerLookup;
 
   if (isNil(ownerId)) {
     ({ ownerId, ownerIdType } = await contractOwnerFromContractAddress(

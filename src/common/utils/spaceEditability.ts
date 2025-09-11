@@ -48,9 +48,9 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
   //   isTokenPage,
   // });
 
-  // If we don't have a current user identity (FID or public key), we're definitely not editable
-  if (isNil(currentUserFid) && isNil(currentUserIdentityPublicKey)) {
-    // console.log('Not editable: No current user identifier');
+  // If we don't have any authentication method (no FID, no public key, and no wallets), we're definitely not editable
+  if (isNil(currentUserFid) && isNil(currentUserIdentityPublicKey) && (!wallets || wallets.length === 0)) {
+    // console.log('Not editable: No authentication method available');
     return { isEditable: false, isLoading: false };
   }
 
