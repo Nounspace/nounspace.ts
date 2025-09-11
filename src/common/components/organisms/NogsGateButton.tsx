@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useAppStore } from "@/common/data/stores/app";
 import { RECHECK_BACKOFF_FACTOR } from "@/common/data/stores/app/setup";
 import { NOGS_CONTRACT_ADDR } from "@/constants/nogs";
@@ -70,7 +70,7 @@ const NogsGateButton = (props: ButtonProps) => {
     }
   }
 
-  async function checkForNogs() {
+  const checkForNogs = useCallback(async () => {
     clearTimeout(nogsTimeoutTimer);
     clearTimeout(nogsRecheckCountDownTimer);
     setNogsRecheckCountDown(0);
@@ -89,22 +89,45 @@ const NogsGateButton = (props: ButtonProps) => {
         setNogsRecheckCountDown(nogsRecheckTimerLength / 1000);
       }
     }
-  }
+  }, [
+    nogsTimeoutTimer,
+    nogsRecheckCountDownTimer,
+    setNogsRecheckCountDown,
+    setNogsShouldRecheck,
+    user,
+    setHasNogs,
+    setModalOpen,
+    setNogsRecheckTimerLength,
+    nogsRecheckTimerLength,
+    setNogsTimeoutTimer,
+  ]);
 
   useEffect(() => {
     if (nogsRecheckCountDown > 0) {
-      setNogsRecheckCountDownTimer(
-        setTimeout(
-          () => setNogsRecheckCountDown(nogsRecheckCountDown - 1),
-          1000,
-        ),
+      const timer = setTimeout(
+        () => setNogsRecheckCountDown(nogsRecheckCountDown - 1),
+        1000,
       );
+      setNogsRecheckCountDownTimer(timer);
+      
+      // Cleanup function to clear timer when component unmounts or effect re-runs
+      return () => {
+        clearTimeout(timer);
+      };
     }
-  }, [nogsRecheckCountDown]);
+  }, [nogsRecheckCountDown, setNogsRecheckCountDown, setNogsRecheckCountDownTimer]);
 
   useEffect(() => {
     nogsShouldRecheck && checkForNogs();
-  }, [nogsShouldRecheck]);
+  }, [nogsShouldRecheck, checkForNogs]);
+
+  // Cleanup effect to clear all timers when component unmounts
+  useEffect(() => {
+    return () => {
+      clearTimeout(nogsTimeoutTimer);
+      clearTimeout(nogsRecheckCountDownTimer);
+    };
+  }, [nogsTimeoutTimer, nogsRecheckCountDownTimer]);
 
   return (
     <>
