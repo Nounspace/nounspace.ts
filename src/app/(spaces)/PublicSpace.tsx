@@ -20,6 +20,7 @@ import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
+import { createClient as createSupabaseClient } from "@/common/data/database/supabase/clients/component";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
@@ -102,6 +103,7 @@ export default function PublicSpace({
   }));
 
   const router = useRouter();
+  const supabase = useMemo(() => createSupabaseClient(), []);
 
   const initialLoading =
     providedSpaceId !== null &&
@@ -119,6 +121,25 @@ export default function PublicSpace({
   useEffect(() => {
     setSpaceIdentityPublicKey(initialSpaceIdentityPublicKey);
   }, [initialSpaceIdentityPublicKey]);
+
+  useEffect(() => {
+    if (!spaceIdentityPublicKey && providedSpaceId) {
+      supabase
+        .from("spaceRegistrations")
+        .select("identityPublicKey")
+        .eq("spaceId", providedSpaceId)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error fetching space registration:", error);
+            return;
+          }
+          if (data?.identityPublicKey) {
+            setSpaceIdentityPublicKey(data.identityPublicKey);
+          }
+        });
+    }
+  }, [spaceIdentityPublicKey, providedSpaceId, supabase]);
 
   
   // Clear cache only when switching to a different space
