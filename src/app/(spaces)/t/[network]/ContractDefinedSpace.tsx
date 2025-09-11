@@ -11,14 +11,20 @@ export interface ContractDefinedSpaceProps {
   pinnedCastId?: string
   ownerId: string | number | null
   ownerIdType: OwnerType
-  owningIdentities: string[]
+  owningIdentities?: string[]
 }
 
-const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
+const ContractDefinedSpace = ({ 
+  owningIdentities = [], 
+  ...otherProps 
+}: ContractDefinedSpaceProps) => {
 
   return (
     <div className="w-full">
-      <DynamicDesktopContractDefinedSpace {...props} />
+      <DynamicDesktopContractDefinedSpace 
+        owningIdentities={owningIdentities}
+        {...otherProps} 
+      />
     </div>
   )
 }

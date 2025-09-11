@@ -878,18 +878,27 @@ export const createSpaceStoreFunc = (
       // Check if a space already exists for this contract that the current
       // identity can modify. We query all modifiable spaces for the identity
       // and then search for one matching the contract address and network.
+      
+      // Guard against missing currentSpaceIdentityPublicKey
+      const currentIdentityKey = get().account.currentSpaceIdentityPublicKey;
+      if (!currentIdentityKey) {
+        console.error("No current space identity public key available");
+        return undefined;
+      }
+      
       let existingSpaces: ModifiableSpacesResponse | undefined;
       try {
         const { data } = await axiosBackend.get<ModifiableSpacesResponse>(
           "/api/space/registry",
           {
             params: {
-              identityPublicKey: get().account.currentSpaceIdentityPublicKey,
+              identityPublicKey: currentIdentityKey,
             },
+            timeout: 5000, // 5 second timeout
           },
         );
         existingSpaces = data;
-        console.log("Nounspace existing spaces response:", existingSpaces);
+        console.debug("Nounspace existing spaces response:", existingSpaces);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.error(
