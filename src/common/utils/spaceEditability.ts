@@ -1,6 +1,7 @@
 import { isNil } from 'lodash';
 import { Address, isAddressEqual } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
+import { useAppStore } from '@/common/data/stores/app';
 
 export type EditabilityCheck = {
   isEditable: boolean;
@@ -14,14 +15,14 @@ export type EditabilityContext = {
   spaceOwnerFid?: number;
   // Contract ownership
   spaceOwnerAddress?: Address;
-  // Identity-based ownership
-  spaceOwnerIdentities?: string[];
   // Token-specific data
   tokenData?: MasterToken;
   // User's wallets for address ownership checks
   wallets?: { address: Address }[];
   // Space type
   isTokenPage?: boolean;
+  // Space ID for checking editableSpaces
+  spaceId?: string;
 };
 
 export const createEditabilityChecker = (context: EditabilityContext) => {
@@ -30,115 +31,83 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     currentUserIdentityPublicKey,
     spaceOwnerFid,
     spaceOwnerAddress,
-    spaceOwnerIdentities,
     tokenData,
     wallets = [],
     isTokenPage = false,
+    spaceId,
   } = context;
 
-  // console.log('Editability check context:', {
-  //   currentUserFid,
-  //   spaceOwnerFid,
-  //   spaceOwnerAddress,
-  //   tokenData: tokenData ? {
-  //     hasClankerData: !!tokenData.clankerData,
-  //     requestorFid: tokenData.clankerData?.requestor_fid,
-  //   } : null,
-  //   walletAddresses: wallets.map(w => w.address),
-  //   isTokenPage,
-  // });
+  // Get store state for editableSpaces lookup
+  const {
+    editableSpaces,
+    addEditableSpace,
+  } = useAppStore((state) => ({
+    editableSpaces: state.space.editableSpaces,
+    addEditableSpace: (spaceId: string) => {
+      state.space.editableSpaces[spaceId] = spaceId;
+    },
+  }));
 
-  // If we don't have any authentication method (no FID, no public key, and no wallets), we're definitely not editable
+  
+  // First, check if the space is already marked as editable in the store
+  if (spaceId && editableSpaces[spaceId]) {
+    return { isEditable: true, isLoading: false };
+  }
+
+  // If we don't have any authentication method, we're definitely not editable
   if (isNil(currentUserFid) && isNil(currentUserIdentityPublicKey) && (!wallets || wallets.length === 0)) {
-    // console.log('Not editable: No authentication method available');
     return { isEditable: false, isLoading: false };
   }
 
+  let isEditable = false;
+
   // For token spaces, check requestor and ownership
   if (isTokenPage) {
-    // console.log('Checking token space editability');
-
-    // Check if user owns via identity public key
-    if (
-      currentUserIdentityPublicKey &&
-      spaceOwnerIdentities?.includes(currentUserIdentityPublicKey)
-    ) {
-      return { isEditable: true, isLoading: false };
-    }
-
-    // Check if user is the owner by FID first (doesn't require clankerData)
+    // Check if user is the owner by FID
     if (
       spaceOwnerFid &&
       !isNil(currentUserFid) &&
       currentUserFid === spaceOwnerFid
     ) {
-      // console.log('Editable: User owns by FID', {
-      //   currentUserFid,
-      //   spaceOwnerFid,
-      // });
-      return { isEditable: true, isLoading: false };
+      isEditable = true;
     }
 
-    // Check if user owns the wallet address (doesn't require clankerData)
+    // Check if user owns the wallet address - handles both direct contract ownership
+    // and Empire token ownership through tokenData.empireData.owner
     const ownerAddress =
       spaceOwnerAddress || (tokenData?.empireData?.owner as Address | undefined);
     if (
+      !isEditable &&
       ownerAddress &&
       wallets.some((w) => isAddressEqual(w.address as Address, ownerAddress))
     ) {
-      // console.log('Editable: User owns by address', {
-      //   spaceOwnerAddress: ownerAddress,
-      //   matchingWallet: wallets.find(w => w.address === ownerAddress),
-      // });
-      return { isEditable: true, isLoading: false };
+      isEditable = true;
     }
 
-    // Only check requestor status if we have clankerData
-    if (tokenData && !isNil(tokenData.clankerData)) {
-      const requestorFid = tokenData.clankerData?.requestor_fid;
-      if (
-        requestorFid &&
-        !isNil(currentUserFid) &&
-        currentUserFid === Number(requestorFid)
-      ) {
-        // console.log('Editable: User is the requestor', {
-        //   currentUserFid,
-        //   requestorFid: Number(requestorFid),
-        // });
-        return { isEditable: true, isLoading: false };
-      }
-    } else {
-      // console.log('Skipping requestor check: No clankerData available');
-    }
-
-    // console.log('Not editable: No matching ownership conditions met for token space');
-  } else {
-    // For profile spaces, just check FID match
-    // console.log('Checking profile space editability');
+    // Check Clanker requestor status
     if (
-      currentUserIdentityPublicKey &&
-      spaceOwnerIdentities?.includes(currentUserIdentityPublicKey)
+      !isEditable &&
+      tokenData?.clankerData?.requestor_fid && 
+      !isNil(currentUserFid) && 
+      currentUserFid === Number(tokenData.clankerData.requestor_fid)
     ) {
-      return { isEditable: true, isLoading: false };
+      isEditable = true;
     }
-
+  } else {
+    // For profile spaces, check FID match
     if (
       spaceOwnerFid &&
       !isNil(currentUserFid) &&
       currentUserFid === spaceOwnerFid
     ) {
-      // console.log('Editable: User owns profile space', {
-      //   currentUserFid,
-      //   spaceOwnerFid,
-      // });
-      return { isEditable: true, isLoading: false };
+      isEditable = true;
     }
-    // console.log('Not editable: FIDs do not match for profile space', {
-    //   currentUserFid,
-    //   spaceOwnerFid,
-    // });
   }
 
-  // console.log('Final result: Not editable');
-  return { isEditable: false, isLoading: false };
-}; 
+  // If we found the space is editable and have a spaceId, add it to editableSpaces
+  if (isEditable && spaceId && addEditableSpace) {
+    addEditableSpace(spaceId);
+  }
+
+  return { isEditable, isLoading: false };
+};

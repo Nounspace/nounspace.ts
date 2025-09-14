@@ -16,15 +16,13 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
   ownerId,
   ownerIdType,
   contractAddress,
-  owningIdentities,
   network,
 }) => {
   const [spaceId, setSpaceId] = useState(initialSpaceId);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { addContractEditableSpaces, setCurrentSpaceId } = useAppStore(
+  const { setCurrentSpaceId } = useAppStore(
     (state) => ({
-      addContractEditableSpaces: state.space.addContractEditableSpaces,
       setCurrentSpaceId: state.currentSpace.setCurrentSpaceId,
     })
   );
@@ -60,11 +58,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
     fetchSpaceIdForContract();
   }, [initialSpaceId, contractAddress, network, setCurrentSpaceId]);
 
-  useEffect(() => {
-    if (spaceId) {
-      addContractEditableSpaces(spaceId, owningIdentities);
-    }
-  }, [spaceId, owningIdentities, addContractEditableSpaces]);
+  // The editabilityChecker now handles adding to editableSpaces directly
 
   if (isNil(contractAddress)) {
     return <SpaceNotFound />;
@@ -86,7 +80,6 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
         spaceId={spaceId}
         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
         contractAddress={contractAddress}
-        owningIdentities={owningIdentities}
       />
     </>
   );
