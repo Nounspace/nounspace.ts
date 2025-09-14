@@ -26,7 +26,7 @@ const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 export type SpacePageType = "profile" | "token" | "proposal";
 
 interface PublicSpaceProps {
-  spaceId: string | null;
+  spaceId?: string; // Changed from string | null to string | undefined (optional)
   tabName: string;
   initialConfig: any; // Replace with proper type
   getSpacePageUrl: (tabName: string) => string;
@@ -36,7 +36,6 @@ interface PublicSpaceProps {
   // Ownership props
   spaceOwnerFid?: number;
   spaceOwnerAddress?: Address;
-  owningIdentities?: string[];
   // Token data
   tokenData?: MasterToken;
   // New prop to identify page type
@@ -51,7 +50,6 @@ export default function PublicSpace({
   // Ownership props
   spaceOwnerFid,
   spaceOwnerAddress,
-  owningIdentities,
   // Token-specific props
   isTokenPage = false,
   contractAddress,
@@ -106,7 +104,7 @@ export default function PublicSpace({
   const router = useRouter();
 
   const initialLoading =
-    providedSpaceId !== null &&
+    providedSpaceId !== undefined &&
     providedSpaceId !== "" &&
     !localSpaces[providedSpaceId];
 
@@ -140,10 +138,10 @@ export default function PublicSpace({
       currentUserIdentityPublicKey,
       spaceOwnerFid,
       spaceOwnerAddress,
-       spaceOwnerIdentities: owningIdentities,
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
       isTokenPage,
+      spaceId: providedSpaceId,
     });
 
     return checker;
@@ -152,10 +150,10 @@ export default function PublicSpace({
     currentUserIdentityPublicKey,
     spaceOwnerFid,
     spaceOwnerAddress,
-    owningIdentities,
     tokenData,
     wallets,
     isTokenPage,
+    providedSpaceId,
   ]);
 
   // Internal isEditable function
@@ -212,8 +210,9 @@ export default function PublicSpace({
       // logic for proposal
     }
 
-    setCurrentSpaceId(nextSpaceId);
-    prevSpaceId.current = nextSpaceId;
+    // Convert undefined to null for store compatibility
+    setCurrentSpaceId(nextSpaceId ?? null);
+    prevSpaceId.current = nextSpaceId ?? null;
     setCurrentTabName(nextTabName);
     prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
@@ -262,7 +261,7 @@ export default function PublicSpace({
 
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(
-    providedSpaceId !== null && !!localSpaces[providedSpaceId],
+    providedSpaceId !== undefined && !!localSpaces[providedSpaceId],
   );
   const isLoadingRef = useRef(false);
   // Keeps track of which tabs have already been loaded for each space
@@ -401,7 +400,7 @@ export default function PublicSpace({
 
     // Attempt registration when space is missing and user is identified
     if (
-      (isTokenPage || editabilityCheck.isEditable) &&
+      editabilityCheck.isEditable &&
       isNil(currentSpaceId) &&
       !isNil(currentUserFid) &&
       !loading &&
@@ -438,40 +437,6 @@ export default function PublicSpace({
           }
 
           if (isTokenPage && contractAddress && tokenData?.network) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-            
-            try {
-              // Construct URL with network parameter when available
-              const url = new URL(`/api/space/owner`, window.location.origin);
-              url.searchParams.set('contractAddress', contractAddress);
-              if (tokenData.network) {
-                url.searchParams.set('network', tokenData.network);
-              }
-
-              const resp = await fetch(url.toString(), {
-                signal: controller.signal,
-              });
-
-              if (!resp.ok) {
-                throw new Error(`Owner lookup failed: ${resp.status} ${resp.statusText}`);
-              }
-
-              const ownerData = await resp.json();
-              // Only log on debug level or when needed for debugging
-              if (process.env.NODE_ENV === 'development') {
-                console.debug("Token owner lookup:", ownerData);
-              }
-            } catch (error) {
-              if (error instanceof Error && error.name === 'AbortError') {
-                console.error("Token owner lookup timed out");
-              } else {
-                console.error("Token owner lookup failed:", error);
-              }
-            } finally {
-              clearTimeout(timeoutId);
-            }
-
             newSpaceId = await registerSpaceContract(
               contractAddress,
               "Profile",
@@ -740,7 +705,7 @@ export default function PublicSpace({
     // Show skeleton only when we haven't loaded initial data yet
     !initialDataLoadRef.current &&
     // Don't show skeleton for navigation between tabs
-    providedSpaceId !== null && providedSpaceId !== "" &&
+    providedSpaceId !== undefined && providedSpaceId !== "" &&
     // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
       loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));

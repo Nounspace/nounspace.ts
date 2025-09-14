@@ -15,7 +15,6 @@ export interface ContractSpacePageProps {
   contractAddress: string | null;
   ownerIdType: OwnerType;
   pinnedCastId?: string;
-  owningIdentities: string[];
   ownerId: string | null;
   tokenData?: MasterToken;
   network: EtherScanChainName;
@@ -86,7 +85,6 @@ export default async function ContractPrimarySpace({ params }) {
           ownerId={ownerId}
           ownerIdType={ownerIdType}
           contractAddress={contractAddressStr}
-          owningIdentities={owningIdentities}
           network={network}
         />
       </TokenProvider>
