@@ -13,7 +13,6 @@ export default function DesktopContractDefinedSpace({
   contractAddress,
   ownerId,
   ownerIdType,
-  owningIdentities,
 }: ContractDefinedSpaceProps) {
   const { tokenData } = useToken();
 
@@ -49,7 +48,6 @@ export default function DesktopContractDefinedSpace({
       spaceOwnerFid={spaceOwnerFid}
       spaceOwnerAddress={spaceOwnerAddress}
       tokenData={tokenData || undefined}
-      owningIdentities={owningIdentities}
     />
   );
 }
