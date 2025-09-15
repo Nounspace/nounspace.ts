@@ -50,7 +50,7 @@
     "@googleapis/youtube": "^18.0.0",
     "@gumlet/react-hls-player": "^1.0.1",
     "@heroicons/react": "^2.0.18",
-    "@internationalized/date": "^3.5.4",
+    "@internationalized/date": "^3.9.0",
     "@mod-protocol/core": "^0.2.1",
     "@mod-protocol/react": "^0.2.0",
     "@mod-protocol/react-editor": "^0.1.0",

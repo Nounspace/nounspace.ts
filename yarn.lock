@@ -1456,10 +1456,10 @@
   dependencies:
     browser-headers "^0.4.1"
 
-"@internationalized/date@^3.5.4", "@internationalized/date@^3.8.2":
-  version "3.8.2"
-  resolved "https://registry.npmjs.org/@internationalized/date/-/date-3.8.2.tgz"
-  integrity sha512-/wENk7CbvLbkUvX1tu0mwq49CVkkWpkXubGel6birjRPyo6uQ4nQpnq5xZu823zRCwwn82zgHrvgF1vZyvmVgA==
+"@internationalized/date@^3.8.2", "@internationalized/date@^3.9.0":
+  version "3.9.0"
+  resolved "https://registry.yarnpkg.com/@internationalized/date/-/date-3.9.0.tgz#cf241989b5dd07a2a9f1c91aabd2ad93968a0cc3"
+  integrity sha512-yaN3brAnHRD+4KyyOsJyk49XUvj2wtbNACSqg0bz3u8t2VuzhC8Q5dfRnrSxjnnbDb+ienBnkn1TzQfE154vyg==
   dependencies:
     "@swc/helpers" "^0.5.0"
 
