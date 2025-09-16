@@ -14,7 +14,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
 const defaultContractPageProps = {
-  spaceId: null,
+  spaceId: undefined,
   ownerId: null,
   ownerIdType: "address" as OwnerType,
   tabName: "Profile",
@@ -144,7 +144,7 @@ export async function loadContractData(
     .limit(1);
 
   const registrationRow = data?.[0];
-  const spaceId = registrationRow?.spaceId || null;
+  const spaceId = registrationRow?.spaceId || undefined;
   const registeredFid = Array.isArray(registrationRow?.fidRegistrations)
     ? registrationRow?.fidRegistrations[0]?.fid
     : registrationRow?.fidRegistrations?.fid;
