@@ -275,7 +275,7 @@ export const createSpaceStoreFunc = (
       throw error; // Stops the execution of the function
     }
 
-    console.log("NewConfig", config);
+    // console.log("NewConfig", config);
     let localCopy;
     const newTimestamp = moment().toISOString();
 
@@ -296,7 +296,7 @@ export const createSpaceStoreFunc = (
         }
       });
       localCopy.timestamp = newTimestamp;
-      console.log("localCopy", localCopy);
+      // console.log("localCopy", localCopy);
     }
 
     set((draft) => {
@@ -528,7 +528,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceOrderToDatabase: debounce(
     async (spaceId, network?: EtherScanChainName) => {
-      console.debug("debug", "Commiting space order to database");
+      // console.debug("debug", "Commiting space order to database");
       const timestamp = moment().toISOString();
 
       const unsignedReq: UnsignedUpdateTabOrderRequest = {
@@ -700,14 +700,14 @@ export const createSpaceStoreFunc = (
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
       const diff = moment.duration(remoteTimestamp.diff(localTimestamp));
-      console.debug("debug", {
-        remoteIsNew,
-        remote: remoteTimestamp.toISOString(),
-        remoteTabs: tabOrderReq.tabOrder,
-        local: localTimestamp.toISOString(),
-        localTabs: localSpace?.order,
-        diff: diff.asSeconds(),
-      });
+      // console.debug("debug", {
+      //   remoteIsNew,
+      //   remote: remoteTimestamp.toISOString(),
+      //   remoteTabs: tabOrderReq.tabOrder,
+      //   local: localTimestamp.toISOString(),
+      //   localTabs: localSpace?.order,
+      //   diff: diff.asSeconds(),
+      // });
 
       if (remoteIsNew) {
         // Remote data is newer, update the store
@@ -866,7 +866,7 @@ export const createSpaceStoreFunc = (
           },
         );
         existingSpaces = data;
-        console.debug("Nounspace existing spaces response:", existingSpaces);
+        // console.debug("Nounspace existing spaces response:", existingSpaces);
       } catch (error) {
         if (axios.isAxiosError(error)) {
           console.error(
@@ -929,7 +929,7 @@ export const createSpaceStoreFunc = (
           "/api/space/registry",
           registration,
         );
-        console.log("Nounspace registration response:", data);
+        // console.log("Nounspace registration response:", data);
         const newSpaceId = data.value!.spaceId;
         
         // Initialize both local and remote spaces with proper structure
