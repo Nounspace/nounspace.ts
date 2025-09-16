@@ -113,14 +113,6 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
-  addProposalEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
-  addContractEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
@@ -235,30 +227,6 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
-  addProposalEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addProposalEditableSpaces");
-    }
-  },
-  addContractEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addContractEditableSpaces");
-    }
-  },
   commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
     const localCopy = cloneDeep(
       get().space.localSpaces[spaceId].tabs[tabName],
