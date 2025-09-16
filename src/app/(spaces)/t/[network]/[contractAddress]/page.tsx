@@ -10,7 +10,7 @@ import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
 import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
 
 export interface ContractSpacePageProps {
-  spaceId: string | null;
+  spaceId?: string;
   tabName: string | null;
   contractAddress: string | null;
   ownerIdType: OwnerType;
@@ -80,7 +80,7 @@ export default async function ContractPrimarySpace({ params }) {
         defaultTokenData={defaultTokenData}
       >
         <ContractPrimarySpaceContent
-          spaceId={spaceId}
+          spaceId={spaceId ?? undefined}
           tabName={tabName}
           ownerId={ownerId}
           ownerIdType={ownerIdType}
