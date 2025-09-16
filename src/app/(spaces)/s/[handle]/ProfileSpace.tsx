@@ -9,7 +9,7 @@ import PublicSpace from "../../PublicSpace";
 export type UserDefinedSpacePageProps = {
   spaceOwnerFid: number | null;
   spaceOwnerUsername: string | null;
-  spaceId: string | null;
+  spaceId?: string;
   tabName: string | string[] | null | undefined;
 };
 
@@ -35,7 +35,7 @@ export const ProfileSpace = ({
 
   return (
     <PublicSpace
-      spaceId={spaceId}
+      spaceId={spaceId ?? undefined}
       tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
       initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
