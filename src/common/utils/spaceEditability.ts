@@ -1,7 +1,7 @@
 import { isNil } from 'lodash';
 import { Address, isAddressEqual } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
-import { useAppStore } from '@/common/data/stores/app';
+import { useAppStore } from '../data/stores/app';
 
 export type EditabilityCheck = {
   isEditable: boolean;
@@ -10,6 +10,9 @@ export type EditabilityCheck = {
 
 export type EditabilityContext = {
   currentUserFid: number | null;
+  // Editable spaces
+  editableSpaces?: Record<string, string>;
+
   currentUserIdentityPublicKey?: string | null;
   // Profile ownership
   spaceOwnerFid?: number;
@@ -23,6 +26,7 @@ export type EditabilityContext = {
   isTokenPage?: boolean;
   // Space ID for checking editableSpaces
   spaceId?: string;
+  
 };
 
 export const createEditabilityChecker = (context: EditabilityContext) => {
@@ -35,22 +39,12 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     wallets = [],
     isTokenPage = false,
     spaceId,
-  } = context;
-
-  // Get store state for editableSpaces lookup
-  const {
     editableSpaces,
-    addEditableSpace,
-  } = useAppStore((state) => ({
-    editableSpaces: state.space.editableSpaces,
-    addEditableSpace: (spaceId: string) => {
-      state.space.editableSpaces[spaceId] = spaceId;
-    },
-  }));
+  } = context;
 
   
   // First, check if the space is already marked as editable in the store
-  if (spaceId && editableSpaces[spaceId]) {
+  if (spaceId && editableSpaces && editableSpaces[spaceId]) {
     return { isEditable: true, isLoading: false };
   }
 
@@ -102,11 +96,6 @@ export const createEditabilityChecker = (context: EditabilityContext) => {
     ) {
       isEditable = true;
     }
-  }
-
-  // If we found the space is editable and have a spaceId, add it to editableSpaces
-  if (isEditable && spaceId && addEditableSpace) {
-    addEditableSpace(spaceId);
   }
 
   return { isEditable, isLoading: false };
