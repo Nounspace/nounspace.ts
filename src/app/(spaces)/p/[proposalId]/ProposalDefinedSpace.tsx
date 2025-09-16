@@ -8,8 +8,8 @@ import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { ProposalData } from "./utils";
 
 export interface ProposalPageSpaceProps {
-  spaceId?: string | null;
-  tabName?: string | null;
+  spaceId?: string;
+  tabName?: string;
   proposalId: string | null;
   proposalData?: ProposalData;
   owningIdentities?: string[];
@@ -38,7 +38,7 @@ const ProposalDefinedSpace = ({
   return (
     <div className="w-full">
       <PublicSpace
-        spaceId={spaceId ?? null}
+        spaceId={spaceId ?? undefined}
         tabName={tabName || "Profile"}
         initialConfig={INITIAL_SPACE_CONFIG}
         getSpacePageUrl={getSpacePageUrl}

@@ -39,7 +39,7 @@ export default function DesktopContractDefinedSpace({
 
   return (
     <PublicSpace
-      spaceId={spaceId}
+      spaceId={spaceId ?? undefined}
       tabName={tabName}
       initialConfig={INITIAL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}

@@ -77,7 +77,7 @@ const ContractPrimarySpaceContent: React.FC<ContractSpacePageProps> = ({
       <ContractDefinedSpace
         ownerId={ownerId}
         ownerIdType={ownerIdType}
-        spaceId={spaceId}
+        spaceId={spaceId ?? undefined}
         tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
         contractAddress={contractAddress}
       />
