@@ -12,12 +12,14 @@ import {
   fetchTokenData,
   GeckoTokenAttribute,
 } from "../lib/utils/fetchTokenData";
-import { ClankerToken } from "../data/queries/clanker";
+import { ClankerToken, fetchClankerByAddress } from "../data/queries/clanker";
+import { fetchEmpireByAddress, EmpireToken } from "../data/queries/empireBuilder";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 
 export interface MasterToken {
   geckoData: GeckoTokenAttribute | null;
   clankerData: ClankerToken | null;
+  empireData: EmpireToken | null;
   network: EtherScanChainName;
 }
 
@@ -47,14 +49,16 @@ export const fetchMasterToken = async (
       String(network),
     );
 
-    const clankerResponse = await fetch(
-      `/api/clanker/ca?address=${address}`,
-    ).then((res) => res.json());
+    const [clankerResponse, empireResponse] = await Promise.all([
+      fetch(`/api/clanker/ca?address=${address}`).then((res) => res.json()),
+      fetchEmpireByAddress(address as Address),
+    ]);
 
     return {
       network: network,
       geckoData: tokenResponse,
       clankerData: clankerResponse,
+      empireData: empireResponse,
     };
 };
 

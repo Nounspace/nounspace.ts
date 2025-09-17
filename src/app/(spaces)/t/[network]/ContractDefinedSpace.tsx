@@ -5,7 +5,7 @@ import { OwnerType } from "@/common/data/api/etherscan"
 import dynamic from "next/dynamic"
 
 export interface ContractDefinedSpaceProps {
-  spaceId: string | null
+  spaceId?: string
   tabName: string
   contractAddress: string
   pinnedCastId?: string
@@ -14,7 +14,6 @@ export interface ContractDefinedSpaceProps {
 }
 
 const ContractDefinedSpace = (props: ContractDefinedSpaceProps) => {
-
   return (
     <div className="w-full">
       <DynamicDesktopContractDefinedSpace {...props} />

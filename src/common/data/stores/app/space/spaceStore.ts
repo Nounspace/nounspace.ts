@@ -113,14 +113,6 @@ export interface SpaceLookupInfo {
 }
 
 interface SpaceActions {
-  addProposalEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
-  addContractEditableSpaces: (
-    spaceId: string | null | undefined,
-    identities: string[],
-  ) => void;
   commitSpaceTabToDatabase: (
     spaceId: string,
     tabName: string,
@@ -235,30 +227,6 @@ export const createSpaceStoreFunc = (
   get: StoreGet<AppStore>,
 ): SpaceStore => ({
   ...spaceStoreprofiles,
-  addProposalEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addProposalEditableSpaces");
-    }
-  },
-  addContractEditableSpaces: (spaceId, identities) => {
-    const currentSpaceIdentityPrimaryKey =
-      get().account.currentSpaceIdentityPublicKey;
-    if (
-      includes(identities, currentSpaceIdentityPrimaryKey) &&
-      !isNil(spaceId)
-    ) {
-      set((draft) => {
-        draft.space.editableSpaces[spaceId] = spaceId;
-      }, "addContractEditableSpaces");
-    }
-  },
   commitSpaceTabToDatabase: async (spaceId: string, tabName: string, network?: string, isInitialCommit = false) => {
     const localCopy = cloneDeep(
       get().space.localSpaces[spaceId].tabs[tabName],
@@ -307,7 +275,7 @@ export const createSpaceStoreFunc = (
       return; // Exit safely instead of throwing
     }
 
-    console.log("NewConfig", config);
+    // console.log("NewConfig", config);
     let localCopy;
     const newTimestamp = moment().toISOString();
 
@@ -328,7 +296,7 @@ export const createSpaceStoreFunc = (
         }
       });
       localCopy.timestamp = newTimestamp;
-      console.log("localCopy", localCopy);
+      // console.log("localCopy", localCopy);
     }
 
     set((draft) => {
@@ -562,7 +530,7 @@ export const createSpaceStoreFunc = (
   },
   commitSpaceOrderToDatabase: debounce(
     async (spaceId, network?: EtherScanChainName) => {
-      console.debug("debug", "Commiting space order to database");
+      // console.debug("debug", "Commiting space order to database");
       const timestamp = moment().toISOString();
 
       const unsignedReq: UnsignedUpdateTabOrderRequest = {
@@ -734,14 +702,14 @@ export const createSpaceStoreFunc = (
         : moment(0);
       const remoteIsNew = remoteTimestamp.isAfter(localTimestamp);
       const diff = moment.duration(remoteTimestamp.diff(localTimestamp));
-      console.debug("debug", {
-        remoteIsNew,
-        remote: remoteTimestamp.toISOString(),
-        remoteTabs: tabOrderReq.tabOrder,
-        local: localTimestamp.toISOString(),
-        localTabs: localSpace?.order,
-        diff: diff.asSeconds(),
-      });
+      // console.debug("debug", {
+      //   remoteIsNew,
+      //   remote: remoteTimestamp.toISOString(),
+      //   remoteTabs: tabOrderReq.tabOrder,
+      //   local: localTimestamp.toISOString(),
+      //   localTabs: localSpace?.order,
+      //   diff: diff.asSeconds(),
+      // });
 
       if (remoteIsNew) {
         // Remote data is newer, update the store
@@ -880,16 +848,40 @@ export const createSpaceStoreFunc = (
       // Check if a space already exists for this contract that the current
       // identity can modify. We query all modifiable spaces for the identity
       // and then search for one matching the contract address and network.
-      const { data: existingSpaces } = await axiosBackend.get<ModifiableSpacesResponse>(
-        "/api/space/registry",
-        {
-          params: {
-            identityPublicKey: get().account.currentSpaceIdentityPublicKey,
-          },
-        },
-      );
       
-      if (existingSpaces.value) {
+      // Guard against missing currentSpaceIdentityPublicKey
+      const currentIdentityKey = get().account.currentSpaceIdentityPublicKey;
+      if (!currentIdentityKey) {
+        console.error("No current space identity public key available");
+        return undefined;
+      }
+      
+      let existingSpaces: ModifiableSpacesResponse | undefined;
+      try {
+        const { data } = await axiosBackend.get<ModifiableSpacesResponse>(
+          "/api/space/registry",
+          {
+            params: {
+              identityPublicKey: currentIdentityKey,
+            },
+            timeout: 5000, // 5 second timeout
+          },
+        );
+        existingSpaces = data;
+        // console.debug("Nounspace existing spaces response:", existingSpaces);
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.error(
+            "Nounspace existing spaces error:",
+            error.response?.status,
+            error.response?.data,
+          );
+        } else {
+          console.error("Nounspace existing spaces error:", error);
+        }
+      }
+
+      if (existingSpaces?.value) {
         const existingSpace = existingSpaces.value.spaces.find(
           space => space.contractAddress === address && space.network === network
         );
@@ -939,6 +931,7 @@ export const createSpaceStoreFunc = (
           "/api/space/registry",
           registration,
         );
+        // console.log("Nounspace registration response:", data);
         const newSpaceId = data.value!.spaceId;
         
         // Initialize both local and remote spaces with proper structure
@@ -979,6 +972,9 @@ export const createSpaceStoreFunc = (
       return newSpaceId;
       } catch (e) {
         console.error("Failed to register contract space:", e);
+        if (axios.isAxiosError(e)) {
+          console.error("Nounspace error response:", e.response?.data);
+        }
         throw e;
       }
     } catch (e) {
