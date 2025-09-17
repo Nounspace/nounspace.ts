@@ -118,6 +118,7 @@ const {
   context: AppStoreContext,
 } = createStoreBindings<AppStore>("AppStore", createAppStore);
 
+// TODO: Replace this with React suspense fallback system
 const HydrationGate: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ children, fallback }) => {
   const store = React.useContext(AppStoreContext);
   const [hydrated, setHydrated] = React.useState(false);
