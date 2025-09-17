@@ -34,6 +34,7 @@ import {
 } from "./chat/chatStore";
 import { usePrivy } from "@privy-io/react-auth";
 import { createCurrentSpaceStoreFunc, CurrentSpaceStore } from "./currentSpace";
+import React from "react";
 
 export type AppStore = {
   account: AccountStore;
@@ -111,8 +112,44 @@ export function createAppStore() {
   });
 }
 
-const { useStore: useAppStore, provider: AppStoreProvider } =
-  createStoreBindings<AppStore>("AppStore", createAppStore);
+const {
+  useStore: useAppStore,
+  provider: BaseAppStoreProvider,
+  context: AppStoreContext,
+} = createStoreBindings<AppStore>("AppStore", createAppStore);
+
+// TODO: Replace this with React suspense fallback system
+const HydrationGate: React.FC<{ children: React.ReactNode; fallback?: React.ReactNode }> = ({ children, fallback }) => {
+  const store = React.useContext(AppStoreContext);
+  const [hydrated, setHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!store) {
+      setHydrated(true);
+      return;
+    }
+
+    const persist = (store as any)?.persist;
+    if (!persist) {
+      setHydrated(true);
+      return;
+    }
+
+    const off = persist.onFinishHydration?.(() => setHydrated(true));
+    if (persist.hasHydrated?.()) setHydrated(true);
+    return typeof off === "function" ? off : undefined;
+  }, [store]);
+
+  if (!hydrated) return <>{fallback ?? null}</>;
+  return <>{children}</>;
+};
+const AppStoreProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <BaseAppStoreProvider>
+    <HydrationGate>{children}</HydrationGate>
+  </BaseAppStoreProvider>
+);
 
 function useLogout() {
   const { logout: privyLogout } = usePrivy();

@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { Channel, FarcasterEmbed } from '@mod-protocol/farcaster';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -37,40 +43,56 @@ export const SharedDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   
   // Adds a channel to recent ones, avoiding duplicates
   const addRecentChannel = useCallback((channel: Channel) => {
-    setRecentChannels(prev => {
+    setRecentChannels((prev) => {
       // Remove duplicates and add the new channel at the beginning
-      const filtered = prev.filter(c => c.id !== channel.id);
+      const filtered = prev.filter((c) => c.id !== channel.id);
       return [channel, ...filtered].slice(0, 20); // Keep up to 20 recent channels
     });
   }, []);
   
   // Adds an embed to the recent embeds cache
   const addRecentEmbed = useCallback((url: string, embed: FarcasterEmbed) => {
-    setRecentEmbeds(prev => ({
+    setRecentEmbeds((prev) => ({
       ...prev,
       [url]: embed,
     }));
   }, []);
   
   // Retrieves an embed from the cache
-  const getRecentEmbed = useCallback((url: string) => {
-    return recentEmbeds[url];
-  }, [recentEmbeds]);
+  const getRecentEmbed = useCallback(
+    (url: string) => {
+      return recentEmbeds[url];
+    },
+    [recentEmbeds],
+  );
   
   // Invalidates a specific cache in React Query
-  const invalidateCache = useCallback((cacheKey: string) => {
-    queryClient.invalidateQueries({ queryKey: [cacheKey] });
-  }, [queryClient]);
-  
+  const invalidateCache = useCallback(
+    (cacheKey: string) => {
+      queryClient.invalidateQueries({ queryKey: [cacheKey] });
+    },
+    [queryClient],
+  );
+
   // Context value
-  const value = {
-    recentChannels,
-    addRecentChannel,
-    recentEmbeds,
-    addRecentEmbed,
-    getRecentEmbed,
-    invalidateCache,
-  };
+  const value = useMemo(
+    () => ({
+      recentChannels,
+      addRecentChannel,
+      recentEmbeds,
+      addRecentEmbed,
+      getRecentEmbed,
+      invalidateCache,
+    }),
+    [
+      recentChannels,
+      addRecentChannel,
+      recentEmbeds,
+      addRecentEmbed,
+      getRecentEmbed,
+      invalidateCache,
+    ],
+  );
   
   return (
     <SharedDataContext.Provider value={value}>

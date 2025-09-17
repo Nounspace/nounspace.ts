@@ -20,12 +20,13 @@ import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 export type SpacePageType = "profile" | "token" | "proposal";
 
 interface PublicSpaceProps {
-  spaceId: string | null;
+  spaceId?: string; // Changed from string | null to string | undefined (optional)
   tabName: string;
   initialConfig: any; // Replace with proper type
   getSpacePageUrl: (tabName: string) => string;
@@ -103,7 +104,7 @@ export default function PublicSpace({
   const router = useRouter();
 
   const initialLoading =
-    providedSpaceId !== null &&
+    providedSpaceId !== undefined &&
     providedSpaceId !== "" &&
     !localSpaces[providedSpaceId];
 
@@ -112,7 +113,7 @@ export default function PublicSpace({
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
   const { editMode } = useSidebarContext();
-
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
   
   // Clear cache only when switching to a different space
   useEffect(() => {
@@ -134,21 +135,25 @@ export default function PublicSpace({
   const editabilityCheck = useMemo(() => {
     const checker = createEditabilityChecker({
       currentUserFid,
+      currentUserIdentityPublicKey,
       spaceOwnerFid,
       spaceOwnerAddress,
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
       isTokenPage,
+      spaceId: providedSpaceId,
     });
 
     return checker;
   }, [
     currentUserFid,
+    currentUserIdentityPublicKey,
     spaceOwnerFid,
     spaceOwnerAddress,
     tokenData,
     wallets,
     isTokenPage,
+    providedSpaceId,
   ]);
 
   // Internal isEditable function
@@ -205,8 +210,9 @@ export default function PublicSpace({
       // logic for proposal
     }
 
-    setCurrentSpaceId(nextSpaceId);
-    prevSpaceId.current = nextSpaceId;
+    // Convert undefined to null for store compatibility
+    setCurrentSpaceId(nextSpaceId ?? null);
+    prevSpaceId.current = nextSpaceId ?? null;
     setCurrentTabName(nextTabName);
     prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
@@ -255,7 +261,7 @@ export default function PublicSpace({
 
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(
-    providedSpaceId !== null && !!localSpaces[providedSpaceId],
+    providedSpaceId !== undefined && !!localSpaces[providedSpaceId],
   );
   const isLoadingRef = useRef(false);
   // Keeps track of which tabs have already been loaded for each space
@@ -392,7 +398,7 @@ export default function PublicSpace({
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
 
-    // Only proceed with registration if we're sure the space doesn't exist and FID is linked
+    // Attempt registration when space is missing and user is identified
     if (
       editabilityCheck.isEditable &&
       isNil(currentSpaceId) &&
@@ -738,7 +744,7 @@ export default function PublicSpace({
     // Show skeleton only when we haven't loaded initial data yet
     !initialDataLoadRef.current &&
     // Don't show skeleton for navigation between tabs
-    providedSpaceId !== null && providedSpaceId !== "" &&
+    providedSpaceId !== undefined && providedSpaceId !== "" &&
     // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
       loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
