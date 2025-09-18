@@ -53,9 +53,11 @@ function PushNotificationManager() {
       if (!publicKey) {
         throw new Error('VAPID public key is missing')
       }
+      const applicationServerKey = urlBase64ToUint8Array(publicKey)
+
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
       })
       setSubscription(sub)
       const serializedSub = JSON.parse(JSON.stringify(sub))
