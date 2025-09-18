@@ -5,7 +5,7 @@ import {
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { SPACE_TYPES } from "@/common/constants/spaceTypes";
+import { SPACE_TYPES } from "@/common/types/space";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
 } from "@/constants/initialPersonSpace";

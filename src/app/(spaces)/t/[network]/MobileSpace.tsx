@@ -52,7 +52,7 @@ const IconButton = React.memo(
 
 IconButton.displayName = "IconButton";
 
-export const MobileContractDefinedSpace = ({
+export const MobileTokenSpace = ({
   contractAddress,
   tabName: providedTabName,
 }: {

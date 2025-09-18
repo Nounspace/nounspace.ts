@@ -5,14 +5,21 @@ import { isArray, isNil } from "lodash";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import PublicSpace from "../../PublicSpace";
-import { SPACE_TYPES } from "@/common/constants/spaceTypes";
-import { ProfileSpaceData } from "@/common/types/space";
+import { SPACE_TYPES, ProfileSpaceData } from "@/common/types/space";
 
-export type UserDefinedSpacePageProps = {
-  spaceOwnerFid: number | null;
-  spaceOwnerUsername: string | null;
+// Editability logic for profile spaces
+const checkProfileSpaceEditability = (
+  fid: number,
+  currentUserFid: number | undefined
+): boolean => {
+  return !isNil(currentUserFid) && currentUserFid === fid;
+};
+
+export type ProfileSpaceProps = {
+  spaceOwnerFid: number | undefined;
+  spaceOwnerUsername: string | undefined;
   spaceId?: string;
-  tabName: string | string[] | null | undefined;
+  tabName: string | string[] | undefined;
 };
 
 export const ProfileSpace = ({
@@ -20,7 +27,7 @@ export const ProfileSpace = ({
   spaceOwnerUsername,
   spaceId,
   tabName,
-}: UserDefinedSpacePageProps) => {
+}: ProfileSpaceProps) => {
   if (isNil(spaceOwnerFid)) {
     return <SpaceNotFound />;
   }
@@ -47,6 +54,10 @@ export const ProfileSpace = ({
     spaceType: SPACE_TYPES.PROFILE,
     updatedAt: new Date().toISOString(),
     fid: spaceOwnerFid,
+    // URL generation
+    spacePageUrl: getSpacePageUrl,
+    // Editability logic
+    isEditable: (currentUserFid: number | undefined) => checkProfileSpaceEditability(spaceOwnerFid, currentUserFid),
     // Configuration
     config: INITIAL_PERSONAL_SPACE_CONFIG
   };
@@ -55,7 +66,6 @@ export const ProfileSpace = ({
     <PublicSpace
       spaceData={profileSpaceData}
       tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
-      getSpacePageUrl={getSpacePageUrl}
     />
   );
 };

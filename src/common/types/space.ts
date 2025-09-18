@@ -1,7 +1,16 @@
-import { SPACE_TYPES, SpaceTypeValue } from '@/common/constants/spaceTypes';
 import { SpaceConfig } from '@/app/(spaces)/Space';
 import { Address } from 'viem';
 import { MasterToken } from '@/common/providers/TokenProvider';
+
+// Space type definitions - the single source of truth for space types
+export const SPACE_TYPES = {
+  PROFILE: 'profile',
+  TOKEN: 'token', 
+  PROPOSAL: 'proposal',
+} as const;
+
+// TypeScript type derived from the constants (for type checking)
+export type SpaceTypeValue = typeof SPACE_TYPES[keyof typeof SPACE_TYPES];
 
 // Base space interface with common properties
 export interface SpaceData {
@@ -10,6 +19,12 @@ export interface SpaceData {
   spaceName: string;
   spaceType: SpaceTypeValue;
   updatedAt: string;
+  
+  // URL generation function for this space
+  spacePageUrl: (tabName: string) => string;
+  
+  // Each space type implements its own logic for editability
+  isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => boolean;
   
   // Configuration - using Omit<SpaceConfig, "isEditable"> since isEditable is determined at runtime
   config: Omit<SpaceConfig, "isEditable">;
@@ -50,3 +65,4 @@ export function isTokenSpace(space: SpaceData): space is TokenSpaceData {
 export function isProposalSpace(space: SpaceData): space is ProposalSpaceData {
   return space.spaceType === SPACE_TYPES.PROPOSAL;
 }
+

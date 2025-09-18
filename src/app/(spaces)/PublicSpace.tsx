@@ -6,7 +6,6 @@ import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
-import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
 import Profile from "@/fidgets/ui/profile";
@@ -19,19 +18,16 @@ import { SpaceConfigSaveDetails } from "./Space";
 import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
-import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
   spaceData: SpaceData;
   tabName: string;
-  getSpacePageUrl: (tabName: string) => string;
 }
 
 export default function PublicSpace({
   spaceData,
   tabName,
-  getSpacePageUrl,
 }: PublicSpaceProps) {
 
   const {
@@ -83,13 +79,11 @@ export default function PublicSpace({
   const router = useRouter();
 
   const [loading, setLoading] = useState<boolean>(isNil(spaceData.id) || !localSpaces[spaceData.id]);
-  const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
+  const [currentUserFid, setCurrentUserFid] = useState<number | undefined>(undefined);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
-  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
-
   
-  // Clear cache only when switching to a different space
+  // Clear cache when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
     if (currentSpaceId !== spaceData.id) {
@@ -105,37 +99,10 @@ export default function PublicSpace({
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
 
-  // Create an editability checker
-  const editabilityCheck = useMemo(() => {
-    // Extract type-specific properties from space
-    const spaceOwnerFid = isProfileSpace(spaceData) ? spaceData.fid : undefined;
-    // Get owner address from space object directly
-    const ownerAddress = isTokenSpace(spaceData) || isProposalSpace(spaceData) ? spaceData.ownerAddress : undefined;
-    // Get token data from space if it's a token space
-    const tokenData = isTokenSpace(spaceData) ? spaceData.tokenData : undefined;
-    
-    const checker = createEditabilityChecker({
-      currentUserFid,
-      currentUserIdentityPublicKey,
-      spaceOwnerFid,
-      spaceOwnerAddress: ownerAddress,
-      tokenData,
-      wallets: wallets.map((w) => ({ address: w.address as Address })),
-      isTokenPage: isTokenSpace(spaceData),
-      isProposalPage: isProposalSpace(spaceData),
-    });
-
-    return checker;
-  }, [
-    currentUserFid,
-    currentUserIdentityPublicKey,
-    spaceData, // Include space since we're extracting properties from it
-    wallets,
-  ]);
-
-  // Internal isEditable function
-  // Get the boolean value directly from editabilityCheck
-  const isEditable = editabilityCheck.isEditable;
+  // Each space has its own isEditable logic
+  const isEditable = useMemo(() => {
+    return spaceData.isEditable(currentUserFid, wallets.map((w) => ({ address: w.address as Address })));
+  }, [spaceData, currentUserFid, wallets]);
 
 
   // Control to avoid infinite space/tab update cycles
@@ -374,11 +341,10 @@ export default function PublicSpace({
 
     // Attempt registration when space is missing and user is identified
     if (
-      editabilityCheck.isEditable &&
+      isEditable &&
       isNil(currentSpaceId) &&
       !isNil(currentUserFid) &&
-      !loading &&
-      !editabilityCheck.isLoading
+      !loading
     ) {
 
       const registerSpace = async () => {
@@ -439,10 +405,10 @@ export default function PublicSpace({
             newSpaceId = await registerSpaceFid(
               spaceData.fid,
               "Profile",
-              getSpacePageUrl("Profile"),
+              spaceData.spacePageUrl("Profile"),
             );
 
-            const newUrl = getSpacePageUrl("Profile");
+            const newUrl = spaceData.spacePageUrl("Profile");
             router.replace(newUrl);
           }
 
@@ -471,7 +437,7 @@ export default function PublicSpace({
             await loadEditableSpaces(); // Second load to invalidate cache
 
             // Update the URL to include the new space ID
-            const newUrl = getSpacePageUrl(initialTabName);
+            const newUrl = spaceData.spacePageUrl(initialTabName);
             router.replace(newUrl);
           }
         } catch (error) {
@@ -482,8 +448,7 @@ export default function PublicSpace({
       registerSpace();
     }
   }, [
-    editabilityCheck.isEditable,
-    editabilityCheck.isLoading,
+    isEditable,
     currentUserFid,
     loading,
     spaceData,
@@ -491,7 +456,6 @@ export default function PublicSpace({
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
-    getSpacePageUrl,
     router,
     registerSpaceContract,
     registerProposalSpace,
@@ -600,7 +564,7 @@ export default function PublicSpace({
       await commitSpaceTab(currentSpaceId, currentTabName, network);
     }
     // Update the URL without triggering a full navigation
-    router.push(getSpacePageUrl(tabName));
+    router.push(spaceData.spacePageUrl(tabName));
   }
 
   const { editMode } = useSidebarContext();
@@ -674,8 +638,8 @@ export default function PublicSpace({
           )
           : undefined;
       }}
-      getSpacePageUrl={getSpacePageUrl}
-      isEditable={editabilityCheck.isEditable}
+      getSpacePageUrl={spaceData.spacePageUrl}
+      isEditable={isEditable}
       spaceId={getCurrentSpaceId()}
     />
   );

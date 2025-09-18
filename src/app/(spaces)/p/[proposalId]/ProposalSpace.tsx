@@ -2,28 +2,25 @@
 
 import React, { useMemo } from "react";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
+import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { Address } from "viem";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
-import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { ProposalData } from "./utils";
 import { useFidFromAddress } from "@/common/data/queries/farcaster";
-import { ProposalSpaceData } from "@/common/types/space";
-import { SPACE_TYPES } from "@/common/constants/spaceTypes";
+import { ProposalSpaceData, SPACE_TYPES } from "@/common/types/space";
 
-export interface ProposalPageSpaceProps {
-  spaceId?: string;
+export interface ProposalSpaceProps {
   tabName?: string;
   proposalId: string | null;
-  proposalData?: ProposalData;
+  proposalData: ProposalData;
   owningIdentities?: string[];
 }
 
-const ProposalDefinedSpace = ({
-  spaceId,
+const ProposalSpace = ({
   tabName,
   proposalId,
-}: ProposalPageSpaceProps) => {
-  const { proposalData } = useProposalContext();
+  proposalData,
+}: ProposalSpaceProps) => {
   const ownerId = proposalData?.proposer.id;
   const { data: ownerFid } = useFidFromAddress(ownerId);
 
@@ -39,20 +36,33 @@ const ProposalDefinedSpace = ({
 
   const getSpacePageUrl = (tabName: string) => `/p/${proposalId}/${tabName}`;
 
+  // Editability logic for proposal spaces
+  const checkProposalSpaceEditability = (
+    ownerAddress: Address,
+    wallets: { address: Address }[]
+  ): boolean => {
+    return wallets.some(
+      (w) => w.address.toLowerCase() === ownerAddress.toLowerCase()
+    );
+  };
+
   // Ensure we have a valid owner address
-  if (!ownerId) {
-    console.error("Missing required ownerAddress for proposal space");
-    return null;
+  if (!ownerId || ownerId === "0x0" || ownerId === "0x0000000000000000000000000000000000000000") {
+    console.error("Missing or invalid ownerAddress for proposal space");
+    return <SpaceNotFound />;
   }
 
   // Create a properly typed ProposalSpace object
   const proposalSpace: ProposalSpaceData = {
-    id: spaceId || `temp-proposal-${proposalId}`,
+    id: undefined, // Will be set by PublicSpace through registration
     spaceName: `Proposal ${proposalId}`,
     spaceType: SPACE_TYPES.PROPOSAL,
     updatedAt: new Date().toISOString(),
     proposalId: proposalId || '',
     ownerAddress: ownerId as Address,
+    spacePageUrl: getSpacePageUrl,
+    isEditable: (currentUserFid: number | undefined, wallets: { address: Address }[] = []) => 
+      checkProposalSpaceEditability(ownerId as Address, wallets),
     config: INITIAL_SPACE_CONFIG
   };
 
@@ -61,10 +71,9 @@ const ProposalDefinedSpace = ({
       <PublicSpace
         spaceData={proposalSpace}
         tabName={tabName || "Overview"}
-        getSpacePageUrl={getSpacePageUrl}
       />
     </div>
   );
 };
 
-export default ProposalDefinedSpace;
+export default ProposalSpace;

@@ -3,19 +3,57 @@
 import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
-import { ContractDefinedSpaceProps } from "./ContractDefinedSpace";
+import { OwnerType } from "@/common/data/api/etherscan";
 import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
-import { Address } from 'viem';
-import { TokenSpaceData } from "@/common/types/space";
-import { SPACE_TYPES } from "@/common/constants/spaceTypes";
+import { Address, isAddressEqual } from 'viem';
+import { TokenSpaceData, SPACE_TYPES } from "@/common/types/space";
+import { isNil } from "lodash";
 
-export default function DesktopContractDefinedSpace({
+export interface TokenSpaceProps {
+  spaceId?: string;
+  tabName: string;
+  contractAddress: string;
+  pinnedCastId?: string;
+  ownerId: string | number | null;
+  ownerIdType: OwnerType;
+}
+
+// Editability logic for token spaces
+const checkTokenSpaceEditability = (
+  ownerAddress: Address,
+  tokenData: any | undefined,
+  currentUserFid: number | undefined,
+  wallets: { address: Address }[]
+): boolean => {
+  // Check if user is the owner by FID (from tokenData)
+  if (
+    tokenData?.clankerData?.requestor_fid && 
+    !isNil(currentUserFid) && 
+    currentUserFid === Number(tokenData.clankerData.requestor_fid)
+  ) {
+    return true;
+  }
+
+  // Check if user owns the wallet address - handles both direct contract ownership
+  // and Empire token ownership through tokenData.empireData.owner
+  const actualOwnerAddress = ownerAddress || (tokenData?.empireData?.owner as Address | undefined);
+  if (
+    actualOwnerAddress &&
+    wallets.some((w) => isAddressEqual(w.address as Address, actualOwnerAddress))
+  ) {
+    return true;
+  }
+
+  return false;
+};
+
+export default function TokenSpace({
   spaceId,
   tabName,
   contractAddress,
   ownerId,
   ownerIdType,
-}: ContractDefinedSpaceProps) {
+}: TokenSpaceProps) {
   const { tokenData } = useToken();
 
   const INITIAL_SPACE_CONFIG = useMemo(
@@ -55,6 +93,9 @@ export default function DesktopContractDefinedSpace({
     network: tokenData?.network || 'mainnet',
     ownerAddress: spaceOwnerAddress,
     tokenData: tokenData || undefined,
+    spacePageUrl: getSpacePageUrl,
+    isEditable: (currentUserFid: number | undefined, wallets: { address: Address }[] = []) => 
+      checkTokenSpaceEditability(spaceOwnerAddress, tokenData, currentUserFid, wallets),
     config: INITIAL_SPACE_CONFIG
   };
 
@@ -62,7 +103,6 @@ export default function DesktopContractDefinedSpace({
     <PublicSpace
       spaceData={tokenSpace}
       tabName={tabName}
-      getSpacePageUrl={getSpacePageUrl}
     />
   );
 }

@@ -9,7 +9,7 @@ import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import ContractPrimarySpaceContent from "../../ContractPrimarySpaceContent";
+import TokenSpace from "../../TokenSpace";
 
 async function loadTokenData(
   contractAddress: Address,
@@ -49,7 +49,13 @@ export default async function WrappedContractPrimarySpace({ params }) {
       defaultTokenData={tokenData}
       network={network}
     >
-      <ContractPrimarySpaceContent {...props} />
+      <TokenSpace
+        spaceId={props.spaceId}
+        tabName={props.tabName || "Overview"}
+        ownerId={props.ownerId}
+        ownerIdType={props.ownerIdType}
+        contractAddress={props.contractAddress}
+      />
     </TokenProvider>
   );
 }

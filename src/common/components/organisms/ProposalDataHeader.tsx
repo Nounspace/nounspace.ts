@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { format } from "date-fns";
 import { Address } from "viem";
 import { useEnsName } from "wagmi";
 import { mainnet } from "wagmi/chains";
+import { ProposalData } from "@/app/(spaces)/p/[proposalId]/utils";
 
 const AddressDisplay = ({ address }: { address: Address }) => {
   const { data: ensName } = useEnsName({
@@ -27,8 +27,11 @@ const AddressDisplay = ({ address }: { address: Address }) => {
   );
 };
 
-const ProposalDataHeader: React.FC = () => {
-  const { proposalData } = useProposalContext();
+interface ProposalDataHeaderProps {
+  proposalData: ProposalData;
+}
+
+const ProposalDataHeader: React.FC<ProposalDataHeaderProps> = ({ proposalData }) => {
   console.log("DEBUG: proposalData", proposalData);
   
   if (!proposalData) {

@@ -1,6 +1,6 @@
 import React from "react";
 import { getTabList, getUserMetadata, type Tab } from "./utils";
-import ProfileSpace, { UserDefinedSpacePageProps } from "./ProfileSpace";
+import ProfileSpace, { ProfileSpaceProps } from "./ProfileSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -8,30 +8,29 @@ import { unstable_noStore as noStore } from "next/cache";
 const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
-): Promise<UserDefinedSpacePageProps> => {
+): Promise<ProfileSpaceProps> => {
   noStore(); 
 
   const userMetadata = await getUserMetadata(handle);
-  const spaceOwnerFid = userMetadata?.fid || null;
-  const spaceOwnerUsername = userMetadata?.username || null;
+  const spaceOwnerFid = userMetadata?.fid || undefined;
+  const spaceOwnerUsername = userMetadata?.username || undefined;
 
   if (!spaceOwnerFid) {
     return {
-      spaceOwnerFid: null,
-      spaceOwnerUsername: null,
+      spaceOwnerFid: undefined,
+      spaceOwnerUsername: undefined,
       spaceId: undefined,
-      tabName: null,
+      tabName: undefined,
     };
   }
 
   const tabList = await getTabList(spaceOwnerFid);
 
   if (!tabList || tabList.length === 0) {
-    return { spaceOwnerFid, spaceOwnerUsername, spaceId: undefined, tabName: null };
+    return { spaceOwnerFid, spaceOwnerUsername, spaceId: undefined, tabName: undefined };
   }
 
   const defaultTab: Tab = tabList[0];
-
   const spaceId = defaultTab.spaceId;
   const tabName = tabNameParam || defaultTab.spaceName;
 

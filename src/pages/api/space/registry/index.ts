@@ -7,7 +7,7 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
 import { tokenRequestorFromContractAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
-import { SPACE_TYPES, SpaceTypeValue } from "@/common/constants/spaceTypes";
+import { SPACE_TYPES, SpaceTypeValue } from "@/common/types/space";
 import {
   findIndex,
   first,

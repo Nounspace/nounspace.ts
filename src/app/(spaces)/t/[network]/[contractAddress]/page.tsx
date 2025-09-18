@@ -7,7 +7,7 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
-import ContractPrimarySpaceContent from "../ContractPrimarySpaceContent";
+import TokenSpace from "../TokenSpace";
 
 export interface ContractSpacePageProps {
   spaceId?: string;
@@ -79,13 +79,12 @@ export default async function ContractPrimarySpace({ params }) {
         network={network}
         defaultTokenData={defaultTokenData}
       >
-        <ContractPrimarySpaceContent
+        <TokenSpace
           spaceId={spaceId ?? undefined}
-          tabName={tabName}
+          tabName={tabName || "Overview"}
           ownerId={ownerId}
           ownerIdType={ownerIdType}
           contractAddress={contractAddressStr}
-          network={network}
         />
       </TokenProvider>
   );
