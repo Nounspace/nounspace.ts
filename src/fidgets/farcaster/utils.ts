@@ -27,18 +27,8 @@ import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 // import { ModProtocolCastAddBody } from "./components/CreateCast";
-import { type Channel } from "@mod-protocol/farcaster";
-
-type FarcasterUrlEmbed = {
-  url: string;
-};
-type FarcasterCastIdEmbed = {
-  castId: {
-    fid: number;
-    hash: Uint8Array;
-  };
-};
-export type FarcasterEmbed = FarcasterCastIdEmbed | FarcasterUrlEmbed;
+import { type Channel, type FarcasterEmbed } from "./types";
+type FarcasterUrlEmbed = FarcasterEmbed & { url: string };
 export function isFarcasterUrlEmbed(embed: FarcasterEmbed): embed is FarcasterUrlEmbed {
   return (embed as FarcasterUrlEmbed).url !== undefined;
 }

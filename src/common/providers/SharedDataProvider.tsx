@@ -7,8 +7,8 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Channel, FarcasterEmbed } from '@mod-protocol/farcaster';
-import { useQueryClient } from '@tanstack/react-query';
+import { Channel, FarcasterEmbed } from "@/fidgets/farcaster/types";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Define the types of data that will be shared
 interface SharedDataContextType {

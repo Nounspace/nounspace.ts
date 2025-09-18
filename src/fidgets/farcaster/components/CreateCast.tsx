@@ -1,44 +1,28 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-// import neynar from "@/common/data/api/neynar";
+"use client";
+
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CastAddBody,
+  CastType,
   FarcasterNetwork,
   makeCastAdd,
+  Signer,
 } from "@farcaster/core";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-
-import {
-  ModManifest,
-  fetchUrlMetadata,
-  handleAddEmbed,
-  handleOpenFile,
-  handleSetInput,
-} from "@mod-protocol/core";
-import { CreationMod } from "@mod-protocol/react";
-import { EditorContent, useEditor } from "@mod-protocol/react-editor";
-import { CastLengthUIIndicator } from "@mod-protocol/react-ui-shadcn/dist/components/cast-length-ui-indicator";
-import { ChannelList } from "@mod-protocol/react-ui-shadcn/dist/components/channel-list";
-import { createRenderMentionsSuggestionConfig } from "@mod-protocol/react-ui-shadcn/dist/lib/mentions";
-import { renderers } from "@mod-protocol/react-ui-shadcn/dist/renderers";
 import { Button } from "@/common/components/atoms/button";
-import { debounce, isEmpty, isUndefined, map } from "lodash";
-import { MentionList } from "./mentionList";
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/common/components/atoms/popover";
+import { debounce, isUndefined, map } from "lodash";
 import Spinner from "@/common/components/atoms/spinner";
 import { useAppStore } from "@/common/data/stores/app";
 import { useBannerStore } from "@/common/stores/bannerStore";
-import { CastType, Signer } from "@farcaster/core";
 import { PhotoIcon } from "@heroicons/react/20/solid";
 import { usePrivy } from "@privy-io/react-auth";
-import EmojiPicker, {
-  Theme,
-  EmojiClickData,
-} from "emoji-picker-react";
+import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { GoSmiley } from "react-icons/go";
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { Address, formatUnits, zeroAddress } from "viem";
@@ -46,36 +30,138 @@ import { base } from "viem/chains";
 import { useBalance } from "wagmi";
 import { useFarcasterSigner } from "..";
 import {
-  FarcasterEmbed,
   fetchChannelsByName,
   fetchChannelsForUser,
   isFarcasterUrlEmbed,
   submitCast,
 } from "../utils";
+import { Channel, FarcasterEmbed, FarcasterMention } from "../types";
 import { ChannelPicker } from "./channelPicker";
+import { MentionList, type MentionListRef } from "./mentionList";
 import { renderEmbedForUrl } from "./Embeds";
-
+import { EditorContent, ReactRenderer, useEditor as useTipTapEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import CharacterCount from "@tiptap/extension-character-count";
+import Mention from "@tiptap/extension-mention";
+import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
+import tippy, { type Instance as TippyInstance } from "tippy.js";
+import "tippy.js/dist/tippy.css";
 
 const SPACE_CONTRACT_ADDR = "0x48c6740bcf807d6c47c864faeea15ed4da3910ab";
+const CAST_CHARACTER_LIMIT = 320;
 
-// Fixed missing imports and incorrect object types
-const API_URL = process.env.NEXT_PUBLIC_MOD_PROTOCOL_API_URL!;
+const mentionFidCache = new Map<string, string>();
+const mentionResultsCache = new Map<string, FarcasterMention[]>();
 
-type FarcasterMention = {
-  fid: number;
-  display_name: string;
-  username: string;
-  avatar_url: string;
+const DEFAULT_CHANNEL_PLACEHOLDER: Channel = {
+  id: "home",
+  name: "Home",
+  image_url: null,
+  parent_url: null,
 };
 
-// Module-level cache of resolved usernames → FIDs
-const mentionFidCache = new Map<string, string>();
+const escapeHtml = (value: string) =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+
+const buildHtmlFromText = (value: string) => {
+  if (!value) {
+    return "<p></p>";
+  }
+
+  return value
+    .split("\n")
+    .map((line) => `<p>${escapeHtml(line)}</p>`)
+    .join("");
+};
+
+const createMentionSuggestion = (
+  getResults: (query: string) => Promise<FarcasterMention[]>,
+) => {
+  return {
+    char: "@",
+    items: async ({ query }: { query: string }) => {
+      const normalized = query.trim().toLowerCase();
+      if (normalized.length === 0) {
+        return [];
+      }
+
+      if (mentionResultsCache.has(normalized)) {
+        return mentionResultsCache.get(normalized)!;
+      }
+
+      const results = await getResults(normalized);
+      mentionResultsCache.set(normalized, results);
+      return results;
+    },
+    render: () => {
+      let component: ReactRenderer | null = null;
+      let popup: TippyInstance | null = null;
+
+      return {
+        onStart: (props: SuggestionProps<FarcasterMention>) => {
+          component = new ReactRenderer(MentionList, {
+            editor: props.editor,
+            props,
+          });
+
+          const element = component.element as HTMLElement | null;
+          const clientRect = props.clientRect;
+          if (!element || !clientRect) {
+            return;
+          }
+
+          popup = tippy(document.body, {
+            getReferenceClientRect: () => clientRect() ?? new DOMRect(),
+            appendTo: () => document.body,
+            content: element,
+            showOnCreate: true,
+            interactive: true,
+            trigger: "manual",
+            placement: "bottom-start",
+          });
+        },
+        onUpdate: (props: SuggestionProps<FarcasterMention>) => {
+          component?.updateProps(props);
+          const clientRect = props.clientRect;
+          if (!clientRect || !popup) {
+            return;
+          }
+          popup.setProps({
+            getReferenceClientRect: () => clientRect() ?? new DOMRect(),
+          });
+        },
+        onKeyDown: (props: SuggestionKeyDownProps) => {
+          if (props.event.key === "Escape") {
+            popup?.hide();
+            return true;
+          }
+
+          const ref = component?.ref as MentionListRef | undefined;
+          if (ref?.onKeyDown) {
+            return ref.onKeyDown({ event: props.event });
+          }
+
+          return false;
+        },
+        onExit: () => {
+          popup?.destroy();
+          component?.destroy();
+        },
+      };
+    },
+  };
+};
 
 const fetchNeynarMentions = async (
   query: string,
 ): Promise<FarcasterMention[]> => {
   try {
-    if (query == "") return [];
+    if (query === "") return [];
 
     const res = await fetch(
       `/api/search/users?q=${encodeURIComponent(query)}&limit=10`,
@@ -94,18 +180,7 @@ const fetchNeynarMentions = async (
   }
 };
 
-const debouncedGetMentions = debounce(fetchNeynarMentions, 200, {
-  leading: true,
-  trailing: false,
-});
-const getUrlMetadata = fetchUrlMetadata(API_URL);
-
-const onError = (err) => {
-  console.error(err);
-  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "development") {
-    window.alert(err.message);
-  }
-};
+const urlPattern = /(https?:\/\/[^\s<]+)/gi;
 
 export type ParentCastIdType = {
   fid: number;
@@ -126,7 +201,7 @@ export type DraftType = {
   embeds?: FarcasterEmbed[];
   parentUrl?: string;
   parentCastId?: ParentCastIdType;
-  mentionsPositions?: number[]; // <-- Add this property
+  mentionsPositions?: number[];
 };
 
 type CreateCastProps = {
@@ -136,35 +211,301 @@ type CreateCastProps = {
 
 const SPARKLES_BANNER_KEY = "sparkles-banner-v1";
 
+const CastLengthIndicator = ({ characters }: { characters: number }) => {
+  const clamped = Math.max(0, Math.min(characters, CAST_CHARACTER_LIMIT));
+  const percentage = Math.min(100, (clamped / CAST_CHARACTER_LIMIT) * 100);
+  const remaining = CAST_CHARACTER_LIMIT - characters;
+  const colorClass =
+    remaining < 0
+      ? "text-red-600"
+      : remaining <= 20
+        ? "text-amber-500"
+        : "text-muted-foreground";
+
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <div className="relative h-2 w-24 overflow-hidden rounded-full bg-muted">
+        <div
+          className={`h-full ${remaining < 0 ? "bg-red-500" : "bg-blue-500"}`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+      <span className={colorClass}>{remaining}</span>
+    </div>
+  );
+};
+
 const CreateCast: React.FC<CreateCastProps> = ({
   initialDraft,
-  afterSubmit = () => { },
+  afterSubmit = () => {},
 }) => {
   const isMobile = useIsMobile();
-  const [currentMod, setCurrentMod] = useState<ModManifest | null>(null);
-  const [initialEmbeds, setInitialEmbeds] = useState<FarcasterEmbed[]>();
   const [draft, setDraft] = useState<DraftType>({
     text: "",
     status: DraftStatus.writing,
     ...initialDraft,
   });
-  const [submitStatus, setSubmitStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [embeds, setEmbeds] = useState<FarcasterEmbed[]>(
+    initialDraft?.embeds ?? [],
+  );
+  const [linkEmbeds, setLinkEmbeds] = useState<FarcasterEmbed[]>([]);
+  const combinedEmbeds = useMemo(
+    () => [...linkEmbeds, ...embeds],
+    [linkEmbeds, embeds],
+  );
 
-  const hasEmbeds = draft?.embeds && !!draft.embeds.length;
+  const hasEmbeds = combinedEmbeds.length > 0;
   const isReply = draft?.parentCastId !== undefined;
   const { signer, isLoadingSigner, fid } = useFarcasterSigner("create-cast");
-  const [initialChannels, setInitialChannels] = useState() as any;
+  const [initialChannels, setInitialChannels] =
+    useState<Channel[] | undefined>();
+  const [channel, setChannel] = useState<Channel | undefined>(
+    initialDraft?.parentUrl
+      ? {
+          id: initialDraft.parentUrl,
+          name: initialDraft.parentUrl,
+          parent_url: initialDraft.parentUrl,
+          image_url: null,
+        }
+      : undefined,
+  );
   const [isPickingEmoji, setIsPickingEmoji] = useState<boolean>(false);
   const parentRef = useRef<HTMLDivElement>(null);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { user } = usePrivy();
+  const result = useBalance({
+    address: (user?.wallet?.address as Address) || zeroAddress,
+    token: SPACE_CONTRACT_ADDR,
+    chainId: base.id,
+  });
+  const spaceHoldAmount = result?.data
+    ? parseInt(formatUnits(result.data.value, result.data.decimals))
+    : 0;
+  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
+  const { hasNogs } = useAppStore((state) => ({
+    hasNogs: state.account.hasNogs,
+  }));
+  const { isBannerClosed, closeBanner } = useBannerStore();
+  const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
+  const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
+  const [submitInFlight, setSubmitInFlight] = useState(false);
 
+  const mentionSuggestion = useMemo(
+    () => createMentionSuggestion(fetchNeynarMentions),
+    [],
+  );
 
-  // Real image upload function for imgBB
+  const editor = useTipTapEditor({
+    extensions: [
+      StarterKit.configure({
+        history: false,
+      }),
+      Link.configure({
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          class: "text-blue-800 break-all",
+        },
+        validate: (href: string) =>
+          href.startsWith("https://") ||
+          href.startsWith("http://") ||
+          href.startsWith("chain:"),
+      }),
+      Placeholder.configure({
+        placeholder: "What's happening?",
+      }),
+      CharacterCount.configure({ limit: CAST_CHARACTER_LIMIT }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: "text-blue-700 font-medium",
+        },
+        suggestion: mentionSuggestion,
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class: "outline-none",
+      },
+    },
+    onCreate: ({ editor }) => {
+      if (initialDraft?.text) {
+        const html = buildHtmlFromText(initialDraft.text);
+        editor.commands.setContent(html, false, {
+          preserveWhitespace: "full",
+        });
+      }
+    },
+  });
+
+  const debouncedGetChannels = useCallback(
+    debounce(
+      async (query: string) => {
+        return await fetchChannelsByName(query);
+      },
+      200,
+      { leading: true, trailing: false },
+    ),
+    [],
+  );
+
+  const debouncedPasteUpload = useMemo(
+    () =>
+      debounce(
+        async (file: File) => {
+          setIsUploadingImage(true);
+          try {
+            const url = await uploadImageToImgBB(file);
+            const embed = { url, status: "loaded" } as FarcasterEmbed;
+            setEmbeds((prev) => [...prev, embed]);
+          } catch (err) {
+            alert("Error uploading image: " + (err as Error).message);
+          } finally {
+            setIsUploadingImage(false);
+          }
+        },
+        300,
+        { leading: true, trailing: false },
+      ),
+    [],
+  );
+
+  useEffect(() => {
+    if (!fid) return;
+    const fetchInitialChannels = async () => {
+      const initial_channels = await fetchChannelsForUser(fid);
+      setInitialChannels(initial_channels);
+      if (!isReply && !channel && initial_channels.length) {
+        setChannel(initial_channels[0]);
+      }
+    };
+    fetchInitialChannels();
+  }, [fid, isReply, channel]);
+
+  const text = editor?.getText({ blockSeparator: "\n" }) ?? "";
+  const characters = editor?.storage.characterCount?.characters?.() ?? 0;
+
+  useEffect(() => {
+    const matches = [...text.matchAll(urlPattern)].map((match) => match[0]);
+    const uniqueUrls = Array.from(new Set(matches));
+    setLinkEmbeds((prev) => {
+      if (
+        prev.length === uniqueUrls.length &&
+        prev.every(
+          (embed, index) =>
+            isFarcasterUrlEmbed(embed) && embed.url === uniqueUrls[index],
+        )
+      ) {
+        return prev;
+      }
+      return uniqueUrls.map((url) => ({ url })) as FarcasterEmbed[];
+    });
+  }, [text]);
+
+  useEffect(() => {
+    if (!editor || submitInFlight) return;
+
+    const fetchMentionsAndSetDraft = async () => {
+      const newEmbeds = combinedEmbeds;
+      const usernamePattern =
+        /(?:^|[\s(])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=[\s.,!?;:)]|$)/g;
+
+      const workingText = text;
+
+      const usernamesWithPositions = [
+        ...workingText.matchAll(usernamePattern),
+      ].map((match) => ({
+        username: match[1],
+        position: match.index! + match[0].indexOf("@"),
+      }));
+
+      const uniqueUsernames = Array.from(
+        new Set(usernamesWithPositions.map((u) => u.username)),
+      );
+
+      const mentionsToFids: { [key: string]: string } = {};
+      const mentionsPositions: number[] = [];
+      let mentionsText = text;
+
+      if (uniqueUsernames.length > 0) {
+        const uncachedUsernames = uniqueUsernames.filter(
+          (username) =>
+            !mentionFidCache.has(username) || !mentionFidCache.get(username),
+        );
+
+        uniqueUsernames.forEach((username) => {
+          const cachedFid = mentionFidCache.get(username);
+          if (cachedFid) {
+            mentionsToFids[username] = cachedFid;
+          }
+        });
+
+        if (uncachedUsernames.length > 0) {
+          try {
+            const query = encodeURIComponent(uncachedUsernames.join(","));
+            const res = await fetch(
+              `/api/farcaster/neynar/getFids?usernames=${query}`,
+            );
+            const fetchedMentions = await res.json();
+
+            if (Array.isArray(fetchedMentions)) {
+              fetchedMentions.forEach((mention) => {
+                if (mention && mention.username && mention.fid) {
+                  const fid = mention.fid.toString();
+                  mentionsToFids[mention.username] = fid;
+                  mentionFidCache.set(mention.username, fid);
+                }
+              });
+            }
+          } catch (err) {
+            console.error("Failed to fetch FIDs in batch:", err);
+          }
+        }
+
+        let cumulativeOffset = 0;
+        const mentionMatches = [...text.matchAll(usernamePattern)];
+
+        for (const match of mentionMatches) {
+          const fullMatch = match[0];
+          const username = match[1];
+          const atIndex = match.index! + fullMatch.indexOf("@");
+
+          const adjustedPosition = atIndex - cumulativeOffset;
+
+          if (mentionsToFids[username]) {
+            mentionsPositions.push(adjustedPosition);
+
+            mentionsText =
+              mentionsText.slice(0, adjustedPosition) +
+              mentionsText.slice(adjustedPosition + username.length + 1);
+
+            cumulativeOffset += username.length + 1;
+          }
+        }
+      }
+
+      setDraft((prevDraft) => {
+        const updatedDraft: DraftType = {
+          ...prevDraft,
+          text: mentionsText,
+          embeds: newEmbeds,
+          parentUrl:
+            channel?.parent_url ?? prevDraft.parentUrl ?? initialDraft?.parentUrl,
+          mentionsToFids,
+          mentionsPositions,
+        };
+        return updatedDraft;
+      });
+    };
+
+    fetchMentionsAndSetDraft();
+  }, [text, combinedEmbeds, channel, editor, submitInFlight]);
+
   async function uploadImageToImgBB(file: File): Promise<string> {
     const apiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
     if (!apiKey) throw new Error("imgBB API key not found");
@@ -172,13 +513,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const formData = new FormData();
     formData.append("image", file);
 
-    const res = await fetch(
-      `https://api.imgbb.com/1/upload?key=${apiKey}`,
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: "POST",
+      body: formData,
+    });
     const data = await res.json();
     if (!data.success)
       throw new Error(data.error?.message || "Failed to upload to ImgBB");
@@ -186,7 +524,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return data.data.display_url || data.data.url;
   }
 
-  // Drop handler
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
@@ -196,7 +533,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
+      const embed = { url, status: "loaded" } as FarcasterEmbed;
+      setEmbeds((prev) => [...prev, embed]);
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -204,13 +542,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   };
 
-  // Drag over handler
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (!isDragging) setIsDragging(true);
   };
 
-  // Drag leave handler
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
@@ -225,7 +561,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
     setIsUploadingImage(true);
     try {
       const url = await uploadImageToImgBB(file);
-      addEmbed({ url, status: "loaded" });
+      const embed = { url, status: "loaded" } as FarcasterEmbed;
+      setEmbeds((prev) => [...prev, embed]);
     } catch (err) {
       alert("Error uploading image: " + (err as Error).message);
     } finally {
@@ -238,11 +575,9 @@ const CreateCast: React.FC<CreateCastProps> = ({
     fileInputRef.current?.click();
   };
 
-  // Reference to the EditorContent element to handle paste (Ctrl+V) events
   const editorContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Effect to add/remove the paste event handler on EditorContent
     const el = editorContentRef.current;
     if (!el) return;
     const handler = (e: ClipboardEvent) => {
@@ -250,7 +585,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
       for (let i = 0; i < e.clipboardData.items.length; i++) {
         const item = e.clipboardData.items[i];
         const file = item.getAsFile();
-        console.log('Clipboard item', i, 'type:', item.type, file);
         if (file && file.type.startsWith("image/")) {
           e.preventDefault();
           debouncedPasteUpload(file);
@@ -261,59 +595,19 @@ const CreateCast: React.FC<CreateCastProps> = ({
     return () => {
       el.removeEventListener("paste", handler as any);
     };
-  }, [editorContentRef.current]);
+  }, [editorContentRef, debouncedPasteUpload]);
 
-  const { isBannerClosed, closeBanner } = useBannerStore();
-  const sparklesBannerClosed = isBannerClosed(SPARKLES_BANNER_KEY);
-
-  const { user } = usePrivy();
-  const result = useBalance({
-    address: (user?.wallet?.address as Address) || zeroAddress,
-    token: SPACE_CONTRACT_ADDR,
-    chainId: base.id,
-  });
-  const spaceHoldAmount = result?.data
-    ? parseInt(formatUnits(result.data.value, result.data.decimals))
-    : 0;
-  const userHoldEnoughSpace = spaceHoldAmount >= 1111;
-  const { hasNogs } = useAppStore((state) => ({
-    hasNogs: state.account.hasNogs,
-  }));
-  const [showEnhanceBanner, setShowEnhanceBanner] = useState(false);
-
-  useEffect(() => {
-    const fetchInitialChannels = async () => {
-      const initial_channels = await fetchChannelsForUser(fid);
-      setInitialChannels(initial_channels);
-    };
-    fetchInitialChannels();
-  }, [fid]);
-
-  const debouncedGetChannels = useCallback(
-    debounce(
-      async (query: string) => {
-        return await fetchChannelsByName(query);
-      },
-      200,
-      { leading: true, trailing: false },
-    ),
-    [],
-  );
-
-  const onSubmitPost = async (): Promise<boolean> => {
-    if ((!draft?.text && !draft?.embeds?.length) || isUndefined(signer)) {
-      console.error(
-        "Submission failed: Missing text or embeds, or signer is undefined.",
-        {
-          draftText: draft?.text,
-          draftEmbedsLength: draft?.embeds?.length,
-          signerUndefined: isUndefined(signer),
-        },
-      );
+  const onSubmitPost = useCallback(async (): Promise<boolean> => {
+    if (!draft?.text && combinedEmbeds.length === 0) {
+      console.error("Submission failed: Missing text or embeds.");
       return false;
     }
 
-    // Delay submission only if there are mentions and they are not resolved
+    if (isUndefined(signer)) {
+      console.error("Submission failed: signer is undefined.");
+      return false;
+    }
+
     if (
       (draft.mentionsPositions?.length || 0) > 0 &&
       Object.keys(draft.mentionsToFids || {}).length === 0
@@ -344,215 +638,35 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       return result.success;
     } catch (error) {
-      console.error(
-        "An unexpected error occurred during post submission:",
-        error,
-      );
+      console.error("An unexpected error occurred during post submission:", error);
       setSubmitStatus("error");
       setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
       return false;
     }
-  };
+  }, [draft, signer, fid, combinedEmbeds.length, afterSubmit]);
 
-  const isPublishing = draft?.status === DraftStatus.publishing;
-  const isPublished = draft?.status === DraftStatus.published;
-  const submissionError = submitStatus === "error";
-
-  const {
-    editor,
-    getText,
-    addEmbed,
-    getEmbeds,
-    setChannel,
-    getChannel,
-    handleSubmit,
-    setText,
-  } = useEditor({
-    fetchUrlMetadata: getUrlMetadata,
-    onError,
-    onSubmit: onSubmitPost,
-    linkClassName: "text-blue-800",
-    renderChannelsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetChannels,
-      RenderList: ChannelList,
-    }),
-    renderMentionsSuggestionConfig: createRenderMentionsSuggestionConfig({
-      getResults: debouncedGetMentions,
-      RenderList: MentionList,
-    }),
-    editorOptions: {
-      parseOptions: {
-        preserveWhitespace: "full",
-      },
-    },
-  });
-
-  const debouncedPasteUpload = useMemo(
-    () =>
-      debounce(
-        async (file: File) => {
-          setIsUploadingImage(true);
-          try {
-            const url = await uploadImageToImgBB(file);
-            addEmbed({ url, status: "loaded" });
-          } catch (err) {
-            alert("Error uploading image: " + (err as Error).message);
-          } finally {
-            setIsUploadingImage(false);
-          }
-        },
-        300,
-        { leading: true, trailing: false },
-      ),
-    [addEmbed],
-  );
-
-  useEffect(() => {
-    if (!text && draft?.text && isEmpty(draft.mentionsToFids)) {
-      editor?.commands.setContent(
-        `<p>${draft.text.replace(/\n/g, "<br>")}</p>`,
-        true,
-        {
-          preserveWhitespace: "full",
-        },
-      );
-    }
-
-    if (draft?.embeds) {
-      setInitialEmbeds(draft.embeds);
-    }
-  }, [editor]);
-
-  const text = getText();
-  const embeds = getEmbeds();
-  const channel = getChannel();
-  useEffect(() => {
-    if (!editor) return;
-    if (isPublishing) return;
-
-    const fetchMentionsAndSetDraft = async () => {
-      // console.group("Mention Parsing");
-      const newEmbeds = initialEmbeds ? [...embeds, ...initialEmbeds] : embeds;
-
-      // Updated regex: supports ENS-style usernames and extra trailing punctuation like . , ! ? ; :
-      // Uses lookaheads instead of lookbehinds for better browser compatibility
-      const usernamePattern =
-        /(?:^|[\s(])@([a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?)(?=[\s.,!?;:)]|$)/g;
-
-      // The working copy of the text for position calculation
-      const workingText = text;
-
-      // Extract mentions and their positions from the original text
-      const usernamesWithPositions = [
-        ...workingText.matchAll(usernamePattern),
-      ].map((match) => ({
-        username: match[1],
-        position: match.index! + match[0].indexOf("@"), // Adjust position to '@'
-      }));
-
-      const uniqueUsernames = Array.from(
-        new Set(usernamesWithPositions.map((u) => u.username)),
-      );
-
-      // console.log("Parsed mentions from text:", usernamesWithPositions);
-
-      const mentionsToFids: { [key: string]: string } = {};
-      const mentionsPositions: number[] = [];
-      let mentionsText = text; // Initialize mentionsText with current text
-
-      if (uniqueUsernames.length > 0) {
-        // Filter out usernames that are already in cache with valid FIDs
-        const uncachedUsernames = uniqueUsernames.filter(
-          username => !mentionFidCache.has(username) || !mentionFidCache.get(username)
-        );
-
-        // Add cached usernames to mentionsToFids only if they have valid FIDs
-        uniqueUsernames.forEach(username => {
-          const cachedFid = mentionFidCache.get(username);
-          if (cachedFid) {
-            mentionsToFids[username] = cachedFid;
-          }
-        });
-
-        // Only make API call if there are uncached usernames
-        if (uncachedUsernames.length > 0) {
-          try {
-            const query = encodeURIComponent(uncachedUsernames.join(","));
-            const res = await fetch(`/api/farcaster/neynar/getFids?usernames=${query}`);
-            const fetchedMentions = await res.json();
-
-            if (Array.isArray(fetchedMentions)) {
-              fetchedMentions.forEach(mention => {
-                if (mention && mention.username && mention.fid) {
-                  const fid = mention.fid.toString();
-                  mentionsToFids[mention.username] = fid;
-                  mentionFidCache.set(mention.username, fid);
-                }
-                // Remove caching of invalid usernames
-              });
-            }
-          } catch (err) {
-            console.error("Failed to fetch FIDs in batch:", err);
-          }
-        }
-
-        let cumulativeOffset = 0;
-        const mentionMatches = [...text.matchAll(usernamePattern)];
-
-        for (const match of mentionMatches) {
-          const fullMatch = match[0]; // e.g. " @bob"
-          const username = match[1];  // "bob"
-          const atIndex = match.index! + fullMatch.indexOf("@");
-
-          // Adjust position based on previous removals
-          const adjustedPosition = atIndex - cumulativeOffset;
-
-          if (mentionsToFids[username]) {
-            mentionsPositions.push(adjustedPosition);
-
-            // Remove `@username` from mentionsText
-            mentionsText = mentionsText.slice(0, adjustedPosition) +
-              mentionsText.slice(adjustedPosition + username.length + 1); // +1 for "@"
-
-            // Update offset so future positions shift correctly
-            cumulativeOffset += username.length + 1;
-          }
-        }
-
-        if (mentionsPositions.length > 10)
-          if (Object.keys(mentionsToFids).length !== mentionsPositions.length) {
-            console.error(
-              "Mismatch between mentions and their positions:",
-              mentionsToFids,
-              mentionsPositions,
-            );
-          }
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!editor || submitInFlight) {
+        return;
       }
 
-      // console.groupEnd();
-
-      // Update the draft regardless of mentions
-      setDraft((prevDraft) => {
-        const updatedDraft = {
-          ...prevDraft,
-          text: mentionsText,
-          embeds: newEmbeds,
-          parentUrl: channel?.parent_url || undefined,
-          mentionsToFids,
-          mentionsPositions,
-        };
-        // console.log("Updated Draft before posting:", updatedDraft);
-        return updatedDraft;
-      });
-    };
-
-    fetchMentionsAndSetDraft();
-  }, [text, embeds, initialEmbeds, channel, isPublishing, editor]);
+      setSubmitInFlight(true);
+      setDraft((prev) => ({ ...prev, status: DraftStatus.publishing }));
+      const success = await onSubmitPost();
+      if (!success) {
+        setDraft((prev) => ({ ...prev, status: DraftStatus.writing }));
+      }
+      setSubmitInFlight(false);
+    },
+    [editor, onSubmitPost, submitInFlight],
+  );
 
   async function publishPost(
     draft: DraftType,
     fid: number,
-    signer: Signer
+    signer: Signer,
   ): Promise<{ success: boolean; message?: string }> {
     if (draft.parentCastId) {
       const { hash } = draft.parentCastId;
@@ -583,7 +697,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
     const castAddMessageResp = await makeCastAdd(
       castBody,
       { fid, network: FarcasterNetwork.MAINNET },
-      signer
+      signer,
     );
 
     if (!castAddMessageResp.isOk()) {
@@ -608,6 +722,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
     }
   }
 
+  const isPublishing =
+    draft?.status === DraftStatus.publishing || submitInFlight;
+  const isPublished = draft?.status === DraftStatus.published;
+  const submissionError = submitStatus === "error";
 
   const getButtonText = () => {
     if (isLoadingSigner) return "Not signed into Farcaster";
@@ -625,6 +743,18 @@ const CreateCast: React.FC<CreateCastProps> = ({
     editor?.chain().focus().insertContent(emojiObject.emoji).run();
     setIsPickingEmoji(false);
   };
+
+  const setText = useCallback(
+    (value: string) => {
+      if (!editor) return;
+      const html = buildHtmlFromText(value);
+      editor.commands.setContent(html, false, {
+        preserveWhitespace: "full",
+      });
+      editor.commands.focus("end");
+    },
+    [editor],
+  );
 
   const handleEnhanceCast = async (text: string) => {
     if (isEnhancing) return;
@@ -687,13 +817,17 @@ const CreateCast: React.FC<CreateCastProps> = ({
           >
             {isDragging && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-blue-100/80 pointer-events-none rounded-lg">
-                <span className="text-blue-700 font-semibold text-lg">Drop the image here…</span>
+                <span className="text-blue-700 font-semibold text-lg">
+                  Drop the image here…
+                </span>
               </div>
             )}
             {isUploadingImage && (
               <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/70 pointer-events-none rounded-lg">
                 <Spinner style={{ width: "40px", height: "40px" }} />
-                <span className="ml-2 text-gray-700 font-medium">Uploading image…</span>
+                <span className="ml-2 text-gray-700 font-medium">
+                  Uploading image…
+                </span>
               </div>
             )}
             <EditorContent
@@ -702,12 +836,10 @@ const CreateCast: React.FC<CreateCastProps> = ({
               autoFocus
               className="w-full h-full min-h-[150px] opacity-80"
               onPaste={(e) => {
-                console.log('onPaste fired', e);
                 if (!e.clipboardData || !e.clipboardData.items) return;
                 for (let i = 0; i < e.clipboardData.items.length; i++) {
                   const item = e.clipboardData.items[i];
                   const file = item.getAsFile();
-                  console.log('Clipboard item', i, 'type:', item.type, file);
                   if (file && file.type.startsWith("image/")) {
                     e.preventDefault();
                     debouncedPasteUpload(file);
@@ -724,29 +856,36 @@ const CreateCast: React.FC<CreateCastProps> = ({
           </div>
         )}
 
-        <div className={isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"}>
-          {/* First row for mobile: Channel picker + icon buttons */}
-          <div className={isMobile ? "flex flex-row justify-between w-full" : "flex flex-row gap-1 md:justify-start"}>
-            {/* Left side: Channel picker and Add media button for mobile */}
+        <div
+          className={
+            isMobile ? "flex flex-col pt-2 gap-2" : "flex flex-row pt-2 gap-1"
+          }
+        >
+          <div
+            className={
+              isMobile
+                ? "flex flex-row justify-between w-full"
+                : "flex flex-row gap-1 md:justify-start"
+            }
+          >
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
               {!isReply && (
                 <div className="opacity-80">
                   {isPublishing || isLoadingSigner ? (
-                    channel?.name
+                    channel?.name ?? DEFAULT_CHANNEL_PLACEHOLDER.name
                   ) : (
                     <ChannelPicker
                       getChannels={debouncedGetChannels}
                       onSelect={(selectedChannel) => {
                         setChannel(selectedChannel);
                       }}
-                      value={channel}
+                      value={channel ?? DEFAULT_CHANNEL_PLACEHOLDER}
                       initialChannels={initialChannels}
                     />
                   )}
                 </div>
               )}
 
-              {/* Add media button moved to left side on mobile */}
               {isMobile && (
                 <Button
                   className="h-10"
@@ -761,9 +900,7 @@ const CreateCast: React.FC<CreateCastProps> = ({
               )}
             </div>
 
-            {/* Right side: Other action buttons */}
             <div className={isMobile ? "flex flex-row gap-1" : ""}>
-              {/* Only show Add button here for desktop */}
               {!isMobile && (
                 <Button
                   className="h-10"
@@ -806,7 +943,6 @@ const CreateCast: React.FC<CreateCastProps> = ({
             </div>
           </div>
 
-          {/* Cast button row for mobile */}
           {isMobile && (
             <div className="flex flex-row pt-2 justify-center w-full">
               <Button
@@ -837,38 +973,11 @@ const CreateCast: React.FC<CreateCastProps> = ({
               open={isPickingEmoji}
             />
           </div>
-          <Popover
-            open={!!currentMod}
-            onOpenChange={(op: boolean) => {
-              if (!op) setCurrentMod(null);
-            }}
-          >
-            <PopoverTrigger></PopoverTrigger>
-            <PopoverContent className="w-[300px]">
-              <div className="space-y-4">
-                <h4 className="font-medium leading-none">{currentMod?.name}</h4>
-                <hr />
-                <CreationMod
-                  input={text}
-                  embeds={embeds}
-                  api={API_URL}
-                  variant="creation"
-                  manifest={currentMod!}
-                  renderers={renderers}
-                  onOpenFileAction={handleOpenFile}
-                  onExitAction={() => setCurrentMod(null)}
-                  onSetInputAction={handleSetInput(setText)}
-                  onAddEmbedAction={handleAddEmbed(addEmbed)}
-                />
-              </div>
-            </PopoverContent>
-          </Popover>
 
-          {/* Desktop cast button */}
           {!isMobile && (
             <>
-              <CastLengthUIIndicator getText={getText} />
-              <div className="grow"></div>
+              <CastLengthIndicator characters={characters} />
+              <div className="grow" />
               <div className="flex flex-row pt-0 justify-end">
                 <Button
                   size="lg"
@@ -888,8 +997,8 @@ const CreateCast: React.FC<CreateCastProps> = ({
       {!sparklesBannerClosed && !showEnhanceBanner && (
         <div className="flex justify-center items-center w-full gap-1 text-orange-600 bg-orange-100 rounded-md p-2 text-sm font-medium mt-2 -mb-4">
           <p>
-            Click the <b>sparkles</b> to enhance a draft cast or generate one
-            from scratch.
+            Click the <b>sparkles</b> to enhance a draft cast or generate one from
+            scratch.
           </p>
         </div>
       )}
@@ -922,9 +1031,15 @@ const CreateCast: React.FC<CreateCastProps> = ({
 
       {hasEmbeds && (
         <div className="mt-8 rounded-md bg-muted p-2 w-full break-all">
-          {map(draft.embeds, (embed) => (
+          {map(combinedEmbeds, (embed) => (
             <div
-              key={`cast-embed-${isFarcasterUrlEmbed(embed) ? embed.url : (typeof embed.castId?.hash === 'string' ? embed.castId.hash : Array.from(embed.castId?.hash || []).join('-'))}`}
+              key={`cast-embed-${
+                isFarcasterUrlEmbed(embed)
+                  ? embed.url
+                  : typeof embed.castId?.hash === "string"
+                    ? embed.castId.hash
+                    : Array.from(embed.castId?.hash || []).join("-")
+              }`}
             >
               {renderEmbedForUrl(embed, true)}
             </div>

@@ -5,7 +5,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { FarcasterMention } from "@mod-protocol/farcaster";
+import { FarcasterMention } from "@/fidgets/farcaster/types";
 import clsx, { ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { debounce } from "lodash";
@@ -14,12 +14,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-type MentionListRef = {
+export type MentionListRef = {
   onKeyDown: (props: { event: Event }) => boolean;
 };
 
 type Props = {
-  items: Array<FarcasterMention | null>;
+  items: FarcasterMention[];
   command: any;
 };
 
@@ -30,19 +30,21 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
   const selectItem = debounce((index: number) => {
     const item = props.items[index];
     if (item) {
-      setSelectedIndex(index); // Ensure the state updates with the clicked item
-      const mentionText = `@${item.username}`; // The text that will appear in the editor
-      props.command({ id: item.username, text: mentionText, fid: item.fid }); // Pass the username and FID to the parent
+      setSelectedIndex(index);
+      const mentionText = `@${item.username}`;
+      props.command({ id: item.username, text: mentionText, fid: item.fid });
     }
   }, 200);
 
   const upHandler = () => {
+    if (props.items.length === 0) return;
     setSelectedIndex(
       (selectedIndex + props.items.length - 1) % props.items.length,
     );
   };
 
   const downHandler = () => {
+    if (props.items.length === 0) return;
     setSelectedIndex((selectedIndex + 1) % props.items.length);
   };
 
@@ -80,7 +82,7 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
     },
   }));
 
-  const noResults = props.items.length === 1 && props.items[0] === null;
+  const noResults = props.items.length === 0;
 
   return (
     // Menu messes with focus which we don't want here
@@ -90,36 +92,33 @@ export const MentionList = forwardRef<MentionListRef, Props>((props, ref) => {
       style={{ maxHeight: "300px", pointerEvents: "auto" }}
     >
       {props.items.length && !noResults ? (
-        props.items.map((item, index) =>
-          !item ? null : (
+        props.items.map((item, index) => (
+          <div
+            className={cn(
+              "flex flex-row p-2 px-3 cursor-pointer gap-2 items-center hover:bg-accent hover:text-accent-foreground",
+              index === selectedIndex && "bg-accent text-accent-foreground",
+            )}
+            key={item.username}
+            onClick={() => selectItem(index)}
+          >
             <div
-              className={cn(
-                "flex flex-row p-2 px-3 cursor-pointer gap-2 items-center hover:bg-accent hover:text-accent-foreground",
-                index === selectedIndex && "bg-accent text-accent-foreground",
-              )}
-              key={item.username}
-              onClick={() => selectItem(index)}
-            >
-              <div
-                style={{
-                  borderRadius: "100%",
-                  width: "48px",
-                  height: "48px",
-                  backgroundImage: `url(${item.avatar_url})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-                onClick={() => selectItem(index)}
-              />
-              <div>
-                <div className="font-bold text-sm">{item.display_name}</div>
-                <div className="font-bold text-muted-foreground text-sm">
-                  @{item.username}
-                </div>
+              style={{
+                borderRadius: "100%",
+                width: "48px",
+                height: "48px",
+                backgroundImage: `url(${item.avatar_url})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+            <div>
+              <div className="font-bold text-sm">{item.display_name}</div>
+              <div className="font-bold text-muted-foreground text-sm">
+                @{item.username}
               </div>
             </div>
-          ),
-        )
+          </div>
+        ))
       ) : noResults ? (
         <div className="flex flex-row p-2 px-3">Not found</div>
       ) : (

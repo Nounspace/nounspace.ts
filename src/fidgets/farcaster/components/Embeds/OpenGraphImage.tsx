@@ -23,18 +23,25 @@ const OpenGraphImage = ({ url }: { url: string }) => {
 
   useEffect(() => {
     const fetchMetadata = async () => {
-      const request = await fetch(
-        "https://api.modprotocol.org/api/cast-embeds-metadata/by-url",
-        {
-          body: JSON.stringify([url]),
+      try {
+        const response = await fetch("/api/cast-embeds-metadata", {
+          body: JSON.stringify({ urls: [url] }),
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-        },
-      );
-      const metadata = await request.json();
-      setMetadata(metadata[url]);
+        });
+
+        if (!response.ok) {
+          console.error("Failed to fetch metadata for", url);
+          return;
+        }
+
+        const metadata = await response.json();
+        setMetadata(metadata[url] ?? null);
+      } catch (error) {
+        console.error("Error fetching metadata:", error);
+      }
     };
 
     fetchMetadata();

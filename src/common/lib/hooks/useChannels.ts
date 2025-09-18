@@ -1,8 +1,8 @@
 "use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { type Channel } from '@mod-protocol/farcaster';
-import { fetchChannelsForUser, fetchChannelsByName } from '@/fidgets/farcaster/utils';
+import { useQuery } from "@tanstack/react-query";
+import { type Channel } from "@/fidgets/farcaster/types";
+import { fetchChannelsForUser, fetchChannelsByName } from "@/fidgets/farcaster/utils";
 
 /**
 * Hook to fetch user channels with cache

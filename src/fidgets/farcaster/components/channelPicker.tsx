@@ -15,12 +15,12 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/common/components/atoms/popover"; // Adjust the import paths if needed
-import { Channel } from "@mod-protocol/farcaster"; // Assuming this is your type
+import { Channel } from "@/fidgets/farcaster/types"; // Assuming this is your type
 
 type Props = {
   getChannels: (query: string) => Promise<Channel[]>;
   onSelect: (value: Channel) => void;
-  value: Channel;
+  value?: Channel;
   initialChannels?: Channel[];
 };
 
@@ -68,14 +68,16 @@ export function ChannelPicker(props: Props) {
           aria-expanded={open}
           className="flex items-center px-4 py-2"
         >
-          <img
-            src={value.image_url ?? ""}
-            alt={value.name}
-            width={24}
-            height={24}
-            className="mr-2 -ml-2"
-          />
-          {value.name}
+          {value?.image_url ? (
+            <img
+              src={value.image_url}
+              alt={value.name}
+              width={24}
+              height={24}
+              className="mr-2 -ml-2"
+            />
+          ) : null}
+          {value?.name ?? "Home"}
           <CaretDownIcon className="-mr-2 ml-2" />
         </Button>
       </PopoverTrigger>
