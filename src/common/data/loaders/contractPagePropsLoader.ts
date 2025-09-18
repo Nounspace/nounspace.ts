@@ -1,4 +1,4 @@
-import { isArray, isNil, isString, isUndefined } from "lodash";
+import { isNil, isString, isUndefined } from "lodash";
 import {
   contractOwnerFromContract,
   loadViemViewOnlyContract,
@@ -8,19 +8,19 @@ import {
   loadOwnedItentitiesForFid,
   loadOwnedItentitiesForWalletAddress,
 } from "../database/supabase/serverHelpers";
-import createSupabaseServerClient from "../database/supabase/clients/server";
-import { string } from "prop-types";
+import { tokenRequestorFromContractAddress } from "../queries/clanker";
+import { createSupabaseServerClient } from "../database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
 const defaultContractPageProps = {
-  spaceId: null,
+  spaceId: undefined,
   ownerId: null,
   ownerIdType: "address" as OwnerType,
   tabName: "Profile",
   contractAddress: null,
   owningIdentities: [],
-  network: string,
+  network: "base",
 };
 
 export async function loadContractData(
@@ -39,7 +39,7 @@ export async function loadContractData(
   const tabName = isString(tabNameUnparsed) ? tabNameUnparsed : "Profile";
   if (
     isNil(contractAddress) ||
-    isArray(contractAddress) ||
+    Array.isArray(contractAddress) ||
     !ETH_CONTRACT_ADDRESS_REGEX.test(contractAddress)
   ) {
     return {
@@ -49,10 +49,11 @@ export async function loadContractData(
       },
     };
   }
+  const contractAddressStr = contractAddress as string;
   // console.log("network contractPageProps", network);
 
   const contractData = await loadViemViewOnlyContract(
-    contractAddress,
+    contractAddressStr,
     isString(network) ? network : undefined,
   );
   if (isUndefined(contractData)) {
@@ -69,17 +70,28 @@ export async function loadContractData(
   let owningIdentities: string[] = [];
   let ownerId: string | null = null;
   let ownerIdType: OwnerType = "address";
+
   try {
-    const ownerData = await contractOwnerFromContract(
-      contract,
-      abi,
-      contractAddress,
-      isString(network) ? network : undefined,
-    );
-    ownerId = ownerData.ownerId || null;
-    ownerIdType = ownerData.ownerIdType;
+      const tokenOwner = await tokenRequestorFromContractAddress(contractAddressStr);
+    ownerId = tokenOwner.ownerId || null;
+    ownerIdType = tokenOwner.ownerIdType;
   } catch (error) {
-    console.error("Error fetching contract owner:", error);
+    console.error("Error fetching token owner:", error);
+  }
+
+  if (isNil(ownerId)) {
+    try {
+      const ownerData = await contractOwnerFromContract(
+        contract,
+        abi,
+        contractAddressStr,
+        isString(network) ? network : undefined,
+      );
+      ownerId = ownerData.ownerId || null;
+      ownerIdType = ownerData.ownerIdType;
+    } catch (error) {
+      console.error("Error fetching contract owner:", error);
+    }
   }
 
   if (isNil(ownerId)) {
@@ -87,7 +99,7 @@ export async function loadContractData(
       props: {
         ...defaultContractPageProps,
         tabName,
-        contractAddress,
+        contractAddressStr,
         pinnedCastId,
         owningIdentities,
       },
@@ -113,13 +125,15 @@ export async function loadContractData(
   } else {
     owningIdentities = await loadOwnedItentitiesForFid(ownerId);
   }
-  // console.log("Debug - Contract Address before query:", contractAddress);
+  // console.log("Debug - Contract Address before query:", contractAddressStr);
   // console.log("Debug - Network:", network);
 
   let query = createSupabaseServerClient()
     .from("spaceRegistrations")
-    .select("spaceId, spaceName, contractAddress, network")
-    .eq("contractAddress", contractAddress);
+    .select(
+      "spaceId, spaceName, contractAddress, network, identityPublicKey, fidRegistrations(fid)"
+    )
+    .eq("contractAddress", contractAddressStr);
 
   if (isString(network)) {
     query = query.eq("network", network);
@@ -127,18 +141,24 @@ export async function loadContractData(
 
   const { data } = await query
     .order("timestamp", { ascending: true })
-    .limit(1)
+    .limit(1);
 
-  // console.log("Debug - Database Query Error:", error);
-  // console.log("Debug - Raw Query Results:", data);
-  // console.log("Debug - First Space ID:", data?.[0]?.spaceId);
-  // console.log("Debug - Query Details:", {
-  //   contractAddress,
-  //   network,
-  //   error: error?.message,
-  // });
+  const registrationRow = data?.[0];
+  const spaceId = registrationRow?.spaceId || undefined;
+  const registeredFid = Array.isArray(registrationRow?.fidRegistrations)
+    ? registrationRow?.fidRegistrations[0]?.fid
+    : registrationRow?.fidRegistrations?.fid;
 
-  const spaceId = data?.[0]?.spaceId || null;
+  if (registrationRow?.identityPublicKey) {
+    if (!owningIdentities.includes(registrationRow.identityPublicKey)) {
+      owningIdentities.push(registrationRow.identityPublicKey);
+    }
+  }
+
+  if (!isNil(registeredFid)) {
+    ownerId = String(registeredFid);
+    ownerIdType = "fid";
+  }
 
   return {
     props: {
@@ -146,7 +166,7 @@ export async function loadContractData(
       ownerId,
       ownerIdType,
       tabName,
-      contractAddress,
+      contractAddress: contractAddressStr,
       pinnedCastId,
       owningIdentities,
     },

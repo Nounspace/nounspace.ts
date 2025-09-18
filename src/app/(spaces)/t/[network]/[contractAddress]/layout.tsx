@@ -3,7 +3,7 @@ import { Metadata } from "next/types";
 import React from "react";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { getTokenMetadataStructure } from "@/common/lib/utils/tokenMetadata";
-import { defaultFrame } from "@/common/lib/frames/metadata";
+import { defaultFrame } from "@/constants/metadata";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { Address } from "viem";
 

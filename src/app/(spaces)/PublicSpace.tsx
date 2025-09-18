@@ -19,6 +19,7 @@ import { SpaceConfigSaveDetails } from "./Space";
 import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
+import { useCurrentSpaceIdentityPublicKey } from "@/common/lib/hooks/useCurrentSpaceIdentityPublicKey";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
@@ -85,6 +86,7 @@ export default function PublicSpace({
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
+  const currentUserIdentityPublicKey = useCurrentSpaceIdentityPublicKey();
 
   
   // Clear cache only when switching to a different space
@@ -114,6 +116,7 @@ export default function PublicSpace({
     
     const checker = createEditabilityChecker({
       currentUserFid,
+      currentUserIdentityPublicKey,
       spaceOwnerFid,
       spaceOwnerAddress: ownerAddress,
       tokenData,
@@ -125,6 +128,7 @@ export default function PublicSpace({
     return checker;
   }, [
     currentUserFid,
+    currentUserIdentityPublicKey,
     spaceData, // Include space since we're extracting properties from it
     wallets,
   ]);
@@ -178,8 +182,9 @@ export default function PublicSpace({
       }
     }
 
-    setCurrentSpaceId(nextSpaceId);
-    prevSpaceId.current = nextSpaceId;
+    // Convert undefined to null for store compatibility
+    setCurrentSpaceId(nextSpaceId ?? null);
+    prevSpaceId.current = nextSpaceId ?? null;
     setCurrentTabName(nextTabName);
     prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
@@ -226,7 +231,7 @@ export default function PublicSpace({
 
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(
-    spaceData.id !== null && !!localSpaces[spaceData.id],
+    spaceData.id !== null && spaceData.id !== undefined && !!localSpaces[spaceData.id],
   );
   const isLoadingRef = useRef(false);
   // Keeps track of which tabs have already been loaded for each space
@@ -367,7 +372,7 @@ export default function PublicSpace({
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
 
-    // Only proceed with registration if we're sure the space doesn't exist and FID is linked
+    // Attempt registration when space is missing and user is identified
     if (
       editabilityCheck.isEditable &&
       isNil(currentSpaceId) &&

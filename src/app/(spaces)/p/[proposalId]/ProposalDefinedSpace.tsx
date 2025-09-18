@@ -11,8 +11,8 @@ import { ProposalSpaceData } from "@/common/types/space";
 import { SPACE_TYPES } from "@/common/constants/spaceTypes";
 
 export interface ProposalPageSpaceProps {
-  spaceId?: string | null;
-  tabName?: string | null;
+  spaceId?: string;
+  tabName?: string;
   proposalId: string | null;
   proposalData?: ProposalData;
   owningIdentities?: string[];

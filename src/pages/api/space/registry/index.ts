@@ -5,7 +5,7 @@ import requestHandler, {
 } from "@/common/data/api/requestHandler";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
-import { fetchClankerByAddress } from "@/common/data/queries/clanker";
+import { tokenRequestorFromContractAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
 import { SPACE_TYPES, SpaceTypeValue } from "@/common/constants/spaceTypes";
 import {
@@ -16,7 +16,6 @@ import {
   isNil,
 } from "lodash";
 import { NextApiRequest, NextApiResponse } from "next/types";
-import { Address } from "viem";
 
 interface SpaceRegistrationBase {
   spaceName: string;
@@ -113,46 +112,39 @@ async function identityCanRegisterForFid(identity: string, fid: number) {
   );
 }
 
-// Create a validation for fid on clanker
-export async function fidCanRegisterClanker(
-  contractAddress?: string,
-  fid?: number,
-  network?: string,
-) {
-  if (isNil(contractAddress) || isNil(fid)) return false;
-
-  const clankerData = await fetchClankerByAddress(contractAddress as Address);
-  return clankerData && clankerData.requestor_fid === fid;
-}
-
 async function identityCanRegisterForContract(
   identity: string,
   contractAddress: string,
   tokenOwnerFid?: number,
   network?: string,
 ) {
-  const canRegisterClanker = await fidCanRegisterClanker(
+  const tokenOwnerLookup = await tokenRequestorFromContractAddress(
     contractAddress,
-    tokenOwnerFid,
-    network,
   );
-  if (canRegisterClanker) {
-    return true;
+  let { ownerId, ownerIdType } = tokenOwnerLookup;
+
+  if (isNil(ownerId)) {
+    ({ ownerId, ownerIdType } = await contractOwnerFromContractAddress(
+      contractAddress,
+      network,
+    ));
   }
-  const { ownerId, ownerIdType } = await contractOwnerFromContractAddress(
-    contractAddress,
-    network,
-  );
 
   if (isNil(ownerId)) {
     return false;
-  } else if (ownerIdType === "fid") {
+  }
+
+  if (ownerIdType === "fid") {
+    if (tokenOwnerFid && ownerId !== tokenOwnerFid.toString()) {
+      return false;
+    }
     const canRegister = await identityCanRegisterForFid(
       identity,
-      parseInt(ownerId),
+      parseInt(ownerId, 10),
     );
     return canRegister;
   }
+
   const ownedIdentities = await loadOwnedItentitiesForWalletAddress(ownerId);
   return includes(ownedIdentities, identity);
 }

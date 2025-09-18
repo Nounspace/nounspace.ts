@@ -11,7 +11,7 @@ import { ProfileSpaceData } from "@/common/types/space";
 export type UserDefinedSpacePageProps = {
   spaceOwnerFid: number | null;
   spaceOwnerUsername: string | null;
-  spaceId: string | null;
+  spaceId?: string;
   tabName: string | string[] | null | undefined;
 };
 

@@ -19,7 +19,7 @@ const loadUserSpaceData = async (
     return {
       spaceOwnerFid: null,
       spaceOwnerUsername: null,
-      spaceId: null,
+      spaceId: undefined,
       tabName: null,
     };
   }
@@ -27,7 +27,7 @@ const loadUserSpaceData = async (
   const tabList = await getTabList(spaceOwnerFid);
 
   if (!tabList || tabList.length === 0) {
-    return { spaceOwnerFid, spaceOwnerUsername, spaceId: null, tabName: null };
+    return { spaceOwnerFid, spaceOwnerUsername, spaceId: undefined, tabName: null };
   }
 
   const defaultTab: Tab = tabList[0];

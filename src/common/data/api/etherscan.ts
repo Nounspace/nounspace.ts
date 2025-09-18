@@ -6,7 +6,8 @@ import {
   getContract, 
   Address,
   PublicClient,
-  Abi
+  Abi,
+  isAddress
 } from "viem";
 import { base } from "viem/chains";
 import { filter, isUndefined } from "lodash";
@@ -227,25 +228,48 @@ export async function contractOwnerFromContract(
       ownerId = result.toString();
       ownerIdType = "fid" as OwnerType;
     } else if (hasFunction(abi, "owner")) {
-      ownerId = await contract.read.owner() as string;
+      const rawOwner = await contract.read.owner() as string;
+      if (isAddress(rawOwner)) {
+        ownerId = rawOwner.toLowerCase();
+      }
     } else if (hasFunction(abi, "deployer")) {
-      ownerId = await contract.read.deployer() as string;
+      const rawDeployer = await contract.read.deployer() as string;
+      if (isAddress(rawDeployer)) {
+        ownerId = rawDeployer.toLowerCase();
+      }
     } else {
       // Use contract creator address as a fall back
       const contractCreation = await getContractCreator(
         contractAddress,
         network,
       );
-      ownerId = contractCreation.contractCreator;
-      try {
-        const addresses = [ownerId];
-        const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({addresses});
-        if (userFid[ownerId]) {
-          ownerId = userFid[ownerId][0].fid.toString();
-          ownerIdType = "fid" as OwnerType;
+      const creatorAddress = contractCreation.contractCreator;
+      
+      if (isAddress(creatorAddress)) {
+        ownerId = creatorAddress.toLowerCase();
+        
+        if (process.env.NEYNAR_API_KEY) {
+          try {
+            const addresses = [ownerId];
+            const userFid = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+            
+            // Type-guard the Neynar response
+            const userMapping = userFid[ownerId];
+            if (Array.isArray(userMapping) && userMapping.length > 0) {
+              const user = userMapping[0];
+              if (user && typeof user.fid === 'number') {
+                ownerId = user.fid.toString();
+                ownerIdType = "fid" as OwnerType;
+              }
+            }
+          } catch (error) {
+            // Only log actual fetch errors, not missing API key
+            if (process.env.NODE_ENV === 'development') {
+              console.debug("Error fetching user FID:", error);
+            }
+          }
         }
-      } catch (error) {
-        console.error("Error fetching user FID:", error);
+        // Silent when NEYNAR_API_KEY is absent - no noisy logging
       }
       // console.log("Contract creator:", contractCreation);
     }

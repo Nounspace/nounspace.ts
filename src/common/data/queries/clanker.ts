@@ -1,6 +1,7 @@
 import { Address } from "viem";
 import { OwnerType } from "../api/etherscan";
-import { fetchEmpireByAddress } from "./empireBuilder";
+import neynar from "../api/neynar";
+import { fetchEmpireByAddress, EmpireToken } from "./empireBuilder";
 
 export interface ClankerToken {
   id: number;
@@ -31,6 +32,7 @@ export async function fetchClankerByAddress(
     });
 
     const json = await response.json();
+    console.log("Clanker response:", json);
 
     if (!response.ok) {
       throw new Error(response.statusText);
@@ -46,30 +48,80 @@ export async function fetchClankerByAddress(
   }
 }
 
+export interface TokenOwnerLookup {
+  ownerId: string | undefined;
+  ownerIdType: OwnerType;
+  clankerData: ClankerToken | null;
+  empireData: EmpireToken | null;
+  neynarUsers?: Record<string, unknown>;
+}
+
 export async function tokenRequestorFromContractAddress(
   contractAddress: string,
-) {
+): Promise<TokenOwnerLookup> {
   const [clankerData, empireData] = await Promise.all([
     fetchClankerByAddress(contractAddress as Address),
     fetchEmpireByAddress(contractAddress as Address),
   ]);
 
+  console.log("tokenRequestorFromContractAddress data:", {
+    clankerData,
+    empireData,
+  });
+
   if (empireData && empireData.owner) {
-    return {
-      ownerId: empireData.owner,
-      ownerIdType: "address" as OwnerType,
-    };
+    let ownerId: string = empireData.owner.toLowerCase();
+    let ownerIdType: OwnerType = "address";
+    let neynarUsers: Record<string, unknown> | undefined;
+
+    if (process.env.NEYNAR_API_KEY) {
+      try {
+        const addresses = [ownerId];
+        neynarUsers = await neynar.fetchBulkUsersByEthOrSolAddress({ addresses });
+        
+        // Safe type guards for neynar response
+        if (
+          neynarUsers && 
+          typeof neynarUsers === 'object' && 
+          neynarUsers[ownerId] &&
+          Array.isArray(neynarUsers[ownerId]) &&
+          (neynarUsers[ownerId] as unknown[]).length > 0
+        ) {
+          const userArray = neynarUsers[ownerId] as unknown[];
+          const user = userArray[0];
+          
+          if (
+            typeof user === 'object' && 
+            user !== null && 
+            'fid' in user && 
+            typeof (user as { fid: unknown }).fid === 'number'
+          ) {
+            ownerId = String((user as { fid: number }).fid);
+            ownerIdType = "fid";
+            console.debug("Found user FID for address:", ownerId);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching owner FID:", error);
+      }
+    }
+
+    return { ownerId, ownerIdType, clankerData, empireData, neynarUsers };
   }
 
   if (clankerData && clankerData.requestor_fid) {
     return {
       ownerId: String(clankerData.requestor_fid),
       ownerIdType: "fid" as OwnerType,
+      clankerData,
+      empireData,
     };
   }
 
   return {
     ownerId: undefined,
     ownerIdType: "fid" as OwnerType,
+    clankerData,
+    empireData,
   };
 }
