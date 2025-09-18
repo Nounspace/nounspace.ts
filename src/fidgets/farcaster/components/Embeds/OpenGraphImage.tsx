@@ -8,33 +8,42 @@ import {
 import { openWindow } from "@/common/lib/utils/navigation";
 
 type OpenGraphMetadata = {
-  image: {
+  image?: {
     url: string;
-    height: number;
-    width: number;
+    height?: number;
+    width?: number;
   };
-  description: string;
-  title: string;
-  publisher: string;
-};
+  description?: string;
+  title?: string;
+  publisher?: string;
+} | null;
+
+type MetadataResponse = Record<string, OpenGraphMetadata>;
 
 const OpenGraphImage = ({ url }: { url: string }) => {
-  const [metadata, setMetadata] = useState<OpenGraphMetadata | null>(null);
+  const [metadata, setMetadata] = useState<OpenGraphMetadata>(null);
 
   useEffect(() => {
     const fetchMetadata = async () => {
-      const request = await fetch(
-        "https://api.modprotocol.org/api/cast-embeds-metadata/by-url",
-        {
-          body: JSON.stringify([url]),
+      try {
+        const response = await fetch("/api/opengraph", {
+          body: JSON.stringify({ urls: [url] }),
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-        },
-      );
-      const metadata = await request.json();
-      setMetadata(metadata[url]);
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch metadata for ${url}: ${response.statusText}`);
+        }
+
+        const metadataByUrl = (await response.json()) as MetadataResponse;
+        setMetadata(metadataByUrl[url] ?? null);
+      } catch (error) {
+        console.error(error);
+        setMetadata(null);
+      }
     };
 
     fetchMetadata();
@@ -52,7 +61,7 @@ const OpenGraphImage = ({ url }: { url: string }) => {
             <img
               className="h-full object-cover max-h-48 rounded-md"
               src={metadata.image.url}
-              alt={metadata.title}
+              alt={metadata.title ?? metadata.description ?? url}
             />
           )}
           <CardTitle>{metadata.title}</CardTitle>

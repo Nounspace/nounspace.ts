@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from '@tanstack/react-query';
-import { type Channel } from '@mod-protocol/farcaster';
+import { type Channel } from "@/fidgets/farcaster/types";
 import { fetchChannelsForUser, fetchChannelsByName } from '@/fidgets/farcaster/utils';
 
 /**

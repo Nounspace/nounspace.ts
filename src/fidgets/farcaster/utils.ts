@@ -27,20 +27,10 @@ import { mnemonicToAccount } from "viem/accounts";
 import { optimismChaninClient } from "@/constants/optimismChainClient";
 import axiosBackend from "@/common/data/api/backend";
 // import { ModProtocolCastAddBody } from "./components/CreateCast";
-import { type Channel } from "@mod-protocol/farcaster";
+import { type Channel, type FarcasterEmbed } from "./types";
 
-type FarcasterUrlEmbed = {
-  url: string;
-};
-type FarcasterCastIdEmbed = {
-  castId: {
-    fid: number;
-    hash: Uint8Array;
-  };
-};
-export type FarcasterEmbed = FarcasterCastIdEmbed | FarcasterUrlEmbed;
-export function isFarcasterUrlEmbed(embed: FarcasterEmbed): embed is FarcasterUrlEmbed {
-  return (embed as FarcasterUrlEmbed).url !== undefined;
+export function isFarcasterUrlEmbed(embed: FarcasterEmbed): embed is { url: string } {
+  return (embed as { url?: string }).url !== undefined;
 }
 
 export const WARPCAST_RECOVERY_PROXY: `0x${string}` =
