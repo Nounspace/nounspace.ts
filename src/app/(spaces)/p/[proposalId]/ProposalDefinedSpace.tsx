@@ -7,6 +7,8 @@ import createInitalProposalSpaceConfigForProposalId from "@/constants/initialPro
 import { useProposalContext } from "@/common/providers/ProposalProvider";
 import { ProposalData } from "./utils";
 import { useFidFromAddress } from "@/common/data/queries/farcaster";
+import { ProposalSpaceData } from "@/common/types/space";
+import { SPACE_TYPES } from "@/common/constants/spaceTypes";
 
 export interface ProposalPageSpaceProps {
   spaceId?: string | null;
@@ -37,18 +39,29 @@ const ProposalDefinedSpace = ({
 
   const getSpacePageUrl = (tabName: string) => `/p/${proposalId}/${tabName}`;
 
+  // Ensure we have a valid owner address
+  if (!ownerId) {
+    console.error("Missing required ownerAddress for proposal space");
+    return null;
+  }
+
+  // Create a properly typed ProposalSpace object
+  const proposalSpace: ProposalSpaceData = {
+    id: spaceId || `temp-proposal-${proposalId}`,
+    spaceName: `Proposal ${proposalId}`,
+    spaceType: SPACE_TYPES.PROPOSAL,
+    updatedAt: new Date().toISOString(),
+    proposalId: proposalId || '',
+    ownerAddress: ownerId as Address,
+    config: INITIAL_SPACE_CONFIG
+  };
+
   return (
     <div className="w-full">
       <PublicSpace
-        spaceId={spaceId ?? null}
-        tabName={tabName || "Profile"}
-        initialConfig={INITIAL_SPACE_CONFIG}
+        spaceData={proposalSpace}
+        tabName={tabName || "Overview"}
         getSpacePageUrl={getSpacePageUrl}
-        isTokenPage={false}
-        spaceOwnerFid={ownerFid}
-        spaceOwnerAddress={ownerId}
-        pageType="proposal"
-        proposalId={proposalId ?? undefined}
       />
     </div>
   );

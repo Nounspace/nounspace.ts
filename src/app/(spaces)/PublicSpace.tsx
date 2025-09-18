@@ -1,13 +1,11 @@
 "use client";
 
-
 import React from "react";
 import { useAuthenticatorManager } from "@/authenticators/AuthenticatorManager";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 import TabBar from "@/common/components/organisms/TabBar";
 import TabBarSkeleton from "@/common/components/organisms/TabBarSkeleton";
 import { useAppStore } from "@/common/data/stores/app";
-import { MasterToken } from "@/common/providers/TokenProvider";
 import { createEditabilityChecker } from "@/common/utils/spaceEditability";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialPersonSpace";
@@ -18,44 +16,22 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
+import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/space";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
-export type SpacePageType = "profile" | "token" | "proposal";
-
 interface PublicSpaceProps {
-  spaceId: string | null;
+  // Core required props
+  spaceData: SpaceData;
   tabName: string;
-  initialConfig: any; // Replace with proper type
   getSpacePageUrl: (tabName: string) => string;
-  // Token-specific props
-  isTokenPage?: boolean;
-  contractAddress?: string;
-  // Ownership props
-  spaceOwnerFid?: number;
-  spaceOwnerAddress?: Address;
-  // Token data
-  tokenData?: MasterToken;
-  // New prop to identify page type
-  pageType?: SpacePageType;
-  proposalId?: string;
 }
 
 export default function PublicSpace({
-  spaceId: providedSpaceId,
-  tabName: providedTabName,
-  initialConfig,
+  spaceData,
+  tabName,
   getSpacePageUrl,
-  // Ownership props
-  spaceOwnerFid,
-  spaceOwnerAddress,
-  // Token-specific props
-  isTokenPage = false,
-  contractAddress,
-  tokenData,
-  pageType, // New prop
-  proposalId,
 }: PublicSpaceProps) {
 
   const {
@@ -107,9 +83,9 @@ export default function PublicSpace({
   const router = useRouter();
 
   const initialLoading =
-    providedSpaceId !== null &&
-    providedSpaceId !== "" &&
-    !localSpaces[providedSpaceId];
+    spaceData.id !== null &&
+    spaceData.id !== "" &&
+    !localSpaces[spaceData.id];
 
   const [loading, setLoading] = useState<boolean>(initialLoading);
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
@@ -120,12 +96,12 @@ export default function PublicSpace({
   // Clear cache only when switching to a different space
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
-    if (currentSpaceId !== providedSpaceId) {
+    if (currentSpaceId !== spaceData.id) {
       clearLocalSpaces();
       loadedTabsRef.current = {};
       initialDataLoadRef.current = false;
     }
-  }, [clearLocalSpaces, getCurrentSpaceId, providedSpaceId]);
+  }, [clearLocalSpaces, getCurrentSpaceId, spaceData.id]);
 
   const {
     lastUpdatedAt: authManagerLastUpdatedAt,
@@ -133,45 +109,37 @@ export default function PublicSpace({
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
 
-  // Determine the page type if not explicitly provided
-  const resolvedPageType = useMemo(() => {
-    if (pageType) return pageType;
-    if (isTokenPage) return "token";
-    if (spaceOwnerFid) return "profile";
-    if (providedSpaceId?.startsWith("proposal:")) return "proposal";
-    return "profile";
-  }, [pageType, isTokenPage, spaceOwnerFid, providedSpaceId]);
+  // Use space.spaceType directly
 
   // Create an editability checker
   const editabilityCheck = useMemo(() => {
+    // Extract type-specific properties from space
+    const spaceOwnerFid = isProfileSpace(spaceData) ? spaceData.fid : undefined;
+    // Get owner address from space object directly
+    const ownerAddress = isTokenSpace(spaceData) || isProposalSpace(spaceData) ? spaceData.ownerAddress : undefined;
+    // Get token data from space if it's a token space
+    const tokenData = isTokenSpace(spaceData) ? spaceData.tokenData : undefined;
+    
     const checker = createEditabilityChecker({
       currentUserFid,
       spaceOwnerFid,
-      spaceOwnerAddress,
+      spaceOwnerAddress: ownerAddress,
       tokenData,
       wallets: wallets.map((w) => ({ address: w.address as Address })),
-      isTokenPage,
-      isProposalPage: resolvedPageType === 'proposal',
+      isTokenPage: isTokenSpace(spaceData),
+      isProposalPage: isProposalSpace(spaceData),
     });
 
     return checker;
   }, [
     currentUserFid,
-    spaceOwnerFid,
-    spaceOwnerAddress,
-    tokenData,
+    spaceData, // Include space since we're extracting properties from it
     wallets,
-    isTokenPage,
-    resolvedPageType,
   ]);
 
   // Internal isEditable function
-  const isEditable = useCallback(
-    (userFid: number) => {
-      return editabilityCheck.isEditable;
-    },
-    [editabilityCheck],
-  );
+  // Get the boolean value directly from editabilityCheck
+  const isEditable = editabilityCheck.isEditable;
 
 
   // Control to avoid infinite space/tab update cycles
@@ -180,41 +148,41 @@ export default function PublicSpace({
 
   useEffect(() => {
     // Reset initialDataLoadRef only when switching spaces
-    if (prevSpaceId.current !== providedSpaceId) {
+    if (prevSpaceId.current !== spaceData.id) {
       initialDataLoadRef.current = false;
     }
     
-    let nextSpaceId = providedSpaceId;
-    let nextTabName = decodeURIComponent(providedTabName);
+    let nextSpaceId = spaceData.id;
+    let nextTabName = decodeURIComponent(tabName);
 
     const localSpacesSnapshot = localSpaces;
 
-    if (resolvedPageType === "token" && contractAddress && tokenData?.network) {
+    if (isTokenSpace(spaceData) && spaceData.tokenData?.network) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
-        (space) =>
-          space.contractAddress === contractAddress &&
-          space.network === tokenData.network,
+        (s) =>
+          s.contractAddress === spaceData.contractAddress &&
+          s.network === spaceData.tokenData?.network,
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
-        nextTabName = decodeURIComponent(providedTabName);
+        nextTabName = decodeURIComponent(tabName);
       }
-    } else if (resolvedPageType === "profile" && spaceOwnerFid) {
+    } else if (isProfileSpace(spaceData)) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
-        (space) => space.fid === spaceOwnerFid,
+        (s) => s.fid === spaceData.fid,
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
-        nextTabName = decodeURIComponent(providedTabName);
+        nextTabName = decodeURIComponent(tabName);
       }
-    } else if (resolvedPageType === "proposal" && proposalId) {
+    } else if (isProposalSpace(spaceData)) {
       const existingSpace = Object.values(localSpacesSnapshot).find(
-        (space) => space.proposalId === proposalId
+        (s) => s.proposalId === spaceData.proposalId
       );
       if (existingSpace) {
         nextSpaceId = existingSpace.id;
         // default to Overview for proposals if tab is missing
-        nextTabName = decodeURIComponent(providedTabName || 'Overview');
+        nextTabName = decodeURIComponent(tabName || 'Overview');
       }
     }
 
@@ -224,12 +192,10 @@ export default function PublicSpace({
     prevTabName.current = nextTabName;
     // localSpaces is not in the dependencies!
   }, [
-    resolvedPageType,
-    providedSpaceId,
-    providedTabName,
-    contractAddress,
-    tokenData?.network,
-    spaceOwnerFid,
+    spaceData,
+    spaceData.id,
+    tabName,
+    isTokenSpace(spaceData) ? spaceData.tokenData?.network : undefined,
     setCurrentSpaceId,
     setCurrentTabName,
   ]);
@@ -268,13 +234,13 @@ export default function PublicSpace({
 
   // Track if initial data load already happened
   const initialDataLoadRef = useRef(
-    providedSpaceId !== null && !!localSpaces[providedSpaceId],
+    spaceData.id !== null && !!localSpaces[spaceData.id],
   );
   const isLoadingRef = useRef(false);
   // Keeps track of which tabs have already been loaded for each space
   const loadedTabsRef = useRef<Record<string, Set<string>>>({});
   
-  // Loads and sets up the user's space tab when providedSpaceId or providedTabName changes
+  // Loads and sets up the user's space tab when space.id or providedTabName changes
   useEffect(() => {
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
@@ -382,14 +348,18 @@ export default function PublicSpace({
   const config = {
     ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
       ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
-      : { ...initialConfig }),
+      : { ...spaceData.config }),
     isEditable,
   };
 
   const memoizedConfig = useMemo(() => {
     if (!config) {
       console.error("Config is undefined");
-      return {};
+      // Add isEditable property to INITIAL_SPACE_CONFIG_EMPTY
+      return {
+        ...INITIAL_SPACE_CONFIG_EMPTY,
+        isEditable
+      };
     }
     return config;
   }, [
@@ -419,11 +389,11 @@ export default function PublicSpace({
           let newSpaceId: string | undefined;
 
           // First check local spaces for existing space
-          if (isTokenPage && contractAddress && tokenData?.network) {
+          if (isTokenSpace(spaceData) && spaceData.tokenData?.network) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) =>
-                space.contractAddress === contractAddress &&
-                space.network === tokenData.network,
+              (s) =>
+                s.contractAddress === spaceData.contractAddress &&
+                s.network === spaceData.tokenData?.network,
             );
 
             if (existingSpace) {
@@ -431,9 +401,9 @@ export default function PublicSpace({
               setCurrentTabName("Profile");
               return;
             }
-          } else if (resolvedPageType === 'proposal' && proposalId) {
+          } else if (isProposalSpace(spaceData)) {
             const existingSpace = Object.values(localSpaces).find(
-              space => space.proposalId === proposalId
+              s => s.proposalId === spaceData.proposalId
             );
 
             if (existingSpace) {
@@ -441,9 +411,9 @@ export default function PublicSpace({
               setCurrentTabName('Overview');
               return;
             }
-          } else if (!isTokenPage) {
+          } else if (isProfileSpace(spaceData)) {
             const existingSpace = Object.values(localSpaces).find(
-              (space) => space.fid === currentUserFid,
+              (s) => s.fid === currentUserFid,
             );
 
             if (existingSpace) {
@@ -453,24 +423,24 @@ export default function PublicSpace({
             }
           }
 
-          if (isTokenPage && contractAddress && tokenData?.network) {
+          if (isTokenSpace(spaceData) && spaceData.tokenData?.network) {
             newSpaceId = await registerSpaceContract(
-              contractAddress,
+              spaceData.contractAddress,
               "Profile",
               currentUserFid,
-              initialConfig,
-              tokenData.network,
+              spaceData.config,
+              spaceData.tokenData.network,
             );
             console.log("Contract space registration result:", {
               success: !!newSpaceId,
               newSpaceId,
-              contractAddress,
+              contractAddress: spaceData.contractAddress,
             });
-          } else if (resolvedPageType === 'proposal' && proposalId) {
-            newSpaceId = await registerProposalSpace(proposalId, initialConfig);
-          } else if (!isTokenPage) {
+          } else if (isProposalSpace(spaceData)) {
+            newSpaceId = await registerProposalSpace(spaceData.proposalId, spaceData.config);
+          } else if (isProfileSpace(spaceData)) {
             newSpaceId = await registerSpaceFid(
-              currentUserFid,
+              spaceData.fid,
               "Profile",
               getSpacePageUrl("Profile"),
             );
@@ -481,7 +451,7 @@ export default function PublicSpace({
 
           if (newSpaceId) {
             // Determine initial tab name depending on space type
-            const initialTabName = resolvedPageType === 'proposal' ? 'Overview' : 'Profile';
+            const initialTabName = isProposalSpace(spaceData) ? 'Overview' : 'Profile';
 
             // Set both spaceId and currentSpaceId atomically
             setCurrentSpaceId(newSpaceId);
@@ -519,15 +489,21 @@ export default function PublicSpace({
     editabilityCheck.isLoading,
     currentUserFid,
     loading,
-    isTokenPage,
-    contractAddress,
-    tokenData?.network,
-    resolvedPageType,
-    proposalId,
+    spaceData,
+    isTokenSpace(spaceData) ? spaceData.tokenData?.network : undefined,
     getCurrentSpaceId,
     getCurrentTabName,
     localSpaces,
-    initialConfig,
+    getSpacePageUrl,
+    router,
+    registerSpaceContract,
+    registerProposalSpace,
+    registerSpaceFid,
+    loadSpaceTabOrder,
+    loadEditableSpaces,
+    loadSpaceTab,
+    setCurrentSpaceId,
+    setCurrentTabName,
   ]);
 
   const saveConfig = useCallback(
@@ -561,8 +537,9 @@ export default function PublicSpace({
     const currentTabName = getCurrentTabName() ?? "Profile";
 
     if (isNil(currentSpaceId)) return;
-    commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
-  }, [getCurrentSpaceId, getCurrentTabName, tokenData?.network]);
+    const network = isTokenSpace(spaceData) ? spaceData.tokenData?.network : undefined;
+    commitSpaceTab(currentSpaceId, currentTabName, network);
+  }, [getCurrentSpaceId, getCurrentTabName, spaceData]);
 
   const resetConfig = useCallback(async () => {
     const currentSpaceId = getCurrentSpaceId();
@@ -573,7 +550,7 @@ export default function PublicSpace({
     let configToSave;
     if (isNil(remoteSpaces[currentSpaceId])) {
       configToSave = {
-        ...initialConfig,
+        ...INITIAL_SPACE_CONFIG_EMPTY,
         isPrivate: false,
       };
     } else {
@@ -584,7 +561,7 @@ export default function PublicSpace({
     }
     
     saveLocalSpaceTab(currentSpaceId, currentTabName, configToSave);
-  }, [getCurrentSpaceId, initialConfig, remoteSpaces, getCurrentTabName]);
+  }, [getCurrentSpaceId, spaceData.config, remoteSpaces, getCurrentTabName]);
 
   // Common tab management
   async function switchTabTo(tabName: string, shouldSave: boolean = true) {
@@ -622,7 +599,8 @@ export default function PublicSpace({
     if (currentSpaceId && shouldSave) {
       const resolvedConfig = await config;
       await saveLocalSpaceTab(currentSpaceId, currentTabName, resolvedConfig);
-      await commitSpaceTab(currentSpaceId, currentTabName, tokenData?.network);
+      const network = isTokenSpace(spaceData) ? spaceData.tokenData?.network : undefined;
+      await commitSpaceTab(currentSpaceId, currentTabName, network);
     }
     // Update the URL without triggering a full navigation
     router.push(getSpacePageUrl(tabName));
@@ -632,8 +610,8 @@ export default function PublicSpace({
 
   const tabBar = (
     <TabBar
-      isTokenPage={isTokenPage}
-      pageType={resolvedPageType}
+      isTokenPage={isTokenSpace(spaceData)}
+      pageType={spaceData.spaceType}
       inHomebase={false}
       currentTab={getCurrentTabName() ?? "Profile"}
       tabList={
@@ -641,7 +619,7 @@ export default function PublicSpace({
           ? localSpaces[getCurrentSpaceId()!]?.order
           : ["Profile"]
       }
-      contractAddress={contractAddress as Address}
+      contractAddress={isTokenSpace(spaceData) ? spaceData.contractAddress as Address : undefined}
       switchTabTo={switchTabTo}
       updateTabOrder={async (newOrder) => {
         const currentSpaceId = getCurrentSpaceId();
@@ -656,7 +634,7 @@ export default function PublicSpace({
           ? deleteSpaceTab(
             currentSpaceId,
             tabName,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spaceData) ? spaceData.tokenData?.network as EtherScanChainName : 'mainnet',
           )
           : undefined;
       }}
@@ -667,7 +645,7 @@ export default function PublicSpace({
             currentSpaceId,
             tabName,
             INITIAL_SPACE_CONFIG_EMPTY,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spaceData) ? spaceData.tokenData?.network as EtherScanChainName : 'mainnet',
           )
           : undefined;
       }}
@@ -687,7 +665,7 @@ export default function PublicSpace({
       commitTab={async (tabName) => {
         const currentSpaceId = getCurrentSpaceId();
         return currentSpaceId
-          ? commitSpaceTab(currentSpaceId, tabName, tokenData?.network)
+          ? commitSpaceTab(currentSpaceId, tabName, isTokenSpace(spaceData) ? spaceData.tokenData?.network : undefined)
           : undefined;
       }}
       commitTabOrder={async () => {
@@ -695,7 +673,7 @@ export default function PublicSpace({
         return currentSpaceId
           ? commitSpaceTabOrder(
             currentSpaceId,
-            tokenData?.network as EtherScanChainName,
+            isTokenSpace(spaceData) ? spaceData.tokenData?.network as EtherScanChainName : 'mainnet',
           )
           : undefined;
       }}
@@ -705,15 +683,14 @@ export default function PublicSpace({
     />
   );
 
-  // @todo - Use correct page type for profile
-  const profile =
-    isTokenPage || !spaceOwnerFid || pageType === "proposal" ? undefined : (
-      <Profile.fidget
-        settings={{ fid: spaceOwnerFid }}
-        saveData={async () => noop()}
-        data={{}}
-      />
-    );
+  // Profile component for profile spaces
+  const profile = isProfileSpace(spaceData) ? (
+    <Profile.fidget
+      settings={{ fid: spaceData.fid }}
+      saveData={async () => noop()}
+      data={{}}
+    />
+  ) : undefined;
 
   if (!profile) {
     console.warn("Profile component is undefined");
@@ -736,7 +713,7 @@ export default function PublicSpace({
     // Show skeleton only when we haven't loaded initial data yet
     !initialDataLoadRef.current &&
     // Don't show skeleton for navigation between tabs
-    providedSpaceId !== null && providedSpaceId !== "" &&
+    spaceData.id !== null && spaceData.id !== "" &&
     // Avoid showing skeleton for tabs that have already been loaded
     !(loadedTabsRef.current[getCurrentSpaceId() ?? ""] && 
       loadedTabsRef.current[getCurrentSpaceId() ?? ""].has(getCurrentTabName() ?? "Profile"));
@@ -753,9 +730,7 @@ export default function PublicSpace({
             <div className="flex h-full">
               <div className="grow">
                 <SpaceLoading
-                  hasProfile={
-                    !isTokenPage && !!spaceOwnerFid && pageType !== "proposal"
-                  }
+                  hasProfile={isProfileSpace(spaceData)}
                   hasFeed={false}
                 />
               </div>

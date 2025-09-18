@@ -5,6 +5,7 @@ import {
 import { FidgetConfig, FidgetInstanceData } from "@/common/fidgets";
 import { SignedFile, signSignable } from "@/common/lib/signedFiles";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
+import { SPACE_TYPES } from "@/common/constants/spaceTypes";
 import createIntialPersonSpaceConfigForFid, {
   INITIAL_SPACE_CONFIG_EMPTY,
 } from "@/constants/initialPersonSpace";
@@ -813,6 +814,7 @@ export const createSpaceStoreFunc = (
       spaceName: name,
       timestamp: moment().toISOString(),
       fid,
+      spaceType: SPACE_TYPES.PROFILE,
     };
     const registration = signSignable(
       unsignedRegistration,
@@ -930,6 +932,7 @@ export const createSpaceStoreFunc = (
         contractAddress: address,
         tokenOwnerFid,
         network: network as EtherScanChainName,
+        spaceType: SPACE_TYPES.TOKEN,
       };
       const registration = signSignable(
         unsignedRegistration,
@@ -1026,6 +1029,7 @@ export const createSpaceStoreFunc = (
         spaceName: `Nouns-Prop-${proposalId}`,
         timestamp: moment().toISOString(),
         proposalId,
+        spaceType: SPACE_TYPES.PROPOSAL,
       };
       const registration = signSignable(
         unsignedRegistration,

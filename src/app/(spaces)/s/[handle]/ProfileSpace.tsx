@@ -5,6 +5,8 @@ import { isArray, isNil } from "lodash";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 import PublicSpace from "../../PublicSpace";
+import { SPACE_TYPES } from "@/common/constants/spaceTypes";
+import { ProfileSpaceData } from "@/common/types/space";
 
 export type UserDefinedSpacePageProps = {
   spaceOwnerFid: number | null;
@@ -36,14 +38,24 @@ export const ProfileSpace = ({
     if (!spaceOwnerUsername) return '#';
     return `/s/${spaceOwnerUsername}/${tabName}`;
   };
+  
+  // Create a properly typed ProfileSpace object
+  const profileSpaceData: ProfileSpaceData = {
+    // Metadata
+    id: spaceId || `temp-profile-${spaceOwnerFid}`,
+    spaceName: spaceOwnerUsername || "Profile",
+    spaceType: SPACE_TYPES.PROFILE,
+    updatedAt: new Date().toISOString(),
+    fid: spaceOwnerFid,
+    // Configuration
+    config: INITIAL_PERSONAL_SPACE_CONFIG
+  };
 
   return (
     <PublicSpace
-      spaceId={spaceId}
+      spaceData={profileSpaceData}
       tabName={isArray(tabName) ? tabName[0] : tabName ?? "Profile"}
-      initialConfig={INITIAL_PERSONAL_SPACE_CONFIG}
       getSpacePageUrl={getSpacePageUrl}
-      spaceOwnerFid={spaceOwnerFid}
     />
   );
 };

@@ -7,6 +7,7 @@ import createSupabaseServerClient from "@/common/data/database/supabase/clients/
 import { loadOwnedItentitiesForWalletAddress } from "@/common/data/database/supabase/serverHelpers";
 import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { isSignable, validateSignable } from "@/common/lib/signedFiles";
+import { SPACE_TYPES, SpaceTypeValue } from "@/common/constants/spaceTypes";
 import {
   findIndex,
   first,
@@ -22,9 +23,11 @@ interface SpaceRegistrationBase {
   identityPublicKey: string;
   signature: string;
   timestamp: string;
+  spaceType: SpaceTypeValue;
 }
 
 export interface SpaceRegistrationContract extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.TOKEN;
   contractAddress: string;
   tokenOwnerFid?: number;
   initialConfig?: Omit<SpaceConfig, "isEditable">;
@@ -32,10 +35,12 @@ export interface SpaceRegistrationContract extends SpaceRegistrationBase {
 }
 
 export interface SpaceRegistrationFid extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.PROFILE;
   fid: number;
 }
 
 export interface SpaceRegistrationProposer extends SpaceRegistrationBase {
+  spaceType: typeof SPACE_TYPES.PROPOSAL;
   proposalId: string;
 }
 
@@ -66,6 +71,7 @@ function isSpaceRegistration(maybe: unknown): maybe is SpaceRegistration {
 function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
   const isValid =
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.PROFILE &&
     (typeof maybe["fid"] == "string" || typeof maybe["fid"] == "number");
 
   return isValid;
@@ -75,6 +81,7 @@ function isSpaceRegistrationFid(maybe: unknown): maybe is SpaceRegistrationFid {
 function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistrationContract {
   return (
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.TOKEN &&
     typeof maybe["contractAddress"] === "string"
   );
 }
@@ -83,6 +90,7 @@ function isSpaceRegistrationContract(maybe: unknown): maybe is SpaceRegistration
 function isSpaceRegistrationProposer(maybe: unknown): maybe is SpaceRegistrationProposer {
   return (
     isSpaceRegistration(maybe) &&
+    maybe["spaceType"] === SPACE_TYPES.PROPOSAL &&
     typeof maybe["proposalId"] === "string"
   );
 }
