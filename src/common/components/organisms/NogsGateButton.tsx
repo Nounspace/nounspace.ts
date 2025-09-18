@@ -90,16 +90,14 @@ const NogsGateButton = (props: ButtonProps) => {
       }
     }
   }, [
-    nogsTimeoutTimer,
-    nogsRecheckCountDownTimer,
+    user,
+    setModalOpen,
+    nogsRecheckTimerLength,
+    setNogsRecheckTimerLength,
+    setNogsTimeoutTimer,
     setNogsRecheckCountDown,
     setNogsShouldRecheck,
-    user,
     setHasNogs,
-    setModalOpen,
-    setNogsRecheckTimerLength,
-    nogsRecheckTimerLength,
-    setNogsTimeoutTimer,
   ]);
 
   useEffect(() => {
@@ -115,7 +113,7 @@ const NogsGateButton = (props: ButtonProps) => {
         clearTimeout(timer);
       };
     }
-  }, [nogsRecheckCountDown, setNogsRecheckCountDown, setNogsRecheckCountDownTimer]);
+  }, [nogsRecheckCountDown]);
 
   useEffect(() => {
     nogsShouldRecheck && checkForNogs();
@@ -127,7 +125,7 @@ const NogsGateButton = (props: ButtonProps) => {
       clearTimeout(nogsTimeoutTimer);
       clearTimeout(nogsRecheckCountDownTimer);
     };
-  }, [nogsTimeoutTimer, nogsRecheckCountDownTimer]);
+  }, []);
 
   return (
     <>
