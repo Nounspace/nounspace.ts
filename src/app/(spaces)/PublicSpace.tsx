@@ -22,7 +22,6 @@ import SpacePage from "./SpacePage";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";
 
 interface PublicSpaceProps {
-  // Core required props
   spaceData: SpaceData;
   tabName: string;
   getSpacePageUrl: (tabName: string) => string;
@@ -82,12 +81,7 @@ export default function PublicSpace({
 
   const router = useRouter();
 
-  const initialLoading =
-    spaceData.id !== null &&
-    spaceData.id !== "" &&
-    !localSpaces[spaceData.id];
-
-  const [loading, setLoading] = useState<boolean>(initialLoading);
+  const [loading, setLoading] = useState<boolean>(isNil(spaceData.id) || !localSpaces[spaceData.id]);
   const [currentUserFid, setCurrentUserFid] = useState<number | null>(null);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
@@ -108,8 +102,6 @@ export default function PublicSpace({
     getInitializedAuthenticators: authManagerGetInitializedAuthenticators,
     callMethod: authManagerCallMethod,
   } = useAuthenticatorManager();
-
-  // Use space.spaceType directly
 
   // Create an editability checker
   const editabilityCheck = useMemo(() => {
@@ -245,7 +237,7 @@ export default function PublicSpace({
     const currentSpaceId = getCurrentSpaceId();
     const currentTabName = getCurrentTabName() ?? "Profile";
     
-// Avoid repeated simultaneous loading or when reloading is not necessary
+    // Avoid repeated simultaneous loading or when reloading is not necessary
     if (isLoadingRef.current) {
       return;
     }

@@ -6,7 +6,7 @@ import { MasterToken } from '@/common/providers/TokenProvider';
 // Base space interface with common properties
 export interface SpaceData {
   // Metadata
-  id: string;
+  id: string | undefined;
   spaceName: string;
   spaceType: SpaceTypeValue;
   updatedAt: string;

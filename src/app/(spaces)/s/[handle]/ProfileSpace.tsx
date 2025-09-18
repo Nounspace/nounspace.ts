@@ -42,7 +42,7 @@ export const ProfileSpace = ({
   // Create a properly typed ProfileSpace object
   const profileSpaceData: ProfileSpaceData = {
     // Metadata
-    id: spaceId || `temp-profile-${spaceOwnerFid}`,
+    id: spaceId || undefined,
     spaceName: spaceOwnerUsername || "Profile",
     spaceType: SPACE_TYPES.PROFILE,
     updatedAt: new Date().toISOString(),
