@@ -3,7 +3,7 @@ import Space, { SpaceConfig, SpaceConfigSaveDetails } from "./Space";
 import { useSidebarContext } from "@/common/components/organisms/Sidebar";
 
 export type SpacePageArgs = {
-  config: SpaceConfig;
+  config: SpaceConfig | undefined;
   saveConfig: (config: SpaceConfigSaveDetails) => Promise<void>;
   commitConfig: () => Promise<void>;
   resetConfig: () => Promise<void>;
@@ -24,7 +24,15 @@ export default function SpacePage({
   feed,
   showFeedOnMobile,
 }: SpacePageArgs) {
-  console.log("🔍 [6/7] SpacePage - Config received from PublicSpace:", config);
+  
+  // If config is undefined, throw a promise to trigger Suspense fallback
+  if (!config) {
+    throw new Promise((resolve) => {
+      // This promise will resolve when the component re-renders with a defined config
+      // The Suspense boundary will catch this and show the fallback
+      setTimeout(resolve, 100); // Short delay to allow state updates
+    });
+  }
   
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();

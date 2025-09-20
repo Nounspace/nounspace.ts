@@ -79,11 +79,6 @@ export default function PublicSpace({
   const router = useRouter();
 
   // Remove manual loading state - we'll use Suspense instead
-  console.log("🔍 [3/7] PublicSpace - Space data received:", {
-    spaceDataId: spaceData.id,
-    isSpaceDataIdNil: isNil(spaceData.id),
-    hasLocalSpace: spaceData.id ? !!localSpaces[spaceData.id] : false
-  });
   const [currentUserFid, setCurrentUserFid] = useState<number | undefined>(undefined);
   const [isSignedIntoFarcaster, setIsSignedIntoFarcaster] = useState(false);
   const { wallets } = useWallets();
@@ -186,10 +181,10 @@ export default function PublicSpace({
 
   // Simplified: For unregistered spaces (spaceData.id is undefined), we don't need to load anything
   // For registered spaces, we'll let Suspense handle the loading
-  const currentSpaceId = getCurrentSpaceId();
   
   // Only load space data if we have a spaceId and it's not already loaded
   useEffect(() => {
+    const currentSpaceId = getCurrentSpaceId();
     if (currentSpaceId && !localSpaces[currentSpaceId]) {
       // Load space data asynchronously - Suspense will handle the loading state
       loadSpaceTabOrder(currentSpaceId)
@@ -200,7 +195,7 @@ export default function PublicSpace({
         });
     }
   }, [
-    currentSpaceId, 
+    getCurrentSpaceId, 
     localSpaces, 
     loadSpaceTabOrder, 
     loadEditableSpaces, 
@@ -234,44 +229,43 @@ export default function PublicSpace({
   }, [isSignedIntoFarcaster, authManagerLastUpdatedAt]);
 
   const currentConfig = getCurrentSpaceConfig();
+  const currentSpaceId = getCurrentSpaceId();
 
-  console.log("🔍 [3/7] PublicSpace - Config resolution (currentConfig vs spaceData.config):", {
-    currentSpaceId: getCurrentSpaceId(),
-    currentTabName: getCurrentTabName(),
-    currentConfig,
-    spaceData,
-    isEditable
-  });
 
-  const config = {
-    ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
-      ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
-      : { ...spaceData.config }),
-    isEditable,
-  };
+  // For spaces with undefined spaceData.id, don't show config until we've confirmed 
+  // whether the space exists in the database or not
+  const isSpaceExistenceUncertain = isNil(spaceData.id) && !currentSpaceId;
+  
+  let config: any = undefined;
+  
+  if (!isSpaceExistenceUncertain) {
+    // Only show config if we're certain about the space's existence
+    config = {
+      ...(currentConfig?.tabs[getCurrentTabName() ?? "Profile"]
+        ? currentConfig.tabs[getCurrentTabName() ?? "Profile"]
+        : { ...spaceData.config }),
+      isEditable,
+    };
+  }
 
-  console.log("🔍 [4/7] PublicSpace - Final config before memoization (merged currentConfig + spaceData.config):", config);
 
   const memoizedConfig = useMemo(() => {
     if (!config) {
-      console.error("Config is undefined - this should not happen as spaceData.config should always be defined");
-      // Add isEditable property to INITIAL_SPACE_CONFIG_EMPTY
-      return {
-        ...INITIAL_SPACE_CONFIG_EMPTY,
-        isEditable
-      };
+      // This is expected when space existence is uncertain - return undefined
+      // which will trigger Suspense fallback
+      return undefined;
     }
     
-    console.log("🔍 [5/7] PublicSpace - Memoized config (final config passed to SpacePage):", config);
     
     return config;
   }, [
-    Object.keys(config?.fidgetInstanceDatums || {}).sort().join(','),
+    config ? Object.keys(config.fidgetInstanceDatums || {}).sort().join(',') : '',
     config?.layoutID,
     config?.layoutDetails,
     config?.isEditable,
     config?.fidgetTrayContents,
     config?.theme,
+    isSpaceExistenceUncertain, // Add this dependency
   ]);
 
   // Update the space registration effect to use the new editability check
@@ -332,11 +326,6 @@ export default function PublicSpace({
               spaceData.config,
               spaceData.tokenData.network,
             );
-            console.log("Contract space registration result:", {
-              success: !!newSpaceId,
-              newSpaceId,
-              contractAddress: spaceData.contractAddress,
-            });
           } else if (isProposalSpace(spaceData)) {
             newSpaceId = await registerProposalSpace(spaceData.proposalId, spaceData.config);
           } else if (isProfileSpace(spaceData)) {
@@ -494,13 +483,6 @@ export default function PublicSpace({
     ? localSpaces[getCurrentSpaceId()!]?.order
     : config.tabNames || ["Profile"];
 
-  console.log("🔍 [3/7] PublicSpace - Tab list for TabBar:", {
-    currentSpaceId: getCurrentSpaceId(),
-    hasLocalSpace: getCurrentSpaceId() ? !!localSpaces[getCurrentSpaceId()!] : false,
-    localSpaceOrder: getCurrentSpaceId() ? localSpaces[getCurrentSpaceId()!]?.order : null,
-    configTabNames: config.tabNames,
-    finalTabList: tabList
-  });
 
   const tabBar = (
     <TabBar
@@ -597,7 +579,6 @@ export default function PublicSpace({
     />
   ), [memoizedConfig, saveConfig, commitConfig, resetConfig, tabBar, profile]);
   
-  console.log("🔍 [3/7] PublicSpace - Rendering with Suspense");
   
   return (
     <Suspense fallback={

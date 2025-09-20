@@ -21,7 +21,6 @@ export default function ProfileSpace({
   spaceData,
   tabName,
 }: ProfileSpaceProps) {
-  console.log("🔍 [2/7] ProfileSpace (Client-side) - spaceData received from server:", { spaceData, tabName });
 
   // Add isEditable and spacePageUrl logic on the client side
   const spaceDataWithEditability = useMemo(() => ({

@@ -24,16 +24,10 @@ const DesktopView: React.FC<DesktopViewProps> = ({
   layoutFidgetKey, 
   ...layoutProps 
 }) => {
-  console.log("🔍 [8/7] DesktopView - Props received from Space:", { layoutFidgetKey, layoutProps });
 
   // Get the right layout component
   const LayoutFidget = useLayoutFidgetSelector(layoutFidgetKey);
 
-  console.log("🔍 [8/7] DesktopView - Selected layout fidget:", {
-    layoutFidgetKey,
-    selectedFidget: LayoutFidget?.name || 'unknown',
-    fidgetType: typeof LayoutFidget
-  });
 
   return <LayoutFidget {...layoutProps} />;
 };

@@ -30,7 +30,6 @@ const ProfileSpacePage = async ({ params }: ProfileSpacePageProps) => {
       return <SpaceNotFound />;
     }
 
-    console.log("🔍 [1/7] ProfileSpacePage (Server-side) - Initial spaceData loaded from database:", profileSpaceData);
 
     return (
       <ProfileSpace
