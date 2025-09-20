@@ -1,5 +1,5 @@
 import { Address } from "viem";
-import { EtherScanChainName } from "@/common/data/api/etherscan";
+import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { MasterToken } from "@/common/types/token";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "./clanker";
