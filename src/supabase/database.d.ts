@@ -1,4 +1,4 @@
-import { SpaceTypeValue } from '@/common/types/space';
+import { SpaceTypeValue } from '@/common/types/spaceData';
 
 export type Json =
   | string

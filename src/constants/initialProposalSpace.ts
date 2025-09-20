@@ -4,9 +4,8 @@ import { INITIAL_SPACE_CONFIG_EMPTY } from "./initialPersonSpace";
 import { Address } from "viem";
 
 export const createInitalProposalSpaceConfigForProposalId = (
-  proposalId: Address,
-  ownerId: Address,
-  proposerAddress?: Address
+  proposalId: string,
+  proposerAddress: Address
 ): Omit<SpaceConfig, "isEditable"> => {
   const config = cloneDeep(INITIAL_SPACE_CONFIG_EMPTY);
 

@@ -2,15 +2,17 @@ import { Address } from "viem";
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
+import { ProposalSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
+import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
 
 export interface ProposalData {
   id: string;
   title: string;
   proposer: {
-    id: Address;
+    id: string; // API returns string addresses
   };
   signers?: {
-    id: Address;
+    id: string; // API returns string addresses
   }[];
   createdTimestamp?: string;
   forVotes?: string;
@@ -218,3 +220,61 @@ export async function loadProposalSpaceId(proposalId: string): Promise<string | 
     return null;
   }
 }
+
+// Proposal space specific creator
+export const createProposalSpaceData = (
+  spaceId: string | undefined,
+  spaceName: string,
+  proposalId: string,
+  ownerAddress: Address,
+  tabName: string,
+  proposalData?: ProposalData
+): Omit<ProposalSpaceData, 'isEditable'> => {
+  
+  const config = {
+    ...createInitalProposalSpaceConfigForProposalId(
+      proposalId,
+      ownerAddress
+    ),
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    // Base SpaceData properties
+    id: spaceId,
+    spaceName,
+    spaceType: SPACE_TYPES.PROPOSAL,
+    updatedAt: new Date().toISOString(),
+    spacePageUrl: (tabName: string) => `/p/${proposalId}/${encodeURIComponent(tabName)}`,
+    config,
+    // ProposalSpaceData specific properties
+    proposalId,
+    ownerAddress,
+    proposalData,
+  };
+};
+
+export const loadProposalSpaceData = async (
+  proposalId: string,
+  tabNameParam?: string
+): Promise<Omit<ProposalSpaceData, 'isEditable'> | null> => {
+  const proposalData = await loadProposalData(proposalId || "0");
+  
+  // Check if proposal data is valid (not the fallback with 0x0 address)
+  if (!proposalData?.proposer?.id || proposalData.proposer.id === "0x0" || proposalData.proposer.id === "0x0000000000000000000000000000000000000000") {
+    return null;
+  }
+
+  const tabName = tabNameParam || "Overview";
+  const spaceName = `Proposal ${proposalId}`;
+  const ownerAddress = proposalData.proposer.id as Address;
+
+  return createProposalSpaceData(
+    undefined, // spaceId will be set by PublicSpace through registration
+    spaceName,
+    proposalId,
+    ownerAddress,
+    tabName,
+    proposalData
+  );
+};

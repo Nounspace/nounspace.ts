@@ -10,7 +10,7 @@ import { TooltipProvider } from "../atoms/tooltip";
 import TokenDataHeader from "./TokenDataHeader";
 import ClaimButtonWithModal from "../molecules/ClaimButtonWithModal";
 import useIsMobile from "@/common/lib/hooks/useIsMobile";
-import { SpaceTypeValue } from "@/common/types/space";
+import { SpaceTypeValue } from "@/common/types/spaceData";
 import { useSidebarContext } from "./Sidebar";
 import { Button } from "../atoms/button";
 

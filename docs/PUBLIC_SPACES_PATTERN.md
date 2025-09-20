@@ -4,27 +4,41 @@ This document describes the architectural pattern used for public spaces in Noun
 
 ## Overview
 
-The public spaces pattern follows a clear separation of concerns between type-specific logic and common functionality. This ensures consistency across different space types while maintaining clean, maintainable code.
+The public spaces pattern follows a clear separation of concerns between server-side data loading and client-side interactivity. This ensures consistency across different space types while maintaining clean, maintainable code and proper serialization between server and client.
 
 ## Architecture
 
 ### Core Components
 
 1. **Page Components** - Server-side data loading and routing
-2. **Space Components** - Type-specific logic and configuration
-3. **PublicSpace** - Common functionality shared across all space types
+2. **Utils Files** - Data loading functions and space data creators
+3. **Space Components** - Client-side type-specific logic and editability
+4. **PublicSpace** - Common functionality shared across all space types
+5. **Layout Components** - Space-specific layouts and providers
 
 ### Data Flow
 
 ```
-Server-side data loading (Page Component)
+Server-side data loading (Utils Functions)
     ↓
-Type-specific space creation (Space Component)
+Omit<SpaceData, 'isEditable'> (Serializable data)
+    ↓
+Page Component (Routes and renders)
+    ↓
+Client-side space component (Adds isEditable function)
     ↓
 Common space management (PublicSpace)
     ↓
 Space rendering and interaction
 ```
+
+### Key Pattern: Omit<SpaceData, 'isEditable'>
+
+The pattern uses TypeScript's `Omit` utility to separate server-side data from client-side functionality:
+
+- **Server-side**: Creates `Omit<SpaceData, 'isEditable'>` (no functions, fully serializable)
+- **Client-side**: Adds `isEditable` function where user state is available
+- **Type Safety**: Explicit about what's missing from server-side data
 
 ## Space Types
 
@@ -33,126 +47,267 @@ Space rendering and interaction
 **Purpose**: User profile spaces for Farcaster users
 
 **Components**:
-- `src/app/(spaces)/s/[handle]/page.tsx` - Page component
-- `src/app/(spaces)/s/[handle]/ProfileSpace.tsx` - Space component
+- `src/app/(spaces)/s/[handle]/page.tsx` - Page component (routing)
+- `src/app/(spaces)/s/[handle]/utils.ts` - Data loading functions
+- `src/app/(spaces)/s/[handle]/ProfileSpace.tsx` - Client-side space component
+- `src/app/(spaces)/s/[handle]/layout.tsx` - Space-specific layout
 
 **Data Flow**:
 ```typescript
-// Page Component - Server-side data loading
+// Utils - Data loading functions
+export const loadUserSpaceData = async (handle, tabNameParam) => {
+  // Load user metadata, create space data
+  return createProfileSpaceData(spaceId, spaceName, fid, tabName);
+};
+
+// Page Component - Routing and rendering
 export default async function ProfileSpacePage({ params }) {
-  const { spaceOwnerFid, spaceOwnerUsername, spaceId, tabName } = 
-    await loadUserSpaceData(handle, tabNameParam);
+  const profileSpaceData = await loadUserSpaceData(handle, tabNameParam);
+  
+  if (!profileSpaceData) {
+    return <SpaceNotFound />;
+  }
   
   return (
     <ProfileSpace
-      spaceOwnerFid={spaceOwnerFid}
-      spaceOwnerUsername={spaceOwnerUsername}
-      spaceId={spaceId}
-      tabName={tabName}
+      spaceData={profileSpaceData} // Omit<ProfileSpaceData, 'isEditable'>
+      tabName={profileSpaceData.config.tabNames?.[0] || "Profile"}
     />
   );
 }
 
-// Space Component - Type-specific logic
-export const ProfileSpace = ({ spaceOwnerFid, spaceOwnerUsername, spaceId, tabName }) => {
-  const profileSpaceData: ProfileSpaceData = {
-    id: spaceId || undefined, // Will be set by PublicSpace
-    spaceName: spaceOwnerUsername || "Profile",
-    spaceType: SPACE_TYPES.PROFILE,
-    fid: spaceOwnerFid,
-    spacePageUrl: getSpacePageUrl,
-    isEditable: checkProfileSpaceEditability,
-    config: INITIAL_PERSONAL_SPACE_CONFIG
-  };
-  
-  return <PublicSpace spaceData={profileSpaceData} tabName={tabName} />;
-};
+// Space Component - Client-side editability logic
+export default function ProfileSpace({ spaceData, tabName }: ProfileSpaceProps) {
+  const spaceDataWithEditability = useMemo(() => ({
+    ...spaceData,
+    isEditable: (currentUserFid: number | undefined) => 
+      isProfileSpaceEditable(spaceData.fid, currentUserFid),
+  }), [spaceData]);
+
+  return (
+    <PublicSpace
+      spaceData={spaceDataWithEditability}
+      tabName={tabName}
+    />
+  );
+}
 ```
+
+**Key Features**:
+- Server-side data loading with `loadUserSpaceData()`
+- Client-side editability based on FID comparison
+- Type-safe `Omit<ProfileSpaceData, 'isEditable'>` pattern
 
 ### 2. Token Spaces (`/t/[network]/[contractAddress]`)
 
 **Purpose**: Token/contract spaces for ERC-20 tokens and NFTs
 
 **Components**:
-- `src/app/(spaces)/t/[network]/[contractAddress]/page.tsx` - Page component
-- `src/app/(spaces)/t/[network]/TokenSpace.tsx` - Space component
+- `src/app/(spaces)/t/[network]/[contractAddress]/page.tsx` - Page component (routing)
+- `src/app/(spaces)/t/[network]/[contractAddress]/utils.ts` - Data loading functions
+- `src/app/(spaces)/t/[network]/TokenSpace.tsx` - Client-side space component
+- `src/app/(spaces)/t/[network]/[contractAddress]/layout.tsx` - Space-specific layout
 
 **Data Flow**:
 ```typescript
-// Page Component - Server-side data loading
-export default async function ContractPrimarySpace({ params }) {
+// Utils - Data loading functions
+export const loadTokenSpaceData = async (params, tabNameParam) => {
+  const spaceMetadata = await loadTokenSpaceMetadata(params);
   const tokenData = await loadTokenData(contractAddress, network);
+  return createTokenSpaceData(spaceId, spaceName, contractAddress, network, ownerId, ownerIdType, tokenData, tabName);
+};
+
+// Page Component - Routing and rendering with TokenProvider
+export default async function ContractPrimarySpace({ params }) {
+  const tokenSpaceData = await loadTokenSpaceData(resolvedParams, decodedTabNameParam);
+  
+  if (!tokenSpaceData) {
+    return <ContractNotFound />;
+  }
   
   return (
-    <TokenSpace
-      spaceId={spaceId}
-      tabName={tabName}
-      contractAddress={contractAddress}
-      ownerId={ownerId}
-      ownerIdType={ownerIdType}
-    />
+    <TokenProvider
+      contractAddress={tokenSpaceData.contractAddress}
+      network={tokenSpaceData.network}
+      defaultTokenData={tokenSpaceData.tokenData}
+    >
+      <TokenSpace
+        spaceData={tokenSpaceData} // Omit<TokenSpaceData, 'isEditable'>
+        tabName={finalTabName}
+      />
+    </TokenProvider>
   );
 }
 
-// Space Component - Type-specific logic
-export default function TokenSpace({ spaceId, tabName, contractAddress, ownerId, ownerIdType }) {
+// Space Component - Client-side editability logic
+export default function TokenSpace({ spaceData, tabName }: TokenSpaceProps) {
   const { tokenData } = useToken(); // Uses TokenProvider context
   
-  const tokenSpace: TokenSpaceData = {
-    id: spaceId || `temp-token-${contractAddress}-${tokenData?.network}`,
-    spaceName: tokenData?.clankerData?.symbol || contractAddress,
-    spaceType: SPACE_TYPES.TOKEN,
-    contractAddress: contractAddress,
-    network: tokenData?.network || 'mainnet',
-    ownerAddress: spaceOwnerAddress,
-    tokenData: tokenData,
-    spacePageUrl: getSpacePageUrl,
-    isEditable: checkTokenSpaceEditability,
-    config: INITIAL_SPACE_CONFIG
-  };
-  
-  return <PublicSpace spaceData={tokenSpace} tabName={tabName} />;
-};
+  const updatedSpaceData: TokenSpaceData = useMemo(() => ({
+    ...spaceData,
+    tokenData: tokenData || spaceData.tokenData,
+    isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => 
+      checkTokenSpaceEditability(spaceData.ownerAddress, tokenData || spaceData.tokenData, currentUserFid, wallets || []),
+  }), [spaceData, tokenData]);
+
+  return (
+    <PublicSpace
+      spaceData={updatedSpaceData}
+      tabName={tabName}
+    />
+  );
+}
 ```
+
+**Key Features**:
+- Server-side data loading with `loadTokenSpaceMetadata()` and `loadTokenData()`
+- Client-side token data updates via `TokenProvider`
+- Complex editability logic (FID + wallet address ownership)
+- Type-safe `Omit<TokenSpaceData, 'isEditable'>` pattern
 
 ### 3. Proposal Spaces (`/p/[proposalId]`)
 
 **Purpose**: DAO proposal spaces for Nouns governance
 
 **Components**:
-- `src/app/(spaces)/p/[proposalId]/[tabname]/page.tsx` - Page component
-- `src/app/(spaces)/p/[proposalId]/ProposalSpace.tsx` - Space component
+- `src/app/(spaces)/p/[proposalId]/page.tsx` - Page component (routing)
+- `src/app/(spaces)/p/[proposalId]/utils.ts` - Data loading functions
+- `src/app/(spaces)/p/[proposalId]/ProposalSpace.tsx` - Client-side space component
+- `src/app/(spaces)/p/[proposalId]/layout.tsx` - Space-specific layout
 
 **Data Flow**:
 ```typescript
-// Page Component - Server-side data loading
-export default async function WrapperProposalPrimarySpace({ params }) {
+// Utils - Data loading functions
+export const loadProposalSpaceData = async (proposalId, tabNameParam) => {
   const proposalData = await loadProposalData(proposalId);
+  return createProposalSpaceData(spaceId, spaceName, proposalId, ownerAddress, tabName);
+};
+
+// Page Component - Routing and rendering
+export default async function ProposalSpacePage({ params }) {
+  const proposalSpaceData = await loadProposalSpaceData(proposalId, tabNameParam);
+  
+  if (!proposalSpaceData) {
+    return <SpaceNotFound />;
+  }
   
   return (
     <ProposalSpace
-      proposalData={proposalData}
-      proposalId={proposalId}
-      tabName={tabName}
+      spaceData={proposalSpaceData} // Omit<ProposalSpaceData, 'isEditable'>
+      tabName={proposalSpaceData.config.tabNames?.[0] || "Overview"}
     />
   );
 }
 
-// Space Component - Type-specific logic
-const ProposalSpace = ({ proposalData, proposalId, tabName }) => {
-  const proposalSpace: ProposalSpaceData = {
-    id: undefined, // Will be set by PublicSpace through registration
-    spaceName: `Proposal ${proposalId}`,
-    spaceType: SPACE_TYPES.PROPOSAL,
-    proposalId: proposalId,
-    ownerAddress: ownerId,
-    spacePageUrl: getSpacePageUrl,
-    isEditable: checkProposalSpaceEditability,
-    config: INITIAL_SPACE_CONFIG
-  };
-  
-  return <PublicSpace spaceData={proposalSpace} tabName={tabName} />;
+// Space Component - Client-side editability logic
+export default function ProposalSpace({ spaceData, tabName }: ProposalSpaceProps) {
+  const spaceDataWithEditability = useMemo(() => ({
+    ...spaceData,
+    isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => 
+      isProposalSpaceEditable(spaceData.ownerAddress, currentUserFid, wallets),
+  }), [spaceData]);
+
+  return (
+    <PublicSpace
+      spaceData={spaceDataWithEditability}
+      tabName={tabName}
+    />
+  );
+}
+```
+
+**Key Features**:
+- Server-side data loading with `loadProposalSpaceData()`
+- Client-side editability based on wallet address ownership
+- 404 handling for invalid proposal IDs
+- Type-safe `Omit<ProposalSpaceData, 'isEditable'>` pattern
+
+## File Structure
+
+Each space type follows a consistent file structure:
+
+```
+src/app/(spaces)/
+├── s/[handle]/                    # Profile Spaces
+│   ├── page.tsx                   # Page component (routing)
+│   ├── utils.ts                   # Data loading functions
+│   ├── ProfileSpace.tsx           # Client-side space component
+│   ├── layout.tsx                 # Space-specific layout
+│   └── [tabName]/page.tsx         # Tab wrapper (re-exports main page)
+├── p/[proposalId]/                # Proposal Spaces
+│   ├── page.tsx                   # Page component (routing)
+│   ├── utils.ts                   # Data loading functions
+│   ├── ProposalSpace.tsx          # Client-side space component
+│   ├── layout.tsx                 # Space-specific layout
+│   └── [tabname]/page.tsx         # Tab wrapper (re-exports main page)
+└── t/[network]/[contractAddress]/ # Token Spaces
+    ├── page.tsx                   # Page component (routing)
+    ├── utils.ts                   # Data loading functions
+    ├── layout.tsx                 # Space-specific layout
+    ├── [tabName]/page.tsx         # Tab wrapper (re-exports main page)
+    └── ../TokenSpace.tsx          # Client-side space component (shared)
+```
+
+## Utils Pattern
+
+Each space type has a dedicated `utils.ts` file that contains:
+
+### Data Loading Functions
+- **`load{Type}SpaceData()`** - Main data loading function
+- **`create{Type}SpaceData()`** - Space data creator function
+- **Helper functions** - Space-specific data fetching utilities
+
+### Example Utils Structure
+```typescript
+// src/app/(spaces)/s/[handle]/utils.ts
+export const loadUserSpaceData = async (handle, tabNameParam) => {
+  // Load user metadata, create space data
+  return createProfileSpaceData(spaceId, spaceName, fid, tabName);
 };
+
+export const createProfileSpaceData = (spaceId, spaceName, fid, tabName) => {
+  // Create ProfileSpaceData object
+  return { id, spaceName, spaceType, updatedAt, spacePageUrl, config, fid };
+};
+
+// Helper functions
+export const getUserMetadata = async (handle) => { ... };
+export const getTabList = async (fid) => { ... };
+```
+
+### Benefits of Utils Pattern
+1. **Separation of Concerns** - Data loading logic separated from page components
+2. **Reusability** - Utils functions can be imported and reused
+3. **Testability** - Data loading logic can be tested independently
+4. **Consistency** - All space types follow the same pattern
+5. **Maintainability** - Centralized data loading logic
+
+## Layout Components
+
+Each space type has a `layout.tsx` file that provides:
+
+### Space-Specific Layouts
+- **Profile Layout** - User-specific layout and providers
+- **Proposal Layout** - Proposal-specific layout and providers  
+- **Token Layout** - Token-specific layout and providers
+
+### Provider Wrapping
+- **TokenProvider** - For token spaces (real-time data updates)
+- **Space-specific providers** - For type-specific functionality
+- **Common providers** - Shared across all space types
+
+### Example Layout Structure
+```typescript
+// src/app/(spaces)/t/[network]/[contractAddress]/layout.tsx
+export default function TokenSpaceLayout({ children }) {
+  return (
+    <TokenProvider>
+      <CommonProviders>
+        {children}
+      </CommonProviders>
+    </TokenProvider>
+  );
+}
 ```
 
 ## PublicSpace Component
@@ -226,6 +381,7 @@ interface ProfileSpaceData extends SpaceData {
 interface TokenSpaceData extends SpaceData {
   contractAddress: Address;
   network: string;
+  ownerAddress: Address;
   tokenData?: MasterToken;
 }
 
@@ -234,6 +390,50 @@ interface ProposalSpaceData extends SpaceData {
   ownerAddress: Address;
 }
 ```
+
+### Server-Side Data Pattern
+
+Server-side data creators return `Omit<SpaceData, 'isEditable'>` to ensure serialization safety:
+
+```typescript
+// Server-side creators
+const createProfileSpaceData = (...): Omit<ProfileSpaceData, 'isEditable'> => { ... }
+const createTokenSpaceData = (...): Omit<TokenSpaceData, 'isEditable'> => { ... }
+const createProposalSpaceData = (...): Omit<ProposalSpaceData, 'isEditable'> => { ... }
+
+// Client-side components add isEditable
+const spaceDataWithEditability = useMemo(() => ({
+  ...spaceData, // Omit<SpaceData, 'isEditable'>
+  isEditable: (currentUserFid, wallets) => { ... }
+}), [spaceData]);
+```
+
+## Benefits of the Omit Pattern
+
+### 1. **Serialization Safety**
+- Server-side data contains no functions, ensuring proper serialization
+- No runtime errors from trying to serialize functions
+- Clean separation between data and behavior
+
+### 2. **Type Safety**
+- `Omit<SpaceData, 'isEditable'>` explicitly shows what's missing
+- TypeScript catches errors at compile time
+- Clear contract between server and client
+
+### 3. **Performance**
+- Server-side data loading is optimized for initial render
+- Client-side editability logic only runs when needed
+- No unnecessary function serialization/deserialization
+
+### 4. **Maintainability**
+- Clear separation of concerns
+- Easy to understand data flow
+- Consistent pattern across all space types
+
+### 5. **Flexibility**
+- Each space type can implement its own editability logic
+- Easy to add new space types following the same pattern
+- Client-side logic can access user state and context
 
 ## Naming Conventions
 
@@ -304,11 +504,46 @@ This consistent naming makes the codebase easier to understand and maintain.
 
 To add a new space type:
 
-1. **Create page component** for server-side data loading
-2. **Create space component** with type-specific logic
-3. **Define space data interface** extending `SpaceData`
-4. **Add space type** to `SPACE_TYPES` enum
-5. **Update PublicSpace** to handle new space type in resolution logic
-6. **Add space registration** logic if needed
+1. **Create directory structure** following the pattern:
+   ```
+   src/app/(spaces)/{type}/[param]/
+   ├── page.tsx          # Page component (routing)
+   ├── utils.ts          # Data loading functions
+   ├── {Type}Space.tsx   # Client-side space component
+   ├── layout.tsx        # Space-specific layout
+   └── [tabName]/page.tsx # Tab wrapper (re-exports main page)
+   ```
+
+2. **Create utils file** with data loading functions:
+   - `load{Type}SpaceData()` - Main data loading function
+   - `create{Type}SpaceData()` - Space data creator function
+   - Helper functions for space-specific data fetching
+
+3. **Create space component** with type-specific logic:
+   - Accept `Omit<{Type}SpaceData, 'isEditable'>` as props
+   - Add `isEditable` function using `useMemo`
+   - Render `PublicSpace` with complete space data
+
+4. **Create page component** for routing:
+   - Import data loading function from utils
+   - Handle 404 cases
+   - Render space component with loaded data
+
+5. **Create layout component** if needed:
+   - Wrap with space-specific providers
+   - Include common providers
+
+6. **Define space data interface** extending `SpaceData`:
+   ```typescript
+   interface {Type}SpaceData extends SpaceData {
+     // Type-specific properties
+   }
+   ```
+
+7. **Add space type** to `SPACE_TYPES` enum
+
+8. **Update PublicSpace** to handle new space type in resolution logic
+
+9. **Add space registration** logic if needed
 
 The pattern ensures new space types integrate seamlessly with existing functionality while maintaining consistency across the application.

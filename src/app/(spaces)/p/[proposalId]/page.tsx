@@ -2,32 +2,10 @@ export const dynamic = "force-static";
 export const revalidate = 60;
 
 import React from "react";
-import { Address } from "viem";
-import ProposalSpace from "./ProposalSpace";
-import { loadProposalData } from "./utils";
+import { loadProposalSpaceData } from "./utils";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
-
-const loadProposalSpaceData = async (
-  proposalId: string,
-  tabNameParam?: string
-) => {
-  const proposalData = await loadProposalData(proposalId || "0");
-  
-  // Check if proposal data is valid (not the fallback with 0x0 address)
-  if (!proposalData?.proposer?.id || proposalData.proposer.id === "0x0" || proposalData.proposer.id === "0x0000000000000000000000000000000000000000") {
-    return {
-      proposalData: null,
-      proposalId,
-      tabName: undefined,
-    };
-  }
-
-  return {
-    proposalData,
-    proposalId,
-    tabName: tabNameParam,
-  };
-};
+import ProposalSpace from "./ProposalSpace";
+import { ProposalProvider } from "@/common/providers/ProposalProvider";
 
 const ProposalSpacePage = async ({
   params,
@@ -45,18 +23,22 @@ const ProposalSpacePage = async ({
     decodedTabNameParam = decodeURIComponent(tabNameParam);
   }
 
-  const { proposalData, tabName } = await loadProposalSpaceData(proposalId, decodedTabNameParam);
+  const proposalSpaceData = await loadProposalSpaceData(proposalId, decodedTabNameParam);
 
-  if (!proposalData) {
+  if (!proposalSpaceData) {
     return <SpaceNotFound />;
   }
 
   return (
-    <ProposalSpace
-      proposalData={proposalData}
+    <ProposalProvider
       proposalId={proposalId}
-      tabName={tabName}
-    />
+      defaultProposalData={proposalSpaceData.proposalData}
+    >
+      <ProposalSpace
+        spaceData={proposalSpaceData}
+        tabName={proposalSpaceData.config.tabNames?.[0] || "Overview"}
+      />
+    </ProposalProvider>
   );
 };
 

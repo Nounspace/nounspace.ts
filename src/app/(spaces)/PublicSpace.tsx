@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Address } from "viem";
 import { SpaceConfigSaveDetails } from "./Space";
-import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/space";
+import { SpaceData, isProfileSpace, isTokenSpace, isProposalSpace } from "@/common/types/spaceData";
 import SpaceLoading from "./SpaceLoading";
 import SpacePage from "./SpacePage";
 const FARCASTER_NOUNSPACE_AUTHENTICATOR_NAME = "farcaster:nounspace";

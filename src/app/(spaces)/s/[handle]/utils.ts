@@ -1,6 +1,9 @@
 import createSupabaseServerClient from "@/common/data/database/supabase/clients/server";
 import { UserMetadata } from "@/common/lib/utils/userMetadata";
 import neynar from "@/common/data/api/neynar";
+import { unstable_noStore as noStore } from "next/cache";
+import { ProfileSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
+import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
 
 export type Tab = {
   spaceId: string;
@@ -79,4 +82,61 @@ export const getTabList = async (fid: number): Promise<Tab[]> => {
     console.error("Exception in getTabList:", e);
     return [];
   }
+};
+
+// Profile space specific creator
+export const createProfileSpaceData = (
+  spaceId: string | undefined,
+  spaceName: string,
+  fid: number,
+  tabName: string
+): Omit<ProfileSpaceData, 'isEditable'> => {
+  const config = {
+    ...createIntialPersonSpaceConfigForFid(fid, spaceName),
+    timestamp: new Date().toISOString(),
+  };
+
+  return {
+    // Base SpaceData properties
+    id: spaceId,
+    spaceName,
+    spaceType: SPACE_TYPES.PROFILE,
+    updatedAt: new Date().toISOString(),
+    spacePageUrl: (tabName: string) => `/s/${spaceName}/${encodeURIComponent(tabName)}`,
+    config,
+    // ProfileSpaceData specific properties
+    fid,
+  };
+};
+
+export const loadUserSpaceData = async (
+  handle: string,
+  tabNameParam?: string
+): Promise<Omit<ProfileSpaceData, 'isEditable'> | null> => {
+  noStore(); 
+
+  const userMetadata = await getUserMetadata(handle);
+  const spaceOwnerFid = userMetadata?.fid || undefined;
+  const spaceOwnerUsername = userMetadata?.username || undefined;
+
+  if (!spaceOwnerFid) {
+    return null;
+  }
+
+  const tabList = await getTabList(spaceOwnerFid);
+
+  if (!tabList || tabList.length === 0) {
+    return null;
+  }
+
+  const defaultTab: Tab = tabList[0];
+  const spaceId = defaultTab.spaceId;
+  const tabName = tabNameParam || defaultTab.spaceName;
+
+  return createProfileSpaceData(
+    spaceId,
+    spaceOwnerUsername || "Profile",
+    spaceOwnerFid,
+    tabName
+  );
 };
