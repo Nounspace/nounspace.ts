@@ -65,14 +65,14 @@ const ProposalDataHeader: React.FC<ProposalDataHeaderProps> = ({ proposalData })
       <div className="flex flex-col">
         <h1 className="text-xl font-bold text-black">⌐◨-◨ - Proposal {id}</h1>
         <div className="text-sm text-gray-500">
-          Proposed by <AddressDisplay address={proposer} /> at {formattedDate}
+          Proposed by <AddressDisplay address={proposer as Address} /> at {formattedDate}
           {signers && signers.length > 0 && (
             <>
               , sponsored by{" "}
               {signers.map((signer, index) => (
                 <React.Fragment key={signer.id}>
                   {index > 0 && ", "}
-                  <AddressDisplay address={signer.id} />
+                  <AddressDisplay address={signer.id as Address} />
                 </React.Fragment>
               ))}
             </>
