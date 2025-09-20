@@ -490,17 +490,25 @@ export default function PublicSpace({
 
   const { editMode } = useSidebarContext();
 
+  const tabList = getCurrentSpaceId()
+    ? localSpaces[getCurrentSpaceId()!]?.order
+    : config.tabNames || ["Profile"];
+
+  console.log("🔍 [3/7] PublicSpace - Tab list for TabBar:", {
+    currentSpaceId: getCurrentSpaceId(),
+    hasLocalSpace: getCurrentSpaceId() ? !!localSpaces[getCurrentSpaceId()!] : false,
+    localSpaceOrder: getCurrentSpaceId() ? localSpaces[getCurrentSpaceId()!]?.order : null,
+    configTabNames: config.tabNames,
+    finalTabList: tabList
+  });
+
   const tabBar = (
     <TabBar
       isTokenPage={isTokenSpace(spaceData)}
       pageType={spaceData.spaceType}
       inHomebase={false}
       currentTab={getCurrentTabName() ?? "Profile"}
-      tabList={
-        getCurrentSpaceId()
-          ? localSpaces[getCurrentSpaceId()!]?.order
-          : ["Profile"]
-      }
+      tabList={tabList}
       contractAddress={isTokenSpace(spaceData) ? spaceData.contractAddress as Address : undefined}
       switchTabTo={switchTabTo}
       updateTabOrder={async (newOrder) => {

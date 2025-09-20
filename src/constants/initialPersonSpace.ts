@@ -15,6 +15,7 @@ export const INITIAL_SPACE_CONFIG_EMPTY: Omit<SpaceConfig, "isEditable"> = {
   theme: DEFAULT_THEME,
   fidgetInstanceDatums: {},
   fidgetTrayContents: [],
+  tabNames: ["Profile"],
 };
 
 const createIntialPersonSpaceConfigForFid = (
@@ -82,6 +83,10 @@ const createIntialPersonSpaceConfigForFid = (
   // Set the layout configuration
   const layoutConfig = getLayoutConfig(config.layoutDetails);
   layoutConfig.layout = layoutItems;
+  
+  // Set default tab names
+  config.tabNames = ["Profile"];
+  
   return config;
 };
 

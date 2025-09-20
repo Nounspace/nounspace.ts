@@ -5,10 +5,10 @@ import ProfileSpace from "./ProfileSpace";
 import { ProfileSpaceData } from "@/common/types/spaceData";
 
 interface ProfileSpacePageProps {
-  params: {
+  params: Promise<{
     handle: string;
     tabName?: string;
-  };
+  }>;
 }
 
 const ProfileSpacePage = async ({ params }: ProfileSpacePageProps) => {
