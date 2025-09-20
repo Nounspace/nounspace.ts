@@ -1,6 +1,6 @@
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
-import { MasterToken } from "@/common/types/token";
+import { MasterToken } from "@/common/providers/TokenProvider";
 import { fetchTokenData } from "@/common/lib/utils/fetchTokenData";
 import { fetchClankerByAddress } from "./clanker";
 import { fetchEmpireByAddress } from "./empireBuilder";
