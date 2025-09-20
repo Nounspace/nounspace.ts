@@ -9,7 +9,7 @@ import { fetchClankerByAddress } from "@/common/data/queries/clanker";
 import { fetchEmpireByAddress } from "@/common/data/queries/empireBuilder";
 import TokenSpace from "../TokenSpace";
 
-export interface ContractSpacePageProps {
+export interface TokenSpacePageProps {
   spaceId?: string;
   tabName: string | null;
   contractAddress: string | null;
@@ -43,19 +43,24 @@ async function loadTokenData(
   }
 }
 
-export default async function ContractPrimarySpace({ params }) {
-  const resolvedParams = await params;
+export default async function ContractPrimarySpace({ 
+  params 
+}: {
+  params: Promise<{ network: string; contractAddress: string; tabName?: string }>
+}) {
+  const { network: networkParam, contractAddress: contractAddressParam, tabName: tabNameParam } = await params;
+  const resolvedParams = { network: networkParam, contractAddress: contractAddressParam };
   const {
     props: {
       spaceId,
-      tabName,
+      tabName: defaultTabName,
       ownerId,
       ownerIdType,
       contractAddress,
       owningIdentities,
     },
   } = await loadContractData(resolvedParams || {});
-  const network = resolvedParams?.network as EtherScanChainName;
+  const network = networkParam as EtherScanChainName;
   const contractAddressStr = contractAddress as string | null;
 
   // Guard against null/undefined contractAddress
@@ -70,6 +75,13 @@ export default async function ContractPrimarySpace({ params }) {
     );
   }
 
+  // Handle tabName parameter (decode if needed)
+  let decodedTabNameParam = tabNameParam;
+  if (tabNameParam) {
+    decodedTabNameParam = decodeURIComponent(tabNameParam);
+  }
+  const finalTabName = decodedTabNameParam || defaultTabName || "Overview";
+
   // Perform server-side token data lookup
   const defaultTokenData = await loadTokenData(contractAddressStr as Address, network);
 
@@ -81,7 +93,7 @@ export default async function ContractPrimarySpace({ params }) {
       >
         <TokenSpace
           spaceId={spaceId ?? undefined}
-          tabName={tabName || "Overview"}
+          tabName={finalTabName}
           ownerId={ownerId}
           ownerIdType={ownerIdType}
           contractAddress={contractAddressStr}

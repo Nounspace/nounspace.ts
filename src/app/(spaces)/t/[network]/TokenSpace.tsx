@@ -4,7 +4,7 @@ import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { OwnerType } from "@/common/data/api/etherscan";
-import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
 import { Address, isAddressEqual } from 'viem';
 import { TokenSpaceData, SPACE_TYPES } from "@/common/types/space";
 import { isNil } from "lodash";
@@ -58,7 +58,7 @@ export default function TokenSpace({
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
-      createInitialContractSpaceConfigForAddress(
+      createInitialTokenSpaceConfigForAddress(
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
         String(tokenData?.clankerData?.requestor_fid || ""),

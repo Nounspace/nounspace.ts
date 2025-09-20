@@ -12,7 +12,7 @@ import { NextApiRequest, NextApiResponse } from "next/types";
 import { identityCanModifySpace } from "./tabs/[tabId]";
 import stringify from "fast-json-stable-stringify";
 import {
-  loadIdentitiesOwningContractSpace,
+  loadIdentitiesOwningTokenSpace,
   loadOwnedItentitiesForSpaceByFid,
 } from "@/common/data/database/supabase/serverHelpers";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
@@ -146,7 +146,7 @@ export async function identitiesCanModifySpace(
   if (!isNull(contractAddress)) {
     const effectiveNetwork = network || registration.network;
     if (effectiveNetwork) {
-      return await loadIdentitiesOwningContractSpace(
+      return await loadIdentitiesOwningTokenSpace(
         contractAddress,
         effectiveNetwork,
       );

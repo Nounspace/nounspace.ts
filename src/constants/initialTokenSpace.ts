@@ -7,7 +7,7 @@ import { getGeckoUrl } from "@/common/lib/utils/links";
 import { Address } from "viem";
 import { getLayoutConfig } from "@/common/utils/layoutFormatUtils";
 
-export const createInitialContractSpaceConfigForAddress = (
+export const createInitialTokenSpaceConfigForAddress = (
   address: string,
   castHash: string | null,
   casterFid: string | null,
@@ -439,4 +439,4 @@ export const createInitialContractSpaceConfigForAddress = (
   return config;
 };
 
-export default createInitialContractSpaceConfigForAddress;
+export default createInitialTokenSpaceConfigForAddress;

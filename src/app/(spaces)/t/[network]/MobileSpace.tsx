@@ -17,7 +17,7 @@ import { getGeckoUrl, getMatchaUrl, getGeckoIframe } from "@/common/lib/utils/li
 import { Address } from "viem";
 import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { useAppStore } from "@/common/data/stores/app";
-import createInitialContractSpaceConfigForAddress from "@/constants/initialContractSpace";
+import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
 
 type Pages = "Price" | "Swaps" | "Chat" | "Links" | "Feed";
 
@@ -75,7 +75,7 @@ export const MobileTokenSpace = ({
 
   const INITIAL_SPACE_CONFIG = useMemo(
     () =>
-      createInitialContractSpaceConfigForAddress(
+      createInitialTokenSpaceConfigForAddress(
         contractAddress,
         tokenData?.clankerData?.cast_hash || "",
         tokenData?.clankerData?.requestor_fid ? String(tokenData.clankerData.requestor_fid) : "",
