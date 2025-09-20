@@ -18,7 +18,7 @@ export default async function ContractPrimarySpace({
     decodedTabNameParam = decodeURIComponent(tabNameParam);
   }
 
-  // Load token space data using the new loader function
+  // Load token space data
   const tokenSpaceData = await loadTokenSpaceData(resolvedParams, decodedTabNameParam);
 
   // Guard against null/undefined tokenSpaceData

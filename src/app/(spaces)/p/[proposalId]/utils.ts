@@ -4,6 +4,8 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { WEBSITE_URL } from "@/constants/app";
 import { ProposalSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
 import createInitalProposalSpaceConfigForProposalId from "@/constants/initialProposalSpace";
+import { checkExistingProposalSpace } from "@/common/lib/serverSpaceUtils";
+import { cookies } from 'next/headers';
 
 export interface ProposalData {
   id: string;
@@ -269,8 +271,22 @@ export const loadProposalSpaceData = async (
   const spaceName = `Proposal ${proposalId}`;
   const ownerAddress = proposalData.proposer.id as Address;
 
+  // Check if space already exists server-side
+  let spaceId: string | undefined;
+  try {
+    const cookieStore = await cookies();
+    const identityPublicKey = cookieStore.get('identity-public-key')?.value;
+    
+    if (identityPublicKey) {
+      spaceId = await checkExistingProposalSpace(identityPublicKey, proposalId) || undefined;
+    }
+  } catch (error) {
+    console.error("Error checking existing proposal space:", error);
+    // Continue without spaceId - user can still claim the space
+  }
+
   return createProposalSpaceData(
-    undefined, // spaceId will be set by PublicSpace through registration
+    spaceId, // Use existing spaceId if found, otherwise undefined for claiming
     spaceName,
     proposalId,
     ownerAddress,

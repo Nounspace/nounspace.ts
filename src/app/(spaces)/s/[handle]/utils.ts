@@ -4,6 +4,8 @@ import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";
 import { ProfileSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
+import { checkExistingProfileSpace } from "@/common/lib/serverSpaceUtils";
+import { cookies } from 'next/headers';
 
 export type Tab = {
   spaceId: string;
@@ -123,15 +125,34 @@ export const loadUserSpaceData = async (
     return null;
   }
 
-  const tabList = await getTabList(spaceOwnerFid);
+  // Check if space already exists server-side
+  let spaceId: string | undefined;
+  try {
+    const cookieStore = await cookies();
+    const identityPublicKey = cookieStore.get('identity-public-key')?.value;
+    
+    if (identityPublicKey) {
+      spaceId = await checkExistingProfileSpace(identityPublicKey, spaceOwnerFid) || undefined;
+    }
+  } catch (error) {
+    console.error("Error checking existing profile space:", error);
+    // Continue without spaceId - user can still claim the space
+  }
 
-  if (!tabList || tabList.length === 0) {
+  // If no spaceId found server-side, try the existing database method as fallback
+  if (!spaceId) {
+    const tabList = await getTabList(spaceOwnerFid);
+    if (tabList && tabList.length > 0) {
+      spaceId = tabList[0].spaceId;
+    }
+  }
+
+  // If still no spaceId, return null (space doesn't exist)
+  if (!spaceId) {
     return null;
   }
 
-  const defaultTab: Tab = tabList[0];
-  const spaceId = defaultTab.spaceId;
-  const tabName = tabNameParam || defaultTab.spaceName;
+  const tabName = tabNameParam || spaceOwnerUsername || "Profile";
 
   return createProfileSpaceData(
     spaceId,
