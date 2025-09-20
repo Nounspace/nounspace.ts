@@ -191,7 +191,7 @@ export const createTokenSpaceData = (
   ownerIdType: OwnerType,
   tokenData: MasterToken | undefined,
   tabName: string
-): Omit<TokenSpaceData, 'isEditable'> => {
+): Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'> => {
   const ownerAddress = ownerId && ownerIdType === "address" ? ownerId as Address : "0x0000000000000000000000000000000000000000" as Address;
   
   const config = {
@@ -215,7 +215,6 @@ export const createTokenSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.TOKEN,
     updatedAt: new Date().toISOString(),
-    spacePageUrl: (tabName: string) => `/t/${network}/${contractAddress}/${encodeURIComponent(tabName)}`,
     config,
     // TokenSpaceData specific properties
     contractAddress,
@@ -228,7 +227,7 @@ export const createTokenSpaceData = (
 export const loadTokenSpaceData = async (
   params: Record<string, string | string[]>,
   tabNameParam?: string
-): Promise<Omit<TokenSpaceData, 'isEditable'> | null> => {
+): Promise<Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
   const spaceMetadata = await loadTokenSpaceMetadata(params);
   
   if (!spaceMetadata.props.contractAddress) {

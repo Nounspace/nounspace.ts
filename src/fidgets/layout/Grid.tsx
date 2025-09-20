@@ -155,6 +155,16 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
   hasFeed,
   fid,
 }) => {
+  console.log("🔍 [9/7] Grid (FINAL COMPONENT) - Props received from DesktopView:", {
+    fidgetInstanceDatums,
+    fidgetTrayContents,
+    layoutConfig,
+    theme,
+    inEditMode,
+    hasProfile,
+    hasFeed,
+    fid
+  });
   // State to handle selecting, dragging, and Grid edit functionality
   const [element, setElement] = useState<HTMLDivElement | null>(
     portalRef.current,
@@ -190,6 +200,8 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
       theme?.properties?.fidgetBorderRadius,
     ],
   );
+
+  console.log("🔍 [9/7] Grid - Grid details calculated:", memoizedGridDetails);
 
   // Consolidated collision detection utility
   const isSpaceAvailable = useCallback((
@@ -925,6 +937,13 @@ const Grid: LayoutFidget<GridLayoutProps> = ({
               const fidgetModule = fidgetDatum
                 ? CompleteFidgets[fidgetDatum.fidgetType]
                 : null;
+              
+              console.log("🔍 [9/7] Grid - Rendering fidget item:", {
+                gridItem,
+                fidgetDatum,
+                fidgetModule: fidgetModule?.name || 'unknown'
+              });
+              
               if (!fidgetModule) return null;
 
               return (

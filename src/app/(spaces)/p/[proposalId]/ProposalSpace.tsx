@@ -7,7 +7,7 @@ import { ProposalSpaceData } from "@/common/types/spaceData";
 import { useProposal } from "@/common/providers/ProposalProvider";
 
 export interface ProposalSpaceProps {
-  spaceData: Omit<ProposalSpaceData, 'isEditable'>;
+  spaceData: Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -28,9 +28,11 @@ export default function ProposalSpace({
 }: ProposalSpaceProps) {
   const { proposalData } = useProposal();
 
-  // Use the passed-in spaceData, but update it with current proposalData from context and add isEditable
+  // Use the passed-in spaceData, but update it with current proposalData from context 
+  // and add isEditable and spacePageUrl
   const updatedSpaceData: ProposalSpaceData = useMemo(() => ({
     ...spaceData,
+    spacePageUrl: (tabName: string) => `/p/${spaceData.proposalId}/${encodeURIComponent(tabName)}`,
     proposalData: proposalData || spaceData.proposalData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) =>
       isProposalSpaceEditable(spaceData.ownerAddress, currentUserFid, wallets),

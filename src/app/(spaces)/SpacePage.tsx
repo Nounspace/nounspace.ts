@@ -24,6 +24,8 @@ export default function SpacePage({
   feed,
   showFeedOnMobile,
 }: SpacePageArgs) {
+  console.log("🔍 [6/7] SpacePage - Config received from PublicSpace:", config);
+  
   const { editMode, setEditMode, setSidebarEditable, portalRef } =
     useSidebarContext();
 

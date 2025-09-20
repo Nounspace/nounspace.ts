@@ -123,6 +123,8 @@ export default function Space({
   setSidebarEditable,
   portalRef,
 }: SpaceArgs) {
+  console.log("🔍 [7/7] Space - Config received from SpacePage:", config);
+
   // Setup our custom hooks
   const isHomebasePath = usePathHelper();
   const { isMobile, showMobileContainer, viewportMobile, setMobilePreview } = useViewportManager();
@@ -133,6 +135,14 @@ export default function Space({
   const layoutFidgetIds = layoutConfig?.layout && config.fidgetInstanceDatums 
     ? extractFidgetIdsFromLayout(layoutConfig.layout, config.fidgetInstanceDatums)
     : [];
+
+  console.log("🔍 [7/7] Space - Layout calculation and viewport info:", {
+    layoutConfig,
+    layoutFidgetIds,
+    isMobile,
+    showMobileContainer,
+    viewportMobile
+  });
   
   // Figure out what should be visible
   const shouldShowFeed = !!feed && (!isMobile || (showFeedOnMobile && !isHomebasePath));

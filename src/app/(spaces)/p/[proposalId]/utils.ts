@@ -231,7 +231,7 @@ export const createProposalSpaceData = (
   ownerAddress: Address,
   tabName: string,
   proposalData?: ProposalData
-): Omit<ProposalSpaceData, 'isEditable'> => {
+): Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'> => {
   
   const config = {
     ...createInitalProposalSpaceConfigForProposalId(
@@ -247,7 +247,6 @@ export const createProposalSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.PROPOSAL,
     updatedAt: new Date().toISOString(),
-    spacePageUrl: (tabName: string) => `/p/${proposalId}/${encodeURIComponent(tabName)}`,
     config,
     // ProposalSpaceData specific properties
     proposalId,
@@ -259,7 +258,7 @@ export const createProposalSpaceData = (
 export const loadProposalSpaceData = async (
   proposalId: string,
   tabNameParam?: string
-): Promise<Omit<ProposalSpaceData, 'isEditable'> | null> => {
+): Promise<Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
   const proposalData = await loadProposalData(proposalId || "0");
   
   // Check if proposal data is valid (not the fallback with 0x0 address)

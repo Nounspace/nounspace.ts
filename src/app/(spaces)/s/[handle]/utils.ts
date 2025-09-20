@@ -92,7 +92,7 @@ export const createProfileSpaceData = (
   spaceName: string,
   fid: number,
   tabName: string
-): Omit<ProfileSpaceData, 'isEditable'> => {
+): Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> => {
   const config = {
     ...createIntialPersonSpaceConfigForFid(fid, spaceName),
     timestamp: new Date().toISOString(),
@@ -104,7 +104,6 @@ export const createProfileSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.PROFILE,
     updatedAt: new Date().toISOString(),
-    spacePageUrl: (tabName: string) => `/s/${spaceName}/${encodeURIComponent(tabName)}`,
     config,
     // ProfileSpaceData specific properties
     fid,
@@ -114,7 +113,7 @@ export const createProfileSpaceData = (
 export const loadUserSpaceData = async (
   handle: string,
   tabNameParam?: string
-): Promise<Omit<ProfileSpaceData, 'isEditable'> | null> => {
+): Promise<Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> | null> => {
   noStore(); 
 
   const userMetadata = await getUserMetadata(handle);
@@ -147,15 +146,10 @@ export const loadUserSpaceData = async (
     }
   }
 
-  // If still no spaceId, return null (space doesn't exist)
-  if (!spaceId) {
-    return null;
-  }
-
   const tabName = tabNameParam || spaceOwnerUsername || "Profile";
 
   return createProfileSpaceData(
-    spaceId,
+    spaceId, // This can be undefined if space doesn't exist yet
     spaceOwnerUsername || "Profile",
     spaceOwnerFid,
     tabName

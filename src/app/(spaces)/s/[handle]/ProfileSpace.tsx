@@ -1,9 +1,11 @@
+"use client";
+
 import React, { useMemo } from "react";
 import PublicSpace from "@/app/(spaces)/PublicSpace";
 import { ProfileSpaceData } from "@/common/types/spaceData";
 
 export interface ProfileSpaceProps {
-  spaceData: Omit<ProfileSpaceData, 'isEditable'>;
+  spaceData: Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -19,9 +21,12 @@ export default function ProfileSpace({
   spaceData,
   tabName,
 }: ProfileSpaceProps) {
-  // Add isEditable logic on the client side
+  console.log("🔍 [2/7] ProfileSpace (Client-side) - spaceData received from server:", { spaceData, tabName });
+
+  // Add isEditable and spacePageUrl logic on the client side
   const spaceDataWithEditability = useMemo(() => ({
     ...spaceData,
+    spacePageUrl: (tabName: string) => `/s/${spaceData.spaceName}/${encodeURIComponent(tabName)}`,
     isEditable: (currentUserFid: number | undefined) => 
       isProfileSpaceEditable(spaceData.fid, currentUserFid),
   }), [spaceData]);

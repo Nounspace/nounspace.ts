@@ -8,7 +8,7 @@ import { TokenSpaceData } from "@/common/types/spaceData";
 import { isNil } from "lodash";
 
 export interface TokenSpaceProps {
-  spaceData: Omit<TokenSpaceData, 'isEditable'>;
+  spaceData: Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'>;
   tabName: string;
 }
 
@@ -47,9 +47,10 @@ export default function TokenSpace({
 }: TokenSpaceProps) {
   const { tokenData } = useToken();
 
-  // Use the passed-in spaceData, but update it with current tokenData from context and add isEditable
+  // Use the passed-in spaceData, but update it with current tokenData from context and add isEditable and spacePageUrl
   const updatedSpaceData: TokenSpaceData = useMemo(() => ({
     ...spaceData,
+    spacePageUrl: (tabName: string) => `/t/${spaceData.network}/${spaceData.contractAddress}/${encodeURIComponent(tabName)}`,
     tokenData: tokenData || spaceData.tokenData,
     isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => 
       checkTokenSpaceEditability(
