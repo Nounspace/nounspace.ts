@@ -17,9 +17,80 @@ import { MINI_APP_PROVIDER_METADATA } from "@/common/providers/MiniAppSdkProvide
 const DEFAULT_SANDBOX_RULES =
   "allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox";
 
+const FALLBACK_BASE_URL = "https://nounspace.app/";
+
+const ensureSandboxRules = (sandbox?: string) => {
+  const rules = new Set(
+    DEFAULT_SANDBOX_RULES.split(/\s+/).filter((token) => token.length > 0),
+  );
+
+  if (sandbox) {
+    sandbox
+      .split(/\s+/)
+      .filter((token) => token.length > 0)
+      .forEach((token) => rules.add(token));
+  }
+
+  rules.add("allow-same-origin");
+
+  return Array.from(rules).join(" ");
+};
+
+const sanitizeMiniAppNavigationTarget = (targetUrl: string) => {
+  const fallback = "about:blank";
+
+  if (!targetUrl) {
+    return fallback;
+  }
+
+  try {
+    const base =
+      typeof window !== "undefined" && window.location
+        ? window.location.href
+        : FALLBACK_BASE_URL;
+    const parsed = new URL(targetUrl, base);
+
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+  } catch (error) {
+    console.warn("Blocked unsupported mini app navigation target", error);
+  }
+
+  return fallback;
+};
+
+const resolveAllowedEmbedSrc = (src?: string | null): string | null => {
+  if (!src) {
+    return null;
+  }
+
+  try {
+    const base =
+      typeof window !== "undefined" && window.location
+        ? window.location.href
+        : FALLBACK_BASE_URL;
+    const parsed = new URL(src, base);
+
+    if (parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+
+    if (parsed.protocol === "about:" && parsed.href === "about:blank") {
+      return parsed.href;
+    }
+  } catch (error) {
+    console.warn("Rejected unsupported iframe src", error);
+    return null;
+  }
+
+  return null;
+};
+
 type IframeAttributeMap = Record<string, string>;
 
 const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
+  const safeTargetUrl = sanitizeMiniAppNavigationTarget(targetUrl);
   const iconPath = MINI_APP_PROVIDER_METADATA.iconPath;
   const providerInfoScript = `
         var providerInfo = parentWindow.__nounspaceMiniAppProviderInfo;
@@ -64,7 +135,10 @@ const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
         console.error("Mini app provider bootstrap failed", err);
       }
       setTimeout(function(){
-        window.location.replace(${JSON.stringify(targetUrl)});
+        var target = ${JSON.stringify(safeTargetUrl)};
+        if (target) {
+          window.location.replace(target);
+        }
       }, 0);
     })();</script></body></html>`;
 };
@@ -345,12 +419,22 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   if (sanitizedEmbedScript) {
     if (isMiniAppEnvironment && sanitizedEmbedAttributes?.src) {
+      const allowedSrc = resolveAllowedEmbedSrc(sanitizedEmbedAttributes.src);
+
+      if (!allowedSrc) {
+        return (
+          <ErrorWrapper
+            icon="🔒"
+            message="This embed source is not allowed in the mini app."
+          />
+        );
+      }
+
       const allowFullScreen = "allowfullscreen" in sanitizedEmbedAttributes;
-      const sandboxRules =
-        sanitizedEmbedAttributes.sandbox || DEFAULT_SANDBOX_RULES;
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(
-        sanitizedEmbedAttributes.src,
+      const sandboxRules = ensureSandboxRules(
+        sanitizedEmbedAttributes.sandbox,
       );
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(allowedSrc);
 
       const widthAttr = sanitizedEmbedAttributes.width;
       const heightAttr = sanitizedEmbedAttributes.height;
@@ -358,7 +442,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       return (
         <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
           <iframe
-            key={`miniapp-sanitized-${sanitizedEmbedAttributes.src}`}
+            key={`miniapp-sanitized-${allowedSrc}`}
             srcDoc={bootstrapDoc}
             title={sanitizedEmbedAttributes.title || "IFrame Fidget"}
             sandbox={sandboxRules}
@@ -581,12 +665,32 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   if (!embedInfo.directEmbed && embedInfo.iframelyHtml) {
     if (isMiniAppEnvironment && iframelyEmbedAttributes?.src) {
+      if (!isValidHttpUrl(iframelyEmbedAttributes.src)) {
+        return (
+          <div
+            style={{ overflow: "hidden", width: "100%", height: "100%" }}
+            dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
+          />
+        );
+      }
+
+      let safeSrc: string;
+
+      try {
+        safeSrc = new URL(iframelyEmbedAttributes.src).toString();
+      } catch (error) {
+        console.warn("Rejected unsupported IFramely iframe src", error);
+        return (
+          <div
+            style={{ overflow: "hidden", width: "100%", height: "100%" }}
+            dangerouslySetInnerHTML={{ __html: embedInfo.iframelyHtml }}
+          />
+        );
+      }
+
       const allowFullScreen = "allowfullscreen" in iframelyEmbedAttributes;
-      const sandboxRules =
-        iframelyEmbedAttributes.sandbox || DEFAULT_SANDBOX_RULES;
-      const bootstrapDoc = createMiniAppBootstrapSrcDoc(
-        iframelyEmbedAttributes.src,
-      );
+      const sandboxRules = ensureSandboxRules(iframelyEmbedAttributes.sandbox);
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(safeSrc);
 
       const widthAttr = iframelyEmbedAttributes.width;
       const heightAttr = iframelyEmbedAttributes.height;
@@ -594,7 +698,7 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
       return (
         <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
           <iframe
-            key={`miniapp-iframely-${iframelyEmbedAttributes.src}`}
+            key={`miniapp-iframely-${safeSrc}`}
             srcDoc={bootstrapDoc}
             title={iframelyEmbedAttributes.title || "IFrame Fidget"}
             sandbox={sandboxRules}
