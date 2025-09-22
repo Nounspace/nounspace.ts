@@ -3,7 +3,7 @@ import { useAccount } from "wagmi";
 import { Button } from "./ui/button";
 import { Avatar, Name } from "@paperclip-labs/whisk-sdk/identity";
 import clsx from "clsx";
-import { useModal } from "connectkit";
+import { useModal } from "../mocks/connectkit";
 import { CHAIN_CONFIG } from "@nouns/config";
 
 interface WalletButtonProps {

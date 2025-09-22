@@ -1,5 +1,5 @@
 import { Noun, NounTraitType } from "@nouns/data/noun/types";
-import { buildSVG } from "@nouns/sdk";
+import { buildSVG } from "../../mocks/nouns-sdk";
 import { imageData } from "./imageData";
 
 const { palette, bgcolors } = imageData;

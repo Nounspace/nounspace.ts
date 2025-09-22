@@ -12,7 +12,7 @@ import {
   reservoirChains,
   createClient as createReservoirClient,
   ReservoirChain,
-} from "@reservoir0x/reservoir-sdk";
+} from "./mocks/reservoir-sdk";
 
 dotenv.config();
 

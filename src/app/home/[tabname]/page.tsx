@@ -7,8 +7,8 @@ import HomeClient from "./HomeClient";
 const DEFAULT_TAB = "Nouns";
 
 type PageProps = {
-  params: { tabname?: string };
-  searchParams: Record<string, string | string[] | undefined>;
+  params: Promise<{ tabname?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const sanitizeTabParam = (value: string | undefined) => {
@@ -21,10 +21,12 @@ const sanitizeTabParam = (value: string | undefined) => {
   }
 };
 
-export default function Page({ params, searchParams }: PageProps) {
-  const tabParam = sanitizeTabParam(params?.tabname);
+export default async function Page({ params, searchParams }: PageProps) {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const tabParam = sanitizeTabParam(resolvedParams?.tabname);
   const nounsContent: ReactNode = (
-    <EmbeddedNounsApp searchParams={searchParams ?? {}} />
+    <EmbeddedNounsApp searchParams={resolvedSearchParams ?? {}} />
   );
 
   return <HomeClient initialTabName={tabParam} nounsContent={nounsContent} />;

@@ -1,7 +1,7 @@
 "use server";
-import { graphql } from "@nouns/data/generated/ponder";
+import { graphql } from "../../generated/ponder";
 import { graphQLFetch } from "@nouns/data/utils/graphQLFetch";
-import { ClientsQuery } from "@nouns/data/generated/ponder/graphql";
+import { ClientsQuery } from "../../generated/ponder";
 import { CHAIN_CONFIG } from "@nouns/config";
 import { SECONDS_PER_DAY } from "@nouns/utils/constants";
 import { formatEther } from "viem";

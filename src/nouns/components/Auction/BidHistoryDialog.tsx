@@ -11,7 +11,7 @@ import { CHAIN_CONFIG } from "@nouns/config";
 import { formatNumber } from "@nouns/utils/format";
 import { Client } from "@nouns/data/ponder/client/getClients";
 import Image from "next/image";
-import { Avatar, Name } from "@paperclip-labs/whisk-sdk/identity";
+import { Avatar, Name } from "../../mocks/whisk-sdk-identity";
 import {
   DrawerDialog,
   DrawerDialogContent,

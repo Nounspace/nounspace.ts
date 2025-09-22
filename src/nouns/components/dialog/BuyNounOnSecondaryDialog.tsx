@@ -24,7 +24,7 @@ import {
   DrawerDialogContentInner,
   DrawerDialogTrigger,
 } from "@nouns/components/ui/DrawerDialog";
-import { useModal } from "connectkit";
+import { useModal } from "../../mocks/connectkit";
 
 interface BuyOnSecondaryDialogProps {
   noun: Noun;

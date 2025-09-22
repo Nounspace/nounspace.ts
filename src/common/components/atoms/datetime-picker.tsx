@@ -54,7 +54,7 @@ import {
   isToday as _isToday,
   toCalendarDate,
 } from "@internationalized/date";
-import { DateSegment as IDateSegment } from "@react-stately/datepicker";
+import { DateSegment as IDateSegment } from "../../../nouns/mocks/react-stately-datepicker";
 
 function Calendar(props: CalendarProps<DateValue>) {
   const prevButtonRef = React.useRef<HTMLButtonElement | null>(null);

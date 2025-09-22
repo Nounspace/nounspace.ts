@@ -1,4 +1,4 @@
-import { graphql } from "@nouns/data/generated/cms";
+import { graphql } from "../generated/cms";
 import { SECONDS_PER_DAY } from "@nouns/utils/constants";
 import { graphQLFetch } from "../utils/graphQLFetch";
 

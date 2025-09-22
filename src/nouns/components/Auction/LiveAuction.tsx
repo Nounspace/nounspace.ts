@@ -12,7 +12,7 @@ import { SecondaryNounListing, SecondaryNounOffer } from "@nouns/data/noun/types
 import SecondaryFloor from "../SecondaryFloor";
 import SecondaryTopOffer from "../SecondaryTopOffer";
 import { Client } from "@nouns/data/ponder/client/getClients";
-import { Name } from "@paperclip-labs/whisk-sdk/identity";
+import { Name } from "../../mocks/whisk-sdk-identity";
 
 export function LiveAuction({
   auction,

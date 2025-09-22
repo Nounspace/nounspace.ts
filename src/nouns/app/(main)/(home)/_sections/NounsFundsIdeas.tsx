@@ -4,7 +4,7 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@nouns/components/ui/carousel";
-import Autoplay from "embla-carousel-autoplay";
+import Autoplay from "../../../../mocks/embla-carousel-autoplay";
 import clsx from "clsx";
 import Image from "next/image";
 import { LinkExternal } from "@nouns/components/ui/link";
