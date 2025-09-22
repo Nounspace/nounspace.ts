@@ -55,6 +55,7 @@ import {
   toCalendarDate,
 } from "@internationalized/date";
 import { DateSegment as IDateSegment } from "../../../nouns/mocks/react-stately-datepicker";
+import type { DateSegment as IDateSegmentType } from "../../../nouns/mocks/react-stately-datepicker";
 
 function Calendar(props: CalendarProps<DateValue>) {
   const prevButtonRef = React.useRef<HTMLButtonElement | null>(null);
@@ -210,7 +211,7 @@ function CalendarCell({ state, date }: CalendarCellProps) {
 }
 
 interface DateSegmentProps {
-  segment: IDateSegment;
+  segment: IDateSegmentType;
   state: DateFieldState;
 }
 
