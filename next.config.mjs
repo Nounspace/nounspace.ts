@@ -98,11 +98,23 @@ const nextConfig = {
     ];
   },
   webpack: (config) => {
-    // Prevent webpack from attempting to bundle Node "os" module
-    // which can cause erroneous imports of @walletconnect/types
+    if (Array.isArray(config.externals)) {
+      config.externals.push("pino-pretty", "lokijs", "encoding");
+    } else if (config.externals) {
+      config.externals = [config.externals, "pino-pretty", "lokijs", "encoding"];
+    } else {
+      config.externals = ["pino-pretty", "lokijs", "encoding"];
+    }
+
+    config.module.rules.push({
+      test: /HeartbeatWorker\.js$/,
+      type: "javascript/esm",
+    });
+
     config.resolve.fallback = {
       ...config.resolve.fallback,
       os: false,
+      fs: false,
     };
     return config;
   },
