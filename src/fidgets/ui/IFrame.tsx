@@ -11,6 +11,88 @@ import { defaultStyleFields, ErrorWrapper, transformUrl, WithMargin } from "@/fi
 import React, { useEffect, useMemo, useState } from "react";
 import DOMPurify from "isomorphic-dompurify";
 import { BsCloud, BsCloudFill } from "react-icons/bs";
+import { useMiniApp } from "@/common/utils/useMiniApp";
+import { MINI_APP_PROVIDER_METADATA } from "@/common/providers/MiniAppSdkProvider";
+
+const DEFAULT_SANDBOX_RULES =
+  "allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox";
+
+type IframeAttributeMap = Record<string, string>;
+
+const createMiniAppBootstrapSrcDoc = (targetUrl: string) => {
+  const iconPath = MINI_APP_PROVIDER_METADATA.iconPath;
+  const providerInfoScript = `
+        var providerInfo = parentWindow.__nounspaceMiniAppProviderInfo;
+        if (!providerInfo) {
+          var icon;
+          try {
+            icon = new URL(${JSON.stringify(iconPath)}, (window.parent && window.parent.location ? window.parent.location.origin : window.location.origin)).toString();
+          } catch (err) {
+            icon = ${JSON.stringify(iconPath)};
+          }
+          providerInfo = {
+            uuid: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.uuid)},
+            name: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.name)},
+            icon: icon,
+            rdns: ${JSON.stringify(MINI_APP_PROVIDER_METADATA.rdns)}
+          };
+        }
+      `;
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body><script>(function(){
+      try {
+        var parentWindow = window.parent;
+        if (!parentWindow) {
+          return;
+        }
+        var provider = parentWindow.__nounspaceMiniAppEthProvider;
+        if (provider) {
+          window.ethereum = provider;
+          ${providerInfoScript}
+          var announce = function() {
+            var detail = {
+              info: providerInfo,
+              provider: provider
+            };
+            window.dispatchEvent(new CustomEvent("eip6963:announceProvider", { detail: detail }));
+          };
+          window.dispatchEvent(new Event("ethereum#initialized"));
+          announce();
+          window.addEventListener("eip6963:requestProvider", announce);
+        }
+      } catch (err) {
+        console.error("Mini app provider bootstrap failed", err);
+      }
+      setTimeout(function(){
+        window.location.replace(${JSON.stringify(targetUrl)});
+      }, 0);
+    })();</script></body></html>`;
+};
+
+const parseIframeAttributes = (html: string | null): IframeAttributeMap | null => {
+  if (typeof window === "undefined" || !html) {
+    return null;
+  }
+
+  try {
+    const parser = new DOMParser();
+    const document = parser.parseFromString(html, "text/html");
+    const iframe = document.querySelector("iframe");
+    if (!iframe) {
+      return null;
+    }
+
+    const attributes: IframeAttributeMap = {};
+    Array.from(iframe.attributes).forEach((attr) => {
+      attributes[attr.name.toLowerCase()] = attr.value;
+    });
+
+    return attributes;
+  } catch (error) {
+    console.error("Failed to parse iframe embed code", error);
+    return null;
+  }
+};
 
 export type IFrameFidgetSettings = {
   url: string;
@@ -153,18 +235,14 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
 
   const debouncedSetUrl = useMemo(() => debounce((value: string) => setDebouncedUrl(value), 300), []);
 
-  useEffect(() => {
-    debouncedSetUrl(url);
-    return () => {
-      debouncedSetUrl.cancel();
-    };
-  }, [url, debouncedSetUrl]);
+  const { isInMiniApp } = useMiniApp();
+  const isMiniAppEnvironment = isInMiniApp === true;
 
-  const isValid = isValidHttpUrl(debouncedUrl);
-  const sanitizedUrl = useSafeUrl(debouncedUrl);
-  const transformedUrl = transformUrl(sanitizedUrl || "");
-  // Scale value is set from size prop
-  const _scaleValue = size;
+  const [sanitizedEmbedAttributes, setSanitizedEmbedAttributes] =
+    useState<IframeAttributeMap | null>(null);
+  const [iframelyEmbedAttributes, setIframelyEmbedAttributes] =
+    useState<IframeAttributeMap | null>(null);
+
   const sanitizedEmbedScript = useMemo(() => {
     if (!embedScript) return null;
     const clean = DOMPurify.sanitize(embedScript, {
@@ -182,6 +260,37 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
     });
     return clean.trim() ? clean : null;
   }, [embedScript]);
+
+  useEffect(() => {
+    debouncedSetUrl(url);
+    return () => {
+      debouncedSetUrl.cancel();
+    };
+  }, [url, debouncedSetUrl]);
+
+  useEffect(() => {
+    if (!sanitizedEmbedScript) {
+      setSanitizedEmbedAttributes(null);
+      return;
+    }
+
+    setSanitizedEmbedAttributes(parseIframeAttributes(sanitizedEmbedScript));
+  }, [sanitizedEmbedScript]);
+
+  useEffect(() => {
+    if (!embedInfo?.iframelyHtml) {
+      setIframelyEmbedAttributes(null);
+      return;
+    }
+
+    setIframelyEmbedAttributes(parseIframeAttributes(embedInfo.iframelyHtml));
+  }, [embedInfo?.iframelyHtml]);
+
+  const isValid = isValidHttpUrl(debouncedUrl);
+  const sanitizedUrl = useSafeUrl(debouncedUrl);
+  const transformedUrl = transformUrl(sanitizedUrl || "");
+  // Scale value is set from size prop
+  const _scaleValue = size;
 
   useEffect(() => {
     if (sanitizedEmbedScript) return;
@@ -235,6 +344,47 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }, [sanitizedUrl, isValid, sanitizedEmbedScript]);
 
   if (sanitizedEmbedScript) {
+    if (isMiniAppEnvironment && sanitizedEmbedAttributes?.src) {
+      const allowFullScreen = "allowfullscreen" in sanitizedEmbedAttributes;
+      const sandboxRules =
+        sanitizedEmbedAttributes.sandbox || DEFAULT_SANDBOX_RULES;
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(
+        sanitizedEmbedAttributes.src,
+      );
+
+      const widthAttr = sanitizedEmbedAttributes.width;
+      const heightAttr = sanitizedEmbedAttributes.height;
+
+      return (
+        <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+          <iframe
+            key={`miniapp-sanitized-${sanitizedEmbedAttributes.src}`}
+            srcDoc={bootstrapDoc}
+            title={sanitizedEmbedAttributes.title || "IFrame Fidget"}
+            sandbox={sandboxRules}
+            allow={sanitizedEmbedAttributes.allow}
+            referrerPolicy={
+              sanitizedEmbedAttributes.referrerpolicy as React.IframeHTMLAttributes<HTMLIFrameElement>["referrerPolicy"]
+            }
+            loading={
+              sanitizedEmbedAttributes.loading as React.IframeHTMLAttributes<HTMLIFrameElement>["loading"]
+            }
+            frameBorder={sanitizedEmbedAttributes.frameborder}
+            allowFullScreen={allowFullScreen}
+            width={widthAttr}
+            height={heightAttr}
+            style={{
+              border: "0",
+              width: widthAttr ? undefined : "100%",
+              height: heightAttr ? undefined : "100%",
+              overflow: isScrollable ? "auto" : "hidden",
+            }}
+            className="size-full"
+          />
+        </div>
+      );
+    }
+
     return (
       <div
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
@@ -354,6 +504,10 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (embedInfo.directEmbed && transformedUrl) {
+    const miniAppBootstrapDoc = isMiniAppEnvironment
+      ? createMiniAppBootstrapSrcDoc(transformedUrl)
+      : null;
+
     return (
       <div
         style={{
@@ -374,9 +528,11 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
             }}
           >
             <iframe
-              src={transformedUrl}
+              key={`iframe-miniapp-${transformedUrl}`}
+              src={miniAppBootstrapDoc ? undefined : transformedUrl}
+              srcDoc={miniAppBootstrapDoc || undefined}
               title="IFrame Fidget"
-              sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              sandbox={DEFAULT_SANDBOX_RULES}
               style={{
                 width: "100%",
                 height: "100%",
@@ -404,9 +560,11 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
               }}
             >
               <iframe
-                src={transformedUrl}
+                key={`iframe-miniapp-${transformedUrl}`}
+                src={miniAppBootstrapDoc ? undefined : transformedUrl}
+                srcDoc={miniAppBootstrapDoc || undefined}
                 title="IFrame Fidget"
-                sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                sandbox={DEFAULT_SANDBOX_RULES}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -422,6 +580,47 @@ const IFrame: React.FC<FidgetArgs<IFrameFidgetSettings>> = ({
   }
 
   if (!embedInfo.directEmbed && embedInfo.iframelyHtml) {
+    if (isMiniAppEnvironment && iframelyEmbedAttributes?.src) {
+      const allowFullScreen = "allowfullscreen" in iframelyEmbedAttributes;
+      const sandboxRules =
+        iframelyEmbedAttributes.sandbox || DEFAULT_SANDBOX_RULES;
+      const bootstrapDoc = createMiniAppBootstrapSrcDoc(
+        iframelyEmbedAttributes.src,
+      );
+
+      const widthAttr = iframelyEmbedAttributes.width;
+      const heightAttr = iframelyEmbedAttributes.height;
+
+      return (
+        <div style={{ overflow: "hidden", width: "100%", height: "100%" }}>
+          <iframe
+            key={`miniapp-iframely-${iframelyEmbedAttributes.src}`}
+            srcDoc={bootstrapDoc}
+            title={iframelyEmbedAttributes.title || "IFrame Fidget"}
+            sandbox={sandboxRules}
+            allow={iframelyEmbedAttributes.allow}
+            referrerPolicy={
+              iframelyEmbedAttributes.referrerpolicy as React.IframeHTMLAttributes<HTMLIFrameElement>["referrerPolicy"]
+            }
+            loading={
+              iframelyEmbedAttributes.loading as React.IframeHTMLAttributes<HTMLIFrameElement>["loading"]
+            }
+            frameBorder={iframelyEmbedAttributes.frameborder}
+            allowFullScreen={allowFullScreen}
+            width={widthAttr}
+            height={heightAttr}
+            style={{
+              border: "0",
+              width: widthAttr ? undefined : "100%",
+              height: heightAttr ? undefined : "100%",
+              overflow: isScrollable ? "auto" : "hidden",
+            }}
+            className="size-full"
+          />
+        </div>
+      );
+    }
+
     return (
       <div
         style={{ overflow: "hidden", width: "100%", height: "100%" }}
