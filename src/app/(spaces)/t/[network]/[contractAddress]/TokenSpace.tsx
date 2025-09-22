@@ -1,5 +1,33 @@
 "use client";
 
+/**
+ * TokenSpace Component
+ * 
+ * Client-side space component for token/contract spaces in the public spaces pattern.
+ * 
+ * Responsibilities:
+ * - Accepts server-side loaded token data (Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'>)
+ * - Adds client-side editability logic with complex ownership verification
+ * - Integrates with TokenProvider for real-time token data updates
+ * - Renders PublicSpace component with complete token space data
+ * 
+ * Data Flow:
+ * 1. Receives serializable token data from server-side page component
+ * 2. Adds isEditable function with multi-layered ownership checks
+ * 3. Adds spacePageUrl function for tab navigation using network and contract address
+ * 4. Updates tokenData from TokenProvider context if available
+ * 5. Passes complete TokenSpaceData to PublicSpace for rendering
+ * 
+ * Editability Logic:
+ * - User can edit if they are the token owner by FID (from clankerData.requestor_fid)
+ * - User can edit if they own the wallet address (direct contract ownership or Empire token ownership)
+ * - Supports both direct contract ownership and Empire token ownership patterns
+ * - Uses address comparison with isAddressEqual for secure wallet matching
+ * 
+ * Part of: /t/[network]/[contractAddress] route structure
+ * Integrates with: TokenProvider, PublicSpace
+ */
+
 import React, { useMemo } from "react";
 import { useToken } from "@/common/providers/TokenProvider";
 import PublicSpace from "@/app/(spaces)/PublicSpace";

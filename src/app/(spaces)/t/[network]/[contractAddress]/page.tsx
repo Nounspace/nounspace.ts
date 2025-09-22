@@ -1,7 +1,7 @@
 import { loadTokenSpaceData } from "./utils";
 import React from "react";
 import { TokenProvider } from "@/common/providers/TokenProvider";
-import TokenSpace from "../TokenSpace";
+import TokenSpace from "./TokenSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 
 export default async function ContractPrimarySpace({ 

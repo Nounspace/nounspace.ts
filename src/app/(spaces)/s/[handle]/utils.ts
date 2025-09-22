@@ -4,8 +4,6 @@ import neynar from "@/common/data/api/neynar";
 import { unstable_noStore as noStore } from "next/cache";
 import { ProfileSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
 import createIntialPersonSpaceConfigForFid from "@/constants/initialPersonSpace";
-import { checkExistingProfileSpace } from "@/common/lib/serverSpaceUtils";
-import { cookies } from 'next/headers';
 
 export type Tab = {
   spaceId: string;
@@ -16,8 +14,17 @@ export const getUserMetadata = async (
   handle: string,
 ): Promise<UserMetadata | null> => {
   try {
-    const { user } = await neynar.lookupUserByUsername({ username: handle });
-
+    // Check if response is valid before destructuring
+    const response = await neynar.lookupUserByUsername({ username: handle });
+    
+    // Validate response has expected structure
+    if (!response || typeof response !== 'object' || !('user' in response)) {
+      console.error('Invalid response from Neynar API:', response);
+      return null;
+    }
+    
+    const { user } = response;
+    
     return {
       fid: user.fid,
       username: user.username,
@@ -26,7 +33,7 @@ export const getUserMetadata = async (
       bio: user.profile?.bio?.text || "",
     };
   } catch (e) {
-    console.error(e);
+    console.error('Error fetching user metadata:', e);
     return null;
   }
 };
@@ -124,26 +131,11 @@ export const loadUserSpaceData = async (
     return null;
   }
 
-  // Check if space already exists server-side
+  // Check if space already exists in database
   let spaceId: string | undefined;
-  try {
-    const cookieStore = await cookies();
-    const identityPublicKey = cookieStore.get('identity-public-key')?.value;
-    
-    if (identityPublicKey) {
-      spaceId = await checkExistingProfileSpace(identityPublicKey, spaceOwnerFid) || undefined;
-    }
-  } catch (error) {
-    console.error("Error checking existing profile space:", error);
-    // Continue without spaceId - user can still claim the space
-  }
-
-  // If no spaceId found server-side, try the existing database method as fallback
-  if (!spaceId) {
-    const tabList = await getTabList(spaceOwnerFid);
-    if (tabList && tabList.length > 0) {
-      spaceId = tabList[0].spaceId;
-    }
+  const tabList = await getTabList(spaceOwnerFid);
+  if (tabList && tabList.length > 0) {
+    spaceId = tabList[0].spaceId;
   }
 
   const tabName = tabNameParam || spaceOwnerUsername || "Profile";

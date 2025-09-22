@@ -303,6 +303,17 @@ export const createSpaceStoreFunc = (
     }
 
     set((draft) => {
+      // Create space entry if it doesn't exist
+      if (!draft.space.localSpaces[spaceId]) {
+        draft.space.localSpaces[spaceId] = {
+          id: spaceId,
+          updatedAt: moment().toISOString(),
+          tabs: {},
+          order: [],
+          changedNames: {},
+        };
+      }
+      
       if (!isNil(newName) && newName.length > 0 && newName !== tabName) {
         draft.space.localSpaces[spaceId].changedNames[newName] = tabName;
         draft.space.localSpaces[spaceId].tabs[newName] = localCopy;

@@ -17,8 +17,6 @@ import { TokenSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import { loadTokenData } from "@/common/data/queries/tokenData";
 import DEFAULT_THEME from "@/common/lib/theme/defaultTheme";
-import { checkExistingTokenSpace } from "@/common/lib/serverSpaceUtils";
-import { cookies } from 'next/headers';
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 
 const defaultContractPageProps = {
@@ -239,20 +237,8 @@ export const loadTokenSpaceData = async (
   const tabName = tabNameParam || spaceMetadata.props.tabName || "Token";
   const spaceName = `Token ${contractAddress}`;
 
-  // Check if space already exists server-side
-  let spaceId: string | undefined = spaceMetadata.props.spaceId;
-  try {
-    const cookieStore = await cookies();
-    const identityPublicKey = cookieStore.get('identity-public-key')?.value;
-    
-    if (identityPublicKey && !spaceId) {
-      // Only check if we don't already have a spaceId from the database
-      spaceId = await checkExistingTokenSpace(identityPublicKey, contractAddress, network) || undefined;
-    }
-  } catch (error) {
-    console.error("Error checking existing token space:", error);
-    // Continue with existing spaceId or undefined
-  }
+  // Use spaceId from database if available
+  const spaceId: string | undefined = spaceMetadata.props.spaceId;
 
   // Load token data
   const tokenData = await loadTokenData(contractAddress as Address, network as EtherScanChainName);

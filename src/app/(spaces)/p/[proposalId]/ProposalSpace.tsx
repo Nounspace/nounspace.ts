@@ -1,5 +1,31 @@
 "use client";
 
+/**
+ * ProposalSpace Component
+ * 
+ * Client-side space component for DAO proposal spaces in the public spaces pattern.
+ * 
+ * Responsibilities:
+ * - Accepts server-side loaded proposal data (Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'>)
+ * - Adds client-side editability logic based on wallet address ownership
+ * - Integrates with ProposalProvider for real-time proposal data updates
+ * - Renders PublicSpace component with complete proposal space data
+ * 
+ * Data Flow:
+ * 1. Receives serializable proposal data from server-side page component
+ * 2. Adds isEditable function that checks if user owns the proposal creator's wallet
+ * 3. Adds spacePageUrl function for tab navigation
+ * 4. Updates proposalData from ProposalProvider context if available
+ * 5. Passes complete ProposalSpaceData to PublicSpace for rendering
+ * 
+ * Editability Logic:
+ * - User can edit if they own the wallet address that created the proposal
+ * - Uses wallet address comparison (case-insensitive)
+ * 
+ * Part of: /p/[proposalId] route structure
+ * Integrates with: ProposalProvider, PublicSpace
+ */
+
 import React, { useMemo } from "react";
 import { Address } from "viem";
 import PublicSpace from "@/app/(spaces)/PublicSpace";

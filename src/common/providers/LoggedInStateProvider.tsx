@@ -17,7 +17,6 @@ import React, { useEffect } from "react";
 import LoginModal from "../components/templates/LoginModal";
 import { AnalyticsEvent } from "../constants/analyticsEvents";
 import { analytics } from "./AnalyticsProvider";
-import { setCookie, deleteCookie } from "@/common/lib/cookieUtils";
 
 type LoggedInLayoutProps = { children: React.ReactNode };
 
@@ -118,14 +117,12 @@ const LoggedInStateProvider: React.FC<LoggedInLayoutProps> = ({ children }) => {
               identities[0].identityPublicKey,
             );
             setCurrentIdentity(identities[0].identityPublicKey);
-            setCookie('identity-public-key', identities[0].identityPublicKey);
           } else {
             const publicKey = await createIdentityForWallet(
               signMessage,
               wallet,
             );
             setCurrentIdentity(publicKey);
-            setCookie('identity-public-key', publicKey);
           }
         } catch (e) {
           console.error(e);
