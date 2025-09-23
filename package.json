@@ -115,6 +115,7 @@
     "frog": "^0.9.4",
     "graphql": "^16.8.1",
     "gray-matter": "^4.0.3",
+    "hono": "^4.9.8",
     "isomorphic-dompurify": "^2.12.0",
     "linkify-react": "^4.1.1",
     "linkifyjs": "^4.3.2",
