@@ -23,7 +23,7 @@ export default function AuctionClient({ clients }: { clients: Client[] }) {
   const queryClient = useQueryClient();
 
   const requestedAuctionId = useMemo(() => {
-    return searchParams.get("auctionId");
+    return searchParams?.get("auctionId");
   }, [searchParams]);
 
   const { data: currentAuctionId, refetch: refetchCurrentAuctionId } = useQuery(

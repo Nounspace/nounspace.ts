@@ -165,7 +165,7 @@ async function LearnPostWrapper({ slug }: { slug: string }) {
         className="aspect-video rounded-[12px] object-cover md:rounded-[24px]"
       />
 
-      <RichText data={post.content} converters={jsxConverters} />
+      <RichText data={post.content} converters={jsxConverters as any} />
     </div>
   );
 }
@@ -206,5 +206,5 @@ const jsxConverters: JSXConvertersFunction<DefaultNodeTypes> = ({
       </LinkExternal>
     );
   },
-  blocks: {},
+  blocks: ({ node }) => <div>{node.children}</div>,
 });

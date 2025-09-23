@@ -33,7 +33,7 @@ export default function TreasuryStats({ data }: StatsProps) {
     : minTimestamp;
 
   // When useMemo, it breaks animation for some reason
-  const treasuryBalance = data
+  const treasuryBalance: Array<{ timestamp: number; value: number }> = data
     .map((d) => ({
       timestamp: d.timestamp,
       value:

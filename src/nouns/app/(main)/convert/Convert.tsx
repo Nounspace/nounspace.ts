@@ -24,7 +24,7 @@ export default function Convert() {
   const searchParams = useSearchParams();
 
   const tab = useMemo(() => {
-    const req = searchParams.get("tab");
+    const req = searchParams?.get("tab");
     return req === "redeem" ? "redeem" : "deposit";
   }, [searchParams]);
 
@@ -32,7 +32,7 @@ export default function Convert() {
     <Tabs
       value={tab}
       onValueChange={(value) => {
-        const params = new URLSearchParams(searchParams.toString());
+        const params = new URLSearchParams(searchParams?.toString() || '');
         params.set("tab", value);
         window.history.pushState(null, "", `?${params.toString()}`);
       }}
