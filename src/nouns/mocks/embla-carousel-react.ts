@@ -3,7 +3,7 @@ import React from 'react';
 
 export type UseEmblaCarouselType = [any, any];
 
-const useEmblaCarousel = () => [
+const useEmblaCarousel = (options?: any, plugins?: any) => [
   {
     emblaRef: null,
     scrollPrev: () => {},

@@ -1,3 +1,3 @@
 // Mock implementation for embla-carousel-autoplay
-export const Autoplay = () => null;
+export const Autoplay = (options?: any) => null;
 export default Autoplay;
