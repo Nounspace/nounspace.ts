@@ -34,7 +34,7 @@ const ProfileSpacePage = async ({ params }: ProfileSpacePageProps) => {
     return (
       <ProfileSpace
         spaceData={profileSpaceData}
-        tabName={profileSpaceData.config.tabNames?.[0] || "Profile"}
+        tabName={decodedTabNameParam || profileSpaceData.defaultTab}
       />
     );
   } catch (err) {

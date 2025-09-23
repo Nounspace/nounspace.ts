@@ -27,6 +27,9 @@ export interface SpaceData {
   // Each space type implements its own logic for editability
   isEditable: (currentUserFid: number | undefined, wallets?: { address: Address }[]) => boolean;
   
+  // Default tab name for this space
+  defaultTab: string;
+  
   // Configuration - using Omit<SpaceConfig, "isEditable"> since isEditable is determined at runtime
   config: Omit<SpaceConfig, "isEditable">;
 }

@@ -111,6 +111,7 @@ export const createProfileSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.PROFILE,
     updatedAt: new Date().toISOString(),
+    defaultTab: "Profile",
     config,
     // ProfileSpaceData specific properties
     fid,

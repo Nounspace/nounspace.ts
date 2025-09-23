@@ -370,8 +370,20 @@ interface SpaceData {
   updatedAt: string;
   spacePageUrl: (tabName: string) => string;
   isEditable: (currentUserFid?: number, wallets?: { address: Address }[]) => boolean;
+  defaultTab: string; // Default tab name for this space
   config: SpaceConfig;
 }
+```
+
+### Default Tab Values
+
+Each space type defines its own default tab:
+
+- **Profile Spaces**: `"Profile"`
+- **Token Spaces**: `"Token"`  
+- **Proposal Spaces**: `"Overview"`
+
+The `defaultTab` property is used as a fallback when no specific tab is provided in the URL, ensuring consistent behavior across all space types.
 
 // Type-specific extensions
 interface ProfileSpaceData extends SpaceData {
@@ -397,14 +409,33 @@ Server-side data creators return `Omit<SpaceData, 'isEditable'>` to ensure seria
 
 ```typescript
 // Server-side creators
-const createProfileSpaceData = (...): Omit<ProfileSpaceData, 'isEditable'> => { ... }
-const createTokenSpaceData = (...): Omit<TokenSpaceData, 'isEditable'> => { ... }
-const createProposalSpaceData = (...): Omit<ProposalSpaceData, 'isEditable'> => { ... }
+const createProfileSpaceData = (...): Omit<ProfileSpaceData, 'isEditable' | 'spacePageUrl'> => { 
+  return {
+    // ... other properties
+    defaultTab: "Profile",
+    // ...
+  };
+}
+const createTokenSpaceData = (...): Omit<TokenSpaceData, 'isEditable' | 'spacePageUrl'> => { 
+  return {
+    // ... other properties
+    defaultTab: "Token",
+    // ...
+  };
+}
+const createProposalSpaceData = (...): Omit<ProposalSpaceData, 'isEditable' | 'spacePageUrl'> => { 
+  return {
+    // ... other properties
+    defaultTab: "Overview",
+    // ...
+  };
+}
 
-// Client-side components add isEditable
+// Client-side components add isEditable and spacePageUrl
 const spaceDataWithEditability = useMemo(() => ({
-  ...spaceData, // Omit<SpaceData, 'isEditable'>
-  isEditable: (currentUserFid, wallets) => { ... }
+  ...spaceData, // Omit<SpaceData, 'isEditable' | 'spacePageUrl'>
+  isEditable: (currentUserFid, wallets) => { ... },
+  spacePageUrl: (tabName) => { ... }
 }), [spaceData]);
 ```
 
@@ -434,6 +465,11 @@ const spaceDataWithEditability = useMemo(() => ({
 - Each space type can implement its own editability logic
 - Easy to add new space types following the same pattern
 - Client-side logic can access user state and context
+
+### 6. **Centralized Default Tab Management**
+- Each space type defines its own default tab name
+- Consistent fallback behavior across all space types
+- Easy to modify default tabs without changing page components
 
 ## Naming Conventions
 

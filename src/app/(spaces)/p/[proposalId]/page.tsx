@@ -36,7 +36,7 @@ const ProposalSpacePage = async ({
     >
       <ProposalSpace
         spaceData={proposalSpaceData}
-        tabName={proposalSpaceData.config.tabNames?.[0] || "Overview"}
+        tabName={decodedTabNameParam || proposalSpaceData.defaultTab}
       />
     </ProposalProvider>
   );

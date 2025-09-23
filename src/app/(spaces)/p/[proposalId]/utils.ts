@@ -245,6 +245,7 @@ export const createProposalSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.PROPOSAL,
     updatedAt: new Date().toISOString(),
+    defaultTab: "Overview",
     config,
     // ProposalSpaceData specific properties
     proposalId,

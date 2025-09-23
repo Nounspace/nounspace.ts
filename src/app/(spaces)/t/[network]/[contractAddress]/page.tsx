@@ -4,7 +4,7 @@ import { TokenProvider } from "@/common/providers/TokenProvider";
 import TokenSpace from "./TokenSpace";
 import SpaceNotFound from "@/app/(spaces)/SpaceNotFound";
 
-export default async function ContractPrimarySpace({ 
+export default async function TokenSpacePage({ 
   params 
 }: {
   params: Promise<{ network: string; contractAddress: string; tabName?: string }>
@@ -28,8 +28,6 @@ export default async function ContractPrimarySpace({
     );
   }
 
-  const finalTabName = decodedTabNameParam || tokenSpaceData.config.tabNames?.[0] || "Token";
-
   return (
       <TokenProvider
         contractAddress={tokenSpaceData.contractAddress as `0x${string}`}
@@ -38,7 +36,7 @@ export default async function ContractPrimarySpace({
       >
         <TokenSpace
           spaceData={tokenSpaceData}
-          tabName={finalTabName}
+          tabName={decodedTabNameParam || tokenSpaceData.defaultTab}
         />
       </TokenProvider>
   );

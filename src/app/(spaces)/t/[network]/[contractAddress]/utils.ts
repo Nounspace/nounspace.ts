@@ -213,6 +213,7 @@ export const createTokenSpaceData = (
     spaceName,
     spaceType: SPACE_TYPES.TOKEN,
     updatedAt: new Date().toISOString(),
+    defaultTab: "Token",
     config,
     // TokenSpaceData specific properties
     contractAddress,
