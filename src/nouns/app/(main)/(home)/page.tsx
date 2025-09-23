@@ -1,5 +1,5 @@
 import Auction from "@nouns/components/Auction";
-import { getFrameMetadata } from "../../../mocks/frog-next";
+import { getFrameMetadata } from "frog/next";
 import React from "react";
 import NounsFundsIdeas from "./_sections/NounsFundsIdeas";
 import ThisIsNouns from "./_sections/ThisIsNouns";

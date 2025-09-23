@@ -6,7 +6,7 @@ import WhiskSdkProvider from "./WhiskSdkProvider";
 import TanstackQueryProvider from "./TanstackQueryProvider";
 import { WagmiProvider } from "wagmi";
 import { Avatar } from "@paperclip-labs/whisk-sdk/identity";
-import { ConnectKitProvider, Types } from "../mocks/connectkit";
+import { ConnectKitProvider, Types } from "connectkit";
 import { wagmiConfig } from "./wagmi-config";
 import Link from "next/link";
 

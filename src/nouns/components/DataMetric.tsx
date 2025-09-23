@@ -1,5 +1,5 @@
 "use client";
-import NumberFlow from "../mocks/number-flow-react";
+import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { HTMLAttributes } from "react";
 

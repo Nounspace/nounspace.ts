@@ -2,7 +2,7 @@
 import { useCallback } from "react";
 import { useSwitchChain } from "wagmi";
 import { CHAIN_CONFIG } from "@nouns/config";
-import { useModal } from "../mocks/connectkit";
+import { useModal } from "connectkit";
 
 export function useSwitchChainCustom(): {
   switchChain: ({ chainId }: { chainId: number }) => Promise<boolean>;

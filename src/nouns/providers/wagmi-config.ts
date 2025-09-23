@@ -1,7 +1,7 @@
 import { createConfig, fallback, http } from "wagmi";
 import { mainnet } from "wagmi/chains";
 
-import { getDefaultConfig } from "../mocks/connectkit";
+import { getDefaultConfig } from "connectkit";
 import { CHAIN_CONFIG } from "@nouns/config";
 
 export const wagmiConfig = createConfig(

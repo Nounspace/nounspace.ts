@@ -1,7 +1,7 @@
 "use client";
 import { tailwindFullTheme } from "@nouns/theme/tailwindFullTheme";
 import { useEffect, useState } from "react";
-import { useMediaQuery } from "../mocks/usehooks-ts";
+import { useMediaQuery } from "usehooks-ts";
 
 export type ScreenSize = "sm" | "md" | "lg" | undefined;
 

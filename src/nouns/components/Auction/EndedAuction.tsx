@@ -13,7 +13,7 @@ import { mainnet } from "viem/chains";
 import { BidHistoryDialog } from "./BidHistoryDialog";
 import { Client } from "@nouns/data/ponder/client/getClients";
 import Image from "next/image";
-import { Avatar, Name } from "../../mocks/whisk-sdk-identity";
+import { Avatar, Name } from "@paperclip-labs/whisk-sdk/identity";
 
 export function EndedAuction({
   auction,

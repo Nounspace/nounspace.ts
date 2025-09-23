@@ -27,7 +27,7 @@ import { CHAIN_CONFIG } from "@nouns/config";
 import { TransactionListenerContext } from "@nouns/providers/TransactionListener";
 import { estimateGas, getGasPrice, simulateCalls } from "viem/actions";
 import { useSwitchChainCustom } from "../useSwitchChainCustom";
-import { useModal } from "../../mocks/connectkit";
+import { useModal } from "connectkit";
 
 const GAS_BUFFER = 0.35; // Gives buffer on gas estimate to help prevent out of gas error
 

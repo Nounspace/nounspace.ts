@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Drawer as DrawerPrimitive } from "../../mocks/vaul";
+import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@nouns/utils/shadcn";
 import { Button } from "./button";
