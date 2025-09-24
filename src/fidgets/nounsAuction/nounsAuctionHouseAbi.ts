@@ -294,6 +294,6 @@ const nounsAuctionHouseAbi = [
     stateMutability: "view",
     type: "function",
   },
-];
+] as const;
 
-export default nounsAuctionHouseAbi as const;
+export default nounsAuctionHouseAbi;
