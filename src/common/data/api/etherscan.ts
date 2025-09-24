@@ -50,9 +50,9 @@ interface EtherscanResponse {
 
 // Server-only environment variable to prevent API key exposure to client
 function getAlchemyApiKey(): string {
-  const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+  const alchemyApiKey = process.env.ALCHEMY_API_KEY;
   if (!alchemyApiKey && typeof window === 'undefined') {
-    throw new Error('NEXT_PUBLIC_ALCHEMY_API_KEY environment variable is required');
+    throw new Error('ALCHEMY_API_KEY environment variable is required');
   }
   return alchemyApiKey || '';
 }
@@ -165,40 +165,12 @@ async function getViewOnlyContractABI(
   contractAddress: string,
   network?: string,
 ): Promise<Abi> {
-  console.log("[getViewOnlyContractABI] Getting contract ABI for:", {
-    contractAddress,
-    network
-  });
-  
-  try {
-    const abiUnfiltered = await getContractABI(contractAddress, network);
-    
-    console.log("[getViewOnlyContractABI] Got unfiltered ABI:", {
-      totalItems: abiUnfiltered.length,
-      itemTypes: abiUnfiltered.reduce((acc, item) => {
-        const type = item.type || 'unknown';
-        acc[type] = (acc[type] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>)
-    });
-    
-    const viewFunctions = filter(
-      abiUnfiltered,
-      (abiItem) =>
-        abiItem.type === "function" && abiItem.stateMutability === "view",
-    ) as Abi;
-    
-    console.log("[getViewOnlyContractABI] Filtered to view functions:", {
-      viewFunctionCount: viewFunctions.length,
-      viewFunctionNames: viewFunctions.slice(0, 5).map(item => item.name)
-    });
-    
-    return viewFunctions;
-  } catch (error) {
-    console.error("[getViewOnlyContractABI] Error getting ABI:", error);
-    // Return empty ABI as fallback
-    return [] as unknown as Abi;
-  }
+  const abiUnfiltered = await getContractABI(contractAddress, network);
+  return filter(
+    abiUnfiltered,
+    (abiItem) =>
+      abiItem.type === "function" && abiItem.stateMutability === "view",
+  ) as Abi;
 }
 
 function hasFunction(abi: Abi, functionName: string): boolean {
@@ -213,25 +185,10 @@ export async function loadViemViewOnlyContract(
   network?: string,
   client?: PublicClient,
 ) {
-  console.log("[loadViemViewOnlyContract] Starting for:", {
-    contractAddress,
-    network
-  });
-  
   try {
     const abi = await getViewOnlyContractABI(contractAddress, network);
-    console.log("[loadViemViewOnlyContract] Got ABI:", {
-      abiLength: abi.length,
-      hasViewFunctions: abi.length > 0,
-      firstFewItems: abi.slice(0, 3).map(item => ({
-        type: item.type,
-        name: item.name,
-        stateMutability: 'stateMutability' in item ? item.stateMutability : undefined
-      }))
-    });
-    
     const publicClient = client || getPublicClient();
-    const result = {
+    return {
       contract: getContract({
         address: contractAddress as Address,
         abi,
@@ -239,11 +196,7 @@ export async function loadViemViewOnlyContract(
       }),
       abi
     };
-    
-    console.log("[loadViemViewOnlyContract] Success, returning contract and ABI");
-    return result;
   } catch (e) {
-    console.error("[loadViemViewOnlyContract] Error:", e);
     return undefined;
   }
 }
