@@ -16,10 +16,6 @@ import { EtherScanChainName } from "@/constants/etherscanChainIds";
 import { TokenSpaceData, SPACE_TYPES } from "@/common/types/spaceData";
 import { MasterToken } from "@/common/providers/TokenProvider";
 import { loadTokenData } from "@/common/data/queries/tokenData";
-// DEFAULT_THEME imported but not used
-import defaultTheme from "@/common/lib/theme/defaultTheme";
-// INITIAL_SPACE_CONFIG_EMPTY imported but not used
-import { INITIAL_SPACE_CONFIG_EMPTY } from "@/constants/initialSpaceConfig";
 import createInitialTokenSpaceConfigForAddress from "@/constants/initialTokenSpace";
 const ETH_CONTRACT_ADDRESS_REGEX = new RegExp(/^0x[a-fA-F0-9]{40}$/);
 

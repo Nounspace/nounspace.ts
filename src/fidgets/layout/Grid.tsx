@@ -88,7 +88,6 @@ const makeGridDetails = (
   borderRadius,
 });
 
-type _GridDetails = ReturnType<typeof makeGridDetails>;
 
 type GridLayoutConfig = LayoutFidgetConfig<PlacedGridItem[]>;
 
