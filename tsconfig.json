@@ -32,6 +32,9 @@
       ],
       "@public/*": [
         "public/*"
+      ],
+      "@nouns/*": [
+        "src/nouns/*"
       ]
     },
     "types": [

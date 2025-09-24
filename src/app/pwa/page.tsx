@@ -55,7 +55,7 @@ function PushNotificationManager() {
       }
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey),
+        applicationServerKey: new Uint8Array(urlBase64ToUint8Array(publicKey)),
       })
       setSubscription(sub)
       const serializedSub = JSON.parse(JSON.stringify(sub))
