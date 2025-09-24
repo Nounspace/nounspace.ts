@@ -1,43 +1,378 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import LinkOut from "../LinkOut";
+import NounImage from "../NounImage";
+import { formatEth } from "../utils";
+import type { Settlement } from "../types";
 
-const mosaicColors = [
-  "#ffb4c6",
-  "#ffd966",
-  "#9be7ff",
-  "#d1c4e9",
-  "#ffe082",
-  "#c5e1a5",
-  "#ffccbc",
-  "#cfd8dc",
-  "#f8bbd0",
+const VIDEO_THUMBNAIL = "https://www.nouns.com/this-is-nouns-video-thumbnail.png";
+const VIDEO_URL = "https://www.youtube.com/watch?v=lOzCA7bZG_k";
+
+const FUNDED_PROJECTS = [
+  {
+    title: "Precious Noggles: Recycled Sunglasses",
+    image: "https://www.nouns.com/project/precious-noggles.png",
+    href: "https://www.youtube.com/watch?v=ZGd_mPiTMgQ",
+  },
+  {
+    title: "Hyalinobatrachium Nouns",
+    image: "https://www.nouns.com/project/frog.png",
+    href: "https://explore.nouns.world/hyalinobatrachium-nouns/",
+  },
+  {
+    title: "Quack and Lola",
+    image: "https://www.nouns.com/project/quack.png",
+    href: "https://www.instagram.com/meetquack/",
+  },
+  {
+    title: "Bud Light x Nouns Super Bowl Commercial",
+    image: "https://www.nouns.com/project/bud-light.png",
+    href: "https://explore.nouns.world/bud-light-and-nouns-super-bowl/",
+  },
+  {
+    title: "Dustin Yellin's PERSON, PLACE, or THING",
+    image: "https://www.nouns.com/project/dustin-yellin.png",
+    href: "https://explore.nouns.world/dustin-yellins-person-place-or-thing/",
+  },
+  {
+    title: "John Hamon x Nouns",
+    image: "https://www.nouns.com/project/john-hamon.png",
+    href: "https://explore.nouns.world/john-hamon-and-nouns/",
+  },
+  {
+    title: "The Rise of Blus: A Nouns Movie",
+    image: "https://www.nouns.com/project/rise-of-blus.png",
+    href: "https://nouns.movie/",
+  },
+  {
+    title: "Nouns House: The hub for builders in Sao Paulo",
+    image: "https://www.nouns.com/project/nouns-house.png",
+    href: "https://instagram.com/nouns_house",
+  },
+  {
+    title: "Gnars: Nouns Action Sports Team",
+    image: "https://www.nouns.com/project/gnars.png",
+    href: "https://gnars.com/",
+  },
+  {
+    title: "The Rose Parade: Shark Pickle Cone",
+    image: "https://www.nouns.com/project/rose-parade.png",
+    href: "https://x.com/NounsDoc/status/1836027328616386725",
+  },
+  {
+    title: "Nouns Esports: A New Model for Gaming",
+    image: "https://www.nouns.com/project/e-sports.png",
+    href: "https://nouns.gg/",
+  },
+];
+
+const SAMPLE_NOUN_IDS = [
+  1n,
+  10n,
+  25n,
+  42n,
+  99n,
+  125n,
+  150n,
+  208n,
+  256n,
+  314n,
+  365n,
+  420n,
+  512n,
+  777n,
+  808n,
+  903n,
+  1111n,
+  1337n,
+];
+
+const GET_A_NOUN_CARDS = [
+  {
+    title: "Join the daily auction",
+    description:
+      "Bid on the latest Noun to become part of the community treasury and governance.",
+    buttonLabel: "Bid now",
+    href: "https://www.nouns.com/nouns",
+    image: "https://www.nouns.com/feature/join-auction/main.png",
+  },
+  {
+    title: "Shop the secondary market",
+    description:
+      "Buy a Noun across leading marketplaces, all in one place.",
+    buttonLabel: "Shop",
+    href: "https://www.nouns.com/explore?buyNow=1",
+    image: "https://www.nouns.com/feature/shop/main.png",
+  },
+  {
+    title: "Redeem $NOUNS for a Noun",
+    description:
+      "Collect 1,000,000 $NOUNS tokens and redeem them for a Noun held in escrow.",
+    buttonLabel: "Redeem",
+    href: "https://www.nouns.com/convert?tab=redeem",
+    image: "https://www.nouns.com/feature/%24nouns-redeem/main.png",
+  },
+];
+
+const ALREADY_OWN_CARDS = [
+  {
+    title: "Instant Swap",
+    description: "Swap your Noun for another in a single trade.",
+    buttonLabel: "Swap",
+    href: "https://www.nouns.com/explore?instantSwap=1",
+    image: "https://www.nouns.com/feature/instant-swap/main.png",
+  },
+  {
+    title: "Treasury Swap",
+    description: "Offer to trade your Noun with one held by the Treasury.",
+    buttonLabel: "Trade",
+    href: "https://www.nouns.com/explore?onlyTreasuryNouns=1",
+    image: "https://www.nouns.com/feature/treasury-swap/main.png",
+  },
+];
+
+const JOURNEY_CARDS = [
+  {
+    title: "Join the Nouns Community",
+    description:
+      "Join the conversation on Farcaster to share ideas and meet other Nouners.",
+    buttonLabel: "Join Nouns on Farcaster",
+    href: "https://warpcast.com/~/channel/nouns",
+    image: "https://www.nouns.com/socials/farcaster.svg",
+    footer: "100k+ Followers",
+  },
+  {
+    title: "Explore Proposals",
+    description:
+      "Discover active proposals and see what the community is funding next.",
+    buttonLabel: "View proposals",
+    href: "https://www.nouns.com/vote",
+    image: "https://www.nouns.com/proposals.svg",
+  },
+];
+
+const LEARN_POSTS = [
+  {
+    title: "Nouns Governance: How Nouns DAO backs proposals",
+    description:
+      "Understand the lifecycle of a proposal, from idea to execution on-chain.",
+    href: "https://www.nouns.com/learn/nouns-governance",
+    image: "https://www.nouns.com/learn/nouns-governance.png",
+  },
+  {
+    title: "Noggle the Glossary of Nouns DAO",
+    description:
+      "Decode the vocabulary, memes, and phrases you will hear inside the DAO.",
+    href: "https://www.nouns.com/learn/noggle-the-glossary",
+    image: "https://www.nouns.com/learn/noggle-the-glossary.png",
+  },
+  {
+    title: "This is Nouns 101",
+    description:
+      "A primer on what Nouns are, how auctions work, and why the DAO exists.",
+    href: "https://www.nouns.com/learn/this-is-nouns-101",
+    image: "https://www.nouns.com/learn/this-is-nouns-101.png",
+  },
+];
+
+const FAQ_ITEMS: {
+  question: string;
+  answer: React.ReactNode;
+}[] = [
+  {
+    question: "What is a Noun?",
+    answer: (
+      <>
+        <p>
+          A Noun is a one-of-a-kind 32x32 pixel art character created daily as
+          part of the Nouns project. Each Noun is randomly generated with
+          traits:
+        </p>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li>backgrounds</li>
+          <li>heads</li>
+          <li>glasses</li>
+          <li>body</li>
+          <li>accessory</li>
+        </ul>
+        <p>
+          Each Noun is stored on the Ethereum blockchain. Beyond the art, owning
+          a Noun gives you membership in Nouns DAO, a community that manages a
+          shared treasury to fund creative and impactful projects.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "What is Nouns DAO?",
+    answer: (
+      <>
+        <p>
+          Nouns is a community-driven project that creates and funds creative
+          ideas and public initiatives. Each day, a unique pixel art character
+          called a &quot;Noun&quot; is generated and sold through an auction. The
+          funds raised go into a shared community treasury, managed collectively
+          by Noun holders.
+        </p>
+        <p>
+          Since 2021, Nouns has supported hundreds of impactful projects across
+          arts, education, the environment, sports, and more. These include
+          funding schools, providing artist grants, supporting clean water
+          initiatives, creating public goods, backing charity events, empowering
+          underrepresented communities, producing educational resources, and
+          sponsoring cultural and environmental projects.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "How do daily auctions work?",
+    answer: (
+      <>
+        <p>
+          Every day, a new Noun is created and auctioned. The auction lasts 24
+          hours, and the highest bidder at the end wins the Noun. Once the
+          auction is settled, the proceeds are sent to the Nouns treasury and the
+          next auction begins automatically.
+        </p>
+        <p>
+          This cycle continues indefinitely. Anyone can participate, and every
+          auction funds creative ideas decided by Noun holders.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "Who can own a Noun, and what does it mean?",
+    answer: (
+      <>
+        <p>
+          Anyone can own a Noun by winning a daily auction, purchasing one from
+          an existing owner, or redeeming 1,000,000 $NOUNS tokens. Ownership
+          grants one vote in Nouns DAO, letting you help decide how the treasury
+          supports creative and impactful projects.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "Are Nouns free to use?",
+    answer: (
+      <>
+        <p>
+          Yes. Nouns artwork is in the public domain, so anyone can use, remix,
+          or build on Nouns without restrictions. This openness encourages
+          creativity across art, media, fashion, software, and more.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "What kinds of projects does Nouns fund?",
+    answer: (
+      <>
+        <p>Nouns backs creativity and subcultures, funding work like:</p>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          <li>Art: public installations, artist grants, and films.</li>
+          <li>Education: schools, learning tools, and resources.</li>
+          <li>Environment: clean water and sustainability efforts.</li>
+          <li>Sports: community events and athlete support.</li>
+          <li>Technology: open-source tools and blockchain research.</li>
+          <li>Charity: empowering underrepresented communities and social causes.</li>
+          <li>and many more.</li>
+        </ul>
+      </>
+    ),
+  },
+  {
+    question: "Who created Nouns?",
+    answer: (
+      <>
+        <p>
+          The Nounders created Nouns. Every 10th Noun for the first five years
+          (IDs #0, #10, #20, and so on) is automatically sent to the Nounders&apos;
+          wallet so they stay invested while 100% of auction proceeds go to the
+          DAO.
+        </p>
+        <p>The Nounders include:</p>
+        <ul className="ml-5 list-disc space-y-1 text-sm">
+          {[
+            "@cryptoseneca",
+            "@gremplin",
+            "@punk4156",
+            "@eboyarts",
+            "@punk4464",
+            "@solimander",
+            "@dhof",
+            "@carrot_init",
+            "@TimpersHD",
+            "@lastpunk9999",
+          ].map((handle) => (
+            <li key={handle}>
+              <LinkOut
+                href={`https://x.com/${handle.replace('@', '')}`}
+                className="underline"
+              >
+                {handle}
+              </LinkOut>
+            </li>
+          ))}
+        </ul>
+        <p>
+          These distributions do not interrupt the 24 hour auction cadence.
+          Auctions continue seamlessly with the next Noun ID.
+        </p>
+      </>
+    ),
+  },
+  {
+    question: "What are $NOUNS tokens?",
+    answer: (
+      <>
+        <p>
+          $NOUNS tokens represent fractional ownership of a Noun. Any Noun can
+          be converted into 1,000,000 $NOUNS tokens, which can be collected and
+          redeemed to claim a Noun held in the token contract.
+        </p>
+      </>
+    ),
+  },
 ];
 
 export const ThisIsNounsSection = () => {
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
-      <div className="grid gap-10 md:grid-cols-[2fr_3fr] md:items-center">
-        <div className="space-y-4">
-          <h2 className="text-3xl font-semibold md:text-4xl">This is Nouns</h2>
-          <p className="text-lg text-muted-foreground">
-            A new Noun is born every 24 hours. Holders steward a powerful DAO
-            treasury and meme the Nouns identity into culture.
-          </p>
-          <LinkOut
-            href="https://nouns.wtf/what-is-nouns"
-            className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/90"
-          >
-            Learn the story
-          </LinkOut>
-        </div>
-        <div className="grid grid-cols-6 gap-2">
-          {Array.from({ length: 18 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-square rounded-xl"
-              style={{ backgroundColor: mosaicColors[index % mosaicColors.length] }}
+    <section className="relative flex w-full flex-col items-center justify-center gap-10 overflow-hidden rounded-3xl bg-white p-6 text-center shadow-sm md:p-12">
+      <div className="relative z-[1] flex flex-col items-center gap-4">
+        <h2 className="text-4xl font-semibold md:text-5xl">This is Nouns</h2>
+        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+          Nouns are unique digital art pieces. One new Noun is auctioned every
+          day, forever. They fund creative projects and form a community-owned,
+          open-source brand that anyone can use and build upon.
+        </p>
+        <LinkOut
+          href={VIDEO_URL}
+          className="flex w-full max-w-xl items-center justify-between gap-4 rounded-2xl border border-black/10 bg-white p-3 text-left transition hover:border-black/30"
+        >
+          <img
+            src={VIDEO_THUMBNAIL}
+            alt="This is Nouns video thumbnail"
+            className="h-20 w-[113px] rounded-xl object-cover"
+            loading="lazy"
+          />
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <span className="text-base font-semibold">This is Nouns</span>
+            <span className="text-sm text-muted-foreground">Watch the video</span>
+          </div>
+        </LinkOut>
+      </div>
+      <div className="pointer-events-none absolute inset-0 -z-[0] opacity-40">
+        <div className="grid h-full w-full grid-cols-6 gap-3">
+          {SAMPLE_NOUN_IDS.map((id) => (
+            <NounImage
+              key={id.toString()}
+              nounId={id}
+              className="h-full w-full object-cover"
             />
           ))}
         </div>
@@ -48,30 +383,63 @@ export const ThisIsNounsSection = () => {
 
 export const NounsFundsIdeasSection = () => {
   return (
-    <section className="rounded-3xl bg-gradient-to-r from-[#141414] via-[#1d1d27] to-[#221d33] p-6 text-white shadow-sm md:p-10">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <h2 className="text-3xl font-semibold">Nouns funds ideas.</h2>
-          <LinkOut
-            href="https://nouns.wtf/vote"
-            className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-black hover:bg-white/80"
-          >
-            Explore proposals
-          </LinkOut>
-        </div>
-        <p className="max-w-2xl text-base text-white/70">
-          Everyday people propose projects for the DAO to back-from public goods
-          to wild creative endeavors. If it spreads Nouns, it might get funded.
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Nouns Funds Ideas</h2>
+        <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+          Proceeds from daily auctions are used to support ideas of all shapes
+          and sizes, like these:
         </p>
-        <div className="flex flex-wrap gap-2">
-          {Array.from({ length: 10 }).map((_, index) => (
-            <span
-              key={index}
-              className="rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-white/70"
-            >
-              Noun {index + 1}
-            </span>
-          ))}
+      </div>
+      <div className="flex w-full gap-4 overflow-x-auto pb-2">
+        {FUNDED_PROJECTS.map((project) => (
+          <LinkOut
+            key={project.title}
+            href={project.href}
+            className="relative flex h-[408px] w-[306px] flex-shrink-0 flex-col justify-end overflow-hidden rounded-[20px]"
+          >
+            <img
+              src={project.image}
+              alt={project.title}
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="relative z-[1] bg-gradient-to-t from-black/80 to-black/0 px-4 pb-6 pt-24 text-left">
+              <h3 className="text-lg font-semibold text-white">{project.title}</h3>
+            </div>
+          </LinkOut>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+export const GovernedByYouSection = ({
+  nounHolderCount,
+}: {
+  nounHolderCount?: number;
+}) => {
+  const label = nounHolderCount && nounHolderCount > 0
+    ? `Governed by you & ${nounHolderCount} others`
+    : "Governed by you & others";
+
+  return (
+    <section className="flex w-full items-center justify-center">
+      <div className="relative flex w-full flex-col items-center justify-center overflow-hidden rounded-3xl bg-black px-6 py-10 text-center text-white shadow-sm md:px-16 md:py-16">
+        <img
+          src="https://www.nouns.com/governed-by-you-background.png"
+          alt="Nouns governance"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+          loading="lazy"
+        />
+        <div className="relative z-[1] flex flex-col items-center gap-4">
+          <h2 className="text-3xl font-semibold md:text-4xl">{label}</h2>
+          <p className="max-w-2xl text-base text-gray-200 md:text-lg">
+            Noun holders collectively decide which ideas to fund and shape the future direction of the community.
+          </p>
+          <div className="inline-flex h-12 items-center justify-center rounded-full border-2 border-white px-6 text-sm font-semibold uppercase">
+            One Noun = One Vote
+          </div>
         </div>
       </div>
     </section>
@@ -80,75 +448,65 @@ export const NounsFundsIdeasSection = () => {
 
 export const TheseAreNounsStrip = () => {
   return (
-    <section className="rounded-3xl bg-[#fdf2ff] p-6 shadow-sm md:p-10">
-      <div className="space-y-4">
-        <h2 className="text-3xl font-semibold">These are Nouns</h2>
-        <p className="text-muted-foreground">
-          Each Noun is generated on-chain with a unique combination of traits.
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">These are Nouns</h2>
+        <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+          One new Noun is born each day with randomly generated traits and
+          preserved on the blockchain forever.
         </p>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6 md:grid-cols-9">
-          {Array.from({ length: 18 }).map((_, index) => (
-            <div
-              key={index}
-              className="aspect-square rounded-2xl border border-dashed border-black/10 bg-white"
-            />
-          ))}
-        </div>
       </div>
+      <div className="grid w-full max-w-4xl grid-cols-3 gap-3 sm:grid-cols-6 md:grid-cols-9">
+        {SAMPLE_NOUN_IDS.map((id) => (
+          <div
+            key={`sample-${id.toString()}`}
+            className="aspect-square overflow-hidden rounded-2xl border border-black/10 bg-white"
+          >
+            <NounImage nounId={id} className="h-full w-full object-cover" />
+          </div>
+        ))}
+      </div>
+      <LinkOut
+        href="https://www.nouns.com/explore"
+        className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80"
+      >
+        Explore Nouns
+      </LinkOut>
     </section>
   );
 };
-
-const nounActions = [
-  {
-    title: "Bid on a Noun",
-    body: "Win the daily auction and join the DAO.",
-    href: "https://nouns.wtf/nouns",
-    accent: "#ffd966",
-  },
-  {
-    title: "Build with Nouns",
-    body: "Propose ideas, make art, or launch a derivative.",
-    href: "https://nouns.center",
-    accent: "#b39ddb",
-  },
-  {
-    title: "Learn the lore",
-    body: "Dig into the docs, podcasts, and community guides.",
-    href: "https://nouns.wtf/about",
-    accent: "#9be7ff",
-  },
-];
 
 export const GetANounSection = () => {
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
-      <h2 className="text-3xl font-semibold">Get a Noun</h2>
-      <p className="mt-2 text-muted-foreground">
-        Three steps to join the Nouns experiment.
-      </p>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {nounActions.map((action) => (
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Get a Noun!</h2>
+        <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+          Bid, buy, or explore fractional ownership. Choose the best way to make
+          a Noun yours.
+        </p>
+      </div>
+      <div className="grid w-full gap-6 md:grid-cols-3">
+        {GET_A_NOUN_CARDS.map((card) => (
           <article
-            key={action.title}
-            className="flex h-full flex-col justify-between rounded-3xl border border-black/10 bg-[#f7f7ff] p-6"
-            style={{ borderColor: action.accent }}
+            key={card.title}
+            className="flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6"
           >
-            <div className="space-y-3">
-              <div
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-lg font-semibold"
-                style={{ backgroundColor: action.accent }}
-              >
-                NOUN
-              </div>
-              <h3 className="text-xl font-semibold">{action.title}</h3>
-              <p className="text-sm text-muted-foreground">{action.body}</p>
+            <div className="space-y-3 text-left">
+              <h3 className="text-xl font-semibold">{card.title}</h3>
+              <p className="text-sm text-muted-foreground">{card.description}</p>
             </div>
+            <img
+              src={card.image}
+              alt={card.title}
+              className="h-40 w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
             <LinkOut
-              href={action.href}
-              className="mt-6 inline-flex items-center text-sm font-semibold text-[#5a5aff] hover:underline"
+              href={card.href}
+              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white hover:bg-black/80"
             >
-              Learn more &gt;
+              {card.buttonLabel}
             </LinkOut>
           </article>
         ))}
@@ -156,38 +514,38 @@ export const GetANounSection = () => {
     </section>
   );
 };
-
-const ownershipLinks = [
-  {
-    title: "Swap or sell",
-    description: "List your Noun or make OTC deals with holders.",
-    href: "https://nouns.wtf/trade",
-  },
-  {
-    title: "Delegate votes",
-    description: "Empower another builder to steward your influence.",
-    href: "https://nouns.wtf/delegates",
-  },
-];
 
 export const AlreadyOwnSection = () => {
   return (
-    <section className="rounded-3xl bg-[#14141c] p-6 text-white shadow-sm md:p-10">
-      <h2 className="text-3xl font-semibold">Already own a Noun?</h2>
-      <p className="mt-2 max-w-xl text-white/70">
-        Stay engaged with treasury proposals or find new collaborations with
-        fellow Nouners.
-      </p>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {ownershipLinks.map((link) => (
-          <article key={link.title} className="rounded-3xl bg-white/10 p-6">
-            <h3 className="text-xl font-semibold">{link.title}</h3>
-            <p className="mt-2 text-sm text-white/70">{link.description}</p>
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Already own a Noun?</h2>
+        <p className="max-w-xl text-base text-muted-foreground md:text-lg">
+          Swap it for another or trade with the Nouns treasury to find your
+          Forever Noun.
+        </p>
+      </div>
+      <div className="grid w-full gap-6 md:grid-cols-2">
+        {ALREADY_OWN_CARDS.map((card) => (
+          <article
+            key={card.title}
+            className="flex h-full flex-col justify-between gap-4 rounded-3xl border border-black/10 bg-[#f7f7ff] p-6"
+          >
+            <div className="space-y-3 text-left">
+              <h3 className="text-xl font-semibold">{card.title}</h3>
+              <p className="text-sm text-muted-foreground">{card.description}</p>
+            </div>
+            <img
+              src={card.image}
+              alt={card.title}
+              className="h-44 w-full rounded-2xl object-cover"
+              loading="lazy"
+            />
             <LinkOut
-              href={link.href}
-              className="mt-4 inline-flex text-sm font-semibold text-white hover:underline"
+              href={card.href}
+              className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2 text-sm font-semibold text-white hover:bg-black/80"
             >
-              Visit resource &gt;
+              {card.buttonLabel}
             </LinkOut>
           </article>
         ))}
@@ -195,161 +553,127 @@ export const AlreadyOwnSection = () => {
     </section>
   );
 };
-
-const journeyLinks = [
-  {
-    title: "Join the community",
-    body: "Hop into the Nouns Discord and meet holders across the globe.",
-    href: "https://discord.gg/nouns",
-    color: "#b388ff",
-  },
-  {
-    title: "Explore proposals",
-    body: "Vote on treasury usage or follow the latest idea flow.",
-    href: "https://nouns.wtf/vote",
-    color: "#141414",
-  },
-];
 
 export const JourneySection = () => {
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
-      <h2 className="text-3xl font-semibold">Start your Nouns journey</h2>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        {journeyLinks.map((link) => (
-          <article
-            key={link.title}
-            className="flex h-full flex-col justify-between rounded-3xl p-6"
-            style={{ backgroundColor: link.color, color: link.color === "#141414" ? "white" : "#141414" }}
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-white p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Start your Nouns journey</h2>
+        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+          Whether you are an artist, technologist, scientist, athlete, or
+          someone with big ideas, there is a place for you in the Nouns
+          community.
+        </p>
+      </div>
+      <div className="grid w-full gap-6 md:grid-cols-2">
+        {JOURNEY_CARDS.map((card) => (
+          <LinkOut
+            key={card.title}
+            href={card.href}
+            className={`flex h-full flex-col items-center justify-between gap-6 rounded-3xl p-6 text-center text-white transition hover:brightness-95 md:p-12 ${card.title === 'Join the Nouns Community' ? 'bg-[#8661CD]' : 'bg-black'}`}
           >
-            <div className="space-y-3">
-              <h3 className="text-2xl font-semibold">{link.title}</h3>
-              <p className="text-sm opacity-80">{link.body}</p>
+            <img src={card.image} alt={card.title} className="h-12 w-12" loading="lazy" />
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">{card.title}</h3>
+              <p className="text-base text-gray-200">{card.description}</p>
             </div>
-            <LinkOut
-              href={link.href}
-              className="mt-6 inline-flex text-sm font-semibold hover:underline"
-              style={{ color: link.color === "#141414" ? "white" : "#141414" }}
-            >
-              Dive in &gt;
-            </LinkOut>
-          </article>
+            <div className="space-y-3">
+              <span className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-black">
+                {card.buttonLabel}
+              </span>
+              {card.footer && (
+                <p className="text-xs uppercase tracking-wider text-gray-200">{card.footer}</p>
+              )}
+            </div>
+          </LinkOut>
         ))}
       </div>
     </section>
   );
 };
-
-const learnCards = [
-  {
-    title: "Governance 101",
-    description: "How the DAO operates, funds ideas, and evolves the meme.",
-    href: "https://nouns.center/learn/governance",
-  },
-  {
-    title: "Discuss with Nouners",
-    description: "Join discourse, Twitter Spaces, and community calls.",
-    href: "https://nouns.camp/",
-  },
-  {
-    title: "WTF is a DAO?",
-    description: "Get the beginner's take on decentralized organizations.",
-    href: "https://nouns.center/learn/dao-basics",
-  },
-];
 
 export const LearnSection = () => {
   return (
-    <section className="rounded-3xl bg-[#f5f5ff] p-6 shadow-sm md:p-10">
-      <h2 className="text-3xl font-semibold">Learn about Nouns DAO</h2>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        {learnCards.map((card) => (
-          <article key={card.title} className="rounded-3xl bg-white p-6 shadow-sm">
-            <h3 className="text-xl font-semibold">{card.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{card.description}</p>
-            <LinkOut
-              href={card.href}
-              className="mt-4 inline-flex text-sm font-semibold text-[#5a5aff] hover:underline"
-            >
-              Read more &gt;
-            </LinkOut>
-          </article>
+    <section className="flex w-full flex-col items-center justify-center gap-8 rounded-3xl bg-[#f7f7ff] p-6 shadow-sm md:gap-12 md:p-12">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Learn about Nouns DAO</h2>
+        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+          All the latest guides, tutorials, and explainers.
+        </p>
+      </div>
+      <div className="grid w-full gap-6 md:grid-cols-3">
+        {LEARN_POSTS.map((post) => (
+          <LinkOut
+            key={post.title}
+            href={post.href}
+            className="flex h-full flex-col justify-between overflow-hidden rounded-3xl bg-white shadow-sm"
+          >
+            <img
+              src={post.image}
+              alt={post.title}
+              className="h-48 w-full object-cover"
+              loading="lazy"
+            />
+            <div className="space-y-3 p-6 text-left">
+              <h3 className="text-xl font-semibold">{post.title}</h3>
+              <p className="text-sm text-muted-foreground">{post.description}</p>
+            </div>
+          </LinkOut>
         ))}
       </div>
+      <LinkOut
+        href="https://www.nouns.com/learn"
+        className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white hover:bg-black/80"
+      >
+        See all posts
+      </LinkOut>
     </section>
   );
 };
 
-const faqItems = [
-  {
-    question: "What is Nouns?",
-    answer:
-      "Nouns is an experimental avatar community that auctions one new character every day and lets holders govern a shared treasury.",
-  },
-  {
-    question: "Who can bid on Nouns?",
-    answer:
-      "Anyone with an Ethereum wallet and ETH can bid in the daily auction. The highest bid at expiry wins the Noun.",
-  },
-  {
-    question: "Where does auction revenue go?",
-    answer:
-      "ETH from winning bids flows directly into the on-chain Nouns DAO treasury, which holders manage collectively.",
-  },
-  {
-    question: "What does owning a Noun unlock?",
-    answer:
-      "Ownership gives you a unique NFT, a vote in governance, and access to a global network of creators and builders.",
-  },
-  {
-    question: "How do proposals work?",
-    answer:
-      "Nouners and delegates can craft proposals. If enough votes pass quorum, the DAO executes them trustlessly on-chain.",
-  },
-  {
-    question: "Is Nouns open-source?",
-    answer:
-      "Yes. All core contracts and artwork are open-source and permissively licensed for experimentation.",
-  },
-  {
-    question: "What are Nounish builders?",
-    answer:
-      "Sub-communities like Nouns Builder spin up their own Nounish DAOs using similar auction mechanics.",
-  },
-  {
-    question: "Where can I follow updates?",
-    answer:
-      "Check nouns.wtf, the Nouns Discord, and community podcasts for the latest drops.",
-  },
-];
-
-export const FaqAccordion = () => {
+export const FaqAccordion = ({
+  settlements,
+}: {
+  settlements?: Settlement[];
+}) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const totalEth = useMemo(() => {
+    if (!settlements?.length) return null;
+    const sum = settlements.reduce((acc, item) => acc + item.amount, 0n);
+    return formatEth(sum);
+  }, [settlements]);
 
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
-      <h2 className="text-3xl font-semibold">Questions? Answers.</h2>
-      <div className="mt-6 space-y-2">
-        {faqItems.map((item, index) => {
+    <section className="flex w-full flex-col items-center justify-center gap-6 rounded-3xl bg-white p-6 shadow-sm md:gap-10 md:p-12">
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Questions? Answers.</h2>
+        {totalEth && (
+          <p className="text-sm text-muted-foreground">
+            Community auctions have raised {totalEth} for the treasury.
+          </p>
+        )}
+      </div>
+      <div className="w-full space-y-3">
+        {FAQ_ITEMS.map((item, index) => {
           const isOpen = openIndex === index;
           return (
             <div
               key={item.question}
-              className="rounded-2xl border border-black/10 bg-[#f8f8ff]"
+              className="rounded-2xl border border-black/10 bg-[#f7f7ff]"
             >
               <button
                 type="button"
-                className="flex w-full items-center justify-between px-5 py-4 text-left text-base font-medium"
+                className="flex w-full items-center justify-between px-6 py-4 text-left text-base font-semibold"
                 onClick={() => setOpenIndex(isOpen ? null : index)}
                 aria-expanded={isOpen}
               >
                 {item.question}
-                <span aria-hidden>{isOpen ? "-" : "+"}</span>
+                <span aria-hidden>{isOpen ? '-' : '+'}</span>
               </button>
               {isOpen && (
-                <p className="px-5 pb-5 text-sm text-muted-foreground">
+                <div className="space-y-3 px-6 pb-6 text-sm text-muted-foreground">
                   {item.answer}
-                </p>
+                </div>
               )}
             </div>
           );

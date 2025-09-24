@@ -17,7 +17,7 @@ const nounsHomeProperties: FidgetProperties = {
     ...defaultStyleFields,
   ],
   size: {
-    minHeight: 12,
+    minHeight: 8,
     maxHeight: 36,
     minWidth: 4,
     maxWidth: 36,

@@ -16,6 +16,8 @@ interface AuctionHeroProps {
   isConnected: boolean;
 }
 
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 const AuctionHero: React.FC<AuctionHeroProps> = ({
   auction,
   ensName,
@@ -28,28 +30,28 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
   const status = getAuctionStatus(auction);
   const nounId = auction ? Number(auction.nounId) : undefined;
   const bidderLabel =
-    auction && auction.bidder !== "0x0000000000000000000000000000000000000000"
+    auction && auction.bidder !== ZERO_ADDRESS
       ? ensName || `${auction.bidder.slice(0, 6)}...${auction.bidder.slice(-4)}`
       : "No bids yet";
 
-  const ctaLabel = status === "ended" && auction && !auction.settled
-    ? "Settle auction"
-    : "Place bid";
-
   const countdownLabel = formatCountdown(countdownMs);
-
   const etherLabel = auction ? formatEth(auction.amount, 3) : "Loading";
   const isEnded = status === "ended";
   const buttonDisabled = isEnded
     ? !auction || auction.settled || isSettling
     : status === "pending";
 
+  const primaryLabel = isEnded && auction && !auction.settled
+    ? isSettling
+      ? "Settling..."
+      : "Settle auction"
+    : !isConnected
+      ? "Connect wallet"
+      : "Place bid";
+
   return (
-    <section
-      aria-label="Current Noun auction"
-      className="rounded-3xl bg-[#f0f0ff] p-6 text-[#17171d] shadow-sm md:p-10"
-    >
-      <div className="grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:gap-10">
+    <section className="rounded-3xl bg-[#f0f0ff] p-6 text-[#17171d] shadow-sm md:p-10">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,320px)_1fr] md:gap-12">
         <div className="flex items-center justify-center">
           {nounId !== undefined ? (
             <NounImage
@@ -64,28 +66,41 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
           )}
         </div>
 
-        <div className="flex flex-col justify-between gap-6">
-          <div className="flex flex-col gap-3">
+        <div className="flex flex-col justify-between gap-8">
+          <div className="flex flex-col gap-4">
             <p className="text-sm uppercase tracking-[0.2em] text-[#8c8ca1]">
-              Now on auction
+              Daily auction
             </p>
-            <h1 className="text-3xl font-semibold md:text-5xl">
+            <h1 className="text-4xl font-semibold md:text-5xl">
               {nounId !== undefined ? `Noun ${nounId}` : "Loading"}
             </h1>
-            <div className="flex flex-wrap items-center gap-4 text-base md:text-lg">
-              <span className="rounded-full bg-white px-4 py-2 font-medium shadow-sm">
-                Current bid: {etherLabel}
-              </span>
-              <span className="rounded-full bg-white px-4 py-2 font-medium shadow-sm">
-                Time left: {status === "ended" ? "00:00" : countdownLabel}
-              </span>
-              <span className="rounded-full bg-white px-4 py-2 font-medium shadow-sm">
-                Bidder: {bidderLabel}
-              </span>
+            <div className="space-y-3">
+              <div className="flex items-end gap-3">
+                <span className="text-4xl font-semibold md:text-5xl">{etherLabel}</span>
+                <span className="pb-2 text-xs uppercase tracking-[0.3em] text-[#8c8ca1]">
+                  Current bid
+                </span>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl bg-white p-4 text-left shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#8c8ca1]">
+                    Time remaining
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">
+                    {status === "ended" ? "00:00" : countdownLabel}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-white p-4 text-left shadow-sm">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#8c8ca1]">
+                    Leading bidder
+                  </p>
+                  <p className="mt-2 text-xl font-semibold">{bidderLabel}</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center">
             <button
               type="button"
               onClick={
@@ -97,18 +112,12 @@ const AuctionHero: React.FC<AuctionHeroProps> = ({
               className="inline-flex h-12 items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white transition hover:scale-[1.01] hover:bg-black/90 disabled:cursor-not-allowed disabled:bg-black/30"
               aria-live="polite"
             >
-              {status === "ended" && auction && !auction.settled
-                ? isSettling
-                  ? "Settling..."
-                  : "Settle auction"
-                : !isConnected
-                  ? "Connect wallet"
-                  : ctaLabel}
+              {primaryLabel}
             </button>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               {nounId !== undefined && (
                 <LinkOut
-                  href={`https://nouns.wtf/noun/${nounId}`}
+                  href={`https://www.nouns.com/noun/${nounId}`}
                   className="inline-flex h-12 items-center justify-center rounded-full bg-white px-4 text-base font-medium text-[#17171d] shadow-sm transition hover:bg-white/70"
                 >
                   View on nouns.com

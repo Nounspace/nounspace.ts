@@ -24,6 +24,7 @@ import {
   AlreadyOwnSection,
   FaqAccordion,
   GetANounSection,
+  GovernedByYouSection,
   JourneySection,
   LearnSection,
   NounsFundsIdeasSection,
@@ -279,6 +280,27 @@ const NounsHomeInner: React.FC = () => {
     return auction.settled ? base + 1 : base;
   }, [auction]);
 
+  const nounHolderCount = useMemo(() => {
+    if (!settlements?.length) return undefined;
+    const holders = new Set<string>();
+    for (const settlement of settlements) {
+      const winner = settlement.winner?.toLowerCase();
+      if (winner && winner !== '0x0000000000000000000000000000000000000000') {
+        holders.add(winner);
+      }
+    }
+    if (auction?.bidder && auction.bidder !== '0x0000000000000000000000000000000000000000') {
+      holders.add(auction.bidder.toLowerCase());
+    }
+    return holders.size || undefined;
+  }, [settlements, auction]);
+
+  const treasuryRaisedLabel = useMemo(() => {
+    if (!settlements?.length) return undefined;
+    const total = settlements.reduce((acc, item) => acc + item.amount, 0n);
+    return formatEth(total);
+  }, [settlements]);
+
   const status = getAuctionStatus(auction);
 
   const canBid = isConnected && chainId === REQUIRED_CHAIN_ID && status === "active";
@@ -500,17 +522,23 @@ const NounsHomeInner: React.FC = () => {
         </aside>
       </div>
 
-      <StatsRow auction={auction} totalSettled={totalSettled} />
+      <StatsRow
+        totalSettled={totalSettled}
+        nounHolderCount={nounHolderCount}
+        ideasFundedLabel="Hundreds"
+        treasuryRaisedLabel={treasuryRaisedLabel}
+      />
 
       <div className={INNER_PADDING}>
         <ThisIsNounsSection />
         <NounsFundsIdeasSection />
+        <GovernedByYouSection nounHolderCount={nounHolderCount} />
         <TheseAreNounsStrip />
         <GetANounSection />
         <AlreadyOwnSection />
         <JourneySection />
         <LearnSection />
-        <FaqAccordion />
+        <FaqAccordion settlements={settlements} />
       </div>
 
       {bidModalOpen && auction && (

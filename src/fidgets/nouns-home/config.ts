@@ -9,9 +9,17 @@ const getEnv = (key: string) =>
     ? (process.env?.[key] as string | undefined)
     : undefined;
 
+const alchemyKey =
+  getEnv("NOUNS_ALCHEMY_API_KEY") || getEnv("NEXT_PUBLIC_ALCHEMY_API_KEY");
+
+const alchemyRpc = alchemyKey
+  ? `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}`
+  : undefined;
+
 const rpcUrl =
   getEnv("NOUNS_RPC_URL") ||
   getEnv("NEXT_PUBLIC_NOUNS_RPC_URL") ||
+  alchemyRpc ||
   FALLBACK_RPC;
 
 const chainIdRaw =

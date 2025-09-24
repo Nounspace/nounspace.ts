@@ -1,54 +1,70 @@
 'use client';
 
 import React from "react";
-import { formatCountdown, formatEth } from "../utils";
-import type { Auction } from "../types";
 
 interface StatsRowProps {
-  auction?: Auction;
   totalSettled: number;
-  treasuryEth?: string;
+  nounHolderCount?: number;
+  ideasFundedLabel?: string;
+  treasuryRaisedLabel?: string;
 }
 
-const StatsRow: React.FC<StatsRowProps> = ({ auction, totalSettled, treasuryEth }) => {
-  const countdownMs = auction
-    ? Number(auction.endTime) * 1000 - Date.now()
-    : 0;
-
+const StatsRow: React.FC<StatsRowProps> = ({
+  totalSettled,
+  nounHolderCount,
+  ideasFundedLabel,
+  treasuryRaisedLabel,
+}) => {
   const stats = [
     {
-      label: "Total Nouns",
-      value: totalSettled.toLocaleString(),
+      label: "Nouns created",
+      value: totalSettled > 0 ? totalSettled.toLocaleString() : "-",
     },
     {
-      label: "Current bid",
-      value: auction ? formatEth(auction.amount) : "Loading",
+      label: "Noun owners",
+      value: nounHolderCount ? nounHolderCount.toLocaleString() : "-",
     },
     {
-      label: "Auction ends in",
-      value: formatCountdown(countdownMs),
+      label: "Ideas funded",
+      value: ideasFundedLabel ?? "Hundreds",
     },
-    treasuryEth
-      ? {
-        label: "Treasury (est.)",
-        value: treasuryEth,
-      }
-      : null,
-  ].filter(Boolean) as { label: string; value: string }[];
+    {
+      label: "Treasury deployed",
+      value: treasuryRaisedLabel ?? "Millions in ETH",
+    },
+  ];
 
   return (
-    <section className="rounded-3xl bg-white p-6 shadow-sm">
-      <h2 className="mb-4 text-xl font-semibold">Nouns by the numbers</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="rounded-3xl bg-white p-6 shadow-sm md:p-10">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <h2 className="text-3xl font-semibold md:text-4xl">Nouns by the Numbers</h2>
+        <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
+          Nouns empower creativity and subcultures, with millions in funding
+          distributed to hundreds of ideas, all governed by Noun holders.
+        </p>
+      </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <div
             key={stat.label}
             className="rounded-2xl border border-black/10 bg-[#f7f7ff] p-4"
           >
-            <p className="text-sm text-muted-foreground">{stat.label}</p>
-            <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
+            <p className="text-sm text-muted-foreground uppercase tracking-wide">
+              {stat.label}
+            </p>
+            <p className="mt-3 text-3xl font-semibold">{stat.value}</p>
           </div>
         ))}
+      </div>
+      <div className="mt-6 flex justify-center">
+        <a
+          href="https://www.nouns.com/stats"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80"
+        >
+          Explore Stats
+        </a>
       </div>
     </section>
   );
