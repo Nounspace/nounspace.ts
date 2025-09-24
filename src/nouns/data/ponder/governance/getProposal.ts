@@ -86,7 +86,10 @@ export async function getProposal(id: number): Promise<Proposal | null> {
       againstVotes: Number(overview.againstVotes),
       abstainVotes: Number(overview.abstainVotes),
       quorumVotes: Number(overview.quorumVotes),
-      executionETA: overview.executionETA ? Number(overview.executionETA) : null,
+      creationBlock: Number(overview.creationBlock),
+      votingStartBlock: Number(overview.votingStartBlock),
+      votingEndBlock: Number(overview.votingEndBlock),
+      // executionETA: overview.executionETA ? Number(overview.executionETA) : null, // Property doesn't exist in Proposal type
       description: proposal.description,
       transactions,
       votes: proposal.votes?.items ?? [],

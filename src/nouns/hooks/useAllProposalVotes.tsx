@@ -13,7 +13,7 @@ export function useAllProposalVotes({
   const { data: newVotes, error } = useQuery({
     ...proposalVotesAfterTimestampQuery(
       Number(proposal.id),
-      Number(proposal.votes[0]?.timestamp ?? "0"),
+      Number(proposal.votes[0]?.blockTimestamp ?? "0"),
     ),
     enabled: proposal.state == "active",
     refetchInterval: 1000 * 3, // Poll every 3s for active proposal votes for realtime updates

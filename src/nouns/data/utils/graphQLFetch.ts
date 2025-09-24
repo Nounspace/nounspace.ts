@@ -63,5 +63,5 @@ export async function graphQLFetchWithFallback<Result, Variables>(
     result = await graphQLFetch(url.fallback, query, variables, cacheConfig);
   }
 
-  return result;
+  return result as Result | null;
 }

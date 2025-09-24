@@ -34,7 +34,7 @@ export async function getProposalOverviews(): Promise<ProposalOverview[]> {
 
   const blockNumber = Number(await getBlockNumber(CHAIN_CONFIG.publicClient));
   const timestamp = Math.floor(Date.now() / 1000);
-  const overviews: ProposalOverview[] = data.proposals.items.map((item) =>
+  const overviews: ProposalOverview[] = (data as any).proposals.items.map((item) =>
     mapProposalOverviewFragmentToProposalOverview(item, blockNumber, timestamp),
   );
 

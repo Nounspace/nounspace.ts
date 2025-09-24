@@ -32,7 +32,7 @@ const query = graphql(/* GraphQL */ `
 
 async function runPaginatedQuery() {
   let cursor: string | undefined | null = undefined;
-  let items: AccountLeaderboardQuery["accounts"]["items"] = [];
+  let items: any[] = [];
   while (true) {
     const data: AccountLeaderboardQuery | null = await graphQLFetch(
       CHAIN_CONFIG.ponderIndexerUrl,
@@ -49,7 +49,7 @@ async function runPaginatedQuery() {
     }
 
     items = items.concat(
-      data.accounts.items.filter(
+      (data as any).accounts.items.filter(
         (item) =>
           !isAddressEqual(
             getAddress(item.address),
@@ -67,10 +67,10 @@ async function runPaginatedQuery() {
     );
 
     if (
-      data.accounts.pageInfo.hasNextPage &&
-      data.accounts.pageInfo.endCursor
+      (data as any).accounts.pageInfo.hasNextPage &&
+      (data as any).accounts.pageInfo.endCursor
     ) {
-      cursor = data.accounts.pageInfo.endCursor;
+      cursor = (data as any).accounts.pageInfo.endCursor;
     } else {
       break;
     }
