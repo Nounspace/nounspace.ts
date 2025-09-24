@@ -1,4 +1,32 @@
-import NounsHomeFidget from "./NounsHomeFidget";
+import React from "react";
+import {
+  FidgetArgs,
+  FidgetModule,
+  FidgetProperties,
+  FidgetSettingsStyle,
+} from "@/common/fidgets";
+import { defaultStyleFields } from "@/fidgets/helpers";
+import BaseNounsHomeFidget from "./NounsHomeFidget";
+
+export type NounsHomeFidgetSettings = FidgetSettingsStyle;
+
+const nounsHomeProperties: FidgetProperties = {
+  fidgetName: "Nouns Home",
+  icon: 0x1f5bc,
+  fields: [
+    ...defaultStyleFields,
+  ],
+  size: {
+    minHeight: 12,
+    maxHeight: 36,
+    minWidth: 4,
+    maxWidth: 36,
+  },
+};
+
+const NounsHomeFidget: React.FC<FidgetArgs<NounsHomeFidgetSettings>> = () => {
+  return <BaseNounsHomeFidget />;
+};
 
 export const fidget = {
   id: "nouns-home",
@@ -7,4 +35,10 @@ export const fidget = {
   version: "1.0.0",
 };
 
-export default NounsHomeFidget;
+const NounsHomeModule = {
+  fidget: NounsHomeFidget,
+  properties: nounsHomeProperties,
+} as FidgetModule<FidgetArgs<NounsHomeFidgetSettings>>;
+
+export { BaseNounsHomeFidget as NounsHomeFidget };
+export default NounsHomeModule;
